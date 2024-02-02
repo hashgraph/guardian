@@ -1,44 +1,51 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onClose()">
-                <mat-icon>close</mat-icon>
-            </div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="loading">
+            <div class="preloader-image preloader-image-l-size"></div>
         </div>
-        <div *ngIf="type === 'policy'" class="g-dialog-title">
-            Compare Policies
+
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="firstPolicy">First Policy</label>
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="policyId1"
+                    [options]="list1"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="firstPolicy"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Select Policy"
+            ></p-dropdown>
         </div>
-        <div *ngIf="type === 'tool'" class="g-dialog-title">
-            Compare Tools
-        </div>
-        <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="disabled">
-                Compare
-            </div>
+
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="firstPolicy"
+            >Secondary Policy</label
+            >
+            <p-multiSelect
+                    (onChange)="onChange()"
+                    [(ngModel)]="policyId2"
+                    [options]="list2"
+                    appendTo="body"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="Select Policy"
+            ></p-multiSelect>
         </div>
     </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <div *ngIf="loading" class="loading">
-                <mat-spinner></mat-spinner>
-            </div>
-
-            <mat-form-field appearance="outline" style="width: 100%">
-                <mat-label *ngIf="type === 'policy'">First policy:</mat-label>
-                <mat-label *ngIf="type === 'tool'">First tool:</mat-label>
-                <mat-select [(value)]="itemID_1" (valueChange)="onChange()">
-                    <mat-option>None</mat-option>
-                    <mat-option *ngFor="let row of list1" [value]="row.id">{{row.name}}</mat-option>
-                </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" style="width: 100%">
-                <mat-label *ngIf="type === 'policy'">Secondary policies:</mat-label>
-                <mat-label *ngIf="type === 'tool'">Secondary tools:</mat-label>
-                <mat-select multiple [(value)]="itemID_2" (valueChange)="onChange()">
-                    <mat-option *ngFor="let row of list2" [value]="row.id">{{row.name}}</mat-option>
-                </mat-select>
-            </mat-form-field>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <p-button
+                    (click)="onClose()"
+                    label="Cancel"
+                    styleClass="p-button-outlined"
+            ></p-button>
+        </div>
+        <div>
+            <button (click)="onCompare()" class="button secondary" label="Compare" pButton></button>
         </div>
     </div>
 </div>

@@ -26,7 +26,7 @@ export enum PolicyEvents {
     CHECK_IF_ALIVE = 'check-if-alive',
     CREATE_VIRTUAL_USER = 'policy-event-create-virtual-user',
     SET_VIRTUAL_USER = 'policy-event-login-virtual-user',
-
+    GET_POLICY_NAVIGATION = 'policy-event-get-policy-navigation',
     RECORD_UPDATE_BROADCAST = 'policy-event-record-update-broadcast',
     GET_RECORD_STATUS = 'policy-event-get-record-status',
     START_RECORDING = 'policy-event-start-recording',
@@ -38,4 +38,5 @@ export enum PolicyEvents {
     FAST_FORWARD = 'policy-event-fast-forward',
     RECORD_RETRY_STEP = 'policy-event-retry-step',
     RECORD_SKIP_STEP = 'policy-event-skip-step',
+    REFRESH_MODEL = 'policy-event-refresh-model',
 }

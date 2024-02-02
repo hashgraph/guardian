@@ -2291,6 +2291,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /map/sh:
+    get:
+      operationId: MapApi_getSentinelKey
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - map
   /metrics:
     get:
       operationId: MetricsApi_getMetrics
@@ -3626,6 +3635,76 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/migrate-data:
+    post:
+      operationId: PolicyApi_migrateData
+      summary: Migrate policy data.
+      description: >-
+        Migrate policy data. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Migration config.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationConfigDTO'
+      responses:
+        '200':
+          description: Errors while migration.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                    id:
+                      type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_6
+        - policies
+      security:
+        - bearerAuth: []
+  /policies/push/migrate-data:
+    post:
+      operationId: PolicyApi_migrateDataAsync
+      summary: Migrate policy data asynchronous.
+      description: >-
+        Migrate policy data asynchronous. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Migration config.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MigrationConfigDTO'
+      responses:
+        '202':
+          description: Created task.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
   /policies/push:
     post:
       tags:
@@ -3678,8 +3757,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_6
-        - policies
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3903,6 +3981,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/discontinue:
+    put:
+      operationId: PolicyApi_discontinuePolicy
+      summary: Discontunue policy.
+      description: >-
+        Discontunue policy. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      requestBody:
+        required: true
+        description: Discontinue details.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: date
+      responses:
+        '200':
+          description: Policies.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/draft:
     put:
       tags:
@@ -3971,6 +4091,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/navigation:
+    get:
+      operationId: PolicyApi_getPolicyNavigation
+      summary: Returns a policy navigation.
+      description: Returns a policy navigation.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/groups:
     get:
       tags:
@@ -4057,6 +4200,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/documents:
+    get:
+      operationId: PolicyApi_getPolicyDocuments
+      summary: Get policy documents.
+      description: >-
+        Get policy documents. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: pageSize
+          required: true
+          in: query
+          description: Page size.
+          schema:
+            type: number
+        - name: pageIndex
+          required: true
+          in: query
+          description: Page index.
+          schema:
+            type: number
+        - name: type
+          required: true
+          in: query
+          description: Document type.
+          schema:
+            enum:
+              - VC
+              - VP
+            type: string
+        - name: includeDocument
+          required: true
+          in: query
+          description: Include document field.
+          schema:
+            type: boolean
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      responses:
+        '200':
+          description: Documents.
+          headers:
+            X-Total-Count:
+              description: Total documents count.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/blocks:
     get:
       tags:
@@ -4323,6 +4528,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/{policyId}/export/xlsx:
+    get:
+      operationId: PolicyApi_getPolicyExportXlsx
+      summary: >-
+        Return policy and its artifacts in a xlsx file format for the specified
+        policy.
+      description: >-
+        Returns a xlsx file containing the published policy and all associated
+        artifacts, i.e. schemas and VCs. Only users with the Standard Registry
+        role are allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
   /policies/import/message:
     post:
       tags:
@@ -4392,6 +4636,84 @@ paths:
         description: >-
           Object that contains the identifier of the Hedera message which
           contains the IPFS CID of the Policy.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        '202':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /policies/import/message/preview:
+    post:
+      tags:
+        - policies
+      description: >-
+        Previews the policy from IPFS without loading it into the local DB. Only
+        users with the Standard Registry role are allowed to make the request.
+      summary: Policy preview from IPFS.
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: >-
+          Object that contains the identifier of the Hedera message which
+          contains the IPFS CID of the policy.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewPolicy'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /policies/push/import/message/preview:
+    post:
+      tags:
+        - policies
+      description: >-
+        Previews the policy from IPFS without loading it into the local DB. Only
+        users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Previews the policy from IPFS without loading it into the local DB.
+      requestBody:
+        description: >-
+          Object that contains the identifier of the Hedera message which
+          contains the IPFS CID of the policy.
         required: true
         content:
           application/json:
@@ -4507,84 +4829,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /policies/import/message/preview:
-    post:
-      tags:
-        - policies
-      description: >-
-        Previews the policy from IPFS without loading it into the local DB. Only
-        users with the Standard Registry role are allowed to make the request.
-      summary: Policy preview from IPFS.
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: >-
-          Object that contains the identifier of the Hedera message which
-          contains the IPFS CID of the policy.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PreviewPolicy'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /policies/push/import/message/preview:
-    post:
-      tags:
-        - policies
-      description: >-
-        Previews the policy from IPFS without loading it into the local DB. Only
-        users with the Standard Registry role are allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Previews the policy from IPFS without loading it into the local DB.
-      requestBody:
-        description: >-
-          Object that contains the identifier of the Hedera message which
-          contains the IPFS CID of the policy.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
-      responses:
-        '202':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /policies/import/file/preview:
     post:
       tags:
@@ -4623,6 +4867,129 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/import/xlsx:
+    post:
+      operationId: PolicyApi_importPolicyFromXlsx
+      summary: Imports new policy from a xlsx file.
+      description: >-
+        Imports new policy and all associated artifacts, such as schemas and
+        VCs, from the provided xlsx file into the local DB. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: query
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A xlsx file containing policy config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /policies/push/import/xlsx:
+    post:
+      operationId: PolicyApi_importPolicyFromXlsxAsync
+      summary: Imports new policy from a xlsx file.
+      description: >-
+        Imports new policy and all associated artifacts, such as schemas and
+        VCs, from the provided xlsx file into the local DB. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: query
+          description: Policy Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A xlsx file containing policy config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /policies/import/xlsx/preview:
+    post:
+      operationId: PolicyApi_importPolicyFromXlsxPreview
+      summary: Policy preview from a xlsx file.
+      description: >-
+        Previews the policy from a xlsx file without loading it into the local
+        DB. Only users with the Standard Registry role are allowed to make the
+        request.
+      parameters: []
+      requestBody:
+        required: true
+        description: A xlsx file containing policy config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
   /policies/blocks/about:
     get:
       operationId: PolicyApi_getBlockAbout
@@ -5003,6 +5370,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /policies/methodologies/categories:
+    get:
+      operationId: PolicyApi_getPolicyCategoriesAsync
+      summary: Get all categories
+      description: Get all categories
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyCategoryDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+  /policies/methodologies/search:
+    post:
+      operationId: PolicyApi_getPoliciesByCategory
+      summary: Get filtered policies
+      description: Get policies by categories and text
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              Filter1:
+                value:
+                  categoryIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+                  text: abc
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
   /schema/{schemaId}:
     get:
       tags:
@@ -6266,6 +6689,192 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /schemas/{schemaId}/export/xlsx:
+    get:
+      operationId: SchemaApi_getPolicyExportXlsx
+      summary: Return schemas in a xlsx file format for the specified policy.
+      description: >-
+        Returns a xlsx file containing schemas. Only users with the Standard
+        Registry role are allowed to make the request.
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/{topicId}/import/xlsx:
+    post:
+      operationId: SchemaApi_importPolicyFromXlsx
+      summary: Imports new schema from a xlsx file into the local DB.
+      description: >-
+        Imports new schema from a xlsx file into the local DB. Only users with
+        the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          description: Topic Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A xlsx file containing schema config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/push/{topicId}/import/xlsx:
+    post:
+      operationId: SchemaApi_importPolicyFromXlsxAsync
+      summary: Imports new schema from a xlsx file into the local DB.
+      description: >-
+        Imports new schema from a xlsx file into the local DB. Only users with
+        the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          description: Topic Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A xlsx file containing schema config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/import/xlsx/preview:
+    post:
+      operationId: SchemaApi_importPolicyFromXlsxPreview
+      summary: Previews the schema from a xlsx file.
+      description: >-
+        Previews the schema from a xlsx file. Only users with the Standard
+        Registry role are allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: A xlsx file containing schema config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/export/template:
+    get:
+      operationId: SchemaApi_exportTemplate
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
   /settings:
     get:
       tags:
@@ -7945,10 +8554,12 @@ paths:
       operationId: BrandingApi_setBranding
       parameters: []
       responses:
-        '204':
-          description: ''
+        '401':
+          description: Unauthorized
       tags: &ref_10
         - branding
+      security:
+        - bearer: []
     get:
       operationId: BrandingApi_getBranding
       parameters: []
@@ -8195,6 +8806,100 @@ paths:
       security:
         - bearer: []
         - bearerAuth: []
+  /projects/search:
+    post:
+      operationId: ProjectsAPI_projectSearch
+      summary: Search projects
+      description: Search projects by filters
+      parameters: []
+      requestBody:
+        required: true
+        description: The question of choosing a methodology
+        content:
+          application/json:
+            schema:
+              type: string
+            examples:
+              q:
+                value: >-
+                  What methodology can I use for production of electricity using
+                  renewable energy technologies?
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_13
+        - projects
+  /projects/compare/documents:
+    post:
+      operationId: ProjectsAPI_compareDocuments
+      summary: Compare documents.
+      description: Compare documents.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterDocumentsDTO'
+            examples:
+              Filter1:
+                value:
+                  documentId1: '000000000000000000000001'
+                  documentId2: '000000000000000000000002'
+              Filter2:
+                value:
+                  documentIds:
+                    - '000000000000000000000001'
+                    - '000000000000000000000002'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompareDocumentsDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+  /projects/properties:
+    get:
+      operationId: ProjectsAPI_getPolicyProperties
+      summary: Get all properties
+      description: Get all properties
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropertiesDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
   /record/{policyId}/status:
     get:
       operationId: RecordApi_getRecordStatus
@@ -8233,7 +8938,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_13
+      tags: &ref_14
         - record
       security:
         - bearerAuth: []
@@ -8276,7 +8981,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8319,7 +9024,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8363,7 +9068,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8405,7 +9110,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8447,7 +9152,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8489,7 +9194,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8531,7 +9236,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8573,7 +9278,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8615,7 +9320,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
@@ -8657,10 +9362,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
       security:
         - bearerAuth: []
         - bearer: []
+  /ai-suggestions/ask:
+    get:
+      operationId: AISuggestionsAPI_getAIAnswer
+      summary: Get methodology suggestion
+      description: Returns AI response to the current question
+      parameters:
+        - name: q
+          required: true
+          in: path
+          description: The question of choosing a methodology
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                example: ACM0001, ACM0002, ACM0006, ACM0007, ACM0018
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_15
+        - ai-suggestions
+  /ai-suggestions/rebuild-vector:
+    put:
+      operationId: AISuggestionsAPI_rebuildVector
+      summary: Rebuild AI vector
+      description: Rebuilds vector based on policy data in the DB
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags: *ref_15
   /schemas/type/{type}:
     get:
       tags:
@@ -9081,7 +9823,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.20.1
+  version: 2.21.0
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -9729,6 +10471,55 @@ components:
         - token
         - count
         - serials
+    MigrationConfigPoliciesDTO:
+      type: object
+      properties:
+        src:
+          type: string
+        dst:
+          type: string
+      required:
+        - src
+        - dst
+    MigrationConfigDTO:
+      type: object
+      properties:
+        policies:
+          $ref: '#/components/schemas/MigrationConfigPoliciesDTO'
+        vcs:
+          type: array
+          items:
+            type: string
+        vps:
+          type: array
+          items:
+            type: string
+        schemas:
+          type: object
+        groups:
+          type: object
+        roles:
+          type: object
+      required:
+        - policies
+        - vcs
+        - vps
+        - schemas
+        - groups
+        - roles
+    PolicyCategoryDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+      required:
+        - id
+        - name
+        - type
     SchemaDTO:
       type: object
       properties:
@@ -9948,6 +10739,44 @@ components:
         - progress
         - type
         - taskId
+    ProjectDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        policyId:
+          type: string
+        policyName:
+          type: string
+        registered:
+          type: string
+        title:
+          type: string
+        companyName:
+          type: string
+        sectoralScope:
+          type: string
+      required:
+        - id
+        - policyId
+        - policyName
+        - registered
+        - title
+        - companyName
+        - sectoralScope
+    PropertiesDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        value:
+          type: string
+      required:
+        - id
+        - title
+        - value
     Object:
       type: object
       properties: {}

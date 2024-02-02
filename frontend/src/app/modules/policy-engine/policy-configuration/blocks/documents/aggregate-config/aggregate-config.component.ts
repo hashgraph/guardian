@@ -8,7 +8,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'aggregate-config',
     templateUrl: './aggregate-config.component.html',
-    styleUrls: ['./aggregate-config.component.css'],
+    styleUrls: ['./aggregate-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class AggregateConfigComponent implements OnInit {
@@ -18,7 +18,7 @@ export class AggregateConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
         options: false,
@@ -63,7 +63,7 @@ export class AggregateConfigComponent implements OnInit {
     onRemoveExpression(i: number) {
         this.properties.expressions.splice(i, 1);
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

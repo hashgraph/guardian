@@ -19,6 +19,7 @@
         "@guardian/interfaces": "file:../interfaces",
         "ajv": "^8.10.0",
         "ajv-formats": "^2.1.1",
+        "angular-svg-icon": "^12.0.0",
         "angularx-qrcode": "^12.0.3",
         "codemirror": "^5.65.0",
         "cronstrue": "^2.4.0",
@@ -29,9 +30,12 @@
         "moment": "^2.29.2",
         "moment-timezone": "^0.5.43",
         "ngx-colors": "3.0.5",
+        "ngx-drag-drop": "^2.0.0",
         "ngx-file-drop": "^12.0.0",
         "ngx-mask": "^12.0.0",
         "ngx-toastr": "^14.1.0",
+        "primeicons": "^6.0.1",
+        "primeng": "^12.2.3",
         "process": "^0.11.10",
         "rxjs": "~6.6.0",
         "stream-browserify": "^3.0.0",
@@ -52,16 +56,17 @@
         "karma-coverage": "~2.0.3",
         "karma-jasmine": "~4.0.0",
         "karma-jasmine-html-reporter": "^1.7.0",
+        "prettier": "3.0.2",
         "typescript": "~4.3.2"
     },
     "license": "Apache-2.0",
     "name": "guardian",
     "private": true,
     "scripts": {
-        "dev:docker": "ng serve --host 0.0.0.0 --disable-host-check --proxy-config ./proxy.docker.json",
         "build": "ng build",
         "build:demo": "ng build --configuration=demo",
         "build:prod": "ng build --configuration=production",
+        "dev:docker": "ng serve --host 0.0.0.0 --disable-host-check --proxy-config ./proxy.docker.json",
         "ng": "ng",
         "start": "ng serve --proxy-config ./proxy.conf.json",
         "start:demo": "ng serve --proxy-config ./proxy.conf.json --configuration=demo",
@@ -69,5 +74,5 @@
         "test": "ng test",
         "watch": "ng build --watch --configuration development --output-path ../www-data"
     },
-    "version": "2.20.0"
+    "version": "2.21.0"
 }

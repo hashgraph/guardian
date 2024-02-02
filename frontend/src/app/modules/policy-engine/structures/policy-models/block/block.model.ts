@@ -1,6 +1,5 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
-import { BlockType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
 import { PolicyEvent } from './block-event.model';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IEventConfig } from '../interfaces/event-config.interface';

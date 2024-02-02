@@ -88,12 +88,16 @@ export class PolicyValidator {
         if (!policy || (typeof policy !== 'object')) {
             this.addError('Invalid policy config');
             return false;
-        } else {
-            this.addPermissions(policy.policyRoles);
-            await this.registerBlock(policy.config);
-            await this.registerSchemas();
-            return true;
         }
+        // TODO: Add default categories or remove
+        // if (!policy.categories?.filter((e) => e).length) {
+        //     this.addError('The policy categories are empty');
+        //     return false;
+        // }
+        this.addPermissions(policy.policyRoles);
+        await this.registerBlock(policy.config);
+        await this.registerSchemas();
+        return true;
     }
 
     /**
@@ -101,6 +105,7 @@ export class PolicyValidator {
      */
     private async registerSchemas(): Promise<void> {
         this.schemas.set('#GeoJSON', SchemaValidator.fromSystem('#GeoJSON'));
+        this.schemas.set('#SentinelHUB', SchemaValidator.fromSystem('#SentinelHUB'));
         const schemas = await DatabaseServer.getSchemas({ topicId: this.topicId });
         for (const schema of schemas) {
             this.schemas.set(schema.iri, SchemaValidator.fromSchema(schema));

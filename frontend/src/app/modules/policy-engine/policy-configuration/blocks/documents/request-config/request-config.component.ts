@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -8,7 +7,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: 'request-config',
     templateUrl: './request-config.component.html',
-    styleUrls: ['./request-config.component.css'],
+    styleUrls: ['./request-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RequestConfigComponent implements OnInit {

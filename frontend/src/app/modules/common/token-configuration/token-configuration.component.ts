@@ -1,29 +1,42 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { ContractType } from '@guardian/interfaces';
-import { ContractService } from 'src/app/services/contract.service';
 
 @Component({
     selector: 'app-token-configuration',
     templateUrl: './token-configuration.component.html',
     styleUrls: ['./token-configuration.component.css'],
 })
-export class TokenConfigurationComponent implements OnInit {
+export class TokenConfigurationComponent implements OnInit, OnChanges {
     @Input('preset') preset?: any;
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
     @Input() contracts: any[];
+    displayContracts: any[];
     ft: any;
 
-    constructor() { }
+    test: any;
+
+    tokenTypes: { value: string, name: string }[] = [
+        {
+            name: 'Fungible',
+            value: 'fungible'
+        },
+        {
+            name: 'Non-Fungible',
+            value: 'non-fungible'
+        }
+    ];
+
+    constructor() {
+    }
 
     get notDraftToken(): boolean {
         return !this.dataForm?.get('draftToken')?.value;
     }
 
     set notDraftToken(value: any) {
-        this.dataForm?.patchValue({ draftToken: !value });
+        this.dataForm?.patchValue({draftToken: !value});
     }
 
     get enableAdmin(): any {
@@ -31,7 +44,7 @@ export class TokenConfigurationComponent implements OnInit {
     }
 
     set enableAdmin(value: any) {
-        this.dataForm?.patchValue({ enableAdmin: value });
+        this.dataForm?.patchValue({enableAdmin: value});
     }
 
     get enableWipe(): any {
@@ -39,7 +52,7 @@ export class TokenConfigurationComponent implements OnInit {
     }
 
     set enableWipe(value: any) {
-        this.dataForm?.patchValue({ enableWipe: value });
+        this.dataForm?.patchValue({enableWipe: value});
     }
 
     get enableFreeze(): any {
@@ -47,7 +60,7 @@ export class TokenConfigurationComponent implements OnInit {
     }
 
     set enableFreeze(value: any) {
-        this.dataForm?.patchValue({ enableFreeze: value });
+        this.dataForm?.patchValue({enableFreeze: value});
     }
 
     get enableKYC(): any {
@@ -55,7 +68,7 @@ export class TokenConfigurationComponent implements OnInit {
     }
 
     set enableKYC(value: any) {
-        this.dataForm?.patchValue({ enableKYC: value });
+        this.dataForm?.patchValue({enableKYC: value});
     }
 
     get wipeContractId(): any {
@@ -73,8 +86,22 @@ export class TokenConfigurationComponent implements OnInit {
         this.onChangeType();
     }
 
+    ngOnChanges() {
+        this.displayContracts =
+            this.wipeContractId &&
+            this.contracts.findIndex(
+                (contract) => contract.contractId === this.wipeContractId
+            ) < 0
+                ? this.contracts.concat([{ contractId: this.wipeContractId }])
+                : this.contracts;
+    }
+
     onChangeType() {
         const data = this.dataForm.getRawValue();
         this.ft = (data && data.tokenType == 'fungible');
+    }
+
+    tokenTypeChanged($event: any) {
+        this.dataForm.controls.tokenType = $event.value;
     }
 }

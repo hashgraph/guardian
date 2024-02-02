@@ -8,7 +8,7 @@ import { IModuleVariables, PolicyBlock, TokenTemplateVariables } from '../../../
 @Component({
     selector: 'create-token-config',
     templateUrl: './create-token-config.component.html',
-    styleUrls: ['./create-token-config.component.css']
+    styleUrls: ['./create-token-config.component.scss']
 })
 export class CreateTokenConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

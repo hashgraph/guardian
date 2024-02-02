@@ -63,5 +63,6 @@ export {
     IEventsLvl,
     IIdLvl,
     IKeyLvl,
-    IPropertiesLvl
+    IPropertiesLvl,
+    IRefLvl
 } from './interfaces/compare-options.interface';

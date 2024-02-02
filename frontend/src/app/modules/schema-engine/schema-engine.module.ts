@@ -1,11 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-    NgxMatDatetimePickerModule,
-    NgxMatNativeDateModule,
-    NgxMatTimepickerModule,
-} from '@angular-material-components/datetime-picker';
+import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule, } from '@angular-material-components/datetime-picker';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GoogleMapsModule } from '@angular/google-maps';
@@ -28,9 +24,19 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
+import { ButtonModule } from 'primeng/button';
+import { TabViewModule } from 'primeng/tabview';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DropdownModule } from 'primeng/dropdown';
+import { DeleteSchemaDialogComponent } from './delete-schema-dialog/delete-schema-dialog.component';
+import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-unavailable-dialog.component';
 import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
 import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
 import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
+import { AngularSvgIconModule } from 'angular-svg-icon';
+import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
 
 @NgModule({
     declarations: [
@@ -49,6 +55,9 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
         EnumEditorDialog,
         CompareSchemaDialog,
         GeojsonTypeComponent,
+        SentinelHubTypeComponent,
+        DeleteSchemaDialogComponent,
+        ServiceUnavailableDialog,
         SchemaTreeComponent,
         SchemaFormDialog
     ],
@@ -64,6 +73,13 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
         CodemirrorModule,
         ArtifactEngineModule,
         GoogleMapsModule,
+        ButtonModule,
+        TabViewModule,
+        InputTextModule,
+        InputTextareaModule,
+        CheckboxModule,
+        DropdownModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         SchemaDialog,

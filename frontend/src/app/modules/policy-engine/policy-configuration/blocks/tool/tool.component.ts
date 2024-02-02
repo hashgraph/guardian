@@ -26,7 +26,7 @@ import {
 @Component({
     selector: 'tool',
     templateUrl: './tool.component.html',
-    styleUrls: ['./tool.component.css'],
+    styleUrls: ['./tool.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ToolComponent implements OnInit {

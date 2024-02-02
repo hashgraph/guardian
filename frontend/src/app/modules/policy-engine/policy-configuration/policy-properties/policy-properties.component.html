@@ -68,6 +68,108 @@
                             <textarea [(ngModel)]="policy.description" [readonly]="readonly"></textarea>
                         </td>
                     </tr>
+                    <tr [attr.collapse]="propHidden.metaData" class="propRow">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Project Schema</td>
+                        <td class="propRowCell">
+                            <mat-select
+                                (selectionChange)="setProjectSchema($event.value)"
+                                [(ngModel)]="projectSchema"
+                                [disabled]="!policySchemas"
+                            >
+                                <mat-option *ngFor="let item of policySchemas" [value]="item.value">
+                                    {{ item.name }}
+                                </mat-option>
+                            </mat-select>
+                        </td>
+                    </tr>
+
+                    <tr class="propHeader">
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'categorization')"
+                            [attr.collapse]="propHidden.categorization">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </td>
+                        <td class="propHeaderCell cellName">Categorization</td>
+                        <td class="propHeaderCell"></td>
+                    </tr>
+
+                    <tr [attr.collapse]="propHidden.categorization" class="propRow">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Sectoral scope</td>
+                        <td class="propRowCell">
+                            <mat-select
+                                (selectionChange)="onCategoriesChanged()"
+                                [(ngModel)]="sectoralScopeSelected"
+                                [disabled]="!allCategories"
+                            >
+                                <mat-option *ngFor="let item of allCategories?.sectoralScopeOptions"
+                                            [value]="item">{{ item.name }}
+                                </mat-option>
+                            </mat-select>
+                        </td>
+                    </tr>
+                    <tr [attr.collapse]="propHidden.categorization" class="propRow">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Project Scale</td>
+                        <td class="propRowCell">
+                            <mat-select
+                                (selectionChange)="onCategoriesChanged()"
+                                [(ngModel)]="projectScaleSelected"
+                                [disabled]="!allCategories"
+                            >
+                                <mat-option *ngFor="let item of allCategories?.projectScaleOptions"
+                                            [value]="item">{{ item.name }}
+                                </mat-option>
+                            </mat-select>
+                        </td>
+                    </tr>
+                    <tr [attr.collapse]="propHidden.categorization" class="propRow">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Applied Technology Type</td>
+                        <td class="propRowCell">
+                            <mat-select
+                                (selectionChange)="onCategoriesChanged()"
+                                [(ngModel)]="appliedTechnologyTypeSelected"
+                                [disabled]="!allCategories"
+                            >
+                                <mat-option *ngFor="let item of allCategories?.appliedTechnologyTypeOptions"
+                                            [value]="item">{{ item.name }}
+                                </mat-option>
+                            </mat-select>
+                        </td>
+                    </tr>
+                    <tr [attr.collapse]="propHidden.categorization" class="propRow">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Mitigation Activity Type</td>
+                        <td class="propRowCell">
+                            <mat-select
+                                (selectionChange)="onCategoriesChanged()"
+                                [(ngModel)]="migrationActivityTypeSelected"
+                                [disabled]="!allCategories"
+                                multiple
+                            >
+                                <mat-option *ngFor="let item of allCategories?.migrationActivityTypeOptions"
+                                            [value]="item">{{ item.name }}
+                                </mat-option>
+                            </mat-select>
+                        </td>
+                    </tr>
+                    <tr [attr.collapse]="propHidden.categorization" class="propRow">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Sub Type</td>
+                        <td class="propRowCell">
+                            <mat-select
+                                (selectionChange)="onCategoriesChanged()"
+                                [(ngModel)]="subTypeSelected"
+                                [disabled]="!allCategories"
+                                multiple
+                            >
+                                <mat-option *ngFor="let item of allCategories?.subTypeOptions"
+                                            [value]="item">{{ item.name }}
+                                </mat-option>
+                            </mat-select>
+                        </td>
+                    </tr>
                 </ng-container>
 
                 <ng-container *ngIf="type == 'Role'">
@@ -96,6 +198,95 @@
                                 </span>
                             </td>
                         </tr>
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngIf="type == 'Navigation'">
+                    <!-- Navigation  -->
+                    <ng-container *ngFor="let role of navigationRoles; let i=index" class="213">
+                        <div class="navigation">
+                            <tr class="propHeader">
+                                <td (click)="onHide(propHidden.navigationRoles, role)" [attr.collapse]="propHidden.navigationRoles[role]"
+                                    class="propRowCol cellCollapse">
+                                    <mat-icon *ngIf="policy.policyRoles && policy.policyRoles.length">
+                                        arrow_drop_down
+                                    </mat-icon>
+                                </td>
+                                <td class="propHeaderCell cellName">{{ role }}</td>
+                                <td class="propHeaderCell">
+                                    <div (click)="addStep(role)" *ngIf="true" class="propAdd">
+                                        <mat-icon>add</mat-icon>
+                                        <span>Add Step</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <ng-container *ngFor="let nav of navigation">
+                                <ng-container *ngIf="nav.role === role">
+                                    <ng-container *ngFor="let step of nav.steps; let s=index">
+                                        <tr *ngIf="!propHidden.navigationRoles[role]" class="propRow subRow stepRow">
+                                            <td (click)="onHide(propHidden.navigationSteps, role + s)"
+                                                [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                                                class="propRowCol cellCollapse">
+                                                <mat-icon *ngIf="policy.policyRoles && policy.policyRoles.length">
+                                                    arrow_drop_down
+                                                </mat-icon>
+                                            </td>
+                                            <td class="propHeaderCell cellName">{{ step.name || ('Step #' + (s + 1)) }}</td>
+                                            <td class="propHeaderCell cellName">
+                                                <span (click)="onRemoveStep(role, step)" [attr.readonly]="readonly"
+                                                      class="remove-step">
+                                                    <mat-icon>delete</mat-icon>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                                            class="propRow subRow">
+                                            <td class="propRowCol"></td>
+                                            <td class="propRowCell cellName">Name</td>
+                                            <td class="propRowCell">
+                                                <input (input)="onEditStep(step)" [(ngModel)]="step.name" [readonly]="readonly"
+                                                       class="prop-input">
+                                            </td>
+                                        </tr>
+                                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                                            class="propRow subRow">
+                                            <td class="propRowCol"></td>
+                                            <td class="propRowCell cellName">Block</td>
+                                            <td class="propRowCell">
+                                                <select-block
+                                                        (change)="onEditStep(step)"
+                                                        [(value)]="step.block"
+                                                        [blocks]="policy.allBlocks"
+                                                        [readonly]="readonly"
+                                                        [root]="policy"
+                                                        type="object"
+                                                ></select-block>
+                                            </td>
+                                        </tr>
+                                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                                            class="propRow subRow">
+                                            <td class="propRowCol"></td>
+                                            <td class="propRowCell cellName">Level</td>
+                                            <td class="propRowCell">
+                                                <input (input)="onEditStep(step)" [(ngModel)]="step.level" [readonly]="readonly"
+                                                       class="prop-input" type="number">
+                                            </td>
+                                        </tr>
+                                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                                            class="propRow subRow">
+                                            <td class="propRowCol"></td>
+                                            <td class="propRowCell cellName">
+                                                <div (click)="addStep(role, s + 1)" class="propAdd">
+                                                    <mat-icon>add</mat-icon>
+                                                    <span>Add Step</span>
+                                                </div>
+                                            </td>
+                                            <td class="propRowCell">
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </ng-container>
+                            </ng-container>
+                        </div>
                     </ng-container>
                 </ng-container>
                 <ng-container *ngIf="type == 'Groups'">

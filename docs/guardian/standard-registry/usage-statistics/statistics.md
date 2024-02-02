@@ -1,5 +1,10 @@
 # 💻 Statistics
 
+1. [Step By Step Process](statistics.md#id-1.-step-by-step-process)
+2. [Demo Video](statistics.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 The analytics-service processes information accessible from the Hedera mirror nodes and collects various statistics
 
 ## **1. Configuration**
@@ -43,3 +48,7 @@ The latest statistical refers can be exported in the format of the Excel file by
 {% hint style="info" %}
 **Note:** The system exports the current state of the statistical data, not the selected refresh.
 {% endhint %}
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=e6U68FtEbG8\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=14\&t=306s)

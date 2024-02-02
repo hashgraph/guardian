@@ -7,7 +7,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'code-editor-dialog',
     templateUrl: './code-editor-dialog.component.html',
-    styleUrls: ['./code-editor-dialog.component.css']
+    styleUrls: ['./code-editor-dialog.component.scss']
 })
 export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     codeMirrorOptions: any = {

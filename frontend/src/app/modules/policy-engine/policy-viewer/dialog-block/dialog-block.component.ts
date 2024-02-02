@@ -7,7 +7,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'dialog-block',
     templateUrl: './dialog-block.component.html',
-    styleUrls: ['./dialog-block.component.css']
+    styleUrls: ['./dialog-block.component.scss']
 })
 export class DialogBlock {
     title: string = "";

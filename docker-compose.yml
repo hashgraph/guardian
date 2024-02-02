@@ -51,10 +51,10 @@ services:
       - ./file:/vault/file:rw
       - ./config:/vault/config:rw
 
-# https://docs.docker.com/compose/environment-variables/envvars-precedence/
-# Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
-# ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
-# specific service variables defined by "environment" can override what is defined in the ecosystem file
+  # https://docs.docker.com/compose/environment-variables/envvars-precedence/
+  # Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
+  # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
+  # specific service variables defined by "environment" can override what is defined in the ecosystem file
 
   notification-service:
     env_file:
@@ -95,8 +95,6 @@ services:
         condition: service_healthy
       auth-service:
         condition: service_started
-      w3s-file-uploader:
-        condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
       - SERVICE_CHANNEL:"worker.1"
@@ -116,8 +114,6 @@ services:
       ipfs-node:
         condition: service_healthy
       auth-service:
-        condition: service_started
-      w3s-file-uploader:
         condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
@@ -170,6 +166,25 @@ services:
     volumes:
       - ./api-gateway/configs:/usr/local/api-gateway/configs:ro
 
+  ai-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./ai-service/Dockerfile
+    expose:
+      - 3013
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+    volumes:
+      - ./ai-service/data:/usr/local/ai-service/data:rw
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - VECTOR_STORAGE_PATH=./faiss-vector
+      - DOCS_STORAGE_PATH=./data/generated-data
+
   policy-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
@@ -212,24 +227,12 @@ services:
       - worker-service-1
       - worker-service-2
       - policy-service
+      - ai-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
       - 5007
-
-  w3s-file-uploader:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
-    build:
-      context: .
-      dockerfile: ./w3s-file-uploader/Dockerfile
-    depends_on:
-      - message-broker
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
-    volumes:
-      - ./w3s-file-uploader/configs:/usr/local/w3s-file-uploader/configs:ro
 
   application-events:
     build:

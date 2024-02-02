@@ -41,7 +41,7 @@ import {
     WiperRequest,
     Workers
 } from '@guardian/common';
-import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
+import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { ipfsAPI } from '@api/ipfs.service';
 import { artifactAPI } from '@api/artifact.service';
@@ -69,6 +69,8 @@ import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from '@api/suggestions.service';
 import { SynchronizationTask } from '@helpers/synchronization-task';
 import { recordAPI } from '@api/record.service';
+import { projectsAPI } from '@api/projects.service';
+import { AISuggestionsService } from '@helpers/ai-suggestions';
 
 export const obj = {};
 
@@ -91,7 +93,10 @@ Promise.all([
         'v2-11-0',
         'v2-12-0',
         'v2-13-0',
-        'v2-16-0'
+        'v2-16-0',
+        'v2-17-0',
+        'v2-18-0',
+        'v2-20-0',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -134,6 +139,7 @@ Promise.all([
         })
 
     }
+    await new AISuggestionsService().setConnection(cn).init();
 
     await state.updateState(ApplicationStates.STARTED);
 
@@ -176,7 +182,8 @@ Promise.all([
         await wizardAPI();
         await recordAPI();
         await brandingAPI(brandingRepository);
-        await suggestionsAPI()
+        await suggestionsAPI();
+        await projectsAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -268,6 +275,7 @@ Promise.all([
 
         return true;
     });
+    let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
         if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
             process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
@@ -284,7 +292,7 @@ Promise.all([
         state.updateState(ApplicationStates.INITIALIZING);
 
         try {
-            const policyEngine = new PolicyEngine();
+            policyEngine = new PolicyEngine();
             await policyEngine.setConnection(cn).init();
             const policyService = new PolicyEngineService(cn);
             await policyService.init();
@@ -362,6 +370,26 @@ Promise.all([
         channel
     );
     wipeSync.start();
+    const policyDiscontinueTask = new SynchronizationTask(
+        'policy-discontinue',
+        async () => {
+            const date = new Date();
+            const policiesToDiscontunie = await policyRepository.find({
+                discontinuedDate: { $lte: date },
+                status: PolicyType.PUBLISH
+            });
+            await policyRepository.update(policiesToDiscontunie.map(policy => {
+                policy.status = PolicyType.DISCONTINUED;
+                return policy;
+            }));
+            await Promise.all(policiesToDiscontunie.map(policy =>
+                new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policy.id, {})
+            ));
+        },
+        '0 * * * *',
+        channel
+    );
+    policyDiscontinueTask.start(true);
 
     startMetricsServer();
 }, (reason) => {

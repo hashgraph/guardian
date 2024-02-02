@@ -1,9 +1,10 @@
-import { AfterContentChecked, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -11,7 +12,7 @@ import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.c
 @Component({
     selector: 'button-block',
     templateUrl: './button-block.component.html',
-    styleUrls: ['./button-block.component.css'],
+    styleUrls: ['./button-block.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ButtonBlockComponent implements OnInit, AfterContentChecked {
@@ -33,6 +34,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         public dialog: MatDialog,
+        private dialogService: DialogService,
         private cdref: ChangeDetectorRef
     ) {
     }
@@ -60,7 +62,9 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         this.loadData();
     }
@@ -86,15 +90,20 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 1000);
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -187,7 +196,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 tag: button.tag,
             })
             .subscribe(
-                () => {},
+                () => { },
                 (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -196,15 +205,16 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     }
 
     onSelectDialog(button: any) {
-        const dialogRef = this.dialog.open(ConfirmationDialog, {
+        const dialogRef = this.dialogService.open(ConfirmationDialog, {
+            header: button.title,
+            width: '100vh',
             data: {
                 title: button.title,
-                description: button.description
+                description: button.description,
             },
-            disableClose: true,
         });
 
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.onClose.subscribe((result) => {
             if (result) {
                 let comments = this.getObjectValue(
                     this.data,

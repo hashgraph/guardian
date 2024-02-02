@@ -1,17 +1,106 @@
-<div class="content">
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading && isConfirmed">
+        <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+    </ng-container>
+    <ng-container *ngIf="!loading && !isConfirmed" [ngTemplateOutlet]="noDIDSettings"></ng-container>
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Artifacts</h1>
+    </div>
+</ng-template>
+
+<ng-template #actionsContainer>
+    <div class="actions-container">
+        <div class="dropdown-block">
+            <p-dropdown (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="policies!">
+                <ng-template pTemplate="selectedItem">
+                    <div *ngIf="currentPolicy"><span class="dropdown-label">Policy</span> <span
+                            class="dropdown-item">{{ currentPolicy.name }}</span></div>
+                </ng-template>
+                <ng-template let-policy pTemplate="item">
+                    <div
+                            class="dropdown-item">{{ policy.name + (policy.id !== -1 ? ' (' + policy.id + ')' : '') }}
+                    </div>
+                </ng-template>
+            </p-dropdown>
+        </div>
+        <div class="flex flex-column-gap-8">
+            <button (click)="importArtifacts()" [icon]="'pi pi-download'" class="button" label="Import an Artifact" pButton
+                    type="button"></button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #tableContainer>
+    <ng-container *ngIf="artifacts && artifacts.length > 0 else noData">
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>ID</th>
+                    <th>POLICY</th>
+                    <th>NAME</th>
+                    <th>EXTENTION</th>
+                    <th>TYPE</th>
+                    <th></th>
+                </tr>
+                <ng-container *ngFor="let artifact of artifacts">
+                    <tr class="row-item">
+                        <td>{{ artifact.uuid }}</td>
+                        <td>{{ policyNameById[artifact.policyId] }}</td>
+                        <td>{{ artifact.name }}</td>
+                        <td>{{ artifact.extention }}</td>
+                        <td>{{ artifact.type }}</td>
+                        <td>
+                            <div class="flex flex-sb-c">
+                                <div class="flex flex-column-gap-20">
+                                    <svg-icon (click)="artifact.editable ? openDeleteArtifactDialog(artifact) : null"
+                                        src="/assets/images/icons/delete.svg" 
+                                        [svgClass]="artifact.editable ? 'accent-color-red' : 'disabled-color'"></svg-icon>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="artifactsCount"
+                (page)="onPage($event)"
+            ></app-paginator>
+
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">No Artifacts</span>
+        <span *ngIf="currentPolicy" class="info-text">in Policy with name <u>{{ currentPolicy.name }}</u></span>
+    </div>
+</ng-template>
+
+<ng-template #noDIDSettings>
+    <div class="not-exist">
+        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
+    </div>
+</ng-template>
+
+<div *ngIf="false" class="content">
     <div *ngIf="isConfirmed" class="actions">
-
         <mat-form-field appearance="outline">
-            <mat-label>Type</mat-label>
-            <mat-select [(value)]="type" (selectionChange)="onChangeType($event)">
-                <mat-option value="policy">Policy Artifacts</mat-option>
-                <mat-option value="tool">Tool Artifacts</mat-option>
-            </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" *ngIf="isPolicy">
             <mat-label>Policy</mat-label>
-            <mat-select [(value)]="currentId" (selectionChange)="onFilter()">
+            <mat-select (selectionChange)="onFilter()" [(value)]="currentPolicy">
                 <mat-option value="">All policies</mat-option>
                 <mat-option *ngFor="let policy of policies" [value]="policy.id">
                     <span>{{policy.name}}</span>
@@ -19,26 +108,9 @@
                 </mat-option>
             </mat-select>
         </mat-form-field>
-
-        <mat-form-field appearance="outline" *ngIf="isTool">
-            <mat-label>Tool</mat-label>
-            <mat-select [(value)]="currentId" (selectionChange)="onFilter()">
-                <mat-option value="">All tools</mat-option>
-                <mat-option *ngFor="let tool of tools" [value]="tool.id">
-                    <span>{{tool.name}}</span>
-                    <span> ({{tool.topicId}})</span>
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
-
         <div style="text-align: end">
-            <button 
-                [attr.readonly]="readonly"
-                mat-raised-button 
-                color="primary" 
-                class="g-btn toolbar-btn" 
-                (click)="importArtifacts()">
-                Import
+            <button (click)="importArtifacts()" class="g-btn" color="primary" mat-raised-button>
+                Import an Artifact
             </button>
         </div>
     </div>
@@ -46,31 +118,31 @@
     <div *ngIf="isConfirmed" class="table-container">
         <table mat-table [dataSource]="artifacts" class="artifacts-table">
             <ng-container matColumnDef="uuid">
-                <th mat-header-cell *matHeaderCellDef> ID </th>
+                <th *matHeaderCellDef mat-header-cell> ID</th>
                 <td mat-cell *matCellDef="let element">{{element.uuid}}</td>
             </ng-container>
             <ng-container matColumnDef="policy">
-                <th mat-header-cell *matHeaderCellDef> Policy </th>
+                <th *matHeaderCellDef mat-header-cell> Policy</th>
                 <td mat-cell *matCellDef="let element">{{policyNameById[element.policyId]}}</td>
             </ng-container>
             <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef> Name </th>
+                <th *matHeaderCellDef mat-header-cell> Name</th>
                 <td mat-cell *matCellDef="let element">{{element.name}}</td>
             </ng-container>
             <ng-container matColumnDef="extention">
-                <th mat-header-cell *matHeaderCellDef> Extention </th>
+                <th *matHeaderCellDef mat-header-cell> Extention</th>
                 <td mat-cell *matCellDef="let element">{{element.extention}}</td>
             </ng-container>
             <ng-container matColumnDef="type">
-                <th mat-header-cell *matHeaderCellDef> Type </th>
+                <th *matHeaderCellDef mat-header-cell> Type</th>
                 <td mat-cell *matCellDef="let element">{{element.type}}</td>
             </ng-container>
 
             <ng-container matColumnDef="delete">
-                <th mat-header-cell *matHeaderCellDef> </th>
+                <th *matHeaderCellDef mat-header-cell></th>
                 <td mat-cell *matCellDef="let element">
                     <div *ngIf="element.editable" class="btn-settings btn-delete" (click)="deleteArtifact(element)"
-                        matTooltip="Delete" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                         matTooltip="Delete" matTooltipClass="guardian-tooltip" matTooltipPosition="above">
                         <mat-icon>delete</mat-icon>
                     </div>
                     <div *ngIf="!element.editable" class="btn-settings btn-delete-des">
@@ -84,7 +156,7 @@
     </div>
     <div *ngIf="isConfirmed" class="table-paginator">
         <mat-paginator [length]="artifactsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-            [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPage($event)" aria-label="Select page">
+                       (page)="onPage($event)" [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page">
         </mat-paginator>
     </div>
 
@@ -93,6 +165,23 @@
     </div>
 
     <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 </div>
+
+<p-dialog [(visible)]="deleteArtifactVisible" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">Detele Artifact</span>
+    </ng-template>
+    <ng-template pTemplate="container">
+        <div class="" style="padding: 0 10px 0 10px;">
+            Are you sure to delete artifact?
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button (click)="deleteArtifact(false)" class="button secondary" label="Cancel" pButton
+                type="button"></button>
+        <button (click)="deleteArtifact(true)" [label]="'Delete'" class="button button-color-red" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>

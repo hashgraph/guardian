@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'button-config',
     templateUrl: './button-config.component.html',
-    styleUrls: ['./button-config.component.css'],
+    styleUrls: ['./button-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ButtonConfigComponent implements OnInit {

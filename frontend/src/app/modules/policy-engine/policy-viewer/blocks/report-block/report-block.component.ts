@@ -3,12 +3,22 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { IconType, IImpactReport, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
+import {
+    IImpactReport,
+    IconType,
+    IPolicyReport,
+    IReport,
+    IReportItem,
+    ITokenReport,
+    IVCReport,
+    IVPReport,
+} from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IconsArray } from './iconsArray';
+import { DialogService } from 'primeng/dynamicdialog';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -24,14 +34,14 @@ interface IAdditionalDocument {
 @Component({
     selector: 'app-report-block',
     templateUrl: './report-block.component.html',
-    styleUrls: ['./report-block.component.css']
+    styleUrls: ['./report-block.component.scss'],
 })
 export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
 
-    hash: string = "";
+    hash: string = '';
     loading: boolean = true;
     socket: any;
     content: string | null = null;
@@ -43,26 +53,31 @@ export class ReportBlockComponent implements OnInit {
     searchForm = this.fb.group({
         value: ['', Validators.required],
     });
-    uiMetaData: { [key: string]: string };
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private fb: FormBuilder,
         public dialog: MatDialog,
+        private dialogService: DialogService,
         iconRegistry: MatIconRegistry,
         sanitizer: DomSanitizer,
         private ipfs: IPFSService
     ) {
         for (let i = 0; i < IconsArray.length; i++) {
             const element = IconsArray[i];
-            iconRegistry.addSvgIconLiteral(element.name, sanitizer.bypassSecurityTrustHtml(element.icon));
+            iconRegistry.addSvgIconLiteral(
+                element.name,
+                sanitizer.bypassSecurityTrustHtml(element.icon)
+            );
         }
     }
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         this.loadData();
     }
@@ -88,16 +103,18 @@ export class ReportBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(
-                this.id,
-                this.policyId
-            ).subscribe((data: any) => {
-                this.setData(data);
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        this.loading = false;
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -110,16 +127,16 @@ export class ReportBlockComponent implements OnInit {
             this.mainDocuments = undefined;
             this.policyDocument = undefined;
             this.documents = undefined;
-            this.hash = "";
+            this.hash = '';
         }
     }
 
     loadTrustChainData(data: any) {
-        this.uiMetaData = data.uiMetaData || {};
+        const uiMetaData = data.uiMetaData || {};
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
-            value: this.hash
+            value: this.hash,
         });
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
@@ -130,7 +147,9 @@ export class ReportBlockComponent implements OnInit {
             this.mainDocuments = [mainDocument];
             if (report.additionalDocuments) {
                 for (const doc of report.additionalDocuments) {
-                    const additionalDocument = this.createAdditionalDocument(doc);
+                    const additionalDocument = this.createAdditionalDocument(
+                        doc
+                    );
                     if (additionalDocument) {
                         this.mainDocuments.push(additionalDocument);
                     }
@@ -149,7 +168,7 @@ export class ReportBlockComponent implements OnInit {
                 visible: true,
                 issuer: this.policyDocument.issuer,
                 username: this.policyDocument.username,
-                document: this.policyDocument.document
+                document: this.policyDocument.document,
             });
         }
         if (this.policyCreatorDocument) {
@@ -159,22 +178,27 @@ export class ReportBlockComponent implements OnInit {
         this.documents = this.documents.reverse();
         this.documents.forEach((reportItem: any) => {
             if (!Array.isArray(reportItem.document) && reportItem.document) {
-                reportItem.document = [{
-                    document: reportItem.document,
-                    tag: reportItem.tag,
-                    issuer: reportItem.issuer,
-                    username: reportItem.username,
-                }];
+                reportItem.document = [
+                    {
+                        document: reportItem.document,
+                        tag: reportItem.tag,
+                        issuer: reportItem.issuer,
+                        username: reportItem.username,
+                    },
+                ];
             }
             if (reportItem.multiple && reportItem.document[0]) {
-                this.onMultipleDocumentClick(reportItem.document[0], reportItem);
+                this.onMultipleDocumentClick(
+                    reportItem.document[0],
+                    reportItem
+                );
             }
             if (reportItem.iconType === IconType.CUSTOM) {
                 const iconLink = reportItem.icon;
                 reportItem.icon = '';
                 this.ipfs.getImageByLink(iconLink).then((res) => {
                     reportItem.icon = res;
-                })
+                });
             }
         });
         this.loading = false;
@@ -189,8 +213,12 @@ export class ReportBlockComponent implements OnInit {
         result.vcDocument = report.vcDocument;
         result.mintDocument = report.mintDocument;
         const impacts: any[] = report.impacts;
-        result.primaryImpacts = impacts?.filter(i => i.impactType === 'Primary Impacts');
-        result.secondaryImpacts = impacts?.filter(i => i.impactType !== 'Primary Impacts');
+        result.primaryImpacts = impacts?.filter(
+            (i) => i.impactType === 'Primary Impacts'
+        );
+        result.secondaryImpacts = impacts?.filter(
+            (i) => i.impactType !== 'Primary Impacts'
+        );
         return result;
     }
 
@@ -198,51 +226,57 @@ export class ReportBlockComponent implements OnInit {
         item: any,
         document?: any
     ) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
+            header: 'VC',
+            styleClass: 'custom-dialog',
             data: {
                 id: item.document.id,
                 dryRun: !!item.document.dryRunId,
                 viewDocument: true,
                 document: document || item.document.document,
                 title: item.type,
-                type: 'VC'
-            }
+                type: 'VC',
+            },
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openVPDocument(item: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
+            header: 'VP',
+            styleClass: 'custom-dialog',
             data: {
                 id: item.document.id,
                 dryRun: !!item.document.dryRunId,
                 viewDocument: true,
                 document: item.document.document,
                 title: item.type,
-                type: 'VP'
-            }
+                type: 'VP',
+            },
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openJsonDocument(item: ITokenReport) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
+            header: 'Json',
+            styleClass: 'custom-dialog',
             data: {
                 document: item.document.document,
                 title: item.type,
                 type: 'JSON',
-            }
+            },
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     mapData(data: any[]) {
@@ -258,36 +292,50 @@ export class ReportBlockComponent implements OnInit {
     onScrollButtonPress(target: HTMLDivElement, amount: number = 0) {
         target.scrollBy({
             behavior: 'smooth',
-            left: amount
+            left: amount,
         });
     }
 
     updateFilter() {
         this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue: this.searchForm.value.value }).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                filterValue: this.searchForm.value.value,
+            })
+            .subscribe(
+                () => {
+                    this.loadData();
+                },
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 
     onBackClick() {
         this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue: null }).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, { filterValue: null })
+            .subscribe(
+                () => {
+                    this.loadData();
+                },
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 
     dynamicSortItems(item?: any, activeDocument?: any) {
-        if (!item
-            || !this.documents
-            || !activeDocument
-            || !item.dynamicFilters
-            || !item.dynamicFilters.length) {
+        if (
+            !item ||
+            !this.documents ||
+            !activeDocument ||
+            !item.dynamicFilters ||
+            !item.dynamicFilters.length
+        ) {
             return;
         }
         const itemIndex = this.documents.indexOf(item);
@@ -295,26 +343,61 @@ export class ReportBlockComponent implements OnInit {
         if (!prevReportItem) {
             return;
         }
-        prevReportItem.allDocuments = prevReportItem.allDocuments || JSON.parse(JSON.stringify(prevReportItem.document));
+        prevReportItem.allDocuments =
+            prevReportItem.allDocuments ||
+            JSON.parse(JSON.stringify(prevReportItem.document));
         for (const dynamicFilter of item.dynamicFilters) {
-            this.applyFilters(prevReportItem, activeDocument, dynamicFilter.field, dynamicFilter.nextItemField, dynamicFilter.type);
+            this.applyFilters(
+                prevReportItem,
+                activeDocument,
+                dynamicFilter.field,
+                dynamicFilter.nextItemField,
+                dynamicFilter.type
+            );
         }
-        this.onMultipleDocumentClick(prevReportItem.document[0], prevReportItem);
+        this.onMultipleDocumentClick(
+            prevReportItem.document[0],
+            prevReportItem
+        );
     }
 
-    applyFilters(reportItemToSort: any, activeDocument: any, field: string, nextItemField: string, type: string) {
+    applyFilters(
+        reportItemToSort: any,
+        activeDocument: any,
+        field: string,
+        nextItemField: string,
+        type: string
+    ) {
         switch (type) {
             case 'equal':
-                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => item.document[nextItemField] === activeDocument.document[field]);
+                reportItemToSort.document = reportItemToSort.allDocuments.filter(
+                    (item: any) =>
+                        item.document[nextItemField] ===
+                        activeDocument.document[field]
+                );
                 break;
             case 'not_equal':
-                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => item.document[nextItemField] !== activeDocument.document[field]);
+                reportItemToSort.document = reportItemToSort.allDocuments.filter(
+                    (item: any) =>
+                        item.document[nextItemField] !==
+                        activeDocument.document[field]
+                );
                 break;
             case 'in':
-                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => activeDocument.document[field].includes(item.document[nextItemField]));
+                reportItemToSort.document = reportItemToSort.allDocuments.filter(
+                    (item: any) =>
+                        activeDocument.document[field].includes(
+                            item.document[nextItemField]
+                        )
+                );
                 break;
             case 'not_in':
-                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => !activeDocument.document[field].includes(item.document[nextItemField]));
+                reportItemToSort.document = reportItemToSort.allDocuments.filter(
+                    (item: any) =>
+                        !activeDocument.document[field].includes(
+                            item.document[nextItemField]
+                        )
+                );
                 break;
         }
     }
@@ -325,7 +408,9 @@ export class ReportBlockComponent implements OnInit {
         }
 
         const itemDocuments = item.document;
-        const oldActiveDocument = itemDocuments.find((item: any) => item.index === 0);
+        const oldActiveDocument = itemDocuments.find(
+            (item: any) => item.index === 0
+        );
         if (oldActiveDocument == activeDocument) {
             return;
         }
@@ -337,11 +422,13 @@ export class ReportBlockComponent implements OnInit {
         activeDocument.index = 0;
         const indexDocument = itemDocuments.indexOf(activeDocument);
         if (itemDocuments.length > 1) {
-            const secondDocumentIndex = (indexDocument + 1) % itemDocuments.length;
+            const secondDocumentIndex =
+                (indexDocument + 1) % itemDocuments.length;
             itemDocuments[secondDocumentIndex].index = 1;
         }
         if (itemDocuments.length > 2) {
-            const thirdDocumentIndex = (indexDocument + 2) % itemDocuments.length;
+            const thirdDocumentIndex =
+                (indexDocument + 2) % itemDocuments.length;
             itemDocuments[thirdDocumentIndex].index = 2;
         }
         item.activeDocumentIndex = item.document.indexOf(activeDocument) + 1;
@@ -360,11 +447,10 @@ export class ReportBlockComponent implements OnInit {
         event.stopPropagation();
         const itemDocuments = item.document;
         const indexDocument = itemDocuments.indexOf(document);
-        const secondDocumentIndex = (indexDocument - 1) < 0 ? itemDocuments.length + (indexDocument - 1) : (indexDocument - 1);
+        const secondDocumentIndex =
+            indexDocument - 1 < 0
+                ? itemDocuments.length + (indexDocument - 1)
+                : indexDocument - 1;
         this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
-    }
-
-    mintError(item: any): boolean {
-        return item.amount !== item.expected
     }
 }

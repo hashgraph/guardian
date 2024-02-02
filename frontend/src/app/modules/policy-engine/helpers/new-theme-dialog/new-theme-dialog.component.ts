@@ -8,7 +8,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 @Component({
     selector: 'new-theme-dialog',
     templateUrl: './new-theme-dialog.component.html',
-    styleUrls: ['./new-theme-dialog.component.css']
+    styleUrls: ['./new-theme-dialog.component.scss']
 })
 export class NewThemeDialog {
     started = false;
@@ -29,7 +29,7 @@ export class NewThemeDialog {
             this.dataForm.setValue({
                 name: this.theme.name || ''
             });
-            if(data.type === 'copy') {
+            if (data.type === 'copy') {
                 this.title = 'Copy Theme';
                 this.button = 'Copy';
             } else {

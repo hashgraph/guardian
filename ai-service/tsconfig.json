@@ -1,0 +1,27 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "skipLibCheck": true,
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "inlineSourceMap": true,
+        "lib": [
+            "es6"
+        ],
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "outDir": "dist/",
+        "target": "es6"
+    },
+    "exclude": [
+        "node_modules",
+        "dist",
+        "data",
+        "faiss-vector"
+    ],
+    "include": [
+        "src/**/*.ts"
+    ]
+}

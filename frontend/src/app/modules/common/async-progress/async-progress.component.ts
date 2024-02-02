@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, SimpleChanges, } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { IStatus, StatusType, TaskAction, UserRole, } from '@guardian/interfaces';
@@ -7,6 +7,7 @@ import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { WizardService } from '../../policy-engine/services/wizard.service';
+import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuration.errors.injector';
 
 @Component({
     selector: 'async-progress',
@@ -38,7 +39,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         private router: Router,
         private informService: InformService,
         private auth: AuthService,
-        private wizardService: WizardService
+        private wizardService: WizardService,
+        @Inject(CONFIGURATION_ERRORS)
+        private _configurationErrors: Map<string, any>
     ) {
         this.last = this.route?.snapshot?.queryParams?.last;
         try {
@@ -195,15 +198,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     replaceUrl: true,
                 });
                 break;
-            case TaskAction.IMPORT_TOOL_FILE:
-            case TaskAction.IMPORT_TOOL_MESSAGE:
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        toolId: result.toolId,
-                    },
-                    replaceUrl: true,
-                });
-                break;
             case TaskAction.WIZARD_CREATE_POLICY:
                 const { policyId, saveState } = result;
                 if (saveState) {
@@ -244,6 +238,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             text.join(''),
                             'The policy is invalid'
                         );
+                        this._configurationErrors.set(policyId, errors);
                     }
                     this.router.navigate(['policy-configuration'], {
                         queryParams: {
@@ -279,6 +274,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             text.join(''),
                             'The tool is invalid'
                         );
+                        this._configurationErrors.set(tool?.id, errors);
                     }
                     this.router.navigate(['policy-configuration'], {
                         queryParams: {
@@ -289,6 +285,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }
                 break;
             case TaskAction.DELETE_POLICY:
+            case TaskAction.MIGRATE_DATA:
+                if (result?.length > 0) {
+                    this.informService.warnMessage(
+                        'There are some errors while migrating',
+                        'Migration warning'
+                    );
+                }
                 this.router.navigate(['policy-viewer'], {
                     replaceUrl: true,
                 });
@@ -342,11 +345,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.CREATE_POLICY:
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
-            case TaskAction.IMPORT_TOOL_FILE:
-            case TaskAction.IMPORT_TOOL_MESSAGE:
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:
+            case TaskAction.MIGRATE_DATA:
                 this.router.navigate(['policy-viewer'], {
                     replaceUrl: true,
                 });

@@ -1,0 +1,83 @@
+<div class="container">
+    <ng-container [ngTemplateOutlet]="messagesTemplate"></ng-container>
+    <ng-container [ngTemplateOutlet]="requestInput"></ng-container>
+</div>
+
+<ng-template #messagesTemplate>
+    <div #containerMessages *ngIf="messages.length" class="container-messages">
+        <ng-container *ngFor="let message of messages">
+            <ng-container *ngIf="message.type === 'REQUEST'">
+                <div class="message-container">
+                    <div class="message">
+                        {{ message.data }}
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="message.type === 'RESPONSE'">
+                <div class="message-container response">
+                    <div class="message response">
+                        {{ $any(message.data).answerBefore }}
+                    </div>
+                </div>
+                <div class="message-container response">
+                    <div class="message response policy-selector">
+                        <ng-container *ngFor="let policy of $any(message.data).items">
+                            <app-search-result-card [detailsUrl]="policy.url" [id]="policy.id" [label]="policy.label"
+                                                    [text]="policy.text"></app-search-result-card>
+                        </ng-container>
+                    </div>
+                </div>
+                <div class="message-container response">
+                    <div class="message response">
+                        {{ $any(message.data).answerAfter }}
+                    </div>
+                </div>
+            </ng-container>
+        </ng-container>
+    </div>
+    <ng-container *ngIf="!messages.length" [ngTemplateOutlet]="noMessages"></ng-container>
+</ng-template>
+
+<ng-template #requestInput>
+    <div class="input-message">
+        <input [formControl]="requestTextControl" placeholder="Please type here your question or request"
+               style="width: 100%;" type="text">
+        <button (click)="sendRequest()" *ngIf="!loading" [disabled]="requestTextControl.invalid">
+            <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_1039_28369)">
+                    <path clip-rule="evenodd" d="M2.13996 6.70842C2.28159 6.34448 2.62213 6.09629 3.01196 6.07289L20.8684 5.00109C21.2465 4.9784 21.6049 5.17127 21.7943 5.49929C21.9837 5.82732 21.9715 6.23419 21.7628 6.55028L11.9064 21.4785C11.6912 21.8044 11.306 21.9752 10.92 21.9159C10.534 21.8566 10.2178 21.578 10.1104 21.2025L7.91125 13.5147L2.35297 7.7662C2.08151 7.48545 1.99832 7.07236 2.13996 6.70842ZM9.9801 13.4749L11.4353 18.5621L17.7597 8.98335L9.9801 13.4749ZM16.7597 7.2513L8.9801 11.7429L5.3021 7.93903L16.7597 7.2513Z"
+                          fill="white"
+                          fill-rule="evenodd"/>
+                </g>
+                <defs>
+                    <clipPath id="clip0_1039_28369">
+                        <rect fill="white" height="24" width="24"/>
+                    </clipPath>
+                </defs>
+            </svg>
+        </button>
+        <div *ngIf="loading"
+             style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px;">
+            <div class="preloader-image"></div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #noMessages>
+    <div class="not-exist">
+        <svg fill="none" height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg">
+            <g clip-path="url(#clip0_1039_28295)">
+                <path
+                        d="M15.314 12.4939C15.534 11.8339 16.466 11.8339 16.686 12.4939L17.976 16.3679C18.2599 17.2195 18.7383 17.9933 19.3733 18.6279C20.0082 19.2625 20.7822 19.7405 21.634 20.0239L25.506 21.3139C26.166 21.5339 26.166 22.4659 25.506 22.6859L21.632 23.9759C20.7804 24.2599 20.0066 24.7383 19.372 25.3732C18.7374 26.0082 18.2595 26.7822 17.976 27.6339L16.686 31.5059C16.6386 31.6505 16.5467 31.7763 16.4235 31.8655C16.3003 31.9548 16.1521 32.0028 16 32.0028C15.8479 32.0028 15.6997 31.9548 15.5765 31.8655C15.4533 31.7763 15.3614 31.6505 15.314 31.5059L14.024 27.6319C13.7402 26.7805 13.2621 26.0069 12.6276 25.3723C11.993 24.7378 11.2194 24.2597 10.368 23.9759L6.49399 22.6859C6.34946 22.6385 6.22361 22.5466 6.13439 22.4235C6.04517 22.3003 5.99713 22.152 5.99713 21.9999C5.99713 21.8478 6.04517 21.6996 6.13439 21.5764C6.22361 21.4532 6.34946 21.3614 6.49399 21.3139L10.368 20.0239C11.2194 19.7402 11.993 19.2621 12.6276 18.6275C13.2621 17.9929 13.7402 17.2193 14.024 16.3679L15.314 12.4939ZM7.58799 2.29593C7.61667 2.20932 7.67191 2.13395 7.74587 2.08053C7.81984 2.02711 7.90875 1.99836 7.99999 1.99836C8.09122 1.99836 8.18014 2.02711 8.2541 2.08053C8.32806 2.13395 8.38331 2.20932 8.41199 2.29593L9.18599 4.61994C9.53199 5.65594 10.344 6.46794 11.38 6.81394L13.704 7.58793C13.7906 7.61661 13.866 7.67186 13.9194 7.74582C13.9728 7.81978 14.0016 7.9087 14.0016 7.99994C14.0016 8.09117 13.9728 8.18009 13.9194 8.25405C13.866 8.32801 13.7906 8.38326 13.704 8.41193L11.38 9.18594C10.869 9.35617 10.4048 9.64306 10.0239 10.0239C9.64312 10.4047 9.35622 10.869 9.18599 11.3799L8.41199 13.7039C8.38331 13.7905 8.32806 13.8659 8.2541 13.9193C8.18014 13.9728 8.09122 14.0015 7.99999 14.0015C7.90875 14.0015 7.81984 13.9728 7.74587 13.9193C7.67191 13.8659 7.61667 13.7905 7.58799 13.7039L6.81399 11.3799C6.64375 10.869 6.35686 10.4047 5.97604 10.0239C5.59522 9.64306 5.13094 9.35617 4.61999 9.18594L2.29599 8.41193C2.20938 8.38326 2.13401 8.32801 2.08059 8.25405C2.02717 8.18009 1.99841 8.09117 1.99841 7.99994C1.99841 7.9087 2.02717 7.81978 2.08059 7.74582C2.13401 7.67186 2.20938 7.61661 2.29599 7.58793L4.61999 6.81394C5.13094 6.6437 5.59522 6.35681 5.97604 5.97599C6.35686 5.59517 6.64375 5.13089 6.81399 4.61994L7.58799 2.29593ZM21.726 0.197935C21.7457 0.140988 21.7827 0.0916068 21.8318 0.0566582C21.8809 0.0217095 21.9397 0.00292969 22 0.00292969C22.0603 0.00292969 22.119 0.0217095 22.1681 0.0566582C22.2172 0.0916068 22.2542 0.140988 22.274 0.197935L22.79 1.74593C23.02 2.43793 23.562 2.97993 24.254 3.20993L25.802 3.72593C25.8589 3.74568 25.9083 3.78267 25.9433 3.83178C25.9782 3.88089 25.997 3.93966 25.997 3.99993C25.997 4.06021 25.9782 4.11898 25.9433 4.16809C25.9083 4.2172 25.8589 4.25419 25.802 4.27394L24.254 4.78994C23.913 4.90338 23.6031 5.09477 23.349 5.3489C23.0948 5.60303 22.9034 5.91291 22.79 6.25394L22.274 7.80194C22.2542 7.85888 22.2172 7.90826 22.1681 7.94321C22.119 7.97816 22.0603 7.99694 22 7.99694C21.9397 7.99694 21.8809 7.97816 21.8318 7.94321C21.7827 7.90826 21.7457 7.85888 21.726 7.80194L21.21 6.25394C21.0965 5.91291 20.9052 5.60303 20.651 5.3489C20.3969 5.09477 20.087 4.90338 19.746 4.78994L18.2 4.27394C18.143 4.25419 18.0937 4.2172 18.0587 4.16809C18.0238 4.11898 18.005 4.06021 18.005 3.99993C18.005 3.93966 18.0238 3.88089 18.0587 3.83178C18.0937 3.78267 18.143 3.74568 18.2 3.72593L19.748 3.20993C20.44 2.97993 20.982 2.43793 21.212 1.74593L21.726 0.199935V0.197935Z"
+                        fill="#848FA9"/>
+            </g>
+            <defs>
+                <clipPath id="clip0_1039_28295">
+                    <rect fill="white" height="32" width="32"/>
+                </clipPath>
+            </defs>
+        </svg>
+        <span class="info-text-strong">There were no chats with AI yet </span>
+        <span class="info-text">Please ask any questions regarding the policies</span>
+    </div>
+</ng-template>

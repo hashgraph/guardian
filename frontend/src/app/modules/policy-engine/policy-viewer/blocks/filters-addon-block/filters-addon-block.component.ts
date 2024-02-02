@@ -9,7 +9,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'filters-addon-block',
     templateUrl: './filters-addon-block.component.html',
-    styleUrls: ['./filters-addon-block.component.css']
+    styleUrls: ['./filters-addon-block.component.scss']
 })
 export class FiltersAddonBlockComponent implements OnInit {
     @Input('id') id!: string;

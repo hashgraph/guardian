@@ -7,7 +7,7 @@ import { GroupVariables, IModuleVariables, PolicyBlock, RoleVariables } from '..
 @Component({
     selector: 'roles-config',
     templateUrl: './roles-config.component.html',
-    styleUrls: ['./roles-config.component.css'],
+    styleUrls: ['./roles-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RolesConfigComponent implements OnInit {

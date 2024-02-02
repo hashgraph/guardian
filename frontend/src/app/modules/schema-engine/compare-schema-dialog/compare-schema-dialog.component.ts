@@ -1,10 +1,10 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component } from '@angular/core';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'compare-schema-dialog',
     templateUrl: './compare-schema-dialog.component.html',
-    styleUrls: ['./compare-schema-dialog.component.css']
+    styleUrls: ['./compare-schema-dialog.component.scss'],
 })
 export class CompareSchemaDialog {
     loading = true;
@@ -24,12 +24,12 @@ export class CompareSchemaDialog {
     topicId2!: any;
 
     constructor(
-        public dialogRef: MatDialogRef<CompareSchemaDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
-        this.schema = data.schema;
-        this.schemas = data.schemas || [];
-        this.policies = data.policies || [];
+        this.schema = this.config.data.schema;
+        this.schemas = this.config.data.schemas || [];
+        this.policies = this.config.data.policies || [];
         this.schemaId1 = this.schema?.id;
         this.list1 = this.schemas;
         this.list2 = this.schemas;
@@ -43,26 +43,26 @@ export class CompareSchemaDialog {
     }
 
     onClose(): void {
-        this.dialogRef.close(false);
+        this.ref.close(false);
     }
 
     onCompare() {
-        this.dialogRef.close({
+        this.ref.close({
             schemaId1: this.schemaId1,
             schemaId2: this.schemaId2,
         });
     }
 
     onChange() {
-        this.list1 = this.schemas.filter(s=> {
-            if(this.topicId1) {
+        this.list1 = this.schemas.filter((s) => {
+            if (this.topicId1) {
                 return s.id !== this.schemaId2 && s.topicId === this.topicId1;
             } else {
                 return s.id !== this.schemaId2;
             }
         });
-        this.list2 = this.schemas.filter(s=> {
-            if(this.topicId2) {
+        this.list2 = this.schemas.filter((s) => {
+            if (this.topicId2) {
                 return s.id !== this.schemaId1 && s.topicId === this.topicId2;
             } else {
                 return s.id !== this.schemaId1;

@@ -1,8 +1,9 @@
 import JSZip from 'jszip';
-import { Artifact, Policy, PolicyTool, Schema, Tag, Token } from '../entity';
+import { Artifact, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity';
 import { DataBaseHelper } from '../helpers';
 import { DatabaseServer } from '../database-modules';
 import { ImportExportUtils } from './utils';
+import { PolicyCategoryExport } from '@guardian/interfaces';
 
 interface IArtifact {
     name: string;
@@ -97,6 +98,10 @@ export class PolicyImportExport {
             tagTargets.push(schema.id.toString());
         }
         const tags = await DatabaseServer.getTags({ localTarget: { $in: tagTargets } });
+
+        const allCategories = await DatabaseServer.getPolicyCategories();
+        policy.categoriesExport = policy.categories?.length ? PolicyImportExport.getPolicyCategoriesExport(policy, allCategories) : [];
+
         return { policy, tokens, schemas, tools, artifacts, tags };
     }
 
@@ -260,6 +265,12 @@ export class PolicyImportExport {
         const tools = toolsStringArray.map(item => JSON.parse(item));
         const tags = tagsStringArray.map(item => JSON.parse(item));
 
+        if (policy.categoriesExport?.length) {
+            const allCategories = await DatabaseServer.getPolicyCategories();
+            policy.categories = PolicyImportExport.parsePolicyCategories(policy, allCategories);
+            policy.categoriesExport = [];
+        }
+
         return {
             policy,
             tokens,
@@ -269,4 +280,52 @@ export class PolicyImportExport {
             tools
         };
     }
+
+    /**
+     * Get policy categories data
+     *
+     * @returns Array of PolicyCategoryExport
+     */
+    static getPolicyCategoriesExport(policy: Policy, allCategories: PolicyCategory[]): PolicyCategoryExport[] {
+        const policyCategories: PolicyCategoryExport[] = [];
+
+        policy.categories.forEach((categoryId: string) => {
+            const foundPolicyCategory = allCategories.find((polCategory: PolicyCategory) => polCategory.id === categoryId);
+            if (foundPolicyCategory) {
+                const categoryExport: PolicyCategoryExport = {
+                    name: foundPolicyCategory.name,
+                    type: foundPolicyCategory.type
+                }
+
+                const addedCategory = policyCategories.find((polCategory: PolicyCategory) => polCategory.name === categoryExport.name && polCategory.type === categoryExport.type);
+
+                if (!addedCategory) {
+                    policyCategories.push(categoryExport);
+                }
+            }
+        });
+
+        return policyCategories;
+    }
+
+    /**
+     * Restore policy categories data
+     *
+     * @returns Array of string
+     */
+    static parsePolicyCategories(policy: Policy, allCategories: PolicyCategory[]): string[] {
+        const policyCategoryIds: string[] = [];
+
+        policy.categoriesExport.forEach((categoryExport: PolicyCategoryExport) => {
+            const foundPolicyCategory = allCategories.find((category: PolicyCategory) =>
+                category.name === categoryExport.name && category.type === categoryExport.type);
+
+            if (foundPolicyCategory && !policyCategoryIds.includes(foundPolicyCategory.id)) {
+                policyCategoryIds.push(foundPolicyCategory.id);
+            }
+        });
+
+        return policyCategoryIds;
+    }
+
 }

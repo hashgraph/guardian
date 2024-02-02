@@ -1,8 +1,8 @@
 import { Guardians } from '@helpers/guardians';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
-import { Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
+import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
 import process from 'process';
 import { AuthUser, checkPermission } from '@auth/authorization-helper';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
@@ -697,11 +697,11 @@ export class SchemaApi {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
         RunFunctionAsync<ServiceError>(async () => {
-            const {iri, topicId, name} = body;
+            const { iri, topicId, name } = body;
             await copySchemaAsync(iri, topicId, name, user.did, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, {code: 500, message: error.message});
+            taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
         return task;
@@ -1946,6 +1946,280 @@ export class SchemaApi {
                 context: schema.context,
                 contextURL: schema.contextURL,
             });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
+    }
+
+    /**
+     * Export schemas in a xlsx file.
+     */
+    @Get('/:schemaId/export/xlsx')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Return schemas in a xlsx file format for the specified policy.',
+        description: 'Returns a xlsx file containing schemas.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema ID',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getPolicyExportXlsx(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Response() res: any
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const file: any = await guardians.exportSchemasXlsx(user, [schemaId]);
+            const schema: any = await guardians.getSchemaById(schemaId);
+            res.setHeader('Content-disposition', `attachment; filename=${schema.name}`);
+            res.setHeader('Content-type', 'application/zip');
+            return res.send(file);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error
+        }
+    }
+
+    /**
+     * Policy import from a zip file.
+     */
+    @Post('/:topicId/import/xlsx')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new schema from a xlsx file into the local DB.',
+        description: 'Imports new schema from a xlsx file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiBody({
+        description: 'A xlsx file containing schema config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.CREATED)
+    async importPolicyFromXlsx(
+        @AuthUser() user: IAuthUser,
+        @Param('topicId') topicId: string,
+        @Body() file: any,
+        @Response() res: any
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            await guardians.importSchemasByXlsx(user, topicId, file);
+            const { items, count } = await guardians.getSchemasByOwner({
+                category: SchemaCategory.POLICY,
+                owner: user.did
+            });
+            SchemaHelper.updatePermission(items, user.did);
+            return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Import Schema from a xlsx file (Async)
+     */
+    @Post('/push/:topicId/import/xlsx')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new schema from a xlsx file into the local DB.',
+        description: 'Imports new schema from a xlsx file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitParam({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: true,
+        example: '0.0.1'
+    })
+    @ApiBody({
+        description: 'A xlsx file containing schema config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async importPolicyFromXlsxAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('topicId') topicId: string,
+        @Body() file: any,
+        @Response() res: any
+    ): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_SCHEMA_FILE, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const guardians = new Guardians();
+            await guardians.importSchemasByXlsxAsync(user, topicId, file, task);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+        return res.status(202).send(task);
+    }
+
+    /**
+     * Preview Schema from a xlsx file
+     */
+    @Post('/import/xlsx/preview')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Previews the schema from a xlsx file.',
+        description: 'Previews the schema from a xlsx file.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'A xlsx file containing schema config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async importPolicyFromXlsxPreview(
+        @AuthUser() user: IAuthUser,
+        @Body() file: any
+    ) {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
+            const guardians = new Guardians();
+            return await guardians.previewSchemasByFileXlsx(user, file);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get sub schemas
+     */
+    @Get('/export/template')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns a list of schemas.',
+        description: 'Returns a list of schemas.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async exportTemplate(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any
+    ): Promise<any> {
+        try {
+            const filename = 'template.xlsx';
+            const guardians = new Guardians();
+            const file = await guardians.getFileTemplate(filename);
+            const fileBuffer = Buffer.from(file, 'base64');
+            res.setHeader('Content-disposition', `attachment; filename=` + filename);
+            res.setHeader('Content-type', 'application/zip');
+            return res.send(fileBuffer);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error

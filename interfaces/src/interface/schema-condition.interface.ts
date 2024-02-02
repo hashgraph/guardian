@@ -25,4 +25,8 @@ export interface SchemaCondition {
      * 'else' fields
      */
     elseFields: SchemaField[];
+    /**
+     * Errors
+     */
+    errors?: any[];
 }

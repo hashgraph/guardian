@@ -6,10 +6,10 @@
 - Demo Video
 - Policy Workflow
 - Policy Guide
-  - Available Roles
+- Available Roles
 - Important Documents & Schemas
 - Token (Carbon Credit)
-  - Step By Step
+- Step By Step
 <!-- /TOC -->
 
 ## Introduction
@@ -46,7 +46,7 @@ AMS-II.G provides a standardized and measurable framework for clean cooking proj
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
 
-Policy: 1698751171.908275443
+Policy: 1706881318.979259003
 Tool 30: 1690820465.670044734
 Tool 33: 1690820484.707441003 
 

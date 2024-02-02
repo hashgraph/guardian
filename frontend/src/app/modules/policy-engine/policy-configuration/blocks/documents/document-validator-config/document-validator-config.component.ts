@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -8,7 +7,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: 'document-validator-config',
     templateUrl: './document-validator-config.component.html',
-    styleUrls: ['./document-validator-config.component.css'],
+    styleUrls: ['./document-validator-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentValidatorConfigComponent implements OnInit {

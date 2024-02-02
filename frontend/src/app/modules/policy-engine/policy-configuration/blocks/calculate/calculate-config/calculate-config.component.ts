@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -8,7 +7,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: 'calculate-config',
     templateUrl: './calculate-config.component.html',
-    styleUrls: ['./calculate-config.component.css'],
+    styleUrls: ['./calculate-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CalculateConfigComponent implements OnInit {
@@ -28,7 +27,7 @@ export class CalculateConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor() {
-        
+
     }
 
     ngOnInit(): void {

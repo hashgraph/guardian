@@ -6,4 +6,5 @@ export enum PolicyType {
     DRAFT = 'DRAFT',
     PUBLISH_ERROR = 'PUBLISH_ERROR',
     PUBLISH = 'PUBLISH',
+    DISCONTINUED = 'DISCONTINUED'
 }

@@ -1,71 +1,68 @@
-<div class="g-dialog-content">
+<div class="dialog-body">
     <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onClose()">
-                <mat-icon>close</mat-icon>
-            </div>
-        </div>
-        <div *ngIf="type=='new'" class="g-dialog-title">
-            New Schema
-        </div>
-        <div *ngIf="type=='edit'" class="g-dialog-title">
-            Edit Schema
-        </div>
-        <div *ngIf="type=='version'" class="g-dialog-title">
-            New Version
-        </div>
-        <div class="restore-data">
-            <button 
-                *ngIf="restoreData && restoreData.id == scheme?.id" 
-                class="restore-data-button" 
-                type="button" 
-                mat-raised-button
-                aria-label="Restore Values" 
-                (click)="onRestoreClick()">
-                Restore Values
-                <mat-icon>restore</mat-icon>
-            </button>
-        </div>
-        <div class="g-dialog-actions">
-            <div class="switch-btn">
-                <switch-button 
-                    [on-label]="'Advanced'" 
-                    [off-label]="'Simplified'" 
-                    [(value)]="extended"></switch-button>
-            </div>
-            <div 
-                *ngIf="!scheme" 
-                class="g-dialog-actions-btn" 
-                (click)="onCreate()"
-                [attr.disabled]="!(valid && started)">
-                Create
-            </div>
-            <div 
-                *ngIf="scheme" class="g-dialog-actions-btn" 
-                (click)="onCreate()" 
-                [attr.disabled]="!(valid && started)">
-                Save
-            </div>
-        </div>
+        <!--        <div class="restore-data">-->
+        <!--            <button-->
+        <!--                class="restore-data-button"-->
+        <!--                *ngIf="restoreData && restoreData.id == scheme?.id"-->
+        <!--                mat-raised-button-->
+        <!--                aria-label="Restore Values"-->
+        <!--                type="button"-->
+        <!--                (click)="onRestoreClick()"-->
+        <!--            >-->
+        <!--                Restore Values<mat-icon>restore</mat-icon>-->
+        <!--            </button>-->
+        <!--        </div>-->
+
+        <p-tabView>
+            <p-tabPanel *ngFor="let tab of items; let i = index">
+                <ng-template pTemplate="header">
+                    <div (click)="handleChangeTab(i)" class="tabview-label">
+                        {{ tab.label }}
+                    </div>
+                </ng-template>
+            </p-tabPanel>
+        </p-tabView>
     </div>
-    <div class="g-dialog-body" 
-        cdkDropList 
-        [cdkDropListData]="fields" 
-        (cdkDropListDropped)="drop($event)">
-        <div class="context">
-            <app-schema-configuration 
-                #document 
+    <div
+            (cdkDropListDropped)="drop($event)"
+            [cdkDropListData]="fields"
+            cdkDropList
+            class="g-dialog-body"
+    >
+        <div style="padding-right: 12px;">
+            <app-schema-configuration
+                #document
                 [type]="type"
                 [value]="scheme"
                 [extended]="extended"
+                (change-fields)="onChangeFields($event)"
                 [schemaType]="schemaType"
                 [modules]="modules"
-                [policies]="policies" 
-                [tools]="tools" 
+                (change-form)="onChangeForm($event)"
+                [policies]="policies"
                 [topicId]="topicId"
-                (change-fields)="onChangeFields($event)" 
-                (change-form)="onChangeForm($event)">
+                [properties]="properties"
+                [tools]="tools"
+            >
             </app-schema-configuration>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onClose()" class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onCreate()" [disabled]="!(valid && started)"
+                    class="button"
+                    label="Save"
+                    pButton
+            >
+            </button>
         </div>
     </div>
 </div>

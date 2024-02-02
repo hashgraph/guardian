@@ -84,10 +84,14 @@ export async function replaceConfig(
  */
 export async function importSubTools(
     hederaAccount: IRootConfig,
-    messages: PolicyTool[] = [],
+    messages: {
+        uuid?: string,
+        name?: string,
+        messageId?: string
+    }[],
     notifier: INotifier,
 ): Promise<ImportResults> {
-    if (!messages.length) {
+    if (!messages?.length) {
         return { tools: [], errors: [] };
     }
 
@@ -114,6 +118,7 @@ export async function importSubTools(
                 type: 'tool',
                 hash: message.uuid,
                 name: message.name,
+                messageId: message.messageId,
                 error: 'Invalid tool'
             });
         }
@@ -123,6 +128,42 @@ export async function importSubTools(
         tools,
         errors
     };
+}
+
+/**
+ * Import tool by message
+ * @param owner
+ * @param messages
+ * @param notifier
+ */
+export async function previewToolByMessage(messageId: string): Promise<IToolComponents> {
+    const oldTool = await DatabaseServer.getTool({ messageId });
+    if (oldTool) {
+        const subSchemas = await DatabaseServer.getSchemas({ topicId: oldTool.topicId });
+        return {
+            tool: oldTool,
+            schemas: subSchemas,
+            tags: [],
+            tools: []
+        }
+    }
+
+    messageId = messageId.trim();
+    const message = await MessageServer.getMessage<ToolMessage>(messageId);
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
+    if (message.type !== MessageType.Tool) {
+        throw new Error('Invalid Message Type');
+    }
+    if (message.action !== MessageAction.PublishTool) {
+        throw new Error('Invalid Message Action');
+    }
+    if (!message.document) {
+        throw new Error('File in body is empty');
+    }
+
+    return await ToolImportExport.parseZipFile(message.document);
 }
 
 /**

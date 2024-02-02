@@ -21,4 +21,13 @@ export async function mapAPI(): Promise<void> {
             return new MessageError(error);
         }
     });
+
+    ApiResponse(MessageAPI.GET_SENTINEL_API_KEY, async (msg) => {
+        try {
+            return new MessageResponse(process.env.GET_SENTINEL_API_KEY || '');
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 }

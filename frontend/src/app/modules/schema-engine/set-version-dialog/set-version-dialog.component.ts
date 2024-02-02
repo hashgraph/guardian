@@ -8,7 +8,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'set-version-dialog',
     templateUrl: './set-version-dialog.component.html',
-    styleUrls: ['./set-version-dialog.component.css'],
+    styleUrls: ['./set-version-dialog.component.scss'],
 })
 export class SetVersionDialog {
     versionControl: FormControl = new FormControl('', [
@@ -20,15 +20,17 @@ export class SetVersionDialog {
         public dialogRef: MatDialogRef<SetVersionDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
-        
+        console.log(3);
     }
 
     onNoClick(): void {
-        this.dialogRef.close(null);
+        this.dialogRef.close(false);
     }
 
     onSubmit(): void {
-        this.dialogRef.close(this.versionControl.value);
+        if (!this.isPublishDisabled) {
+            this.dialogRef.close(this.versionControl.value);
+        }
     }
 
     get isPublishDisabled(): boolean {

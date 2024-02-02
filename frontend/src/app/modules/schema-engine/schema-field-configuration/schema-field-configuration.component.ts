@@ -7,6 +7,7 @@ import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
 import { FieldControl } from '../field-control';
+import { DialogService } from 'primeng/dynamicdialog';
 import { Subscription } from 'rxjs';
 
 /**
@@ -15,7 +16,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'schema-field-configuration',
     templateUrl: './schema-field-configuration.component.html',
-    styleUrls: ['./schema-field-configuration.component.css'],
+    styleUrls: ['./schema-field-configuration.component.scss'],
 })
 export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
@@ -27,30 +28,57 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('extended') extended!: boolean;
     @Input('value') value!: any;
     @Input('private') canBePrivate!: boolean;
+    @Input('properties') properties: { title: string; _id: string; value: string }[];
+    @Input('errors') errors!: any[];
 
     @Output('remove') remove = new EventEmitter<any>();
 
-    unit: boolean = true;
-    enum: boolean = false;
-    helpText: boolean = false;
-    loading: boolean = false;
-    keywords: string[] = [];
-    isString: boolean = false;
+    public unit: boolean = true;
+    public enum: boolean = false;
+    public helpText: boolean = false;
+    public loading: boolean = false;
+    public keywords: string[] = [];
+    public isString: boolean = false;
+    public fieldType: FormControl;
+    public property: FormControl;
+    public groupedFieldTypes: any = [
+        {
+            label: 'Units of measure',
+            value: 'uom',
+            items: [
+                { label: 'Prefix', value: 'prefix' },
+                { label: 'Postfix', value: 'postfix' },
+            ],
+        },
+        {
+            label: 'Hedera',
+            value: 'h',
+            items: [{ label: 'Account', value: 'hederaAccount' }],
+        },
+    ];
+    public fieldTypes: any = [
+        { label: 'None', value: 'none' },
+        { label: 'Hidden', value: 'hidden' },
+        { label: 'Required', value: 'required' },
 
-    fieldType: FormControl;
-    fieldTypeSub: Subscription;
+    ];
+    public error: any;
+    private fieldTypeSub: Subscription;
+    private fieldPropertySub: Subscription;
 
     constructor(
         public dialog: MatDialog,
+        private dialogService: DialogService,
         private ipfs: IPFSService,
         private toastr: ToastrService
     ) {
         this.fieldType = new FormControl();
+        this.property = new FormControl();
     }
 
     ngOnInit(): void {
         if (this.field) {
-            const enumValues = this.field.controlEnum.value
+            const enumValues = this.field.controlEnum.value;
             if (enumValues && enumValues.length) {
                 for (let i = 0; i < enumValues.length && i < 5; i++) {
                     this.keywords.push(enumValues[i]);
@@ -60,7 +88,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             if (remoteLinkValue) {
                 this.loadRemoteEnumData(remoteLinkValue);
             }
-
             if (this.field.controlRequired.value === true) {
                 this.fieldType.setValue('required')
             } else if (this.field.hidden.value === true) {
@@ -68,37 +95,77 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             } else {
                 this.fieldType.setValue('none')
             }
+            this.property.setValue(this.field.property.value);
+            this.error = this.errors?.find((e) =>
+                e.target &&
+                e.target.type === 'field' &&
+                e.target.field === this.field.controlKey?.value
+            );
         }
-
-
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
             switch (value) {
                 case 'required':
                     this.field.controlRequired.setValue(true);
                     this.field.hidden.setValue(false);
                     break;
-
                 case 'hidden':
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(true);
                     break;
-
                 case 'none':
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
                     break;
-
                 default:
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
                     break;
             }
-        })
+        });
+        this.fieldPropertySub = this.property.valueChanges.subscribe(val => {
+            if (val) {
+                this.field.property.setValue(val);
+            }
+        });
+    }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes?.types?.firstChange && this.types) {
+            const newSimpleTypes = this.types.map((type: any) => {
+                return { label: type.name, value: type.value };
+            });
+            this.groupedFieldTypes.unshift({
+                label: 'Simple Types',
+                value: 'st',
+                items: newSimpleTypes,
+            });
+        }
+        if (changes?.schemaTypes?.firstChange && this.schemaTypes) {
+            const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
+                return { 
+                    ...schemaType,
+                    label: schemaType.name, 
+                    value: schemaType.value 
+                };
+            });
+            this.groupedFieldTypes.push({
+                label: 'Schema defined',
+                value: 'sd',
+                items: newSchemasTypes,
+            });
+        }
+        if (changes.extended && Object.keys(changes).length === 1) {
+            return;
+        }
+        if (this.field) {
+            const type = this.field.controlType;
+            this.onTypeChange(type);
+        }
     }
 
     ngOnDestroy() {
-        this.fieldTypeSub?.unsubscribe();
+        this.fieldPropertySub.unsubscribe();
+        this.fieldTypeSub.unsubscribe();
     }
 
     updateControlEnum(values: string[]) {
@@ -132,22 +199,12 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             .finally(() => (this.loading = false));
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.extended && Object.keys(changes).length === 1) {
-            return;
-        }
-        if(this.field) {
-            const type = this.field.controlType.value;
-            this.onTypeChange(type);
-        }
-    }
-
     onRemove(field: any) {
         this.remove.emit(field);
     }
 
     onTypeChange(event: any) {
-        const item = this.types.find(e => e.value == event);
+        const item = this.types.find((e) => e.value == event.value);
         if (item && item.name == 'Boolean') {
             this.field.controlArray.setValue(false);
             this.field.controlArray.disable();
@@ -155,7 +212,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             this.field.controlArray.enable();
         }
 
-        this.unit = event == UnitSystem.Prefix || event == UnitSystem.Postfix;
+        this.unit =
+            event.value == UnitSystem.Prefix ||
+            event.value == UnitSystem.Postfix;
 
         this.isString = (item && item.name === 'String') || false;
         if (!this.isString) {
@@ -175,7 +234,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             this.field.controlBold.enable();
         }
 
-        this.enum = (item && item.name || event) === 'Enum';
+        this.enum = ((item && item.name) || event.value) === 'Enum';
         if (this.enum) {
             this.field.controlEnum.setValidators([Validators.required]);
         } else {
@@ -185,50 +244,60 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     onEditEnum() {
-        const dialogRef = this.dialog.open(EnumEditorDialog, {
-            panelClass: 'g-dialog',
-            width: "700px",
+        const dialogRef = this.dialogService.open(EnumEditorDialog, {
+            header: 'Enum data',
+            width: '700px',
+            styleClass: 'custom-dialog',
             data: {
                 enumValue: this.field.controlEnum.value,
-                errorHandler: this.errorHandler.bind(this)
+                errorHandler: this.errorHandler.bind(this),
             },
-            disableClose: true,
         });
-        dialogRef.afterClosed().subscribe((res: { enumValue: string, loadToIpfs: boolean }) => {
-            if (!res) {
-                return;
-            }
-            this.field.controlRemoteLink.patchValue("");
+        dialogRef
+            .onClose
+            .subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
+                if (!res) {
+                    return;
+                }
+                this.field.controlRemoteLink.patchValue('');
 
-            const uniqueTrimmedEnumValues: string[] = [
-                ...new Set(
-                    res.enumValue
-                        .split('\n')
-                        .map(item => item.trim())
-                )
-            ] as string[];
+                const uniqueTrimmedEnumValues: string[] = [
+                    ...new Set(
+                        res.enumValue.split('\n').map((item) => item.trim())
+                    ),
+                ] as string[];
 
-            if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
-                this.field.controlEnum.clear();
-                this.loading = true;
-                this.ipfs.addFile(new Blob([
-                    JSON.stringify({
-                        enum: uniqueTrimmedEnumValues
-                    })
-                ])).subscribe(cid => {
-                    this.loading = false;
-                    const link = IPFS_SCHEMA + cid;
-                    this.field.controlRemoteLink.patchValue(link);
-                    this.loadRemoteEnumData(link);
-                }, (err) => {
-                    this.loading = false;
-                    this.errorHandler(err.message, 'Enum data can not be loaded to IPFS');
+                if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
+                    this.field.controlEnum.clear();
+                    this.loading = true;
+                    this.ipfs
+                        .addFile(
+                            new Blob([
+                                JSON.stringify({
+                                    enum: uniqueTrimmedEnumValues,
+                                }),
+                            ])
+                        )
+                        .subscribe(
+                            (cid) => {
+                                this.loading = false;
+                                const link = IPFS_SCHEMA + cid;
+                                this.field.controlRemoteLink.patchValue(link);
+                                this.loadRemoteEnumData(link);
+                            },
+                            (err) => {
+                                this.loading = false;
+                                this.errorHandler(
+                                    err.message,
+                                    'Enum data can not be loaded to IPFS'
+                                );
+                                this.updateControlEnum(uniqueTrimmedEnumValues);
+                            }
+                        );
+                } else {
                     this.updateControlEnum(uniqueTrimmedEnumValues);
-                });
-            } else {
-                this.updateControlEnum(uniqueTrimmedEnumValues);
-            }
-        });
+                }
+            });
     }
 
     onHepTextReset() {
@@ -242,7 +311,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             timeOut: 30000,
             closeButton: true,
             positionClass: 'toast-bottom-right',
-            enableHtml: true
+            enableHtml: true,
         });
     }
 }

@@ -3,6 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { PolicyProgressService } from '../../../services/policy-progress.service';
 
 /**
  * Component for display block of 'policyRolesBlock' types.
@@ -10,7 +11,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'app-roles-block',
     templateUrl: './roles-block.component.html',
-    styleUrls: ['./roles-block.component.css']
+    styleUrls: ['./roles-block.component.scss']
 })
 export class RolesBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -23,7 +24,7 @@ export class RolesBlockComponent implements OnInit {
     socket: any;
     content: string | null = null;
 
-    roles?: string[];
+    roles: string[] = [];
     groups?: string[];
     title?: any;
     description?: any;
@@ -41,6 +42,7 @@ export class RolesBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private policyProgressService: PolicyProgressService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder
@@ -147,7 +149,9 @@ export class RolesBlockComponent implements OnInit {
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, data)
                 .subscribe(
-                    () => {},
+                    () => {
+                        this.policyProgressService.updateData(data);
+                    },
                     (e) => {
                         console.error(e.error);
                         this.loading = false;

@@ -7,7 +7,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'import-file-dialog',
     templateUrl: './import-file-dialog.component.html',
-    styleUrls: ['./import-file-dialog.component.css']
+    styleUrls: ['./import-file-dialog.component.scss']
 })
 export class ImportFileDialog {
     public loading: boolean = false;

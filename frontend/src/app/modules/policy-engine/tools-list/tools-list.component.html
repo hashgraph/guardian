@@ -1,7 +1,6 @@
 <div class="content">
-    <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
+
+    <div class="page-title">Tools</div>
 
     <!-- <div *ngIf="loading && taskId" class="loading">
         <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
@@ -16,20 +15,300 @@
 
     <ng-container *ngIf="isConfirmed && tools">
         <div class="actions-container">
-            <button mat-raised-button color="primary" (click)="newTool()" class="toolbar-btn add">
-                <mat-icon>add</mat-icon>
-                <span>Create New</span>
-            </button>
-            <button mat-raised-button color="primary" (click)="importTool()" class="toolbar-btn">
-                <mat-icon>file_open</mat-icon>
-                <span>Import</span>
-            </button>
-            <button (click)="compareTools()" class="toolbar-btn" color="primary" mat-raised-button>
-                <mat-icon>compare</mat-icon>
-                <span>Compare</span>
-            </button>
+            <div style="margin-left: auto; display: flex; gap: 8px;">
+                <p-button
+                        (click)="newTool()"
+                        [pTooltip]="'Create New'"
+                        class="toolbar-btn-primary"
+                        label="Create New"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                d="M20 12C20 12.6227 19.4952 13.1275 18.8725 13.1275H13.1275V18.8725C13.1275 19.4952 12.6227 20 12 20C11.3773 20 10.8725 19.4952 10.8725 18.8725V13.1275H5.12752C4.50481 13.1275 4 12.6227 4 12C4 11.3773 4.50481 10.8725 5.12752 10.8725H10.8725V5.12752C10.8725 4.50481 11.3773 4 12 4C12.6227 4 13.1275 4.50481 13.1275 5.12752V10.8725H18.8725C19.4952 10.8725 20 11.3773 20 12Z"
+                                fill="white"
+                        />
+                    </svg>
+                </p-button>
+                <p-button
+                        (click)="importTool()"
+                        [pTooltip]="'Import'"
+                        class="toolbar-btn-primary"
+                        label="Import"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                                clip-rule="evenodd"
+                                d="M11.0001 3C11.0001 2.44771 11.4478 2 12.0001 2C12.5524 2 13.0001 2.44772 13.0001 3V11.5858L15.293 9.29285C15.6836 8.90232 16.3167 8.90232 16.7073 9.29285C17.0978 9.68337 17.0978 10.3165 16.7073 10.7071L12.7073 14.7071L12.7072 14.707C12.5263 14.888 12.2762 15 12.0001 15C11.7239 15 11.4739 14.888 11.2929 14.707L11.2929 14.7071L7.29289 10.7071C6.90237 10.3165 6.90237 9.68337 7.29289 9.29285C7.68342 8.90232 8.31658 8.90232 8.70711 9.29285L11.0001 11.5858V3ZM5 14.5C5 13.9477 4.55228 13.5 4 13.5C3.44772 13.5 3 13.9477 3 14.5V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V14.5C21 13.9477 20.5523 13.5 20 13.5C19.4477 13.5 19 13.9477 19 14.5V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V14.5Z"
+                                fill="white"
+                                fill-rule="evenodd"
+                        />
+                    </svg>
+                </p-button>
+                <p-button
+                        (click)="compareTools()"
+                        [pTooltip]="'Compare'"
+                        class="toolbar-btn-secondary"
+                        label="Compare"
+                        styleClass="p-button-outlined"
+                        tooltipPosition="bottom"
+                >
+                    <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <g clip-path="url(#clip0_1435_5281)">
+                            <mask
+                                    height="25"
+                                    id="mask0_1435_5281"
+                                    maskUnits="userSpaceOnUse"
+                                    style="mask-type: luminance;"
+                                    width="24"
+                                    x="0"
+                                    y="-1"
+                            >
+                                <path
+                                        d="M24 -0.000488281H0V23.9995H24V-0.000488281Z"
+                                        fill="white"
+                                />
+                            </mask>
+                            <g mask="url(#mask0_1435_5281)">
+                                <path
+                                        class="primary-color"
+                                        clip-rule="evenodd"
+                                        d="M12 0.999512C12.5523 0.999512 13 1.44723 13 1.99951L13 2.99951C13.5523 2.99951 14 3.44723 14 3.99951C14 4.5518 13.5523 4.99951 13 4.99951V18.9995C13.5523 18.9995 14 19.4472 14 19.9995C14 20.5518 13.5523 20.9995 13 20.9995L13 21.9995C13 22.5518 12.5523 22.9995 12 22.9995C11.4477 22.9995 11 22.5518 11 21.9995V20.9995H6C4.34316 20.9995 3 19.6564 3 17.9995V5.99951C3 4.34267 4.34314 2.99951 6 2.99951H11V1.99951C11 1.44723 11.4477 0.999512 12 0.999512ZM11 4.99951H6C5.44772 4.99951 5 5.44723 5 5.99951V17.9995C5 18.5518 5.44771 18.9995 6 18.9995H11V4.99951ZM16 3.99951C16 3.44723 16.4477 2.99951 17 2.99951H18C19.6569 2.99951 21 4.34268 21 5.99951V6.99951C21 7.5518 20.5523 7.99951 20 7.99951C19.4477 7.99951 19 7.5518 19 6.99951V5.99951C19 5.44722 18.5523 4.99951 18 4.99951H17C16.4477 4.99951 16 4.5518 16 3.99951ZM20 9.99952C20.5523 9.99952 21 10.4472 21 10.9995V12.9995C21 13.5518 20.5523 13.9995 20 13.9995C19.4477 13.9995 19 13.5518 19 12.9995V10.9995C19 10.4472 19.4477 9.99952 20 9.99952ZM20 15.9995C20.5523 15.9995 21 16.4472 21 16.9995V17.9995C21 19.6564 19.6569 20.9995 18 20.9995H17C16.4477 20.9995 16 20.5518 16 19.9995C16 19.4472 16.4477 18.9995 17 18.9995H18C18.5523 18.9995 19 18.5518 19 17.9995V16.9995C19 16.4472 19.4477 15.9995 20 15.9995Z"
+                                        fill-rule="evenodd"
+                                />
+                            </g>
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_1435_5281">
+                                <rect fill="white" height="24" width="24"/>
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </p-button>
+            </div>
         </div>
-        <div class="table-container">
+
+        <ng-container *ngIf="tools && tools.length > 0; else noData">
+            <div class="table-container">
+                <p-table [value]="tools">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <!-- <th
+                                 class="header-cell-text"
+                                 style="min-width: 140px; max-width: 150px;"
+                             >
+                                 UUID
+                             </th>-->
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px; max-width: 150px;"
+                            >
+                                Name
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px; max-width: 150px;"
+                            >
+                                Description
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                Schemas
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                Status
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                Hedera Topic Id
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 165px;"
+                            >
+                                Tags
+                            </th>
+                            <th
+                                *ngIf="canPublishAnyTool"
+                                class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                Operations
+                            </th>
+                            <th
+                                class="header-cell-text"
+                                style="min-width: 140px;"
+                            >
+                                {{ !canPublishAnyTool ? 'Operations' : '' }}
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template let-tool pTemplate="body">
+                        <tr class="policy-grid-row">
+                            <!--<td
+                                class="first-policy-grid-cell text-truncate"
+                                pTooltip="{{ tool.uuid }}"
+                                tooltipPosition="top"
+                                style="min-width: 140px; max-width: 150px;"
+                            >
+                                {{ tool.uuid }}
+                            </td>-->
+                            <td
+                                class="first-policy-grid-cell text-truncate"
+                                pTooltip="{{ tool.name }}"
+                                style="min-width: 140px; max-width: 150px;"
+                                tooltipPosition="top"
+                            >
+                                {{ tool.name || '–' }}
+                            </td>
+                            <td
+                                class="text-truncate"
+                                pTooltip="{{ tool.description }}"
+                                style="min-width: 140px; max-width: 150px;"
+                                tooltipPosition="top"
+                            >
+                                {{ tool.description || '–' }}
+                            </td>
+                            <td style="min-width: 140px;">
+                                <a [queryParams]="{
+                                    type: 'tool',
+                                    topic: tool.topicId
+                                }" [routerLink]="['/schemas']">Schemas</a>
+                            </td>
+                            <td style="min-width: 140px;">
+                                <span [ngSwitch]="tool.status">
+                                    <div *ngSwitchCase="'DRAFT'" class="p-tag p-tag-grey">
+                                        Draft
+                                    </div>
+                                    <div *ngSwitchCase="'PUBLISHED'" class="p-tag p-tag-success">
+                                        Published
+                                    </div>
+                                    <div *ngSwitchDefault class="p-tag p-tag-grey">
+                                        {{ tool.status || '–' }}
+                                    </div>
+                                </span>
+                            </td>
+                            <td style="min-width: 140px;">
+                                <hedera-explorer [params]="tool.topicId" type="topics">
+                                    {{ tool.topicId }}
+                                </hedera-explorer>
+                            </td>
+                            <td
+                                style="min-width: 165px;"
+                            >
+                                <tags-explorer
+                                    [data]="tool._tags"
+                                    [entity]="tagEntity"
+                                    [owner]="owner"
+                                    [schemas]="tagSchemas"
+                                    [service]="tagsService"
+                                    [target]="tool.id"></tags-explorer>
+                            </td>
+                            <td
+                                *ngIf="canPublishAnyTool"
+                                class="last-policy-grid-cell"
+                            >
+                                <div *ngIf="tool.status === 'DRAFT'"
+                                     class="commands-line"
+                                >
+                                    <button
+                                        (click)="publishTool(tool)"
+                                        class="button height-28"
+                                        pButton
+                                        type="button"
+                                    >
+                                        Publish
+                                    </button>
+                                </div>
+                            </td>
+                            <td
+                                class="last-policy-grid-cell"
+                                style="min-width: 140px;"
+                            >
+                                <div class="commands-line">
+                                    <div
+                                        [queryParams]="{toolId: tool.id}"
+                                        [routerLink]="['/policy-configuration']"
+                                        class="btn-icon-edit"
+                                        matTooltip="Edit"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipHideDelay="100"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="500"
+                                    >
+                                        <svg-icon class="opacity-icon"
+                                            src="/assets/images/icons/edit.svg" 
+                                            svgClass="primary-color"></svg-icon>
+                                    </div>
+                                    <div
+                                        (click)="exportTool(tool)"
+                                        class="operations-icon-container"
+                                        matTooltip="Export"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipHideDelay="100"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="500"
+                                    >
+                                        <svg-icon 
+                                            class="opacity-icon"
+                                            src="/assets/images/icons/export.svg" 
+                                            svgClass="primary-color"></svg-icon>
+                                    </div>
+                                    <div
+                                        (click)="tool.status ==='DRAFT' ? deleteTool(tool) : null"
+                                        class="operations-icon-container"
+                                        matTooltip="Delete"
+                                        matTooltipClass="guardian-tooltip"
+                                        matTooltipHideDelay="100"
+                                        matTooltipPosition="above"
+                                        matTooltipShowDelay="500"
+                                    >
+                                        <svg-icon class="opacity-icon"
+                                            src="/assets/images/icons/delete.svg" 
+                                            [svgClass]="tool.status === 'DRAFT' ? 'accent-color-red' : 'disabled-color'"></svg-icon>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="toolsCount"
+                (page)="onPage($event)"
+            ></app-paginator>
+
+        </ng-container>
+        <!-- <div class="table-container">
             <table mat-table [dataSource]="tools" class="table">
                 <ng-container matColumnDef="uuid">
                     <th mat-header-cell *matHeaderCellDef> UUID </th>
@@ -52,9 +331,9 @@
                 <ng-container matColumnDef="schemas">
                     <th mat-header-cell *matHeaderCellDef> Schemas </th>
                     <td mat-cell *matCellDef="let element">
-                        <a [routerLink]="['/schemas']" [queryParams]="{ 
+                        <a [routerLink]="['/schemas']" [queryParams]="{
                             type: 'tool',
-                            topic: element.topicId 
+                            topic: element.topicId
                         }">Schemas</a>
                     </td>
                 </ng-container>
@@ -84,12 +363,12 @@
                 <ng-container matColumnDef="tags">
                     <th mat-header-cell *matHeaderCellDef> Tags </th>
                     <td mat-cell *matCellDef="let element">
-                        <tags-explorer 
-                            [data]="element._tags" 
-                            [owner]="owner" 
+                        <tags-explorer
+                            [data]="element._tags"
+                            [owner]="owner"
                             [target]="element.id"
-                            [schemas]="tagSchemas" 
-                            [entity]="tagEntity" 
+                            [schemas]="tagSchemas"
+                            [entity]="tagEntity"
                             [service]="tagsService"></tags-explorer>
                     </td>
                 </ng-container>
@@ -135,6 +414,23 @@
             <mat-paginator [length]="toolsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
                 [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
             </mat-paginator>
-        </div>
+        </div> -->
     </ng-container>
+</div>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">There were no Tool created yet</span>
+        <span class="info-text">Please create new tool to see the data</span>
+    </div>
+</ng-template>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

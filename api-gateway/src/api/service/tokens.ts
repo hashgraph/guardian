@@ -1,5 +1,5 @@
 import { Guardians } from '@helpers/guardians';
-import { IToken, ITokenInfo, TaskAction, UserRole } from '@guardian/interfaces';
+import { ITokenInfo, TaskAction, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
@@ -96,19 +96,32 @@ export class TokensApi {
             const user = req.user;
             const policyId = req.query?.policy;
 
-            let tokens: IToken[] = [];
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                tokens = await guardians.getTokens({ did: user.did });
-                const map = await engineService.getTokensMap(user.did);
-                tokens = await setDynamicTokenPolicy(tokens, engineService);
-                tokens = setTokensPolicies(tokens, map, policyId, false);
-            } else if (user.did) {
-                tokens = await guardians.getAssociatedTokens(user.did);
-                const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
-                tokens = await setDynamicTokenPolicy(tokens, engineService);
-                tokens = setTokensPolicies(tokens, map, policyId, true);
+            let pageIndex: number;
+            let pageSize: number;
+            if (req.query && req.query.pageIndex && req.query.pageSize) {
+                pageIndex = Number.parseInt(req.query.pageIndex, 10);
+                pageSize = Number.parseInt(req.query.pageSize, 10);
             }
-            return res.json(tokens);
+
+            let tokensAndCount = {
+                items: [],
+                count: 0
+            }
+
+            if (user.role === UserRole.STANDARD_REGISTRY) {
+                tokensAndCount = await guardians.getTokensPage(user.did, pageIndex, pageSize);
+                const map = await engineService.getTokensMap(user.did);
+                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, false);
+            } else if (user.did) {
+                tokensAndCount = await guardians.getAssociatedTokens(user.did, pageIndex, pageSize);
+                const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
+                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
+            }
+            return res
+                .setHeader('X-Total-Count', tokensAndCount.count)
+                .json(tokensAndCount.items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -246,7 +259,7 @@ export class TokensApi {
                 await guardians.deleteTokenAsync(tokenId, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
-                taskManager.addError(task.taskId, {code: error.code || 500, message: error.message});
+                taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
 
             return res.status(202).send(task);

@@ -1,5 +1,5 @@
 import { BaseEntity } from '../models';
-import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyCategoryExport, PolicyType } from '@guardian/interfaces';
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers';
 import { ObjectId } from '@mikro-orm/mongodb';
@@ -84,6 +84,12 @@ export class Policy extends BaseEntity {
     policyRoles?: string[];
 
     /**
+     * Policy navigation
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    policyNavigation?: any[];
+
+    /**
      * Policy groups
      */
     @Property({ nullable: true, type: 'unknown' })
@@ -165,10 +171,61 @@ export class Policy extends BaseEntity {
     hashMapFileId?: ObjectId;
 
     /**
+     * Important Parameters
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    importantParameters?: {
+        atValidation?: string,
+        monitored?: string
+    }
+
+    /**
+     * Typical Projects
+     */
+    @Property({ nullable: true })
+    typicalProjects?: string;
+
+    /**
+     * Applicability Conditions
+     */
+    @Property({ nullable: true })
+    applicabilityConditions?: string;
+
+    /**
+     * Policy category ids
+     */
+    @Property({ nullable: true })
+    categories?: string[];
+
+    /**
+     * Policy category data for export file
+     */
+    @Property({ nullable: true })
+    categoriesExport?: PolicyCategoryExport[];
+
+    /**
+     * Policy details url
+     */
+    @Property({ nullable: true })
+    detailsUrl?: string;
+
+    /**
+     * Id of project's schema
+     */
+    @Property({ nullable: true })
+    projectSchema?: string;
+
+    /**
      * Tools
      */
     @Property({ nullable: true, type: 'unknown' })
     tools?: any;
+
+    /**
+     * Discontinued date
+     */
+    @Property({ nullable: true })
+    discontinuedDate?: Date;
 
     /**
      * Set policy defaults

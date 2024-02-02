@@ -1,6 +1,5 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -8,7 +7,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: 'source-addon-config',
     templateUrl: './source-addon-config.component.html',
-    styleUrls: ['./source-addon-config.component.css'],
+    styleUrls: ['./source-addon-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class SourceAddonConfigComponent implements OnInit {
@@ -70,5 +69,4 @@ export class SourceAddonConfigComponent implements OnInit {
     onSave() {
         this.item.changed = true;
     }
-
 }

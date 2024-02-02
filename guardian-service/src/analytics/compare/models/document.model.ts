@@ -181,6 +181,7 @@ export class DocumentModel implements IWeightModel {
         this._weight = [];
         this._weightMap = {};
         this._hash = '';
+        this._relationships = [];
     }
 
     /**
@@ -401,6 +402,21 @@ export class DocumentModel implements IWeightModel {
         }
 
         return this.compareWeight(doc, index, schemas);
+    }
+
+    /**
+     * Merge documents
+     * @param docs - models
+     * @public
+     */
+    public merge(docs: DocumentModel[] | DocumentModel): void {
+        if (Array.isArray(docs)) {
+            for (const doc of docs) {
+                this.merge(doc);
+            }
+        } else {
+            this._document.merge(docs._document);
+        }
     }
 
     /**

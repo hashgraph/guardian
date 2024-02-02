@@ -124,6 +124,12 @@ export class Workers extends NatsService {
         if (!task.data.mirrorNodes) {
             task.data.mirrorNodes = Environment.mirrorNodes;
         }
+        if (!task.data.localNodeAddress) {
+            task.data.localNodeAddress = Environment.localNodeAddress;
+        }
+        if (!task.data.localNodeProtocol) {
+            task.data.localNodeProtocol = Environment.localNodeProtocol;
+        }
         return this.addTask(task, priority, false);
     }
 
@@ -142,6 +148,12 @@ export class Workers extends NatsService {
         }
         if (!task.data.mirrorNodes) {
             task.data.mirrorNodes = Environment.mirrorNodes;
+        }
+        if (!task.data.localNodeAddress) {
+            task.data.localNodeAddress = Environment.localNodeAddress;
+        }
+        if (!task.data.localNodeProtocol) {
+            task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
         return this.addTask(task, priority, true, attempts);
     }

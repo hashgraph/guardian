@@ -8,6 +8,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { ViewerDialog } from '../../../helpers/viewer-dialog/viewer-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -15,7 +16,7 @@ import { ViewerDialog } from '../../../helpers/viewer-dialog/viewer-dialog.compo
 @Component({
     selector: 'documents-source-block',
     templateUrl: './documents-source-block.component.html',
-    styleUrls: ['./documents-source-block.component.css'],
+    styleUrls: ['./documents-source-block.component.scss'],
     animations: [
         trigger('statusExpand', [
             state('collapsed', style({ height: '0px', minHeight: '0' })),
@@ -55,7 +56,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private dialogService: DialogService,
     ) {
         this.fields = [];
         this.columns = [];
@@ -216,9 +218,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
             });
             dialogRef.afterClosed().subscribe(async (result) => { });
         } else {
-            const dialogRef = this.dialog.open(VCViewerDialog, {
+            const dialogRef = this.dialogService.open(VCViewerDialog, {
+                header: field.dialogContent,
                 width: '850px',
-                panelClass: 'g-dialog',
+                styleClass: 'custom-dialog',
                 data: {
                     id: row.id,
                     dryRun: !!row.dryRunId,
@@ -227,9 +230,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     type: 'VC',
                     viewDocument: true
                 },
-                disableClose: true,
             });
-            dialogRef.afterClosed().subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         }
     }
 
@@ -356,9 +359,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         const text = this.getText(row, field);
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
+            closable: true,
+            header: 'Text',
+            styleClass: 'custom-dialog',
             data: {
                 id: row.id,
                 dryRun: !!row.dryRunId,
@@ -368,7 +373,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 viewDocument: false
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     onSerials(event: MouseEvent, row: any, field: any) {

@@ -1,7 +1,7 @@
 ::ng-deep body {
     --pc-main-grid-border: #b4c4cb;
     --pc-border-color: #bdbdbd;
-    --pc-active-resize-delimiter-color: #1f2262;
+    --pc-active-resize-delimiter-color: #626f75;
     --pc-active-icon-color: #3f51b5;
     --pc-no-active-color: #555;
     --pc-active-background-color: #eff0f9;
@@ -49,6 +49,10 @@
     width: 100%;
     height: 100%;
     position: relative;
+    border: 0px solid var(--pc-main-grid-border);
+    border-left-width: 4px;
+    border-right-width: 0px;
+    border-bottom-width: 2px;
 }
 
 .action-color {
@@ -109,7 +113,7 @@
     left: 0;
     right: 0;
     top: 0;
-    height: calc(100vh - 125px);
+    height: calc(100vh - 2px);
     overflow: hidden;
     min-width: 1000px;
 }
@@ -125,7 +129,7 @@
     border: 4px solid var(--pc-main-grid-border);
     border-top-width: 7px;
     border-left-width: 4px;
-    border-right-width: 4px;
+    border-right-width: 8px;
     border-bottom-width: 3px;
     box-sizing: border-box;
 }
@@ -146,9 +150,11 @@
 .left-toolbar {
     height: 100%;
     position: relative;
+    // border-right: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
     background-color: white;
     z-index: 1;
+    min-width: 150px;
 }
 
 .center-container {
@@ -156,8 +162,10 @@
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
+    // border-right: 4px solid var(--pc-main-grid-border);
     z-index: 1;
     background-color: white;
+    min-width: 275px;
 }
 
 .tree-container {
@@ -189,17 +197,19 @@
     // width: 485px;
     position: relative;
     box-sizing: border-box;
+    border-right: 4px solid var(--pc-main-grid-border);
     display: flex;
     gap: 2px;
     flex-direction: column;
     background: var(--pc-main-grid-border);
     z-index: 1;
-    // min-width: 465px;
+    min-width: 280px;
 }
 
 .right-top-toolbar {
     position: relative;
     width: 100%;
+    border-bottom: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
     min-height: 31px;
     flex: 1;
@@ -282,7 +292,7 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        height: 52px;
+        height: 60px;
         margin: 5px 4px;
         padding: 4px 2px 2px 2px;
         font-size: 12px;
@@ -395,12 +405,13 @@
 .toolbar-menu {
     display: flex;
     overflow: hidden;
-    min-width: 60px;
-    height: 26px;
+    min-width: 110px;
+    height: 34px;
     flex-direction: row;
     border: 1px solid transparent;
-    margin: 2px;
+    margin: 3px 5px;
     padding: 4px 8px 2px 2px;
+    border-radius: 4px;
     font-size: 12px;
     align-items: center;
     align-content: center;
@@ -699,6 +710,10 @@
                 margin-left: 1px;
                 position: relative;
                 user-select: none;
+                min-width: 40px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
 
                 &:hover {
                     background: var(--pc-tabs-hover-color);
@@ -1194,13 +1209,17 @@
             padding-left: 50px !important;
         }
 
+        .navigation .stepRow .propRowCol {
+            left: 20px !important;
+            top: 3px !important;
+        }
+
         .remove-cell input {
             width: calc(100% - 28px) !important;
         }
 
         .propAdd {
             height: 20px;
-            width: 250px;
             overflow: hidden;
             cursor: pointer;
             font-size: 12px;
@@ -1209,6 +1228,8 @@
             position: relative;
             font-weight: 500;
             user-select: none;
+            width: 100%;
+            min-width: 175px;
 
             mat-icon {
                 position: absolute;
@@ -1248,6 +1269,21 @@
             }
         }
 
+        .remove-step {
+            width: auto !important;
+            text-align: end;
+            color: #e30101;
+            cursor: pointer;
+
+            mat-icon {
+                font-size: 20px;
+            }
+
+            &[readonly="true"] {
+                display: none;
+            }
+        }
+
         .propBottom {
             background: var(--pc-background-color);
             font-weight: 500;
@@ -1270,6 +1306,17 @@
                 right: -4px;
                 bottom: 0px;
                 border-top: 1px solid var(--pc-border-color);
+            }
+        }
+
+        .navigation .propBottom {
+            left: -2px;
+            right: 1px;
+            bottom: -24px;
+            box-shadow: 2px 4px 0 0 var(--pc-prop-border-color), 2px 0px 0 0 var(--pc-prop-border-color), 0px 0px 0 0 var(--pc-prop-border-color);
+
+            &::after {
+                display: none;
             }
         }
 
@@ -1587,9 +1634,14 @@
     &[status="TOOL"] {
         color: var(--pc-tool-block-color);
     }
+
+    &[status="ERROR"] {
+        color: var(--color-accent-red-1);
+    }
 }
 
-.resizing, .resizing-vertical {
+.resizing,
+.resizing-vertical {
     position: relative;
 
     .resizing__delimiter:hover,
@@ -1608,7 +1660,9 @@
     height: 100%;
 
     .resizing__delimiter {
-         width: 4px; height: 100%; left: -2px;
+        width: 4px;
+        height: 100%;
+        left: -2px;
     }
 
     .resizing__delimiter:hover {
@@ -1632,6 +1686,7 @@
 
 ::ng-deep {
     .cdk-drag-placeholder {
+
         &.left-toolbar,
         &.center-container,
         &.right-toolbar,
@@ -1640,5 +1695,84 @@
             outline: 1px dashed black;
             opacity: 0.5;
         }
+    }
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
+.preloader-image {
+    width: 16px;
+    height: 16px;
+    border-top: 3px solid var(--color-primary);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+    border-radius: 100%;
+    filter: brightness(100%);
+    animation-name: preloaderRotationColored;
+    animation-duration: 7.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+
+.preloader-image-l-size {
+    width: 56px;
+    height: 56px;
+}
+
+@keyframes preloaderRotationColored {
+    0% {
+        transform: rotate(0deg);
+        opacity: 1;
+    }
+
+    25% {
+        transform: rotate(360deg);
+        border-top: 3px solid rgba(0, 0, 0, 0);
+        border-right: 3px solid var(--color-primary);
+        border-left: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid rgba(0, 0, 0, 0);
+    }
+
+    50% {
+        transform: rotate(720deg);
+        border-top: 3px solid rgba(0, 0, 0, 0);
+        border-left: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid var(--color-primary);
+        border-right: 3px solid rgba(0, 0, 0, 0);
+    }
+
+    75% {
+        transform: rotate(1080deg);
+        border-top: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid rgba(0, 0, 0, 0);
+        border-right: 3px solid rgba(0, 0, 0, 0);
+        border-left: 3px solid var(--color-primary);
+    }
+
+    100% {
+        transform: rotate(1440deg);
+        border-top: 3px solid var(--color-primary);
+        border-left: 3px solid rgba(0, 0, 0, 0);
+        border-right: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid rgba(0, 0, 0, 0);
     }
 }

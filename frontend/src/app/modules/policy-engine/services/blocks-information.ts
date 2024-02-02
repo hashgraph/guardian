@@ -44,12 +44,7 @@ import { ExternalTopicBlockComponent } from '../policy-viewer/blocks/external-to
 import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
 import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
 import { MessagesReportBlockComponent } from '../policy-viewer/blocks/messages-report-block/messages-report-block.component';
-import {
-    BlockGroup,
-    BlockHeaders,
-    PolicyBlock,
-    IBlockSetting
-} from "../structures";
+import { BlockGroup, BlockHeaders, IBlockSetting, PolicyBlock } from '../structures';
 import { BlockType } from '@guardian/interfaces';
 import BlockIcons from './block-icons';
 
@@ -197,7 +192,7 @@ const Action: IBlockSetting = {
                 }
             }
             if (block.properties.type == 'dropdown') {
-                result.push("DropdownEvent");
+                result.push('DropdownEvent');
             }
             return result;
         }

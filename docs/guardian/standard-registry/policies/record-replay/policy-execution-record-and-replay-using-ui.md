@@ -1,5 +1,10 @@
 # 💻 Policy execution record and replay using UI
 
+1. [Step By Step Process](policy-execution-record-and-replay-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](policy-execution-record-and-replay-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## 1. Record
 
 The recording starts on the press of the ‘Record’ button.
@@ -69,3 +74,7 @@ A summary dialogue is shown at the end of the replay. This dialogue contains the
 The ‘details’ page shows detailed breakdown of differences between the corresponding documents or tokens.
 
 ![image15.png](<../../../../.gitbook/assets/14 (9).png>)
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=WU\_ntIM5SJA\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=1)

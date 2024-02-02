@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'calculate-math-config',
     templateUrl: './calculate-math-config.component.html',
-    styleUrls: ['./calculate-math-config.component.css'],
+    styleUrls: ['./calculate-math-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CalculateMathConfigComponent implements OnInit {
@@ -17,7 +17,7 @@ export class CalculateMathConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         equationsGroup: false,
         equations: {},
@@ -58,7 +58,7 @@ export class CalculateMathConfigComponent implements OnInit {
     onRemoveEquation(i: number) {
         this.properties.equations.splice(i, 1);
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

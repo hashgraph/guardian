@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyType, Schema, Token } from '@guardian/interfaces';
 import { IBlockConfig } from '../interfaces/block-config.interface';
 import { IModuleVariables } from '../interfaces/module-variables.interface';
 import { PolicyBlock } from '../block/block.model';

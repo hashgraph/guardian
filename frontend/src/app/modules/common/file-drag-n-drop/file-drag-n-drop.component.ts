@@ -5,7 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
     selector: 'app-file-drag-n-drop',
     templateUrl: './file-drag-n-drop.component.html',
-    styleUrls: ['./file-drag-n-drop.component.css']
+    styleUrls: ['./file-drag-n-drop.component.scss']
 })
 export class FileDragNDropComponent implements OnInit {
 

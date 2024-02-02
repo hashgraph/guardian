@@ -1,21 +1,39 @@
-<div class="context" *ngIf="count">
-    <button 
-        class="compare-btn" 
-        mat-mini-fab 
-        matBadgePosition="after" 
-        matBadgeColor="warn"
-        [matBadge]="count"
-        [matBadgeHidden]="count < 1" 
-        (menuOpened)="onMenuOpened()" 
-        (menuClosed)="menuOpened = false" 
-        [matMenuTriggerFor]="compareMenu">
-        <mat-icon>compare</mat-icon>
-    </button>
+<div class="context" *ngIf="count > 0">
+
+    <div 
+        [class.current]="active"
+        class="item cursor-pointer"
+    >
+        <svg-icon class="svg-icon-16" src="/assets/images/icons/compare.svg" svgClass="color-white"></svg-icon>
+        <div [class.hidden-logotype]="!collapsed" class="collapsed-notify-counter">
+            <div class="badge" (click)="onMenuOpened($event)">
+                <span class="notification-counter">
+                    {{ count }}
+                </span>
+            </div>
+        </div>
+        <div 
+            [class.hidden-logotype]="collapsed"
+            class="span-icon"
+            (click)="onMenuOpened($event)"
+            (menuClosed)="menuOpened = false"
+            [matMenuTriggerFor]="compareMenu"
+        >
+            <span>Documents</span>
+
+            <div class="badge">
+                <span class="notification-counter">
+                    {{ count }}
+                </span>
+            </div>
+
+        </div>
+    </div>
 
     <mat-menu 
         #compareMenu="matMenu" 
         yPosition="below" 
-        xPosition="before" 
+        xPosition="after" 
         class="compare-menu-panel">
         <div class="compare-menu" (click)="$event.stopPropagation()">
             <div class="compare-header">

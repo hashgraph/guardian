@@ -5,8 +5,6 @@ import { PolicyBlock, BlocLine, BlockRect, EventCanvas, PolicyFolder, PolicyItem
 import { RegisteredService } from '../../services/registered.service';
 import { ThemeService } from '../../../../services/theme.service';
 import { BLOCK_TYPE_TIPS } from 'src/app/injectors/block-type-tips.injector';
-import { DomSanitizer } from '@angular/platform-browser';
-import { MatIconRegistry } from '@angular/material/icon';
 
 enum BlockStyle {
     None = 'None',
@@ -24,7 +22,7 @@ enum BlockStyle {
 @Component({
     selector: 'policy-tree',
     templateUrl: './policy-tree.component.html',
-    styleUrls: ['./policy-tree.component.css']
+    styleUrls: ['./policy-tree.component.scss']
 })
 export class PolicyTreeComponent implements OnInit {
     @Input('module') module!: PolicyFolder;

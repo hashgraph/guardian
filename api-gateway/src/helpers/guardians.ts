@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
-import { NatsService } from '@guardian/common';
+import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
 /**
@@ -108,6 +108,23 @@ export class Guardians extends NatsService {
      */
     public async getTokens(params?: IFilter): Promise<IToken[]> {
         return await this.sendMessage(MessageAPI.GET_TOKENS, params);
+    }
+
+    /**
+     * Return tokens
+     *
+     * @param {string} [did]
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ResponseAndCount<IToken>} - tokens
+     */
+    public async getTokensPage(
+        did?: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<IToken>> {
+        return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE, { did, pageIndex, pageSize });
     }
 
     /**
@@ -386,9 +403,15 @@ export class Guardians extends NatsService {
     /**
      * Get associated tokens
      * @param did
+     * @param pageIndex
+     * @param pageSize
      */
-    public async getAssociatedTokens(did: string): Promise<ITokenInfo[]> {
-        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { did });
+    public async getAssociatedTokens(
+        did: string,
+        pageIndex: number,
+        pageSize: number
+    ): Promise<ResponseAndCount<ITokenInfo>> {
+        return await this.sendMessage(MessageAPI.GET_ASSOCIATED_TOKENS, { did, pageIndex, pageSize });
     }
 
     /**
@@ -934,6 +957,7 @@ export class Guardians extends NatsService {
         childrenLvl: any,
         idLvl: any,
         keyLvl: any,
+        refLvl: any
     ) {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
             type,
@@ -943,7 +967,8 @@ export class Guardians extends NatsService {
             propLvl,
             childrenLvl,
             idLvl,
-            keyLvl
+            keyLvl,
+            refLvl
         });
     }
 
@@ -1964,6 +1989,13 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get sentinel api key
+     */
+    public async getSentinelApiKey(): Promise<string> {
+        return await this.sendMessage<string>(MessageAPI.GET_SENTINEL_API_KEY);
+    }
+
+    /**
      * Create tag
      * @param tag
      * @param owner
@@ -2397,5 +2429,49 @@ export class Guardians extends NatsService {
      */
     public async skipStep(policyId: string, owner: string, options: any): Promise<any> {
         return await this.sendMessage<any>(MessageAPI.RECORD_SKIP_STEP, { policyId, owner, options });
+    }
+
+    /**
+     * Get schema export xlsx
+     * @param user
+     * @param ids
+     */
+    public async exportSchemasXlsx(user: IAuthUser, ids: string[]) {
+        const file = await this.sendMessage(MessageAPI.SCHEMA_EXPORT_XLSX, { ids, user }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Load xlsx file for import
+     * @param user
+     * @param topicId
+     * @param xlsx
+     */
+    public async importSchemasByXlsx(user: IAuthUser, topicId: string, xlsx: Buffer) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX, { user, xlsx, topicId });
+    }
+
+    /**
+     * Async load xlsx file for import
+     * @param user
+     * @param zip
+     * @param versionOfTopicId
+     * @param task
+     */
+    public async importSchemasByXlsxAsync(user: IAuthUser, topicId: string, xlsx: Buffer, task: NewTask) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, { user, xlsx, topicId, task });
+    }
+
+    /**
+     * Get policy info from xlsx file
+     * @param user
+     * @param zip
+     */
+    public async previewSchemasByFileXlsx(user: IAuthUser, xlsx: Buffer) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW, { user, xlsx });
+    }
+
+    public async getFileTemplate(filename: string): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_TEMPLATE, {filename});
     }
 }

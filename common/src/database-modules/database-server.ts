@@ -26,10 +26,14 @@ import {
     Contract as ContractCollection,
     ExternalDocument,
     SuggestionsConfig,
-    Record
+    Record,
+    PolicyCategory,
+    VcDocument,
+    VpDocument
 } from '../entity';
 import { Binary } from 'bson';
 import {
+    DocumentType,
     GenerateUUIDv4,
     IVC,
     SchemaEntity,
@@ -38,7 +42,9 @@ import {
 import { BaseEntity } from '../models';
 import { DataBaseHelper } from '../helpers';
 import { Theme } from '../entity/theme';
+import { GetConditionsPoliciesByCategories } from '../helpers/policy-category';
 import { PolicyTool } from '../entity/tool';
+import { PolicyProperty } from '../entity/policy-property';
 
 /**
  * Database server
@@ -84,6 +90,8 @@ export class DatabaseServer {
         this.classMap.set(Tag, 'Tag');
         this.classMap.set(TagCache, 'TagCache');
         this.classMap.set(ExternalDocument, 'ExternalDocument');
+        this.classMap.set(PolicyCategory, 'PolicyCategories');
+        this.classMap.set(PolicyProperty, 'PolicyProperties');
     }
 
     /**
@@ -735,6 +743,48 @@ export class DatabaseServer {
      */
     public async getPolicy(policyId: string): Promise<Policy> {
         return await new DataBaseHelper(Policy).findOne(policyId);
+    }
+
+    /**
+     * Get Publish Policies
+     *
+     * @virtual
+     */
+    public static async getPublishPolicies(): Promise<Policy[]> {
+        return await new DataBaseHelper(Policy).find({
+            where: {
+                status: { $eq: 'PUBLISH' }
+            }
+        });
+    }
+
+    /**
+     * Get Policy Categories
+     *
+     * @virtual
+     */
+    public static async getPolicyCategories(): Promise<PolicyCategory[]> {
+        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory);
+    }
+
+    /**
+     * Get Policy Properties
+     *
+     * @virtual
+     */
+    public static async getPolicyProperties(): Promise<PolicyProperty[]> {
+        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty);
+    }
+
+    /**
+     * Get Policies By Category and Name
+     * @param {string[]} categoryIds - category ids
+     * @param {string} text - part of category name
+     * @returns {any} - found policies
+     */
+    public static async getFilteredPolicies(categoryIds: string[], text: string): Promise<Policy[]> {
+        const conditions = await GetConditionsPoliciesByCategories(categoryIds, text);
+        return await new DataBaseHelper(Policy).find({ $and: conditions });
     }
 
     /**
@@ -1956,9 +2006,13 @@ export class DatabaseServer {
         model.description = data.description;
         model.topicDescription = data.topicDescription;
         model.policyRoles = data.policyRoles;
+        model.policyNavigation = data.policyNavigation;
         model.policyTopics = data.policyTopics;
         model.policyTokens = data.policyTokens;
         model.policyGroups = data.policyGroups;
+        model.categories = data.categories;
+        model.projectSchema = data.projectSchema;
+
         return await new DataBaseHelper(Policy).save(model);
     }
 
@@ -2116,6 +2170,53 @@ export class DatabaseServer {
             ];
         }
         return await new DataBaseHelper(DryRun).findAndCount(filters, otherOptions);
+    }
+
+    /**
+     * Get Virtual Documents
+     * @param policyId
+     * @param includeDocument
+     * @param type
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @returns Documents and count
+     */
+    public static async getDocuments(
+        policyId: string,
+        includeDocument: boolean = false,
+        type?: DocumentType,
+        pageIndex?: string,
+        pageSize?: string,
+    ): Promise<[any[], number]> {
+        const filters: any = {
+            $and: [{
+                policyId,
+            }]
+        }
+        const otherOptions: any = {
+            fields: ['id', 'owner']
+        };
+        if (includeDocument) {
+            otherOptions.fields.push('documentFileId');
+        }
+        const _pageSize = parseInt(pageSize, 10);
+        const _pageIndex = parseInt(pageIndex, 10);
+        if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+            otherOptions.orderBy = { createDate: 'DESC' };
+            otherOptions.limit = _pageSize;
+            otherOptions.offset = _pageIndex * _pageSize;
+        }
+        if (type === DocumentType.VC) {
+            otherOptions.fields.push('schema');
+            filters.$and.push({ schema: { $ne: null }});
+            filters.$and.push({ schema: { $nin: ['#UserRole'] }});
+            return await new DataBaseHelper(VcDocument).findAndCount(filters, otherOptions);
+        } else if (type === DocumentType.VP) {
+            return await new DataBaseHelper(VpDocument).findAndCount(filters, otherOptions);
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
     }
 
     /**

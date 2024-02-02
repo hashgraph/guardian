@@ -361,6 +361,8 @@ export class AnalyticsApi {
         const propLvl = body ? body.propLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
+        const keyLvl = 0;
+        const refLvl = 0;
         const user = req.user;
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
@@ -384,7 +386,8 @@ export class AnalyticsApi {
                 propLvl,
                 childrenLvl,
                 idLvl,
-                0
+                keyLvl,
+                refLvl
             );
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -744,6 +747,8 @@ export class AnalyticsApi {
         const propLvl = body ? body.propLvl : null;
         const childrenLvl = body ? body.childrenLvl : null;
         const idLvl = body ? body.idLvl : null;
+        const keyLvl = 0;
+        const refLvl = 0;
         const user = req.user;
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
@@ -766,7 +771,8 @@ export class AnalyticsApi {
                 propLvl,
                 childrenLvl,
                 idLvl,
-                0
+                keyLvl,
+                refLvl
             );
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
