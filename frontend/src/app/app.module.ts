@@ -84,6 +84,7 @@ import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-t
 
 // PrimeNG
 import { InputTextModule } from 'primeng/inputtext';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
@@ -173,6 +174,7 @@ import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
         QRCodeModule,
         ButtonModule,
         InputTextModule,
+        SelectButtonModule,
         DropdownModule,
         ButtonModule,
         DialogModule,

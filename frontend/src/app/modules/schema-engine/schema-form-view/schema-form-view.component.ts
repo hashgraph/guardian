@@ -35,6 +35,10 @@ export class SchemaFormViewComponent implements OnInit {
     ngOnInit(): void {
     }
 
+    isBooleanView(item: boolean | any): string {
+        return (typeof item === 'boolean') ? String(item) : 'Unset';
+    }
+
     ngOnChanges() {
         this.hide = this.hide || {};
         if (this.schemaFields) {

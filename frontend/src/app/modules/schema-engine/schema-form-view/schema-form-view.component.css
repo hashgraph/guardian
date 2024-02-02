@@ -192,3 +192,15 @@ form {
 .example-full-width {
     width: 100%;
 }
+
+.boolean-show {
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 14px;
+
+    top: 22px;
+    display: block;
+    position: absolute;
+}

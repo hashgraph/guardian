@@ -42,7 +42,9 @@
                     </div>
 
                     <div *ngIf="isBoolean(item)" class="boolean-form-field">
-                        <p-checkbox [(ngModel)]="item.value" name="groupname" value="val1"></p-checkbox>
+                        <span class="boolean-show">{{ isBooleanView(item.value) }}</span>
+                        <!--                        <p-checkbox *ngIf="!isUnset(item.value)" [(ngModel)]="item.value" [name]="item.name" [binary]="true"></p-checkbox>-->
+                        <!--                        <span *ngIf="isUnset(item.value)">Unset</span>-->
                     </div>
 
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
@@ -109,7 +111,7 @@
                             </div>
 
                             <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
-                                <input [readonly]="true" [value]="item.value | date: 'shortDate'" class="p-field-input" pInputText
+                                <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText
                                        type="date">
                             </div>
 
