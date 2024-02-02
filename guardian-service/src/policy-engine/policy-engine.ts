@@ -559,7 +559,7 @@ export class PolicyEngine extends NatsService {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             model.hash = '';
-            await DatabaseServer.updatePolicy(model);
+            model = await DatabaseServer.updatePolicy(model);
             throw error;
         }
 
@@ -579,7 +579,7 @@ export class PolicyEngine extends NatsService {
 
                     replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
                     replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
-                    await DatabaseServer.updatePolicy(model);
+                    model = await DatabaseServer.updatePolicy(model);
                 }
 
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
@@ -694,7 +694,7 @@ export class PolicyEngine extends NatsService {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             model.hash = '';
-            await DatabaseServer.updatePolicy(model);
+            model = await DatabaseServer.updatePolicy(model);
             throw error
         }
 
