@@ -6845,9 +6845,9 @@ paths:
       security:
         - bearerAuth: []
         - bearer: []
-  /schemas/export/example:
+  /schemas/export/template:
     get:
-      operationId: SchemaApi_exportExample
+      operationId: SchemaApi_exportTemplate
       summary: Returns a list of schemas.
       description: >-
         Returns a list of schemas. Only users with the Standard Registry role
