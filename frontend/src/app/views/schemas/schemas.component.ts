@@ -536,6 +536,14 @@ export class SchemaConfigComponent implements OnInit {
         );
     }
 
+    public ifCanImport(element: Schema): boolean {
+        return (
+            this.type === SchemaType.Policy ||
+            this.type === SchemaType.Module ||
+            this.type === SchemaType.Tool
+        );
+    }
+
     public ifCanEdit(element: Schema): boolean {
         if (this.type === SchemaType.System) {
             return !element.readonly && !element.active;
@@ -779,6 +787,35 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 this.schemaService.pushImportByFile(data, topicId).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
+                break;
+            }
+        }
+    }
+
+    private importByExcel(data: any, topicId: string): void {
+        this.loading = true;
+        switch (this.type) {
+            case SchemaType.System: {
+                return;
+            }
+            case SchemaType.Tag: {
+                return;
+            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
+            case SchemaType.Policy:
+            default: {
+                const category = this.getCategory();
+                this.schemaService.pushImportByXlsx(data, topicId).subscribe((result) => {
                     const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
@@ -1059,13 +1096,14 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importSchemasDetails(result: any) {
-        const { type, data, schemas } = result;
+        const { type, data, schemas, errors } = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 schemas: schemas,
+                errors: errors,
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
@@ -1078,13 +1116,14 @@ export class SchemaConfigComponent implements OnInit {
                 this.onImportSchemas(result.messageId);
                 return;
             }
-
             if (result && result.topicId) {
                 this.loading = true;
                 if (type == 'message') {
                     this.importByMessage(data, result.topicId);
                 } else if (type == 'file') {
                     this.importByFile(data, result.topicId);
+                } else if (type == 'xlsx') {
+                    this.importByExcel(data, result.topicId);
                 }
             }
         });
@@ -1143,5 +1182,29 @@ export class SchemaConfigComponent implements OnInit {
             data: element,
             autoFocus: false
         })
+    }
+
+    public downloadExcelExample() {
+        this.schemaService
+            .downloadExcelExample()
+            .subscribe((fileBuffer) => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-schema',
+                    })
+                );
+                downloadLink.setAttribute(
+                    'download',
+                    `schema template.xlsx`
+                );
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (error) => {
+                this.loading = false;
+            });
     }
 }

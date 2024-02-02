@@ -9,22 +9,24 @@
             <div *ngIf="loading" class="loading">
                 <div class="preloader-image preloader-image-l-size"></div>
             </div>
+
+            <div class="field">
+                <div class="field-header">Policy</div>
+                <div>
+                    <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
+                        <mat-label>* Policy</mat-label>
+                        <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
+                            <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="field-header">Schemas</div>
             <div *ngFor="let schema of schemas">
                 <div class="schema">
                     <div class="schema-header">{{schema.name}}</div>
 
                     <div class="version-container">
-                        <div class="field">
-                            <div class="field-name">Policy</div>
-                            <div>
-                                <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
-                                    <mat-label>* Policy</mat-label>
-                                    <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
-                                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </div>
-                        </div>
                         <div class="version-container">
                             <div *ngIf="schema.version" class="field">
                                 <div class="field-name">Version</div>
@@ -44,6 +46,17 @@
                     <div *ngIf="schema.description" class="field-last">
                         <div class="field-name">Description</div>
                         <div class="field-value">{{schema.description}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="errors?.length" class="fields-container">
+                <div class="field-header">Warning & Errors</div>
+                <div class="field-array">
+                    <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
+                        <div>{{error.worksheet}}</div>
+                        <div>{{error.__path}}</div>
+                        <div>{{error.text}}</div>
                     </div>
                 </div>
             </div>

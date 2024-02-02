@@ -12,24 +12,29 @@
     <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
         <ng-template [ngSwitchCase]="0">
             <app-file-drag-n-drop
-                    (onFileLoaded)="importFromFile($event)"
-                    dropZoneLabel="Import Schema .schema file"
-                    fileExtension="schema"
+                (onFileLoaded)="importFromFile($event)"
+                dropZoneLabel="Import Schema .schema file"
+                fileExtension="schema"
             ></app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
             <form [formGroup]="dataForm">
-                <label class="form-label" htmlFor="timestamp"
-                >Message timestamp</label
-                >
+                <label class="form-label" htmlFor="timestamp">Message timestamp</label>
                 <input
-                        formControlName="timestamp"
-                        id="timestamp"
-                        pInputText
-                        placeholder="Timestamp"
-                        type="text"
+                    formControlName="timestamp"
+                    id="timestamp"
+                    pInputText
+                    placeholder="Timestamp"
+                    type="text"
                 />
             </form>
+        </ng-template>
+        <ng-template [ngSwitchCase]="2">
+            <app-file-drag-n-drop
+                (onFileLoaded)="importFromExcel($event)"
+                dropZoneLabel="Import Schema .xlsx file"
+                fileExtension="xlsx"
+            ></app-file-drag-n-drop>
         </ng-template>
     </ng-container>
 

@@ -39,22 +39,33 @@
                 </ng-container>
             </div>
             <div class="schema-actions-buttons-container">
-                <p-button (click)="onCreateSchemas()" *ngIf="canCreate" class="toolbar-btn">
-                    <mat-icon class="toolbar-icons">add</mat-icon>
-                    <span>Create a Schema</span>
-                </p-button>
-                <p-button (click)="onImportSchemas()" *ngIf="canImport" class="toolbar-btn">
-                    <mat-icon class="toolbar-icons">file_open</mat-icon>
-                    <span>Import</span>
+
+                <p-button
+                    *ngIf="canCreate"
+                    (click)="onCreateSchemas()"
+                    class="toolbar-btn-primary"
+                    [pTooltip]="'Create a Schema'"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
                 </p-button>
                 <p-button
-                    (click)="onCompare()"
-                    *ngIf="isPolicy || isModule || isTool"
-                    class="toolbar-btn compare-button"
-                    styleClass="p-button-outlined">
-                    <mat-icon class="toolbar-icons">compare</mat-icon>
-                    <span>Compare</span>
+                    *ngIf="canImport"
+                    (click)="onImportSchemas()"
+                    class="toolbar-btn-primary"
+                    [pTooltip]="'Import'"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/import.svg" svgClass="color-white"></svg-icon>
                 </p-button>
+                <p-button
+                    *ngIf="isPolicy || isModule || isTool"
+                    (click)="onCompare()"
+                    [pTooltip]="'Compare'"
+                    class="toolbar-btn-secondary"
+                    styleClass="p-button-outlined"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
+                </p-button>
+
             </div>
         </div>
     </div>
@@ -443,17 +454,58 @@
 
 <mat-menu #schemaMenu="matMenu">
     <ng-template matMenuContent let-element="schema">
+        <p-button
+            (click)="ifCanExport(element) ? onExport(element) : null"
+            [disabled]="!ifCanExport(element)"
+            label="Export schema"
+            class="schema-menu-p-btn"
+            styleClass="p-button-outlined"
+            [pTooltip]="'Export schema'"
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/export.svg" 
+                [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>
+        </p-button>
+
+        <div class="schema-menu-delimiter"></div>
+
+        <!-- <p-button
+            (click)="ifCanExport(element) ? exportToExcel(element) : null"
+            [disabled]="!ifCanExport(element)"
+            label="Export schemas to Excel"
+            class="schema-menu-p-btn"
+            styleClass="p-button-outlined"
+            [pTooltip]="'Export schema to Excel'"
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/export.svg" 
+                [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>
+        </p-button> -->
+        <!-- <p-button
+            (click)="canImport ? onImportSchemas(): null"
+            [disabled]="!canImport"
+            label="Import schemas from Excel"
+            class="schema-menu-p-btn"
+            styleClass="p-button-outlined"
+            [pTooltip]="'Import schemas from excel'"
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/import.svg" svgClass="primary-color"></svg-icon>
+        </p-button> -->
+        
+        <p-button
+            (click)="downloadExcelExample()"
+            label="Download Excel example"
+            class="schema-menu-p-btn"
+            styleClass="p-button-outlined"
+            [pTooltip]="'Download Excel example'"
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/document.svg" svgClass="primary-color"></svg-icon>
+        </p-button>
+
+        <div class="schema-menu-delimiter"></div>
+
         <button *ngIf="ifCanCopy(element)" mat-menu-item (click)="onCopySchema(element)" class="schema-menu-btn">
             <mat-icon>content_copy</mat-icon>
             <span>Copy</span>
         </button>
-
-        <button *ngIf="ifCanExport(element)" mat-menu-item (click)="onExport(element)" class="schema-menu-btn">
-            <mat-icon>import_export</mat-icon>
-            <span>Export</span>
-        </button>
-
-        <div *ngIf="ifCanExport(element) || ifCanCopy(element)" class="schema-menu-delimiter"></div>
 
         <button mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
             <mat-icon>settings</mat-icon>
@@ -482,9 +534,17 @@
 
         <div class="schema-menu-delimiter"></div>
 
-        <button *ngIf="ifCanDelete(element)" mat-menu-item (click)="onCheckDeleteSchema(element)" class="schema-menu-btn-del">
-            <mat-icon>delete</mat-icon>
-            <span>Delete schema</span>
-        </button>
+        <p-button
+            (click)="ifCanDelete(element) ? onCheckDeleteSchema(element) : null"
+            [disabled]="!ifCanDelete(element)"
+            label="Delete schema"
+            class="schema-menu-p-btn"
+            styleClass="p-button-outlined accent-color-red"
+            [pTooltip]="'Delete schema'"
+            tooltipPosition="bottom">
+            <svg-icon
+                src="/assets/images/icons/delete.svg"
+                [svgClass]="ifCanDelete(element) ? 'accent-color-red' : 'disabled-color'"></svg-icon>
+        </p-button>
     </ng-template>
 </mat-menu>

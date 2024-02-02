@@ -14,6 +14,7 @@ export class SchemaViewDialog {
     schemas!: any[];
     topicId: any;
     policies: any[];
+    errors: any[];
 
     constructor(
         public dialogRef: MatDialogRef<SchemaViewDialog>,
@@ -21,6 +22,7 @@ export class SchemaViewDialog {
         this.schemas = this.data.schemas || [];
         this.topicId = this.data.topicId || null;
         this.policies = this.data.policies || [];
+        this.errors = this.data.errors || [];
     }
 
     ngOnInit() {

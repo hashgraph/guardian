@@ -35,7 +35,7 @@ export class ExportSchemaDialog {
         navigator.clipboard.writeText(text);
     }
 
-    saveToFile() {
+    public saveToFile() {
         this.loading = true;
         this.schemaService.exportInFile(this.schema.id).subscribe(
             (fileBuffer) => {
@@ -48,6 +48,33 @@ export class ExportSchemaDialog {
                 downloadLink.setAttribute(
                     'download',
                     `schemas_${Date.now()}.schema`
+                );
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                    this.ref.close();
+                }, 500);
+            },
+            (error) => {
+                this.loading = false;
+            }
+        );
+    }
+
+    public saveToExcel() {
+        this.loading = true;
+        this.schemaService.exportToExcel(this.schema.id).subscribe(
+            (fileBuffer) => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-schema',
+                    })
+                );
+                downloadLink.setAttribute(
+                    'download',
+                    `schemas_${Date.now()}.xlsx`
                 );
                 document.body.appendChild(downloadLink);
                 downloadLink.click();

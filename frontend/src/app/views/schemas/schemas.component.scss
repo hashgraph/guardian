@@ -479,3 +479,102 @@ a {
 .schema-menu-btn-del mat-icon {
     color: var(--color-accent-red-1);
 }
+
+.toolbar-btn-primary {
+    ::ng-deep .p-button {
+        background: var(--color-primary);
+        border: 1px solid var(--color-primary);
+        font-family: Inter, sans-serif;
+        font-size: 1px;
+        font-style: normal;
+        font-weight: 500;
+        margin-left: 10px;
+        height: 40px;
+        padding: 8px;
+        border-radius: 8px;
+    }
+}
+
+.toolbar-btn-secondary {
+    ::ng-deep .p-button {
+        background: #fff;
+        border: 1px solid var(--color-primary) !important;
+        font-family: Inter, sans-serif;
+        font-size: 1px;
+        font-style: normal;
+        font-weight: 500;
+        margin-left: 10px;
+        height: 40px;
+        padding: 8px;
+        border-radius: 8px;
+    }
+}
+
+.primary-color {
+    fill: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.color-white {
+    fill: white;
+    color: white;
+}
+
+.disabled-color {
+    fill: var(--color-grey-5, #848FA9) !important;
+    color: var(--color-grey-5, #848FA9) !important;
+    cursor: not-allowed !important;
+}
+
+.schema-menu-p-btn {
+    user-select: none;
+    position: relative;
+    width: 220px;
+    display: block;
+
+    ::ng-deep .p-button-outlined {
+        color: var(--primary-color);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        background-color: #ffffff;
+        min-height: 40px;
+        border: none !important;
+        border-radius: 8px;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 40px auto;
+        text-align: left;
+    }
+
+    ::ng-deep .accent-color-red {
+        fill: var(--color-accent-red-1) !important;
+        color: var(--color-accent-red-1) !important;
+    }
+
+    ::ng-deep .accent-color-red.p-disabled,
+    ::ng-deep .p-disabled {
+        opacity: 1 !important;
+        fill: var(--color-grey-5, #848FA9) !important;
+        color: var(--color-grey-5, #848FA9) !important;
+        cursor: not-allowed !important;
+    }
+}
+
+.schema-menu-delimiter {
+    width: 100%;
+    height: 10px;
+    position: relative;
+
+    &::after {
+        content: "";
+        pointer-events: none;
+        position: absolute;
+        top: 5px;
+        left: 20px;
+        right: 20px;
+        bottom: 0px;
+        border-top: 1px solid #ccc;
+    }
+}

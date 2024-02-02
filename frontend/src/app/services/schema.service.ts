@@ -184,7 +184,7 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
     }
 
-    copySchema(copyInfo: any) {
+    public copySchema(copyInfo: any) {
         return this.http.post<ITask>(`${this.url}/push/copy`, copyInfo);
     }
 
@@ -194,5 +194,33 @@ export class SchemaService {
 
     public properties(): Observable<any[]> {
         return this.http.get<any>(`${API_BASE_URL}/projects/properties`);
+    }
+
+    public exportToExcel(id: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${id}/export/xlsx`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public downloadExcelExample(): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/export/example`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public previewByXlsx(file: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public pushImportByXlsx(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/xlsx`, schemasFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
     }
 }

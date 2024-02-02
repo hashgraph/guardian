@@ -24,8 +24,9 @@ export class ImportSchemaDialog {
     loading: boolean = false;
 
     items: MenuItem[] = [
-        {label: 'Import from file'},
+        {label: 'Import from File'},
         {label: 'Import from IPFS'},
+        {label: 'Import from Excel'},
     ];
 
     taskId: string | undefined = undefined;
@@ -133,6 +134,28 @@ export class ImportSchemaDialog {
                         type: 'file',
                         data: arrayBuffer,
                         schemas: result,
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
+        });
+    }
+
+    importFromExcel(file: any) {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.addEventListener('load', (e: any) => {
+            const arrayBuffer = e.target.result;
+            this.loading = true;
+            this.schemaService.previewByXlsx(arrayBuffer).subscribe(
+                (result) => {
+                    this.loading = false;
+                    this.ref.close({
+                        type: 'xlsx',
+                        data: arrayBuffer,
+                        ...result,
                     });
                 },
                 (e) => {
