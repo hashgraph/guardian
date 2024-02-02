@@ -5,6 +5,9 @@ import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logg
 import { ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs } from './helpers';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
+import { readFile } from 'fs/promises';
+import path from 'path';
+import process from 'process';
 
 @Controller()
 export class SchemaService { }
@@ -449,7 +452,7 @@ export async function schemaAPI(): Promise<void> {
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(MessageAPI.DELETE_SCHEMA, async (msg) => {
+    ApiResponse<any>(MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid delete schema parameter');
@@ -1099,6 +1102,7 @@ export async function schemaAPI(): Promise<void> {
                 true
             );
             await PolicyImportExportHelper.updatePolicyComponents(policy);
+
             notifier.result({
                 schemas: xlsxResult.schemas,
                 errors: result.errors
@@ -1134,7 +1138,23 @@ export async function schemaAPI(): Promise<void> {
             }
             xlsxResult.updateSchemas(false);
             GenerateBlocks.generate(xlsxResult);
+
             return new MessageResponse(xlsxResult.toJson());
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Preview schema by xlsx
+     */
+    ApiResponse(MessageAPI.GET_TEMPLATE, async (msg) => {
+        try {
+            const {filename} = msg;
+            const filePath = path.join(process.cwd(), 'artifacts', filename);
+            const file = await readFile(filePath);
+            return new BinaryMessageResponse(file.buffer);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

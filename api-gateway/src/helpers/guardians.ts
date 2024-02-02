@@ -2470,4 +2470,8 @@ export class Guardians extends NatsService {
     public async previewSchemasByFileXlsx(user: IAuthUser, xlsx: Buffer) {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW, { user, xlsx });
     }
+
+    public async getFileTemplate(filename: string): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_TEMPLATE, {filename});
+    }
 }

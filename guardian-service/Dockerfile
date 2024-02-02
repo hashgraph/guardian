@@ -46,6 +46,7 @@ COPY ./guardian-service/package.json ./
 COPY ./yarn.lock ./
 COPY ./package-lock.json ./
 COPY ./guardian-service/system-schemas ./system-schemas/.
+COPY ./guardian-service/artifacts ./artifacts/.
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN yarn install

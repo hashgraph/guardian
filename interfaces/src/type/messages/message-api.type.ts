@@ -2,6 +2,7 @@
  * Message api
  */
 export enum MessageAPI {
+    GET_TEMPLATE = 'get-template',
     PUBLISH_TASK = 'publish-task',
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',
