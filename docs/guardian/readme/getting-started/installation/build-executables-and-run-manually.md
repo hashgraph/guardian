@@ -36,12 +36,20 @@ Install, configure and start all the prerequisites, then build and start each co
 
     in `./guardian-service/configs/.env.guardian.develop`:
 
-    ```plaintext
-    OPERATOR_ID="..."
-    OPERATOR_KEY="..."
+```plaintext
+OPERATOR_ID="..."
+OPERATOR_KEY="..."
+```
+
+*   Setting up Chat GPT API KEY to enable AI Search and Guided Search:
+
+    For setting up AI and Guided Search, we need to set OPENAI\_API\_KEY variable in `./ai-service/configs/.env*` files.
+
+    ```
+    OPENAI_API_KEY="..."
     ```
 
-> _**NOTE:**_ Once you start each service, please wait for the initialization process to be completed.\*\*
+_**NOTE:**_ Once you start each service, please wait for the initialization process to be completed.\*\*
 
 1. Clone the repo
 
@@ -129,7 +137,39 @@ To start the service:
 yarn workspace worker-service start
 ```
 
-9. Build and start _**guardian-service**_ service
+9. Build and start **notification**_**-service**_ service
+
+To build the service:
+
+Yarn:
+
+```
+yarn workspace notification-service run build
+```
+
+Npm:
+
+```
+npm --workspace=notification-service run build
+```
+
+Configure the service as previously described. Update **OPERATOR\_ID** and **OPERATOR\_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
+
+To start the service (found on [http://localhost:3002](http://localhost:3002/)):
+
+Yarn:
+
+```
+yarn workspace notification-service start
+```
+
+Npm:
+
+```
+npm --workspace=notification-service start
+```
+
+10. Build and start _**guardian-service**_ service
 
 To build the service:
 
@@ -145,7 +185,7 @@ To start the service (found on [http://localhost:3002](https://localhost:3002)):
  yarn workspace guardian-service start
 ```
 
-10. Build and start _**api-gateway**_ service
+11. Build and start _**api-gateway**_ service
 
 To build the service:
 
@@ -161,7 +201,7 @@ To start the service (found on [http://localhost:3002](https://localhost:3002)):
 yarn workspace api-gateway start
 ```
 
-11. From the **mrv-sender** folder
+12. From the **mrv-sender** folder
 
 To build the service:
 
@@ -178,7 +218,37 @@ To start the service (found on [http://localhost:3005](http://localhost:3005)):
 npm start
 ```
 
-12. From the **frontend** folder
+13. **From the ai-service folder**
+
+To build the service:
+
+Yarn:
+
+```
+yarn workspace ai-service run build
+```
+
+Npm:
+
+```
+npm --workspace=ai-service run build
+```
+
+Configure the service as previously described. Do not need special configuration variables.
+
+Yarn:
+
+```
+yarn workspace ai-service start
+```
+
+Npm:
+
+```
+npm --workspace=ai-service start
+```
+
+14. From the **frontend** folder
 
 To build the service:
 

@@ -6,10 +6,10 @@
 * [Need and Use for the ACM0007 Policy](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#need-and-use-for-the-acm0007-policy)
 * [Policy Workflow](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#policy-workflow)
 * [Policy Guide](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#policy-guide)
-  * [Available Roles](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#available-roles)
-  * [Important Documents \\& Schemas](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#important-documents--schemas)
-  * [Token(Carbon Emissions Reduction)](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#tokencarbon-emissions-reduction)
-  * [Step By Step](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#step-by-step)
+* [Available Roles](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#available-roles)
+* [Important Documents \\& Schemas](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#important-documents--schemas)
+* [Token(Carbon Emissions Reduction)](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#tokencarbon-emissions-reduction)
+* [Step By Step](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#step-by-step)
 
 ### Introduction <a href="#introduction" id="introduction"></a>
 
