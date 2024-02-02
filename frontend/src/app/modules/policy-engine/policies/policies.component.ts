@@ -786,7 +786,7 @@ export class PoliciesComponent implements OnInit {
             }
         });
     }
-	
+
     public migrateData(policyId?: any) {
         const item = this.policies?.find((e) => e.id === policyId);
         const dialogRef = this.dialogService.open(MigrateData, {
@@ -846,15 +846,18 @@ export class PoliciesComponent implements OnInit {
             this.tokenService.getTokens(),
             this.schemaService.getSchemas(),
             this.policyEngineService.all(),
+            this.policyEngineService.getPolicyCategories()
         ]).subscribe(
             (result) => {
                 const tokens = result[0].map((token) => new Token(token));
                 const schemas = result[1].map((schema) => new Schema(schema));
                 const policies = result[2];
+                const categories = result[3];
                 this.wizardService.openPolicyWizardDialog(
                     WizardMode.CREATE,
                     (value) => {
                         this.loading = true;
+                        console.log(value);
                         this.wizardService
                             .createPolicyAsync({
                                 wizardConfig: value.config,
@@ -862,6 +865,7 @@ export class PoliciesComponent implements OnInit {
                             })
                             .subscribe(
                                 (result) => {
+                                    console.log(result);
                                     const { taskId, expectation } = result;
                                     this.router.navigate(['task', taskId], {
                                         queryParams: {
