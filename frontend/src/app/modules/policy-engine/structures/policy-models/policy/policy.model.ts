@@ -561,16 +561,44 @@ export class PolicyTemplate {
     }
 
     public setPolicyInfo(policyData: {
-        name: string,
-        description: string,
-        topicDescription: string
+        applicabilityConditions?: string;
+        appliedTechnologyType?: string;
+        atValidation?: string;
+        description?: string;
+        detailsUrl?: string;
+        migrationActivityType?: string;
+        monitored?: string
+        name?: string
+        projectScale?: string;
+        sectoralScope?: string
+        subType?: string;
+        topicDescription?: string;
+        typicalProjects?: string;
     }) {
         if (!policyData) {
             return;
         }
-        this.name = policyData.name;
-        this.description = policyData.description;
-        this.topicDescription = policyData.topicDescription;
+        this.name = policyData.name as string;
+        this.description = policyData.description as string;
+        this.topicDescription = policyData.topicDescription as string;
+        const categories = [];
+        for (const elem of [
+            policyData.projectScale,
+            policyData.migrationActivityType,
+            policyData.subType,
+            policyData.appliedTechnologyType,
+            policyData.sectoralScope
+        ]) {
+            if (Array.isArray(elem)) {
+                for (const _el of elem) {
+                    categories.push(_el)
+                }
+            } else if (elem !== undefined) {
+                categories.push(elem);
+            }
+        }
+        this.setCategories(categories);
+        console.log(policyData);
     }
 
     public getJSON(): any {

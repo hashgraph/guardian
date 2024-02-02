@@ -28,6 +28,7 @@ import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injec
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { StopResizingEvent } from '../../directives/resizing.directive';
 import { OrderOption } from '../../structures/interfaces/order-option.interface';
+import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -38,6 +39,8 @@ import { OrderOption } from '../../structures/interfaces/order-option.interface'
     styleUrls: ['./policy-configuration.component.scss'],
 })
 export class PolicyConfigurationComponent implements OnInit {
+    @ViewChild(PolicyPropertiesComponent) propertiesComponent: PolicyPropertiesComponent;
+
     public loading: boolean = true;
     public options: Options;
     public readonly!: boolean;
@@ -1404,39 +1407,61 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    private asyncUpdatePolicy(): Observable<void> {
-        return new Observable<void>(subscriber => {
-            this.changeView('blocks');
-            const root = this.policyTemplate.getJSON();
-            if (root) {
-                this.loading = true;
-                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
-                    if (policy) {
-                        this.updatePolicyTemplate(policy);
-
-                        if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
-                            this.policyCategoriesMapped = [];
-                            this.policyTemplate.categories.forEach(id => {
-                                const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
-                                if (category) {
-                                    this.policyCategoriesMapped.push(category);
+    public openPolicyWizardDialog() {
+        this.loading = true;
+        forkJoin([
+            this.tokenService.getTokens(),
+            this.schemaService.getSchemas(),
+            this.policyEngineService.all(),
+        ]).subscribe((result) => {
+            const tokens = result[0].map((token) => new Token(token));
+            const schemas = result[1].map((schema) => new Schema(schema));
+            const policies = result[2];
+            this.wizardService.openPolicyWizardDialog(
+                WizardMode.EDIT,
+                (value) => {
+                    if (value.create) {
+                        this.loading = true;
+                        this.wizardService
+                            .getPolicyConfig(this.policyId, value.config)
+                            .subscribe((result) => {
+                                this.loading = false;
+                                this.policyTemplate.setPolicyInfo(
+                                    value.config.policy
+                                );
+                                const roles = value.config.roles;
+                                const policy = this.policyTemplate.getJSON();
+                                policy.policyRoles = roles.filter(
+                                    (role: string) => role !== 'OWNER'
+                                );
+                                policy.config = result.policyConfig;
+                                this.updatePolicyTemplate(policy);
+                                if (value.saveState) {
+                                    this.wizardService.setWizardPreset(
+                                        this.policyId,
+                                        {
+                                            data: result?.wizardConfig,
+                                            currentNode: value?.currentNode,
+                                        }
+                                    );
                                 }
-                            })
-                        }
+                                this.remapCategories()
+                            });
+                    } else if (value.saveState) {
+                        this.wizardService.setWizardPreset(this.policyId, {
+                            data: value.config,
+                            currentNode: value.currentNode,
+                        });
                     } else {
-                        this.policyTemplate = new PolicyTemplate();
-                        this.policyTemplate.setTokens(this.tokens);
-                        this.policyTemplate.setSchemas(this.schemas);
-                        this.policyTemplate.setTools(this.tools.items);
+                        this.wizardService.removeWizardPreset(this.policyId);
                     }
-                    setTimeout(() => { this.loading = false; }, 500);
-                    subscriber.next();
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
-            }
-        });
+                },
+                tokens,
+                schemas,
+                policies,
+                this.policyTemplate
+            );
+        }, () => undefined, () => this.loading = false);
     }
 
     private updatePolicyTemplate(policy: any) {
@@ -1636,60 +1661,43 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public openPolicyWizardDialog() {
-        this.loading = true;
-        forkJoin([
-            this.tokenService.getTokens(),
-            this.schemaService.getSchemas(),
-            this.policyEngineService.all(),
-        ]).subscribe((result) => {
-            const tokens = result[0].map((token) => new Token(token));
-            const schemas = result[1].map((schema) => new Schema(schema));
-            const policies = result[2];
-            this.wizardService.openPolicyWizardDialog(
-                WizardMode.EDIT,
-                (value) => {
-                    if (value.create) {
-                        this.loading = true;
-                        this.wizardService
-                            .getPolicyConfig(this.policyId, value.config)
-                            .subscribe((result) => {
-                                this.loading = false;
-                                this.policyTemplate.setPolicyInfo(
-                                    value.config.policy
-                                );
-                                const roles = value.config.roles;
-                                const policy = this.policyTemplate.getJSON();
-                                policy.policyRoles = roles.filter(
-                                    (role: string) => role !== 'OWNER'
-                                );
-                                policy.config = result.policyConfig;
-                                this.updatePolicyTemplate(policy);
-                                if (value.saveState) {
-                                    this.wizardService.setWizardPreset(
-                                        this.policyId,
-                                        {
-                                            data: result?.wizardConfig,
-                                            currentNode: value?.currentNode,
-                                        }
-                                    );
-                                }
-                            });
-                    } else if (value.saveState) {
-                        this.wizardService.setWizardPreset(this.policyId, {
-                            data: value.config,
-                            currentNode: value.currentNode,
-                        });
+    private asyncUpdatePolicy(): Observable<void> {
+        return new Observable<void>(subscriber => {
+            this.changeView('blocks');
+            const root = this.policyTemplate.getJSON();
+            if (root) {
+                this.loading = true;
+                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
+                    if (policy) {
+                        this.updatePolicyTemplate(policy);
+
+                        this.remapCategories();
                     } else {
-                        this.wizardService.removeWizardPreset(this.policyId);
+                        this.policyTemplate = new PolicyTemplate();
+                        this.policyTemplate.setTokens(this.tokens);
+                        this.policyTemplate.setSchemas(this.schemas);
+                        this.policyTemplate.setTools(this.tools.items);
                     }
-                },
-                tokens,
-                schemas,
-                policies,
-                this.policyTemplate
-            );
-        }, () => undefined, () => this.loading = false);
+                    setTimeout(() => { this.loading = false; }, 500);
+                    subscriber.next();
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
+    private remapCategories() {
+        if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
+            this.policyCategoriesMapped = [];
+            this.policyTemplate.categories.forEach(id => {
+                const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
+                if (category) {
+                    this.policyCategoriesMapped.push(category);
+                }
+            })
+        }
     }
 
     private generateSuggestionsInput(
