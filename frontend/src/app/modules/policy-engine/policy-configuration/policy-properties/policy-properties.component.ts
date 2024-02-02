@@ -1,15 +1,5 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import {
-    PolicyTemplate,
-    PolicyToken,
-    PolicyGroup,
-    PolicyRole,
-    PolicyTopic,
-    PolicyNavigationModel,
-    PolicyNavigationStepModel,
-    IPolicyCategory,
-    SchemaVariables
-} from '../../structures';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { IPolicyCategory, PolicyGroup, PolicyNavigationModel, PolicyNavigationStepModel, PolicyRole, PolicyTemplate, PolicyToken, PolicyTopic, SchemaVariables } from '../../structures';
 import { PolicyCategoryType } from '@guardian/interfaces';
 
 /**
@@ -65,7 +55,7 @@ export class PolicyPropertiesComponent implements OnInit {
     migrationActivityTypeSelected: IPolicyCategory[] = [];
     subTypeSelected: IPolicyCategory[] = [];
 
-    constructor() {
+    constructor(private cd: ChangeDetectorRef) {
     }
 
     ngOnInit(): void {
