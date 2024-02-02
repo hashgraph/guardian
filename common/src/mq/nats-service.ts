@@ -1,4 +1,4 @@
-import { NatsConnection, headers, Subscription } from 'nats';
+import { headers, NatsConnection, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec';
 
@@ -47,14 +47,20 @@ export abstract class NatsService {
             callback: async (error, msg) => {;
                 if (!error) {
                     const messageId = msg.headers.get('messageId');
+                    const rawMessage = msg.headers.get('rawMessage');
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
+                        // if (rawMessage === 'true') {
+                        //     const message = await this.codec.decodeBuffer(msg.data) as any;
+                        //     fn(message)
+                        // } else {
                         const message = await this.codec.decode(msg.data) as any;
                         if (!message) {
                             fn(null)
                         } else {
                             fn(message.body, message.error);
                         }
+                        // }
                         this.responseCallbacksMap.delete(messageId)
                     }
                 } else {
@@ -195,7 +201,14 @@ export abstract class NatsService {
                     }
                     // head.append('rawMessage', isRaw);
                     if (!noRespond) {
-                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
+                        const cbData = await cb(await this.codec.decode(msg.data), msg.headers);
+                        // if (Buffer.isBuffer(cbData)) {
+                        //     head.append('rawMessage', 'true');
+                        //     msg.respond(await this.codec.encodeBuffer(cbData), {headers: head});
+                        // } else {
+                        msg.respond(await this.codec.encode(cbData), {headers: head});
+                        // }
+
                     } else {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }

@@ -1,4 +1,4 @@
-import { ApplicationState, MessageInitialization, MessageResponse } from '@guardian/common';
+import { ApplicationState, MessageError, MessageInitialization, MessageResponse } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { GuardiansService } from '@helpers/guardians';
 
@@ -8,7 +8,7 @@ import { GuardiansService } from '@helpers/guardians';
  * @param handleFunc
  * @constructor
  */
-export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
+export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T> | MessageError<any> | Buffer>): void {
     const state = new ApplicationState();
     new GuardiansService().registerListener(event, async (msg) => {
         if (![ApplicationStates.READY, ApplicationStates.BAD_CONFIGURATION].includes(state.getState())) {

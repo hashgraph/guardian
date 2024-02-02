@@ -35,6 +35,18 @@ export function ZipCodec() {
                 throw NatsError.errorForCode(ErrorCode.BadJson, error);
             }
         },
+
+        async encodeBuffer(file: Buffer) {
+            try {
+                const directLink = new LargePayloadContainer().addObject(file);
+                return JSONCodec().encode({
+                    directLink
+                });
+            } catch (error) {
+                throw NatsError.errorForCode(ErrorCode.BadJson, error);
+            }
+        },
+
         async decode(a) {
             try {
                 const parsed = JSONCodec().decode(a) as any;
@@ -54,6 +66,21 @@ export function ZipCodec() {
             } catch (error) {
                 throw NatsError.errorForCode(ErrorCode.BadJson, error);
             }
-        }
+        },
+
+        async decodeBuffer(a) {
+            try {
+                const parsed = JSONCodec().decode(a) as any;
+                const directLink = parsed.directLink;
+
+                const response = await axios.get(directLink, {
+                    responseType: 'arraybuffer'
+                });
+
+                return response.data;
+            } catch (error) {
+                throw NatsError.errorForCode(ErrorCode.BadJson, error);
+            }
+        },
     }
 }

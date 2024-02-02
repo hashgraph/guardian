@@ -2213,10 +2213,15 @@ export class SchemaApi {
         @Response() res: any
     ): Promise<any> {
         try {
-            const file = Buffer.from([]);
-            res.setHeader('Content-disposition', `attachment; filename=example`);
+            const filename = 'template.xlsx';
+
+            const guardians = new Guardians();
+            const file = await guardians.getFileTemplate(filename);
+            const fileBuffer = Buffer.from(file, 'base64');
+
+            res.setHeader('Content-disposition', `attachment; filename=` + filename);
             res.setHeader('Content-type', 'application/zip');
-            return res.send(file);
+            return res.send(fileBuffer);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
