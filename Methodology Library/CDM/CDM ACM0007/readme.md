@@ -45,6 +45,8 @@ ACM0007 thus enables a practical solution to reduce grid emissions intensity in 
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
+Timestamp: 1706881469.628524368
+
 ### Available Roles 
  
 - Project participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
