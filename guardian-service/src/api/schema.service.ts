@@ -998,7 +998,7 @@ export async function schemaAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.SCHEMA_EXPORT_XLSX, async (msg) => {
         try {
-            const { user, ids } = msg;
+            const { ids } = msg;
             const schemas = await exportSchemas(ids);
             const buffer = await JsonToXlsx.generate(schemas, [], []);
             return new BinaryMessageResponse(buffer);
@@ -1099,10 +1099,8 @@ export async function schemaAPI(): Promise<void> {
                 true
             );
             await PolicyImportExportHelper.updatePolicyComponents(policy);
-
-
             notifier.result({
-                policyId: policy.id,
+                schemas: xlsxResult.schemas,
                 errors: result.errors
             });
         }, async (error) => {
@@ -1112,13 +1110,12 @@ export async function schemaAPI(): Promise<void> {
         return new MessageResponse(task);
     });
 
-
     /**
      * Preview schema by xlsx
      */
     ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW, async (msg) => {
         try {
-            const { user, xlsx } = msg;
+            const { xlsx } = msg;
             if (!xlsx) {
                 throw new Error('file in body is empty');
             }
@@ -1137,8 +1134,6 @@ export async function schemaAPI(): Promise<void> {
             }
             xlsxResult.updateSchemas(false);
             GenerateBlocks.generate(xlsxResult);
-
-
             return new MessageResponse(xlsxResult.toJson());
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

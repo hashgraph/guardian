@@ -1952,29 +1952,6 @@ export class SchemaApi {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Export schemas in a xlsx file.
      */
@@ -2140,7 +2117,7 @@ export class SchemaApi {
         @Response() res: any
     ): Promise<any> {
         const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
+        const task = taskManager.start(TaskAction.IMPORT_SCHEMA_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.importSchemasByXlsxAsync(user, topicId, file, task);
@@ -2200,13 +2177,6 @@ export class SchemaApi {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-
-
-
-
 
     /**
      * Get sub schemas
