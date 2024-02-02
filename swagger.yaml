@@ -6689,6 +6689,192 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /schemas/{schemaId}/export/xlsx:
+    get:
+      operationId: SchemaApi_getPolicyExportXlsx
+      summary: Return schemas in a xlsx file format for the specified policy.
+      description: >-
+        Returns a xlsx file containing schemas. Only users with the Standard
+        Registry role are allowed to make the request.
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/{topicId}/import/xlsx:
+    post:
+      operationId: SchemaApi_importPolicyFromXlsx
+      summary: Imports new schema from a xlsx file into the local DB.
+      description: >-
+        Imports new schema from a xlsx file into the local DB. Only users with
+        the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          description: Topic Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A xlsx file containing schema config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/push/{topicId}/import/xlsx:
+    post:
+      operationId: SchemaApi_importPolicyFromXlsxAsync
+      summary: Imports new schema from a xlsx file into the local DB.
+      description: >-
+        Imports new schema from a xlsx file into the local DB. Only users with
+        the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          description: Topic Id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A xlsx file containing schema config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/import/xlsx/preview:
+    post:
+      operationId: SchemaApi_importPolicyFromXlsxPreview
+      summary: Previews the schema from a xlsx file.
+      description: >-
+        Previews the schema from a xlsx file. Only users with the Standard
+        Registry role are allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: A xlsx file containing schema config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /schemas/export/example:
+    get:
+      operationId: SchemaApi_exportExample
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_8
+      security:
+        - bearerAuth: []
+        - bearer: []
   /settings:
     get:
       tags:
