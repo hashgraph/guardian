@@ -39,7 +39,6 @@
                 </ng-container>
             </div>
             <div class="schema-actions-buttons-container">
-
                 <p-button
                     *ngIf="canCreate"
                     (click)="onCreateSchemas()"
@@ -47,6 +46,14 @@
                     [pTooltip]="'Create a Schema'"
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
+                </p-button>
+                <p-button
+                    *ngIf="canCreate"
+                    (click)="downloadExcelExample()"
+                    class="toolbar-btn-primary"
+                    [pTooltip]="'Generate Excel Template'"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
                 </p-button>
                 <p-button
                     *ngIf="canImport"
@@ -65,7 +72,6 @@
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
-
             </div>
         </div>
     </div>
@@ -490,7 +496,7 @@
             <svg-icon src="/assets/images/icons/import.svg" svgClass="primary-color"></svg-icon>
         </p-button> -->
         
-        <p-button
+        <!-- <p-button
             (click)="downloadExcelExample()"
             label="Download Excel example"
             class="schema-menu-p-btn"
@@ -498,9 +504,9 @@
             [pTooltip]="'Download Excel Template'"
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/document.svg" svgClass="primary-color"></svg-icon>
-        </p-button>
+        </p-button> -->
 
-        <div class="schema-menu-delimiter"></div>
+        <!-- <div class="schema-menu-delimiter"></div> -->
 
         <button *ngIf="ifCanCopy(element)" mat-menu-item (click)="onCopySchema(element)" class="schema-menu-btn">
             <mat-icon>content_copy</mat-icon>
