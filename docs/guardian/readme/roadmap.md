@@ -24,13 +24,20 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2321](https://gith
 
 ### Business User Policy Development Feature - schemas MVP
 
-Business Analyst and Sustainability Consultants generally are less technical than developers. Although JSON is the most functional way to construct Guardian Policies, there may be more formal ways to integrate traditional business tool and rules validation capabilities to automatically compile policies.
+* Create a excel 'schema representation' standard suitable for non-technical users. _Note: use existing excel schemas from Tools and UNFCCC initiatives as guidance._
+* Create an explicit template for the above, downloadable from Guardian UI, which users can take and update/change to develop new schemas.
+* Create an Export/Import UI and tooling which would allow seamless transformation of schemas written in Excel into valid Guardian JSON schemas and vice versa
+* Ensure manual interventions are possible for corrections/adjustments of complex formulas and other issues.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1885](https://github.com/hashgraph/guardian/issues/1885)
 
 ### Geographic raster imagery support in Guardian
 
-Introduce support for getTIFF and other raster types of data.
+Introduce support for geoTIFF and other raster types of data such that:
+
+* Guardian documents (i.e. in schemas) can reference raster data (in geoTIFF and other common formats) which are located on external (3rd party) systems.
+* Guardian UI can display raster images and their georeferencing data when they are encountered in documents.
+* Guardian policy can access and manipulate (use in calculations, etc) data from raster sources.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1930](https://github.com/hashgraph/guardian/issues/1930)
 
