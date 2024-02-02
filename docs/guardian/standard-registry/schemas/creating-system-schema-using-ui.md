@@ -110,6 +110,7 @@ There are different types of Field Types:
 * Help Text
 * GeoJSON
 * URI
+* Sentinel Hub
 
 Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
