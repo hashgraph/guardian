@@ -515,7 +515,33 @@ npm --workspace=api-gateway start
     npm start
     ```
 
-#### 13. From the **frontend** folder
+#### 13. From the **ai-service** folder
+
+To build the service:
+
+Yarn:
+```shell
+yarn workspace ai-service run build
+```
+
+Npm:
+```
+npm --workspace=ai-service run build
+```
+
+Configure the service as previously described. Do not need special configuration variables.
+
+Yarn:
+```
+yarn workspace ai-service start
+```
+
+Npm:
+```
+npm --workspace=ai-service start
+```
+
+#### 14. From the **frontend** folder
 
     To build the service:
 
