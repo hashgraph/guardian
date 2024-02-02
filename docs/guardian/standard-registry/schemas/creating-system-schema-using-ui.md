@@ -112,6 +112,29 @@ There are different types of Field Types:
 * URI
 * Sentinel Hub
 
+<!---->
+
+* Number
+* Integer
+* String
+* Boolean
+* Date
+* Time
+* DateTime
+* Duration
+* URL
+* Email
+* Image
+* Account
+* Units of Measure
+  * Prefix
+  * Postfix
+* Enum
+* Help Text
+* GeoJSON
+* URI
+* Sentinel Hub
+
 Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
 {% hint style="info" %}
