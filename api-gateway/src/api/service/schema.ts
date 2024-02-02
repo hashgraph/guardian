@@ -2181,7 +2181,7 @@ export class SchemaApi {
     /**
      * Get sub schemas
      */
-    @Get('/export/example')
+    @Get('/export/template')
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
@@ -2208,13 +2208,13 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async exportExample(
+    async exportTemplate(
         @AuthUser() user: IAuthUser,
         @Response() res: any
     ): Promise<any> {
         try {
             const file = Buffer.from([]);
-            res.setHeader('Content-disposition', `attachment; filename=example`);
+            res.setHeader('Content-disposition', `attachment; filename=template`);
             res.setHeader('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {

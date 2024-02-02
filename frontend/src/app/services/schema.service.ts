@@ -203,7 +203,7 @@ export class SchemaService {
     }
 
     public downloadExcelExample(): Observable<ArrayBuffer> {
-        return this.http.get(`${this.url}/export/example`, {
+        return this.http.get(`${this.url}/export/template`, {
             responseType: 'arraybuffer'
         });
     }
