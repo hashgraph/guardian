@@ -6,10 +6,10 @@
 - [Need and Use for the ACM0007 Policy](#need-and-use-for-the-acm0007-policy)
 - [Policy Workflow](#policy-workflow)
 - [Policy Guide](#policy-guide)
-  - [Available Roles](#available-roles)
-  - [Important Documents \& Schemas](#important-documents--schemas)
-  - [Token(Carbon Emissions Reduction)](#tokencarbon-emissions-reduction)
-  - [Step By Step](#step-by-step)
+- [Available Roles](#available-roles)
+- [Important Documents \& Schemas](#important-documents--schemas)
+- [Token(Carbon Emissions Reduction)](#tokencarbon-emissions-reduction)
+- [Step By Step](#step-by-step)
 
 <!-- /TOC -->
 
@@ -70,4 +70,76 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-Coming Soon
+1. Login as Standard Registry and import the policy either by file or through IPFS timestamp.
+2. Create a new user and assign role as Project Proponent.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/5469acb1-b261-4e93-bd40-e5b184cfa7a8)
+
+3. Name new Project Participant.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/95bebf8d-9f21-4681-858c-a0aaca51b8d7)
+
+4. Сreate a new user and assign role as VVB.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/4fcd133c-d440-47fc-becc-f4ce7d4a3989)
+
+5. Name new VVB.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/83643596-d283-4a00-9ea7-c9372c3e6418)
+
+6. Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/a78f4799-74d8-4d2f-af61-e39b9305f9ad)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/363ba6a0-1cc2-4e8d-b552-33c36ec2e4f7)
+
+7. Login back as Project Participant and create a New project by clicking on "New Project" button and enter all the required details.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/8357798b-31c4-4297-a771-50b7b19359e7)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/47072fe9-52c9-4fb5-87e7-15fd738e8f79)
+
+8. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/ae6913b5-ee20-4a0f-9ca1-d4ddb8cf440c)
+
+9. Project Participant creates monitoring report by clicking on Add Report and fills out the monitoring report form.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/d6622431-157d-4d86-b742-5ca81d5d4b83)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/31296727-9f19-4d67-8d86-2f44c0834a7d)
+
+10. After creating monitoring report, project participant assigns VVB to verify it.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/613e1ec7-60ea-4353-af11-6c93b4f0ef67)
+
+11. Log in as a VVB and, after reviewing the monitoring report, the VVB verifies it.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/f7525812-c331-48c8-bdca-5da4fcae70d5)
+
+12. Login as SR and once it is reviewed, SR approves the Monitoring report.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/9da0dd7c-fc3f-4a8a-a770-22074b181aaa)
+
+13. Once minting is completed, we can view tokens in VPs  tab.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/8a3afc63-d83f-461b-8414-7bcf7c4be6eb)
+
+14. TrustChain can also be viewed by clicking on View “TrustChain” button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/f93955eb-884e-4712-9331-66ba05dc2e3b)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
