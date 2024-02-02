@@ -39,7 +39,7 @@ ACM0007 thus enables a practical solution to reduce grid emissions intensity in 
 
 ### Policy Guide <a href="#policy-guide" id="policy-guide"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp: 1706881469.628524368
 
 #### Available Roles <a href="#available-roles" id="available-roles"></a>
 

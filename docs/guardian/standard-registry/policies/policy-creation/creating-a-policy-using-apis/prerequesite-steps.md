@@ -33,6 +33,8 @@ STANDARD\_REGISTRY
 {% endswagger-response %}
 {% endswagger %}
 
+## **Authentication Process**
+
 ### **Login**
 
 {% swagger method="post" path="" baseUrl="/api/v1/accounts/login" summary="" %}
@@ -105,6 +107,8 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9......
 ```
 {% endswagger-response %}
 {% endswagger %}
+
+## **Account Creations**
 
 ### **Hedera account creation**
 
