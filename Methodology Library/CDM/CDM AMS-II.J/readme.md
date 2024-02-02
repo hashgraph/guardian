@@ -71,7 +71,9 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ## IPFS Timestamp
 
-Coming Soon
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
+
+Policy Timestamp: 1706881157.848214003
 
 ### Step By Step 
 

@@ -212,7 +212,15 @@ To summarise, the process of configuring delegated access to the w3up API consis
 
 The complete guide to using the new w3up web3.storage API is available at https://web3.storage/docs/w3up-client.
   
-#### 5. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+#### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
+
+For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `./configs/.env*` files.
+
+```shell
+OPENAI_API_KEY="..."
+```
+
+#### 6. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
    ```shell
    docker compose up -d --build
@@ -220,7 +228,7 @@ The complete guide to using the new w3up web3.storage API is available at https:
    
 > **_NOTE:_** About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 
-#### 6. Browse to <http://localhost:3000> and complete the setup.
+#### 7. Browse to <http://localhost:3000> and complete the setup.
 
 for other examples go to:
 * [Deploying Guardian using a specific environment( DEVELOP)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-develop.md)
@@ -269,7 +277,12 @@ Install, configure and start all the prerequisites, then build and start each co
    OPERATOR_ID="..."
    OPERATOR_KEY="..."
    ```
+- Setting up Chat GPT API KEY to enable AI Search and Guided Search:
+For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `./ai-service/configs/.env*` files.
 
+  ```plaintext
+   OPENAI_KEY="..."
+  ```
 > **_NOTE:_** Once you start each service, please wait for the initialization process to be completed.**
 
 #### 1. Clone the repo
@@ -515,7 +528,33 @@ npm --workspace=api-gateway start
     npm start
     ```
 
-#### 13. From the **frontend** folder
+#### 13. From the **ai-service** folder
+
+To build the service:
+
+Yarn:
+```shell
+yarn workspace ai-service run build
+```
+
+Npm:
+```
+npm --workspace=ai-service run build
+```
+
+Configure the service as previously described. Do not need special configuration variables.
+
+Yarn:
+```
+yarn workspace ai-service start
+```
+
+Npm:
+```
+npm --workspace=ai-service start
+```
+
+#### 14. From the **frontend** folder
 
     To build the service:
 

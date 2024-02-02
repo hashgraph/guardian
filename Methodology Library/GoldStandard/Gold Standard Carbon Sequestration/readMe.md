@@ -79,7 +79,7 @@ Carbon sequestration projects play a crucial role in addressing global climate c
 ## Policy Guide
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
-Policy: 
+Policy: 1706888033.418420003
 
 ## Available Roles
 

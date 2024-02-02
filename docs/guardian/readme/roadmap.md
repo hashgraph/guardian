@@ -22,47 +22,35 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2030](https://gith
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2321](https://github.com/hashgraph/guardian/issues/2321)
 
-### Business User Policy Development Feature
+### Business User Policy Development Feature - schemas MVP
 
-Business Analyst and Sustainability Consultants generally are less technical than developers. Although JSON is the most functional way to construct Guardian Policies, there may be more formal ways to integrate traditional business tool and rules validation capabilities to automatically compile policies.
+* Create a excel 'schema representation' standard suitable for non-technical users. _Note: use existing excel schemas from Tools and UNFCCC initiatives as guidance._
+* Create an explicit template for the above, downloadable from Guardian UI, which users can take and update/change to develop new schemas.
+* Create an Export/Import UI and tooling which would allow seamless transformation of schemas written in Excel into valid Guardian JSON schemas and vice versa
+* Ensure manual interventions are possible for corrections/adjustments of complex formulas and other issues.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1885](https://github.com/hashgraph/guardian/issues/1885)
 
 ### Geographic raster imagery support in Guardian
 
-Introduce support for getTIFF and other raster types of data.
+Introduce support for geoTIFF and other raster types of data such that:
+
+* Guardian documents (i.e. in schemas) can reference raster data (in geoTIFF and other common formats) which are located on external (3rd party) systems.
+* Guardian UI can display raster images and their georeferencing data when they are encountered in documents.
+* Guardian policy can access and manipulate (use in calculations, etc) data from raster sources.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1930](https://github.com/hashgraph/guardian/issues/1930)
 
-### Post-minting data enrichment for issued tokens
+### Development of ACM0007: Conversion from Single Cycle to Combined Cycle Power Generation
 
-Projects should have ability to enrich the trust-chain of tokens with additional data in the form of VC/VP after the tokens have been created through editable metadata. Diagrammatically this should look like this:
+Designing of the Schema and getting it approved. Development of the policy using Schema Development of all the tools involved in the policy:
 
-```scss
-VP1(VC1, VC2) <---- Token
-                  /
-VP2(VC3) <-------/ (edited) 
-```
+* Tool 02- Combined tool to identify the baseline scenario and demonstrate additionality
+* Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+* Tool 07- Tool to calculate the emission factor for an electricity system
+* Tool 10- Tool to determine the remaining lifetime of equipment
 
-Where VP2 (VC3) have been linked to the token after the token have been minted.
-
-It should be possible to specify, at minting time, that a particular token instance prohibits adding and/or removing of any information after the creation.
-
-Probably depends on [https://github.com/hashgraph/hedera-improvement-proposal/discussions/607](https://github.com/hashgraph/hedera-improvement-proposal/discussions/607), also visible here: [https://hips.hedera.com/hip/hip-657](https://hips.hedera.com/hip/hip-657)
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1896](https://github.com/hashgraph/guardian/issues/1896)
-
-### FireBlocks/ Meetaco Integration
-
-We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
-
-### Conforming to Hedera DID, VC, VP, Standards
-
-Update to memo field VP/DID structure to normalize DID spec with the rest of Hedera DID method work (which will also be updated)
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2211](https://github.com/hashgraph/guardian/issues/2211)
+Referral Link : [https://github.com/hashgraph/guardian/issues/2883](https://github.com/hashgraph/guardian/issues/2883)
 
 ## ---- February 2024----
 
@@ -90,7 +78,19 @@ Introduce the ability to mint Mitigation Asset Type tokens as the result of the 
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/54](https://github.com/hashgraph/guardian/issues/54)
 
+### FireBlocks/ Meetaco Integration
+
+We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
+
 ## ---- March 2024----
+
+### Conforming to Hedera DID, VC, VP, Standards
+
+Update to memo field VP/DID structure to normalize DID spec with the rest of Hedera DID method work (which will also be updated)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2211](https://github.com/hashgraph/guardian/issues/2211)
 
 ### Remove requirement for hardcoded (error prone) status options
 
@@ -135,23 +135,6 @@ Introduce a comparison functionality where it'd be possible to 'diff' arbitrary 
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://github.com/hashgraph/guardian/issues/2704)
 
-### Revamp Guardian user/roles and permissions model
-
-* Fundamentally separate the concept of users, roles and permissions in Guardian
-* Introduce granular concept of permissions which could be assigned to users, a user could then perform a specific function within the role if its assigned role 'contains' this permission. These should include (but not limited to):
-  * Policy edit/submit for review
-  * Policy view
-  * Policy approval & publish
-* Introduce a "user admin" role, which allows:
-  * defining new roles from permissions
-  * assigning of roles to users
-* Create a permissioning system which verifies actor role before any action has been taken throughout Guardian
-* Package in suitable most-common role set into Guardian so it can be operated immediately 'out of the box' without the need for additional configuration
-* Create a concept of 'delegation' where a user with a particular role/permission can explicitly 'delegate' this role/permission to another user
-* Introduce the functionality to produce a report (page, download) which lists all users and their roles/permissions mapping in the system
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2844](https://github.com/hashgraph/guardian/issues/2844)
-
 ### Hedera interactions resilience module
 
 Create a Guardian 'transaction execution' service which would assure orderly transaction execution and their status tracking, and provide intelligent retry and failure recovery functionality such that required transactions would be guaranteed to be asynchronously executed once, and only once, and in the right order.
@@ -180,6 +163,23 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://gith
 
 ## ---- May 2024----
 
+### Revamp Guardian user/roles and permissions model
+
+* Fundamentally separate the concept of users, roles and permissions in Guardian
+* Introduce granular concept of permissions which could be assigned to users, a user could then perform a specific function within the role if its assigned role 'contains' this permission. These should include (but not limited to):
+  * Policy edit/submit for review
+  * Policy view
+  * Policy approval & publish
+* Introduce a "user admin" role, which allows:
+  * defining new roles from permissions
+  * assigning of roles to users
+* Create a permissioning system which verifies actor role before any action has been taken throughout Guardian
+* Package in suitable most-common role set into Guardian so it can be operated immediately 'out of the box' without the need for additional configuration
+* Create a concept of 'delegation' where a user with a particular role/permission can explicitly 'delegate' this role/permission to another user
+* Introduce the functionality to produce a report (page, download) which lists all users and their roles/permissions mapping in the system
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2844](https://github.com/hashgraph/guardian/issues/2844)
+
 ### Conform Guardian generated NFTs with HIP412 for better ecosystem-wide compatibility for NFTs and wallets
 
 1. Define senisble defaults for all NFT Guardian assets that is the minimum implementation of HIP412 ([@mattsmithies](https://github.com/mattsmithies) can advise on tooling or a method to support)
@@ -187,12 +187,6 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://gith
 3. Allow marketplaces to change the defaults for their specific needs on the creation of tokens and more importantly the mint of assets.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1672](https://github.com/hashgraph/guardian/issues/1672)
-
-### Further evolution of policy comparison (a.k.a 'mass diff')
-
-Relying on the work done in the course of [#1793](https://github.com/hashgraph/guardian/issues/1793) (i.e. creating data structures (hashes) to enable more efficient comparison), allow for mass-comparison of policies such that a user should be able to search for local policies 'similar' to 'different' to some other policy based on some similarity threshold. This is related (but different) to [#2281](https://github.com/hashgraph/guardian/issues/2281) as it focuses on 'easy diff' vs 'easy search'.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2706](https://github.com/hashgraph/guardian/issues/2706)
 
 ### Allow users chose sync/async execution of an API call
 
@@ -212,7 +206,13 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2922](https://gith
 
 ## ---- June 2024----
 
-## Guardian Oracle service to verify token trust chain from within Hedera smart contracts
+### Further evolution of policy comparison (a.k.a 'mass diff')
+
+Relying on the work done in the course of [#1793](https://github.com/hashgraph/guardian/issues/1793) (i.e. creating data structures (hashes) to enable more efficient comparison), allow for mass-comparison of policies such that a user should be able to search for local policies 'similar' to 'different' to some other policy based on some similarity threshold. This is related (but different) to [#2281](https://github.com/hashgraph/guardian/issues/2281) as it focuses on 'easy diff' vs 'easy search'.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2706](https://github.com/hashgraph/guardian/issues/2706)
+
+### Guardian Oracle service to verify token trust chain from within Hedera smart contracts
 
 Develop a Guardian 'Oracle' service to produce (at least) a verifiable binary valid/not valid answer for a given token or group of tokens reachable from within the smart contract, which can then form the basis conditional operation inside the smart contract.
 
@@ -245,7 +245,7 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/1667](https://gith
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2847](https://github.com/hashgraph/guardian/issues/2847)
 
-## Code audit: support and resolution of issues
+### Code audit: support and resolution of issues
 
 * Define scope and organise code audit and application penetration testing by a reputable 3rd party security firm.
 * Support audit team with Q\&A and setting up environments etc
@@ -253,7 +253,7 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2847](https://gith
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2989](https://github.com/hashgraph/guardian/issues/2989)
 
-## Development of GS Methodology for Emission Reductions from Safe Drinking Water Supply v.1.0
+### Development of GS Methodology for Emission Reductions from Safe Drinking Water Supply v.1.0
 
 Designing of the Schema and getting it approved.&#x20;
 
@@ -263,14 +263,14 @@ Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2924](https://github.com/hashgraph/guardian/issues/2924)
 
-## GHG scorecards Research
+### GHG scorecards Research
 
 * Identify the KPIs (and the data requirements behind them) to be captured by the Environmental scorecards to best support demand signaling.
 * Identify the business requirements for the Environmental Scorecards, i.e., how they could be used by supply and demand-side actors, markets, etc.?
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1017](https://github.com/hashgraph/guardian/issues/1017)
 
-## Global environmental/Guardian data search (indexer) component for Hedera and IPFS
+### Global environmental/Guardian data search (indexer) component for Hedera and IPFS
 
 * Improve the data storage and indexing capabilities of Guardian for the data belonging to the local instance such that complex analytical queries could be run efficiently, such as 'search for data similar to this' and 'what is the possibility of this being a double entry for something submitted elsewhere'.
 * Introduce a global search and indexing capability for data produce by other (all) instances such that queries above could be run on the entire body of Guardian data produced from the beginning of time (in blockchain sense).

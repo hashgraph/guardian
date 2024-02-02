@@ -163,7 +163,15 @@ IPFS_STORAGE_PROOF="..."
 
 To know complete process of How to setup IPFS Storage variables, please check [How to generate Web3.Storage API values](../../how-to-generate-web3.storage-api-key.md)
 
-5\. Build and launch with Docker. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+#### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
+
+For setting up AI and Guided Search, we need to set OPENAI\_API\_KEY variable in `./configs/.env*` files.
+
+```
+OPENAI_API_KEY="..."
+```
+
+6. Build and launch with Docker. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
 ```
 docker-compose up -d --build
@@ -175,7 +183,7 @@ docker-compose up -d --build
 About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 {% endhint %}
 
-6\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](https://github.com/hashgraph/guardian/blob/main/docs/guardian/readme/getting-started/installation/broken-reference/README.md)
+7. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](https://github.com/hashgraph/guardian/blob/main/docs/guardian/readme/getting-started/installation/broken-reference/README.md)
 
 ### Demo Video
 
