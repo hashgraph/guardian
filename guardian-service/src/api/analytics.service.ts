@@ -1,22 +1,4 @@
-import {
-    CompareOptions,
-    DocumentComparator,
-    DocumentModel,
-    HashComparator,
-    IChildrenLvl,
-    IEventsLvl,
-    IPropertiesLvl,
-    ModuleComparator,
-    ModuleModel,
-    PolicyComparator,
-    PolicyModel,
-    PolicySearchModel,
-    RootSearchModel,
-    SchemaComparator,
-    SchemaModel,
-    ToolComparator,
-    ToolModel
-} from '@analytics';
+import { CompareOptions, DocumentComparator, DocumentModel, HashComparator, IChildrenLvl, IEventsLvl, IPropertiesLvl, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, PolicySearchModel, RootSearchModel, SchemaComparator, SchemaModel, ToolComparator, ToolModel } from '@analytics';
 import { DatabaseServer, Logger, MessageError, MessageResponse } from '@guardian/common';
 import { ApiResponse } from '@api/helpers/api-response';
 import { MessageAPI, PolicyType, UserRole } from '@guardian/interfaces';
@@ -33,7 +15,7 @@ export class AnalyticsController {
  * @constructor
  */
 export async function analyticsAPI(): Promise<void> {
-    ApiResponse(MessageAPI.COMPARE_POLICIES, async (msg) => {
+    ApiResponse<any>(MessageAPI.COMPARE_POLICIES, async (msg) => {
         try {
             const {
                 type,
@@ -86,7 +68,7 @@ export async function analyticsAPI(): Promise<void> {
         }
     });
 
-    ApiResponse(MessageAPI.COMPARE_MODULES, async (msg) => {
+    ApiResponse<any>(MessageAPI.COMPARE_MODULES, async (msg) => {
         try {
             const {
                 type,
@@ -136,7 +118,7 @@ export async function analyticsAPI(): Promise<void> {
         }
     });
 
-    ApiResponse(MessageAPI.COMPARE_SCHEMAS, async (msg) => {
+    ApiResponse<any>(MessageAPI.COMPARE_SCHEMAS, async (msg) => {
         try {
             const {
                 type,
@@ -180,7 +162,7 @@ export async function analyticsAPI(): Promise<void> {
         }
     });
 
-    ApiResponse(MessageAPI.SEARCH_POLICIES, async (msg) => {
+    ApiResponse<any>(MessageAPI.SEARCH_POLICIES, async (msg) => {
         try {
             const { policyId } = msg;
             const threshold = 0;
@@ -258,7 +240,7 @@ export async function analyticsAPI(): Promise<void> {
         }
     });
 
-    ApiResponse(MessageAPI.COMPARE_DOCUMENTS, async (msg) => {
+    ApiResponse<any>(MessageAPI.COMPARE_DOCUMENTS, async (msg) => {
         try {
             const {
                 user,
@@ -317,7 +299,7 @@ export async function analyticsAPI(): Promise<void> {
         }
     });
 
-    ApiResponse(MessageAPI.COMPARE_TOOLS, async (msg) => {
+    ApiResponse<any>(MessageAPI.COMPARE_TOOLS, async (msg) => {
         try {
             const {
                 user,
