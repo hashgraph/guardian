@@ -1,10 +1,10 @@
 # 💻 Import and Export Excel file User Guide
 
-The ‘Import/Export schemas from/to Excel’ UI triggers the process of seamless transformation of schemas written in Excel into valid Guardian JSON schemas, and vice versa. The content of such schema excel files must conform to the format represented in the template excel accessible via the corresponding button on the 'Policy Schemas’ page. The menu options for actioning Import and Export are accessible via the ‘Manage Policies’ and ‘Policy Schemas’ pages.
+The ‘Import/Export schemas from/to Excel’ UI menu options trigger the process of seamless transformation of schemas written in Excel into valid Guardian JSON schemas, and vice versa. The content of such schema excel files must conform to the format presented in the template accessible via the corresponding button on the 'Policy Schemas’ page. The menu options for actioning Import and Export are accessible via the ‘Manage Policies’ and ‘Policy Schemas’ pages.
 
-In Guardian, schemas cannot exist unless tied in with a Policy, a Tool or embedded into another schema. Therefore when a schema or a set of schemas are imported they get imported into a context of a policy. Users can create a new empty policy for such purposes, or use an existing policy. In the latter case, all existing schemas in the policy are preserved (and can be manually deleted later), new schemas are added together with the basic policy blocks scaffolding which is inserted at the beginning of the policy flow.
+In Guardian schemas usually exist within a Policy, a Tool or embedded into another schema. To ease the process when a schema or a set of schemas are imported, they get imported into a context of a policy. Users can create a new empty policy for such purposes or use an existing policy. In the latter case all existing schemas in the policy are preserved (and can be manually deleted later), new schemas are added together with the basic policy blocks scaffolding which is inserted at the beginning of the policy flow.
 
-When schemas are exported they are packaged into a single Excel file formatted similar to the template mentioned above. It is recommended to experiment with exporting your existing policies and reviewing the resulting excel files so you can familiarize your self with the format and the content.
+When schemas are exported, they are packaged into a single Excel file formatted like the template mentioned above. It is recommended to experiment with exporting your existing policies and reviewing the resulting excel files so you can familiarize yourself with the format and the content.
 
 ## 1. Import
 

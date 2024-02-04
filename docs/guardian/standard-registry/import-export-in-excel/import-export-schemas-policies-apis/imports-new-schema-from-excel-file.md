@@ -1,8 +1,8 @@
-# Imports new Schema from Excel file
+# Import schemas in Excel file format into a policy
 
-{% swagger method="post" path="" baseUrl="/schemas/{topicId}/import/xlsx" summary="Imports new schema from a xlsx file into the local DB." %}
+{% swagger method="post" path="" baseUrl="/schemas/{topicId}/import/xlsx" summary="Import schemas in Excel file format into a policy" %}
 {% swagger-description %}
-Imports new schema from a xlsx file into the local DB. Only users with the Standard Registry role are allowed to make the request.
+Imports new schema from a xlsx file into policy. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="topicId" type="String" required="true" %}
