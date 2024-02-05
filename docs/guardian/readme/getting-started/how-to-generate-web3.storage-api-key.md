@@ -65,7 +65,7 @@ The output of this command is the value to be used in the environment variable `
 
 1. `w3 login`
 2. `w3 create space`
-3. `w3 use space`
+3. `w3 space use`
 4. `npx ucan-key ed`
 5. `w3 delegation`
 
