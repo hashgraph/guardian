@@ -2942,10 +2942,10 @@
   dependencies:
     web-streams-polyfill "^3.1.1"
 
-"@web3-storage/access@^18.1.0":
-  version "18.1.0"
-  resolved "https://registry.yarnpkg.com/@web3-storage/access/-/access-18.1.0.tgz#b4a5dbc5600ed07850ec65a4830562447f7b5068"
-  integrity sha512-M6hMIm7GRJxN+l41u2+aK97whe15YF7vYVqvpm4dsbk8HQBzmjrRXw9jKhh71jPNgVRCpwvhLYpUM+lEgImvhw==
+"@web3-storage/access@^18.1.0", "@web3-storage/access@^18.2.0":
+  version "18.2.0"
+  resolved "https://registry.yarnpkg.com/@web3-storage/access/-/access-18.2.0.tgz#c8cc52d9af41dea29dcd625fc79624e4c6384e7e"
+  integrity sha512-EME/HViwasLsXmhGC3j93nxPwL3hfWHb5uD5sOw79PBDIGcPHYE3L9w3TQSDeKPXbA+mA4J7uWbAoTcoDkElSg==
   dependencies:
     "@ipld/car" "^5.1.1"
     "@ipld/dag-ucan" "^3.4.0"
@@ -2956,14 +2956,14 @@
     "@ucanto/principal" "^9.0.0"
     "@ucanto/transport" "^9.0.0"
     "@ucanto/validator" "^9.0.1"
-    "@web3-storage/capabilities" "^13.0.0"
+    "@web3-storage/capabilities" "^13.1.1"
     "@web3-storage/did-mailto" "^2.1.0"
     bigint-mod-arith "^3.1.2"
     conf "11.0.2"
     multiformats "^12.1.2"
-    one-webcrypto "https://github.com/web3-storage/one-webcrypto"
+    one-webcrypto "git+https://github.com/web3-storage/one-webcrypto.git"
     p-defer "^4.0.0"
-    type-fest "^3.3.0"
+    type-fest "^4.9.0"
     uint8arrays "^4.0.6"
 
 "@web3-storage/capabilities@^12.1.0":
@@ -2978,10 +2978,10 @@
     "@ucanto/validator" "^9.0.1"
     "@web3-storage/data-segment" "^3.2.0"
 
-"@web3-storage/capabilities@^13.0.0":
-  version "13.0.0"
-  resolved "https://registry.yarnpkg.com/@web3-storage/capabilities/-/capabilities-13.0.0.tgz#b1af648eb436299e331d7aa5988151ab1bfab370"
-  integrity sha512-SSviDXFweCu8FhaQ7BjsK1WDPBdwoduJhfD2DFRKkZT/V25vdBkqtW4qVc6tfO5IhTVxRpnn62PmbIbbcHzBRQ==
+"@web3-storage/capabilities@^13.1.1":
+  version "13.1.1"
+  resolved "https://registry.yarnpkg.com/@web3-storage/capabilities/-/capabilities-13.1.1.tgz#bd14331e2f73554e105548dde07f74dee6eaf189"
+  integrity sha512-yQwrjhqwXGc1z8FCs7dCMsNp+G1LCrPq8RWCrflHA0rlISyMez6DQQpOJrCfao/MSk30nzPSzIm+FX/k3+8knw==
   dependencies:
     "@ucanto/core" "^9.0.1"
     "@ucanto/interface" "^9.0.0"
@@ -3021,10 +3021,10 @@
   resolved "https://registry.yarnpkg.com/@web3-storage/multipart-parser/-/multipart-parser-1.0.0.tgz#6b69dc2a32a5b207ba43e556c25cc136a56659c4"
   integrity sha512-BEO6al7BYqcnfX15W2cnGR+Q566ACXAT9UQykORCWW80lmkpWsnEob6zJS1ZVBKsSJC8+7vJkHwlp+lXG1UCdw==
 
-"@web3-storage/upload-client@^13.0.0":
-  version "13.0.0"
-  resolved "https://registry.yarnpkg.com/@web3-storage/upload-client/-/upload-client-13.0.0.tgz#d3f690f8a223958542c85656aed41ccd60b853e9"
-  integrity sha512-NCasbk7msHiQ+e+7TIYiOJyYcoiUlcK44FIYffDX+k4mb9J0qfA93Cw3FQSHe4D/3nEm5nCYs1rNxl07OIOpoQ==
+"@web3-storage/upload-client@^13.0.1":
+  version "13.0.1"
+  resolved "https://registry.yarnpkg.com/@web3-storage/upload-client/-/upload-client-13.0.1.tgz#910e6e904f652f3907cca1c5c873dd42e84f630d"
+  integrity sha512-vfAtp1qIIgcoNQ21X/+jrHZjQU28af516YWWkYWbGV68dBzBd9c7r+8KjQwRDIV8kSl0Pmho6Dy1OWlhpZfE6g==
   dependencies:
     "@ipld/car" "^5.2.2"
     "@ipld/dag-cbor" "^9.0.6"
@@ -3033,18 +3033,18 @@
     "@ucanto/client" "^9.0.0"
     "@ucanto/interface" "^9.0.0"
     "@ucanto/transport" "^9.0.0"
-    "@web3-storage/capabilities" "^13.0.0"
-    fr32-sha2-256-trunc254-padded-binary-tree-multihash "^3.1.1"
+    "@web3-storage/capabilities" "^13.1.1"
+    fr32-sha2-256-trunc254-padded-binary-tree-multihash "^3.3.0"
     ipfs-utils "^9.0.14"
     multiformats "^12.1.2"
     p-retry "^5.1.2"
     parallel-transform-web "^1.0.1"
     varint "^6.0.0"
 
-"@web3-storage/w3up-client@^12.0.0":
-  version "12.0.0"
-  resolved "https://registry.yarnpkg.com/@web3-storage/w3up-client/-/w3up-client-12.0.0.tgz#601e432ae2bc8fa1ccdea5718eb5f9e67ee0a8df"
-  integrity sha512-94nEsrLf93U3ym4C/Ae9kqu4MtQG9YgRp2tXkOwZdVqGR7NCf92CMBfbM2aIPxIM5i1CIe7EMbb+SLFZYRzh4A==
+"@web3-storage/w3up-client@^12.4.1":
+  version "12.4.1"
+  resolved "https://registry.yarnpkg.com/@web3-storage/w3up-client/-/w3up-client-12.4.1.tgz#10f989c08b0961168489fb4f310f96fa9aff37b0"
+  integrity sha512-Ti4k5UScn5kdF0A5rz0WkDefD0LofUCUJNDGRYQFudw17FmaZHfQGSQvZ0CozYrCJg8K7JPTbU4/m3joWu0ufQ==
   dependencies:
     "@ipld/dag-ucan" "^3.4.0"
     "@ucanto/client" "^9.0.0"
@@ -3052,11 +3052,11 @@
     "@ucanto/interface" "^9.0.0"
     "@ucanto/principal" "^9.0.0"
     "@ucanto/transport" "^9.0.0"
-    "@web3-storage/access" "^18.1.0"
-    "@web3-storage/capabilities" "^13.0.0"
+    "@web3-storage/access" "^18.2.0"
+    "@web3-storage/capabilities" "^13.1.1"
     "@web3-storage/did-mailto" "^2.1.0"
     "@web3-storage/filecoin-client" "^3.2.0"
-    "@web3-storage/upload-client" "^13.0.0"
+    "@web3-storage/upload-client" "^13.0.1"
 
 "@zxing/text-encoding@0.9.0":
   version "0.9.0"
@@ -6151,10 +6151,10 @@ forwarded@0.2.0:
   resolved "https://registry.yarnpkg.com/forwarded/-/forwarded-0.2.0.tgz#2269936428aad4c15c7ebe9779a84bf0b2a81811"
   integrity sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==
 
-fr32-sha2-256-trunc254-padded-binary-tree-multihash@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/fr32-sha2-256-trunc254-padded-binary-tree-multihash/-/fr32-sha2-256-trunc254-padded-binary-tree-multihash-3.1.1.tgz#82b87cdb2f79be80e490920215b546d97a0377d0"
-  integrity sha512-4nYelGDFTB/gvCK2QdbAKyLcir0uELmzsFSBAJmqHI6JktlIickWFOITRINGdKQU6nqkg+7kWu7i80w1QjAW9Q==
+fr32-sha2-256-trunc254-padded-binary-tree-multihash@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/fr32-sha2-256-trunc254-padded-binary-tree-multihash/-/fr32-sha2-256-trunc254-padded-binary-tree-multihash-3.3.0.tgz#30e0aaa3594ea781a2d53505570604bfcd9c7085"
+  integrity sha512-O11VDxPmPvbQj5eac2BJXyieNacyd+RCMhwOzXQQM/NCI25x3c32YWB4/JwgOWPCpKnNXF6lpK/j0lj7GWOnYQ==
 
 fraction.js@^4.2.0:
   version "4.3.7"
@@ -9594,9 +9594,10 @@ one-time@^1.0.0:
   dependencies:
     fn.name "1.x.x"
 
-one-webcrypto@^1.0.3, "one-webcrypto@https://github.com/web3-storage/one-webcrypto":
+one-webcrypto@^1.0.3, "one-webcrypto@git+https://github.com/web3-storage/one-webcrypto.git":
   version "1.0.3"
-  resolved "https://github.com/web3-storage/one-webcrypto#5148cd14d5489a8ac4cd38223870e02db15a2382"
+  uid "5148cd14d5489a8ac4cd38223870e02db15a2382"
+  resolved "git+https://github.com/web3-storage/one-webcrypto.git#5148cd14d5489a8ac4cd38223870e02db15a2382"
 
 onetime@^5.1.0:
   version "5.1.2"
@@ -12074,10 +12075,10 @@ type-fest@^2.11.2, type-fest@^2.18.0, type-fest@^2.19.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
   integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
-type-fest@^3.3.0:
-  version "3.13.1"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.13.1.tgz#bb744c1f0678bea7543a2d1ec24e83e68e8c8706"
-  integrity sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==
+type-fest@^4.9.0:
+  version "4.10.2"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-4.10.2.tgz#3abdb144d93c5750432aac0d73d3e85fcab45738"
+  integrity sha512-anpAG63wSpdEbLwOqH8L84urkL6PiVIov3EMmgIhhThevh9aiMQov+6Btx0wldNcvm4wV+e2/Rt1QdDwKHFbHw==
 
 type-is@^1.6.12, type-is@^1.6.4, type-is@~1.6.18:
   version "1.6.18"
