@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
     accessTokenUpdateInterval: 29 * 1000,
-  displayDemoAccounts: true,
+    displayDemoAccounts: true,
     isMeecoConfigured: true,
   explorerSettings: {
     url: 'https://explore.lworks.io/${network}/${type}/${value}/${subType}/${subValue}',

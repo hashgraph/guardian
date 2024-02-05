@@ -10,7 +10,6 @@ import {
     TokenVariables,
     TopicVariables
 } from '../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -18,7 +17,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: 'module',
     templateUrl: './module.component.html',
-    styleUrls: ['./module.component.css'],
+    styleUrls: ['./module.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ModuleComponent implements OnInit {

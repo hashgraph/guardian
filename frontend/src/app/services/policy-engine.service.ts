@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { MigrationConfig } from '@guardian/interfaces';
 
 /**
  * Services for working from policy and separate blocks.
@@ -52,6 +53,10 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/dry-run`, null);
     }
 
+    public discontinue(policyId: string, details: { date?: Date }): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/discontinue`, details);
+    }
+
     public draft(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/draft`, null);
     }
@@ -97,6 +102,12 @@ export class PolicyEngineService {
 
     public exportInFile(policyId: string): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/${policyId}/export/file`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public exportToExcel(policyId: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/export/xlsx`, {
             responseType: 'arraybuffer'
         });
     }
@@ -149,6 +160,32 @@ export class PolicyEngineService {
         });
     }
 
+    public previewByXlsx(policyFile: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public importByXlsx(policyFile: any, policyId: string): Observable<any[]> {
+        var query = policyId ? `?policyId=${policyId}` : '';
+        return this.http.post<any[]>(`${this.url}/import/xlsx${query}`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public pushImportByXlsx(policyFile: any, policyId: string): Observable<{ taskId: string, expectation: number }> {
+        var query = policyId ? `?policyId=${policyId}` : '';
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/xlsx${query}`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
     public getBlockInformation(): Observable<any> {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
@@ -181,6 +218,37 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}`, { observe: 'response' });
     }
 
+    public documents(
+        policyId: string,
+        includeDocument: boolean = false,
+        type: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params: any = {}
+        if (includeDocument) {
+            params.includeDocument = includeDocument;
+        }
+        if (type) {
+            params.type = type;
+        }
+        if (Number.isInteger(pageIndex)) {
+            params.pageIndex = pageIndex;
+        }
+        if (Number.isInteger(pageSize)) {
+            params.pageSize = pageSize;
+        }
+        return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
+    }
+
+    public migrateData(migrationConfig: MigrationConfig) {
+        return this.http.post<{ error: string, id: string }[]>(`${this.url}/migrate-data`, migrationConfig);
+    }
+
+    public migrateDataAsync(migrationConfig: MigrationConfig) {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
+    }
+
     public getGroups(policyId: string): Observable<any[]> {
         return this.http.get<any>(`${this.url}/${policyId}/groups`);
     }
@@ -195,5 +263,17 @@ export class PolicyEngineService {
 
     public setMultiPolicy(policyId: string, data: any): Observable<any> {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
+    }
+
+    public getPolicyNavigation(policyId: string): Observable<any> {
+        return this.http.get<void>(`${this.url}/${policyId}/navigation`);
+    }
+
+    public getPolicyCategories(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/methodologies/categories`);
+    }
+
+    public getMethodologies(categoryIds?: string[], text?: string): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/methodologies/search`, { categoryIds, text });
     }
 }

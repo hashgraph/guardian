@@ -4,11 +4,17 @@
 @import '~codemirror/theme/material';
 @import '~codemirror/addon/fold/foldgutter.css';
 @import '~codemirror/addon/lint/lint.css';
+@import "~primeicons/primeicons.css";
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
 
 html,
 body {
     height: 100%;
+    background-color: #F9FAFC;
+}
+
+.p-dialog-mask {
+    pointer-events: all !important;
 }
 
 body {
@@ -18,8 +24,8 @@ body {
     font-weight: 300;
 }
 
-body > .leader-line,
-body > .leader-line-areaAnchor {
+body>.leader-line,
+body>.leader-line-areaAnchor {
     display: none !important;
 }
 
@@ -107,6 +113,7 @@ body > .leader-line-areaAnchor {
 .guardian-tooltip {
     font-size: 16px;
     overflow-wrap: break-word !important;
+
     &.small-guardian-tooltip {
         font-size: 12px;
     }
@@ -129,7 +136,10 @@ button.mat-button {
 
 .cdk-overlay-pane {
     .mat-dialog-container {
-        border-radius: 30px;
+        padding: 32px;
+        border-radius: 16px;
+        background: #FFF;
+        box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.08);
 
         .mat-dialog-content {
             max-height: unset;
@@ -200,6 +210,34 @@ button.mat-button {
 
 .error-message-toastr .toast-close-button {
     color: #fa1905 !important;
+}
+
+.warn-message-toastr {
+    background-color: #fff6c8 !important;
+    border: 1px solid gold !important;
+    color: goldenrod !important;
+    box-shadow: 0 0 0px 1px #ffffff, 0 0 8px 1px #999999 !important;
+    margin: 1px 1px 6px 1px !important;
+
+    &.toast-warning {
+        background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgLTk2MCA5NjAgOTYwIiB3aWR0aD0iMjQiPjxwYXRoIGZpbGw9IiNGRkQ3MDAiIGQ9Im00MC0xMjAgNDQwLTc2MCA0NDAgNzYwSDQwWm00NDAtMTIwcTE3IDAgMjguNS0xMS41VDUyMC0yODBxMC0xNy0xMS41LTI4LjVUNDgwLTMyMHEtMTcgMC0yOC41IDExLjVUNDQwLTI4MHEwIDE3IDExLjUgMjguNVQ0ODAtMjQwWm0tNDAtMTIwaDgwdi0yMDBoLTgwdjIwMFoiLz48L3N2Zz4=");
+    }
+}
+
+.warn-message-toastr .toast-title {
+    color: gold !important;
+    font-size: 16px !important;
+    margin-bottom: 3px !important;
+}
+
+.warn-message-toastr a {
+    color: #126db3 !important;
+    font-weight: 500 !important;
+    padding: 0px 2px !important;
+}
+
+.warn-message-toastr .toast-close-button {
+    color: gold !important;
 }
 
 .info-message-toastr {
@@ -320,6 +358,256 @@ button.mat-button {
     border-radius: 15px !important;
 }
 
-.cursor-grabbing, .cursor-grabbing * {
-    cursor: grabbing !important;
+::selection {
+    background: var(--color-primary);
+    color: #FFFFFF;
+}
+
+/* switch button */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .25s;
+    transition: .25s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 4px;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30' width='16px' height='16px'%3E%3Cpath d='M 26.980469 5.9902344 A 1.0001 1.0001 0 0 0 26.292969 6.2929688 L 11 21.585938 L 4.7070312 15.292969 A 1.0001 1.0001 0 1 0 3.2929688 16.707031 L 10.292969 23.707031 A 1.0001 1.0001 0 0 0 11.707031 23.707031 L 27.707031 7.7070312 A 1.0001 1.0001 0 0 0 26.980469 5.9902344 z' fill='green' /%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: center center;
+    transition: .25s;
+}
+
+input:checked+.slider {
+    background-color: var(--color-accent-green-1, #19BE47);
+    transition: border 0s linear;
+}
+
+input:not(:checked)+.slider {
+    background-color: transparent;
+    border: 3px solid var(--color-grey-4, #B0B5BA);
+    box-sizing: content-box;
+    transition: border 0s linear;
+}
+
+input:not(:checked)+.slider:before {
+    position: absolute;
+    content: "";
+    height: 10px;
+    width: 10px;
+    left: 3px;
+    bottom: 5px;
+    background-image: none;
+    background-color: var(--color-grey-4, #B0B5BA);
+}
+
+input:checked+.slider:before {
+    transform: translateX(22px);
+}
+
+.slider.round {
+    border-radius: 24px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.slider-text {
+    color: var(--color-grey-5, #848FA9);
+    font-family: Roboto, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 30px;
+}
+
+::ng-deep .color-primary {
+    fill: var(--color-primary);
+    color: var(--color-primary);
+}
+
+::ng-deep .color-accent-red {
+    fill: var(--color-accent-red-1);
+    color: var(--color-accent-red-1);
+}
+
+::ng-deep .color-accent-green {
+    fill: var(--color-accent-green-1);
+    color: var(--color-accent-green-1);
+}
+
+.preloader-image {
+    width: 16px;
+    height: 16px;
+    border-top: 3px solid var(--color-primary);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+    border-radius: 100%;
+    filter: brightness(100%);
+    animation-name: preloaderRotationColored;
+    animation-duration: 7.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+
+.preloader-image-l-size {
+    width: 56px;
+    height: 56px;
+}
+
+@keyframes preloaderRotationColored {
+    0% {
+        transform: rotate(0deg);
+        opacity: 1;
+    }
+
+    25% {
+        transform: rotate(360deg);
+        border-top: 3px solid rgba(0, 0, 0, 0);
+        border-right: 3px solid var(--color-primary);
+        border-left: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid rgba(0, 0, 0, 0);
+    }
+
+    50% {
+        transform: rotate(720deg);
+        border-top: 3px solid rgba(0, 0, 0, 0);
+        border-left: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid var(--color-primary);
+        border-right: 3px solid rgba(0, 0, 0, 0);
+    }
+
+    75% {
+        transform: rotate(1080deg);
+        border-top: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid rgba(0, 0, 0, 0);
+        border-right: 3px solid rgba(0, 0, 0, 0);
+        border-left: 3px solid var(--color-primary);
+    }
+
+    100% {
+        transform: rotate(1440deg);
+        border-top: 3px solid var(--color-primary);
+        border-left: 3px solid rgba(0, 0, 0, 0);
+        border-right: 3px solid rgba(0, 0, 0, 0);
+        border-bottom: 3px solid rgba(0, 0, 0, 0);
+    }
+}
+
+::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    background: #ffffff;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.button {
+    height: 40px;
+    border-radius: 8px;
+    background: var(--color-primary);
+    border: 0 !important;
+    color: var(--color-grey-white);
+    font-family: Inter, serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px;
+    padding: 6px 32px;
+    transition: all 0.25s ease-in-out;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.button:hover {
+    background: var(--color-primary) !important;
+    filter: brightness(1.05) !important;
+}
+
+.secondary {
+    background: transparent !important;
+    border: 1px solid var(--color-primary) !important;
+    color: var(--color-primary) !important;
+}
+
+.secondary:hover {
+    background: var(--color-grey-1) !important;
+    color: var(--color-primary) !important;
+}
+
+.button[disabled],
+.secondary[disabled],
+.button[disabled]:hover,
+.secondary[disabled]:hover {
+    background: var(--color-grey-3) !important;
+    color: var(--color-grey-5) !important;
+    cursor: no-drop;
+    filter: brightness(1);
+}
+
+::ng-deep .tabview-label {
+    color: var(--color-primary) !important;
+}
+
+svg-icon {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 24px;
+}
+
+svg-icon.svg-icon-24 {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 24px;
+}
+
+svg-icon.svg-icon-16 {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 16px;
+}
+
+svg-icon.svg-icon-32 {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 32px;
+}
+
+#ngx-colors-overlay .circle.button {
+    padding: unset;
 }

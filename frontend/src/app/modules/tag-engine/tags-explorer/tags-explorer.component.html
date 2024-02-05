@@ -1,23 +1,34 @@
 <div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>
 <div *ngIf="history" class="container" [attr.readonly]="loading">
-    <div *ngIf="history.top" class="main-tags" [attr.count]="history.count" (click)="onOpen()">
-        <div class="main-tag" [attr.count]="history.top.count" [attr.owner]="history.top.owner">
+    <div
+        (click)="onOpen()"
+        *ngIf="history.top"
+        [attr.count]="history.count"
+        class="main-tags"
+    >
+        <div
+            [attr.count]="history.top.count"
+            [attr.owner]="history.top.owner"
+            class="main-tag"
+        >
             <mat-icon class="tag-icon">sell</mat-icon>
             <div class="tag-name">
-                {{history.top.name}}
+                {{ history.top.name }}
             </div>
             <div class="tag-count">
-                {{history.top.count}}
+                {{ history.top.count }}
             </div>
         </div>
         <mat-icon class="edit-tags">more_horiz</mat-icon>
     </div>
-    <div *ngIf="!history.top" class="main-tag add-tags" (click)="onAdd()">
-        <mat-icon class="tag-icon">add</mat-icon>
-        <div class="tag-name">
-            Create Tag
-        </div>
+    <div (click)="onAdd()" *ngIf="!history.top">
+        <button class="p-button-outlined">
+            <svg-icon class="svg-icon-16" 
+                src="/assets/images/icons/16/add.svg" 
+                svgClass="primary-color"></svg-icon>
+            Create a Tag
+        </button>
     </div>
 </div>

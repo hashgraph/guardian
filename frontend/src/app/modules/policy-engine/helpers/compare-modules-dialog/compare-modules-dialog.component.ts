@@ -1,32 +1,35 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Component } from '@angular/core';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'compare-modules-dialog',
     templateUrl: './compare-modules-dialog.component.html',
-    styleUrls: ['./compare-modules-dialog.component.css']
+    styleUrls: ['./compare-modules-dialog.component.scss']
 })
 export class CompareModulesDialogComponent {
     loading = true;
 
-    module!: any;
-    modules: any[];
+    type: string = '';
 
-    moduleId1!: any;
-    moduleId2!: any;
+    item!: any;
+    items: any[];
+
+    itemId1!: any;
+    itemId2!: any;
 
     list1: any[];
     list2: any[];
 
     constructor(
-        public dialogRef: MatDialogRef<CompareModulesDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-
-        this.module = data.module;
-        this.modules = data.modules || [];
-        this.moduleId1 = this.module?.id;
-        this.list1 = this.modules;
-        this.list2 = this.modules;
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
+    ) {
+        this.type = config.data.type || 'Module';
+        this.item = config.data.module || config.data.tool;
+        this.items = config.data.modules || config.data.tools || [];
+        this.itemId1 = this.item?.id;
+        this.list1 = this.items;
+        this.list2 = this.items;
     }
 
     ngOnInit() {
@@ -40,18 +43,18 @@ export class CompareModulesDialogComponent {
     }
 
     onClose(): void {
-        this.dialogRef.close(false);
+        this.ref.close(false);
     }
 
     onCompare() {
-        this.dialogRef.close({
-            moduleId1: this.moduleId1,
-            moduleId2: this.moduleId2,
+        this.ref.close({
+            itemId1: this.itemId1,
+            itemId2: this.itemId2,
         });
     }
 
     onChange() {
-        this.list1 = this.modules.filter(s => s.id !== this.moduleId2);
-        this.list2 = this.modules.filter(s => s.id !== this.moduleId1);
+        this.list1 = this.items.filter(s => s.id !== this.itemId2);
+        this.list2 = this.items.filter(s => s.id !== this.itemId1);
     }
 }

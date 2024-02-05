@@ -1,22 +1,61 @@
 :root {
+  --font-family-poppins: 'Poppins', sans-serif;
+  --font-family-inter: 'Inter', sans-serif;
+
+  --color-background: #F9FAFC;
+  --color-primary: #5252ff;
+  --color-secondary: #CDDDFD;
+
+  --color-grey-black-1: #181818;
+  --color-grey-black-2: #23252E;
+  --color-grey-1: #F9FAFC;
+  --color-grey-2: #EFF3F7;
+  --color-grey-3: #E1E7EF;
+  --color-grey-4: #B0B5BA;
+  --color-grey-5: #848FA9;
+  --color-grey-white: #FFFFFF;
+
+  --color-accent-red-1: #FF432A;
+  --color-accent-red-2: #F5D7D7;
+
+  --color-accent-green-1: #19BE47;
+  --color-accent-green-2: #CAFDD9;
+
+  --color-accent-yellow-1: #DA9B22;
+  --color-accent-yellow-2: #FFF2D8;
+
+
+  --linear-gradient: linear-gradient(174deg, var(--color-primary) 4.61%, rgba(6, 129, 238, 0.43) 128.14%), #FFF;
+
+  --container-margin: 56px 48px 56px 48px;
+
+  /*** TODO - remove vars below after implement new design of UI ***/
+
     --app-font-family: 'Lato', sans-serif;
     --primary-color: #2C78F6;
     --text-color: #000;
 
-    --header-height: 125px;
+  --header-width-expand: 280px;
+  --header-width-collapse: 80px;
+  --header-color-primary: #0681EE;
+  --header-preloader-color: #FFF;
+  --header-color-primary-dark: rgba(0, 0, 0, 1);
+  --header-color-shadow: rgba(76, 0, 161, 0.24);
+
+  --header-height: 0px;
     --header-height-policy: 175px;
     --header-background-color:#000;
-    
+
     --table-row-height: 64px;
 
     --button-primary-color: #2C78F6;
     --button-primary-color-hover: #0C6BE5;
-    
-    --vh: 1vh;
+
+  --vh: 1vh;
 }
 
 @media (max-width: 810px) {
     :root {
-        --header-height: 75px;
+      --header-height: 0px;
     }
 }

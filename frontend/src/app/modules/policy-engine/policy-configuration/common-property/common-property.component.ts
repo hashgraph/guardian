@@ -1,20 +1,6 @@
-import {
-    Component,
-    EventEmitter,
-    Inject,
-    Input,
-    OnInit,
-    Output,
-    SimpleChanges,
-    ViewEncapsulation,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation, } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
-import {
-    PolicyBlock,
-    RoleVariables,
-    SchemaVariables,
-} from '../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
+import { PolicyBlock, RoleVariables, SchemaVariables, } from '../../structures';
 
 /**
  * common property
@@ -22,7 +8,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: '[common-property]',
     templateUrl: './common-property.component.html',
-    styleUrls: ['./common-property.component.css'],
+    styleUrls: ['./common-property.component.scss'],
     encapsulation: ViewEncapsulation.None,
 })
 export class CommonPropertyComponent implements OnInit {
@@ -62,7 +48,8 @@ export class CommonPropertyComponent implements OnInit {
 
     constructor(
         private registeredService: RegisteredService
-    ) {}
+    ) {
+    }
 
     ngOnInit(): void {
         this.needUpdate = true;

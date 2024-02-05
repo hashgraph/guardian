@@ -35,6 +35,51 @@ export interface ISuite {
 }
 
 /**
+ * Suite options
+ */
+export interface ISuiteOptions {
+    /**
+     * Issuer
+     */
+    did: string;
+    /**
+     * Private key
+     */
+    key: string | PrivateKey,
+    /**
+     * Signature type
+     */
+    signatureType?: SignatureType;
+}
+
+/**
+ * Document options
+ */
+export interface IDocumentOptions {
+    /**
+     * Group
+     */
+    group?: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+        /**
+         * Group type
+         */
+        type: string;
+        /**
+         * Group context
+         */
+        context: any;
+    };
+    /**
+     * UUID
+     */
+    uuid?: string;
+}
+
+/**
  * Connecting VCJS library
  */
 export class VCJS {
@@ -160,7 +205,7 @@ export class VCJS {
     /**
      * Generate new UUIDv4
      */
-    public generateUUID(): string {
+    protected generateUUID(): string {
         return `urn:uuid:${GenerateUUIDv4()}`;
     }
 
@@ -337,7 +382,10 @@ export class VCJS {
      * @param {PrivateKey | string} key - Private Key
      * @param {any} subject - Credential Object
      * @param {any} [group] - Issuer
-     * @returns {HcsVcDocument<VcSubject>} - VC Document
+     *
+     * @returns {VcDocument} - VC Document
+     *
+     * @deprecated
      */
     public async createVC(
         did: string,
@@ -346,15 +394,82 @@ export class VCJS {
         group?: any,
         signatureType: SignatureType = SignatureType.Ed25519Signature2018,
     ): Promise<VcDocument> {
-        const document =
-            signatureType === SignatureType.Ed25519Signature2018
-                ? DidRootKey.createByPrivateKey(did, key)
-                : await BBSDidRootKey.createByPrivateKey(did, key);
-        const id = this.generateUUID();
-        const suite = await this.createSuite(document);
-        const vcSubject = VcSubject.create(subject);
+        return await this.createVcDocument(subject, { did, key, signatureType }, { group });
+    }
 
-        const vc = new VcDocument(signatureType === SignatureType.BbsBlsSignature2020);
+    /**
+     * Create VC Document
+     *
+     * @param {string} did - DID
+     * @param {PrivateKey | string} key - Private Key
+     * @param {VcDocument} vc - json
+     *
+     * @returns {VcDocument} - VC Document
+     *
+     * @deprecated
+     */
+    public async issueVC(
+        did: string,
+        key: string | PrivateKey,
+        vc: VcDocument
+    ): Promise<VcDocument> {
+        return await this.issueVcDocument(vc, { did, key });
+    }
+
+    /**
+     * Create VP Document
+     *
+     * @param {string} did - DID
+     * @param {PrivateKey | string} key - Private Key
+     * @param {VcDocument[]} vcs - VC Documents
+     * @param {string} [uuid] - new uuid
+     *
+     * @returns {VpDocument} - VP Document
+     *
+     * @deprecated
+     */
+    public async createVP(
+        did: string,
+        key: string | PrivateKey,
+        vcs: VcDocument[],
+        uuid?: string
+    ): Promise<VpDocument> {
+        return await this.createVpDocument(vcs, { did, key }, { uuid });
+    }
+
+    /**
+     * Create VC Document
+     *
+     * @param {ICredentialSubject} subject - Credential Object
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VcDocument} - VC Document
+     */
+    public async createVcDocument(
+        subject: ICredentialSubject,
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
+    ): Promise<VcDocument> {
+        let id: string;
+        if (documentOptions && documentOptions.uuid) {
+            id = documentOptions.uuid;
+        } else {
+            id = this.generateUUID();
+        }
+
+        const hasBBSSignature: boolean = suiteOptions.signatureType === SignatureType.BbsBlsSignature2020;
+        let suite: Ed25519Signature2018 | BbsBlsSignature2020;
+        if (hasBBSSignature) {
+            const keyDocument = await BBSDidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
+            suite = await this.createSuite(keyDocument);
+        } else {
+            const keyDocument = DidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
+            suite = await this.createSuite(keyDocument);
+        }
+
+        const vcSubject = VcSubject.create(subject);
+        const vc = new VcDocument(hasBBSSignature);
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
@@ -369,12 +484,12 @@ export class VCJS {
         for (const element of this.schemaContext) {
             vc.addContext(element);
         }
-        if (group) {
-            vc.setIssuer(new Issuer(did, group.groupId));
-            vc.addType(group.type);
-            vc.addContext(group.context);
+        if (documentOptions && documentOptions.group) {
+            vc.setIssuer(new Issuer(suiteOptions.did, documentOptions.group.groupId));
+            vc.addType(documentOptions.group.type);
+            vc.addContext(documentOptions.group.context);
         } else {
-            vc.setIssuer(new Issuer(did));
+            vc.setIssuer(new Issuer(suiteOptions.did));
         }
 
         return await this.issue(vc, suite, this.loader);
@@ -383,49 +498,68 @@ export class VCJS {
     /**
      * Create VC Document
      *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {any} vc - json
+     * @param {VcDocument} vc - VC Document
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VcDocument} - VC Document
      */
-    public async issueVC(
-        did: string,
-        key: string | PrivateKey,
-        vc: VcDocument
+    public async issueVcDocument(
+        vc: VcDocument,
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
     ): Promise<VcDocument> {
-        const document =
-            vc.getContext().includes(VcDocument.BBS_SIGNATURE_CONTEXT)
-                ? await BBSDidRootKey.createByPrivateKey(did, key)
-                : DidRootKey.createByPrivateKey(did, key);
-        const id = this.generateUUID();
-        const suite = await this.createSuite(document);
+        let id: string;
+        if (documentOptions && documentOptions.uuid) {
+            id = documentOptions.uuid;
+        } else {
+            id = this.generateUUID();
+        }
+
+        const hasBBSSignature: boolean = vc.getContext().includes(VcDocument.BBS_SIGNATURE_CONTEXT);
+        let suite: Ed25519Signature2018 | BbsBlsSignature2020;
+        if (hasBBSSignature) {
+            const keyDocument = await BBSDidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
+            suite = await this.createSuite(keyDocument);
+        } else {
+            const keyDocument = DidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
+            suite = await this.createSuite(keyDocument);
+        }
+
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
         vc.setProof(null);
         vc = await this.issue(vc, suite, this.loader);
         return vc;
+
     }
 
     /**
      * Create VP Document
      *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {HcsVcDocument<VcSubject>[]} vcs - VC Documents
-     * @param {string} [uuid] - new uuid
+     * @param {VcDocument[]} vcs - VC Documents
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
      *
-     * @returns {HcsVpDocument} - VP Document
+     * @returns {VpDocument} - VP Document
      */
-    public async createVP(
-        did: string,
-        key: string | PrivateKey,
+    public async createVpDocument(
         vcs: VcDocument[],
-        uuid?: string,
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
     ): Promise<VpDocument> {
-        uuid = uuid || this.generateUUID();
-        const document = DidRootKey.createByPrivateKey(did, key);
+        let id: string;
+        if (documentOptions && documentOptions.uuid) {
+            id = documentOptions.uuid;
+        } else {
+            id = this.generateUUID();
+        }
+
+        const document = DidRootKey.createByPrivateKey(suiteOptions.did, suiteOptions.key);
         const suite = await this.createSuite(document);
+
         let vp = new VpDocument();
-        vp.setId(uuid);
+        vp.setId(id);
         vp.addVerifiableCredentials(vcs);
         vp = await this.issuePresentation(vp, suite as Ed25519Signature2018, this.loader);
         return vp;

@@ -4,9 +4,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } 
 import { PageEvent } from '@angular/material/paginator';
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
-import moment from 'moment-timezone';
-import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 
 /**
  * Form view by schema
@@ -16,9 +14,8 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
     templateUrl: './schema-form-view.component.html',
     styleUrls: ['./schema-form-view.component.css'],
     providers: [
-        {provide: MAT_DATE_LOCALE, useValue: ''},
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
+        {provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT}
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -34,11 +31,12 @@ export class SchemaFormViewComponent implements OnInit {
 
     constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
 
-    formatDate(date: string): Date {
-        return moment(date, 'YYYY-MM-DD').tz(Intl.DateTimeFormat().resolvedOptions().timeZone, true).toDate();
-    }
 
     ngOnInit(): void {
+    }
+
+    isBooleanView(item: boolean | any): string {
+        return (typeof item === 'boolean') ? String(item) : 'Unset';
     }
 
     ngOnChanges() {

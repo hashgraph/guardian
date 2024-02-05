@@ -26,5 +26,9 @@ export enum MessageAction {
     DeleteTag = 'delete-tag',
     PublishTool = 'publish-tool',
     CreateTool = 'create-tool',
-    CreateContract = 'create-contract'
+    CreateContract = 'create-contract',
+    DiscontinuePolicy = 'discontinue-policy',
+    DeferredDiscontinuePolicy = 'deferred-discontinue-policy',
+    MigrateVC = 'migrate-vc-document',
+    MigrateVP = 'migrate-vp-document',
 }

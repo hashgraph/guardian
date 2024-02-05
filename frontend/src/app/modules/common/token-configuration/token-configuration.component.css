@@ -5,8 +5,9 @@ form {
 }
 
 .switch-btn {
-    width: 180px;
+    width: 234px;
     height: 32px;
+    margin-top: 16px;
 }
 
 .keys-config {
@@ -15,15 +16,19 @@ form {
 }
 
 .key-value {
-    display: grid;
-    grid-template-columns: 200px 100px auto;
-    padding-bottom: 20px;
-    align-content: center;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 32px;
 }
 
 .key-name {
-    font-weight: 500;
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 18px;
+    margin-bottom: 8px;
 }
 
 .delimiter {
@@ -62,11 +67,77 @@ form {
     }
 
     .key-description {
-        grid-column: 1 / span 2;
+        font-family: Inter, sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 18px;
+        margin-bottom: 16px;
     }
 }
 
-.wipe-contract {
-    width: 180px;
-    transform: translateY(5px);
+.p-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+}
+
+.p-field-label {
+    color: var(--color-grey-black-1, #181818);
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 14px;
+    margin-bottom: 6px;
+}
+
+.p-field-input {
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #FFF);
+    outline: none !important;
+    box-shadow: unset !important;
+    padding: 12px 0 12px 16px;
+    align-items: center;
+    align-self: stretch;
+    transition: border 0.25s ease-in-out;
+    box-sizing: border-box;
+
+    color: var(--color-grey-black-1, #181818);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+}
+
+.p-field-input:focus {
+    border: 1px solid var(--color-primary);
+}
+
+:host ::ng-deep .p-dropdown {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #E1E7EF);
+    background: var(--color-grey-white, #FFF);
+    outline: none !important;
+    box-shadow: unset !important;
+    padding: 4px 0 4px 8px;
+    align-items: center;
+    align-self: stretch;
+    transition: border 0.25s ease-in-out;
+    box-sizing: border-box;
+
+    color: var(--color-grey-black-1, #181818);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+}
+
+.wipe-contract-dropdown {
+    margin-top: 16px;
+    width: 100%;
 }

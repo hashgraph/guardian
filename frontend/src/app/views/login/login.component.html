@@ -1,63 +1,83 @@
-<div class="content login">
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>Username</mat-label>
-            <input matInput formControlName="login">
-            <span *ngIf="showLoginRequiredError" class="field-error">
-                Value is required
-            </span>
-        </mat-form-field>
-
-        <div class="password-control">
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>Password</mat-label>
-                <input matInput formControlName="password" [type]="passFieldType">
-                <span *ngIf="showPasswordRequiredError" class="field-error">
-                    Value is required
-                </span>
-            </mat-form-field>
-
-            <mat-icon
-                *ngIf="showPasswordValue; else hidePassBtn"
-                class="eye-icon"
-                (click)="togglePasswordShow()"
-            >
-                 visibility_on
-            </mat-icon>
-
-            <ng-template #hidePassBtn>
-                <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>
-            </ng-template>
+<div *onlyForDemo class="demo-block">
+    <div class="user-content-button">
+        <div class="projects-link" routerLink="/projects">Projects</div>
+    </div>
+    <div class="user-content-button" [matMenuTriggerFor]="demoMenu">
+        <div class="example-icon admin-panel">
+            <span>Demo Admin Panel</span>
         </div>
-
-        <div class="login__footer">
-            <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">
-                Log In
-            </button>
-
-            <div *ngIf="isMeecoLoginAllowed" class="login-btns__separator">
-                <div class="separator-line"></div>
-                <span>OR</span>
-                <div class="separator-line"></div>
+    </div>
+    <mat-menu #demoMenu="matMenu" xPosition="before">
+        <div mat-menu-item class="demo-menu">
+            <div class="debug-user">
+                <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry</button>
+                <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
+                <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
+                <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
+                <button mat-raised-button (click)="authState.doLogin('Registrant','test')">Registrant</button>
+                <button mat-raised-button (click)="authState.doLogin('VVB','test')">VVB</button>
+                <button mat-raised-button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent</button>
+                <button mat-raised-button (click)="authState.doLogin('Verra','test')">Verra</button>
             </div>
-
-            <button
-                mat-button
-                *ngIf="isMeecoLoginAllowed"
-                type="button"
-                class="meeco-button"
-                (click)="onMeecoLogin()"
-                [disabled]="shouldDisableMeecoBtn"
-            >
-                <img src="/assets/meeco.svg" class="meeco-button__logo" />
-                {{ meecoBtnTitle }}
-            </button>
+            <div class="debug-user">
+                <div class="current-user"
+                    *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
+                    (click)="authState.doLogin(user.username, 'test')"
+                     [ngClass]="{
+                        'current-user-first' : isFirst,
+                        'current-user-last': i === users.length - 1
+                    }">
+                    <div class="current-user-name">
+                        <span>{{ user.username }}</span>
+                        <span class="current-user-role">({{user.role}})</span>
+                    </div>
+                    <div class="current-user-policy-roles"
+                        *ngIf="user.policyRoles && user.policyRoles.length"
+                        [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
+                        matTooltipClass="policy-roles-tooltip">
+                        <b>User participates in {{user.policyRoles.length}} policies</b>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <a [routerLink]="['/register']" class="create-link">Create new <mat-icon>chevron_right</mat-icon></a>
-    </form>
-
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+    </mat-menu>
+</div>
+<div class="login-container">
+    <div style="width: 50vw; height: 100%; background: var(--linear-gradient);">
+        <img [src]="backgroundImageData" class="background-image">
+    </div>
+    <div [class.w-100]="brandingLoading" class="login-form">
+        <div *ngIf="!brandingLoading && !loading" class="form-container">
+            <h1>Welcome<br>to the {{ companyName }}</h1>
+            <form [formGroup]="loginForm">
+                <div class="form-input-container">
+                    <label class="p-field-label" for="login">Username</label>
+                    <input class="p-field-input" formControlName="login" id="login" pInputText placeholder="Enter a Username"
+                           type="text"/>
+                </div>
+                <div class="form-input-container">
+                    <label class="p-field-label" for="password">Password</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <input #password [feedback]="false" [showPassword]="false" class="p-field-input" formControlName="password"
+                               id="password"
+                               pPassword placeholder="Password"/>
+                        <button (click)="password.type === 'password' ? password.type = 'text' : password.type = 'password'"
+                                [icon]="'pi pi-eye'" class="p-button-rounded p-button-secondary p-button-text" pButton
+                                type="button"
+                                style="position: absolute; right: 20%;"></button>
+                    </div>
+                </div>
+                <div style="display: flex; column-gap: 10px; align-items: center;">
+                    <button (click)="onLogin()"
+                            [disabled]="!this.loginForm.controls['login'].value || !this.loginForm.controls['password'].value"
+                            class="button full-width" label="Log In" pButton type="submit"></button>
+                </div>
+                <div class="sign-up">
+                    <span>Don’t have an Account?</span>
+                    <span (click)="signUpInit()" class="primary-text-button">Sign Up</span>
+                </div>
+            </form>
+        </div>
+        <div *ngIf="loading" class="preloader preloader-image-l-size"></div>
     </div>
 </div>

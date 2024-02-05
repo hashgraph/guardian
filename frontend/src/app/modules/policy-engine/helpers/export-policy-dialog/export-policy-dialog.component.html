@@ -1,98 +1,78 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onClose()">
-                <mat-icon>close</mat-icon>
-            </div>
-        </div>
-        <div class="g-dialog-title">
-            Export dialog
-        </div>
-        <div class="g-dialog-actions"></div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
-    <div class="g-dialog-body">
-        <div class="context">
-            <div *ngIf="loading" class="loading">
-                <mat-spinner></mat-spinner>
-            </div>
 
-            <div *ngIf="policy" class="policy">
-                <div class="policy-header">{{policy.name}}</div>
+    <div *ngIf="policy" class="policy">
+        <div class="field-name">Policy Name</div>
+        <div class="field-value">{{ policy.name }}</div>
 
-                <div class="delimiter"></div>
+        <div *ngIf="policy.description">
+            <div class="field-name">Description</div>
+            <div class="field-value">{{ policy.description }}</div>
+        </div>
 
-                <div *ngIf="policy.description">
-                    <div class="field-name">Description</div>
-                    <div class="field-value">{{policy.description}}</div>
-                </div>
+        <div *ngIf="policy.version">
+            <div class="field-name">Version</div>
+            <div class="field-value">{{ policy.version }}</div>
+        </div>
 
-                <div *ngIf="policy.version">
-                    <div class="field-name">Version</div>
-                    <div class="field-value">{{policy.version}}</div>
-                </div>
+        <div class="field">
+            <div class="field-name">Creator</div>
+            <div class="field-value">{{ policy.owner }}</div>
+        </div>
+    </div>
 
-                <div class="field">
-                    <div class="field-name">Creator</div>
-                    <div class="field-value">{{policy.owner}}</div>
-                </div>
+    <div *ngIf="module" class="policy">
+        <div class="field-name">Module Name</div>
+        <div class="field-value">{{ module.name }}</div>
 
-                <div class="delimiter"></div>
+        <div *ngIf="module.description">
+            <div class="field-name">Description</div>
+            <div class="field-value">{{ module.description }}</div>
+        </div>
 
-                <div class="container">
-                    <button mat-raised-button color="primary" [cdkCopyToClipboard]="policy.messageId"
-                        [disabled]="!policy.messageId">Copy message identifier</button>
-                    <button mat-raised-button color="primary" (click)="saveToFile()">Save to file</button>
-                </div>
-            </div>
+        <div class="field">
+            <div class="field-name">Creator</div>
+            <div class="field-value">{{ module.owner }}</div>
+        </div>
+    </div>
 
-            <div *ngIf="module" class="policy">
-                <div class="policy-header">{{module.name}}</div>
+    <div *ngIf="tool" class="policy">
+        <div class="policy-header">{{ tool.name }}</div>
 
-                <div class="delimiter"></div>
+        <div class="delimiter"></div>
 
-                <div *ngIf="module.description">
-                    <div class="field-name">Description</div>
-                    <div class="field-value">{{module.description}}</div>
-                </div>
+        <div *ngIf="tool.description">
+            <div class="field-name">Description</div>
+            <div class="field-value">{{ tool.description }}</div>
+        </div>
 
-                <div class="field">
-                    <div class="field-name">Creator</div>
-                    <div class="field-value">{{module.owner}}</div>
-                </div>
-
-                <div class="delimiter"></div>
-
-                <div class="container">
-                    <button mat-raised-button color="primary" [cdkCopyToClipboard]="module.messageId"
-                        [disabled]="!module.messageId">Copy message identifier</button>
-                    <button mat-raised-button color="primary" (click)="moduleToFile()">Save to file</button>
-                </div>
-            </div>
-
-            <div *ngIf="tool" class="policy">
-                <div class="policy-header">{{tool.name}}</div>
-
-                <div class="delimiter"></div>
-
-                <div *ngIf="tool.description">
-                    <div class="field-name">Description</div>
-                    <div class="field-value">{{tool.description}}</div>
-                </div>
-
-                <div class="field">
-                    <div class="field-name">Creator</div>
-                    <div class="field-value">{{tool.owner}}</div>
-                </div>
-
-                <div class="delimiter"></div>
-
-                <div class="container">
-                    <button mat-raised-button color="primary" [cdkCopyToClipboard]="tool.messageId"
-                        [disabled]="!tool.messageId">Copy message identifier</button>
-                    <button mat-raised-button color="primary" (click)="toolToFile()">Save to file</button>
-                </div>
-            </div>
-
+        <div class="field">
+            <div class="field-name">Creator</div>
+            <div class="field-value">{{ tool.owner }}</div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="copy-button">
+            <p-button
+                    (click)="
+                    handleCopyToClipboard(
+                        policy ? policy.messageId : module ? module.messageId : tool ? tool.messageId : ''
+                    )
+                "
+                    [disabled]="policy ? !policy.messageId : module ? !module.messageId : tool ? !tool.messageId : true"
+                    label="Copy message identifier"
+                    styleClass="p-button-outlined"
+            ></p-button>
+        </div>
+        <div>
+            <p-button
+                    (click)="policy ? saveToFile() : module ? moduleToFile() : tool ? toolToFile() : false"
+                    label="Save to file"
+            ></p-button>
         </div>
     </div>
 </div>

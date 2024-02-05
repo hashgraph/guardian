@@ -9,7 +9,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'app-information-block',
     templateUrl: './information-block.component.html',
-    styleUrls: ['./information-block.component.css']
+    styleUrls: ['./information-block.component.scss'],
 })
 export class InformationBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -28,13 +28,15 @@ export class InformationBlockComponent implements OnInit {
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private policyHelper: PolicyHelper,
+        private policyHelper: PolicyHelper
     ) {
     }
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         this.loadData();
     }
@@ -60,13 +62,18 @@ export class InformationBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        this.loading = false;
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 

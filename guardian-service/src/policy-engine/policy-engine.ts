@@ -44,6 +44,7 @@ import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
+import { AISuggestionsService } from '@helpers/ai-suggestions';
 
 /**
  * Result of publishing
@@ -121,7 +122,7 @@ export class PolicyEngine extends NatsService {
 
         const policies = await DatabaseServer.getPolicies({
             where: {
-                status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN] }
+                status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN, PolicyType.DISCONTINUED] }
             }
         });
         await Promise.all(policies.map(async (policy) => {
@@ -500,6 +501,10 @@ export class PolicyEngine extends NatsService {
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
             replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
 
+            if (model.projectSchema === schemaIRI) {
+                model.projectSchema = newSchema.iri;
+            }
+
             const name = newSchema.name;
             num++;
             notifier.info(`Schema ${num} (${name || '-'}) published`);
@@ -554,7 +559,7 @@ export class PolicyEngine extends NatsService {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             model.hash = '';
-            await DatabaseServer.updatePolicy(model);
+            model = await DatabaseServer.updatePolicy(model);
             throw error;
         }
 
@@ -574,7 +579,7 @@ export class PolicyEngine extends NatsService {
 
                     replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
                     replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
-                    await DatabaseServer.updatePolicy(model);
+                    model = await DatabaseServer.updatePolicy(model);
                 }
 
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
@@ -675,7 +680,7 @@ export class PolicyEngine extends NatsService {
                 const schemaObject = new Schema(policySchema);
                 credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
             }
-            const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
+            const vc = await vcHelper.createVcDocument(credentialSubject, { did: owner, key: root.hederaAccountKey });
             await DatabaseServer.saveVC({
                 hash: vc.toCredentialHash(),
                 owner,
@@ -689,7 +694,7 @@ export class PolicyEngine extends NatsService {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             model.hash = '';
-            await DatabaseServer.updatePolicy(model);
+            model = await DatabaseServer.updatePolicy(model);
             throw error
         }
 
@@ -786,7 +791,7 @@ export class PolicyEngine extends NatsService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
-        const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
+        const vc = await vcHelper.createVcDocument(credentialSubject, { did: owner, key: root.hederaAccountKey });
 
         await databaseServer.saveVC({
             hash: vc.toCredentialHash(),
@@ -834,6 +839,9 @@ export class PolicyEngine extends NatsService {
         if (policy.status === PolicyType.PUBLISH) {
             throw new Error(`Policy already published`);
         }
+        if (policy.status === PolicyType.DISCONTINUED) {
+            throw new Error(`Policy is discontinued`);
+        }
         if (!ModelHelper.checkVersionFormat(version)) {
             throw new Error('Invalid version format');
         }
@@ -858,6 +866,11 @@ export class PolicyEngine extends NatsService {
                 await DatabaseServer.clearDryRun(policy.id.toString());
             }
             const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
+
+            if (newPolicy.status === PolicyType.PUBLISH) {
+                new AISuggestionsService().rebuildAIVector().then();
+            }
+
             await this.generateModel(newPolicy.id.toString());
             const users = await new Users().getUsersBySrId(owner);
 
@@ -1064,6 +1077,15 @@ export class PolicyEngine extends NatsService {
         } else {
             return Promise.resolve();
         }
+    }
+
+    /**
+     * Regenerate policy model
+     * @param policyId Policy identifier
+     */
+    public async regenerateModel(policyId: string): Promise<any> {
+        await this.destroyModel(policyId);
+        return await this.generateModel(policyId);
     }
 
     /**

@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { UserType } from '@guardian/interfaces';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
-import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -9,7 +8,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 @Component({
     selector: 'action-config',
     templateUrl: './action-config.component.html',
-    styleUrls: ['./action-config.component.css'],
+    styleUrls: ['./action-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ActionConfigComponent implements OnInit {

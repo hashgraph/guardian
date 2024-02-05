@@ -1,5 +1,10 @@
 # 💻 Demo on Policy Wizard using UI
 
+1. [Step By Step Process](demo-on-policy-wizard-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](demo-on-policy-wizard-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 There are two ways to open Policy Wizard:
 
 1. Click on Policy Wizard button from Policies Tab as shown below:
@@ -88,3 +93,7 @@ After the policy in the wizard is configured, users can click on ‘Create’ an
 Next time, when the wizard is opened a dialog with the selector of wizard states would be displayed, where we can select respective policy and restore progress.
 
 <figure><img src="../../../../.gitbook/assets/image (25) (4).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=sJFfkQ49JnI\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=18\&t=1076s)

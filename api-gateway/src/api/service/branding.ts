@@ -1,63 +1,64 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Logger } from '@guardian/common';
-import { Response } from 'express';
 import { Guardians } from '@helpers/guardians';
-import { checkPermission } from '@auth/authorization-helper';
-import { UserRole } from '@guardian/interfaces';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from '@auth/auth.decorator';
+import { UserRole } from '@guardian/interfaces';
 
 /**
  * Branding route
  */
 @Controller('branding')
 @ApiTags('branding')
-export class BrandingApi {
+export class BrandingApi{
 
-  @Post('/')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async setBranding(
-    @Req() req,
-    @Res() res: Response): Promise<any> {
-      await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-      try {
-        const {
-          headerColor,
-          primaryColor,
-          companyName,
-          companyLogoUrl,
-          loginBannerUrl,
-          faviconUrl
-        } = req.body;
+    @Auth(UserRole.STANDARD_REGISTRY)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Post('/')
+    async setBranding(@Body() body: any): Promise<any> {
+        try {
+            const {
+                headerColor,
+                primaryColor,
+                companyName,
+                companyLogoUrl,
+                loginBannerUrl,
+                faviconUrl,
+                headerColor1,
+                termsAndConditions
+            } = body;
 
-        const data = {
-          headerColor,
-          primaryColor,
-          companyName,
-          companyLogoUrl,
-          loginBannerUrl,
-          faviconUrl
-        };
+            const data = {
+                headerColor,
+                primaryColor,
+                companyName,
+                companyLogoUrl,
+                loginBannerUrl,
+                faviconUrl,
+                headerColor1,
+                termsAndConditions
+            };
 
-        const guardians = new Guardians();
-        await guardians.setBranding(JSON.stringify(data));
-      } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        throw error;
-      }
+            const guardians = new Guardians();
+            await guardians.setBranding(JSON.stringify(data));
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
 
-      return res.status(204).end();
-  }
-
-  @Get('/')
-  async getBranding(@Res() res: Response): Promise<any> {
-    try {
-      const guardians = new Guardians();
-      const brandingDataString = await guardians.getBranding();
-      const brandingData = JSON.parse(brandingDataString.config);
-      return res.json(brandingData);
-    } catch (error) {
-      new Logger().error(error, ['API_GATEWAY']);
-      throw error;
+        return;
     }
-  }
+
+    @Get('/')
+    async getBranding(): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const brandingDataString = await guardians.getBranding();
+            const brandingData = JSON.parse(brandingDataString.config);
+            return brandingData;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
+        }
+    }
 }

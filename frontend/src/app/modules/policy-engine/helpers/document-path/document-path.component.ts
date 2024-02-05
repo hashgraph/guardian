@@ -6,7 +6,7 @@ import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@
 @Component({
     selector: 'document-path',
     templateUrl: './document-path.component.html',
-    styleUrls: ['./document-path.component.css']
+    styleUrls: ['./document-path.component.scss']
 })
 export class DocumentPath {
     @Input('value') value!: string;

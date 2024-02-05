@@ -1,6 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
 import { BlockModel } from './block.model';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IEventsLvl } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { IWeightItem } from '../interfaces/weight-item.interface';
 
@@ -99,7 +99,7 @@ export class EventModel {
      * @param options - comparison options
      * @public
      */
-    public update(map: IKeyMap<BlockModel>, options: ICompareOptions): void {
+    public update(map: IKeyMap<BlockModel>, options: CompareOptions): void {
         const source: BlockModel = map[this.source];
         const target: BlockModel = map[this.target];
         if (source) {
@@ -124,7 +124,7 @@ export class EventModel {
         hashState.hash(`input:${this.input}`);
         hashState.hash(`output:${this.output}`);
         const weight = String(hashState.result());
-        if (options.eventLvl > 0) {
+        if (options.eventLvl === IEventsLvl.All) {
             this._weight = weight;
         } else {
             this._weight = '';
@@ -163,7 +163,7 @@ export class EventModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightItem {
+    public toWeight(options: CompareOptions): IWeightItem {
         return {
             weight: this._hash
         }

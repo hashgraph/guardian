@@ -8,7 +8,7 @@ For a demo example of following steps, here is the policy timestamp: **167516453
 
 1. Switch to the Roles tab
 
-![Roles Tab](<../../../../.gitbook/assets/0 (1).png>)
+![Roles Tab](<../../../../.gitbook/assets/0 (1) (1).png>)
 
 2. Create 2 new roles called ‘**Example role 1**_’ and_ ‘_**Example role 2**_’
 
@@ -70,4 +70,4 @@ Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
 3. The owner of the Policy (the Standard Registry user) upon executing the policy would skip the role selection form and would immediately end-up in the corresponding container
 
-![For Standard Registry](<../../../../.gitbook/assets/13 (1) (1).png>)
+![For Standard Registry](<../../../../.gitbook/assets/13 (1) (1) (1) (1).png>)

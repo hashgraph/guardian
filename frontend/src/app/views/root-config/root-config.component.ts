@@ -1,5 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+    FormBuilder,
+    FormControl,
+    FormGroup,
+    Validators,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
@@ -12,11 +17,12 @@ import { HeaderPropsService } from '../../services/header-props.service';
 import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
 import { Router } from '@angular/router';
+import { DialogService } from 'primeng/dynamicdialog';
 
 enum OperationMode {
     None,
     Generate,
-    GetAllUserTopics
+    GetAllUserTopics,
 }
 
 enum StartActions {
@@ -30,7 +36,7 @@ enum StartActions {
 @Component({
     selector: 'app-root-config',
     templateUrl: './root-config.component.html',
-    styleUrls: ['./root-config.component.scss']
+    styleUrls: ['./root-config.component.scss'],
 })
 export class RootConfigComponent implements OnInit {
     @ViewChild('actionMenu') actionMenu: any;
@@ -45,7 +51,7 @@ export class RootConfigComponent implements OnInit {
             type: StartActions.NEXT,
             action: () => {
                 this.generated = true;
-            }
+            },
         },
         {
             label: 'Restore data',
@@ -55,30 +61,38 @@ export class RootConfigComponent implements OnInit {
                 const topicId = this.selectedTokenId.value;
                 this.loading = true;
                 this.headerProps.setLoading(true);
-                this.profileService.restoreProfile({
-                    hederaAccountId: value.hederaAccountId?.trim(),
-                    hederaAccountKey: value.hederaAccountKey?.trim(),
-                    topicId
-                }).subscribe((result) => {
-                    const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId], {
-                        queryParams: {
-                            last: btoa(location.href)
+                this.profileService
+                    .restoreProfile({
+                        hederaAccountId: value.hederaAccountId?.trim(),
+                        hederaAccountKey: value.hederaAccountKey?.trim(),
+                        topicId,
+                    })
+                    .subscribe(
+                        (result) => {
+                            const {taskId, expectation} = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
+                        },
+                        (e) => {
+                            this.loading = false;
+                            this.taskId = undefined;
                         }
-                    });
-                }, (e) => {
-                    this.loading = false;
-                    this.taskId = undefined;
-                })
-            }
-        }
-    ]
+                    );
+            },
+        },
+    ];
     get showForm(): boolean {
-        return this.currentKeyAction.type === StartActions.NEXT
+        return this.currentKeyAction.type === StartActions.NEXT;
     }
 
     get shouldDisableActionBtns(): boolean {
-        return !this.hederaForm.valid || (!this.selectedTokenId.valid && !this.showForm && !this.generated);
+        return (
+            !this.hederaForm.valid ||
+            (!this.selectedTokenId.valid && !this.showForm && !this.generated)
+        );
     }
 
     isConfirmed: boolean = false;
@@ -119,24 +133,22 @@ export class RootConfigComponent implements OnInit {
         private informService: InformService,
         private taskService: TasksService,
         private fb: FormBuilder,
-        public dialog: MatDialog,
-        private headerProps: HeaderPropsService) {
-
+        public dialog: DialogService,
+        private headerProps: HeaderPropsService
+    ) {
         this.profile = null;
         this.balance = null;
         this.vcForm = new FormGroup({});
         this.hederaForm.addControl('vc', this.vcForm);
         this.hideVC = {
-            id: true
-        }
+            id: true,
+        };
         this.generated = false;
-        this.hederaForm.statusChanges.subscribe(
-            (result) => {
-                setTimeout(() => {
-                    this.formValid = result == 'VALID';
-                });
-            }
-        );
+        this.hederaForm.statusChanges.subscribe((result) => {
+            setTimeout(() => {
+                this.formValid = result == 'VALID';
+            });
+        });
     }
 
     ngOnInit() {
@@ -144,7 +156,7 @@ export class RootConfigComponent implements OnInit {
         this.hederaForm.setValue({
             hederaAccountId: '',
             hederaAccountKey: '',
-            vc: {}
+            vc: {},
         });
         this.loadProfile();
     }
@@ -157,41 +169,46 @@ export class RootConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.profileService.getBalance(),
-            this.schemaService.getSystemSchemasByEntity(SchemaEntity.STANDARD_REGISTRY)
-        ]).subscribe((value) => {
-            if (!value[2]) {
-                this.errorLoadSchema = true;
+            this.schemaService.getSystemSchemasByEntity(
+                SchemaEntity.STANDARD_REGISTRY
+            ),
+        ]).subscribe(
+            (value) => {
+                if (!value[2]) {
+                    this.errorLoadSchema = true;
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
+                    return;
+                }
+
+                const profile = value[0];
+                const balance = value[1];
+                const schema = value[2];
+
+                this.isConfirmed = !!profile.confirmed;
+                this.isFailed = !!profile.failed;
+                this.isNewAccount = !!!profile.didDocument;
+
+                if (this.isConfirmed) {
+                    this.balance = balance;
+                    this.profile = profile;
+                }
+
+                if (schema) {
+                    this.schema = new Schema(schema);
+                }
+
+                setTimeout(() => {
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
+                }, 500);
+            },
+            ({message}) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
-                return;
+                console.error(message);
             }
-
-            const profile = value[0];
-            const balance = value[1];
-            const schema = value[2];
-
-            this.isConfirmed = !!(profile.confirmed);
-            this.isFailed = !!(profile.failed);
-            this.isNewAccount = !!(!profile.didDocument);
-
-            if (this.isConfirmed) {
-                this.balance = balance;
-                this.profile = profile;
-            }
-
-            if (schema) {
-                this.schema = new Schema(schema);
-            }
-
-            setTimeout(() => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-            }, 500)
-        }, ({ message }) => {
-            this.loading = false;
-            this.headerProps.setLoading(false);
-            console.error(message);
-        });
+        );
     }
 
     onHederaSubmit() {
@@ -202,58 +219,61 @@ export class RootConfigComponent implements OnInit {
             const data: any = {
                 hederaAccountId: value.hederaAccountId?.trim(),
                 hederaAccountKey: value.hederaAccountKey?.trim(),
-                vcDocument: vcDocument
-            }
+                vcDocument: vcDocument,
+            };
             this.loading = true;
             this.headerProps.setLoading(true);
-            this.profileService.pushSetProfile(data).subscribe((result) => {
-                const { taskId, expectation } = result;
-                this.router.navigate(['task', taskId], {
-                    queryParams: {
-                        last: btoa(location.href)
-                    }
-                });
-            }, ({ message }) => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-                console.error(message);
-            });
+            this.profileService.pushSetProfile(data).subscribe(
+                (result) => {
+                    const {taskId, expectation} = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href),
+                        },
+                    });
+                },
+                ({message}) => {
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
+                    console.error(message);
+                }
+            );
         }
     }
 
     openVCDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            width: '65vw',
+            closable: true,
+            header: 'VC',
             data: {
                 id: document.id,
                 dryRun: !!document.dryRunId,
                 document: document.document,
-                title: title,
+                title,
                 type: 'VC',
-                viewDocument: true
-            }
+                viewDocument: true,
+            },
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
         });
     }
 
     openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            width: '65vw',
+            closable: true,
+            header: 'DID',
             data: {
                 id: document.id,
                 dryRun: !!document.dryRunId,
                 document: document.document,
-                title: title,
+                title,
                 type: 'JSON',
-            }
+            },
         });
 
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
         });
     }
 
@@ -269,7 +289,7 @@ export class RootConfigComponent implements OnInit {
     }
 
     ngOnDestroy(): void {
-        clearInterval(this.progressInterval)
+        clearInterval(this.progressInterval);
     }
 
     onActionMenuClick(event: MouseEvent): void {
@@ -281,20 +301,25 @@ export class RootConfigComponent implements OnInit {
     }
 
     onRestoreDataClick(): void {
-        this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === StartActions.RESTORE_DATA);
+        this.currentKeyActionIndex = this.startActions.findIndex(
+            (a) => a.type === StartActions.RESTORE_DATA
+        );
     }
 
     randomKey() {
         this.loading = true;
-        this.otherService.pushGetRandomKey().subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.Generate;
-        }, (e) => {
-            this.loading = false;
-            this.taskId = undefined;
-        });
+        this.otherService.pushGetRandomKey().subscribe(
+            (result) => {
+                const {taskId, expectation} = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+                this.operationMode = OperationMode.Generate;
+            },
+            (e) => {
+                this.loading = false;
+                this.taskId = undefined;
+            }
+        );
     }
 
     onChangeForm() {
@@ -311,18 +336,21 @@ export class RootConfigComponent implements OnInit {
         const value = this.hederaForm.value;
         const profile = {
             hederaAccountId: value.hederaAccountId?.trim(),
-            hederaAccountKey: value.hederaAccountKey?.trim()
-        }
+            hederaAccountKey: value.hederaAccountKey?.trim(),
+        };
         this.loading = true;
-        this.profileService.getAllUserTopics(profile).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.GetAllUserTopics;
-        }, (e) => {
-            this.loading = false;
-            this.taskId = undefined;
-        })
+        this.profileService.getAllUserTopics(profile).subscribe(
+            (result) => {
+                const {taskId, expectation} = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+                this.operationMode = OperationMode.GetAllUserTopics;
+            },
+            (e) => {
+                this.loading = false;
+                this.taskId = undefined;
+            }
+        );
     }
 
     retry() {
@@ -336,12 +364,14 @@ export class RootConfigComponent implements OnInit {
         if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++) {
                 let dataArrayElem = data[j];
-                if (dataArrayElem === "" || dataArrayElem === null) {
+                if (dataArrayElem === '' || dataArrayElem === null) {
                     data.splice(j, 1);
                     j--;
                 }
-                if (Object.getPrototypeOf(dataArrayElem) === Object.prototype
-                    || Array.isArray(dataArrayElem)) {
+                if (
+                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
+                    Array.isArray(dataArrayElem)
+                ) {
                     this.prepareDataFrom(dataArrayElem);
                 }
             }
@@ -351,11 +381,13 @@ export class RootConfigComponent implements OnInit {
             let dataKeys = Object.keys(data);
             for (let i = 0; i < dataKeys.length; i++) {
                 const dataElem = data[dataKeys[i]];
-                if (dataElem === "" || dataElem === null) {
+                if (dataElem === '' || dataElem === null) {
                     delete data[dataKeys[i]];
                 }
-                if (Object.getPrototypeOf(dataElem) === Object.prototype
-                    || Array.isArray(dataElem)) {
+                if (
+                    Object.getPrototypeOf(dataElem) === Object.prototype ||
+                    Array.isArray(dataElem)
+                ) {
                     this.prepareDataFrom(dataElem);
                 }
             }
@@ -374,38 +406,47 @@ export class RootConfigComponent implements OnInit {
             const operationMode = this.operationMode;
             this.taskId = undefined;
             this.operationMode = OperationMode.None;
-            this.taskService.get(taskId).subscribe((task) => {
-                switch (operationMode) {
-                    case OperationMode.Generate: {
-                        const { id, key } = task.result;
-                        const value = this.hederaForm.value;
-                        this.hederaForm.setValue({
-                            hederaAccountId: id,
-                            hederaAccountKey: key,
-                            vc: value.vc
-                        });
-                        this.loading = false;
-                        break;
-                    }
-                    case OperationMode.GetAllUserTopics: {
-                        this.userTopics = task.result
-                            .sort((a: any, b: any) => {
-                                return b.timestamp - a.timestamp;
-                            })
-                            .map((i: any) => {
-                                return {
-                                    topicId: i.topicId,
-                                    date: new Date(i.timestamp).toLocaleString()
-                                }
+            this.taskService.get(taskId).subscribe(
+                (task) => {
+                    switch (operationMode) {
+                        case OperationMode.Generate: {
+                            const {id, key} = task.result;
+                            const value = this.hederaForm.value;
+                            this.hederaForm.setValue({
+                                hederaAccountId: id,
+                                hederaAccountKey: key,
+                                vc: value.vc,
                             });
-                        this.loadProfile();
-                        this.selectedTokenId.setValue((this.userTopics && this.userTopics.length) ? this.userTopics[0].topicId : undefined)
-                        break;
+                            this.loading = false;
+                            break;
+                        }
+                        case OperationMode.GetAllUserTopics: {
+                            this.userTopics = task.result
+                                .sort((a: any, b: any) => {
+                                    return b.timestamp - a.timestamp;
+                                })
+                                .map((i: any) => {
+                                    return {
+                                        topicId: i.topicId,
+                                        date: new Date(
+                                            i.timestamp
+                                        ).toLocaleString(),
+                                    };
+                                });
+                            this.loadProfile();
+                            this.selectedTokenId.setValue(
+                                this.userTopics && this.userTopics.length
+                                    ? this.userTopics[0].topicId
+                                    : undefined
+                            );
+                            break;
+                        }
                     }
+                },
+                (e) => {
+                    this.loading = false;
                 }
-            }, (e) => {
-                this.loading = false;
-            });
+            );
         }
     }
 }

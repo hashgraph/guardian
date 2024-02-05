@@ -11,7 +11,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'report-item-config',
     templateUrl: './report-item-config.component.html',
-    styleUrls: ['./report-item-config.component.css'],
+    styleUrls: ['./report-item-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ReportItemConfigComponent implements OnInit {
@@ -21,7 +21,7 @@ export class ReportItemConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     fileLoading = false;
 
     propHidden: any = {
@@ -119,7 +119,7 @@ export class ReportItemConfigComponent implements OnInit {
     onMultipleChange() {
         this.properties.dynamicFilters = [];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

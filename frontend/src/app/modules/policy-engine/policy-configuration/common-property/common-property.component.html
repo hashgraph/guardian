@@ -80,7 +80,8 @@
             <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell">
-            <input class="prop-input prop-checkbox" type="checkbox" [(ngModel)]="value" [readonly]="readonly" (change)="onSave()">
+            <input class="prop-input prop-checkbox" type="checkbox" [(ngModel)]="value" [readonly]="readonly"
+                   (change)="onSave()">
         </td>
     </tr>
 </ng-container>

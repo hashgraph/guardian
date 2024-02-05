@@ -11,6 +11,8 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - VM0042
    - VM0044
    - VerraARR
+   - PWRM0001
+   - VM0041
 4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
@@ -26,23 +28,24 @@ This folder contains sub folders for each Methodology and their authors (with ma
 6. Improved Cookstove - OCI
 7. GCC - KrypC
 8. Gold Standard Afforestation / Reforestation - Envision
-9. CDM AMS-II.G - Envision
-10. CDM AMS-III.AR - Envision
-11. CDM AMS-III.BB - Envision
-12. CDM AMS-III.D - Envision
-13. CDM AR-ACM0003 - Envision
-14. CDM AMS-I.C (Coming Soon)
-15. CDM ACM0001 (Coming Soon)
-16. CDM ACM0002 (Coming Soon)
-17. CDM AMS-III.F (Coming Soon)
-18. CDM ACM0006 (Coming Soon)
-19. CDM ACM0018 (Coming Soon)
-20. CDM AMS-III.AV (Coming Soon)
-21. CDM AMS-III.H (Coming Soon)
-22. CDM AMS-I.F (Coming Soon)
-23. CDM ACM0007 (Coming Soon)
-24. CDM AMS-I.A (Coming Soon)
-25. CDM AMS-II.J (Coming Soon)
+9. Gold Standard Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate - Envision
+10. CDM ACM0007 - Envision
+11. CDM AMS-II.G - Envision
+12. CDM AMS-III.AR - Envision
+13. CDM AMS-III.BB - Envision
+14. CDM AMS-III.D - Envision
+15. CDM AR-ACM0003 - Envision
+16. CDM AMS-I.C (Coming Soon)
+17. CDM ACM0001 (Coming Soon)
+18. CDM ACM0002 (Coming Soon)
+19. CDM AMS-III.F (Coming Soon)
+20. CDM ACM0006 (Coming Soon)
+21. CDM ACM0018 (Coming Soon)
+22. CDM AMS-III.AV (Coming Soon)
+23. CDM AMS-III.H (Coming Soon)
+24. CDM AMS-I.F (Coming Soon)
+25. CDM AMS-I.A (Coming Soon)
+26. CDM AMS-II.J (Coming Soon)
 
 ### Emission Policies
 

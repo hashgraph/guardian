@@ -113,6 +113,7 @@ const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.ASSOCIATE_TOKEN, 'Token associated'],
     [TaskAction.DISSOCIATE_TOKEN, 'Token dissociated'],
     [TaskAction.RESTORE_USER_PROFILE, 'Profile restored'],
+    [TaskAction.MIGRATE_DATA, 'Data migrated'],
 ]);
 
 function getNotificationResultMessage(action: TaskAction, result: any) {

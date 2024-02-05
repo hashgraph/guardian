@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'information-config',
     templateUrl: './information-config.component.html',
-    styleUrls: ['./information-config.component.css'],
+    styleUrls: ['./information-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class InformationConfigComponent implements OnInit {
@@ -17,7 +17,7 @@ export class InformationConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
     };
@@ -46,7 +46,7 @@ export class InformationConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

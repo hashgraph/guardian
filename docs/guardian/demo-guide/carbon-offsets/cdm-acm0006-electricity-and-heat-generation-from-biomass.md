@@ -31,7 +31,7 @@ In the modern landscape of emission reduction initiatives, the value of transpar
 
 ### Policy Workflow <a href="#policy-workflow" id="policy-workflow"></a>
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (13).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide <a href="#policy-guide" id="policy-guide"></a>
 

@@ -1,0 +1,14 @@
+<div>Some services cannot be started, are in the process of starting, or have been stopped</div>
+<div style="display: flex; align-items: center; column-gap: 6px; justify-content: end; margin-top: 20px;">
+    <div class="cancel-button">
+        <button
+                (click)="onNoClick()"
+                class="button secondary"
+                label="Close"
+                pButton
+        ></button>
+    </div>
+    <div>
+        <button (click)="onSubmit()" class="button" label="Check statuses" pButton></button>
+    </div>
+</div>

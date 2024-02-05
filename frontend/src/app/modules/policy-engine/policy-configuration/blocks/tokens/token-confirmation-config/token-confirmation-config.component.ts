@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables  } from '../../../../structures';
+import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables } from '../../../../structures';
 
 /**
  * Settings for block of 'mintDocument' and 'wipeDocument' types.
@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables  
 @Component({
     selector: 'token-confirmation-config',
     templateUrl: './token-confirmation-config.component.html',
-    styleUrls: ['./token-confirmation-config.component.css'],
+    styleUrls: ['./token-confirmation-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class TokenConfirmationConfigComponent implements OnInit {

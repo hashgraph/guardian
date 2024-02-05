@@ -45,7 +45,7 @@ Within this digital methodology, users will use a collection of Clean Developmen
 
 ### Policy Workflow  <a href="#_toc149219505" id="_toc149219505"></a>
 
-<figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide  <a href="#_toc149219506" id="_toc149219506"></a>
 

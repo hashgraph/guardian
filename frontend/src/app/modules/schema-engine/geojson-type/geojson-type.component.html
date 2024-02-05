@@ -23,8 +23,8 @@
         </mat-select>
     </mat-form-field>
 
-    <div class="google-map-container">
-        <google-map [center]="center" (mapDblclick)="mapDblclick()" (mapClick)="mapClick($event)"
+    <div class="google-map-container" *ngIf="mapService.mapLoaded">
+        <google-map (authFailure)="authFailed()" [center]="center" (mapDblclick)="mapDblclick()" (mapClick)="mapClick($event)"
             (mapRightclick)="mapRightclick()" height="300px" [options]="mapOptions" width="auto">
             <ng-container *ngIf="markers">
                 <map-marker *ngFor="let marker of markers" [position]="marker.position" [options]="commonOptions">

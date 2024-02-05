@@ -6,7 +6,7 @@ import { SettingsService } from 'src/app/services/settings.service';
 @Component({
   selector: 'app-settings-view',
   templateUrl: './settings-view.component.html',
-  styleUrls: ['./settings-view.component.css']
+    styleUrls: ['./settings-view.component.scss']
 })
 export class SettingsViewComponent implements OnInit {
   dataForm = this.fb.group({

@@ -1,5 +1,10 @@
 # 💻 Tools using UI
 
+1. [Step By Step Process](tools-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](tools-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## 1. Managing Tools
 
 Tools page (in the Policies section) provides facilities to manage Tools and create new ones.
@@ -108,3 +113,7 @@ Similarly, Input/Output Events variables are external interfaces for events. It 
 Tools can be added to the Policy similarly to Module and/or Blocks.
 
 <figure><img src="../../../../.gitbook/assets/image (327).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=L0L0Kd7vkkU\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=9\&t=265s)

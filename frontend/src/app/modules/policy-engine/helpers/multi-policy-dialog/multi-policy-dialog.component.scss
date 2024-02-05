@@ -1,0 +1,299 @@
+.container {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 14px;
+}
+
+.container button {
+    margin-top: 5px;
+    margin-left: 10px;
+    min-width: 280px;
+}
+
+.schema-field {
+    flex: 1;
+}
+
+:host .content {
+    max-height: 400px;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.g-dialog-title-btn mat-icon {
+    position: absolute;
+    font-size: 32px;
+    top: 7px;
+    left: 7px;
+    color: #646464;
+}
+
+.context {
+    position: relative;
+    min-height: 275px;
+}
+
+.group-name {
+    padding: 0px 0px 15px 0px;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.group-value {
+    padding: 0px 10px 15px 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.group-value[disabled="true"] {
+    display: none;
+}
+
+@media (max-width: 810px) {
+
+    .g-dialog-cancel{order: 1;}
+    .g-dialog-title{order: 2;}
+    .g-dialog-body{order: 3;}
+    .g-dialog-actions{order: 4;}
+
+    .g-dialog-header {
+        box-shadow: none;
+    }
+
+    .mat-radio-container {
+        background-color: #2C78F6 !important;
+        border-color: #2C78F6 !important;
+    }
+
+    .context {
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    .group-value {
+        padding-left: 0;
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    #title {
+        width: 192px;
+        height: 56px;
+
+        /* 24 px semibold */
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 600;
+        font-size: 24px;
+        line-height: 28px;
+
+        /* Grey black */
+        color: #222222;
+
+        /* Inside auto layout */
+        flex: none;
+        order: 0;
+        flex-grow: 1;
+    }
+
+    .g-dialog-body {
+        /* Auto layout */
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0px;
+        gap: 24px;
+        margin: 0 auto;
+
+        position: relative;
+
+        width: 100%;
+
+        /* Inside auto layout */
+        flex: none;
+        order: 1;
+        flex-grow: 0;
+    }
+
+    .g-dialog-actions {
+        display: flex;
+        justify-content: center;
+    }
+
+    .g-dialog-actions-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 90%;
+        margin: 20px 5% !important;
+    }
+
+    .table-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #E0E0E0;
+    }
+
+    .table-container span:nth-child(odd) {
+        /* targets the first <span> in each <div> */
+        grid-column: 1; /* places the element in the first column */
+        color: #BABABA;
+    }
+
+    .table-container span:nth-child(even) {
+        /* targets the second <span> in each <div> */
+        grid-column: 2; /* places the element in the second column */
+        color: #222222;
+        margin: auto 0;
+    }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  width: 452px;
+  overflow: visible;
+  padding-bottom: 25px;
+}
+
+.context {
+  position: relative;
+  overflow-y: auto;
+}
+
+.loading {
+  background: #fff;
+  position: absolute;
+  z-index: 99;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.schema-header {
+  height: 44px;
+  font-size: 34px;
+  display: block;
+  padding: 12px;
+  box-sizing: border-box;
+  text-align: center;
+  color: #000;
+}
+
+.delimiter {
+  padding: 50px 50px;
+  width: 100%;
+  height: 100px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.delimiter::after {
+  content: '';
+  position: absolute;
+  height: 2px;
+  top: 50px;
+  left: 0px;
+  right: 0px;
+  border-top: 1px solid #c8c8c8;
+}
+
+.field-value {
+  color: #000;
+  font-size: 20px;
+}
+
+.field-name {
+  margin-bottom: 12px;
+}
+
+.field {
+  margin-top: 5px;
+  margin-bottom: 28px;
+}
+
+.field-last {
+  margin-bottom: 0px;
+}
+
+.version-container {
+  display: flex;
+  gap: 15px;
+}
+
+.version-container__new-versions {
+  margin-top: 3px;
+}
+
+.g-dialog-header {
+  padding: 0;
+}
+
+.g-dialog-title {
+  height: auto !important;
+  padding: 0 !important;
+  margin-bottom: 24px !important;
+  color: #495057 !important;
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+  font-family: Poppins, sans-serif !important;
+  font-style: normal !important;
+}
+
+.form-input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
+}
+
+.form-label {
+  margin-bottom: 6px;
+  color: var(--color-grey-black-1, #181818);
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 14px;
+}
+
+:host ::ng-deep {
+  .mat-dialog-title {
+    margin-bottom: 32px;
+    color: #000;
+    font-family: Poppins;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+  }
+
+  .mat-form-field {
+    width: 100%;
+  }
+
+  .mat-dialog-actions {
+    display: flex;
+    justify-content: end;
+    gap: 16px;
+  }
+}

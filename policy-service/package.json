@@ -11,11 +11,12 @@
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1"
+        "@azure/core-rest-pipeline": "1.12.1",
+        "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "2.19.1",
-        "@guardian/interfaces": "2.19.1",
+        "@guardian/common": "2.21.0",
+        "@guardian/interfaces": "2.21.0",
         "@hashgraph/sdk": "2.34.1",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "2.0.2",
@@ -52,7 +53,8 @@
         "mongodb": "5.6.0",
         "prom-client": "^14.1.1",
         "prometheus-api-metrics": "3.2.2",
-        "reflect-metadata": "^0.1.13"
+        "reflect-metadata": "^0.1.13",
+        "rxjs": "^7.8.1"
     },
     "description": "",
     "devDependencies": {
@@ -94,5 +96,5 @@
         "test:local": "mocha tests/**/*.test.js",
         "test:stability": "mocha tests/stability.test.js"
     },
-    "version": "2.19.1"
+    "version": "2.21.0"
 }

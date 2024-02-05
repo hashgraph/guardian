@@ -1,18 +1,9 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    RunFunctionAsync,
-    DatabaseServer,
-    Logger,
-} from '@guardian/common';
+import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, } from '@guardian/common';
 import { IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from '@policy-engine/policy-engine';
-import {
-    exportSchemas,
-    importSchemaByFiles,
-} from './helpers/schema-import-export-helper';
+import { exportSchemas, importSchemaByFiles, } from './helpers/schema-import-export-helper';
 import { PolicyWizardHelper } from './helpers/policy-wizard-helper';
 
 /**
@@ -89,6 +80,22 @@ export async function wizardAPI(): Promise<void> {
                 const policyEngine = new PolicyEngine();
                 const wizardHelper = new PolicyWizardHelper();
                 config = await createExistingPolicySchemas(config, owner);
+                const categories = [];
+                for (const elem of [
+                    config.policy.projectScale,
+                    config.policy.migrationActivityType,
+                    config.policy.subType,
+                    config.policy.appliedTechnologyType,
+                    config.policy.sectoralScope
+                ]) {
+                    if (Array.isArray(elem)) {
+                        for (const _el of elem) {
+                            categories.push(_el)
+                        }
+                    } else if (elem !== undefined) {
+                        categories.push(elem);
+                    }
+                }
                 const policyConfig = wizardHelper.createPolicyConfig(config);
                 const policy = await policyEngine.createPolicy(
                     Object.assign(config.policy, {
@@ -96,6 +103,7 @@ export async function wizardAPI(): Promise<void> {
                         policyRoles: config.roles.filter(
                             (role: string) => role !== 'OWNER'
                         ),
+                        categories
                     }),
                     owner,
                     notifier

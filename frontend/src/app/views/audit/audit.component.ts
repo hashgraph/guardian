@@ -7,6 +7,7 @@ import { forkJoin } from 'rxjs';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from '../../services/policy-engine.service';
 import { HttpResponse } from '@angular/common/http';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Page with the list of VP Documents.
@@ -44,11 +45,12 @@ export class AuditComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private policyEngineService: PolicyEngineService,
-        public dialog: MatDialog
+        public dialog: MatDialog,
+        private dialogService: DialogService,
     ) {
         this.dataCount = 0;
         this.pageIndex = 0;
-        this.pageSize = 25;
+        this.pageSize = 10;
     }
 
     ngOnInit() {
@@ -102,7 +104,7 @@ export class AuditComponent implements OnInit {
         this.loading = true;
         this.dataCount = 0;
         this.pageIndex = 0;
-        this.pageSize = 25;
+        this.pageSize = 10;
         this.currentPolicy = this.route.snapshot.queryParams['policyId'] || '';
         this.currentUser = this.route.snapshot.queryParams['owner'] || '';
         forkJoin([
@@ -138,9 +140,11 @@ export class AuditComponent implements OnInit {
     }
 
     openVP(element: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
+            closable: true,
+            header: 'VP',
+            styleClass: 'custom-dialog',
             data: {
                 id: element.id,
                 dryRun: !!element.dryRunId,
@@ -148,10 +152,10 @@ export class AuditComponent implements OnInit {
                 title: 'VP',
                 type: 'VP',
                 viewDocument: true
-            },
-            disableClose: true,
+            }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     setFilter(type: string, value: string) {

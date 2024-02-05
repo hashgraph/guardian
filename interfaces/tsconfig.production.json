@@ -8,6 +8,7 @@
         ],
         "moduleResolution": "node",
         "sourceMap": false,
+        "skipLibCheck": true,
         "outDir": "dist/",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,

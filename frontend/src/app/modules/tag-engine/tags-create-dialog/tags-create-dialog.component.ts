@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating tags.
@@ -8,7 +8,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 @Component({
     selector: 'tags-create-dialog',
     templateUrl: './tags-create-dialog.component.html',
-    styleUrls: ['./tags-create-dialog.component.css']
+    styleUrls: ['./tags-create-dialog.component.scss']
 })
 export class TagCreateDialog {
     started = false;
@@ -16,17 +16,18 @@ export class TagCreateDialog {
         name: ['', Validators.required],
         description: [''],
     });
-    title: string = "New Tag";
+    title: string = 'New Tag';
     schemas: any[] = [];
     schema: any;
     schemaForm: FormGroup;
+    canAddDocument = false;
 
     constructor(
-        public dialogRef: MatDialogRef<TagCreateDialog>,
+        public dialogRef: DynamicDialogRef,
         private changeDetector: ChangeDetectorRef,
         private fb: FormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.schemas = data?.schemas;
+        public data: DynamicDialogConfig) {
+        this.schemas = data.data?.schemas;
         this.schemaForm = fb.group({});
     }
 
@@ -42,8 +43,7 @@ export class TagCreateDialog {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
             if (this.schema) {
-                const vc = this.schemaForm.value;
-                data.document = vc;
+                data.document = this.schemaForm.value;
                 data.schema = this.schema?.iri;
             }
             this.dialogRef.close(data);
@@ -51,6 +51,8 @@ export class TagCreateDialog {
     }
 
     onAddArtifact(selector: any) {
+        this.canAddDocument = true;
+
         if (this.schemas.length === 1) {
             this.schemaForm = this.fb.group({});
             this.schema = this.schemas[0];
@@ -66,6 +68,7 @@ export class TagCreateDialog {
 
     onDeleteArtifact() {
         this.schema = null;
+        this.canAddDocument = false;
     }
 
     public get disabled(): boolean {

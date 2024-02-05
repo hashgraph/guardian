@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating module.
@@ -8,7 +9,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 @Component({
     selector: 'new-module-dialog',
     templateUrl: './new-module-dialog.component.html',
-    styleUrls: ['./new-module-dialog.component.css']
+    styleUrls: ['./new-module-dialog.component.scss']
 })
 export class NewModuleDialog {
     public type = 'module';
@@ -22,11 +23,12 @@ export class NewModuleDialog {
     public placeholder = 'Module name';
 
     constructor(
-        public dialogRef: MatDialogRef<NewModuleDialog>,
-        private fb: FormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        if (data) {
-            switch (data.type) {
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
+        private fb: FormBuilder
+    ) {
+        if (this.config?.data) {
+            switch (this.config.data.type) {
                 case 'module':
                     this.type = 'module';
                     break;
@@ -38,8 +40,8 @@ export class NewModuleDialog {
                     break;
             }
             this.dataForm.setValue({
-                name: data.name || '',
-                description: data.description || '',
+                name: this.config.data.name || '',
+                description: this.config.data.description || '',
             });
         }
         if (this.type === 'module') {
@@ -56,13 +58,13 @@ export class NewModuleDialog {
     }
 
     onNoClick(): void {
-        this.dialogRef.close(null);
+        this.ref.close(null);
     }
 
     onSubmit() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
-            this.dialogRef.close(data);
+            this.ref.close(data);
         }
     }
 }

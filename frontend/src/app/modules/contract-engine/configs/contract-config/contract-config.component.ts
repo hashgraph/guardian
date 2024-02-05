@@ -1,12 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import {
-    ContractType,
-    IUser,
-    SchemaHelper,
-    TagType,
-    Token,
-} from '@guardian/interfaces';
+import { ContractType, IUser, SchemaHelper, TagType, Token, } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ContractService } from 'src/app/services/contract.service';
@@ -318,7 +312,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     importContract() {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
-            width: '500px',
+            width: '700px',
             autoFocus: false,
             disableClose: true,
             data: {
@@ -363,7 +357,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     createContract() {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
-            width: '500px',
+            width: '700px',
             autoFocus: false,
             disableClose: true,
             data: {
@@ -396,7 +390,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     inputHederaIdentifier(callback: (result: string) => void) {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
-            width: '500px',
+            width: '700px',
             autoFocus: false,
             disableClose: true,
             data: {

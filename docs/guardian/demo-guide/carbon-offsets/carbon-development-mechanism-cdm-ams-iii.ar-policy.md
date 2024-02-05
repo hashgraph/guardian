@@ -1,4 +1,4 @@
-# 🏭 Carbon Development Mechanism (CDM) AMS-III.AR Policy
+# 🏭 CDM AMS-III.AR : Carbon Development Mechanism
 
 ## **Table of Contents**
 
@@ -44,7 +44,7 @@ These roles are as follows:
 * **Designated National Authority (DNA)** - The DNA is a governmental body representing the country where the emission reduction project is being implemented. They review and approve the project's eligibility in accordance with national policies and regulations. The DNA's endorsement is essential for the project to proceed with the AMS-III.AR policy.
 * **Registry (UNFCCC)** - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
-<figure><img src="../../../.gitbook/assets/0 (1) (1).jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1) (1) (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ## **Policy Guide**
 

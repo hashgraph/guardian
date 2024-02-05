@@ -1,21 +1,46 @@
-<div *ngIf="!loading && isConfirmed" class="content">
-    <div class="info-container">
-        <div class="info-item-container">
-            <div class="info-item-box" type="Policy"></div>
-            <span>-</span>
-            <span>Policies</span>
-        </div>
-        <div class="info-item-container">
-            <div class="info-item-box" type="Module"></div>
-            <span>-</span>
-            <span>Modules</span>
+<div class="tooltip-container">
+    <div class="item">
+        <div class="color-rectangle color-blue"></div>
+        <span>Policies</span>
+    </div>
+    <div class="item">
+        <div class="color-rectangle color-green"></div>
+        <span>Modules</span>
+    </div>
+</div>
+<div class="drag-drop-container">
+    <div class="item">
+        <h3>All policies and modules</h3>
+        <div #available="cdkDropList" (cdkDropListDropped)="drop($event)" [cdkDropListConnectedTo]="[result]"
+             [cdkDropListData]="policiesAndModules" cdkDropList
+             class="draggable-elements-container">
+            <div *ngFor="let item of policiesAndModules" [attr.type]="item.type" cdkDrag class="item">
+                <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
+                <span>{{ item.name }}</span>
+                <span (click)="move(item)" class="move-right-btn"><mat-icon>arrow_right_alt</mat-icon></span>
+            </div>
         </div>
     </div>
+    <div class="item">
+        <h3>Suggestions priority order</h3>
+        <div #result="cdkDropList" (cdkDropListDropped)="drop($event)" [cdkDropListConnectedTo]="[available]"
+             [cdkDropListData]="suggestionsOrderPriority" cdkDropList
+             class="draggable-elements-container">
+            <div *ngFor="let item of suggestionsOrderPriority" [attr.type]="item.type" cdkDrag class="item">
+                <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
+                <span>{{ item.name }}</span>
+                <span (click)="remove(item)" class="delete-btn"><mat-icon>delete</mat-icon></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="!loading && isConfirmed && false" class="content">
     <div class="content-container">
         <div class="container">
             <h2>All policies and modules</h2>
             <div cdkDropList #available="cdkDropList" [cdkDropListData]="policiesAndModules"
-                [cdkDropListConnectedTo]="[result]" class="item-list" (cdkDropListDropped)="drop($event)">
+                 (cdkDropListDropped)="drop($event)" [cdkDropListConnectedTo]="[result]" class="item-list">
                 <div class="item-list-box" [attr.type]="item.type" *ngFor="let item of policiesAndModules" cdkDrag>
                     <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
                     <span>{{item.name}}</span>
@@ -25,17 +50,23 @@
         </div>
 
         <div class="center-container">
-            <div class="action-btn"><button mat-flat-button color="primary" (click)="apply()">Apply settings</button>
+            <div class="action-btn">
+                <button (click)="apply()" color="primary" mat-flat-button>Apply settings</button>
             </div>
-            <div><mat-icon class="arrow-icon">arrow_right_alt</mat-icon></div>
-            <div class="action-btn"><button mat-flat-button color="warn" (click)="clear()">Clear</button></div>
+            <div>
+                <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
+            </div>
+            <div class="action-btn">
+                <button (click)="clear()" color="warn" mat-flat-button>Clear</button>
+            </div>
         </div>
 
         <div class="container">
             <h2>Suggestions priority order</h2>
             <div cdkDropList #result="cdkDropList" [cdkDropListData]="suggestionsOrderPriority"
-                [cdkDropListConnectedTo]="[available]" class="item-list" (cdkDropListDropped)="drop($event)">
-                <div class="item-list-box" [attr.type]="item.type" *ngFor="let item of suggestionsOrderPriority" cdkDrag>
+                 (cdkDropListDropped)="drop($event)" [cdkDropListConnectedTo]="[available]" class="item-list">
+                <div *ngFor="let item of suggestionsOrderPriority" [attr.type]="item.type" cdkDrag
+                     class="item-list-box">
                     <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
                     <span>{{item.name}}</span>
                     <span class="delete-btn" (click)="remove(item)"><mat-icon>delete</mat-icon></span>
@@ -48,5 +79,5 @@
     Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
 </div>
 <div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

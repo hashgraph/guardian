@@ -17,3 +17,7 @@ Each schema and its child schemas are represented by same color in parent to chi
 Schema Tree hierarchy can be downloaded by clicking on Download icon:
 
 <figure><img src="../../../../.gitbook/assets/image (403).png" alt=""><figcaption></figcaption></figure>
+
+## 3. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=WU\_ntIM5SJA\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=1)

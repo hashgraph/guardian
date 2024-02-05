@@ -1,5 +1,10 @@
 # 🔨 How to Configure Hedera Local Node
 
+1. [Step By Step Process](how-to-configure-hedera-local-node.md#step-by-step-process)
+2. [Demo Video](how-to-configure-hedera-local-node.md#demo-video)
+
+### Step By Step Process
+
 1. Install a Hedera Local Network following the [official documentation](https://github.com/hashgraph/hedera-local-node#docker)
 2. Configure Guardian's configuration files `.env/.env.docker` accordingly:
 
@@ -26,3 +31,7 @@ Note:
 3. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
 4. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
 5. HEDERA\_NET : Type of the Hedera node to transact.
+
+### Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=EpCOI31iMoI\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=1)

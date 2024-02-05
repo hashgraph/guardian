@@ -1,0 +1,51 @@
+<div class="dialog-body">
+    <form (ngSubmit)="onSubmit()" [formGroup]="registerFormGroup">
+        <div class="form-input-container">
+            <label class="p-field-label" for="username">Username</label>
+            <input class="p-field-input" formControlName="username" id="username" pInputText placeholder="Username"
+                   type="text"/>
+            <span *ngIf="
+                  registerFormGroup.controls['username'].value.includes(' ')"
+                  class="danger-text">
+                Login has a whitespace symbols
+            </span>
+        </div>
+        <div class="form-input-container">
+            <label class="p-field-label" for="password">Password</label>
+            <input class="p-field-input" formControlName="password" id="password" pInputText placeholder="Password"
+                   type="password"/>
+            <span *ngIf="
+                  registerFormGroup.controls['password'].value.includes(' ')"
+                  class="danger-text">
+                Password has a whitespace symbols
+            </span>
+        </div>
+        <div class="form-input-container">
+            <label class="p-field-label" for="confirmPassword">Password</label>
+            <input class="p-field-input" formControlName="confirmPassword" id="confirmPassword" pInputText
+                   placeholder="Confirm password" type="password"/>
+            <span *ngIf="
+                  registerFormGroup.controls['confirmPassword'].value &&
+                  registerFormGroup.controls['password'].value !== registerFormGroup.controls['confirmPassword'].value"
+                  class="danger-text">
+                Passwords are different
+            </span>
+        </div>
+    </form>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onNoClick()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onSubmit()" [disabled]="registerFormGroup.invalid || registerFormGroup.controls['password'].value !== registerFormGroup.controls['confirmPassword'].value" class="button"
+                    label="Request Access"
+                    pButton></button>
+        </div>
+    </div>
+</div>

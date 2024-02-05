@@ -29,17 +29,17 @@ As this is an integral part of using Guardian, the association with the users He
 
 The user registration form into a policy has also been redesigned. This makes the long form divisible in a more digestible manner, compartmentalizing each category of input into a page of its own. The mobile adaptation to the registration into a policy.
 
-![](../../../.gitbook/assets/7.png)
+![](<../../../.gitbook/assets/7 (2).png>)
 
 The images below are the registration forms which have been redesigned
 
-![](<../../../.gitbook/assets/8 (2).png>) ![](<../../../.gitbook/assets/9 (1) (3) (1).png>)
+![](<../../../.gitbook/assets/8 (2) (1).png>) ![](<../../../.gitbook/assets/9 (1) (3) (1).png>)
 
 ### User creating a retire request
 
 The "Create Retire Request" form was also adapted, as can be seen below.
 
-![](<../../../.gitbook/assets/10 (1).png>)
+![](<../../../.gitbook/assets/10 (1) (1).png>)
 
 ### User Create / Join Multi Policy
 

@@ -9,7 +9,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'pagination-addon-block',
     templateUrl: './pagination-addon-block.component.html',
-    styleUrls: ['./pagination-addon-block.component.css']
+    styleUrls: ['./pagination-addon-block.component.scss']
 })
 export class PaginationAddonBlockComponent implements OnInit {
     @Input('id') id!: string;

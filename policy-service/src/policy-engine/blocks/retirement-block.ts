@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, GenerateUUIDv4, IRootConfig, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentSignature, IRootConfig, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '@guardian/common';
@@ -58,7 +58,11 @@ export class RetirementBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const wipeVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const wipeVC = await vcHelper.createVcDocument(
+            vcSubject,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid });
         return wipeVC;
     }
 
@@ -71,11 +75,10 @@ export class RetirementBlock {
      */
     private async createVP(root: IRootConfig, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVP(
-            root.did,
-            root.hederaAccountKey,
+        const vp = await vcHelper.createVpDocument(
             vcs,
-            uuid
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
         );
         return vp;
     }
@@ -101,7 +104,7 @@ export class RetirementBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const uuid = GenerateUUIDv4();
+        const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const wipeVC = await this.createWipeVC(root, token, tokenAmount, ref);

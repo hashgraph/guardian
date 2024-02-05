@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
@@ -57,7 +57,7 @@ export class TopicModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         const weights = [];
         const weightMap = {};
 
@@ -165,7 +165,7 @@ export class TopicModel implements IWeightModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightItem {
+    public toWeight(options: CompareOptions): IWeightItem {
         if (!this._weight.length) {
             return {
                 weight: this.name

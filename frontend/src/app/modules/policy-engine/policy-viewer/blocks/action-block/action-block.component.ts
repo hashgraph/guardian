@@ -9,7 +9,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'action-block',
     templateUrl: './action-block.component.html',
-    styleUrls: ['./action-block.component.css']
+    styleUrls: ['./action-block.component.scss'],
 })
 export class ActionBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -38,7 +38,9 @@ export class ActionBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         this.loadData();
     }
@@ -63,15 +65,20 @@ export class ActionBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 1000);
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
@@ -153,24 +160,34 @@ export class ActionBlockComponent implements OnInit {
         this.loading = true;
         const data = { ...row };
         data.status = status;
-        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, data)
+            .subscribe(
+                () => {
+                    this.loadData();
+                },
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 
     onDownload() {
-        this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe((data) => {
-            if (data) {
-                this.downloadObjectAsJson(data.body, data.fileName);
-            }
-            this.loading = false;
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, this.data)
+            .subscribe(
+                (data) => {
+                    if (data) {
+                        this.downloadObjectAsJson(data.body, data.fileName);
+                    }
+                    this.loading = false;
+                },
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 
     downloadObjectAsJson(exportObj: any, exportName: string) {

@@ -9,7 +9,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'http-request-config',
     templateUrl: './http-request-config.component.html',
-    styleUrls: ['./http-request-config.component.css'],
+    styleUrls: ['./http-request-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class HttpRequestConfigComponent implements OnInit {

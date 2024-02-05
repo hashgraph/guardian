@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { IRate } from '../interfaces/rate.interface';
 import { Rate } from './rate';
 import { DocumentModel } from '../models/document.model';
@@ -87,7 +87,7 @@ export class DocumentsRate extends Rate<DocumentModel> {
     private compareDocuments(
         document1: DocumentModel,
         document2: DocumentModel,
-        options: ICompareOptions
+        options: CompareOptions
     ): IRate<any>[] {
         const list: string[] = [];
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
@@ -133,7 +133,7 @@ export class DocumentsRate extends Rate<DocumentModel> {
     private compareOptions(
         document1: DocumentModel,
         document2: DocumentModel,
-        options: ICompareOptions
+        options: CompareOptions
     ): IRate<any>[] {
         const list: string[] = [];
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
@@ -174,7 +174,7 @@ export class DocumentsRate extends Rate<DocumentModel> {
      * @param options - comparison options
      * @public
      */
-    public override calc(options: ICompareOptions): void {
+    public override calc(options: CompareOptions): void {
         const document1 = this.left;
         const document2 = this.right;
 

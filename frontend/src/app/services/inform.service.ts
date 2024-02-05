@@ -71,4 +71,19 @@ export class InformService {
             enableHtml: true,
         });
     }
+
+    public warnMessage(text: string, header: string) {
+        const body = `
+            <div>${text}</div>
+            <div>See <a style="color: #0B73F8" href="/admin/logs">logs</a> for details.</div>
+        `;
+        this.toastr.warning(body, header, {
+            timeOut: 100000,
+            extendedTimeOut: 30000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            toastClass: 'ngx-toastr warn-message-toastr',
+            enableHtml: true,
+        });
+    }
 }
