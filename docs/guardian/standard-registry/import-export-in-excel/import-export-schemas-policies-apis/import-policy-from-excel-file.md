@@ -1,10 +1,8 @@
 # Import Schemas in Excel file format into a Policy
 
-{% swagger method="post" path="" baseUrl="/api/v1/policies/import/xlsx?policyId=<policyId>" summary="Import schemas in
-Excel file format into a policy" %}
+{% swagger method="post" path="" baseUrl="/api/v1/policies/import/xlsx?policyId=<policyId>" summary="Import schemas in Excel file format into a policy" %}
 {% swagger-description %}
-Imports new Schema and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB.
-Only users with the Standard Registry role are allowed to make the request.
+Imports new Schema and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyId" type="String" required="true" %}
