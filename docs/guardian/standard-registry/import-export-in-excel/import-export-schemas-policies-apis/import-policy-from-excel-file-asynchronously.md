@@ -1,8 +1,10 @@
-# Import Policy from Excel file Asynchronously
+# Asynchronously imports schemas in Excel file format into a policy
 
-{% swagger method="post" path="" baseUrl="/policies/push/import/xlsx" summary="Imports new policy from a xlsx file." %}
+{% swagger method="post" path="" baseUrl="/api/v1/policies/push/import/xlsx?policyId=<policyId>" summary="Asynchronously
+imports schemas in Excel file format into a policy" %}
 {% swagger-description %}
-Imports new policy and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB. Only users with the Standard Registry role are allowed to make the request.
+Asynchronously imports schemas in Excel file format into a policy. Only users with the Standard Registry role are
+allowed to make the request.
 {% endswagger-description %}
 
 {% swagger-parameter in="path" name="policyId" type="String" required="true" %}

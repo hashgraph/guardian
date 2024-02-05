@@ -10,21 +10,7 @@ import { Users } from '@helpers/users';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { MigrationConfigDTO, PolicyCategoryDTO } from '@middlewares/validation/schemas/policies';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
-import {
-    ApiBody,
-    ApiAcceptedResponse,
-    ApiExtraModels,
-    ApiForbiddenResponse,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiSecurity,
-    ApiTags,
-    ApiUnauthorizedResponse,
-    getSchemaPath
-} from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
@@ -1509,14 +1495,12 @@ export class PolicyApi {
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromXlsx(
         @AuthUser() user: IAuthUser,
-        @Query('policyId') policyId,
-        @Body() file: any,
-        @Response() res: any
+        @Query('policyId') policyId: string,
+        @Body() file: Buffer
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            const policies = await engineService.importXlsx(user, policyId, file);
-            return res.status(201).send(policies);
+            return await engineService.importXlsx(user, file, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1567,8 +1551,7 @@ export class PolicyApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId,
-        @Body() file: any,
-        @Response() res: any
+        @Body() file: Buffer
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -1579,7 +1562,7 @@ export class PolicyApi {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        return res.status(202).send(task);
+        return task;
     }
 
     /**
