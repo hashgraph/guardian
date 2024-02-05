@@ -310,7 +310,7 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param zip
      */
-    public async importFilePreview(user: IAuthUser, zip: Buffer) {
+    public async importFilePreview(user: IAuthUser, zip: ArrayBuffer) {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, { zip, user });
     }
 
@@ -320,7 +320,7 @@ export class PolicyEngine extends NatsService {
      * @param zip
      * @param versionOfTopicId
      */
-    public async importXlsx(user: IAuthUser, xlsx: Buffer, policyId: string) {
+    public async importXlsx(user: IAuthUser, xlsx: ArrayBuffer, policyId: string) {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX, { user, xlsx, policyId });
     }
 
@@ -331,7 +331,7 @@ export class PolicyEngine extends NatsService {
      * @param versionOfTopicId
      * @param task
      */
-    public async importXlsxAsync(user: IAuthUser, xlsx: Buffer, policyId: string, task: NewTask) {
+    public async importXlsxAsync(user: IAuthUser, xlsx: ArrayBuffer, policyId: string, task: NewTask) {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { user, xlsx, policyId, task });
     }
 
@@ -340,7 +340,7 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param zip
      */
-    public async importXlsxPreview(user: IAuthUser, xlsx: Buffer) {
+    public async importXlsxPreview(user: IAuthUser, xlsx: ArrayBuffer) {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { user, xlsx });
     }
 
