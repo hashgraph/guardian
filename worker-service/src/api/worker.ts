@@ -204,7 +204,7 @@ export class Worker extends NatsService {
                 if (!ipfsStorageApiKey) {
                     throw new Error('Ipfs storage api key setting is empty');
                 }
-                const [w3cKey, w3cProof] = ipfsStorageApiKey?.split(';');
+                const [w3cKey, w3cProof] = ipfsStorageApiKey.split(';');
                 const ipfsClient = new IpfsClientClass(
                     w3cKey,
                     w3cProof
@@ -215,8 +215,6 @@ export class Worker extends NatsService {
                 this.ipfsClient = ipfsClient;
                 const secretManager = SecretManager.New();
                 await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
-                const validator = new ValidateConfiguration()
-                await validator.validate();
             } catch (error) {
                 this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
             }
