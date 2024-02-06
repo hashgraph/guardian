@@ -149,14 +149,17 @@ export class CustomLogicBlock {
                     artifacts.push(JSON.parse(artifactFile));
                 }
 
+                const importCode = `const [done, user, documents, mathjs, artifacts, formulajs] = arguments;\r\n`;
+                const expression = ref.options.expression || '';
                 const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {
                     workerData: {
-                        execFunc: `const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`,
+                        execFunc: `${importCode}${execCode}${expression}`,
                         user,
                         documents,
                         artifacts
                     },
                 });
+
                 worker.on('error', (error) => {
                     reject(error);
                 });

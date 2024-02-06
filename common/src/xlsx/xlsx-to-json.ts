@@ -4,7 +4,7 @@ import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from
 import { Table } from './models/table';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition';
-import { SchemaCategory, SchemaField } from '@guardian/interfaces';
+import { SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result';
 import { XlsxEnum } from './models/xlsx-enum';
 import { EnumTable } from './models/enum-table';
@@ -241,6 +241,42 @@ export class XlsxToJson {
                 );
             }
 
+            if(schema.entity === SchemaEntity.VC || schema.entity === SchemaEntity.EVC) {
+                fields.push({
+                    name: 'policyId',
+                    title: 'Policy Id',
+                    description: 'Policy Id',
+                    required: true,
+                    isArray: false,
+                    isRef: false,
+                    type: 'string',
+                    format: undefined,
+                    pattern: undefined,
+                    unit: undefined,
+                    unitSystem: undefined,
+                    customType: undefined,
+                    readOnly: true,
+                    isPrivate: undefined,
+                    property: undefined,
+                });
+                fields.push({
+                    name: 'ref',
+                    title: 'Relationships',
+                    description: 'Relationships',
+                    required: false,
+                    isArray: false,
+                    isRef: false,
+                    type: 'string',
+                    format: undefined,
+                    pattern: undefined,
+                    unit: undefined,
+                    unitSystem: undefined,
+                    customType: undefined,
+                    readOnly: true,
+                    isPrivate: undefined,
+                    property: undefined,
+                });
+            }
             const conditions = conditionCache.map(c => c.toJson());
             schema.update(fields, conditions, expressions);
             return schema;

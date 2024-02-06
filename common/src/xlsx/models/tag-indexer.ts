@@ -2,7 +2,6 @@ import { BlockType } from '@guardian/interfaces';
 import { PolicyTool } from '../../entity';
 import { XlsxSchema } from './xlsx-schema';
 
-
 export class TagIndexer {
     private index: number;
 

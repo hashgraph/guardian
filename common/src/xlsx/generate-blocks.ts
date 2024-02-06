@@ -110,7 +110,8 @@ export class GenerateBlocks {
                     inputEvents: tool.config?.inputEvents,
                     outputEvents: tool.config?.outputEvents,
                     variables: tool.config?.variables,
-                    innerEvents: []
+                    innerEvents: [],
+                    defaultActive: false
                 })
                 GenerateBlocks.pushBlock(parent, block);
             }
@@ -198,6 +199,7 @@ export class GenerateBlocks {
                 documentSigner: '',
                 idType: 'UUID',
                 outputSchema: schema.iri,
+                defaultActive: false
             });
             GenerateBlocks.pushBlock(parent, calculation);
         }
@@ -281,7 +283,7 @@ export class GenerateBlocks {
         }
 
         let body = '';
-        body += `// Environment variables\r\n`;
+        body += `// Pre-defined variables\r\n`;
         body += `// - documents: VC[] - input documents;\r\n`;
         body += `// - user: User - current user;\r\n`;
         body += `// - artifacts: Artifact[] - related artifacts;\r\n`;
@@ -290,36 +292,48 @@ export class GenerateBlocks {
         body += `// - done(documents: VC[]): Function - completion of calculations;\r\n`;
         body += `\r\n`;
 
+        body += `// Function to clear unset fields\r\n`;
+        body += `function clearUnsetField(document, fieldName) {\r\n`;
+        body += `    if(\r\n`;
+        body += `        document[fieldName] === '' || \r\n`;
+        body += `        document[fieldName] === null || \r\n`;
+        body += `        document[fieldName] === undefined\r\n`;
+        body += `    ) {\r\n`;
+        body += `        delete document[fieldName];\r\n`;
+        body += `    }\r\n`;
+        body += `}\r\n`;
+
         //Templates
         for (const [symbol, templates] of functions) {
-            body += `//${symbol} function\r\n`;
+            body += `// Template '${symbol}' function\r\n`;
+            body += `// - arguments: any[]\r\n`;
             body += `function ${symbol}() {\r\n`;
-            body += `    //Template\r\n`;
             for (const template of templates) {
-                body += `    //${template}\r\n`;
+                body += `    // ${template}\r\n`;
             }
             if (typeof formulajs[symbol] === 'function') {
                 body += `    return formulajs.${symbol}.apply(this, arguments);\r\n`;
             } else {
-                body += `    //!Error: Unsupported function.\r\n`;
+                body += `    // !Error: Unsupported function.\r\n`;
             }
             body += `}\r\n`;
             body += `\r\n`;
         }
 
         //Main
-        body += `//Main function\r\n`;
+        body += `// Main function\r\n`;
+        body += `// - document: VC - input VC document;\r\n`;
         body += `function main(document) {\r\n`;
 
         //Variables
         if (variables.size) {
-            body += `    //Variables\r\n`;
+            body += `    // Variables\r\n`;
         }
         for (const [symbol, path] of variables) {
             if (path) {
                 body += `    let ${symbol} = document.${path};\r\n`;
             } else {
-                body += `    //!Error: Variable "${symbol}" is not defined.\r\n`;
+                body += `    // !Error: Variable "${symbol}" is not defined.\r\n`;
             }
 
         }
@@ -327,7 +341,7 @@ export class GenerateBlocks {
 
         //Ranges
         if (ranges.size) {
-            body += `    //Ranges\r\n`;
+            body += `    // Ranges\r\n`;
         }
         for (const [symbol, path] of ranges) {
             body += `    let ${symbol} = [${path.join(',')}];\r\n`;
@@ -335,25 +349,26 @@ export class GenerateBlocks {
         body += `\r\n`;
 
         //Expressions
-        body += `    //Expressions\r\n`;
+        body += `    // Expressions\r\n`;
         for (const expression of expressions) {
-            body += `    //${xlsxSchema.worksheet.name}: ${expression.name} = ${expression.formulae}\r\n`;
+            body += `    // ${xlsxSchema.worksheet.name}: ${expression.name} = ${expression.formulae}\r\n`;
             if (expression.validated) {
                 body += `    document.${expression.name} = ${expression.transformed};\r\n`;
+                body += `    clearUnsetField(document, '${expression.name}');\r\n`;
             } else {
-                body += `    //!Error: Failed to parse formula.\r\n`;
+                body += `    // !Error: Failed to parse formula.\r\n`;
             }
             body += `\r\n`;
         }
 
         //Main
-        body += `    //Result\r\n`;
+        body += `    // Result\r\n`;
         body += `    return document;\r\n`;
         body += `}\r\n`;
         body += `\r\n`;
         body += `(function calc() {\r\n`;
         body += `    return done(documents.map((document) =>\r\n`;
-        body += `        main(document.document.credentialSubject[0]);\r\n`;
+        body += `        main(document.document.credentialSubject[0])\r\n`;
         body += `    ));\r\n`;
         body += `})();`;
 

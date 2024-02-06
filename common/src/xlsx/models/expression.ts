@@ -19,10 +19,10 @@ export class Expression {
     }
 
     public parse(): void {
-        const node = mathjs.parse(this.formulae);
-        this.parseNodes(node);
-        const transformed = node.transform(
-            function (node: mathjs.MathNode, path: string, parent: mathjs.MathNode) {
+        const tree = mathjs.parse(this.formulae);
+        this.parseNodes(tree);
+        const transformed = tree.transform(
+            (node: mathjs.MathNode, path: string, parent: mathjs.MathNode) => {
                 if (node.type === 'RangeNode') {
                     return new mathjs.SymbolNode(
                         `${node.start.toString()}_${node.end.toString()}`
