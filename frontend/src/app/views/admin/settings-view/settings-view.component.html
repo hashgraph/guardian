@@ -1,26 +1,3 @@
-<!--<h1 class="settings-title">Change settings</h1>
-<div *ngIf="!isLoading; else spinner">
-    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-        <mat-form-field class="submit-field" appearance="outline">
-            <mat-label>* OPERATOR ID:</mat-label>
-            <input matInput name="OPERATOR_ID" type="text" formControlName="operatorId">
-        </mat-form-field>
-
-        <mat-form-field class="submit-field" appearance="outline">
-            <mat-label>* OPERATOR KEY:</mat-label>
-            <input matInput name="OPERATOR_KEY" type="password" placeholder="Enter secret key" formControlName="operatorKey">
-        </mat-form-field>
-
-        <mat-form-field class="submit-field" appearance="outline">
-            <mat-label>* IPFS STORAGE API KEY:</mat-label>
-            <input matInput name="IPFS_STORAGE_API_KEY" type="password" placeholder="Enter secret key" formControlName="ipfsStorageApiKey">
-        </mat-form-field>
-
-        <button mat-raised-button color="primary" type="submit" class="submit-button"
-            [disabled]="!dataForm.valid">Ok</button>
-    </form>
-</div>-->
-
 <div class="container">
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container *ngIf="!isLoading">
@@ -53,8 +30,15 @@
             </div>
             <div class="form-input-container">
                 <label class="p-field-label" for="ipfsKey">* IPFS Storage API Key</label>
-                <input class="p-field-input" formControlName="ipfsStorageApiKey" id="ipfsKey" pInputText
-                       placeholder="IPFS Storage API Key" type="text"/>
+                <input [formControl]="getFormControl(keyAndProof,'key')" class="p-field-input" id="ipfsKey"
+                       pInputText placeholder="IPFS Storage API Key"
+                       type="text"/>
+            </div>
+            <div class="form-input-container">
+                <label class="p-field-label" for="ipfsKey">* IPFS Storage API proof</label>
+                <input [formControl]="getFormControl(keyAndProof,'proof')" class="p-field-input" id="ipfsProof"
+                       pInputText placeholder="IPFS Storage API Key"
+                       type="text"/>
             </div>
         </form>
     </div>

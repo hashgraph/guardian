@@ -191,7 +191,6 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
-        console.log(this);
     }
 
     get currentEntity(): any {
