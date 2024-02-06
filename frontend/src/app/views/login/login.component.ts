@@ -72,7 +72,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        console.log(this);
         this.testUsers$ = this.otherService.getAllUsers();
         this.loading = false;
         this.redirect().finally(() => {
