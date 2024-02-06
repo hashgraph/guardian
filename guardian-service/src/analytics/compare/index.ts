@@ -1,7 +1,7 @@
 export { PolicyComparator } from './comparators/policy-comparator';
 export { SchemaComparator } from './comparators/schema-comparator';
 export { IArtifacts } from './interfaces/artifacts.interface';
-export { ICompareOptions } from './interfaces/compare-options.interface';
+export { CompareOptions as ICompareOptions } from './interfaces/compare-options.interface';
 export { ICompareResult } from './interfaces/compare-result.interface';
 export { IKeyMap } from './interfaces/key-map.interface';
 export { IModel } from './interfaces/model.interface';
@@ -52,7 +52,17 @@ export { ModuleComparator } from './comparators/module-comparator';
 export { HashComparator } from './comparators/hash-comparator';
 export { FileModel } from './models/file.model';
 export { DocumentComparator } from './comparators/document-comparator';
+export { RecordComparator } from './comparators/record-comparator';
 export { ToolComparator } from './comparators/tool-comparator';
 export { ToolModel } from './models/tool.model';
 export { DocumentModel } from './models/document.model';
 export { RateMap, RateKeyMap } from './utils/rate-map';
+export {
+    CompareOptions,
+    IChildrenLvl,
+    IEventsLvl,
+    IIdLvl,
+    IKeyLvl,
+    IPropertiesLvl,
+    IRefLvl
+} from './interfaces/compare-options.interface';

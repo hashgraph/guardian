@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
 import { IProperties } from '../interfaces/properties.interface';
 import { PropertyType } from '../types/property.type';
 import { SchemaModel } from './schema.model';
@@ -69,6 +69,12 @@ export class PropertyModel<T> implements IProperties<T> {
     protected _key: string;
 
     /**
+     * Property
+     * @protected
+     */
+    protected _property: string;
+
+    /**
      * Model key
      * @public
      */
@@ -94,12 +100,21 @@ export class PropertyModel<T> implements IProperties<T> {
     }
 
     /**
+     * Ignore comparison
+     * @param options - comparison options
+     * @public
+     */
+    public ignore(options: CompareOptions): boolean {
+        return false;
+    }
+
+    /**
      * Comparison of models using weight
      * @param item - model
      * @param options - comparison options
      * @public
      */
-    public equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
+    public equal(item: PropertyModel<any>, options: CompareOptions): boolean {
         return this.type === item.type && this._weight === item._weight;
     }
 
@@ -121,6 +136,9 @@ export class PropertyModel<T> implements IProperties<T> {
         if (this._title) {
             item.title = this._title;
         }
+        if (this._property) {
+            item.property = this._property;
+        }
         return item;
     }
 
@@ -129,8 +147,8 @@ export class PropertyModel<T> implements IProperties<T> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.propLvl === 1) {
+    public hash(options: CompareOptions): string {
+        if (options.propLvl === IPropertiesLvl.Simple) {
             if (this.lvl === 1) {
                 return `${this.path}:${this.value}`;
             } else {
@@ -166,14 +184,24 @@ export class PropertyModel<T> implements IProperties<T> {
     }
 
     /**
+     * Set property
+     * @public
+     */
+    public setProperty(property: string): void {
+        this._property = property;
+    }
+
+    /**
      * Update all weight
      * @public
      */
-    public update(options: ICompareOptions): void {
-        if (options.idLvl === 2) {
+    public update(options: CompareOptions): void {
+        if (options.keyLvl === IKeyLvl.Description) {
             this._key = this._description;
-        } else if (options.idLvl === 3) {
+        } else if (options.keyLvl === IKeyLvl.Title) {
             this._key = this._title;
+        } else if (options.keyLvl === IKeyLvl.Property) {
+            this._key = this._property;
         } else {
             this._key = this.path;
         }
@@ -201,8 +229,8 @@ export class UUIDPropertyModel extends PropertyModel<any> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.idLvl === 0) {
+    public hash(options: CompareOptions): string {
+        if (options.idLvl === IIdLvl.None) {
             return null;
         }
         return super.hash(options);
@@ -213,8 +241,8 @@ export class UUIDPropertyModel extends PropertyModel<any> {
      * @param item - model
      * @public
      */
-    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
-        if (options.idLvl === 0) {
+    public override equal(item: PropertyModel<any>, options: CompareOptions): boolean {
+        if (options.idLvl === IIdLvl.None) {
             return true;
         } else {
             return this.type === item.type && this.value === item.value;
@@ -331,8 +359,8 @@ export class TokenPropertyModel extends PropertyModel<string> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.idLvl === 0 && this.token) {
+    public hash(options: CompareOptions): string {
+        if (options.idLvl === IIdLvl.None && this.token) {
             return `${this.path}:${this.token.hash(options)}`;
         }
         return super.hash(options);
@@ -343,8 +371,8 @@ export class TokenPropertyModel extends PropertyModel<string> {
      * @param item - model
      * @public
      */
-    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
-        if (options.idLvl === 0) {
+    public override equal(item: PropertyModel<any>, options: CompareOptions): boolean {
+        if (options.idLvl === IIdLvl.None) {
             return super.equal(item, options);
         } else {
             return this.type === item.type && this.value === item.value;
@@ -400,8 +428,8 @@ export class SchemaPropertyModel extends PropertyModel<string> {
      * @param options - comparison options
      * @public
      */
-    public hash(options: ICompareOptions): string {
-        if (options.idLvl === 0 && this.schema) {
+    public hash(options: CompareOptions): string {
+        if (options.idLvl === IIdLvl.None && this.schema) {
             return `${this.path}:${this.schema.hash(options)}`;
         }
         return super.hash(options);
@@ -412,11 +440,96 @@ export class SchemaPropertyModel extends PropertyModel<string> {
      * @param item - model
      * @public
      */
-    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
-        if (options.idLvl === 0) {
+    public override equal(item: PropertyModel<any>, options: CompareOptions): boolean {
+        if (options.idLvl === IIdLvl.None) {
             return super.equal(item, options);
         } else {
             return this.type === item.type && this.value === item.value;
         }
+    }
+}
+
+/**
+ * Document Property
+ */
+export class DocumentPropertyModel extends PropertyModel<any> {
+    /**
+     * Is system fields
+     * @public
+     */
+    private readonly isSystem: boolean;
+
+    constructor(
+        name: string,
+        value: any,
+        lvl?: number,
+        path?: string,
+        type?: string
+    ) {
+        super(name, PropertyType.Property, value, lvl, path);
+        this.isSystem = this.checkSystemField(name, path, type, value);
+    }
+
+    private checkSystemField(
+        name: string,
+        path: string,
+        type: string,
+        value: any
+    ): boolean {
+        try {
+            if (
+                name === '@context' ||
+                name === 'type' ||
+                name === 'policyId' ||
+                name === 'id' ||
+                name === 'ref' ||
+                name === 'tokenId' ||
+                name === 'issuanceDate' ||
+                name === 'issuer'
+            ) {
+                return true;
+            }
+            if (type === 'MintToken') {
+                if (
+                    name === 'date'
+                ) {
+                    return true;
+                }
+            }
+            if (path && typeof path === 'string') {
+                if (
+                    path === 'proof' ||
+                    path.includes('@context') ||
+                    path.startsWith('proof.') ||
+                    path.startsWith('type.') ||
+                    path.endsWith('proof.created') ||
+                    path.endsWith('proof.jws') ||
+                    path.endsWith('proof.proofPurpose') ||
+                    path.endsWith('proof.type') ||
+                    path.endsWith('proof.verificationMethod')
+                ) {
+                    return true;
+                }
+            }
+            if (value && typeof value === 'string') {
+                if (
+                    value.startsWith('did:hedera:')
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
+     * Ignore comparison
+     * @param options - comparison options
+     * @public
+     */
+    public override ignore(options: CompareOptions): boolean {
+        return this.isSystem && options.idLvl === IIdLvl.None;
     }
 }

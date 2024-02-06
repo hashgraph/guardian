@@ -1,4 +1,4 @@
-import { IPolicyBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock, IPolicyInterfaceBlock, IPolicyNavigationStep } from '@policy-engine/policy-engine.interface';
 
 /**
  * Block state data
@@ -42,3 +42,7 @@ export type PolicyBlockMap = Map<string, IPolicyBlock | IPolicyInterfaceBlock>;
  * Tag map
  */
 export type PolicyTagMap = Map<string, string>;
+/**
+ * Navigation map
+ */
+export type PolicyNavigationMap = Map<string, IPolicyNavigationStep[]>;

@@ -1,8 +1,8 @@
-import { CdkDropList } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
+import { PolicyCategoryType, Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
@@ -16,28 +16,19 @@ import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dial
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { RegisteredService } from '../../services/registered.service';
-import {
-    Options,
-    PolicyBlock,
-    PolicyTemplate,
-    PolicyModule,
-    PolicyStorage,
-    ModuleTemplate,
-    Theme,
-    ThemeRule,
-    ToolTemplate,
-    ToolMenuItem,
-    PolicyFolder,
-    PolicyItem,
-    PolicyRoot,
-    ToolMenu
-} from '../../structures';
+import { IPolicyCategory, ModuleTemplate, Options, PolicyBlock, PolicyModule, PolicyStorage, PolicyTemplate, Theme, ThemeRule, ToolMenu, ToolTemplate } from '../../structures';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../../../services/theme.service';
-import { SuggestionsService } from '../../../../services/suggestions.service';
-import { ToolsService } from '../../../../services/tools.service';
-import { AnalyticsService } from '../../../../services/analytics.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
+import { SuggestionsService } from '../../../../services/suggestions.service';
+import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
+import { ToolsService } from 'src/app/services/tools.service';
+import { DialogService } from 'primeng/dynamicdialog';
+import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { StopResizingEvent } from '../../directives/resizing.directive';
+import { OrderOption } from '../../structures/interfaces/order-option.interface';
+import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -48,6 +39,8 @@ import { WizardMode, WizardService } from 'src/app/modules/policy-engine/service
     styleUrls: ['./policy-configuration.component.scss'],
 })
 export class PolicyConfigurationComponent implements OnInit {
+    @ViewChild(PolicyPropertiesComponent) propertiesComponent: PolicyPropertiesComponent;
+
     public loading: boolean = true;
     public options: Options;
     public readonly!: boolean;
@@ -94,6 +87,16 @@ export class PolicyConfigurationComponent implements OnInit {
     public openSettings: boolean = false;
     public themes!: Theme[];
     public theme!: Theme;
+
+    public categories: IPolicyCategory[] = [];
+    public allCategories: any = {
+        appliedTechnologyTypeOptions: [],
+        migrationActivityTypeOptions: [],
+        projectScaleOptions: [],
+        sectoralScopeOptions: [],
+        subTypeOptions: [],
+    };
+    public policyCategoriesMapped: IPolicyCategory[] = [];
 
     public readonly codeMirrorOptions = {
         theme: 'default',
@@ -193,6 +196,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
+        private dialogService: DialogService,
         private changeDetector: ChangeDetectorRef,
         private informService: InformService,
         private registeredService: RegisteredService,
@@ -204,7 +208,9 @@ export class PolicyConfigurationComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,
-        private analyticsService: AnalyticsService
+        private analyticsService: AnalyticsService,
+        @Inject(CONFIGURATION_ERRORS)
+        private _configurationErrors: Map<string, any>
     ) {
         this.options = new Options();
         this.storage = new PolicyStorage(localStorage);
@@ -246,6 +252,19 @@ export class PolicyConfigurationComponent implements OnInit {
         this.moduleId = this.route.snapshot.queryParams.moduleId;
         this.toolId = this.route.snapshot.queryParams.toolId;
 
+        if (this._configurationErrors.has(this.policyId)) {
+            this.setErrors(this._configurationErrors.get(this.policyId), 'policy');
+            this._configurationErrors.delete(this.policyId);
+        }
+        if (this._configurationErrors.has(this.moduleId)) {
+            this.setErrors(this._configurationErrors.get(this.moduleId), 'module');
+            this._configurationErrors.delete(this.moduleId);
+        }
+        if (this._configurationErrors.has(this.toolId)) {
+            this.setErrors(this._configurationErrors.get(this.toolId), 'tool');
+            this._configurationErrors.delete(this.toolId);
+        }
+
         if (this.policyId) {
             this.rootType = 'Policy';
             this.loadPolicy();
@@ -283,13 +302,15 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyEngineService.getBlockInformation(),
                 this.schemaService.getSchemas(this.policyTemplate.topicId),
                 this.modulesService.menuList(),
-                this.toolsService.menuList()
+                this.toolsService.menuList(),
+                this.policyEngineService.getPolicyCategories()
             ]).subscribe((data) => {
                 const tokens = data[0] || [];
                 const blockInformation = data[1] || {};
                 const schemas = data[2] || [];
                 const modules = data[3] || [];
                 const tools = data[4] || [];
+                this.categories = data[5] || [];
 
                 this.registeredService.registerConfig(blockInformation);
                 this.tokens = tokens.map((e: any) => new Token(e));
@@ -301,6 +322,38 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.policyTemplate.setSchemas(this.schemas);
                 this.policyTemplate.setTools(this.tools.items);
                 this.finishedLoad(this.policyTemplate);
+
+                this.categories.forEach((item: IPolicyCategory) => {
+                    switch (item.type) {
+                        case PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE:
+                            this.allCategories.appliedTechnologyTypeOptions.push(item);
+                            break;
+                        case PolicyCategoryType.MITIGATION_ACTIVITY_TYPE:
+                            this.allCategories.migrationActivityTypeOptions.push(item);
+                            break;
+                        case PolicyCategoryType.PROJECT_SCALE:
+                            this.allCategories.projectScaleOptions.push(item);
+                            break;
+                        case PolicyCategoryType.SECTORAL_SCOPE:
+                            this.allCategories.sectoralScopeOptions.push(item);
+                            break;
+                        case PolicyCategoryType.SUB_TYPE:
+                            this.allCategories.subTypeOptions.push(item);
+                            break;
+                        default:
+                            break;
+                    }
+                })
+
+                if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
+                    this.policyCategoriesMapped = [];
+                    this.policyTemplate?.categories?.forEach(id => {
+                        const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
+                        if (category) {
+                            this.policyCategoriesMapped.push(category);
+                        }
+                    })
+                }
             }, ({ message }) => {
                 this.loading = false;
                 console.error(message);
@@ -356,7 +409,6 @@ export class PolicyConfigurationComponent implements OnInit {
             console.error(message);
         });
     }
-
 
     private loadTool(): void {
         this.rootId = this.toolId;
@@ -969,7 +1021,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeDetector.detectChanges();
     }
 
-    private setErrors(results: any) {
+    private setErrors(results: any, type: string) {
         const blocks = results.blocks || [];
         const modules = results.modules || [];
         const tools = results.tools || [];
@@ -1000,12 +1052,12 @@ export class PolicyConfigurationComponent implements OnInit {
                 }
             }
         }
-        this.errorsCount = this.errors.length;
+        this.errorsCount = this.errors.length + commonErrors.length;
         this.errorsMap = {};
         for (const element of this.errors) {
             this.errorsMap[element.id] = element.errors;
         }
-        this.errorMessage(commonErrors);
+        this.errorMessage(commonErrors, type);
     }
 
     private jsonToObject(json: string): any {
@@ -1062,10 +1114,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateCodeMirrorStyles();
     }
 
-    private errorMessage(errors: string[]) {
+    private errorMessage(errors: string[], type: string) {
         if (errors && errors.length) {
             const text = errors.map((text) => `<div>${text}</div>`).join('');
-            this.informService.errorShortMessage(text, 'The policy is invalid');
+            this.informService.errorShortMessage(text, `The ${type} is invalid`);
         }
     }
 
@@ -1246,13 +1298,14 @@ export class PolicyConfigurationComponent implements OnInit {
             policyGroups: json?.policyGroups,
             policyTopics: json?.policyTopics,
             policyTokens: json?.policyTokens,
+            categories: json?.categories,
             config: json?.config
         }
         this.policyEngineService.validate(object).subscribe((data: any) => {
             const { policy, results } = data;
             const config = policy.config;
             this.policyTemplate.rebuild(config);
-            this.setErrors(results);
+            this.setErrors(results, 'policy');
             this.onSelect(this.openFolder.root);
             this.loading = false;
         }, (e) => {
@@ -1296,7 +1349,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.clearState();
                 this.loadData();
             } else {
-                this.setErrors(errors);
+                this.setErrors(errors, 'policy');
                 this.loading = false;
             }
         }, (e) => {
@@ -1354,29 +1407,61 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    private asyncUpdatePolicy(): Observable<void> {
-        return new Observable<void>(subscriber => {
-            this.changeView('blocks');
-            const root = this.policyTemplate.getJSON();
-            if (root) {
-                this.loading = true;
-                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
-                    if (policy) {
-                        this.updatePolicyTemplate(policy);
+    public openPolicyWizardDialog() {
+        this.loading = true;
+        forkJoin([
+            this.tokenService.getTokens(),
+            this.schemaService.getSchemas(),
+            this.policyEngineService.all(),
+        ]).subscribe((result) => {
+            const tokens = result[0].map((token) => new Token(token));
+            const schemas = result[1].map((schema) => new Schema(schema));
+            const policies = result[2];
+            this.wizardService.openPolicyWizardDialog(
+                WizardMode.EDIT,
+                (value) => {
+                    if (value.create) {
+                        this.loading = true;
+                        this.wizardService
+                            .getPolicyConfig(this.policyId, value.config)
+                            .subscribe((result) => {
+                                this.loading = false;
+                                this.policyTemplate.setPolicyInfo(
+                                    value.config.policy
+                                );
+                                const roles = value.config.roles;
+                                const policy = this.policyTemplate.getJSON();
+                                policy.policyRoles = roles.filter(
+                                    (role: string) => role !== 'OWNER'
+                                );
+                                policy.config = result.policyConfig;
+                                this.updatePolicyTemplate(policy);
+                                if (value.saveState) {
+                                    this.wizardService.setWizardPreset(
+                                        this.policyId,
+                                        {
+                                            data: result?.wizardConfig,
+                                            currentNode: value?.currentNode,
+                                        }
+                                    );
+                                }
+                                this.remapCategories()
+                            });
+                    } else if (value.saveState) {
+                        this.wizardService.setWizardPreset(this.policyId, {
+                            data: value.config,
+                            currentNode: value.currentNode,
+                        });
                     } else {
-                        this.policyTemplate = new PolicyTemplate();
-                        this.policyTemplate.setTokens(this.tokens);
-                        this.policyTemplate.setSchemas(this.schemas);
-                        this.policyTemplate.setTools(this.tools.items);
+                        this.wizardService.removeWizardPreset(this.policyId);
                     }
-                    setTimeout(() => { this.loading = false; }, 500);
-                    subscriber.next();
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
-            }
-        });
+                },
+                tokens,
+                schemas,
+                policies,
+                this.policyTemplate
+            );
+        }, () => undefined, () => this.loading = false);
     }
 
     private updatePolicyTemplate(policy: any) {
@@ -1399,14 +1484,17 @@ export class PolicyConfigurationComponent implements OnInit {
         const module = this.moduleTemplate.getJSON();
         delete module.id;
         delete module.uuid;
-        const dialogRef = this.dialog.open(NewModuleDialog, {
+        const dialogRef = this.dialogService.open(NewModuleDialog, {
             width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
-            data: module
+            styleClass: 'custom-dialog',
+            header: 'New Module',
+            closable: true,
+            data: {
+                type: 'module'
+            }
+            // data: module
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
             }
@@ -1432,14 +1520,17 @@ export class PolicyConfigurationComponent implements OnInit {
                 description: item.localTag,
                 config: json
             }
-            const dialogRef = this.dialog.open(NewModuleDialog, {
+
+            const dialogRef = this.dialogService.open(NewModuleDialog, {
                 width: '650px',
-                panelClass: 'g-dialog',
-                disableClose: true,
-                autoFocus: false,
-                data: module
+                styleClass: 'custom-dialog',
+                header: 'New Module',
+                closable: true,
+                data: {
+                    type: 'module'
+                }
             });
-            dialogRef.afterClosed().subscribe(async (result) => {
+            dialogRef.onClose.subscribe(async (result) => {
                 if (!result) {
                     return;
                 }
@@ -1487,7 +1578,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.modulesService.validate(module).subscribe((data: any) => {
             const { module, results } = data;
             this.moduleTemplate.rebuild(module);
-            this.setErrors(results);
+            this.setErrors(results, 'module');
             this.onOpenRoot(this.moduleTemplate);
             this.onSelect(this.openFolder.root);
             this.loading = false;
@@ -1500,14 +1591,17 @@ export class PolicyConfigurationComponent implements OnInit {
         const tool = this.toolTemplate.getJSON();
         delete tool.id;
         delete tool.uuid;
-        const dialogRef = this.dialog.open(NewModuleDialog, {
+        const dialogRef = this.dialogService.open(NewModuleDialog, {
             width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
-            data: { ...tool, type: 'tool' }
+            styleClass: 'custom-dialog',
+            header: 'New Module',
+            closable: true,
+            data: {
+                type: 'tool'
+            }
+            // data: { ...tool, type: 'tool' }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
             }
@@ -1558,7 +1652,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.toolsService.validate(tool).subscribe((data: any) => {
             const { tool, results } = data;
             this.toolTemplate.rebuild(tool);
-            this.setErrors(results);
+            this.setErrors(results, 'tool');
             this.onOpenRoot(this.toolTemplate);
             this.onSelect(this.openFolder.root);
             this.loading = false;
@@ -1567,60 +1661,43 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    public openPolicyWizardDialog() {
-        this.loading = true;
-        forkJoin([
-            this.tokenService.getTokens(),
-            this.schemaService.getSchemas(),
-            this.policyEngineService.all(),
-        ]).subscribe((result) => {
-            const tokens = result[0].map((token) => new Token(token));
-            const schemas = result[1].map((schema) => new Schema(schema));
-            const policies = result[2];
-            this.wizardService.openPolicyWizardDialog(
-                WizardMode.EDIT,
-                (value) => {
-                    if (value.create) {
-                        this.loading = true;
-                        this.wizardService
-                            .getPolicyConfig(this.policyId, value.config)
-                            .subscribe((result) => {
-                                this.loading = false;
-                                this.policyTemplate.setPolicyInfo(
-                                    value.config.policy
-                                );
-                                const roles = value.config.roles;
-                                const policy = this.policyTemplate.getJSON();
-                                policy.policyRoles = roles.filter(
-                                    (role: string) => role !== 'OWNER'
-                                );
-                                policy.config = result.policyConfig;
-                                this.updatePolicyTemplate(policy);
-                                if (value.saveState) {
-                                    this.wizardService.setWizardPreset(
-                                        this.policyId,
-                                        {
-                                            data: result?.wizardConfig,
-                                            currentNode: value?.currentNode,
-                                        }
-                                    );
-                                }
-                            });
-                    } else if (value.saveState) {
-                        this.wizardService.setWizardPreset(this.policyId, {
-                            data: value.config,
-                            currentNode: value.currentNode,
-                        });
+    private asyncUpdatePolicy(): Observable<void> {
+        return new Observable<void>(subscriber => {
+            this.changeView('blocks');
+            const root = this.policyTemplate.getJSON();
+            if (root) {
+                this.loading = true;
+                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
+                    if (policy) {
+                        this.updatePolicyTemplate(policy);
+
+                        this.remapCategories();
                     } else {
-                        this.wizardService.removeWizardPreset(this.policyId);
+                        this.policyTemplate = new PolicyTemplate();
+                        this.policyTemplate.setTokens(this.tokens);
+                        this.policyTemplate.setSchemas(this.schemas);
+                        this.policyTemplate.setTools(this.tools.items);
                     }
-                },
-                tokens,
-                schemas,
-                policies,
-                this.policyTemplate
-            );
-        }, () => undefined, () => this.loading = false);
+                    setTimeout(() => { this.loading = false; }, 500);
+                    subscriber.next();
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
+    private remapCategories() {
+        if (this.policyTemplate?.categories?.length && this.policyTemplate?.categories.length > 0) {
+            this.policyCategoriesMapped = [];
+            this.policyTemplate.categories.forEach(id => {
+                const category = this.categories.find((cat: IPolicyCategory) => cat.id === id);
+                if (category) {
+                    this.policyCategoriesMapped.push(category);
+                }
+            })
+        }
     }
 
     private generateSuggestionsInput(
@@ -1654,6 +1731,18 @@ export class PolicyConfigurationComponent implements OnInit {
         return [result, childConfig];
     }
 
+    public backToPolicies() {
+        this.router.navigateByUrl('/policy-viewer');
+    }
+
+    public backToModules() {
+        this.router.navigateByUrl('/modules');
+    }
+
+    public backToTools() {
+        this.router.navigateByUrl('/tools');
+    }
+
     public onBlockSearch(block: any): void {
         const option = {
             config: this.rootTemplate.getConfig(),
@@ -1676,5 +1765,48 @@ export class PolicyConfigurationComponent implements OnInit {
                 (event.source as PolicyBlock).replaceConfig(event.target as PolicyBlock);
             }
         }
+    }
+
+    onDroppedSection(event: CdkDragDrop<any[]>) {
+        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+        this.options.save();
+    }
+
+    saveSizes(event: StopResizingEvent) {
+        return (item: OrderOption) => {
+            if (item.id === event.prev?.id) {
+                item.size = event.prev.size;
+            }
+            if (item.id === event.next?.id) {
+                item.size = event.next.size;
+            }
+            return item;
+        }
+    }
+
+    stopResizingConfiguration(event: StopResizingEvent) {
+        this.options.configurationOrder = this.options.configurationOrder.map(
+            this.saveSizes(event)
+        );
+        this.options.save();
+    }
+
+    stopResizingProperties(event: StopResizingEvent) {
+        this.options.propertiesOrder = this.options.propertiesOrder.map(
+            this.saveSizes(event)
+        );
+        this.options.save();
+    }
+
+    onDragSection(event: any) {
+        document.body.classList.add('inherit-cursor');
+        document.body.classList.add('pointer-events-children-none');
+        document.body.style.cursor = 'grabbing';
+    }
+
+    onDropSection(event: any) {
+        document.body.classList.remove('inherit-cursor');
+        document.body.classList.remove('pointer-events-children-none');
+        document.body.style.cursor = '';
     }
 }

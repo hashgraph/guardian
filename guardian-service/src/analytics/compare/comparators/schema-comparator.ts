@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
 import { ReportTable } from '../../table/report-table';
 import { Status } from '../types/status.type';
 import { SchemaModel } from '../models/schema.model';
@@ -19,18 +19,21 @@ export class SchemaComparator {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(options?: ICompareOptions) {
+    constructor(options?: CompareOptions) {
         if (options) {
             this.options = options;
         } else {
-            this.options = {
-                propLvl: 2,
-                childLvl: 0,
-                eventLvl: 0,
-                idLvl: 1,
-            }
+            this.options = new CompareOptions(
+                IPropertiesLvl.All,
+                IChildrenLvl.None,
+                IEventsLvl.None,
+                IIdLvl.All,
+                IKeyLvl.Default,
+                IRefLvl.Default,
+                null
+            );
         }
     }
 
@@ -155,7 +158,7 @@ export class SchemaComparator {
      * @param options
      * @private
      */
-    private compareSchemas(schema1: SchemaModel, schema2: SchemaModel, options: ICompareOptions): IRate<any>[] {
+    private compareSchemas(schema1: SchemaModel, schema2: SchemaModel, options: CompareOptions): IRate<any>[] {
         const fields = this.compareArray(Status.PARTLY, schema1.fields, schema2.fields, options);
         return fields;
     }
@@ -167,7 +170,7 @@ export class SchemaComparator {
      * @param options
      * @private
      */
-    private compareField(field1: FieldModel, field2: FieldModel, options: ICompareOptions): FieldsRate {
+    private compareField(field1: FieldModel, field2: FieldModel, options: CompareOptions): FieldsRate {
         const rate = new FieldsRate(field1, field2);
         rate.calc(options);
         if (!field1 && !field2) {
@@ -205,7 +208,7 @@ export class SchemaComparator {
         type: Status,
         fields1: FieldModel[],
         fields2: FieldModel[],
-        options: ICompareOptions
+        options: CompareOptions
     ): FieldsRate[] {
         let result: IRateMap<FieldModel>[];
         if (type === Status.FULL) {

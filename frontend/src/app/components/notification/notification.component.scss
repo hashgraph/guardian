@@ -2,6 +2,66 @@
     background-color: var(--button-primary-color);
 }
 
+.primary-color {
+    fill: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.info-color {
+    fill: var(--color-secondary, #CDDDFD);
+    color: var(--color-secondary, #CDDDFD);
+}
+
+.details-color {
+    fill: #C4D0E1;
+    color: #C4D0E1;
+}
+
+.success-color {
+    fill: #19BE47;
+    color: #19BE47;
+}
+
+.error-color {
+    fill: var(--color-accent-red-1, #FF432A);
+    color: var(--color-accent-red-1, #FF432A);
+}
+
+.disabled-color {
+    fill: var(--color-grey-6, #848FA9);
+    color: var(--color-grey-6, #848FA9);
+}
+
+
+.badge {
+    background-color: #ff432a;
+    width: min-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 8px;
+    border-radius: 16px;
+    cursor: pointer;
+
+    span {
+        color: #fff;
+        font-family: Inter, serif;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 20px;
+    }
+}
+
+.notification-counter {
+    color: #FFF;
+    font-family: Inter, serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+}
+
 .notification-menu {
     display: flex;
     flex-direction: column;
@@ -24,12 +84,14 @@
 .notification-menu-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     padding: 0 5px;
 
     &__title {
-        font-size: 25px;
-        line-height: 25px;
+        font-size: 24px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 32px;
     }
 }
 
@@ -41,15 +103,39 @@
 }
 
 .link-btn {
-    color: #438eff;
+    background: transparent;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 16px;
+
+    color: var(--color-primary, #438EFF);
     cursor: pointer;
+    border: 1px solid var(--color-secondary, #CDDDFD);
+    padding: 6px 16px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &[disabled] {
+        color: var(--color-secondary, #CDDDFD);
+    }
+}
+
+.primary-btn {
+    color: var(--color-grey-white, #FFFFFF);
+    background-color: var(--color-primary, #438EFF);
+    border: 0;
+    height: 40px;
 }
 
 .progress,
 .notification {
     padding: 10px;
     width: 300px;
-    border-radius: 10px;
+    border-radius: 8px;
     outline: 1px solid #2c78f654;
 }
 
@@ -58,49 +144,81 @@
     margin-top: 10px;
 }
 
+.width-min-content {
+    width: min-content;
+}
+
 .notification {
-    display: grid;
-    grid-template-columns: 30px 1fr 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
 
     &[unread='true'] {
-        box-shadow: 0px 0px 4px 2px #2c78f687;
+        border: 1px solid var(--color-primary, #0681EE);
     }
+
     &__title {
-        grid-column: 2 / 3;
-        grid-row: 1 / 2;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        padding-right: 5px;
+        display: flex;
+        column-gap: 8px;
+
+        span {
+            color: #000;
+            font-family: Inter, sans-serif;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+        }
     }
-    &__icon {
-        grid-row: 1/3;
-        align-self: center;
-        width: 25px;
-        height: 25px;
-        font-size: 25px;
-        grid-column: 1;
-    }
+
     &__message {
-        grid-column: 2 / 4;
-        grid-row: 2 / 3;
+        margin-left: 32px;
+        overflow-x: hidden;
+        color: var(--color-grey-6, #848FA9);
         white-space: nowrap;
         text-overflow: ellipsis;
-        overflow: hidden;
+        font-family: Inter, sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
     }
+
+    &__progressbar {
+        margin-top: 8px;
+        width: 270px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        column-gap: 8px;
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+        }
+
+        .progress-value {
+            width: min-content;
+            height: min-content;
+
+            color: var(--color-grey-6, #848FA9);
+            text-align: center;
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+            white-space: nowrap;
+
+            &:after {
+                content: '%';
+            }
+        }
+    }
+
     &__details {
-        grid-row: 1/2;
-        grid-column: 3 / 4;
-        justify-self: end;
-    }
-    &[type='SUCCESS'] &__icon {
-        color: green;
-    }
-    &[type='ERROR'] &__icon {
-        color: red;
-    }
-    &[type='WARN'] &__icon {
-        color: goldenrod;
+        height: 24px;
     }
 }
 
@@ -119,12 +237,21 @@
         overflow: hidden;
         padding-right: 5px;
     }
+
     &__message {
         grid-area: message;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
     }
+
+    &__progressbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+    }
+
     &__details {
         grid-area: details;
         justify-self: end;
@@ -134,9 +261,13 @@
 .progress-bar {
     display: flex;
     gap: 10px;
-    align-items: flex-end;
+    align-items: end;
     grid-area: progress;
     margin-bottom: 3px;
+
+    &__line {
+        width: 250px;
+    }
 
     &__value {
         grid-area: value;
@@ -145,10 +276,31 @@
 }
 
 .no-new-notifications {
-    width: 330px;
-    text-align: center;
-    font-size: 20px;
-    line-height: 40px;
+    width: 370px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    row-gap: 16px;
+    margin: 46px 0;
+
+    span {
+        color: var(--color-grey-6, #848FA9);
+        text-align: center;
+        font-family: Inter, sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
 }
 
+::ng-deep .p-progressbar {
+    width: 100%;
+    border-radius: 8px;
+    height: 8px;
+}
 
+::ng-deep .p-progressbar-value {
+    background-color: var(--color-primary) !important;
+}

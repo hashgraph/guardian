@@ -1,10 +1,15 @@
 # 💻 User Guide
 
+1. [Step By Step Process](user-guide.md#id-1.-step-by-step-process)
+2. [Demo Video](user-guide.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ### 1. Icon & Tooltip :
 
 Added notification icon and also tooltip with count of unread notifications:
 
-![image4.png](../../../.gitbook/assets/0.png)
+![image4.png](<../../../.gitbook/assets/0 (1).png>)
 
 ### 2. View :
 
@@ -29,3 +34,7 @@ Users can see the details of the status or progresses of the recent processes by
 Users can see old notifications by clicking on “”View all notifications”. On the notifications status grid, we can perform two operations on the notification: “Delete up to this point” and “Open”.
 
 ![image6.png](<../../../.gitbook/assets/4 (4).png>)
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=e6U68FtEbG8\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=14\&t=306s)

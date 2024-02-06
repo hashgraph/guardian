@@ -10,18 +10,7 @@ import { takeUntil } from 'rxjs/operators';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
-
-export const DATETIME_FORMATS = {
-    parse: {
-        dateInput: 'l, LT',
-    },
-    display: {
-        dateInput: 'l, LT',
-        monthYearLabel: 'MM yyyy',
-        dateA11yLabel: 'LL',
-        monthYearA11yLabel: 'MMMM YYYY',
-    }
-};
+import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -64,10 +53,10 @@ enum ErrorArrayMessageByFieldType {
 @Component({
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',
-    styleUrls: ['./schema-form.component.css'],
+    styleUrls: ['./schema-form.component.scss'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: DATETIME_FORMATS }
+        {provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT}
     ]
 })
 export class SchemaFormComponent implements OnInit {
@@ -79,6 +68,7 @@ export class SchemaFormComponent implements OnInit {
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
     @Input('preset') presetDocument: any = null;
+    @Input('example') example: boolean = false;
     @Input() cancelText: string = 'Cancel';
     @Input() submitText: string = 'Submit';
     @Input() cancelHidden: boolean = false;
@@ -86,6 +76,8 @@ export class SchemaFormComponent implements OnInit {
     @Input() showButtons: boolean = true;
     @Input() isChildSchema: boolean = false;
     @Input() comesFromDialog: boolean = false;
+
+    @Input() isFormForFinishSetup: boolean = false;
 
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
@@ -132,7 +124,7 @@ export class SchemaFormComponent implements OnInit {
         this.conditionFields = [];
 
         if (this.conditions) {
-            this.conditions.forEach((cond: any) => {
+            this.conditions = this.conditions.map((cond: any) => {
                 if (this.presetDocument) {
                     cond.preset = {};
                     for (const thenField of cond.thenFields) {
@@ -144,10 +136,11 @@ export class SchemaFormComponent implements OnInit {
                             this.presetDocument[elseField?.name];
                     }
                 }
-                cond.conditionForm = new FormGroup({});
-                this.subscribeCondition(cond.conditionForm);
+                const conditionForm = new FormGroup({});
+                this.subscribeCondition(conditionForm);
                 this.conditionFields.push(...cond.thenFields);
                 this.conditionFields.push(...cond.elseFields);
+                return Object.assign({ conditionForm }, cond);
             });
         }
 
@@ -203,17 +196,67 @@ export class SchemaFormComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
     }
 
-    private isAllFieldsHidden(field: SchemaField): boolean {
+    public addGroup(item: any) {
+        item.control =
+            item.customType === ('geo' || 'sentinel') ? new FormControl({}) : new FormGroup({});
+        this.options?.addControl(item.name, item.control);
+        this.change.emit();
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public isInput(item: SchemaField): boolean {
         return (
-            field.hidden ||
             (
-                field.isRef &&
-                field.type !== '#GeoJSON' &&
-                !!field.fields?.every((field: any) =>
-                    this.isAllFieldsHidden(field)
-                )
-            )
+                item.type === 'string' ||
+                item.type === 'number' ||
+                item.type === 'integer' ||
+                item.customType === 'geo' ||
+                item.customType === 'sentinel'
+            ) && (
+                item.format !== 'date' &&
+                item.format !== 'time' &&
+                item.format !== 'date-time'
+            ) && !item.remoteLink && !item.enum
         );
+    }
+
+    private getValidators(item: any): ValidatorFn[] {
+        const validators = [];
+
+        if (item.required) {
+            validators.push(Validators.required);
+        }
+
+        if (item.pattern) {
+            validators.push(Validators.pattern(new RegExp(item.pattern)));
+            return validators;
+        }
+
+        if (item.format === 'email') {
+            validators.push(Validators.pattern(fullFormats.email as RegExp));
+        }
+
+        if (item.type === 'number') {
+            validators.push(this.isNumberOrEmptyValidator());
+        }
+
+        if (item.format === 'duration') {
+            validators.push(Validators.pattern(fullFormats.duration as RegExp));
+        }
+
+        if (item.type === 'integer') {
+            validators.push(this.isNumberOrEmptyValidator());
+        }
+
+        if (item.format === 'url') {
+            validators.push(Validators.pattern(fullFormats.url as RegExp));
+        }
+
+        if (item.format === 'uri') {
+            validators.push(uriValidator());
+        }
+
+        return validators;
     }
 
     private createFieldControl(field: SchemaField): any {
@@ -250,11 +293,10 @@ export class SchemaFormComponent implements OnInit {
 
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
-            item.isAllFieldsHidden = this.isAllFieldsHidden(item);
             item.displayRequired = item.fields.some((refField: any) => refField.required);
             if (field.required || item.preset) {
                 item.control =
-                    item.customType === 'geo'
+                    item.customType === ('geo' || 'sentinel')
                         ? new FormControl({})
                         : new FormGroup({});
             }
@@ -298,18 +340,17 @@ export class SchemaFormComponent implements OnInit {
             item.control = new FormArray([]);
             item.list = [];
             item.fields = field.fields;
-            item.isAllFieldsHidden = this.isAllFieldsHidden(item);
             if (item.preset && item.preset.length) {
                 for (let index = 0; index < item.preset.length; index++) {
                     const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);
+                    const listItem = this.createListControl(item, preset);//todo
                     item.list.push(listItem);
                     item.control.push(listItem.control);
                 }
                 this.options?.updateValueAndValidity();
                 this.change.emit();
             } else if (field.required) {
-                const listItem = this.createListControl(item);
+                const listItem = this.createListControl(item);//todo
                 item.list.push(listItem);
                 item.control.push(listItem.control);
 
@@ -332,124 +373,6 @@ export class SchemaFormComponent implements OnInit {
         return item;
     }
 
-    private createListControl(item: any, preset?: any): any {
-        const listItem: any = {
-            name: item.name,
-            preset: preset,
-            index: String(item.list.length),
-        }
-        if (item.isRef) {
-            listItem.control =
-                item.customType === 'geo'
-                    ? new FormControl({})
-                    : new FormGroup({});
-        } else {
-            listItem.fileUploading = false;
-            const validators = this.getValidators(item);
-            listItem.control = new FormControl(preset === null || preset === undefined ? "" : preset, validators);
-            this.postFormat(item, listItem.control);
-        }
-
-        return listItem;
-    }
-
-    private getValidators(item: any): ValidatorFn[] {
-        const validators = [];
-
-        if (item.required) {
-            validators.push(Validators.required);
-        }
-
-        if (item.pattern) {
-            validators.push(Validators.pattern(new RegExp(item.pattern)));
-            return validators;
-        }
-
-        if (item.format === 'email') {
-            validators.push(Validators.pattern(fullFormats.email as RegExp));
-        }
-
-        if (item.type === 'number') {
-            validators.push(this.isNumberOrEmptyValidator());
-        }
-
-        if (item.format === 'duration') {
-            validators.push(Validators.pattern(fullFormats.duration as RegExp));
-        }
-
-        if (item.type === 'integer') {
-            validators.push(this.isNumberOrEmptyValidator());
-        }
-
-        if (item.format === 'url') {
-            validators.push(Validators.pattern(fullFormats.url as RegExp));
-        }
-
-        if (item.format === 'uri') {
-            validators.push(uriValidator());
-        }
-
-        return validators;
-    }
-
-    private postFormat(item: any, control: FormControl): any {
-        const format = item.format;
-        const type = item.type;
-        const pattern = item.pattern;
-        const customType = item.customType;
-
-        control.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((val: any) => {
-                let valueToSet: any = val;
-                if (format === 'date') {
-                    const momentDate = moment(val);
-                    if (momentDate.isValid()) {
-                        valueToSet = momentDate.format("YYYY-MM-DD");
-                    } else {
-                        valueToSet = "";
-                    }
-                } else if (format === 'date-time') {
-                    const momentDate = moment(val);
-                    if (momentDate.isValid()) {
-                        momentDate.seconds(0);
-                        momentDate.milliseconds(0);
-                        valueToSet = momentDate.toISOString();
-                    } else {
-                        valueToSet = "";
-                    }
-                } else if (type === 'number' || type === 'integer') {
-                    if (typeof (val) === 'string') {
-                        if (
-                            (!pattern && !this._patternByNumberType[type].test(val)) ||
-                            (pattern && !val?.match(pattern))
-                        ) {
-                            valueToSet = null;
-                        } else if (type == 'integer') {
-                            valueToSet = parseInt(val);
-                        } else if (type == 'number') {
-                            valueToSet = parseFloat(val);
-                        }
-                    }
-                    if (!Number.isFinite(valueToSet)) {
-                        valueToSet = val;
-                    }
-                } else if (customType === 'geo') {
-                    try {
-                        valueToSet = JSON.parse(val);
-                    } catch {
-                        valueToSet = val;
-                    }
-                } else {
-                    return;
-                }
-                control.setValue(valueToSet, {
-                    emitEvent: false,
-                    emitModelToViewChange: false
-                });
-            });
-    }
-
     public addItem(item: any) {
         const listItem = this.createListControl(item);
         item.list.push(listItem);
@@ -460,12 +383,25 @@ export class SchemaFormComponent implements OnInit {
         });
     }
 
-    public addGroup(item: any) {
-        item.control =
-            item.customType === 'geo' ? new FormControl({}) : new FormGroup({});
-        this.options?.addControl(item.name, item.control);
-        this.change.emit();
-        this.changeDetectorRef.detectChanges();
+    private createListControl(item: any, preset?: any): any {
+        const listItem: any = {
+            name: item.name,
+            preset: preset,
+            index: String(item.list.length),
+        }
+        if (item.isRef) {
+            listItem.control =
+                item.customType === ('geo' || 'sentinel')
+                    ? new FormControl({})
+                    : new FormGroup({});
+        } else {
+            listItem.fileUploading = false;
+            const validators = this.getValidators(item);
+            listItem.control = new FormControl(preset === null || preset === undefined ? "" : preset, validators);
+            this.postFormat(item, listItem.control);
+        }
+
+        return listItem;
     }
 
     public removeGroup(item: any) {
@@ -652,19 +588,62 @@ export class SchemaFormComponent implements OnInit {
             || item.pattern === '^ipfs:\/\/.+';
     }
 
-    public isInput(item: SchemaField): boolean {
-        return (
-            (
-                item.type === 'string' ||
-                item.type === 'number' ||
-                item.type === 'integer' ||
-                item.customType === 'geo'
-            ) && (
-                item.format !== 'date' &&
-                item.format !== 'time' &&
-                item.format !== 'date-time'
-            ) && !item.remoteLink && !item.enum
-        );
+    private postFormat(item: any, control: FormControl): any {
+        const format = item.format;
+        const type = item.type;
+        const pattern = item.pattern;
+        const customType = item.customType;
+
+        control.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((val: any) => {
+                let valueToSet: any = val;
+                if (format === 'date') {
+                    const momentDate = moment(val);
+                    if (momentDate.isValid()) {
+                        valueToSet = momentDate.format("YYYY-MM-DD");
+                    } else {
+                        valueToSet = "";
+                    }
+                } else if (format === 'date-time') {
+                    const momentDate = moment(val);
+                    if (momentDate.isValid()) {
+                        momentDate.seconds(0);
+                        momentDate.milliseconds(0);
+                        valueToSet = momentDate.toISOString();
+                    } else {
+                        valueToSet = "";
+                    }
+                } else if (type === 'number' || type === 'integer') {
+                    if (typeof (val) === 'string') {
+                        if (
+                            (!pattern && !this._patternByNumberType[type].test(val)) ||
+                            (pattern && !val?.match(pattern))
+                        ) {
+                            valueToSet = null;
+                        } else if (type == 'integer') {
+                            valueToSet = parseInt(val);
+                        } else if (type == 'number') {
+                            valueToSet = parseFloat(val);
+                        }
+                    }
+                    if (!Number.isFinite(valueToSet)) {
+                        valueToSet = val;
+                    }
+                } else if (customType === ('geo' || 'sentinel')) {
+                    try {
+                        valueToSet = JSON.parse(val);
+                    } catch {
+                        valueToSet = val;
+                    }
+                } else {
+                    return;
+                }
+                control.setValue(valueToSet, {
+                    emitEvent: false,
+                    emitModelToViewChange: false
+                });
+            });
     }
 
     public isEnum(item: SchemaField) {

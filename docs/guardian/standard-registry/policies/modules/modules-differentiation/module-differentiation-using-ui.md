@@ -12,7 +12,7 @@ Once, compare button is clicked, we need to select the first and second modules 
 
 ### 1.1 Result of comparison:
 
-<figure><img src="../../../../../.gitbook/assets/2.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/2 (3).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.1.1 Params**
 
@@ -47,7 +47,7 @@ Once, compare button is clicked, we need to select the first and second modules 
 
 Block comparison structure can be expanded to view the comparison of their Properties:
 
-![image4.png](<../../../../../.gitbook/assets/3 (1).png>)
+![image4.png](<../../../../../.gitbook/assets/3 (1) (1).png>)
 
 *
   *

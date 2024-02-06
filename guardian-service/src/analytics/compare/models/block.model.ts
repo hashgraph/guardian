@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
 import { EventModel } from './event.model';
 import { BlockPropertiesModel } from './block-properties.model';
 import { WeightType } from '../types/weight.type';
@@ -137,7 +137,7 @@ export class BlockModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         const weights = [];
         const weightMap = {};
 
@@ -173,9 +173,9 @@ export class BlockModel implements IWeightModel {
             }
             _children2 = String(_hashState.result());
 
-            if (options.childLvl > 1) {
+            if (options.childLvl === IChildrenLvl.All) {
                 _children = _children2;
-            } else if (options.childLvl > 0) {
+            } else if (options.childLvl === IChildrenLvl.First) {
                 _children = _children1;
             } else {
                 _children = '0';
@@ -206,36 +206,36 @@ export class BlockModel implements IWeightModel {
         - tag + prop + children
         */
         weightMap[WeightType.CHILD_LVL_2] = _children2;
-        if (options.childLvl > 0) {
+        if (options.childLvl !== IChildrenLvl.None) {
             weightMap[WeightType.CHILD_LVL_1] = _children;
             weights.push(weightMap[WeightType.CHILD_LVL_1]);
         }
-        if (options.propLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             weightMap[WeightType.PROP_LVL_1] = _tag;
             weights.push(weightMap[WeightType.PROP_LVL_1]);
         }
-        if (options.propLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             weightMap[WeightType.PROP_LVL_2] = _prop;
             weights.push(weightMap[WeightType.PROP_LVL_2]);
         }
-        if (options.propLvl > 0 && options.childLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None && options.childLvl !== IChildrenLvl.None) {
             weightMap[WeightType.PROP_AND_CHILD_1] = CompareUtils.aggregateHash(_tag, _children);
             weights.push(weightMap[WeightType.PROP_AND_CHILD_1]);
         }
-        if (options.propLvl > 0 && options.childLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None && options.childLvl !== IChildrenLvl.None) {
             weightMap[WeightType.PROP_AND_CHILD_2] = CompareUtils.aggregateHash(_prop, _children);
             weights.push(weightMap[WeightType.PROP_AND_CHILD_2]);
         }
-        if (options.propLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             weightMap[WeightType.PROP_LVL_3] = CompareUtils.aggregateHash(_tag, _prop);
             weights.push(weightMap[WeightType.PROP_LVL_3]);
         }
-        if (options.propLvl > 0 && options.childLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None && options.childLvl !== IChildrenLvl.None) {
             weightMap[WeightType.PROP_AND_CHILD_3] = CompareUtils.aggregateHash(_tag, _prop, _children);
             weights.push(weightMap[WeightType.PROP_AND_CHILD_3]);
         }
 
-        if (options.propLvl > 0) {
+        if (options.propLvl !== IPropertiesLvl.None) {
             this._hash = CompareUtils.aggregateHash(_hash, _tag, _prop);
         } else {
             this._hash = CompareUtils.aggregateHash(_hash, _tag);
@@ -251,7 +251,7 @@ export class BlockModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public updateEvents(map: IKeyMap<BlockModel>, options: ICompareOptions) {
+    public updateEvents(map: IKeyMap<BlockModel>, options: CompareOptions) {
         for (const event of this._events) {
             event.update(map, options);
         }
@@ -263,7 +263,7 @@ export class BlockModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public updateArtifacts(artifacts: IArtifacts[], options: ICompareOptions) {
+    public updateArtifacts(artifacts: IArtifacts[], options: CompareOptions) {
         for (const artifact of this._artifacts) {
             const row = artifacts.find(e => e.uuid === artifact.uuid);
             if (row && row.data) {
@@ -280,7 +280,7 @@ export class BlockModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
+    public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: CompareOptions): void {
         this._prop.updateSchemas(schemaMap, options);
     }
 
@@ -290,7 +290,7 @@ export class BlockModel implements IWeightModel {
      * @param options - comparison options
      * @public
      */
-    public updateTokens(tokenMap: IKeyMap<TokenModel>, options: ICompareOptions): void {
+    public updateTokens(tokenMap: IKeyMap<TokenModel>, options: CompareOptions): void {
         this._prop.updateTokens(tokenMap, options);
     }
 
@@ -427,7 +427,7 @@ export class BlockModel implements IWeightModel {
      * Get weight object
      * @public
      */
-    public toWeight(options: ICompareOptions): IWeightBlock {
+    public toWeight(options: CompareOptions): IWeightBlock {
         const children: IWeightBlock[] = [];
         let length = 0;
         for (const child of this._children) {

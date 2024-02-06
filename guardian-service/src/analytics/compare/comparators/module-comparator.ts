@@ -1,6 +1,6 @@
 import { BlockModel } from '../models/block.model';
 import { BlocksRate } from '../rates/blocks-rate';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
 import { ReportTable } from '../../table/report-table';
 import { Status } from '../types/status.type';
 import { IRateMap } from '../interfaces/rate-map.interface';
@@ -18,62 +18,24 @@ import { ModuleModel } from '../models/module.model';
  */
 export class ModuleComparator {
     /**
-     * Properties
-     * 0 - Don't compare
-     * 1 - Only simple properties
-     * 2 - All properties
-     * @private
-     */
-    private readonly propLvl: number;
-
-    /**
-     * Children
-     * 0 - Don't compare
-     * 1 - Only child blocks of the first level
-     * 2 - All children
-     * @private
-     */
-    private readonly childLvl: number;
-
-    /**
-     * Events
-     * 0 - Don't compare
-     * 1 - All events
-     * @private
-     */
-    private readonly eventLvl: number;
-
-    /**
-     * UUID
-     * 0 - Don't compare
-     * 1 - All UUID
-     * @private
-     */
-    private readonly idLvl: number;
-
-    /**
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
-    constructor(options?: ICompareOptions) {
+    constructor(options?: CompareOptions) {
         if (options) {
-            this.propLvl = options.propLvl;
-            this.childLvl = options.childLvl;
-            this.eventLvl = options.eventLvl;
-            this.idLvl = options.idLvl;
+            this.options = options;
         } else {
-            this.propLvl = 2;
-            this.childLvl = 2;
-            this.eventLvl = 1;
-            this.idLvl = 1;
-        }
-        this.options = {
-            propLvl: this.propLvl,
-            childLvl: this.childLvl,
-            eventLvl: this.eventLvl,
-            idLvl: this.idLvl,
+            this.options = new CompareOptions(
+                IPropertiesLvl.All,
+                IChildrenLvl.All,
+                IEventsLvl.All,
+                IIdLvl.All,
+                IKeyLvl.Default,
+                IRefLvl.Default,
+                null
+            );
         }
     }
 
@@ -319,7 +281,7 @@ export class ModuleComparator {
      * @param options
      * @private
      */
-    private compareTree(block1: BlockModel, block2: BlockModel, options: ICompareOptions): BlocksRate {
+    private compareTree(block1: BlockModel, block2: BlockModel, options: CompareOptions): BlocksRate {
         const rate = new BlocksRate(block1, block2);
         rate.calc(options);
         if (!block1 && !block2) {
@@ -363,7 +325,7 @@ export class ModuleComparator {
         type: Status,
         children1: BlockModel[],
         children2: BlockModel[],
-        options: ICompareOptions
+        options: CompareOptions
     ): BlocksRate[] {
         let result: IRateMap<BlockModel>[];
         if (type === Status.FULL) {
@@ -391,7 +353,7 @@ export class ModuleComparator {
     private compareArray(
         children1: IWeightModel[],
         children2: IWeightModel[],
-        options: ICompareOptions
+        options: CompareOptions
     ): IRate<any>[] {
         const result = MergeUtils.partlyMerge<IWeightModel>(children1, children2);
         const rates: IRate<any>[] = [];

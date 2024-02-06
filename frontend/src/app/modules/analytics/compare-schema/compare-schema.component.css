@@ -47,7 +47,7 @@
 
 .list {
     overflow: auto;
-    height: calc(100vh - 205px);
+    /* height: calc(100vh - 205px); */
 }
 
 .merge-table {

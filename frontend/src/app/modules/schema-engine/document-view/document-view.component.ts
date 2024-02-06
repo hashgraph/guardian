@@ -11,7 +11,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 @Component({
     selector: 'app-document-view',
     templateUrl: './document-view.component.html',
-    styleUrls: ['./document-view.component.css'],
+    styleUrls: ['./document-view.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentViewComponent implements OnInit {
@@ -86,7 +86,7 @@ export class DocumentViewComponent implements OnInit {
 
     loadSchema(type: string) {
         if (this.schema) {
-            this.schemaMap[type] =  new Schema(this.schema);
+            this.schemaMap[type] = new Schema(this.schema);
             this.loading--;
             this.ref.detectChanges();
         }

@@ -9,7 +9,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'timer-config',
     templateUrl: './timer-config.component.html',
-    styleUrls: ['./timer-config.component.css'],
+    styleUrls: ['./timer-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class TimerConfigComponent implements OnInit {
@@ -19,7 +19,7 @@ export class TimerConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
         options: false,

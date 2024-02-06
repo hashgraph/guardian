@@ -34,7 +34,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 **Note:** it is important that DID of the user is used for ID of the documents as this value will be used further in the document for filtration
 
-![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (1).png>)
+![Adding DID as ID Type](<../../../../.gitbook/assets/2 (3) (1) (1).png>)
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
@@ -54,7 +54,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 ### 1.2 Save the project
 
-![Saving Project](<../../../../.gitbook/assets/6 (2) (1).png>)
+![Saving Project](<../../../../.gitbook/assets/6 (2) (1) (1).png>)
 
 ### 1.3 Link to the token
 
@@ -92,15 +92,15 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.4.5 Use ‘**documentsSourceAddon**’ for data for **Dropdown**_**.**_
 
-![adding documentSourceAddon](<../../../../.gitbook/assets/14 (1) (1) (1).png>)
+![adding documentSourceAddon](<../../../../.gitbook/assets/14 (1) (1) (1) (1) (1).png>)
 
 1.4.6 Save the changed document
 
-![Saving the documents](<../../../../.gitbook/assets/15 (1) (1).png>)
+![Saving the documents](<../../../../.gitbook/assets/15 (1) (1) (1).png>)
 
 1.4.7 As ‘**documentsSourceAddon**’ does not have default events, we need manually add them.
 
-![Adding events](<../../../../.gitbook/assets/16 (1).png>)
+![Adding events](<../../../../.gitbook/assets/16 (1) (1) (1).png>)
 
 1.4.8 Return to grid settings and add **Dropdown** into the target column.
 
@@ -116,7 +116,7 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 _(Please see_ [_example 2_](data-input-via-forms-using-roles-to-partition-user-activities..md) _for the more detailed description of this workflow)_
 
-![Adding document approval block](<../../../../.gitbook/assets/19 (1).png>)
+![Adding document approval block](<../../../../.gitbook/assets/19 (1) (2).png>)
 
 1.5.3 Add Approve button into the grid
 

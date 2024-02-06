@@ -9,6 +9,7 @@ import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Page to find VP Documents and display Trust Chain.
@@ -38,6 +39,7 @@ export class TrustChainComponent implements OnInit {
         private router: Router,
         private fb: FormBuilder,
         public dialog: MatDialog,
+        private dialogService: DialogService,
         iconRegistry: MatIconRegistry,
         sanitizer: DomSanitizer
     ) {
@@ -140,10 +142,11 @@ export class TrustChainComponent implements OnInit {
 
 
     openVCDocument(item: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
+            header: 'VC',
+            styleClass: 'custom-dialog',
             data: {
                 id: item.id,
                 dryRun: !!item.dryRunId,
@@ -153,14 +156,16 @@ export class TrustChainComponent implements OnInit {
                 type: 'VC'
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openVPDocument(item: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
+            header: 'VP',
+            styleClass: 'custom-dialog',
             data: {
                 id: item.id,
                 dryRun: !!item.dryRunId,
@@ -170,14 +175,16 @@ export class TrustChainComponent implements OnInit {
                 type: 'VP'
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openJsonDocument(item: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
+            header: 'Json',
+            styleClass: 'custom-dialog',
             data: {
                 id: item.id,
                 dryRun: !!item.dryRunId,
@@ -186,7 +193,8 @@ export class TrustChainComponent implements OnInit {
                 type: 'JSON',
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     mapData(data: any[]) {

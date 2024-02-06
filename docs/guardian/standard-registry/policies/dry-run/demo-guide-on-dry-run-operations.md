@@ -1,5 +1,10 @@
 # 💻 Dry Run Mode using UI
 
+1. [Step By Step Process](demo-guide-on-dry-run-operations.md#id-1.-step-by-step-process)
+2. [Demo Video](demo-guide-on-dry-run-operations.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 In this mode of operation all artifacts (files, documents and transactions) that are produced in the course of execution of the policy are stored in the local database but not sent out to Hedera or IPFS. The artifacts are stored in the database in a separate table specific for the ‘dry run’ mode. This also allows the trial for executing the workflow without real accounts.
 
 ### 1. Starting Dry Run Mode
@@ -213,3 +218,7 @@ GET: /api/v1/policies/{policyId}/dry-run/ipfs?pageIndex=0&pageSize=100
 ```
 
 To get complete information on above API, please check : [#returns-lists-of-ipfs-files.](dry-run-mode-using-apis/returns-list-of-ipfs-files.md#returns-lists-of-ipfs-files. "mention")
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=WU\_ntIM5SJA\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=1)

@@ -1,0 +1,105 @@
+<div *ngIf="!loading" class="container">
+    <div class="header">
+        <h1>List of Tokens</h1>
+    </div>
+    <ng-container *ngIf="isConfirmed; else noDIDSettings">
+        <ng-container *ngIf="tokens.length > 0 else noData">
+            <div class="table-container">
+                <table>
+                    <tr class="row-header">
+                        <th>Token</th>
+                        <th>Associated</th>
+                        <th>Token balance</th>
+                        <th>Frozen</th>
+                        <th>KYCd</th>
+                        <th>Policies</th>
+                        <th>Tags</th>
+                    </tr>
+                    <ng-container *ngFor="let token of tokens">
+                        <tr class="row-item">
+                            <td>
+                                {{ token.tokenName }}
+                                <hedera-explorer *ngIf="!token.draftToken else draftToken" [params]="token.tokenId"
+                                                 type="tokens">{{ token.tokenId }}
+                                </hedera-explorer>
+                                <ng-template #draftToken>Draft Token</ng-template>
+                            </td>
+                            <td>
+                                <div class="chip-container">
+                                    <div class="chip chip-color-{{getColor(token.associated)}}">
+                                        {{ token.associated }}
+                                    </div>
+                                    <div (click)="associate(token)" class="associated-btn">
+                                        <img
+                                                alt=""
+                                                src="assets/images/icons/link.svg"
+                                        />
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="chip-container">
+                                    {{ token.tokenBalance || 'N/A' }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="chip-container">
+                                    <div class="chip chip-color-{{getColor(token.frozen)}}">
+                                        {{ token.enableFreeze ? token.frozen : 'N/A' }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="chip-container">
+                                    <div class="chip chip-color-{{getColor(token.kyc)}}">
+                                        {{ token.enableKYC ? token.kyc : 'N/A' }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="policies-info">{{ getPoliciesInfo(token.policies) }}</div>
+                            </td>
+                            <td>
+                                <tags-explorer [data]="token._tags" [entity]="tagEntity" [owner]="owner"
+                                               [schemas]="tagSchemas" [service]="tagsService"
+                                               [target]="token.id"></tags-explorer>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </table>
+            </div>
+
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="tokensCount"
+                (page)="onPage($event)"
+            ></app-paginator>
+
+        </ng-container>
+    </ng-container>
+</div>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">There were no Tokens created yet</span>
+        <span class="info-text">Please create new token to see the data</span>
+    </div>
+</ng-template>
+
+<ng-template #noDIDSettings>
+    <div class="not-exist">
+        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
+    </div>
+</ng-template>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<!-- todo: why was && !taskId -->
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

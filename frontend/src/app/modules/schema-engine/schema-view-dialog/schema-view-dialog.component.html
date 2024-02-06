@@ -1,55 +1,32 @@
 <div class="g-dialog-content">
     <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onClose()">
-                <mat-icon>close</mat-icon>
-            </div>
-        </div>
         <div class="g-dialog-title">
             Schema Import Preview
-        </div>
-        <div class="g-dialog-actions">
-            <div class="g-dialog-actions-btn" (click)="onImport()" [attr.disabled]="!topicId">
-                Import
-            </div>
         </div>
     </div>
     <div class="g-dialog-body">
         <div class="context">
             <div *ngIf="loading" class="loading">
-                <mat-spinner></mat-spinner>
+                <div class="preloader-image preloader-image-l-size"></div>
             </div>
+
+            <div class="field">
+                <div class="field-header">Policy</div>
+                <div>
+                    <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
+                        <mat-label>* Policy</mat-label>
+                        <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
+                            <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="field-header">Schemas</div>
             <div *ngFor="let schema of schemas">
                 <div class="schema">
                     <div class="schema-header">{{schema.name}}</div>
 
-                    <div class="delimiter"></div>
-
                     <div class="version-container">
-
-                        <div class="field" *ngIf="schemaType === 'policy'">
-                            <div class="field-name">Policy</div>
-                            <div>
-                                <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
-                                    <mat-label>* Policy</mat-label>
-                                    <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
-                                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </div>
-                        </div>
-                        <div class="field" *ngIf="schemaType === 'tool'">
-                            <div class="field-name">Tool</div>
-                            <div>
-                                <mat-form-field appearance="outline" class="{{ topicId ? '' : 'mat-form-field-invalid'}}" style="min-width: 383px">
-                                    <mat-label>* Tool</mat-label>
-                                    <mat-select [(value)]="topicId" class="{{ topicId ? '' : 'mat-select-invalid'}}" >
-                                        <mat-option *ngFor="let tool of tools" [value]="tool.topicId">{{tool.name}}</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </div>
-                        </div>
-
                         <div class="version-container">
                             <div *ngIf="schema.version" class="field">
                                 <div class="field-name">Version</div>
@@ -72,6 +49,29 @@
                     </div>
                 </div>
             </div>
+
+            <div *ngIf="errors?.length" class="fields-container">
+                <div class="field-header">Warning & Errors</div>
+                <div class="field-array">
+                    <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
+                        <div>{{error.worksheet}}</div>
+                        <div>{{error.__path}}</div>
+                        <div>{{error.text}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div mat-dialog-actions>
+        <div class="cancel-button">
+            <p-button
+                    (click)="onClose()"
+                    label="Cancel"
+                    styleClass="p-button-outlined"
+            ></p-button>
+        </div>
+        <div>
+            <p-button (click)="onImport()" [disabled]="!topicId" label="Import"></p-button>
         </div>
     </div>
 </div>

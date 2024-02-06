@@ -7,6 +7,7 @@ export class SchemaVariables {
     public version?: string;
     public sourceVersion?: string;
     public status?: string;
+    public statusLabel?: string;
     public data?: Schema;
     public disable: boolean;
     public defs: string[];
@@ -31,9 +32,9 @@ export class SchemaVariables {
             this.name = schema.name || '';
             this.version = schema.version;
             this.sourceVersion = schema.sourceVersion;
-            this.status = schema.status;
             this.value = schema.iri || '';
             this.data = schema;
+            this.status = schema.status;
             const defs = schema?.document?.$defs;
             if (defs && Object.prototype.toString.call(defs) === '[object Object]') {
                 this.defs = Object.keys(defs);
@@ -45,13 +46,24 @@ export class SchemaVariables {
         if (value !== undefined) {
             this.value = value;
         }
+        this.statusLabel = this.getStatusLabel(this.status);
+    }
+
+    private getStatusLabel(status?: string): string | undefined {
+        if (status === 'VARIABLE') return 'Variable';
+        if (status === 'TOOL') return 'Tool';
+        if (status === 'ERROR') return 'Incomplete';
+        if (status === 'DRAFT') return 'Draft';
+        if (status === 'PUBLISHED') return 'Published';
+        if (status === 'UNPUBLISHED') return 'Unpublished';
+        return status;
     }
 
     public get displayName(): string {
-        return SchemaHelper.getSchemaName(this.name, this.sourceVersion || this.version, this.status);
+        return SchemaHelper.getSchemaName(this.name, this.sourceVersion || this.version, this.statusLabel);
     }
 
     public get tooltip(): string {
-        return SchemaHelper.getSchemaName(this.name, this.version || this.sourceVersion, this.status);
+        return SchemaHelper.getSchemaName(this.name, this.version || this.sourceVersion, this.statusLabel);
     }
 }

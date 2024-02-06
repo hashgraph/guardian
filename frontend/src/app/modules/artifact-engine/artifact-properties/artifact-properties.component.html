@@ -1,37 +1,21 @@
 <div class="artifact-container">
-    <div 
-        *ngIf="this.currentBlock.artifacts.length > 0" 
-        class="artifact-list" 
-        cdkDropList
-        [cdkDropListData]="this.currentBlock.artifacts" 
-        (cdkDropListDropped)="changeArtifactPosition($event)"
+    <div (cdkDropListDropped)="changeArtifactPosition($event)" *ngIf="this.currentBlock.artifacts.length > 0" [cdkDropListData]="this.currentBlock.artifacts"
+         cdkDropList class="artifact-list"
         [cdkDropListDisabled]="readonly">
-
         <div class="artifact-row" *ngFor="let artifact of this.currentBlock.artifacts; let i = index;" cdkDrag>
             <mat-icon>drag_handle</mat-icon>
-            <span class="artifact-name">{{artifact.name}}</span>
-            <span class="artifact-type"> ({{artifact.type}})</span>
+            {{ artifact.name }} ({{ artifact.type }})
             <span class="remove-prop" [attr.readonly]="readonly" (click)="removeArtifact(artifact)">
                 <mat-icon>delete</mat-icon>
             </span>
         </div>
     </div>
-
-    <button 
-        mat-button 
-        class="add-artifact-button" 
-        [matMenuTriggerFor]="menu"
-        [disabled]="!(policyArtifacts.length)">
+    <button [matMenuTriggerFor]="menu" class="add-artifact-button" mat-button>
         <mat-icon>add</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
         <ng-container *ngFor="let artifact of policyArtifacts">
-            <button 
-                class="add-artifact-item" 
-                mat-menu-item 
-                (click)="addArtifact(artifact)" 
-                [disabled]="readonly"
-            >
+            <button (click)="addArtifact(artifact)" [disabled]="readonly" mat-menu-item>
                 {{artifact.name}} ({{artifact.type}})
             </button>
         </ng-container>

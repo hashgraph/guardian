@@ -57,6 +57,11 @@ export class PolicyMessage extends Message {
      */
     public policyTopicId: string;
 
+    /**
+     * Discontinued date
+     */
+    public discontinuedDate?: Date;
+
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
         this._responseType = 'raw';
@@ -79,6 +84,7 @@ export class PolicyMessage extends Message {
         this.policyTopicId = model.topicId;
         this.instanceTopicId = model.instanceTopicId;
         this.synchronizationTopicId = model.synchronizationTopicId;
+        this.discontinuedDate = model.discontinuedDate;
         this.document = zip;
     }
 
@@ -93,7 +99,7 @@ export class PolicyMessage extends Message {
      * To message object
      */
     public override toMessageObject(): PolicyMessageBody {
-        return {
+        const messageObject: any = {
             id: null,
             status: null,
             type: this.type,
@@ -111,7 +117,11 @@ export class PolicyMessage extends Message {
             synchronizationTopicId: this.synchronizationTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
+        };
+        if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
+            messageObject.effectiveDate = this.discontinuedDate?.toISOString();
         }
+        return messageObject;
     }
 
     /**
@@ -178,6 +188,10 @@ export class PolicyMessage extends Message {
         message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
         message.synchronizationTopicId = json.synchronizationTopicId;
+        if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(json.action)
+            && json.effectiveDate) {
+            message.discontinuedDate = new Date(json.effectiveDate)
+        }
 
         if (json.cid) {
             const urls = [{
@@ -229,6 +243,9 @@ export class PolicyMessage extends Message {
         result.policyTopicId = this.policyTopicId;
         result.instanceTopicId = this.instanceTopicId;
         result.synchronizationTopicId = this.synchronizationTopicId;
+        if ([MessageAction.DeferredDiscontinuePolicy, MessageAction.DiscontinuePolicy].includes(this.action)) {
+            result.effectiveDate = this.discontinuedDate;
+        }
         result.document = this.document;
         return result;
     }

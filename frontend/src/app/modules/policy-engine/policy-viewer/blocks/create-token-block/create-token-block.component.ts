@@ -1,8 +1,9 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { IUser } from '@guardian/interfaces';
-import { TokenDialog } from 'src/app/modules/common/token-dialog/token-dialog.component';
+import { ContractType, IUser } from '@guardian/interfaces';
+import { forkJoin } from 'rxjs';
+import { ContractService } from 'src/app/services/contract.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -14,7 +15,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'create-token-block',
     templateUrl: './create-token-block.component.html',
-    styleUrls: ['./create-token-block.component.css']
+    styleUrls: ['./create-token-block.component.scss']
 })
 export class CreateTokenBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -35,11 +36,13 @@ export class CreateTokenBlockComponent implements OnInit {
     user!: IUser;
     isExist: boolean = false;
     disabled = false;
+    contracts: { contractId: string }[] = [];
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private profile: ProfileService,
+        private contractService: ContractService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder,
         private dialog: MatDialog,
@@ -56,7 +59,7 @@ export class CreateTokenBlockComponent implements OnInit {
             enableFreeze: [false, Validators.required],
             enableKYC: [false, Validators.required],
             enableWipe: [true, Validators.required],
-            wipeContractId: [''],
+            wipeContractId: [],
         });
     }
 
@@ -64,11 +67,16 @@ export class CreateTokenBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
-        this.profile.getProfile()
-            .subscribe((user: IUser) => {
-                this.user = user;
-                this.loadData();
-            });
+        forkJoin([
+            this.contractService.getContracts({
+                type: ContractType.WIPE
+            }),
+            this.profile.getProfile()
+        ]).subscribe((value) => {
+            this.contracts = value[0] && value[0].body || [];
+            this.user = value[1];
+            this.loadData();
+        })
     }
 
     ngOnDestroy(): void {
@@ -139,24 +147,5 @@ export class CreateTokenBlockComponent implements OnInit {
                 this.loading = false;
             });
         }
-    }
-
-    onDialog() {
-        const dialogRef = this.dialog.open(TokenDialog, {
-            width: '750px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            data: {
-                title: this.title,
-                description: this.description,
-                hideType: true
-            }
-        });
-        dialogRef.afterClosed().subscribe((res: any) => {
-            if (!res) {
-                return;
-            }
-            this.onSubmit(res);
-        })
     }
 }

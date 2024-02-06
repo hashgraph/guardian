@@ -1,7 +1,7 @@
 import { Status } from '../types/status.type';
 import { IRate } from '../interfaces/rate.interface';
 import { FieldModel } from '../models/field.model';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { PropertiesRate } from './properties-rate';
 import { Rate } from './rate';
 import { IRateMap } from '../interfaces/rate-map.interface';
@@ -56,7 +56,7 @@ export class FieldsRate extends Rate<FieldModel> {
     private compare(
         field1: FieldModel,
         field2: FieldModel,
-        options: ICompareOptions
+        options: CompareOptions
     ): void {
         const list: string[] = [];
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
@@ -119,7 +119,7 @@ export class FieldsRate extends Rate<FieldModel> {
      * @param options - comparison options
      * @public
      */
-    public override calc(options: ICompareOptions): void {
+    public override calc(options: CompareOptions): void {
         this.compare(this.left, this.right, options);
 
         if (!this.left || !this.right) {

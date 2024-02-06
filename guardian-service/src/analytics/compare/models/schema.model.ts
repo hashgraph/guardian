@@ -1,4 +1,4 @@
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
 import { SchemaDocumentModel } from './schema-document.model';
 import { Policy, PolicyTool, Schema as SchemaCollection } from '@guardian/common';
@@ -54,7 +54,7 @@ export class SchemaModel {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    private readonly options: CompareOptions;
 
     /**
      * Schema Model
@@ -105,7 +105,7 @@ export class SchemaModel {
 
     constructor(
         schema: SchemaCollection,
-        options: ICompareOptions
+        options: CompareOptions
     ) {
         this.options = options;
         this.id = '';
@@ -136,6 +136,16 @@ export class SchemaModel {
         }
     }
 
+    public static from(data: any, options: CompareOptions): SchemaModel {
+        return new SchemaModel({
+            id: data.$id,
+            name: data.title,
+            description: data.description,
+            iri: data.$id,
+            document: data
+        } as any, options);
+    }
+
     /**
      * Convert class to object
      * @public
@@ -159,13 +169,13 @@ export class SchemaModel {
      * @param options - comparison options
      * @public
      */
-    public update(options: ICompareOptions): void {
+    public update(options: CompareOptions): void {
         const hashUtils: HashUtils = new HashUtils();
 
         hashUtils.reset();
         hashUtils.add(this.name || '');
         hashUtils.add(this.description || '');
-        if (options.idLvl > 0) {
+        if (options.idLvl === IIdLvl.All) {
             hashUtils.add(this.version || '');
             hashUtils.add(this.uuid || '');
             hashUtils.add(this.iri || '');
@@ -187,7 +197,7 @@ export class SchemaModel {
      * @param options - comparison options
      * @public
      */
-    public hash(options?: ICompareOptions): string {
+    public hash(options?: CompareOptions): string {
         return this._weight;
     }
 

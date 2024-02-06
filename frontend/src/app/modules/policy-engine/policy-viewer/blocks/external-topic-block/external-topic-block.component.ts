@@ -10,7 +10,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'external-topic-block',
     templateUrl: './external-topic-block.component.html',
-    styleUrls: ['./external-topic-block.component.css']
+    styleUrls: ['./external-topic-block.component.scss']
 })
 export class ExternalTopicBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -120,7 +120,7 @@ export class ExternalTopicBlockComponent implements OnInit {
                     break;
                 case 'NEED_SCHEMA':
                     this.schemaForm.reset();
-                    const index = this.schemas?.findIndex(s=>s.status === 'INCOMPATIBLE' || s.status === 'COMPATIBLE');
+                    const index = this.schemas?.findIndex(s => s.status === 'INCOMPATIBLE' || s.status === 'COMPATIBLE');
                     this.stepIndex = index === -1 ? 1 : 2;
                     this.completed = [true, true, false, false, false];
                     this.editable = [false, true, true, false, false];

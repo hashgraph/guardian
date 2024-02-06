@@ -127,6 +127,10 @@ export class Schema implements ISchema {
      */
     public component?: string;
     /**
+     * Errors
+     */
+    public errors?: any[];
+    /**
      * User DID
      * @private
      */
@@ -190,6 +194,7 @@ export class Schema implements ISchema {
                 this.context = null;
             }
             this.component = (schema as any).component || (schema as any).__component;
+            this.errors = schema.errors;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -213,6 +218,7 @@ export class Schema implements ISchema {
             this.documentURL = '';
             this.contextURL = '';
             this.iri = '';
+            this.errors = [];
         }
         if (this.document) {
             this.parseDocument(includeSystemProperties);
@@ -227,8 +233,9 @@ export class Schema implements ISchema {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
         const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
-        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, null, includeSystemProperties);
-        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
+        const schemaCache = new Map<string, any>();
+        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
+        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
     }
 
     /**
@@ -305,6 +312,37 @@ export class Schema implements ISchema {
     }
 
     /**
+     * Set new fields
+     * @param fields
+     * @param conditions
+     * @param force
+     */
+    public setFields(
+        fields?: SchemaField[],
+        conditions?: SchemaCondition[],
+        force = false
+    ): void {
+        if (force) {
+            this.fields = fields || [];
+            this.conditions = conditions || [];
+        } else {
+            if (Array.isArray(fields)) {
+                this.fields = fields;
+            }
+            if (Array.isArray(conditions)) {
+                this.conditions = conditions;
+            }
+        }
+    }
+
+    /**
+     * Update Document
+     */
+    public updateDocument(): void {
+        this.document = SchemaHelper.buildDocument(this, this.fields, this.conditions);
+    }
+
+    /**
      * Update
      * @param fields
      * @param conditions
@@ -317,6 +355,7 @@ export class Schema implements ISchema {
         if (!this.fields) {
             return null;
         }
+
         this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 
@@ -358,6 +397,21 @@ export class Schema implements ISchema {
             if (Array.isArray(f.fields)) {
                 this._searchFields(f.fields, filter, result, f.path + '.');
             }
+        }
+    }
+
+    /**
+     * Set example data
+     * @param data
+     */
+    public setExample(data: any): void {
+        if (data) {
+            this.document = SchemaHelper.updateFields(this.document, (name: string, property: any) => {
+                if (!(property.$ref && !property.type) && data.hasOwnProperty(name)) {
+                    property.examples = [data[name]];
+                }
+                return property;
+            });
         }
     }
 }

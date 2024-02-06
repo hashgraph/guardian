@@ -1,60 +1,107 @@
-<div class="content">
-    <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
+<div class="dialog-body" [attr.file-type]="type">
+    <p-tabView class="action-tabs">
+        <p-tabPanel *ngFor="let tab of items; let i = index">
+            <ng-template pTemplate="header">
+                <div (click)="handleChangeTab(i)" class="tabview-label">
+                    {{ tab.label }}
+                </div>
+            </ng-template>
+        </p-tabPanel>
+    </p-tabView>
+
+    <ng-container [ngSwitch]="importType">
         <ng-template [ngSwitchCase]="0">
-            <div class="login-header">
-                <mat-icon class="close-button" (click)="onNoClick()">close</mat-icon>
-            </div>
-            <app-file-drag-n-drop *ngIf="type==='policy'" fileExtension="policy" (onFileLoaded)="importFromFile($event)"
-                dropZoneLabel="Import Policy .policy file"></app-file-drag-n-drop>
-            <app-file-drag-n-drop *ngIf="type==='module'" fileExtension="module" (onFileLoaded)="importFromFile($event)"
-                dropZoneLabel="Import Module .module file"></app-file-drag-n-drop>
-            <app-file-drag-n-drop *ngIf="type==='tool'" fileExtension="tool" (onFileLoaded)="importFromFile($event)"
-                dropZoneLabel="Import Tool .tool file"></app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type === 'policy'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import Policy .policy file"
+                    fileExtension="policy"
+            ></app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type === 'module'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import Module .module file"
+                    fileExtension="module"
+            ></app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type==='tool'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import Tool .tool file"
+                    fileExtension="tool">
+            </app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type==='xlsx'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import .xlsx file"
+                    fileExtension="xlsx">
+            </app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
-            <div class="header">
-                <h1 mat-dialog-title>
-                    Enter hedera message timestamp
-                </h1>
-                <div *ngIf="innerWidth <= 810" class="g-dialog-cancel-btn" (click)="onNoClick()">
-                    <mat-icon>close</mat-icon>
-                </div>
-            </div>
-            <div mat-dialog-content>
-                <form [formGroup]="dataForm" (ngSubmit)="importFromMessage()">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>Message timestamp</mat-label>
-                        <input matInput type="text" placeholder="Message timestamp" formControlName="timestamp">
-                    </mat-form-field>
-                    <div mat-dialog-actions>
-                        <button mat-raised-button color="primary" type="submit" id="ok-btn"
-                            [disabled]="!dataForm.valid">Ok</button>
-                        <button mat-button type="button" id="cancel-btn" (click)="onNoClick()">Cancel</button>
-                    </div>
-                </form>
-            </div>
+            <form [formGroup]="dataForm">
+                <label class="form-label" htmlFor="timestamp">Message timestamp</label>
+                <input
+                    formControlName="timestamp"
+                    id="timestamp"
+                    pInputText
+                    placeholder="Timestamp"
+                    type="text"
+                />
+            </form>
         </ng-template>
-    </ng-container>
-
-    <ng-container *ngIf="!isImportTypeSelected">
-        <div class="action-select-step">
-            <div class="login-header">
-                <span class="login-header-title">Select action</span>
-                <mat-icon (click)="onNoClick()">close</mat-icon>
+        <!-- <ng-template [ngSwitchCase]="2">
+            <label class="form-label" htmlFor="selectPolicy"
+                >Select Policy</label
+            >
+            <div class="policy-selection">
+                <p-dropdown
+                    id="selectPolicy"
+                    [options]="openSourcePolicies"
+                    [(ngModel)]="selectedOpenSourcePolicy"
+                    [showClear]="true"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Policy"
+                    class="policy-dropdown"
+                ></p-dropdown>
+                <p>Token Type: CRU</p>
             </div>
-            <button mat-button (click)="setImportType(0)">
-                <span class="action-name">Import from file</span>
-            </button>
-            <button mat-button (click)="setImportType(1)">
-                <span class="action-name">Import from IPFS</span>
-            </button>
-        </div>
+            <div class="policy-actions">
+                <p-button
+                    label="View Documentation"
+                    (click)="OnViewDocumentation()"
+                ></p-button>
+                <p-button
+                    label="Direct Download"
+                    (click)="OnDirectDownload()"
+                ></p-button>
+            </div>
+        </ng-template> -->
     </ng-container>
 
-    <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <async-progress *ngIf="loading && taskId" [taskId]="taskId" (error)="onAsyncError($event)"
-        (completed)="onAsyncCompleted()"></async-progress>
+    <async-progress
+            (completed)="onAsyncCompleted()"
+            (error)="onAsyncError($event)"
+            *ngIf="loading && taskId"
+            [taskId]="taskId"
+    ></async-progress>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onNoClick()" class="button secondary"
+                    label="Close"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="importType === 1 ? importFromMessage() : ''" class="button"
+                    label="Import"
+                    pButton
+            ></button>
+        </div>
+    </div>
 </div>

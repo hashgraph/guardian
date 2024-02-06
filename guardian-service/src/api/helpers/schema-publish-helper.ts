@@ -1,4 +1,4 @@
-import { GeoJsonContext, IRootConfig, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { GeoJsonContext, IRootConfig, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
 
 import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
@@ -36,9 +36,14 @@ export async function publishSchema(
     }
 
     let additionalContexts: Map<string, any>;
-    if (itemDocument.$defs && itemDocument.$defs['#GeoJSON']) {
+    if (itemDocument.$defs && (itemDocument.$defs['#GeoJSON'] || itemDocument.$defs['#SentinelHUB'])) {
         additionalContexts = new Map<string, any>();
-        additionalContexts.set('#GeoJSON', GeoJsonContext);
+        if (itemDocument.$defs['#GeoJSON']) {
+            additionalContexts.set('#GeoJSON', GeoJsonContext);
+        }
+        if (itemDocument.$defs['#SentinelHUB']) {
+            additionalContexts.set('#SentinelHUB', SentinelHubContext);
+        }
     }
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
@@ -242,9 +247,14 @@ export async function findAndDryRunSchema(
         }
     }
     let additionalContexts: Map<string, any>;
-    if (itemDocument.$defs && itemDocument.$defs['#GeoJSON']) {
+    if (itemDocument.$defs && (itemDocument.$defs['#GeoJSON'] || itemDocument.$defs['#SentinelHUB'])) {
         additionalContexts = new Map<string, any>();
-        additionalContexts.set('#GeoJSON', GeoJsonContext);
+        if (itemDocument.$defs['#GeoJSON']) {
+            additionalContexts.set('#GeoJSON', GeoJsonContext);
+        }
+        if (itemDocument.$defs['#SentinelHUB']) {
+            additionalContexts.set('#SentinelHUB', SentinelHubContext);
+        }
     }
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);

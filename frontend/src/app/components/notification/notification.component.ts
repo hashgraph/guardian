@@ -1,14 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-    NotificationAction,
-    NotificationType,
-    NotifyAPI,
-} from '@guardian/interfaces';
+import { NotificationType, NotifyAPI, } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
-import { Subscription, forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notify.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { MatMenu } from '@angular/material/menu';
 
 @Component({
     selector: 'app-notification',
@@ -22,15 +19,24 @@ export class NotificationComponent implements OnInit {
     menuOpened: boolean = false;
     subscription = new Subscription();
 
-    viewDetails = (notification: any) =>
+    @Input() menuCollapsed: boolean;
+
+    @ViewChild('notificationMenu') notificationMenu: MatMenu;
+
+    viewDetails($event: MouseEvent, notification: any) {
+        if (!notification.action) {
+            $event.stopPropagation();
+        }
         this.notificationService.viewDetails(notification);
+    }
 
     constructor(
         private ws: WebSocketService,
         private notificationService: NotificationService,
         private toastr: ToastrService,
-        private router: Router
-    ) {}
+        public router: Router,
+    ) {
+    }
 
     ngOnInit() {
         forkJoin([
@@ -200,7 +206,8 @@ export class NotificationComponent implements OnInit {
         }
     }
 
-    readAll() {
+    readAll(event: MouseEvent) {
+        event.stopPropagation();
         this.notificationService.readAll().subscribe((result) => {
             this.unreadNotifications = 0;
             this.notifications = result;
@@ -222,12 +229,19 @@ export class NotificationComponent implements OnInit {
         }, 5000);
     }
 
-    onMenuOpened() {
+    onMenuOpened($event: MouseEvent) {
+        $event.stopPropagation();
+        if (this.menuCollapsed) {
+            $event.stopImmediatePropagation();
+            this.router.navigate(['notifications']);
+            return;
+        }
         this.menuOpened = true;
-        this.readFirstNotification();
+        //this.readFirstNotification();
     }
 
     viewAllNotifications() {
+        this.menuOpened = false;
         this.router.navigate(['notifications']);
     }
 

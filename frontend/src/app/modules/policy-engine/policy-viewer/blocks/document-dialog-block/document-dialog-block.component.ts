@@ -7,7 +7,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'document-dialog-block',
     templateUrl: './document-dialog-block.component.html',
-    styleUrls: ['./document-dialog-block.component.css']
+    styleUrls: ['./document-dialog-block.component.scss']
 })
 export class DocumentDialogBlock implements OnInit {
     title: string = "";
@@ -19,8 +19,8 @@ export class DocumentDialogBlock implements OnInit {
     }
 
     ngOnInit() {
-        const { 
-            document, 
+        const {
+            document,
             title,
             dialogType,
             dialogClass,

@@ -13,16 +13,19 @@ import { TagsService } from '../../services/tag.service';
 import { ConfirmationDialogComponent } from '../../modules/common/confirmation-dialog/confirmation-dialog.component';
 import { SchemaDialog } from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
 import { ImportSchemaDialog } from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
+import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
+import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
+import { SchemaFormDialog } from '../../modules/schema-engine/schema-form-dialog/schema-form-dialog.component';
 import { SetVersionDialog } from '../../modules/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from '../../modules/schema-engine/schema-view-dialog/schema-view-dialog.component';
-import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
-import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
 import { ModulesService } from '../../services/modules.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
 import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
+import { DialogService } from 'primeng/dynamicdialog';
+import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 
 enum SchemaType {
     System = 'system',
@@ -41,22 +44,14 @@ const policySchemaColumns: string[] = [
     'tags',
     'status',
     'operation',
-    'export',
-    'tree',
-    'edit',
-    'clone-schema',
-    'delete',
-    'document',
+    'menu',
 ];
 
 const moduleSchemaColumns: string[] = [
     'type',
     'status',
     'operation',
-    'export',
-    'edit',
-    'delete',
-    'document',
+    'menu',
 ];
 
 const toolSchemaColumns: string[] = [
@@ -64,11 +59,7 @@ const toolSchemaColumns: string[] = [
     'type',
     'status',
     'operation',
-    'export',
-    'tree',
-    'edit',
-    'delete',
-    'document',
+    'menu',
 ];
 
 const systemSchemaColumns: string[] = [
@@ -77,9 +68,7 @@ const systemSchemaColumns: string[] = [
     'entity',
     'active',
     'activeOperation',
-    'editSystem',
-    'deleteSystem',
-    'document',
+    'menu',
 ];
 
 const tagSchemaColumns: string[] = [
@@ -87,9 +76,7 @@ const tagSchemaColumns: string[] = [
     'owner',
     'status',
     'tagOperation',
-    'editTag',
-    'deleteTag',
-    'document',
+    'menu',
 ];
 
 /**
@@ -125,7 +112,14 @@ export class SchemaConfigComponent implements OnInit {
     public draftTools: any[] = [];
     public columns: string[] = [];
     public compareList: any[] = [];
-    // private schemasMap: { [x: string]: ISchema[] } = {};
+    public properties: any[] = [];
+    public schemasTypes: { label: string; value: SchemaType }[] = [
+        { label: 'Policy Schemas', value: SchemaType.Policy },
+        { label: 'Module Schemas', value: SchemaType.Module },
+        { label: 'Tag Schemas', value: SchemaType.Tag },
+        { label: 'System Schemas', value: SchemaType.System },
+        { label: 'Tool Schemas', value: SchemaType.Tool },
+    ];
 
     constructor(
         public tagsService: TagsService,
@@ -134,9 +128,11 @@ export class SchemaConfigComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private moduleService: ModulesService,
         private toolService: ToolsService,
+        private projectComparisonService: ProjectComparisonService,
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private dialogService: DialogService
     ) {
         this.readonlyByTopic = {};
     }
@@ -188,6 +184,7 @@ export class SchemaConfigComponent implements OnInit {
         const topic = this.route.snapshot.queryParams['topic'];
         this.type = this.getType(type);
         this.currentTopic = topic && topic !== 'all' ? topic : '';
+        console.log(this);
         this.loadProfile();
     }
 
@@ -292,8 +289,10 @@ export class SchemaConfigComponent implements OnInit {
             this.moduleService.page(),
             this.toolService.page(),
             //Compare
-            this.schemaService.list()
-        ]).subscribe((value) => {
+            this.schemaService.list(),
+            //Properties
+            this.projectComparisonService.getProperties()
+        ]).subscribe((value: any[]) => {
             try {
                 //Profile
                 const profile: IUser | null = value[0];
@@ -313,7 +312,10 @@ export class SchemaConfigComponent implements OnInit {
                 const policies: any[] = value[2] || [];
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
-                this.policies = [];
+                this.policies = [{
+                    name: 'No binding',
+                    topicId: ''
+                }];
                 for (const policy of policies) {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
@@ -379,6 +381,10 @@ export class SchemaConfigComponent implements OnInit {
                 }
                 this.compareList = list;
 
+                //Properties
+                const properties: any[] = value[6] || [];
+                this.properties = properties;
+
                 //LoadData
                 this.loadSchemas();
             } catch (error) {
@@ -415,6 +421,12 @@ export class SchemaConfigComponent implements OnInit {
         }
         loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
             this.page = SchemaHelper.map(schemasResponse.body || []);
+            for (const element of this.page as any[]) {
+                element.__policyId = this.policyIdByTopic[element.topicId];
+                element.__policyName = this.policyNameByTopic[element.topicId] || ' - ';
+                element.__toolId = this.toolIdByTopic[element.topicId];
+                element.__toolName = this.toolNameByTopic[element.topicId] || ' - ';
+            }
             this.count = (schemasResponse.headers.get('X-Total-Count') || this.page.length) as number;
             this.loadTagsData();
         }, (e) => {
@@ -441,14 +453,16 @@ export class SchemaConfigComponent implements OnInit {
             }, 500);
         }
     }
-
-    public onFilter(): void {
+    public onFilter(event: any) {
+        if (event.value === null) {
+            this.currentTopic = '';
+        }
         this.pageIndex = 0;
         this.router.navigate(['/schemas'], {
             queryParams: {
                 type: this.type,
-                topic: this.currentTopic || 'all'
-            }
+                topic: this.currentTopic || 'all',
+            },
         });
         this.loadSchemas();
     }
@@ -464,14 +478,13 @@ export class SchemaConfigComponent implements OnInit {
         this.loadSchemas();
     }
 
-    public onChangeType(event: any): void {
+    public onChangeType(type: SchemaType): void {
+        this.type = type;
         this.pageIndex = 0;
         this.pageSize = 100;
         this.currentTopic = '';
         this.router.navigate(['/schemas'], {
-            queryParams: {
-                type: this.type
-            }
+            queryParams: { type }
         });
         this.loadSchemas();
     }
@@ -497,6 +510,48 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         this.page = this.page.slice();
+    }
+
+    public ifDraft(element: Schema): boolean {
+        return (element.status === 'DRAFT' || element.status === 'ERROR');
+    }
+
+    public ifCanDelete(element: Schema): boolean {
+        if (this.type === SchemaType.System) {
+            return !element.readonly && !element.active;
+        } else {
+            return this.ifDraft(element);
+        }
+    }
+
+    public ifCanCopy(element: Schema): boolean {
+        return (this.type === SchemaType.Policy);
+    }
+
+    public ifCanExport(element: Schema): boolean {
+        return (
+            this.type === SchemaType.Policy ||
+            this.type === SchemaType.Module ||
+            this.type === SchemaType.Tool
+        );
+    }
+
+    public ifCanImport(element: Schema): boolean {
+        return (
+            this.type === SchemaType.Policy ||
+            this.type === SchemaType.Module ||
+            this.type === SchemaType.Tool
+        );
+    }
+
+    public ifCanEdit(element: Schema): boolean {
+        if (this.type === SchemaType.System) {
+            return !element.readonly && !element.active;
+        } else if (this.type === SchemaType.Tag) {
+            return this.ifDraft(element);
+        } else {
+            return this.ifDraft(element) || !this.readonly;
+        }
     }
 
     private createSchema(schema: Schema | null): void {
@@ -746,47 +801,114 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
+    private importByExcel(data: any, topicId: string): void {
+        this.loading = true;
+        switch (this.type) {
+            case SchemaType.System: {
+                return;
+            }
+            case SchemaType.Tag: {
+                return;
+            }
+            case SchemaType.Module:
+            case SchemaType.Tool:
+            case SchemaType.Policy:
+            default: {
+                const category = this.getCategory();
+                this.schemaService.pushImportByXlsx(data, topicId).subscribe((result) => {
+                    const { taskId } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                }, (e) => {
+                    this.loadError(e);
+                });
+                break;
+            }
+        }
+    }
+
     public onCreateSchemas(): void {
         if (this.readonly) {
             return;
         }
-        const dialogRef = this.dialog.open(SchemaDialog, {
+        const dialogRef = this.dialogService.open(SchemaDialog, {
+            header: 'New Schema',
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            styleClass: 'custom-dialog',
             data: {
                 type: 'new',
                 schemaType: this.type,
                 topicId: this.currentTopic,
                 policies: this.policies,
                 modules: this.modules,
-                tools: this.draftTools
+                tools: this.draftTools,
+                properties: this.properties
             }
         });
-        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.createSchema(schema);
         });
     }
 
-    public onOpenDocument(element: Schema): void {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '850px',
+    public onOpenConfig(element: Schema): void {
+        return this.onEditDocument(element);
+    }
+
+    public onOpenForm(schema: Schema, example: boolean): void {
+        const dialogRef = this.dialog.open(SchemaFormDialog, {
+            width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
+            data: { schema, example }
+        });
+        dialogRef.afterClosed().subscribe(async (exampleDate: any) => {
+            if (exampleDate) {
+                schema.setExample(exampleDate);
+                this.updateSchema(schema.id, schema);
+            }
+        });
+    }
+
+    public onOpenDocument(element: Schema): void {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            header: 'Schema',
+            width: '850px',
+            styleClass: 'custom-dialog',
             data: {
-                document: element.document,
+                document: element?.document,
                 title: 'Schema',
                 type: 'JSON',
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    public onEditDocument(element: Schema): void {
-        const dialogRef = this.dialog.open(SchemaDialog, {
+    public onEditSchema(element: Schema): void {
+        if (this.type === SchemaType.System && !element.readonly && !element.active) {
+            return this.onEditDocument(element);
+        }
+        if (this.type === SchemaType.Tag && this.ifDraft(element)) {
+            return this.onEditDocument(element);
+        }
+        if (this.ifDraft(element)) {
+            return this.onEditDocument(element);
+        }
+        if (element.isCreator && !this.readonly) {
+            return this.onNewVersion(element);
+        }
+        if (!element.isCreator && !this.readonly) {
+            return this.onCloneSchema(element);
+        }
+    }
+
+    private onEditDocument(element: Schema): void {
+        const dialogRef = this.dialogService.open(SchemaDialog, {
+            header: 'Edit Schema',
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            styleClass: 'custom-dialog',
             data: {
                 type: 'edit',
                 schemaType: this.type,
@@ -794,10 +916,11 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: element
             }
         });
-        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.updateSchema(element.id, schema);
         });
     }
@@ -849,11 +972,11 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    public onNewVersion(element: Schema): void {
-        const dialogRef = this.dialog.open(SchemaDialog, {
+    private onNewVersion(element: Schema): void {
+        const dialogRef = this.dialogService.open(SchemaDialog, {
+            header: 'New Version',
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            styleClass: 'custom-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
@@ -861,15 +984,16 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: element
             }
         });
-        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.newVersionSchema(element.id, schema);
         });
     }
 
-    public onCloneSchema(element: Schema): void {
+    private onCloneSchema(element: Schema): void {
         const newDocument: any = { ...element };
         delete newDocument._id;
         delete newDocument.id;
@@ -878,10 +1002,10 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.owner;
         delete newDocument.version;
         delete newDocument.previousVersion;
-        const dialogRef = this.dialog.open(SchemaDialog, {
+        const dialogRef = this.dialogService.open(SchemaDialog, {
+            header: 'New Version',
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            styleClass: 'custom-dialog',
             data: {
                 type: 'version',
                 topicId: this.currentTopic,
@@ -889,16 +1013,17 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: newDocument
             }
         });
-        dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
+        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.createSchema(schema);
         });
     }
 
     public onCopySchema(element: Schema): void {
-        const newDocument: any = {...element};
+        const newDocument: any = { ...element };
         delete newDocument._id;
         delete newDocument.id;
         delete newDocument.uuid;
@@ -917,13 +1042,14 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
+                properties: this.properties,
                 scheme: newDocument
             }
         });
         dialogRef.afterClosed().subscribe(async (copyInfo: any | null) => {
             if (copyInfo) {
                 this.schemaService.copySchema(copyInfo).subscribe((result) => {
-                    const {taskId} = result;
+                    const { taskId } = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -933,7 +1059,6 @@ export class SchemaConfigComponent implements OnInit {
                     this.loadError(e);
                 });
             }
-            // this.createSchema(schema);
         });
     }
 
@@ -957,13 +1082,13 @@ export class SchemaConfigComponent implements OnInit {
         if (this.readonly) {
             return;
         }
-        const dialogRef = this.dialog.open(ImportSchemaDialog, {
-            width: '500px',
-            autoFocus: false,
-            disableClose: true,
+        const dialogRef = this.dialogService.open(ImportSchemaDialog, {
+            header: 'Select action',
+            width: '720px',
+            styleClass: 'custom-dialog',
             data: { timeStamp: messageId }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.importSchemasDetails(result);
             }
@@ -971,13 +1096,14 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importSchemasDetails(result: any) {
-        const { type, data, schemas } = result;
+        const { type, data, schemas, errors } = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 schemas: schemas,
+                errors: errors,
                 topicId: this.currentTopic,
                 schemaType: this.type,
                 policies: this.policies,
@@ -990,13 +1116,14 @@ export class SchemaConfigComponent implements OnInit {
                 this.onImportSchemas(result.messageId);
                 return;
             }
-
             if (result && result.topicId) {
                 this.loading = true;
                 if (type == 'message') {
                     this.importByMessage(data, result.topicId);
                 } else if (type == 'file') {
                     this.importByFile(data, result.topicId);
+                } else if (type == 'xlsx') {
+                    this.importByExcel(data, result.topicId);
                 }
             }
         });
@@ -1004,24 +1131,16 @@ export class SchemaConfigComponent implements OnInit {
 
     public onExport(element: Schema): void {
         this.schemaService.exportInMessage(element.id)
-            .subscribe(schema => this.dialog.open(ExportSchemaDialog, {
-                width: '700px',
-                panelClass: 'g-dialog',
-                disableClose: true,
+            .subscribe(schema => this.dialogService.open(ExportSchemaDialog, {
+                header: 'Export Schema',
+                width: '720px',
+                styleClass: 'custom-dialog',
                 data: {
                     schema: schema
                 },
-                autoFocus: false
             }), (e) => {
                 this.loadError(e);
             });
-    }
-
-    public onViewSchemaTree(element: Schema): void {
-        this.dialog.open(SchemaTreeComponent, {
-            data: element,
-            autoFocus: false
-        })
     }
 
     public onActive(element: Schema): void {
@@ -1035,18 +1154,17 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onCompare(element?: Schema) {
-        const dialogRef = this.dialog.open(CompareSchemaDialog, {
+        const dialogRef = this.dialogService.open(CompareSchemaDialog, {
+            header: 'Compare Schemas',
             width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            styleClass: 'custom-dialog',
             data: {
                 schema: element,
                 policies: this.policies,
                 schemas: this.compareList
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.router.navigate(['/compare'], {
                     queryParams: {
@@ -1057,5 +1175,36 @@ export class SchemaConfigComponent implements OnInit {
                 });
             }
         });
+    }
+
+    public onViewSchemaTree(element: Schema): void {
+        this.dialog.open(SchemaTreeComponent, {
+            data: element,
+            autoFocus: false
+        })
+    }
+
+    public downloadExcelExample() {
+        this.schemaService
+            .downloadExcelExample()
+            .subscribe((fileBuffer) => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-schema',
+                    })
+                );
+                downloadLink.setAttribute(
+                    'download',
+                    `schema template.xlsx`
+                );
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (error) => {
+                this.loading = false;
+            });
     }
 }

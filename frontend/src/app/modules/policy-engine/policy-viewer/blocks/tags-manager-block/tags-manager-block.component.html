@@ -1,8 +1,12 @@
-<div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
-</div>
-
 <div *ngIf="tags" class="content">
     <tags-explorer [data]="tags" [owner]="owner" [target]="target" [entity]="entity" [schemas]="tagSchemas"
         [service]="tagsService"></tags-explorer>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

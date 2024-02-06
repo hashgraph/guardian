@@ -7,28 +7,22 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'app-schema-view-dialog',
     templateUrl: './schema-view-dialog.component.html',
-    styleUrls: ['./schema-view-dialog.component.css']
+    styleUrls: ['./schema-view-dialog.component.scss']
 })
 export class SchemaViewDialog {
     loading = true;
-
-    schemaType: string;
     schemas!: any[];
     topicId: any;
     policies: any[];
-    modules: any[];
-    tools: any[];
+    errors: any[];
 
     constructor(
         public dialogRef: MatDialogRef<SchemaViewDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.schemas = this.data.schemas || [];
         this.topicId = this.data.topicId || null;
-
-        this.schemaType = data.schemaType || 'policy';
-        this.policies = data.policies || [];
-        this.modules = data.modules || [];
-        this.tools = data.tools || [];
+        this.policies = this.data.policies || [];
+        this.errors = this.data.errors || [];
     }
 
     ngOnInit() {

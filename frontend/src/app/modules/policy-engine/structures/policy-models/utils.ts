@@ -1,9 +1,9 @@
-import { PolicyBlock } from "./block/block.model";
-import { IBlockConfig } from "./interfaces/block-config.interface";
-import { PolicyFolder, PolicyItem } from "./interfaces/types";
-import { PolicyModule } from "./module/block.model";
-import { PolicyTool } from "./tool/block.model";
-import { SchemaVariables } from "./variables/schema-variables";
+import { PolicyBlock } from './block/block.model';
+import { IBlockConfig } from './interfaces/block-config.interface';
+import { PolicyFolder, PolicyItem } from './interfaces/types';
+import { PolicyModule } from './module/block.model';
+import { PolicyTool } from './tool/block.model';
+import { SchemaVariables } from './variables/schema-variables';
 
 export class TemplateUtils {
     public static buildBlock(
@@ -39,7 +39,8 @@ export class TemplateUtils {
 
     public static checkSchemaVariables(variables: SchemaVariables[]): void {
         const map = new Set<string>([
-            '#GeoJSON'
+            '#GeoJSON',
+            '#SentinelHUB'
         ]);
         for (const variable of variables) {
             variable.disable = false;

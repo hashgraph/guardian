@@ -1,7 +1,3 @@
-<div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
-</div>
-
 <div class="content" *ngIf="commonVisible">
     <ng-container *ngFor="let button of buttons" >
         <div *ngIf="button.type == 'selector' && button.visible && button.name">
@@ -16,4 +12,12 @@
             </div>
         </div>
     </ng-container>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

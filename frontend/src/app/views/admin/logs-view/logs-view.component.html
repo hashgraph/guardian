@@ -1,121 +1,140 @@
-<div class="content">
-    <form [formGroup]="searchForm" (ngSubmit)="onApply()" class="search-form">
-        <mat-form-field class="submit-field" appearance="outline">
-            <mat-label>Message</mat-label>
-            <input matInput type="text" formControlName="message">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Message Type</mat-label>
-            <mat-select formControlName="type">
-              <mat-option value="ERROR">Error</mat-option>
-              <mat-option value="INFO">Info</mat-option>
-              <mat-option value="WARN">Warn</mat-option>
-              <mat-option value="">All</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-        <mat-form-field appearance="outline">
-            <mat-label>Enter a date range</mat-label>
-            <mat-date-range-input [formGroup]="searchForm" [rangePicker]="picker">
-              <input matStartDate formControlName="startDate" placeholder="Start date">
-              <input matEndDate formControlName="endDate" placeholder="End date">
-            </mat-date-range-input>
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-date-range-picker #picker></mat-date-range-picker>
-
-            <mat-error *ngIf="searchForm.controls.startDate.hasError('matStartDateInvalid')">Invalid start date</mat-error>
-            <mat-error *ngIf="searchForm.controls.endDate.hasError('matEndDateInvalid')">Invalid end date</mat-error>
-        </mat-form-field>
-
-        <mat-form-field class="search-field">
-            <mat-chip-list #chipList formControlName="attributes">
-                <mat-chip *ngFor="let attribute of searchForm.get('attributes')!.value" [removable]="true" (removed) = "remove(attribute)">
-                    {{attribute}}
-                <button matChipRemove>
-                    <mat-icon>cancel</mat-icon>
-                </button>
-                </mat-chip>
-
-                <input
-                    #chipInput
-                    matInput
-                    [matAutocomplete]="auto"
-                    (matChipInputTokenEnd)="add($event, auto); chipInput.value = ''; chipInput.blur();"
-                    [matChipInputFor]="chipList"
-                    placeholder="Attributes"
-                    [formControl]="autoCompleteControl">
-
-                <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event); chipInput.value = ''; chipInput.blur()">
-                    <mat-option *ngFor="let attr of attributes | async" [value]="attr">
-                        {{attr}}
-                    </mat-option>
-                </mat-autocomplete>
-            </mat-chip-list>
-        </mat-form-field>
-
-        <button mat-raised-button color="primary" type="submit" class="submit-button">Apply filters</button>
-        <button mat-raised-button type="button" (click)="onSave()">Save logs</button>
-        <button mat-raised-button type="button" (click)="clearValues()">Clear filters</button>
-    </form>
-
-    <div class="table-container">
-        <div class="loading-shade"
-            *ngIf="loading">
-            <mat-spinner></mat-spinner>
-        </div>
-        <table mat-table [dataSource]="logs" class="log-table"
-            matSort matSortActive="datetime" matSortDisableClear matSortDirection="desc">
-            <ng-container matColumnDef="type">
-                <th mat-header-cell *matHeaderCellDef> Type </th>
-                <td mat-cell *matCellDef="let element">
-                    <span [ngSwitch]="element.type">
-                        <div *ngSwitchCase="'ERROR'">
-                            <span class="log-type type-ERROR">ERROR</span>
-                        </div>
-                        <div *ngSwitchCase="'WARN'">
-                            <span class="log-type type-WARN">WARN</span>
-                        </div>
-                        <div *ngSwitchCase="'INFO'">
-                            <span class="log-type type-INFO">INFO</span>
-                        </div>
-                    </span>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="datetime">
-                <th mat-header-cell mat-sort-header *matHeaderCellDef> Datetime </th>
-                <td mat-cell *matCellDef="let element" >
-                    <div>
-                        <span>{{element.datetime}}</span>
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="message">
-                <th mat-header-cell *matHeaderCellDef> Message </th>
-                <td mat-cell *matCellDef="let element">
-                    <div class="long-message">{{element.message}}</div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="attributes">
-                <th mat-header-cell *matHeaderCellDef> Attributes </th>
-                <td mat-cell *matCellDef="let element">
-                    <div class="long-message">
-                        {{element.attributes && element.attributes.join(', ')}}
-                    </div>
-                </td>
-            </ng-container>
-            <ng-container matColumnDef="details">
-                <th mat-header-cell *matHeaderCellDef> Details </th>
-                <td mat-cell *matCellDef="let element" >
-                    <div class="btn-settings" (click)="openDetails(element)" >
-                        <mat-icon>expand_more</mat-icon>
-                        <span>Details</span>
-                    </div>
-                </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="logColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: logColumns;"></tr>
-        </table>
-        <mat-paginator [length]="this.totalCount"  [pageSizeOptions]="[10, 20, 30]"></mat-paginator>
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading">
+        <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+    </ng-container>
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 </div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Logs</h1>
+    </div>
+</ng-template>
+
+<ng-template #actionsContainer>
+    <div class="actions-container">
+        <form [formGroup]="searchForm">
+            <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
+                <p-multiSelect #searchInput (onFilter)="onFilter($event)"
+                               [filter]="true" [options]="attributes"
+                               emptyMessage=""
+                               formControlName="attributes" placeholder="Attributes">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="country-item country-item-value">
+                            <span class="grey-6">{{ item }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="country-item">
+                            <div>{{ item }}</div>
+                        </div>
+                    </ng-template>
+                </p-multiSelect>
+                <span class="p-input-icon-right">
+                    <i>
+                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/search.svg" svgClass="color-search">
+                        </svg-icon>
+                    </i>
+                    <input
+                        [formControlName]="'message'"
+                        class="search-input"
+                        pInputText
+                        placeholder="Message"
+                    />
+                </span>
+                <p-dropdown [formControlName]="'type'" [options]="types">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <div class="country-item country-item-value">
+                            <span class="grey-6">Message Type {{ item.label }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <div class="country-item">
+                            <div>{{ item.label }}</div>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+                <p-calendar [formControl]="dateRangeForm" [maxDate]="currentDate" [placeholder]="'Enter date range'"
+                            [showIcon]="true" [showTime]="true" dateFormat="mm/dd/yy"
+                            selectionMode="range"></p-calendar>
+            </div>
+        </form>
+        <div class="flex flex-column-gap-8">
+            <button
+                (click)="onApply()"
+                class="button"
+                label="Apply"
+                pButton
+                type="button"
+            ></button>
+            <button
+                (click)="clearValues()"
+                class="button secondary"
+                label="Clear filters"
+                pButton
+                type="button"
+            ></button>
+            <button
+                (click)="onSave()"
+                class="button"
+                label="Save logs"
+                pButton
+                type="button"
+            ></button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #tableContainer>
+    <ng-container *ngIf="logs && logs.length > 0; else noData">
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>TYPE</th>
+                    <th>DATE TIME</th>
+                    <th>MESSAGE</th>
+                    <th>ATTRIBUTES</th>
+                    <th>DETAILS</th>
+                </tr>
+                <ng-container *ngFor="let log of logs">
+                    <tr class="row-item">
+                        <td>{{ log.type }}</td>
+                        <td>{{ $any(log).datetime }}</td>
+                        <td>
+                            {{ log.message }}
+                        </td>
+                        <td>
+                            {{ log.attributes }}
+                        </td>
+                        <td>
+                            <button (click)="openDetails(log)" class="button secondary" pButton>Details</button>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+
+            <app-paginator
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+                [length]="totalCount"
+                (page)="onPage($event)"
+            ></app-paginator>
+
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong"
+        >There were no Logs by current criteria</span
+        >
+        <span class="info-text"></span>
+    </div>
+</ng-template>

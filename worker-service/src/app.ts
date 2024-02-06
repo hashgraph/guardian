@@ -1,14 +1,7 @@
-import {
-    ApplicationState, LargePayloadContainer,
-    Logger,
-    MessageBrokerChannel,
-    ValidateConfiguration,
-    SecretManager, OldSecretManager, NotificationService, Users
-} from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, NotificationService, OldSecretManager, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
-import { decode } from 'jsonwebtoken';
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -53,11 +46,21 @@ Promise.all([
         if (timer) {
             clearInterval(timer);
         }
+
+        let IPFS_STORAGE_KEY: string;
+        let IPFS_STORAGE_PROOF: string;
+
         const secretManager = SecretManager.New();
-        let {IPFS_STORAGE_API_KEY} = await secretManager.getSecrets('apikey/ipfs');
-        if (!IPFS_STORAGE_API_KEY) {
-            IPFS_STORAGE_API_KEY= process.env.IPFS_STORAGE_API_KEY
-            await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
+        const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
+        if (!keyAndProof?.IPFS_STORAGE_API_KEY) {
+            IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
+            IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
+            await secretManager.setSecrets('apikey/ipfs', {IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}`});
+        } else {
+            console.log(keyAndProof);
+            const [key, proof] = keyAndProof.IPFS_STORAGE_API_KEY.split(';')
+            IPFS_STORAGE_KEY = key;
+            IPFS_STORAGE_PROOF = proof;
         }
 
         HederaSDKHelper.setTransactionLogSender(async (data) => {
@@ -65,23 +68,9 @@ Promise.all([
         });
 
         await state.updateState(ApplicationStates.INITIALIZING);
-        const w = new Worker();
+        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF);
         await w.setConnection(cn).init();
 
-        if (process.env.IPFS_PROVIDER === 'web3storage') {
-            if (!IPFS_STORAGE_API_KEY) {
-                return false;
-            }
-
-            try {
-                const decoded = decode(IPFS_STORAGE_API_KEY);
-                if (!decoded) {
-                    return false
-                }
-            } catch (e) {
-                return false
-            }
-        }
         if (process.env.IPFS_PROVIDER === 'local') {
             if (!process.env.IPFS_NODE_ADDRESS) {
                 return false
@@ -97,14 +86,14 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         await state.updateState(ApplicationStates.READY);
-        logger.info('Worker started', [channelName]);
+        logger.info('Worker started', [channelName, 'WORKER']);
     });
 
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
         }, 1000);
-        logger.error('Worker not configured', [channelName]);
+        logger.error('Worker not configured', [channelName, 'WORKER']);
     })
 
     await validator.validate();

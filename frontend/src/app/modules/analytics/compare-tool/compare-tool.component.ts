@@ -291,7 +291,6 @@ export class CompareToolComponent implements OnInit {
                         propertiesContext.lvl = propertiesContext.item.lvl;
                         propertiesContext.offset = 10 * propertiesContext.lvl;
                     }
-                    debugger;
                     propertiesContexts.push(propertiesContext);
                 }
                 const variableContext: IResultContext<IToolDetailsContext> = {

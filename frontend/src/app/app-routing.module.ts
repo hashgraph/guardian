@@ -19,7 +19,6 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
-import { ContractConfigComponent } from './modules/contract-engine/configs/contract-config/contract-config.component';
 import { BrandingComponent } from './views/branding/branding.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { AsyncProgressComponent } from './modules/common/async-progress/async-progress.component';
@@ -34,6 +33,13 @@ import { ModulesListComponent } from './modules/policy-engine/modules-list/modul
 import { ToolsListComponent } from './modules/policy-engine/tools-list/tools-list.component';
 import { SearchPoliciesComponent } from './modules/analytics/search-policies/search-policies.component';
 import { AboutViewComponent } from './views/admin/about-view/about-view.component';
+import { PolicySearchComponent } from './views/policy-search/policy-search.component';
+import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
+import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
+import { ContractConfigComponent } from './modules/contract-engine/configs/contract-config/contract-config.component';
+import { UserContractConfigComponent } from './modules/contract-engine/configs/user-contract-config/user-contract-config.component';
+import { AnnotationBlockComponent } from './modules/project-comparison/component/annotation-block/annotation-block.component';
+import { ProjectsComparisonTableComponent } from './modules/project-comparison/component/projects-comparison-table/projects-comparison-table.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -158,6 +164,9 @@ const routes: Routes = [
     { path: 'notifications', component: NotificationsComponent },
 
     { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
+    { path: 'policy-search', component: PolicySearchComponent, canActivate: [UserGuard, ServicesStatusGuard] },
+    { path: 'tokens-user', component: ListOfTokensUserComponent, canActivate: [UserGuard, ServicesStatusGuard] },
+    { path: 'retirement-user', component: UserContractConfigComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 
     { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
@@ -169,8 +178,8 @@ const routes: Routes = [
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
-            {path: 'logs', component: LogsViewComponent},
-            {path: 'about', component: AboutViewComponent}
+            { path: 'logs', component: LogsViewComponent },
+            { path: 'about', component: AboutViewComponent }
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
@@ -187,8 +196,12 @@ const routes: Routes = [
 
     { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
     { path: 'search', component: SearchPoliciesComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'record-results', component: RecordResultsComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+
+    {path: 'projects', component: AnnotationBlockComponent, data: {title: 'GUARDIAN / Project Overview'}},
+    {path: 'projects/comparison', component: ProjectsComparisonTableComponent, data: {title: 'GUARDIAN / Project Comparison'}},
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

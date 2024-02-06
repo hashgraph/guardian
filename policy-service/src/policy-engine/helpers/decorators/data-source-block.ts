@@ -87,7 +87,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param countResult
              * @protected
              */
-             protected async getGlobalSourcesFilters(user: IPolicyUser) {
+            protected async getGlobalSourcesFilters(user: IPolicyUser) {
                 const dynFilters = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
@@ -124,7 +124,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     }
                     filters.push(blockFilter);
                 }
-                return {filters, dataType: sourceAddons[0].options.dataType};
+                return { filters, dataType: sourceAddons[0].options.dataType };
             }
 
             /**
@@ -181,7 +181,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     }
 
                     skip = Math.max(start - previousCount, 0);
-                    limit =  paginationData.itemsPerPage - Math.min((previousCount - start), 0);
+                    limit = paginationData.itemsPerPage - Math.min((previousCount - start), 0);
 
                     const childData = await currentSource.getFromSource(user, globalFilters, false, {
                         offset: skip,

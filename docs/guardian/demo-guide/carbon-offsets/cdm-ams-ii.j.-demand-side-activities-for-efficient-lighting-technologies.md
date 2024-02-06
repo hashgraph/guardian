@@ -16,6 +16,8 @@
 
 [Workflow](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#workflow)
 
+Policy Guide
+
 [Key Documents and Schemas](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#key-documents-and-schemas)
 
 [Token (Carbon Emission Reduction)](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#token-carbon-emission-reduction)
@@ -61,6 +63,10 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 ### Workflow&#x20;
 
 <figure><img src="../../../.gitbook/assets/image (373).png" alt=""><figcaption></figcaption></figure>
+
+### Policy Guide
+
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp : 1706881157.848214003
 
 ### Key Documents and Schemas&#x20;
 

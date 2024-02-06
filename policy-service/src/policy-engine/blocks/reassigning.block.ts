@@ -85,12 +85,12 @@ export class ReassigningBlock {
             actor = user;
         }
 
+        const uuid = await ref.components.generateUUID();
         const credentialSubject = vcDocument.credentialSubject[0];
-        const vc: any = await this.vcHelper.createVC(
-            root.did,
-            root.hederaAccountKey,
+        const vc: any = await this.vcHelper.createVcDocument(
             credentialSubject,
-            groupContext
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid, group: groupContext }
         );
 
         let item = PolicyUtils.createVC(ref, owner, vc);

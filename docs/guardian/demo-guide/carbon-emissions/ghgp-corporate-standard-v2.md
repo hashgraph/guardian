@@ -28,7 +28,7 @@
 
 [TODO](ghgp-corporate-standard-v2.md#\_toc146717960)
 
-### Introduction <a href="#_toc146717947" id="_toc146717947"></a>
+### Introduction <a href="#toc146717947" id="toc146717947"></a>
 
 The GHG Protocol Corporate Accounting and Reporting Standard (GHGP Corporate Standard) is the world’s leading standard outlining requirements and guidance for corporate-level and organizational-level GHG emission inventories. As of 2016, approximately 92% of Fortune 500 companies responding to the CDP—an investor-led effort to increase corporate carbon disclosures—referenced the used the GHGP Corporate Standard to conduct their GHG inventories.\[1] Also, many other GHG-related standards—such as the Natural Capital Partner’s CarbonNeutral Protocol and the Science Based Targets Initiative (SBTi)—point to the Greenhouse Gas Protocol as the default standard for the quantification and accounting of corporate GHG emissions. As future regulations and standards are developed and implemented, they are likely to either prescribe or encourage the use of Greenhouse Gas Protocol standards.
 
@@ -36,7 +36,7 @@ This Guardian Policy mints Carbon Emission Tokens (CETs) in accordance with the 
 
 The policy currently covers emissions from grid electricity consumption (location and market-based calculations), natural gas consumption, mobile combustion, and refrigerants. The policy is designed to be dynamic, allowing organizations to assign entities to organizations, assets/emission generating objects (EGOs) to entities, and GHG sources to assets/EGOs in a hierarchical structure to dynamically tailor the policy and inventory to specific corporate structures and operations.
 
-### Need and Use for the GHGP Corporate Standard Policy <a href="#_toc146717948" id="_toc146717948"></a>
+### Need and Use for the GHGP Corporate Standard Policy <a href="#toc146717948" id="toc146717948"></a>
 
 According to the IPCC, in order to avoid potentially irreversible impacts of climate change, global GHG emissions should be reduced by approximately 45% by 2030 (relative to 2010 levels) and achieve net zero by around 2050. Therefore, it comes as no surprise that the largest companies in the world are increasingly aligning their GHG reduction targets with the latest scientific models, in an effort to both exhibit their commitment to sustainability, as well as to remain viable in a low-carbon future. The number of companies working with the Science Based Targets initiative (SBTi) has increased nearly 1,900% between 2015 and 2020, with 1,039 cumulatively committed companies representing nearly 20% of global market capitalization (over $20.5 trillion USD).
 
@@ -46,17 +46,17 @@ Despite a growing interest in measuring, disclosing, and reducing GHG emissions 
 
 The Guardian GHGP Corporate Policy offers a unique technical opportunity for companies to streamline, add robustness, and build trust and transparency into their GHG inventories. The policy allows user to dynamically add entities and EGOs to organizations and GHG sources to EGOs to build their inventories in alignment with their specific corporate structures. MRV data can then be sourced by the Guardian automatically (e.g., via API, IoT-enabled devices, etc.) or provided manually depending on the user’s level of digitization. The inventory is further streamlined through Guardian policies with built in auto-calculation blocks, emission factors, and GWPs. The results of the inventory can be immutably and transparently verified by third parties. Finally, the emissions are tokenized to allow for enhanced tracking, transparency, accounting, and reporting, with the results and data structured in accordance with GHGP reporting requirements.
 
-### Policy Workflow <a href="#_toc146717950" id="_toc146717950"></a>
+### Policy Workflow <a href="#toc146717950" id="toc146717950"></a>
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide <a href="#_toc146717951" id="_toc146717951"></a>
+### Policy Guide <a href="#toc146717951" id="toc146717951"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
 Latest Version - 1698402201.827872003
 
-### Available Roles <a href="#_toc146717952" id="_toc146717952"></a>
+### Available Roles <a href="#toc146717952" id="toc146717952"></a>
 
 **Registry** – The role responsible for publishing policies, creating tokens, and issuing CETs to organizations in accordance with the policy and methodology.
 
@@ -64,7 +64,7 @@ Latest Version - 1698402201.827872003
 
 **VVB (Validation & Verification Body)** – Independent third party who audits organization’s critical documentation, MRV data and sources, and GHG inventories. Verification is optional for this policy as it is optional under the GHGP Corporate Standard. The workflow steps involving the VVBs will not block the subsequent steps or the minting of CETs, therefore they can be 1) executed according to the workflow above, 2) skipped, or 3) executed later in the workflow.
 
-### Important Documents & Schemas <a href="#_toc146717953" id="_toc146717953"></a>
+### Important Documents & Schemas <a href="#toc146717953" id="toc146717953"></a>
 
 1. Organizational Profile – The company or organization creates a profile of key information, targets, and reporting metrics. Entities (such as business units, subsidiaries, etc.) are assigned to the company or organization.
 2. Entity Schema – The company profiles with key information for each entity. Assets and EGOs (such as facilities, vehicles, etc.) are assigned to entities. Together, the entities make up the corporate structure by which the inventory is based.
@@ -73,13 +73,13 @@ Latest Version - 1698402201.827872003
 5. Raw Data Schema — Raw activity data sourced manually or automatically from APIs or devices such as IoT-enabled electricity meters.
 6. Reporting Metrics — Key metrics to support reporting in alignment with the GHGP Corporate Standard.
 
-### Token (Carbon Emission) <a href="#_toc146717954" id="_toc146717954"></a>
+### Token (Carbon Emission) <a href="#toc146717954" id="toc146717954"></a>
 
 Carbon Emission Token (CET) equivalent to 1 metric ton of CO2e emissions.
 
-### Step by Step <a href="#_toc146717955" id="_toc146717955"></a>
+### Step by Step <a href="#toc146717955" id="toc146717955"></a>
 
-### Organization Flow <a href="#_toc146717956" id="_toc146717956"></a>
+### Organization Flow <a href="#toc146717956" id="toc146717956"></a>
 
 The Organization is responsible for inputting key data and information and assigning entities, assets, GHG sources, and devices in alignment with their corporate and operational structure.
 
@@ -141,29 +141,29 @@ The Organization is responsible for inputting key data and information and assig
 
 <figure><img src="../../../.gitbook/assets/image (245).png" alt="" width="563"><figcaption></figcaption></figure>
 
-### VVB Flow <a href="#_toc146717957" id="_toc146717957"></a>
+### VVB Flow <a href="#toc146717957" id="toc146717957"></a>
 
 1. Assign role as VVB and add VVB name
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
-
 <figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. All the GHG resources once viewed can be verified.
 
-<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. After verification of GHG resources, VVB reviews reporting metrics and approve/reject.
 
 <figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 
-### Administrator (Registry) <a href="#_toc146717958" id="_toc146717958"></a>
+### Administrator (Registry) <a href="#toc146717958" id="toc146717958"></a>
 
 1. After the organizational emissions have been calculated, the Registry will approve or reject the CET issuance request, and consequently issue CETs if approved.
 
@@ -173,11 +173,11 @@ The Organization is responsible for inputting key data and information and assig
 
 <figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
-### Futureproofing (Automated GHG Inventories) <a href="#_toc146717959" id="_toc146717959"></a>
+### Futureproofing (Automated GHG Inventories) <a href="#toc146717959" id="toc146717959"></a>
 
 Due to several factors such as lack of expertise, absent third-party assurance, and methodologies that leave significant room for error, corporate GHG inventories are often inaccurate and unreliable. In addition, manually collecting monitoring and activity data each year can be a cumbersome task. By automating and digitizing the collection of monitoring data, GHG quantification calculations, and (optionally) third-party verification of devices, data, and calculations, GHG inventories can be automated and streamlined to enhance trust, transparency, and efficiency.
 
-### TODO <a href="#_toc146717960" id="_toc146717960"></a>
+### TODO <a href="#toc146717960" id="toc146717960"></a>
 
 The policy currently covers emissions from grid electricity consumption (location and market-based calculations), natural gas consumption, mobile combustion, and refrigerants. In future iterations of the policy, GHG source schemas can be modulated, and new types of data sources can be added as necessary. The policy is designed to be dynamic, allowing organizations to assign entities to organizations, assets/EGOs to entities, and GHG sources to assets/EGOs in a hierarchical structure to dynamically tailor the inventory to specific corporate structures and operations. This aspect may also be modulated in future iterations of the policy.
 

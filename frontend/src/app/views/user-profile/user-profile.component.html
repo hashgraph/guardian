@@ -1,285 +1,278 @@
 <div class="content user-profile">
-
     <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <async-progress *ngIf="loading && taskId" [taskId]="taskId"
-            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
+    <async-progress
+        (completed)="onAsyncCompleted()"
+        (error)="onAsyncError($event)"
+        *ngIf="loading && taskId"
+        [taskId]="taskId"
+    ></async-progress>
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="profile" class="profile">
-            <mat-tab-group (selectedIndexChange)="onChange($event)" [selectedIndex]="selectedIndex">
-                <mat-tab label="Account">
-                    <div class="account">
-                        <div class="account-item">
-                            <div class="account-item-name">HEDERA ID</div>
-                            <div class="account-item-value">
-                                <hedera-explorer type="accounts"
-                                    [params]="profile.hederaAccountId || ''">{{profile.hederaAccountId}}
-                                </hedera-explorer>
-                            </div>
-                        </div>
-                        <div class="account-item">
-                            <div class="account-item-name"> BALANCE</div>
-                            <div class="account-item-value"> {{balance}}</div>
-                        </div>
-                        <div *ngIf="profile.topicId" class="account-item">
-                            <div class="account-item-name"> USER TOPIC</div>
-                            <div class="account-item-value">
-                                <hedera-explorer type="topics" [params]="profile.topicId">{{profile.topicId}}
-                                </hedera-explorer>
-                            </div>
-                        </div>
-                        <div class="account-item">
-                            <div class="account-item-name"> Standard Registry</div>
-                            <div class="account-item-value"> {{profile.parent}} </div>
-                        </div>
-                        <div class="account-item">
-                            <div class="account-item-name"> DID</div>
-                            <div class="account-item-value"> {{profile.did}} </div>
-                        </div>
-                        <div class="account-item">
-                            <div class="account-item-name"> DID Document</div>
-                            <div class="account-item-value">
-                                <a (click)="openDIDDocument(didDocument, 'DID')">View Document</a>
-                            </div>
-                        </div>
-                        <div *ngIf="vcDocument" class="account-item">
-                            <div class="account-item-name"> VC Document</div>
-                            <div class="account-item-value">
-                                <a (click)="openVCDocument(vcDocument, 'VC')">View Document</a>
-                            </div>
-                        </div>
+            <div class="header">
+                <h1>Profile</h1>
+            </div>
+            <div class="user-info-container">
+                <div class="item">
+                    <span>HEDERA ID</span>
+                    <div>
+                        <hedera-explorer
+                            [params]="profile.hederaAccountId || ''"
+                            type="accounts"
+                        >{{ profile.hederaAccountId }}
+                        </hedera-explorer>
                     </div>
-                </mat-tab>
-                <mat-tab label="Tokens">
-                    <ng-container *ngIf="tokens; else elseTemplate">
-                        <table mat-table [dataSource]="tokens" class="token-table">
-                            <ng-container matColumnDef="name">
-                                <th mat-header-cell *matHeaderCellDef> TOKEN </th>
-                                <td mat-cell *matCellDef="let element">
-                                    {{element.tokenName}} (<hedera-explorer type="tokens"
-                                        [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>)
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="associated">
-                                <th mat-header-cell *matHeaderCellDef> Associated </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <div class="item-color-{{getColor(element.associated,false)}}">
-                                        {{element.associated}}
-                                        <div class="associated-btn" (click)="associate(element)">
-                                            <mat-icon *ngIf="element.associated == 'No'">link</mat-icon>
-                                            <mat-icon *ngIf="element.associated == 'Yes'">link_off</mat-icon>
-                                        </div>
-                                    </div>
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="hBarBalance">
-                                <th mat-header-cell *matHeaderCellDef> hBar Balance </th>
-                                <td mat-cell *matCellDef="let element"> {{element.hBarBalance}} </td>
-                            </ng-container>
-                            <ng-container matColumnDef="tokenBalance">
-                                <th mat-header-cell *matHeaderCellDef> Token Balance </th>
-                                <td mat-cell *matCellDef="let element"> {{element.tokenBalance}} </td>
-                            </ng-container>
-                            <ng-container matColumnDef="frozen">
-                                <th mat-header-cell *matHeaderCellDef> Frozen </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <div *ngIf="element.enableFreeze"
-                                        class="item-color-{{getColor(element.frozen,true)}}">
-                                        {{element.frozen}}
-                                    </div>
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="kyc">
-                                <th mat-header-cell *matHeaderCellDef> KYCd </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <div *ngIf="element.enableKYC" class="item-color-{{getColor(element.kyc,false)}}">
-                                        {{element.kyc}}
-                                    </div>
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="policies">
-                                <th mat-header-cell *matHeaderCellDef> Policies </th>
-                                <td mat-cell *matCellDef="let element" [matTooltip]="element.policies?.join(', ')">
-                                    <div class="policies-info">{{getPoliciesInfo(element.policies)}}</div>
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="tags">
-                                <th mat-header-cell *matHeaderCellDef> Tags </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                                        [schemas]="tagSchemas" [entity]="tagEntity"
-                                        [service]="tagsService"></tags-explorer>
-                                </td>
-                            </ng-container>
-                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                        </table>
-                    </ng-container>
-                </mat-tab>
-                <mat-tab label="Retire">
-                    <ng-container *ngIf="contractRequests; else elseTemplate">
-                        <table mat-table [dataSource]="contractRequests" class="retire-table">
-                            <ng-container matColumnDef="contractId">
-                                <th mat-header-cell *matHeaderCellDef> Contract Id </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <hedera-explorer type="contracts"
-                                        [params]="element.document.credentialSubject[0].contractId">{{element.document.credentialSubject[0].contractId}}</hedera-explorer>
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="date">
-                                <th mat-header-cell *matHeaderCellDef> Date </th>
-                                <td mat-cell *matCellDef="let element">
-                                    {{ getDate(element.document.issuanceDate)}}
-                                </td>
-                            </ng-container>
-                            <ng-container matColumnDef="operation">
-                                <th mat-header-cell *matHeaderCellDef> Operations </th>
-                                <td mat-cell *matCellDef="let element">
-                                    <div class="view-action-btn"
-                                        (click)="viewRetireRequest(element)">
-                                        <span>View Details</span>
-                                        <mat-icon>visibility</mat-icon>
-                                    </div>
-                                </td>
-                            </ng-container>
-                            <tr mat-header-row *matHeaderRowDef="displayedColumnsContractRequests"></tr>
-                            <tr mat-row *matRowDef="let row; columns: displayedColumnsContractRequests;"></tr>
-                        </table>
-                        <button (click)="openRetirePoolsDialog()" mat-raised-button color="primary"
-                            style="margin: 10px;">Retire</button>
-                        <button (click)="openRetireRequestsDialog()" mat-raised-button color="primary"
-                        style="margin: 10px;">Requests</button>
-                    </ng-container>
-                </mat-tab>
-            </mat-tab-group>
+                </div>
+                <div class="item">
+                    <span>BALANCE</span>
+                    <span>{{ balance }}</span>
+                </div>
+                <div *ngIf="profile.topicId" class="item">
+                    <span>USER TOPIC</span>
+                    <div>
+                        <hedera-explorer
+                            [params]="profile.topicId"
+                            type="topics"
+                        >{{ profile.topicId }}</hedera-explorer>
+                    </div>
+                </div>
+                <div class="item">
+                    <span>Standard Registry</span>
+                    <span>{{ profile.parent }}</span>
+                </div>
+                <div class="item">
+                    <span>DID</span>
+                    <span>{{ profile.did }}</span>
+                </div>
+                <div class="item">
+                    <span>DID Document</span>
+                    <div
+                        (click)="openDIDDocument(didDocument, 'DID')"
+                        class="view-document-button"
+                    >
+                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                        </svg-icon>
+                        <span>View document</span>
+                    </div>
+                </div>
+                <div *ngIf="vcDocument" class="item">
+                    <span>VC Document</span>
+                    <div
+                        (click)="openVCDocument(vcDocument, 'VC')"
+                        class="view-document-button"
+                    >
+                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                        </svg-icon>
+                        <span>View document</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </ng-container>
     <ng-template #elseTemplate>
-        <mat-stepper *ngIf="isNewAccount && !isFailed" class="user-onboarding-wizard" [linear]="false" #stepper>
-            <mat-step label="Standard Registries">
-                <div class="user-onboarding-wizard__header">
-                    <h1 class="user-onboarding-wizard__title">Standard Registries</h1>
+        <div *ngIf="isNewAccount && !isFailed && !loading" class="finish-setup-main-container">
+            <div class="user-profile-setup-title">User Profile Setup</div>
 
-                    <form
-                        *ngIf="hasRegistries"
-                        class="user-onboarding-wizard__filters"
-                        [formGroup]="filtersForm"
+            <div class="content-main-block-container">
+                <div class="progress-container">
+                    <div
+                        *ngFor="let step of steps"
+                        [ngClass]="{ active: step.index === currentStep }"
+                        class="step-item"
                     >
-                        <div>
-                            <span>Filter by</span>
-
-                            <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
-                                <input matInput placeholder="Policy name" formControlName="policyName">
-                            </mat-form-field>
-
-                            <mat-form-field class="user-onboarding-wizard__control" appearance="outline">
-                                <input matInput placeholder="Geography" formControlName="geography">
-                            </mat-form-field>
-                        </div>
-
-                        <div class="user-onboarding-wizard__filter-btns">
-                            <button
-                                mat-raised-button
-                                color="primary"
-                                [disabled]="isFilterButtonDisabled"
-                                (click)="applyFilters()"
-                            >Apply</button>
-
-                            <button
-                                mat-stroked-button
-                                [disabled]="!filtersForm.dirty"
-                                (click)="clearFilters()"
-                            >Clear filters</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="user-onboarding-wizard__content">
-                    <ng-container *ngIf="!noFilterResults; else noResults">
-                        <p *ngIf="!hasRegistries" class="no-results">
-                            Standard registries have not been created yet.
-                        </p>
-
-                        <ul class="standard-registry">
-                            <app-standard-registry-card
-                                *ngFor="let registry of standardRegistriesList; trackBy:trackByDid"
-                                [registry]="registry"
-                                (registrySelected)="selectStandardRegistry($event)"
-                                [isRegistrySelected]="isRegistrySelected(registry.did)"
-                            ></app-standard-registry-card>
-                        </ul>
-                    </ng-container>
-
-                    <ng-template #noResults>
-                        <p *ngIf="noFilterResults" class="no-results">No results found.</p>
-                    </ng-template>
-                </div>
-
-                <div class="user-onboarding-wizard__footer">
-                    <button
-                        mat-raised-button
-                        color="primary"
-                        matStepperNext
-                        [disabled]="!isStandardRegistrySelected"
-                    >Next</button>
-                </div>
-            </mat-step>
-            <mat-step label="Hedera Credentials">
-                <h1 class="user-onboarding-wizard__title centered-text">Hedera Credentials</h1>
-
-                <div class="user-onboarding-wizard__content">
-                    <div class="list">
-                        <form [formGroup]="hederaForm">
-                            <div *ngIf="schema" class="list-item">
-                                <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
-                                    (change)="onChangeForm()" [showButtons]="false">
-                                </app-schema-form>
-                            </div>
-
-                            <div class="list-item">
-                                <mat-form-field class="example-full-width" appearance="outline">
-                                    <mat-label>* OPERATOR ID:</mat-label>
-                                    <input matInput placeholder="0.0.1548173" formControlName="id">
-                                </mat-form-field>
-                            </div>
-
-                            <div class="list-item">
-                                <mat-form-field class="example-full-width" appearance="outline">
-                                    <mat-label>* OPERATOR KEY:</mat-label>
-                                    <input matInput placeholder="302e020100300506.........7e74946abca993f543cf9509c8edc"
-                                        formControlName="key">
-                                </mat-form-field>
-                            </div>
-
-                            <button mat-raised-button class="generate-btn" (click)="randomKey()">Generate</button>
-                        </form>
+                        <i
+                            [ngClass]="step.index === currentStep
+                                ? 'pi-check'
+                                : 'pi-angle-right'"
+                            class="pi"
+                        ></i>
+                        <p>{{ step.label }}</p>
                     </div>
                 </div>
-                <div class="user-onboarding-wizard__footer">
-                    <button mat-stroked-button matStepperPrevious>Back</button>
-                    <button
-                        mat-raised-button
-                        color="primary"
-                        matStepperNext
-                        [disabled]="hederaForm.invalid"
-                        (click)="onHederaSubmit()"
-                    >Submit</button>
-                </div>
-            </mat-step>
-        </mat-stepper>
 
+                <div class="forms-container">
+                    <ng-container *ngIf="currentStep === 0">
+                        <div class="user-onboarding-wizard__header">
+                            <form
+                                *ngIf="hasRegistries"
+                                [formGroup]="filtersForm"
+                                class="user-onboarding-wizard__filters"
+                            >
+                                <div class="search-inputs">
+                                    <label
+                                        class="form-label"
+                                        htmlFor="policyName"
+                                    >
+                                        Filter by
+                                    </label>
+
+                                    <span class="p-input-icon-right">
+                                        <input
+                                            formControlName="policyName"
+                                            id="policyName"
+                                            pInputText
+                                            placeholder="Policy name"
+                                            type="text"
+                                        />
+                                        <i class="pi pi-search"></i>
+                                    </span>
+
+                                    <span class="p-input-icon-right">
+                                        <input
+                                            formControlName="geography"
+                                            pInputText
+                                            placeholder="Geography"
+                                            type="text"
+                                        />
+                                        <i class="pi pi-search"></i>
+                                    </span>
+                                </div>
+
+                                <div class="user-onboarding-wizard__filter-btns">
+                                    <p-button
+                                        (click)="applyFilters()"
+                                        [disabled]="isFilterButtonDisabled"
+                                        class="apply-filters-button"
+                                        label="Apply"
+                                    ></p-button>
+                                    <p-button
+                                        (click)="clearFilters()"
+                                        [disabled]="!filtersForm.dirty"
+                                        class="clear-filters-button"
+                                        styleClass="p-button-outlined"
+                                    >Clear filters</p-button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="user-onboarding-wizard__content">
+                            <ng-container *ngIf="!noFilterResults; else noResults">
+                                <p *ngIf="!hasRegistries" class="no-results">
+                                    Standard registries have not been created
+                                    yet.
+                                </p>
+
+                                <ul class="standard-registry">
+                                    <app-standard-registry-card 
+                                        (registrySelected)="selectStandardRegistry($event)" 
+                                        *ngFor="let registry of standardRegistriesList; trackBy: trackByDid" 
+                                        [isRegistrySelected]="isRegistrySelected(registry.did)" 
+                                        [registry]="registry"></app-standard-registry-card>
+                                </ul>
+                            </ng-container>
+
+                            <ng-template #noResults>
+                                <p *ngIf="noFilterResults" class="no-results">
+                                    No results found.
+                                </p>
+                            </ng-template>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="currentStep === 1">
+                        <div class="hedera-credentials-title">
+                            Hedera Credentials
+                        </div>
+
+                        <div class="hedera-credentials-form-container">
+                            <form [formGroup]="hederaForm" class="hedera-form">
+                                <div *ngIf="schema" class="list-item">
+                                    <app-schema-form
+                                            (change)="onChangeForm()"
+                                            [formGroup]="vcForm"
+                                            [private-fields]="hideVC"
+                                            [schema]="schema"
+                                            [showButtons]="false"
+                                    >
+                                    </app-schema-form>
+                                </div>
+
+                                <div class="input-field-container">
+                                    <label class="form-label" htmlFor="operatorId">
+                                        * OPERATOR ID (Hedera Account):
+                                    </label>
+                                    <input
+                                        formControlName="id"
+                                        id="operatorId"
+                                        pInputText
+                                        placeholder="0.0.1548173"
+                                        type="text"
+                                    />
+                                </div>
+                                <div class="input-field-container">
+                                    <label class="form-label" htmlFor="operatorKey">
+                                        * OPERATOR KEY (Hedera Account Private Key):
+                                    </label>
+                                    <input
+                                        formControlName="key"
+                                        id="operatorKey"
+                                        pInputText
+                                        placeholder="302e020100300506032b657004220420e..."
+                                        type="text"
+                                    />
+                                </div>
+                                <p-button
+                                    (click)="randomKey()"
+                                    class="generate-btn"
+                                    label="Generate"
+                                    styleClass="p-button-outlined"
+                                >
+                                </p-button>
+                            </form>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="user-profile-setup-buttons-container">
+                <div *ngIf="currentStep === 0" class="user-profile-next-button">
+                    <p-button
+                        (click)="changeStep(true)"
+                        [disabled]="!isStandardRegistrySelected"
+                        label="Next"
+                    >
+                    </p-button>
+                </div>
+                <div
+                    *ngIf="currentStep === 1"
+                    class="user-profile-finish-buttons"
+                >
+                    <div class="previous-button">
+                        <p-button
+                            (click)="changeStep(false)"
+                            label="Previous"
+                            styleClass="p-button-outlined"
+                        ></p-button>
+                    </div>
+                    <div class="confirm-button">
+                        <p-button
+                            (click)="onHederaSubmit()"
+                            [disabled]="hederaForm.invalid"
+                            label="Submit"
+                        >
+                        </p-button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
             <div class="clock-loader"></div>
-            <p>Creating DID ... </p>
+            <p>Creating DID ...</p>
         </div>
         <div *ngIf="isFailed" class="error-list">
             <p>An error occurred while creating the document.</p>
             <p>Please try again later.</p>
-            <button mat-raised-button type="button" color="primary" class="generate-btn"
-                (click)="retry()">Retry</button>
+            <button
+                (click)="retry()"
+                class="generate-btn"
+                color="primary"
+                mat-raised-button
+                type="button"
+            >
+                Retry
+            </button>
         </div>
     </ng-template>
 </div>

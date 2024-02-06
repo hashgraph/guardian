@@ -1,12 +1,156 @@
-<div class="content">
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading && isConfirmed">
+        <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+    </ng-container>
+    <ng-container *ngIf="!loading && !isConfirmed" [ngTemplateOutlet]="noDIDSettings"></ng-container>
     <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Modules</h1>
+    </div>
+</ng-template>
+
+<ng-template #actionsContainer>
+    <div class="actions-container">
+        <span class="p-input-icon-right">
+            <i class="pi pi-search"></i>
+            <input [(ngModel)]="searchParam" class="search-input" pInputText placeholder="Search" type="text">
+        </span>
+        <div class="module-actions-buttons-container">
+            <p-button
+                    (click)="newModules()"
+                    class="toolbar-btn"
+            >
+                <mat-icon class="toolbar-icons">add</mat-icon>
+                <span>Create a Module</span>
+            </p-button>
+            <p-button
+                    (click)="importModules()"
+                    class="toolbar-btn"
+            >
+                <mat-icon class="toolbar-icons">file_open</mat-icon>
+                <span>Import</span>
+            </p-button>
+            <p-button
+                    (click)="compareModules()"
+                    class="toolbar-btn compare-button"
+                    styleClass="p-button-outlined"
+            >
+                <mat-icon class="toolbar-icons">compare</mat-icon>
+                <span>Compare</span>
+            </p-button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #tableContainer>
+    <ng-container *ngIf="modules && modules.length > 0 else noData">
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>NAME</th>
+                    <th>DESCRIPTION</th>
+                    <th>TAGS</th>
+                    <th>STATUS</th>
+                    <th>OPERATIONS</th>
+                </tr>
+                <ng-container *ngFor="let module of modules">
+                    <tr *ngIf="module.name.includes(searchParam) || module.description.includes(searchParam)"
+                        class="row-item">
+                        <td>{{ module.name }}</td>
+                        <td>{{ module.description }}</td>
+                        <td>
+                            <tags-explorer [data]="module._tags" [entity]="tagEntity" [owner]="owner"
+                                           [schemas]="tagSchemas" [service]="tagsService"
+                                           [target]="module.id"></tags-explorer>
+                        </td>
+                        <td>
+                            <div *ngIf="module.status === 'DRAFT'" class="p-tag p-tag-grey">Draft</div>
+                            <div *ngIf="module.status === 'PUBLISHED'" class="p-tag p-tag-success">Published</div>
+                        </td>
+                        <td>
+                            <div class="flex flex-sb-c">
+                                <button (click)="publishModule(module)" [disabled]="module.status === 'PUBLISHED'" class="button height-28"
+                                        pButton>Publish
+                                </button>
+                                <div class="flex flex-column-gap-20">
+                                    <svg-icon 
+                                        (click)="exportModules(module)"
+                                        src="/assets/images/icons/export.svg" 
+                                        svgClass="primary-color"></svg-icon>
+                                    <div [queryParams]="{ moduleId: module.uuid }"
+                                         [routerLink]="['/policy-configuration']">
+                                        <svg-icon class="opacity-icon"
+                                            src="/assets/images/icons/edit.svg" 
+                                            svgClass="primary-color"></svg-icon>
+                                    </div>
+                                    <svg-icon 
+                                        (click)="module.status === 'DRAFT' ? openDeleteModuleDialog(module) : null"
+                                        class="opacity-icon"
+                                        src="/assets/images/icons/delete.svg" 
+                                        [svgClass]="module.status === 'DRAFT' ? 'accent-color-red' : 'disabled-color'"></svg-icon>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="modulesCount"
+                (page)="onPage($event)"
+            ></app-paginator>
+
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">No modules have been created yet</span>
+        <span class="info-text">Please create a new module or import one to see the data</span>
+    </div>
+</ng-template>
+
+<ng-template #noDIDSettings>
+    <div class="not-exist">
+        <span>Before starting work you need to get DID <a [routerLink]="['/profile']">here</a></span>
+    </div>
+</ng-template>
+
+<p-dialog [(visible)]="deleteTokenVisible" [closable]="true" [draggable]="false" [modal]="true">
+    <ng-template pTemplate="header">
+        <span class="modal-header">Detele Module</span>
+    </ng-template>
+    <div class="" style="padding: 0 10px 0 10px;">
+        Are you sure to delete module?
+    </div>
+    <ng-template pTemplate="footer">
+        <button (click)="deleteModule(false)" class="button secondary" label="Cancel" pButton
+                type="button"></button>
+        <button (click)="deleteModule(true)" [label]="'Delete'" class="button button-color-red" pButton
+                type="button"></button>
+    </ng-template>
+</p-dialog>
+<!--<div class="content">
+    <div *ngIf="loading && !taskId" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
-    <!-- <div *ngIf="loading && taskId" class="loading">
+    &lt;!&ndash; <div *ngIf="loading && taskId" class="loading">
         <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
             (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div> -->
+    </div> &ndash;&gt;
 
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
@@ -32,25 +176,25 @@
         <div class="table-container">
             <table mat-table [dataSource]="modules" class="table">
                 <ng-container matColumnDef="uuid">
-                    <th mat-header-cell *matHeaderCellDef> UUID </th>
+                    <th mat-header-cell *matHeaderCellDef> UUID</th>
                     <td mat-cell *matCellDef="let element">
                         {{ element.uuid }}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Name </th>
+                    <th mat-header-cell *matHeaderCellDef> Name</th>
                     <td mat-cell *matCellDef="let element">
                         {{ element.name }}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef> Description </th>
+                    <th mat-header-cell *matHeaderCellDef> Description</th>
                     <td mat-cell *matCellDef="let element">
                         {{ element.description }}
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef> Status </th>
+                    <th mat-header-cell *matHeaderCellDef> Status</th>
                     <td mat-cell *matCellDef="let element">
                         <span [ngSwitch]="element.status">
                             <div *ngSwitchCase="'DRAFT'">
@@ -66,14 +210,15 @@
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="tags">
-                    <th mat-header-cell *matHeaderCellDef> Tags </th>
+                    <th mat-header-cell *matHeaderCellDef> Tags</th>
                     <td mat-cell *matCellDef="let element">
                         <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                            [schemas]="tagSchemas" [entity]="tagEntity" [service]="tagsService"></tags-explorer>
+                                       [schemas]="tagSchemas" [entity]="tagEntity"
+                                       [service]="tagsService"></tags-explorer>
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="operation">
-                    <th mat-header-cell *matHeaderCellDef> Operations </th>
+                    <th mat-header-cell *matHeaderCellDef> Operations</th>
                     <td mat-cell *matCellDef="let element">
                         <div *ngIf="element.status =='DRAFT'" class="btn-publish" (click)="publishModule(element)">
                             Publish
@@ -112,8 +257,8 @@
         </div>
         <div class="table-paginator">
             <mat-paginator [length]="modulesCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
+                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
             </mat-paginator>
         </div>
     </ng-container>
-</div>
+</div>-->

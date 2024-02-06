@@ -11,7 +11,6 @@ export interface ISchema {
      * Id
      */
     _id: any;
-
     /**
      * Serialized Id
      */
@@ -112,9 +111,12 @@ export interface ISchema {
      * Is active schema
      */
     active?: boolean;
-
     /**
      * Code version
      */
     codeVersion?: string;
+    /**
+     * Errors
+     */
+    errors?: any[];
 }

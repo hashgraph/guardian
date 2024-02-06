@@ -8,7 +8,7 @@ import { PolicyBlock, PolicyFolder } from '../../structures';
 @Component({
     selector: 'select-block',
     templateUrl: './select-block.component.html',
-    styleUrls: ['./select-block.component.css']
+    styleUrls: ['./select-block.component.scss']
 })
 export class SelectBlock {
     @Input('root') root!: PolicyFolder;

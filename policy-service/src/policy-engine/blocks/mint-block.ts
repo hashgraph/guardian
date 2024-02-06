@@ -1,6 +1,6 @@
 import { ActionCallback, TokenBlock } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import {
@@ -170,7 +170,12 @@ export class MintBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const mintVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const mintVC = await vcHelper.createVcDocument(
+            vcSubject,
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
+        );
         return mintVC;
     }
 
@@ -207,7 +212,12 @@ export class MintBlock {
             if (additionalMessages) {
                 vcSubject.relationships = additionalMessages.slice();
             }
-            const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+            const uuid = await ref.components.generateUUID();
+            const vc = await vcHelper.createVcDocument(
+                vcSubject,
+                { did: root.did, key: root.hederaAccountKey },
+                { uuid }
+            );
             result.push(vc);
         }
         if (addons && addons.length) {
@@ -228,11 +238,10 @@ export class MintBlock {
      */
     private async createVP(root: IHederaAccount, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVP(
-            root.did,
-            root.hederaAccountKey,
+        const vp = await vcHelper.createVpDocument(
             vcs,
-            uuid
+            { did: root.did, key: root.hederaAccountKey },
+            { uuid }
         );
         return vp;
     }
@@ -259,7 +268,7 @@ export class MintBlock {
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
-        const uuid = GenerateUUIDv4();
+        const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         if (Number.isNaN(amount) || !Number.isFinite(amount)) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);

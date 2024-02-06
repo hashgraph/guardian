@@ -1,5 +1,5 @@
 import { Status } from '../types/status.type';
-import { ICompareOptions } from './compare-options.interface';
+import { CompareOptions } from './compare-options.interface';
 
 /**
  * Rate Model interface
@@ -39,7 +39,7 @@ export interface IRate<T> {
      * @param options - comparison options
      * @public
      */
-    calc(options: ICompareOptions): void;
+    calc(options: CompareOptions): void;
 
     /**
      * Convert class to object

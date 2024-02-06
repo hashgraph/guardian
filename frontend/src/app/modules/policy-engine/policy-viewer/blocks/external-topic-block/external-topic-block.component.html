@@ -1,7 +1,3 @@
-<div *ngIf="loading" class="loading">
-    <mat-spinner></mat-spinner>
-</div>
-
 <div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'">
     <mat-stepper linear="false" #stepper [selectedIndex]="stepIndex">
         <ng-template matStepperIcon="description">
@@ -226,4 +222,12 @@
             </div>
         </div>
     </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
 </div>

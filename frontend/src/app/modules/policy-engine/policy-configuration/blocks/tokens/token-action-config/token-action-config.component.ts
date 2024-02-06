@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables }
 @Component({
     selector: 'token-action-config',
     templateUrl: './token-action-config.component.html',
-    styleUrls: ['./token-action-config.component.css'],
+    styleUrls: ['./token-action-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class TokenActionConfigComponent implements OnInit {

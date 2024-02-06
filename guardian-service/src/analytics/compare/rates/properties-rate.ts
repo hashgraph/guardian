@@ -1,6 +1,6 @@
 import { Status } from '../types/status.type';
 import { IRate } from '../interfaces/rate.interface';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface';
 import { PropertyModel } from '../models/property.model';
 import { CompareUtils } from '../utils/utils';
 import { IRateMap } from '../interfaces/rate-map.interface';
@@ -106,7 +106,7 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
     private compareProp(
         prop1: PropertyModel<any>,
         prop2: PropertyModel<any>,
-        options: ICompareOptions
+        options: CompareOptions
     ): PropertiesRate[] {
         const list: string[] = [];
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
@@ -146,7 +146,7 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
      * @param options - comparison options
      * @public
      */
-    public calc(options: ICompareOptions): void {
+    public calc(options: CompareOptions): void {
         this.properties = this.compareProp(this.left, this.right, options);
 
         if (!this.left || !this.right) {
@@ -159,6 +159,12 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
         } else {
             this.totalRate = 0;
             this.type = Status.PARTLY;
+        }
+
+        if (this.left.ignore(options)) {
+            this.totalRate = 100;
+            this.propertiesRate = 100;
+            return;
         }
 
         if (this.properties && this.properties.length) {

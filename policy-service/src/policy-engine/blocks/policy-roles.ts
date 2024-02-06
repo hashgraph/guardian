@@ -3,7 +3,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -193,6 +193,7 @@ export class PolicyRolesBlock {
         user: IAuthUser,
         groupConfig: IGroupConfig
     ): Promise<IUserGroup> {
+        const uuid: string = await ref.components.generateUUID();
         if (groupConfig.groupRelationshipType === GroupRelationshipType.Multiple) {
             if (groupConfig.groupAccessType === GroupAccessType.Global) {
                 const result = await ref.databaseServer.getGlobalGroup(ref.policyId, groupConfig.name);
@@ -218,7 +219,7 @@ export class PolicyRolesBlock {
                         did: user.did,
                         username: user.username,
                         owner: ref.policyOwner,
-                        uuid: GenerateUUIDv4(),
+                        uuid,
                         role: groupConfig.creator,
                         groupName: groupConfig.name,
                         groupLabel: groupConfig.label,
@@ -234,7 +235,7 @@ export class PolicyRolesBlock {
                     did: user.did,
                     username: user.username,
                     owner: user.did,
-                    uuid: GenerateUUIDv4(),
+                    uuid,
                     role: groupConfig.creator,
                     groupName: groupConfig.name,
                     groupLabel: groupConfig.label,
@@ -250,7 +251,7 @@ export class PolicyRolesBlock {
                 did: user.did,
                 username: user.username,
                 owner: user.did,
-                uuid: GenerateUUIDv4(),
+                uuid,
                 role: groupConfig.creator,
                 groupName: groupConfig.name,
                 groupLabel: groupConfig.label,
@@ -315,11 +316,12 @@ export class PolicyRolesBlock {
             return null;
         }
 
+        const uuid: string = await ref.components.generateUUID();
         const groupOwner = await PolicyUtils.getHederaAccount(ref, group.owner);
         const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
-            id: GenerateUUIDv4(),
+            id: uuid,
             role: group.role,
             userId: group.did,
             policyId: ref.policyId
@@ -337,20 +339,24 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const mintVC = await vcHelper.createVC(groupOwner.did, groupOwner.hederaAccountKey, vcSubject);
+        const userVC = await vcHelper.createVcDocument(
+            vcSubject,
+            { did: groupOwner.did, key: groupOwner.hederaAccountKey },
+            { uuid }
+        );
 
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
         const messageServer = new MessageServer(groupOwner.hederaAccountId, groupOwner.hederaAccountKey, ref.dryRun);
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(mintVC);
+        vcMessage.setDocument(userVC);
         vcMessage.setRole(group);
         const vcMessageResult = await messageServer
             .setTopicObject(rootTopic)
             .sendMessage(vcMessage);
 
-        const vcDocument = PolicyUtils.createVC(ref, user, mintVC);
+        const vcDocument = PolicyUtils.createVC(ref, user, userVC);
         vcDocument.type = DataTypes.USER_ROLE;
-        vcDocument.schema = `#${mintVC.getSubjectType()}`;
+        vcDocument.schema = `#${userVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
         vcDocument.relationships = null;

@@ -1,54 +1,69 @@
-<div class="content">
+<div class="dialog-body">
+    <p-tabView>
+        <p-tabPanel *ngFor="let tab of items; let i = index">
+            <ng-template pTemplate="header">
+                <div (click)="handleChangeTab(i)" class="tabview-label">
+                    {{ tab.label }}
+                </div>
+            </ng-template>
+        </p-tabPanel>
+    </p-tabView>
+
     <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
         <ng-template [ngSwitchCase]="0">
-            <div class="login-header">
-                <mat-icon class="close-button" (click)="onNoClick()">close</mat-icon>
-            </div>
-
-            <app-file-drag-n-drop fileExtension="schema" (onFileLoaded)="importFromFile($event)"
-                dropZoneLabel="Import Schema .schema file"></app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                (onFileLoaded)="importFromFile($event)"
+                dropZoneLabel="Import Schema .schema file"
+                fileExtension="schema"
+            ></app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
-            <div class="header">
-                <h1 mat-dialog-title>
-                    Enter hedera message timestamp
-                </h1>
-                <div *ngIf="innerWidth <= 810" class="g-dialog-cancel-btn" (click)="onNoClick()">
-                    <mat-icon>close</mat-icon>
-                </div>
-            </div>
-            <div mat-dialog-content>
-                <form [formGroup]="dataForm" (ngSubmit)="importFromMessage()">
-                    <mat-form-field class="example-full-width" appearance="outline">
-                        <mat-label>Message timestamp</mat-label>
-                        <input matInput type="text" placeholder="Message timestamp" formControlName="timestamp">
-                    </mat-form-field>
-                    <div mat-dialog-actions>
-                        <button mat-raised-button color="primary" type="submit" id="ok-btn" [disabled]="!dataForm.valid">Ok</button>
-                        <button mat-button type="button" id="cancel-btn" (click)="onNoClick()">Cancel</button>
-                    </div>
-                </form>
-            </div>
+            <form [formGroup]="dataForm">
+                <label class="form-label" htmlFor="timestamp">Message timestamp</label>
+                <input
+                    formControlName="timestamp"
+                    id="timestamp"
+                    pInputText
+                    placeholder="Timestamp"
+                    type="text"
+                />
+            </form>
         </ng-template>
-    </ng-container>
-    <ng-container *ngIf="!isImportTypeSelected">
-        <div class="action-select-step">
-            <div class="login-header">
-                <span class="login-header-title">Select action</span>
-                <mat-icon (click)="onNoClick()">close</mat-icon>
-            </div>
-            <button mat-button (click)="setImportType(0)">
-                <span class="action-name">Import from file</span>
-            </button>
-            <button mat-button (click)="setImportType(1)">
-                <span class="action-name">Import from IPFS</span>
-            </button>
-        </div>
+        <ng-template [ngSwitchCase]="2">
+            <app-file-drag-n-drop
+                (onFileLoaded)="importFromExcel($event)"
+                dropZoneLabel="Import Schema .xlsx file"
+                fileExtension="xlsx"
+            ></app-file-drag-n-drop>
+        </ng-template>
     </ng-container>
 
     <div *ngIf="loading && !taskId" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
-    <async-progress *ngIf="loading && taskId" [taskId]="taskId"
-        (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
+    <async-progress
+            (completed)="onAsyncCompleted()"
+            (error)="onAsyncError($event)"
+            *ngIf="loading && taskId"
+            [taskId]="taskId"
+    ></async-progress>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onNoClick()"
+                    class="button secondary"
+                    label="Close"
+                    pButton
+                    styleClass="p-button-outlined"
+            ></button>
+        </div>
+        <div>
+            <button (click)="this.importType === 1 ? importFromMessage() : ''" class="button"
+                    label="Import"
+                    pButton
+            ></button>
+        </div>
+    </div>
 </div>

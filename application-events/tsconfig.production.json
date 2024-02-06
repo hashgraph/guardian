@@ -1,25 +1,22 @@
 {
-  "compileOnSave": true,
   "compilerOptions": {
-    "baseUrl": "./src",
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "inlineSourceMap": false,
-    "skipLibCheck": true,
-    "lib": [
-      "es5",
-      "es6"
-    ],
+    "baseUrl": "src",
+    "target": "es6",
     "module": "commonjs",
-    "moduleResolution": "node",
-    "outDir": "dist/",
-    "target": "es6"
+    "experimentalDecorators": true,
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleResolution": "node"
   },
+  "include": [
+    "./src/**/*",
+    "./tests/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
-    "dist"
-  ],
-    "include": ["./src/**/*",  "./src/docs/swagger.yaml"]
+    "**/*.spec.ts"
+  ]
 }

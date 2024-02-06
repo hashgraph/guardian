@@ -8,7 +8,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 @Component({
     selector: 'multi-policy-dialog',
     templateUrl: './multi-policy-dialog.component.html',
-    styleUrls: ['./multi-policy-dialog.component.css']
+    styleUrls: ['./multi-policy-dialog.component.scss']
 })
 export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
     loading = false;

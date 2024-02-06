@@ -7,7 +7,7 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
 @Component({
     selector: 'container-config',
     templateUrl: './container-config.component.html',
-    styleUrls: ['./container-config.component.css'],
+    styleUrls: ['./container-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ContainerConfigComponent implements OnInit {
@@ -17,7 +17,7 @@ export class ContainerConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
     };
@@ -47,7 +47,7 @@ export class ContainerConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

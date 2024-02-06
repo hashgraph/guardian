@@ -8,7 +8,7 @@ import { environment } from 'src/environments/environment';
 @Component({
     selector: 'hedera-explorer',
     templateUrl: './hedera-explorer.component.html',
-    styleUrls: ['./hedera-explorer.component.css']
+    styleUrls: ['./hedera-explorer.component.scss']
 })
 export class HederaExplorer {
     url: string;

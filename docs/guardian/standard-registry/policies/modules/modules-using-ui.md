@@ -1,5 +1,10 @@
 # 💻 Modules using UI
 
+1. [Step By Step Process](modules-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](modules-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 For a demo example of following steps, here is the policy timestamp: **1677851599.493646003**
 
 ## **Policy Modules**
@@ -28,7 +33,7 @@ Modules can also be created via the Policy editor UI in two ways: 1. By clicking
 
 Modules can be imported from local file system or from IPFS via messageIds.
 
-<figure><img src="../../../../.gitbook/assets/4 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/4 (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/5 (6).png" alt=""><figcaption></figcaption></figure>
 
@@ -36,7 +41,7 @@ Modules can be imported from local file system or from IPFS via messageIds.
 
 Modules can be exported as files or/and ‘published’ into IPFS. For published modules users can retrieve its messageId which can serve as a reference for import elsewhere.
 
-![image7.png](<../../../../.gitbook/assets/6 (2).png>)
+![image7.png](<../../../../.gitbook/assets/6 (2) (1).png>)
 
 ![image8.png](<../../../../.gitbook/assets/7 (1) (3).png>)
 
@@ -50,7 +55,7 @@ Modules which have not been published can be deleted.
 
 Modules which have not been published can be edited.
 
-![image10.png](<../../../../.gitbook/assets/9 (3).png>)
+![image10.png](<../../../../.gitbook/assets/9 (3) (1).png>)
 
 ### 2. Using Modules
 
@@ -58,7 +63,7 @@ Modules which have not been published can be edited.
 
 The ‘insides’ of modules are isolated from the rest of Policy it may be embedded into. The external view of a module is represented by _**Variables**_ and _**Input\Output Events**_, which serve as an interface of the Module and transmit data into and out of the module.
 
-<figure><img src="../../../../.gitbook/assets/10 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/10 (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.1.1 Generic Structure
 
@@ -127,3 +132,7 @@ Module added to the policy can be freely edited and changed. Module can be opene
 Modules added or created in the policy are ‘instances’ of the module and can only exist inside the policy until they are explicitly saved which adds them to the module library.
 
 <figure><img src="../../../../.gitbook/assets/20 (2).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=YS0XgdnHWzc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=23\&t=387s)

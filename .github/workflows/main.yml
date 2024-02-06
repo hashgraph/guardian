@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 16.12.0 ]
+        node-version: [ 20.10.0 ]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -55,11 +55,13 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Detect secrets
         run: |
           yarn run detect-secrets
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Lint
         run: |
           pushd interfaces
@@ -91,6 +93,7 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Test
         run: |
           pushd common
@@ -107,6 +110,7 @@ jobs:
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
           OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
           OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
       - name: Publish Unit Test Results

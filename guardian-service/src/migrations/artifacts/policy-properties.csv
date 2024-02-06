@@ -1,0 +1,480 @@
+AccountableImpactOrganization.id,ACR- Truck Stop Electrification
+AccountableImpactOrganization.name,ACR- Advanced Refrigeration Systems
+AccountableImpactOrganization.description,"ACR- Certified Reclaimed HFC Refrigerants, Propellants, and Fire Suppressants "
+AccountableImpactOrganization.addresses,ACR - Destruction of Ozone Depleting Substances and High-GWP Foam
+AccountableImpactOrganization.owners,ACR- Destruction of Ozone Depleting Substances from International Sources
+AccountableImpactOrganization.country,ACR- Transition to Advanced Formulation Blowing Agents in Foam Manufacturing
+AccountableImpactOrganization.region,ACR - Afforestation and Reforestation of Degraded Lands
+AccountableImpactOrganization.informationLink,ACR- Avoided Conversion of Grasslands and Shrublands to Crop Production 
+AccountableImpactOrganization.mediaLinks,ACR - Improved Forest Management (IFM) on Canadian Forestlands
+AccountableImpactOrganization.attestations,ACR- Improved Forest Management (IFM) on Non-Federal U.S. Forestlands
+AccountableImpactOrganization.activityImpactModules,ACR- Improved Forest Management (IFM) on Small Non-Industrial Private Forestlands 
+ActivityImpactModule.id,ACR - Restoration of California Deltaic and Coastal Wetlands
+ActivityImpactModule.aioId,ACR- Restoration of Pocosin Wetlands ACR - Carbon Capture and Storage Projects
+ActivityImpactModule.name,CAR - Adipic Acid Production
+ActivityImpactModule.classificationCategory,ACR- Landfill Gas Destruction and Beneficial Use Projects 
+ActivityImpactModule.classificationMethod,CAR- Biochar
+ActivityImpactModule.benefitCategory,CAR- Canada Grassland
+ActivityImpactModule.projectScope,CAR - Coal Mine Methane 
+ActivityImpactModule.projectType,CAR - Forest
+ActivityImpactModule.projectScale,CAR- Grassland
+ActivityImpactModule.arbId,CAR- Mexico Boiler Efficiency
+ActivityImpactModule.geographicLocation,CAR - Mexico Forest
+ActivityImpactModule.firstYearIssuance,CAR- Mexico Halocarbon
+ActivityImpactModule.registryProjectId,CAR - Mexico Landfill 
+ActivityImpactModule.developers,CAR - Mexico Livestock
+ActivityImpactModule.sponsors,CAR - Nitric Acid Production
+ActivityImpactModule.claimSources,CAR- Mexico Ozone Depleting Substances 
+ActivityImpactModule.impactClaims,CAR - Organic Waste Composting
+ActivityImpactModule.mrvExtensions,CAR - Organic Waste Digestion 
+ActivityImpactModule.validations,CAR - Ozone Depleting Substances 
+ActivityImpactModule.attestations,CAR - Rice Cultivation
+ActivityImpactModule.accountableImpactOrganization,CAR- Nitrogen Management
+ActivityImpactModule.projectStartDate,CAR - Soil Enrichment 
+ActivityImpactModule.projectCreditingPeriod,CAR - Urban Forest Management 
+ActivityImpactModule.projectMonitoringPeriod,CAR - Urban Tree Planting
+Address.addressType,CAR - U.S. Landfill 
+Address.addressLines,CAR - U.S. Livestock
+Address.city,CDM - AM0001
+Address.state,CDM - AM0007
+Address.zip,CDM - AM0009
+Address.country,CDM - AM0017
+Any.typeUrl,CDM - AM0018
+Any.value,CDM - AM0019
+Attestation.tag,CDM - AM0020
+Attestation.type,CDM - AM0021
+Attestation.proofType,CDM - AM0023
+Attestation.attestor,CDM - AM0026
+Attestation.signature,CDM - AM0027
+Audits.auditDate,CDM - AM0028
+Audits.auditReports,CDM - AM0030
+CRU.id,CDM - AM0031
+CRU.quantity,CDM - AM0035
+CRU.unit,CDM - AM0036
+CRU.ownerId,CDM - AM0037
+CRU.listingAgentId,CDM - AM0038
+CRU.coreCarbonPrinciples,CDM - AM0043
+CRU.climateLabels,CDM - AM0044
+CRU.status,CDM - AM0045
+CRU.referencedCredit,CDM - AM0046
+CRU.appliedToId,CDM - AM0048
+CRU.processedClaimId,CDM - AM0049
+CRU.issuerId,CDM - AM0050
+CRU.processedClaim,CDM - AM0052
+CheckpointResult.id,CDM - AM0053
+CheckpointResult.checkpointId,CDM - AM0055
+CheckpointResult.linkToVerificationData,CDM - AM0056
+CheckpointResult.dateRange,CDM - AM0057
+CheckpointResult.efBefore,CDM - AM0058
+CheckpointResult.efAfter,CDM - AM0059
+CheckpointResult.mrvExtensions,CDM - AM0060
+ClaimSource.id,CDM - AM0061
+ClaimSource.aimId,CDM - AM0062
+ClaimSource.name,CDM - AM0063
+ClaimSource.description,CDM - AM0064
+ClaimSource.location,CDM - AM0065
+ClaimSource.sourceType,CDM - AM0066
+ClaimSource.unitOfMeasure,CDM - AM0067
+ClaimSource.sourceIdentifier,CDM - AM0068
+ClaimSource.mrvExtensions,CDM - AM0069
+ClimateLabel.id,CDM - AM0070
+ClimateLabel.name,CDM - AM0071
+ClimateLabel.description,CDM - AM0072
+CoBenefit.unSdg,CDM - AM0073
+CoBenefit.description,CDM - AM0074
+CoreCarbonPrinciples.assetId,CDM - AM0075
+CoreCarbonPrinciples.issuanceDate,CDM - AM0076
+CoreCarbonPrinciples.vintage,CDM - AM0077
+CoreCarbonPrinciples.generationType,CDM - AM0078
+CoreCarbonPrinciples.verificationStandard,CDM - AM0079
+CoreCarbonPrinciples.mitigationActivity,CDM - AM0080
+CoreCarbonPrinciples.durability,CDM - AM0081
+CoreCarbonPrinciples.replacement,CDM - AM0082
+CoreCarbonPrinciples.parisAgreementCompliance,CDM - AM0083
+CoreCarbonPrinciples.quantifiedSdgImpacts,CDM - AM0084
+CoreCarbonPrinciples.adaptationCoBenefits,CDM - AM0086
+Credential.context,CDM - AM0088
+Credential.id,CDM - AM0089
+Credential.type,CDM - AM0090
+Credential.issuer,CDM - AM0091
+Credential.issuanceDate,CDM - AM0092
+Credential.credentialSubject,CDM - AM0093
+Credential.proof,CDM - AM0094
+CredentialSubject.id,CDM - AM0095
+CredentialSubject.property,CDM - AM0096
+DataExtension.key,CDM - AM0097
+DataExtension.value,CDM - AM0098
+DataExtension.data,CDM - AM0099
+Date.dateTime,CDM - AM0100
+Date.dateString,CDM - AM0101
+DatePoint.date,CDM - AM0103
+DatePoint.timeStamp,CDM - AM0104
+DateRange.startDate,CDM - AM0105
+DateRange.endDate,CDM - AM0106
+Degradable.percentage,CDM - AM0107
+Degradable.factor,CDM - AM0108
+Degradable.degradationType,CDM - AM0109
+DigitalSignature.type,CDM - AM0110
+DigitalSignature.jws,CDM - AM0111
+DigitalSignature.vc,CDM - AM0112
+DigitalSignature.signatureCase,CDM - AM0113
+Durability.storageType,CDM - AM0114
+Durability.years,CDM - AM0115
+Durability.degradable,CDM - AM0116
+Durability.reversalMitigation,CDM - AM0117
+GeographicLocation.longitude,CDM - AM0118
+GeographicLocation.latitude,CDM - AM0119
+GeographicLocation.geoJsonOrKml,CDM - AM0120
+GeographicLocation.geographicLocationFile,CDM - AM0121
+ImpactClaim.id,CDM - AM0122
+ImpactClaim.aimId,CDM - AMS-I.A.
+ImpactClaim.processedClaimId,CDM - AMS-I.B.
+ImpactClaim.unit,CDM - AMS-I.C.
+ImpactClaim.quantity,CDM - AMS-I.D.
+ImpactClaim.coBenefits,CDM - AMS-I.E.
+ImpactClaim.checkpoints,CDM - AMS-I.F.
+ImpactClaim.mrvExtensions,CDM - AMS-I.G.
+ImpactClaim.activityImpactModule,CDM - AMS-I.H.
+ImpactClaimCheckpoint.id,CDM - AMS-I.I.
+ImpactClaimCheckpoint.claimId,CDM - AMS-I.J.
+ImpactClaimCheckpoint.claimSourceIds,CDM - AMS-I.K.
+ImpactClaimCheckpoint.projectDeveloperId,CDM - AMS-I.L.
+ImpactClaimCheckpoint.efBefore,CDM - AMS-I.M.
+ImpactClaimCheckpoint.efAfter,CDM - AMS-II.A.
+ImpactClaimCheckpoint.checkpointDateRange,CDM - AMS-II.B.
+ImpactClaimCheckpoint.verifiedLinkToCheckpointData,CDM - AMS-II.C.
+ImpactClaimCheckpoint.mrvExtensions,CDM - AMS-II.D.
+ImpactClaimCheckpoint.spanDataPackage,CDM - AMS-II.E.
+MRVRequirements.measurementSpecification,CDM - AMS-II.F.
+MRVRequirements.specificationLink,CDM - AMS-II.G.
+MRVRequirements.precision,CDM - AMS-II.H.
+MRVRequirements.claimPeriod,CDM - AMS-II.I.
+Manifest.id,CDM - AMS-II.J.
+Manifest.version,CDM - AMS-II.K.
+Manifest.aimId,CDM - AMS-II.L.
+Manifest.claimId,CDM - AMS-II.M.
+Manifest.projectDeveloperId,CDM - AMS-II.N.
+Manifest.created,CDM - AMS-II.O.
+Manifest.mrvExtensions,CDM - AMS-II.P.
+Manifest.sdpFiles,CDM - AMS-II.Q.
+MitigationActivity.category,CDM - AMS-II.R.
+MitigationActivity.method,CDM - AMS-II.S.
+MrvExtension.mrvExtensionContext,CDM - AMS-II.T.
+MrvExtension.typedExtension,CDM - AMS-III.A.
+MrvExtension.untypedExtension,CDM - AMS-III.B.
+MrvExtension.extensionCase,CDM - AMS-III.C.
+PACompliance.ca,CDM - AMS-III.D.
+PACompliance.letterOfApproval,CDM - AMS-III.E.
+PrecisionMix.low,CDM - AMS-III.F.
+PrecisionMix.medium,CDM - AMS-III.G.
+PrecisionMix.high,CDM - AMS-III.H.
+ProcessedClaim.id,CDM - AMS-III.I.
+ProcessedClaim.vpaId,CDM - AMS-III.J.
+ProcessedClaim.impactClaimId,CDM - AMS-III.K.
+ProcessedClaim.creditId,CDM - AMS-III.L.
+ProcessedClaim.unit,CDM - AMS-III.M.
+ProcessedClaim.quantity,CDM - AMS-III.N.
+ProcessedClaim.coBenefits,CDM - AMS-III.O.
+ProcessedClaim.mrvExtensions,CDM - AMS-III.P.
+ProcessedClaim.checkpointResults,CDM - AMS-III.Q.
+ProcessedClaim.issuanceRequest,CDM - AMS-III.R.
+ProcessedClaim.verificationProcessAgreement,CDM - AMS-III.S.
+ProcessedClaim.impactClaim,CDM - AMS-III.T.
+ProcessedClaim.asset,CDM - AMS-III.U.
+Proof.type,CDM - AMS-III.V.
+Proof.created,CDM - AMS-III.W.
+Proof.proofPurpose,CDM - AMS-III.X.
+Proof.verificationMethod,CDM - AMS-III.Y.
+Proof.challenge,CDM - AMS-III.Z.
+Proof.domain,CDM - AMS-III.AA.
+Proof.jws,CDM - AMS-III.AB.
+QualityStandard.name,CDM - AMS-III.AC.
+QualityStandard.description,CDM - AMS-III.AD.
+QualityStandard.standard,CDM - AMS-III.AE.
+QualityStandard.methodologyAndTools,CDM - AMS-III.AF.
+QualityStandard.version,CDM - AMS-III.AG.
+QualityStandard.coBenefits,CDM - AMS-III.AH.
+QualityStandard.standardLink,CDM - AMS-III.AI.
+REC.id,CDM - AMS-III.AJ.
+REC.recType,CDM - AMS-III.AK.
+REC.validJurisdiction,CDM - AMS-III.AL.
+REC.quantity,CDM - AMS-III.AM.
+REC.unit,CDM - AMS-III.AN.
+REC.ownerId,CDM - AMS-III.AO.
+REC.listingAgentId,CDM - AMS-III.AP.
+REC.climateLabels,CDM - AMS-III.AQ.
+REC.status,CDM - AMS-III.AR.
+REC.referencedRec,CDM - AMS-III.AS.
+REC.appliedToId,CDM - AMS-III.AT.
+REC.processedClaimId,CDM - AMS-III.AU.
+REC.issuerId,CDM - AMS-III.AV.
+REC.processedClaim,CDM - AMS-III.AW.
+ReferencedCredit.id,CDM - AMS-III.AX.
+ReferencedRec.id,CDM - AMS-III.AY.
+Replacement.replacesId,CDM - AMS-III.BA.
+Replacement.replacementDate,CDM - AMS-III.BB.
+Replacement.notes,CDM - AMS-III.BC.
+ReversalMitigation.reversalRisk,CDM - AMS-III.BD.
+ReversalMitigation.insuranceType,CDM - AMS-III.BE.
+ReversalMitigation.insurancePolicyOwner,CDM - AMS-III.BF.
+ReversalMitigation.insurancePolicyLink,CDM - AMS-III.BG.
+SdpFile.name,CDM - AMS-III.BH.
+SdpFile.type,CDM - AMS-III.BI.
+SdpFile.description,CDM - AMS-III.BJ.
+SdpFile.claimSourceId,CDM - AMS-III.BK.
+SdpFile.claimSourceAttestation,CDM - AMS-III.BL.
+SdpFile.mrvExtensions,CDM - AMS-III.BM.
+Signatory.id,CDM - AMS-III.BN.
+Signatory.name,CDM - AMS-III.BO.
+Signatory.description,CDM - AMS-III.BP.
+Signatory.signatoryRole,CDM - AR-AM0014
+Signatory.signature,CDM - AR-AMS0003 
+SpanDataPackage.manifest,CDM - AR-AMS0007
+Tag.name,CDM - ACM0001
+Tag.context,CDM - ACM0002
+Tag.description,CDM - ACM0003
+Tag.data,CDM - ACM0004
+Timestamp.seconds,CDM - ACM0005
+Timestamp.nanos,CDM - ACM0006
+TypedExtension.dataSchema,CDM - ACM0007
+TypedExtension.documentation,CDM - ACM0008
+TypedExtension.data,CDM - ACM0009
+UntypedExtension.name,CDM - ACM0010
+UntypedExtension.version,CDM - ACM0011
+UntypedExtension.description,CDM - ACM0012
+UntypedExtension.documentation,CDM - ACM0013
+UntypedExtension.dataExtensions,CDM - ACM0014
+Validation.validationDate,CDM - ACM0015
+Validation.validatingPartyId,CDM - ACM0016
+Validation.validationMethod,CDM - ACM0017
+Validation.validationExpirationDate,CDM - ACM0018
+Validation.validationSteps,CDM - ACM0019
+ValidationStep.validationStepName,CDM - ACM0020
+ValidationStep.validationStepDescription,CDM - ACM0021
+ValidationStep.validationStepStatus,CDM - ACM0022
+ValidationStep.validationStepDocumentLink,CDM - ACM0023
+VerificationProcessAgreement.id,CDM - ACM0024
+VerificationProcessAgreement.name,CDM - ACM0025
+VerificationProcessAgreement.description,CDM - ACM0026
+VerificationProcessAgreement.signatories,CDM - TOOL 1
+VerificationProcessAgreement.qualityStandard,CDM - TOOL 2
+VerificationProcessAgreement.mrvRequirements,CDM - TOOL 3
+VerificationProcessAgreement.agreementDate,CDM - TOOL 4
+VerificationProcessAgreement.estimatedAnnualCredits,CDM - TOOL 5
+VerificationProcessAgreement.aimId,CDM - TOOL 6
+VerificationProcessAgreement.auditSchedule,CDM - TOOL 7
+VerificationProcessAgreement.audits,CDM - TOOL 8
+VerificationProcessAgreement.activityImpactModule,CDM - TOOL 9
+VerificationProcessAgreement.processedClaims,CDM - TOOL 10
+VerifiedLink.id,CDM - TOOL 11
+VerifiedLink.uri,CDM - TOOL 12
+VerifiedLink.description,CDM - TOOL 13
+VerifiedLink.hashProof,CDM - TOOL 14
+VerifiedLink.hashAlgorithm,CDM - TOOL 15
+,CDM - TOOL 16
+,CDM - TOOL 17
+,CDM - TOOL 18
+,CDM - TOOL 19
+,CDM - TOOL 20
+,CDM - TOOL 21
+,CDM - TOOL 22
+,CDM - TOOL 23
+,CDM - TOOL 24
+,CDM - TOOL 25
+,CDM - TOOL 26
+,CDM - TOOL 27
+,CDM - TOOL 28
+,CDM - TOOL 29
+,CDM - TOOL 30
+,CDM - TOOL 31
+,CDM - TOOL 32
+,CDM - TOOL 33
+,CDM - AR-TOOL02
+,CDM - AR-TOOL03
+,CDM - AR-TOOL08
+,CDM - AR-TOOL12
+,CDM - AR-TOOL14
+,CDM - AR-TOOL15
+,CDM - AR-TOOL16
+,CDM - AR-TOOL17
+,CDM - AR-TOOL18
+,CDM - AR-TOOL19
+,GS - METHODOLOGY FOR METERED & MEASURED ENERGY COOKING DEVICES
+,GS - METHODOLOGY FOR RETROFIT ENERGY EFFICIENCY MEASURES IN SHIPPING
+,GS - SOIL ORGANIC CARBON ACTIVITY MODULE FOR APPLICATION OF ORGANIC SOIL IMPROVERS FROM PULP AND PAPER MILL SLUDGES
+,GS - REDUCED EMISSIONS FROM COOKING AND HEATING:TECHNOLOGIES AND PRACTICES TO DISPLACE DECENTRALIZED THERMAL ENERGY CONSUMPTION (TPDDTEC) 
+,GS - CARBON SEQUESTRATION THROUGH ACCELERATED CARBONATION OF CONCRETE AGGREGATE
+,VCS - VM0001
+,VCS - VM0002
+,VCS - VM0003
+,VCS - VM0004
+,VCS - VM0005
+,VCS - VM0006
+,VCS - VM0007
+,VCS - VM0008
+,VCS - VM0009
+,VCS - VM0010
+,VCS - VM0011
+,VCS - VM0012
+,VCS - VM0013
+,VCS - VM0014
+,VCS - VM0015
+,VCS - VM0016
+,VCS - VM0017
+,VCS - VM0018
+,VCS - VM0019
+,VCS - VM0020
+,VCS - VM0021
+,VCS - VM0022
+,VCS - VM0023
+,VCS - VM0024
+,VCS - VM0025
+,VCS - VM0026
+,VCS - VM0027
+,VCS - VM0028
+,VCS - VM0029
+,VCS - VM0030
+,VCS - VM0031
+,VCS - VM0032
+,VCS - VM0033
+,VCS - VM0034
+,VCS - VM0035
+,VCS - VM0036
+,VCS - VM0037
+,VCS - VM0038
+,VCS - VM0039
+,VCS - VM0040
+,VCS - VM0041
+,VCS - VM0042
+,VCS - VM0043
+,VCS - VM0044
+,VCS - VM0045
+,VCS - VM0046
+,VCS - VM0047
+,VCS - VMR0001
+,VCS - VMR0002
+,VCS - VMR0003
+,VCS - VMR0004
+,VCS - VMR0006
+,VCS - VMR0007
+,VCS - VMR0008
+,ID_PM044
+,ID_PM043
+,ID_PM042
+,ID_PM041
+,ID_PM040
+,ID_PM039
+,ID_AM028
+,ID_AM027
+,ID_AM026
+,ID_AM025
+,ID_AM024
+,ID_AM023
+,ID_AM022
+,ID_AM021
+,ID_AM020
+,ID_AM006
+,VN_PM028
+,ID_AM019
+,VN_PM027
+,ID_AM018
+,ID_AM007
+,TH_PM026
+,VN_PM026
+,VN_PM025
+,TH_PM025
+,ID_AM009
+,VN_PM024
+,ID_AM017
+,TH_PM024
+,ID_AM016
+,VN_PM023
+,TH_PM023
+,ID_AM015
+,TH_PM022
+,VN_AM015
+,VN_AM009
+,ID_AM014
+,TH_PM021
+,TH_AM017
+,ID_AM013
+,VN_AM014
+,VN_AM013
+,TH_AM016
+,VN_AM012
+,TH_AM015
+,ID_AM011
+,TH_AM001
+,VN_AM011
+,ID_AM012
+,VN_AM010
+,TH_AM014
+,ID_AM008
+,VN_AM006
+,TH_AM013
+,TH_AM012
+,VN_AM004
+,ID_AM005
+,ID_AM004
+,TH_AM011
+,VN_AM003
+,ID_AM003
+,VN_AM002
+,TH_AM010
+,ID_AM002
+,TH_AM009
+,ID_AM010
+,VN_AM008
+,TH_AM008
+,TH_AM005
+,VN_AM007
+,TH_AM007
+,VN_AM001
+,MM_PM007
+,TH_AM006
+,MM_PM006
+,VN_AM005
+,KH_AM004
+,TH_AM002
+,KH_AM005
+,BD_PM005
+,MM_AM005
+,TH_AM004
+,LA_AM004
+,BD_AM001
+,MN_AM003
+,MM_AM004
+,KE_AM003
+,LA_AM003
+,MM_AM003
+,CR_AM003
+,KH_AM003
+,PH_PM003
+,TH_AM003
+,CL_AM001
+,ET_AM003
+,BD_AM003
+,BD_AM002
+,ET_AM002
+,KE_AM002
+,CR_AM002
+,LA_AM002
+,KH_AM002
+,MV_AM002
+,MM_AM002
+,PH_AM002
+,MN_AM002
+,CL_AM002
+,PW_AM001
+,PH_AM001
+,KE_AM001
+,KH_AM001
+,SA_AM001
+,MN_AM001
+,MM_AM001
+,CR_AM001
+,ID_AM001
+,MX_AM001
+,ET_AM001
+,LA_AM001
+,MV_AM001

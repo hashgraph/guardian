@@ -12,7 +12,6 @@ import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-
 import { FileDragNDropComponent } from './file-drag-n-drop/file-drag-n-drop.component';
 import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.component';
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
-import { TokenDialog } from './token-dialog/token-dialog.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
 import { NgxColorsModule } from 'ngx-colors';
@@ -26,6 +25,13 @@ import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.
 import { CompareBtnComponent } from './compare-btn/compare-btn.component';
 import { CompareViewerComponent } from './compare-viewer/compare-viewer.component';
 import { AlertComponent } from './alert/alert.component';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ButtonModule } from 'primeng/button';
+import { PaginatorComponent } from './paginator/paginator.component';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -38,7 +44,6 @@ import { AlertComponent } from './alert/alert.component';
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
-        TokenDialog,
         FileExplorer,
         ConfirmDialog,
         SelectorDialogComponent,
@@ -48,7 +53,8 @@ import { AlertComponent } from './alert/alert.component';
         DataInputDialogComponent,
         CompareBtnComponent,
         CompareViewerComponent,
-        AlertComponent
+        AlertComponent,
+        PaginatorComponent,
     ],
     imports: [
         CommonModule,
@@ -57,7 +63,13 @@ import { AlertComponent } from './alert/alert.component';
         NgxMatDatetimePickerModule,
         NgxFileDropModule,
         NgxColorsModule,
-        NgxMaskModule.forRoot()
+        NgxMaskModule.forRoot(),
+        DialogModule,
+        InputTextModule,
+        DropdownModule,
+        ProgressBarModule,
+        ButtonModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         DatetimePicker,
@@ -69,7 +81,6 @@ import { AlertComponent } from './alert/alert.component';
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
-        TokenDialog,
         FileExplorer,
         ConfirmDialog,
         NgxColorsModule,
@@ -78,7 +89,9 @@ import { AlertComponent } from './alert/alert.component';
         NgxMaskModule,
         NewVersionsComponent,
         CompareBtnComponent,
-        CompareViewerComponent
+        CompareViewerComponent,
+        PaginatorComponent,
+        DataInputDialogComponent
     ]
 })
 export class CommonComponentsModule { }

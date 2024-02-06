@@ -1,5 +1,5 @@
 import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVP, IVPDocument } from '@guardian/interfaces';
-import { Entity, Property, Enum, BeforeCreate, Unique, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
+import { Entity, Property, Enum, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers';
@@ -10,7 +10,6 @@ import ObjSet from 'lodash.set';
  * VP documents collection
  */
 @Entity()
-@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' } } } })
 export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Document owner

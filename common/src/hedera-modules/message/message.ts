@@ -222,7 +222,7 @@ export abstract class Message {
      * @param index
      * @param type
      */
-    public getUrlValue(index: number, type: UrlType): string | null {
+    public getUrlValue(index: number, type: UrlType): string {
         if (this.urls && this.urls[index]) {
             switch (type) {
                 case UrlType.cid:
@@ -233,7 +233,7 @@ export abstract class Message {
                     break;
             }
         }
-        return null;
+        return undefined;
     }
 
     /**

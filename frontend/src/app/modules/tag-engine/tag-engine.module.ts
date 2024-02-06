@@ -7,6 +7,9 @@ import { TagsExplorerDialog } from './tags-explorer-dialog/tags-explorer-dialog.
 import { TagCreateDialog } from './tags-create-dialog/tags-create-dialog.component';
 import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -19,7 +22,10 @@ import { CommonComponentsModule } from '../common/common-components.module';
         FormsModule,
         CommonComponentsModule,
         MaterialModule,
-        SchemaEngineModule
+        SchemaEngineModule,
+        ButtonModule,
+        DropdownModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [
         TagsExplorer,

@@ -1,22 +1,20 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
-    </div>
-
     <div *ngIf="!isModuleValid" class="not-exist">
         Component doesn't exist
     </div>
 
     <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
-    <search-blocks 
-        *ngIf="blockSearchData" 
-        class="policy-configuration" 
-        [value]="blockSearchData" 
+    <search-blocks *ngIf="blockSearchData" class="policy-configuration" [value]="blockSearchData"
         (action)="onSearchAction($event)"></search-blocks>
 
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
             <ng-container *ngIf="rootType === 'Policy'">
+                <div (click)="backToPolicies()" class="top-toolbar-btn all-status" title="Back">
+                    <mat-icon>reply</mat-icon>
+                    <span>Back</span>
+                </div>
+
                 <div class="top-toolbar-btn readonly-status" (click)="savePolicy()" title="Save Policy">
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
@@ -27,14 +25,16 @@
                     <span>Save As</span>
                 </div>
 
-                <div class="top-toolbar-btn readonly-status wizard-btn" (click)="openPolicyWizardDialog()" title="Policy Wizard">
+                <div class="top-toolbar-btn readonly-status wizard-btn" (click)="openPolicyWizardDialog()"
+                    title="Policy Wizard">
                     <mat-icon>auto_awesome</mat-icon>
                     <span>Wizard</span>
                 </div>
 
                 <div class="delimiter"></div>
 
-                <div *ngIf="policyTemplate.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
+                <div *ngIf="policyTemplate.isDraft" class="top-toolbar-group all-status"
+                    [matMenuTriggerFor]="publishMenu">
                     <mat-icon class="edit-color">edit</mat-icon>
                     <span class="edit-color">Draft</span>
                     <div class="expand-group">
@@ -42,10 +42,10 @@
                     </div>
                 </div>
 
-                <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
+                <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 80px"
                     [matMenuTriggerFor]="dryRunMenu">
                     <mat-icon class="dry-run-color">build</mat-icon>
-                    <span class="dry-run-color">
+                    <span class="dry-run-color font-size-xs">
                         In Dry Run
                     </span>
                     <div class="expand-group">
@@ -77,6 +77,11 @@
             </ng-container>
 
             <ng-container *ngIf="rootType === 'Module'">
+                <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">
+                    <mat-icon>reply</mat-icon>
+                    <span>Back</span>
+                </div>
+
                 <div class="top-toolbar-btn readonly-status" (click)="updateModule()" title="Save Module">
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
@@ -103,8 +108,14 @@
                     <span class="publish-color">Published</span>
                 </div>
 
-                <div *ngIf="moduleTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationModule()"
-                    title="Validation Module" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
+                <div 
+                    *ngIf="moduleTemplate.isDraft" 
+                    class="top-toolbar-btn all-status" 
+                    (click)="validationModule()"
+                    title="Validation Module" 
+                    [attr.errors-count]="errorsCount" 
+                    [attr.readonly]="!isTree"
+                >
                     <mat-icon>task_alt</mat-icon>
                     <span>Validation</span>
                     <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
@@ -114,6 +125,11 @@
             </ng-container>
 
             <ng-container *ngIf="rootType === 'Tool'">
+                <div (click)="backToTools()" class="top-toolbar-btn all-status" title="Back">
+                    <mat-icon>reply</mat-icon>
+                    <span>Back</span>
+                </div>
+
                 <div class="top-toolbar-btn readonly-status" (click)="updateTool()" title="Save Tool">
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
@@ -163,13 +179,13 @@
                         <mat-icon>redo</mat-icon>
                         <span>Redo</span>
                     </div>
-                    <div class="top-toolbar-btn" (click)="onSuggestionsClick()"
-                        title="Suggestions" [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+                    <div class="top-toolbar-btn" (click)="onSuggestionsClick()" title="Suggestions"
+                        [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
                         <mat-icon>assistant</mat-icon>
                         <span>Suggestions</span>
                     </div>
-                    <div class="top-toolbar-btn" (click)="copyBlocksMode=!copyBlocksMode"
-                        title="Copy Mode" [ngClass]="{'btn-mode-active': copyBlocksMode}">
+                    <div class="top-toolbar-btn" (click)="copyBlocksMode=!copyBlocksMode" title="Copy Mode"
+                        [ngClass]="{'btn-mode-active': copyBlocksMode}">
                         <mat-icon>content_copy</mat-icon>
                         <span>Copy Mode</span>
                     </div>
@@ -217,8 +233,7 @@
                 </ng-container>
             </ng-container>
 
-
-            <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="viewMenu" style="width: 60px">
+            <div [matMenuTriggerFor]="viewMenu" class="top-toolbar-group all-status event-color" style="width: 80px">
                 <mat-icon *ngIf="currentView == 'blocks'">view_agenda</mat-icon>
                 <mat-icon *ngIf="currentView == 'json'">code</mat-icon>
                 <mat-icon *ngIf="currentView == 'yaml'">segment</mat-icon>
@@ -243,7 +258,7 @@
 
             <ng-container *ngIf="isTree">
                 <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"
-                    style="width: 60px">
+                    style="width: 80px">
                     <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
                     <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
                         <div class="action-event-icon"></div>
@@ -265,7 +280,7 @@
             </ng-container>
 
 
-            <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="themesMenu" style="width: 60px">
+            <div [matMenuTriggerFor]="themesMenu" class="top-toolbar-group all-status event-color" style="width: 80px">
                 <mat-icon>palette</mat-icon>
                 <span>Themes</span>
                 <div class="expand-group">
@@ -281,307 +296,377 @@
             <div class="delimiter"></div>
         </div>
 
-        <div class="main-container">
-            <div class="left-toolbar">
-                <div class="pc-tabs">
-                    <div class="pc-tabs-headers">
-                        <div class="tab-header tab-header-min" [attr.selected]="options.components" (click)="select('components')">
-                            <mat-icon class="action-color">article</mat-icon>
-                            <span>Blocks</span>
-                        </div>
-                        <div class="tab-header tab-header-min" [attr.selected]="options.moduleLibrary" (click)="select('moduleLibrary')">
-                            <mat-icon class="action-color" svgIcon="policy-module"></mat-icon>
-                            <span>Modules</span>
-                        </div>
-                        <div class="tab-header tab-header-min" [attr.selected]="options.toolLibrary" (click)="select('toolLibrary')">
-                            <mat-icon class="action-color tool-icon">handyman</mat-icon>
-                            <span>Tools</span>
-                        </div>
-                    </div>
-
-                    <div class="pc-tabs-content components-menu" 
-                        cdkDropList 
-                        #menuList="cdkDropList"
-                        [cdkDropListConnectedTo]="[dropListConnector.body]" 
-                        cdkDropListSortingDisabled
-                        [cdkDropListEnterPredicate]="noReturnPredicate" 
-                        (cdkDropListDropped)="drop($event)">
-
-                        <div class="components-container" [hidden]="!options.components">
-                            
-                            <div class="components-search">
-                                <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
-                                <mat-icon class="components-search-icon">search</mat-icon>
+        <div class="main-container" cdkDropList cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder">
+            <ng-container *ngFor="let configuration of options.configurationOrder; let last = last">
+                <ng-container [ngSwitch]="configuration.id">
+                    <ng-container *ngSwitchCase="'blocks'">
+                        <ng-container
+                            *ngTemplateOutlet="configurationBlocks; context: { last, size: configuration.size, id: configuration.id }"></ng-container>
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'tree'">
+                        <ng-container
+                            *ngTemplateOutlet="configurationTree; context: { last, size: configuration.size, id: configuration.id }"></ng-container>
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'properties'">
+                        <ng-container
+                            *ngTemplateOutlet="configurationProperties; context: { last, size: configuration.size, id: configuration.id }"></ng-container>
+                    </ng-container>
+                </ng-container>
+                <div class="resizing" resizing *ngIf="!last" (onStopResizing)="stopResizingConfiguration($event)">
+                    <div class="resizing__delimiter"></div>
+                </div>
+            </ng-container>
+            <ng-template #configurationBlocks let-size="size" let-id="id">
+                <div class="left-toolbar" cdkDrag [cdkDragStartDelay]="100" (cdkDragStarted)="onDragSection($event)"
+                    (cdkDragDropped)="onDropSection($event)" [ngStyle]="{ width: size, 'flex-basis': size }"
+                    [attr.resizing-id]="id">
+                    <mat-icon *cdkDragPreview>lists</mat-icon>
+                    <div class="pc-tabs">
+                        <div class="pc-tabs-headers" cdkDragHandle>
+                            <div class="tab-header tab-header-min" [attr.selected]="options.components"
+                                (click)="select('components')">
+                                <mat-icon class="action-color">article</mat-icon>
+                                <span>Blocks</span>
                             </div>
-                            <div 
-                                *ngIf="componentsList.favorites.length" 
-                                class="components-group"
-                                [attr.readonly]="disableComponentMenu"
-                                [attr.collapsed]="options.favoritesGroup">
-                                <div class="components-group-name" (click)="collapse('favoritesGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <mat-icon class="components-group-name-icon">star</mat-icon>
-                                    <span style="padding-left: 22px">Favorites
-                                        ({{componentsList.favorites.length}})</span>
-                                </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of componentsList.favorites">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAdd(item)">
-                                            <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                                <span class="drag-component-name">{{item.name}}</span>
-                                            </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                            <span>{{item.name}}</span>
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite($event, item)">star</mat-icon>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="tab-header tab-header-min" [attr.selected]="options.moduleLibrary"
+                                (click)="select('moduleLibrary')">
+                                <mat-icon class="action-color" svgIcon="policy-module"></mat-icon>
+                                <span>Modules</span>
                             </div>
-                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.uiGroup">
-                                <div class="components-group-name" (click)="collapse('uiGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>UI Components ({{componentsList.uiComponents.length}})</span>
-                                </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of componentsList.uiComponents">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAdd(item)">
-                                            <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                                <span class="drag-component-name">{{item.name}}</span>
-                                            </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                            <span>{{item.name}}</span>
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite($event, item)">star</mat-icon>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.serverGroup">
-                                <div class="components-group-name" (click)="collapse('serverGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Server Components ({{componentsList.serverBlocks.length}})</span>
-                                </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of componentsList.serverBlocks">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAdd(item)">
-                                            <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                                <span class="drag-component-name">{{item.name}}</span>
-                                            </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                            <span>{{item.name}}</span>
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite($event, item)">star</mat-icon>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="components-group" [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.addonsGroup">
-                                <div class="components-group-name" (click)="collapse('addonsGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Addons ({{componentsList.addons.length}})</span>
-                                </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of componentsList.addons">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAdd(item)">
-                                            <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                                <span class="drag-component-name">{{item.name}}</span>
-                                            </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAdd(item)">
-                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                            <span>{{item.name}}</span>
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite($event, item)">star</mat-icon>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div *ngIf="componentsList.unGrouped.length" class="components-group"
-                                [attr.readonly]="disableComponentMenu" [attr.collapsed]="options.unGroup">
-                                <div class="components-group-name" (click)="collapse('unGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>unGrouped</span>
-                                </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of componentsList.unGrouped">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAdd(item)">
-                                            <div class="drag-component">
-                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                                <span class="drag-component-name">{{item.name}}</span>
-                                            </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAdd(item)"
-                                            [attr.block-type]="item.header">
-                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                            <span>{{item.name}}</span>
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite($event, item)">star</mat-icon>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="tab-header tab-header-min" [attr.selected]="options.toolLibrary"
+                                (click)="select('toolLibrary')">
+                                <mat-icon class="action-color tool-icon">handyman</mat-icon>
+                                <span>Tools</span>
                             </div>
                         </div>
 
-                        <div class="components-container" [hidden]="!options.moduleLibrary">
-                            <div class="components-search">
-                                <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
-                                <mat-icon class="components-search-icon">search</mat-icon>
-                            </div>
-                            <div 
-                                *ngIf="modulesList.favorites.length" 
-                                class="components-group"
-                                [attr.collapsed]="options.favoritesModulesGroup" 
-                                [attr.readonly]="disableModuleMenu">
-                                <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <mat-icon class="components-group-name-icon">star</mat-icon>
-                                    <span style="padding-left: 22px">Favorites
-                                        ({{modulesList.favorites.length}})</span>
+                        <div 
+                            class="pc-tabs-content components-menu" 
+                            cdkDropList #menuList="cdkDropList"
+                            [cdkDropListConnectedTo]="[dropListConnector.body]" 
+                            cdkDropListSortingDisabled
+                            [cdkDropListEnterPredicate]="noReturnPredicate" 
+                            (cdkDropListDropped)="drop($event)"
+                        >
+                            <div class="components-container" [hidden]="!options.components">
+
+                                <div class="components-search">
+                                    <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
+                                    <mat-icon class="components-search-icon">search</mat-icon>
                                 </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of modulesList.favorites">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
-                                            <div class="drag-component drag-module">
-                                                <div class="drag-component-icon">
+                                <div 
+                                    *ngIf="componentsList.favorites.length" 
+                                    class="components-group"
+                                    [attr.readonly]="disableComponentMenu" 
+                                    [attr.collapsed]="options.favoritesGroup"
+                                >
+                                    <div class="components-group-name" (click)="collapse('favoritesGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <mat-icon class="components-group-name-icon">star</mat-icon>
+                                        <span style="padding-left: 22px">
+                                            Favorites ({{componentsList.favorites.length}})
+                                        </span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item"
+                                            *ngFor="let item of componentsList.favorites">
+                                            <div 
+                                                cdkDrag 
+                                                [cdkDragData]="item.data" 
+                                                class="drag-btn"
+                                                [attr.block-type]="item.header"
+                                                (click)="onAdd(item)"
+                                            >
+                                                <div class="drag-component">
+                                                    <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAdd(item)">
+                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                                <span>{{item.name}}</span>
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setFavorite($event, item)">star</mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="components-group" [attr.readonly]="disableComponentMenu"
+                                    [attr.collapsed]="options.uiGroup">
+                                    <div class="components-group-name" (click)="collapse('uiGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <span>UI Components ({{componentsList.uiComponents.length}})</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item"
+                                            *ngFor="let item of componentsList.uiComponents">
+                                            <div 
+                                                cdkDrag 
+                                                [cdkDragData]="item.data" 
+                                                class="drag-btn"
+                                                [attr.block-type]="item.header" 
+                                                (click)="onAdd(item)"
+                                            >
+                                                <div class="drag-component">
+                                                    <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAdd(item)">
+                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                                <span>{{item.name}}</span>
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setFavorite($event, item)">star</mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="components-group" [attr.readonly]="disableComponentMenu"
+                                    [attr.collapsed]="options.serverGroup">
+                                    <div class="components-group-name" (click)="collapse('serverGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <span>Server Components ({{componentsList.serverBlocks.length}})</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item"
+                                            *ngFor="let item of componentsList.serverBlocks">
+                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                                [attr.block-type]="item.header" (click)="onAdd(item)">
+                                                <div class="drag-component">
+                                                    <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAdd(item)">
+                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                                <span>{{item.name}}</span>
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setFavorite($event, item)">star</mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="components-group" [attr.readonly]="disableComponentMenu"
+                                    [attr.collapsed]="options.addonsGroup">
+                                    <div class="components-group-name" (click)="collapse('addonsGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <span>Addons ({{componentsList.addons.length}})</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item" *ngFor="let item of componentsList.addons">
+                                            <div 
+                                                cdkDrag 
+                                                [cdkDragData]="item.data" 
+                                                class="drag-btn"
+                                                [attr.block-type]="item.header" 
+                                                (click)="onAdd(item)"
+                                            >
+                                                <div class="drag-component">
+                                                    <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAdd(item)">
+                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                                <span>{{item.name}}</span>
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setFavorite($event, item)">star</mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div 
+                                    *ngIf="componentsList.unGrouped.length" 
+                                    class="components-group"
+                                    [attr.readonly]="disableComponentMenu" 
+                                    [attr.collapsed]="options.unGroup"
+                                >
+                                    <div class="components-group-name" (click)="collapse('unGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <span>unGrouped</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item"
+                                            *ngFor="let item of componentsList.unGrouped">
+                                            <div 
+                                                cdkDrag 
+                                                [cdkDragData]="item.data" 
+                                                class="drag-btn"
+                                                [attr.block-type]="item.header" 
+                                                (click)="onAdd(item)"
+                                            >
+                                                <div class="drag-component">
+                                                    <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAdd(item)"
+                                                [attr.block-type]="item.header">
+                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                                <span>{{item.name}}</span>
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setFavorite($event, item)">star</mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="components-container" [hidden]="!options.moduleLibrary">
+                                <div class="components-search">
+                                    <input placeholder="Search" [(ngModel)]="searchModule"
+                                        (input)="onModuleSearch($event)">
+                                    <mat-icon class="components-search-icon">search</mat-icon>
+                                </div>
+                                <div 
+                                    *ngIf="modulesList.favorites.length" 
+                                    class="components-group"
+                                    [attr.collapsed]="options.favoritesModulesGroup"
+                                    [attr.readonly]="disableModuleMenu"
+                                >
+                                    <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <mat-icon class="components-group-name-icon">star</mat-icon>
+                                        <span style="padding-left: 22px">Favorites
+                                            ({{modulesList.favorites.length}})</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item" *ngFor="let item of modulesList.favorites">
+                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                                [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                                <div class="drag-component drag-module">
+                                                    <div class="drag-component-icon">
+                                                        <mat-icon svgIcon="policy-module"></mat-icon>
+                                                    </div>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAddModule(item)">
+                                                <div class="component-btn-icon">
                                                     <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{item.name}}</span>
-                                            </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAddModule(item)">
-                                            <div class="component-btn-icon">
-                                                <mat-icon svgIcon="policy-module"></mat-icon>
-                                            </div>
-                                            <span>{{item.name}}</span>
-                                            <span class="component-btn-toolbar">
-                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
-                                                <!-- <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
+                                                <span>{{item.name}}</span>
+                                                <span class="component-btn-toolbar">
+                                                    <mat-icon class="component-btn-favorite"
+                                                        [attr.favorite]="item.favorite"
+                                                        (click)="setModuleFavorite($event, item)">star</mat-icon>
+                                                    <!-- <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
                                                     [attr.favorite]="item.favorite"
                                                     (click)="onDeleteModule(item)">delete</mat-icon> -->
-                                            </span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="components-group" 
-                                [attr.collapsed]="options.defaultModulesGroup" 
-                                [attr.readonly]="disableModuleMenu">
-                                <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Default Modules ({{modulesList.defaultModules.length}})</span>
-                                </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of modulesList.defaultModules">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
-                                            <div class="drag-component drag-module">
-                                                <div class="drag-component-icon">
+                                <div class="components-group" [attr.collapsed]="options.defaultModulesGroup"
+                                    [attr.readonly]="disableModuleMenu">
+                                    <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <span>Default Modules ({{modulesList.defaultModules.length}})</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item"
+                                            *ngFor="let item of modulesList.defaultModules">
+                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                                [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                                <div class="drag-component drag-module">
+                                                    <div class="drag-component-icon">
+                                                        <mat-icon svgIcon="policy-module"></mat-icon>
+                                                    </div>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAddModule(item)">
+                                                <div class="component-btn-icon">
                                                     <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{item.name}}</span>
+                                                <span>{{item.name}}</span>
+                                                <span class="component-btn-toolbar">
+                                                    <mat-icon class="component-btn-favorite"
+                                                        [attr.favorite]="item.favorite"
+                                                        (click)="setModuleFavorite($event, item)">star</mat-icon>
+                                                </span>
                                             </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAddModule(item)">
-                                            <div class="component-btn-icon">
-                                                <mat-icon svgIcon="policy-module"></mat-icon>
-                                            </div>
-                                            <span>{{item.name}}</span>
-                                            <span class="component-btn-toolbar">
-                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="components-group" [attr.collapsed]="options.customModulesGroup" [attr.readonly]="disableModuleMenu">
-                                <div class="components-group-name" (click)="collapse('customModulesGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Custom models ({{modulesList.customModules.length}})</span>
-                                </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of modulesList.customModules">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
-                                            <div class="drag-component drag-module">
-                                                <div class="drag-component-icon">
+                                <div class="components-group" [attr.collapsed]="options.customModulesGroup"
+                                    [attr.readonly]="disableModuleMenu">
+                                    <div class="components-group-name" (click)="collapse('customModulesGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <span>Custom models ({{modulesList.customModules.length}})</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item"
+                                            *ngFor="let item of modulesList.customModules">
+                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                                [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                                <div class="drag-component drag-module">
+                                                    <div class="drag-component-icon">
+                                                        <mat-icon svgIcon="policy-module"></mat-icon>
+                                                    </div>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAddModule(item)">
+                                                <div class="component-btn-icon">
                                                     <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{item.name}}</span>
+                                                <span>{{item.name}}</span>
+                                                <span class="component-btn-toolbar">
+                                                    <mat-icon class="component-btn-favorite"
+                                                        [attr.favorite]="item.favorite"
+                                                        (click)="setModuleFavorite($event, item)">star</mat-icon>
+                                                </span>
                                             </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAddModule(item)">
-                                            <div class="component-btn-icon">
-                                                <mat-icon svgIcon="policy-module"></mat-icon>
-                                            </div>
-                                            <span>{{item.name}}</span>
-                                            <span class="component-btn-toolbar">
-                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="components-container" [hidden]="!options.toolLibrary">
-                            <div class="components-search">
-                                <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
-                                <mat-icon class="components-search-icon">search</mat-icon>
-                            </div>
-                            <div class="components-group" [attr.collapsed]="options.customToolsGroup" [attr.readonly]="disableToolMenu">
-                                <div class="components-group-name" (click)="collapse('customToolsGroup')">
-                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Tools ({{modulesList.customTools.length}})</span>
+                            <div class="components-container" [hidden]="!options.toolLibrary">
+                                <div class="components-search">
+                                    <input placeholder="Search" [(ngModel)]="searchModule"
+                                        (input)="onModuleSearch($event)">
+                                    <mat-icon class="components-search-icon">search</mat-icon>
                                 </div>
-                                <div class="components-group-body readonly-status">
-                                    <div class="components-group-item" *ngFor="let item of modulesList.customTools">
-                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                            [attr.block-type]="item.header" (click)="onAddTool(item)">
-                                            <div class="drag-component drag-module">
-                                                <div class="drag-component-icon">
+                                <div class="components-group" [attr.collapsed]="options.customToolsGroup"
+                                    [attr.readonly]="disableToolMenu">
+                                    <div class="components-group-name" (click)="collapse('customToolsGroup')">
+                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                        <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                        <span>Tools ({{modulesList.customTools.length}})</span>
+                                    </div>
+                                    <div class="components-group-body readonly-status">
+                                        <div class="components-group-item" *ngFor="let item of modulesList.customTools">
+                                            <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                                [attr.block-type]="item.header" (click)="onAddTool(item)">
+                                                <div class="drag-component drag-module">
+                                                    <div class="drag-component-icon">
+                                                        <mat-icon class="tool-icon">handyman</mat-icon>
+                                                    </div>
+                                                    <span class="drag-component-name">{{item.name}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="component-btn" (click)="onAddTool(item)">
+                                                <div class="component-btn-icon">
                                                     <mat-icon class="tool-icon">handyman</mat-icon>
                                                 </div>
-                                                <span class="drag-component-name">{{item.name}}</span>
-                                            </div>
-                                        </div>
-                                        <div class="component-btn" (click)="onAddTool(item)">
-                                            <div class="component-btn-icon">
-                                                <mat-icon class="tool-icon">handyman</mat-icon>
-                                            </div>
-                                            <span>{{item.name}}</span>
-                                            <span class="component-btn-toolbar">
-                                                <!-- <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                <span>{{item.name}}</span>
+                                                <span class="component-btn-toolbar">
+                                                    <!-- <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
                                                     (click)="setModuleFavorite($event, item)">star</mat-icon> -->
-                                            </span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -589,328 +674,431 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="center-container">
-
-                <div *ngIf="!isTree && errors?.length" class="json-errors">
-                    <div *ngFor="let item of errors" class="errors-property">
-                        <span>{{item}}</span>
+            </ng-template>
+            <ng-template #configurationTree let-size="size" let-id="id">
+                <div class="center-container" 
+                    [attr.resizing-id]="id" 
+                    cdkDrag 
+                    [cdkDragStartDelay]="100"
+                    (cdkDragStarted)="onDragSection($event)" 
+                    (cdkDragDropped)="onDropSection($event)"
+                    [ngStyle]="{ width: size, 'flex-basis': size }"
+                >
+                    <mat-icon *cdkDragPreview>account_tree</mat-icon>
+                    <div *ngIf="!isTree && errors?.length" class="json-errors">
+                        <div *ngFor="let item of errors" class="errors-property">
+                            <span>{{item}}</span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="pc-tabs minimized-tabs">
-                    <div class="pc-tabs-headers right-menu">
-                        <div 
-                            *ngIf="rootType ==='Policy'" 
-                            class="tab-header tab-header-icon"
-                            [attr.selected]="openFolder===policyTemplate" 
-                            (click)="onOpenRoot(policyTemplate)"
-                            style="width: 100px;margin-right: 6px">
-                            <mat-icon class="action-color">article</mat-icon>
-                            Policy
-                        </div>
-                        <div 
-                            *ngIf="rootType ==='Module'" 
-                            class="tab-header tab-header-icon" 
-                            [attr.selected]="true"
-                            (click)="onOpenRoot(moduleTemplate)" 
-                            style="width: 100px;margin-right: 6px">
-                            <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
-                            Module
-                        </div>
-                        <div 
-                            *ngIf="rootType ==='Tool'" 
-                            class="tab-header tab-header-icon" 
-                            [attr.selected]="true"
-                            (click)="onOpenRoot(toolTemplate)" 
-                            style="width: 100px;margin-right: 6px">
-                            <mat-icon class="module-root-icon action-color tool-icon">handyman</mat-icon>
-                            Tool
-                        </div>
-
-                        <ng-container *ngIf="allSubModule">
-                            <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule"
-                                [attr.selected]="openFolder===item" (click)="onOpenModule(item)">
-                                <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
-                                {{item.localTag}}
+                    <div class="pc-tabs minimized-tabs">
+                        <div class="pc-tabs-headers right-menu" cdkDragHandle>
+                            <div *ngIf="rootType ==='Policy'" 
+                                class="tab-header tab-header-icon"
+                                [attr.selected]="openFolder===policyTemplate" 
+                                (click)="onOpenRoot(policyTemplate)"
+                                style="width: 100px;margin-right: 6px"
+                            >
+                                <mat-icon class="action-color">article</mat-icon>
+                                Policy
                             </div>
+                            <div *ngIf="rootType ==='Module'" class="tab-header tab-header-icon" [attr.selected]="true"
+                                (click)="onOpenRoot(moduleTemplate)" style="width: 100px;margin-right: 6px">
+                                <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
+                                Module
+                            </div>
+                            <div *ngIf="rootType ==='Tool'" class="tab-header tab-header-icon" [attr.selected]="true"
+                                (click)="onOpenRoot(toolTemplate)" style="width: 100px;margin-right: 6px">
+                                <mat-icon class="module-root-icon action-color tool-icon">handyman</mat-icon>
+                                Tool
+                            </div>
+
+                            <ng-container *ngIf="allSubModule">
+                                <div class="tab-header tab-header-icon" 
+                                    *ngFor="let item of allSubModule"
+                                    [attr.selected]="openFolder===item" 
+                                    (click)="onOpenModule(item)"
+                                >
+                                    <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
+                                    {{item.localTag}}
+                                </div>
+                            </ng-container>
+                            <div class="theme-legends" [attr.active]="options.legendActive">
+                                <div class="theme-legends-icon" (click)="change('legendActive')">
+                                    <mat-icon>palette</mat-icon>
+                                </div>
+                                <div *ngIf="isTree" class="theme-legends-container">
+                                    <div *ngFor="let rule of theme.rules" class="theme-rule">
+                                        <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all>
+                                        </div>
+                                        <div class="theme-rule-description">
+                                            {{getLegendText(rule)}}
+                                        </div>
+                                    </div>
+                                    <div *ngIf="theme.default" class="theme-rule">
+                                        <div class="theme-rule-prev" [style]="blockStyle(theme.default)" theme-block
+                                            theme-all></div>
+                                        <div class="theme-rule-description">{{theme.default.description || '-'}}</div>
+                                    </div>
+                                </div>
+                                <div *ngIf="!isTree" class="theme-legends-container">
+                                    <div *ngFor="let syntaxGroup of theme.syntaxGroups" class="theme-rule">
+                                        <div class="theme-rule-syntax-prev" style="padding: 5px 10px;">
+                                            <div style="width: 100%; height: 100%;"
+                                                [ngStyle]="{ 'background-color': syntaxGroup.color}"></div>
+                                        </div>
+                                        <div class="theme-rule-description">
+                                            {{syntaxGroup.name}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pc-tabs-content" 
+                            [ngClass]="{
+                                'tree-container': isTree
+                            }">
+                            <div *ngIf="!isTree" class="textarea-code">
+                                <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions"
+                                    (ngModelChange)="saveState()">
+                                </ngx-codemirror>
+                            </div>
+                            <policy-tree 
+                                *ngIf="isTree" 
+                                [module]="openFolder" 
+                                [blocks]="openFolder.dataSource"
+                                [errors]="errorsMap" 
+                                [readonly]="readonly" 
+                                [active]="eventVisible"
+                                [connector]="dropListConnector" 
+                                [suggestions]="isSuggestionsEnabled"
+                                [nextBlock]="nextBlock" 
+                                [nestedBlock]="nestedBlock" 
+                                [(currentBlock)]="currentBlock"
+                                (search)="onBlockSearch($event)" 
+                                (nested)="addSuggestionsBlock($event, true)"
+                                (next)="addSuggestionsBlock($event)" 
+                                (open)="onOpenModule($event)"
+                                (delete)="onDelete($event)" 
+                                (select)="onSelect($event)" 
+                                (reorder)="onReorder($event)"
+                                (init)="onInitViewer($event)">
+                            </policy-tree>
+                        </div>
+                    </div>
+
+                </div>
+            </ng-template>
+
+            <ng-template #configurationProperties let-size="size" let-id="id">
+                <div 
+                    [attr.resizing-id]="id" 
+                    cdkDrag 
+                    [cdkDragStartDelay]="100" 
+                    (cdkDragStarted)="onDragSection($event)"
+                    (cdkDragDropped)="onDropSection($event)" 
+                    [cdkDragDisabled]="true" 
+                    cdkDropList
+                    cdkDropListOrientation="vertical" 
+                    (cdkDropListDropped)="onDroppedSection($event)"
+                    [cdkDropListData]="options.propertiesOrder" 
+                    class="right-toolbar"
+                    [ngStyle]="{ width: size, 'flex-basis': size }"
+                >
+                    <mat-icon *cdkDragPreview>description</mat-icon>
+                    <ng-container *ngFor="let properties of options.propertiesOrder; let last = last">
+                        <ng-container [ngSwitch]="properties.id">
+                            <ng-container *ngSwitchCase="'policy'">
+                                <ng-container
+                                    *ngTemplateOutlet="propertiesPolicy; context: { size: properties.size, id: properties.id }"></ng-container>
+                            </ng-container>
+                            <ng-container *ngSwitchCase="'block'">
+                                <ng-container
+                                    *ngTemplateOutlet="propertiesBlock; context: { size: properties.size, id: properties.id }"></ng-container>
+                            </ng-container>
                         </ng-container>
-                        <div class="theme-legends" [attr.active]="options.legendActive">
-                            <div class="theme-legends-icon" (click)="change('legendActive')">
-                                <mat-icon>palette</mat-icon>
-                            </div>
-                            <div *ngIf="isTree" class="theme-legends-container">
-                                <div *ngFor="let rule of theme.rules" class="theme-rule">
-                                    <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all></div>
-                                    <div class="theme-rule-description">
-                                        {{getLegendText(rule)}}
+                        <div class="resizing-vertical" resizing *ngIf="!last"
+                            [ngStyle]="{ visibility: (!options.rightTopMenu && !options.rightBottomMenu) ? 'visible' : 'hidden' }"
+                            [vertical]="true" (onStopResizing)="stopResizingProperties($event)">
+                            <div class="resizing__delimiter"></div>
+                        </div>
+                    </ng-container>
+
+                    <ng-template #propertiesPolicy let-size="size" let-id="id">
+
+                        <div 
+                            cdkDrag 
+                            [cdkDragStartDelay]="100" 
+                            (cdkDragStarted)="onDragSection($event)"
+                            (cdkDragDropped)="onDropSection($event)" 
+                            [attr.resizing-id]="id"
+                            [ngStyle]="{ height: size, 'flex-basis': size }" 
+                            class="right-top-toolbar"
+                            [attr.collapse-top]="options.rightTopMenu" 
+                            [attr.collapse-bottom]="options.rightBottomMenu"
+                        >
+                            <mat-icon *cdkDragPreview>article</mat-icon>
+                            <div *ngIf="policyDescription" class="pc-tabs">
+                                <div class="pc-tabs-headers" cdkDragHandle>
+                                    <div class="tab-header" [attr.selected]="options.description"
+                                        (click)="select('description')">
+                                        Description
+                                    </div>
+                                    <div (click)="select('roles')" [attr.selected]="options.roles" class="tab-header">
+                                        Roles
+                                    </div>
+                                    <div (click)="select('navigation')" [attr.selected]="options.navigation" class="tab-header">
+                                        Navigation
+                                    </div>
+                                    <div (click)="select('groups')" [attr.selected]="options.groups" class="tab-header">
+                                        Groups
+                                    </div>
+                                    <div (click)="select('topics')" [attr.selected]="options.topics" class="tab-header">
+                                        Topics
+                                    </div>
+                                    <div (click)="select('tokens')" [attr.selected]="options.tokens" class="tab-header">
+                                        Tokens
+                                    </div>
+                                    <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
+                                        (click)="collapse('rightTopMenu')">
+                                        <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                        <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                                     </div>
                                 </div>
-                                <div *ngIf="theme.default" class="theme-rule">
-                                    <div class="theme-rule-prev" [style]="blockStyle(theme.default)" theme-block
-                                        theme-all></div>
-                                    <div class="theme-rule-description">{{theme.default.description || '-'}}</div>
-                                </div>
-                            </div>
-                            <div *ngIf="!isTree" class="theme-legends-container">
-                                <div *ngFor="let syntaxGroup of theme.syntaxGroups" class="theme-rule">
-                                    <div class="theme-rule-syntax-prev" style="padding: 5px 10px;">
-                                        <div style="width: 100%; height: 100%;" [ngStyle]="{ 'background-color': syntaxGroup.color}"></div>
+                                <div class="pc-tabs-content" [attr.readonly]="!isTree">
+                                    <div class="prop-container" [hidden]="!options.description">
+                                        <policy-properties 
+                                            class="readonly-status" 
+                                            [allCategories]="allCategories"
+                                            [policyCategories]="policyCategoriesMapped" 
+                                            [policy]="policyTemplate"
+                                            type="Main" 
+                                            [readonly]="readonly"
+                                        ></policy-properties>
                                     </div>
-                                    <div class="theme-rule-description">
-                                        {{syntaxGroup.name}}
+                                    <div class="prop-container" [hidden]="!options.roles">
+                                        <policy-properties 
+                                            class="readonly-status" 
+                                            [policy]="policyTemplate" 
+                                            type="Role"
+                                            [readonly]="readonly"
+                                        ></policy-properties>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pc-tabs-content" [ngClass]="{
-                        'tree-container': isTree
-                    }">
-                        <div *ngIf="!isTree" class="textarea-code">
-                            <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
-                            </ngx-codemirror>
-                        </div>
-                        <policy-tree 
-                            *ngIf="isTree" 
-                            [module]="openFolder" 
-                            [blocks]="openFolder.dataSource" 
-                            [errors]="errorsMap"
-                            [readonly]="readonly" 
-                            [active]="eventVisible" 
-                            [connector]="dropListConnector" 
-                            [suggestions]="isSuggestionsEnabled"
-                            [nextBlock]="nextBlock" 
-                            [nestedBlock]="nestedBlock" 
-                            [(currentBlock)]="currentBlock"
-                            (search)="onBlockSearch($event)"
-                            (nested)="addSuggestionsBlock($event, true)" 
-                            (next)="addSuggestionsBlock($event)"
-                            (open)="onOpenModule($event)" 
-                            (delete)="onDelete($event)" 
-                            (select)="onSelect($event)"
-                            (reorder)="onReorder($event)" 
-                            (init)="onInitViewer($event)">
-                        </policy-tree>
-                    </div>
-                </div>
-
-            </div>
-            <div class="right-toolbar">
-
-                <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
-                    [attr.collapse-bottom]="options.rightBottomMenu">
-
-                    <div *ngIf="policyDescription" class="pc-tabs">
-                        <div class="pc-tabs-headers">
-                            <div class="tab-header" [attr.selected]="options.description"
-                                (click)="select('description')">
-                                Description
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.roles" (click)="select('roles')">
-                                Roles
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.groups" (click)="select('groups')">
-                                Groups
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.topics" (click)="select('topics')">
-                                Topics
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.tokens" (click)="select('tokens')">
-                                Tokens
-                            </div>
-                            <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
-                                (click)="collapse('rightTopMenu')">
-                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
-                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
-                            </div>
-                        </div>
-                        <div class="pc-tabs-content" [attr.readonly]="!isTree">
-                            <div class="prop-container" [hidden]="!options.description">
-                                <policy-properties 
-                                    class="readonly-status"
-                                    type="Main" 
-                                    [policy]="policyTemplate" 
-                                    [readonly]="readonly"></policy-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.roles">
-                                <policy-properties 
-                                    class="readonly-status"
-                                    type="Role" 
-                                    [policy]="policyTemplate" 
-                                    [readonly]="readonly"></policy-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.groups">
-                                <policy-properties 
-                                    class="readonly-status" 
-                                    type="Groups"
-                                    [policy]="policyTemplate" 
-                                    [readonly]="readonly"></policy-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.topics">
-                                <policy-properties 
-                                    class="readonly-status"
-                                    type="Topics" 
-                                    [policy]="policyTemplate" 
-                                    [readonly]="readonly"></policy-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.tokens">
-                                <policy-properties 
-                                    class="readonly-status"
-                                    type="Tokens" 
-                                    [policy]="policyTemplate" 
-                                    [readonly]="readonly"></policy-properties>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div *ngIf="moduleDescription" class="pc-tabs">
-                        <div class="pc-tabs-headers">
-                            <div class="tab-header" [attr.selected]="options.descriptionModule"
-                                (click)="select('descriptionModule')">
-                                Description
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.inputsModule"
-                                (click)="select('inputsModule')">
-                                Inputs
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.outputsModule"
-                                (click)="select('outputsModule')">
-                                Outputs
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.variablesModule"
-                                (click)="select('variablesModule')">
-                                Variables
-                            </div>
-                            <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
-                                (click)="collapse('rightTopMenu')">
-                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
-                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
-                            </div>
-                        </div>
-                        <div class="pc-tabs-content" [attr.readonly]="!isTree">
-                            <div class="prop-container" [hidden]="!options.descriptionModule">
-                                <module-properties class="readonly-status" 
-                                    type="Main"
-                                    [module]="openFolder" 
-                                    [readonly]="readonly"
-                                    [errors]="errorsMap[openFolder.id]"></module-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.inputsModule">
-                                <module-properties class="readonly-status" 
-                                    type="Inputs" 
-                                    [module]="openFolder" 
-                                    [readonly]="readonly"
-                                    [errors]="errorsMap[openFolder.id]"></module-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.outputsModule">
-                                <module-properties class="readonly-status" 
-                                    type="Outputs"
-                                    [module]="openFolder" 
-                                    [readonly]="readonly"
-                                    [errors]="errorsMap[openFolder.id]"></module-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.variablesModule">
-                                <module-properties class="readonly-status" 
-                                    type="Variables" 
-                                    [module]="openFolder" 
-                                    [readonly]="readonly"
-                                    [errors]="errorsMap[openFolder.id]"></module-properties>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="right-bottom-toolbar" 
-                    *ngIf="currentBlock && !isRootModule"
-                    [attr.collapse-top]="options.rightTopMenu" 
-                    [attr.collapse-bottom]="options.rightBottomMenu">
-
-                    <div class="pc-tabs">
-                        <div class="pc-tabs-headers">
-                            <div class="tab-header" [attr.selected]="options.properties" (click)="select('properties')">
-                                Properties
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.events" (click)="select('events')">
-                                Events
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.artifacts" (click)="select('artifacts')">
-                                Artifacts
-                            </div>
-                            <div class="tab-header" [attr.selected]="options.json" (click)="select('json')">
-                                Json
-                            </div>
-                            <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
-                                (click)="collapse('rightBottomMenu')">
-                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
-                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
-                            </div>
-                        </div>
-                        <div class="pc-tabs-content" [attr.readonly]="!isTree">
-                            <div class="prop-container" [hidden]="!options.properties">
-                                <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
-                                    <div *ngFor="let item of errorsMap[currentBlock.id]" class="errors-property">
-                                        <span>{{item}}</span>
+                                    <div [hidden]="!options.navigation" class="prop-container">
+                                        <policy-properties 
+                                            [policy]="policyTemplate" 
+                                            [readonly]="readonly"
+                                            class="readonly-status" 
+                                            type="Navigation"
+                                        ></policy-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.groups">
+                                        <policy-properties 
+                                            [policy]="policyTemplate" 
+                                            type="Groups"
+                                            class="readonly-status" 
+                                            [readonly]="readonly"
+                                        ></policy-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.topics">
+                                        <policy-properties 
+                                            class="readonly-status" 
+                                            [policy]="policyTemplate"
+                                            type="Topics" 
+                                            [readonly]="readonly"
+                                        ></policy-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.tokens">
+                                        <policy-properties 
+                                            class="readonly-status" 
+                                            [policy]="policyTemplate"
+                                            type="Tokens" 
+                                            [readonly]="readonly"
+                                        ></policy-properties>
                                     </div>
                                 </div>
-                                <common-properties class="readonly-status" 
-                                    [module]="openFolder" 
-                                    [block]="currentBlock"
-                                    [readonly]="readonly" 
-                                    type="Common"></common-properties>
                             </div>
-                            <div class="prop-container" [hidden]="!options.events">
-                                <common-properties class="readonly-status" 
-                                    [module]="openFolder" 
-                                    [block]="currentBlock"
-                                    [readonly]="readonly" 
-                                    type="Events"></common-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.artifacts">
-                                <artifact-properties class="readonly-status" 
-                                    [readonly]="readonly" 
-                                    [rootId]="rootId"
-                                    [block]="currentBlock"></artifact-properties>
-                            </div>
-                            <div class="prop-container" [hidden]="!options.json">
-                                <json-properties 
-                                    *ngIf="options.json" 
-                                    [block]="currentBlock"
-                                    [readonly]="readonly"></json-properties>
+
+                            <div *ngIf="moduleDescription" class="pc-tabs">
+                                <div class="pc-tabs-headers">
+                                    <div class="tab-header" [attr.selected]="options.descriptionModule"
+                                        (click)="select('descriptionModule')">
+                                        Description
+                                    </div>
+                                    <div class="tab-header" [attr.selected]="options.inputsModule"
+                                        (click)="select('inputsModule')">
+                                        Inputs
+                                    </div>
+                                    <div class="tab-header" [attr.selected]="options.outputsModule"
+                                        (click)="select('outputsModule')">
+                                        Outputs
+                                    </div>
+                                    <div class="tab-header" [attr.selected]="options.variablesModule"
+                                        (click)="select('variablesModule')">
+                                        Variables
+                                    </div>
+                                    <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
+                                        (click)="collapse('rightTopMenu')">
+                                        <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                        <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
+                                    </div>
+                                </div>
+                                <div class="pc-tabs-content" [attr.readonly]="!isTree">
+                                    <div class="prop-container" [hidden]="!options.descriptionModule">
+                                        <module-properties 
+                                            [module]="openFolder" 
+                                            type="Main" 
+                                            class="readonly-status"
+                                            [readonly]="readonly"
+                                            [errors]="errorsMap[openFolder.id]"
+                                        ></module-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.inputsModule">
+                                        <module-properties 
+                                            [module]="openFolder" 
+                                            class="readonly-status" type="Inputs"
+                                            [readonly]="readonly"
+                                            [errors]="errorsMap[openFolder.id]"
+                                        ></module-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.outputsModule">
+                                        <module-properties 
+                                            [module]="openFolder" 
+                                            type="Outputs" 
+                                            class="readonly-status"
+                                            [readonly]="readonly"
+                                            [errors]="errorsMap[openFolder.id]"
+                                        ></module-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.variablesModule">
+                                        <module-properties 
+                                            [module]="openFolder" 
+                                            class="readonly-status"
+                                            type="Variables" 
+                                            [readonly]="readonly"
+                                            [errors]="errorsMap[openFolder.id]"
+                                        ></module-properties>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </ng-template>
+
+                    <ng-template #propertiesBlock let-size="size" let-id="id">
+                        <div 
+                            cdkDrag 
+                            [cdkDragStartDelay]="100" 
+                            (cdkDragStarted)="onDragSection($event)"
+                            (cdkDragDropped)="onDropSection($event)" 
+                            [attr.resizing-id]="id"
+                            [ngStyle]="{ height: size, 'flex-basis': size }" 
+                            class="right-bottom-toolbar"
+                            *ngIf="currentBlock && !isRootModule" 
+                            [attr.collapse-top]="options.rightTopMenu"
+                            [attr.collapse-bottom]="options.rightBottomMenu"
+                        >
+                            <mat-icon *cdkDragPreview>article</mat-icon>
+                            <div class="pc-tabs">
+                                <div class="pc-tabs-headers" cdkDragHandle>
+                                    <div class="tab-header" [attr.selected]="options.properties"
+                                        (click)="select('properties')">
+                                        Properties
+                                    </div>
+                                    <div class="tab-header" [attr.selected]="options.events" (click)="select('events')">
+                                        Events
+                                    </div>
+                                    <div class="tab-header" [attr.selected]="options.artifacts"
+                                        (click)="select('artifacts')">
+                                        Artifacts
+                                    </div>
+                                    <div class="tab-header" [attr.selected]="options.json" (click)="select('json')">
+                                        Json
+                                    </div>
+                                    <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
+                                        (click)="collapse('rightBottomMenu')">
+                                        <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                        <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
+                                    </div>
+                                </div>
+                                <div class="pc-tabs-content" [attr.readonly]="!isTree">
+                                    <div class="prop-container" [hidden]="!options.properties">
+                                        <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
+                                            <div *ngFor="let item of errorsMap[currentBlock.id]"
+                                                class="errors-property">
+                                                <span>{{item}}</span>
+                                            </div>
+                                        </div>
+                                        <common-properties 
+                                            [module]="openFolder" 
+                                            [readonly]="readonly"
+                                            [block]="currentBlock" 
+                                            class="readonly-status"
+                                            type="Common"
+                                        ></common-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.events">
+                                        <common-properties 
+                                            [module]="openFolder" 
+                                            [readonly]="readonly"
+                                            [block]="currentBlock" 
+                                            class="readonly-status"
+                                            type="Events"
+                                        ></common-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.artifacts">
+                                        <artifact-properties 
+                                            [policyId]="policyId" 
+                                            [readonly]="readonly"
+                                            class="readonly-status" 
+                                            [block]="currentBlock"
+                                        ></artifact-properties>
+                                    </div>
+                                    <div class="prop-container" [hidden]="!options.json">
+                                        <json-properties 
+                                            *ngIf="options.json" 
+                                            [block]="currentBlock"
+                                            [readonly]="readonly"
+                                        ></json-properties>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div 
+                            cdkDrag 
+                            [cdkDragStartDelay]="100" 
+                            (cdkDragStarted)="onDragSection($event)"
+                            (cdkDragDropped)="onDropSection($event)" 
+                            [attr.resizing-id]="id"
+                            [ngStyle]="{ height: size, 'flex-basis': size }" 
+                            class="right-bottom-toolbar"
+                            *ngIf="currentBlock && isRootModule" 
+                            [attr.collapse-top]="options.rightTopMenu"
+                            [attr.collapse-bottom]="options.rightBottomMenu"
+                        >
+                            <div class="pc-tabs">
+                                <div class="pc-tabs-headers" cdkDragHandle>
+                                    <div class="tab-header" [attr.selected]="true" (click)="select('events')">
+                                        Events
+                                    </div>
+                                    <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
+                                        (click)="collapse('rightBottomMenu')">
+                                        <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                        <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
+                                    </div>
+                                </div>
+                                <div class="pc-tabs-content">
+                                    <div class="prop-container readonly-status">
+                                        <common-properties [module]="openFolder" [block]="currentBlock"
+                                            [readonly]="readonly" type="Events"></common-properties>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
                 </div>
-
-                <div class="right-bottom-toolbar" 
-                    *ngIf="currentBlock && isRootModule"
-                    [attr.collapse-top]="options.rightTopMenu" 
-                    [attr.collapse-bottom]="options.rightBottomMenu">
-
-                    <div class="pc-tabs">
-                        <div class="pc-tabs-headers">
-                            <div class="tab-header" [attr.selected]="true" (click)="select('events')">
-                                Events
-                            </div>
-                            <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
-                                (click)="collapse('rightBottomMenu')">
-                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
-                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
-                            </div>
-                        </div>
-                        <div class="pc-tabs-content">
-                            <div class="prop-container readonly-status">
-                                <common-properties 
-                                    [module]="openFolder" 
-                                    [block]="currentBlock" 
-                                    [readonly]="readonly"
-                                    type="Events"></common-properties>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+            </ng-template>
         </div>
     </div>
 </div>
@@ -1002,3 +1190,11 @@
         <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{t.name}}</span>
     </div>
 </mat-menu>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

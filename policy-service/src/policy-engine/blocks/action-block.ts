@@ -100,8 +100,6 @@ export class InterfaceDocumentActionBlock {
 
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
-            const policy = await ref.databaseServer.getPolicy(ref.policyId);
-
             const userDID = document.owner;
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, userDID);
             const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
@@ -114,7 +112,7 @@ export class InterfaceDocumentActionBlock {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
                     'url': ref.options.targetUrl || process.env.MRV_ADDRESS,
-                    'topic': policy.topicId,
+                    'topic':ref.policyInstance?.topicId,
                     'hederaAccountId': hederaAccountId,
                     'hederaAccountKey': hederaAccountKey,
                     'installer': userDID,
@@ -126,9 +124,9 @@ export class InterfaceDocumentActionBlock {
                         'type': schema.type,
                         '@context': [schema.contextURL]
                     },
-                    'didDocument': await didDocument.getPrivateDidDocument(),
+                    'didDocument': didDocument.getPrivateDidDocument(),
                     'policyId': ref.policyId,
-                    'policyTag': policy.policyTag,
+                    'policyTag': ref.policyInstance?.policyTag,
                     'ref': sensorDid
                 }
             }
