@@ -2,13 +2,19 @@ import URL from "../../../support/GuardianUrls";
 
 const HomePageLocators = {
 
-  usernameInput: '[formcontrolname="login"]',
+  usernameInput: '[formcontrolname="username"]',
   passInput: '[formcontrolname="password"]',
   confirmpassinput : '[formcontrolname="confirmPassword"]',
   submitBtn: '[type="submit"]',
+    requestAccessBtn: 'button[label="Request Access"]',
+    dialog: 'div[role="dialog"]',
   logoutBtn: "Log out",
   generateBtn: "Generate",
-  createLnk: "a.create-link",
+  createLnk: "Sign Up",
+    acceptBtn: 'button[label="Accept"]',
+    continueBtn: 'button[label="Continue"]',
+    SRtype: "Standard Registry",
+    userType: 'Default User',
   standardregistryBtn : "Standard Registry",
   userBtn : "User",
   auditorBtn : "Auditor",
@@ -146,19 +152,21 @@ export class HomePage {
 
 
     createStandartRegistryAccount(username) {
-        cy.get(HomePageLocators.createLnk).click();
-     cy.contains(HomePageLocators.standardregistryBtn).click();
-     const inputName = cy.get(HomePageLocators.usernameInput);
-     inputName.click().clear();
-     inputName.type(username);
-     const inputPass = cy.get(HomePageLocators.passInput);
-     inputPass.click().clear();
-     inputPass.type('test123');
-     const confirminputPass = cy.get(HomePageLocators.confirmpassinput);
-     confirminputPass.click().clear();
-     confirminputPass.type('test123');
-     cy.get(HomePageLocators.submitBtn).click();
-  }
+        cy.contains(HomePageLocators.createLnk).click();
+        cy.get(HomePageLocators.acceptBtn).click();
+        cy.contains(HomePageLocators.SRtype).click();
+        cy.get(HomePageLocators.continueBtn).click();
+        const inputName = cy.get(HomePageLocators.dialog).find(HomePageLocators.usernameInput);
+        inputName.click().clear();
+        inputName.type(username);
+        const inputPass = cy.get(HomePageLocators.dialog).find(HomePageLocators.passInput);
+        inputPass.click().clear();
+        inputPass.type('test123');
+        const confirminputPass = cy.get(HomePageLocators.dialog).find(HomePageLocators.confirmpassinput);
+        confirminputPass.click().clear();
+        confirminputPass.type('test123');
+        cy.get(HomePageLocators.dialog).find(HomePageLocators.requestAccessBtn).click();
+    }
 
   verifyAlert()
   {
@@ -167,57 +175,54 @@ export class HomePage {
 
 
   createAuditor(username) {
-    cy.get(HomePageLocators.createLnk).click();
-   cy.contains(HomePageLocators.auditorBtn).click();
-   const inputName = cy.get(HomePageLocators.usernameInput);
-   inputName.click().clear();
-   inputName.type(username);
-   const inputPass = cy.get(HomePageLocators.passInput);
-   inputPass.click().clear();
-   inputPass.type('test123');
-   const confirminputPass = cy.get(HomePageLocators.confirmpassinput);
-   confirminputPass.click().clear();
-   confirminputPass.type('test123');
-   cy.get(HomePageLocators.submitBtn).click();
-   cy.wait(2000)
-   cy.contains(HomePageLocators.auditEle).should('not.be.null');
-   cy.contains(HomePageLocators.trustChainEle).should('not.be.null');
-
-
-}
+      cy.contains(HomePageLocators.createLnk).click();
+      cy.contains(HomePageLocators.auditorBtn).click();
+      const inputName = cy.get(HomePageLocators.usernameInput);
+      inputName.click().clear();
+      inputName.type(username);
+      const inputPass = cy.get(HomePageLocators.passInput);
+      inputPass.click().clear();
+      inputPass.type('test123');
+      const confirminputPass = cy.get(HomePageLocators.confirmpassinput);
+      confirminputPass.click().clear();
+      confirminputPass.type('test123');
+      cy.get(HomePageLocators.submitBtn).click();
+      cy.wait(2000)
+      cy.contains(HomePageLocators.auditEle).should('not.be.null');
+      cy.contains(HomePageLocators.trustChainEle).should('not.be.null');
+  }
 
   createUserAccount(username) {
-   cy.get(HomePageLocators.createLnk).click();
-   cy.contains(HomePageLocators.userBtn).click();
-   const inputName = cy.get(HomePageLocators.usernameInput);
-   inputName.click().clear();
-   inputName.type(username);
-   const inputPass = cy.get(HomePageLocators.passInput);
-   inputPass.click().clear();
-   inputPass.type('test123');
-   const confirminputPass = cy.get(HomePageLocators.confirmpassinput);
-   confirminputPass.click().clear();
-   confirminputPass.type('test123');
-   cy.get(HomePageLocators.submitBtn).click();
-   cy.wait(2000)
-
-
-}
+        cy.contains(HomePageLocators.createLnk).click();
+      cy.get(HomePageLocators.acceptBtn).click();
+      cy.contains(HomePageLocators.userType).click();
+      cy.get(HomePageLocators.continueBtn).click();
+      const inputName = cy.get(HomePageLocators.dialog).find(HomePageLocators.usernameInput);
+      inputName.click().clear();
+      inputName.type(username);
+      const inputPass = cy.get(HomePageLocators.dialog).find(HomePageLocators.passInput);
+      inputPass.click().clear();
+      inputPass.type('test123');
+      const confirminputPass = cy.get(HomePageLocators.dialog).find(HomePageLocators.confirmpassinput);
+      confirminputPass.click().clear();
+      confirminputPass.type('test123');
+      cy.get(HomePageLocators.dialog).find(HomePageLocators.requestAccessBtn).click();
+  }
 
 //Non Happy Scenarios
 
 clickStandardRegistry(){
-  cy.get(HomePageLocators.createLnk).click();
+  cy.contains(HomePageLocators.createLnk).click();
 cy.contains(HomePageLocators.standardregistryBtn).click();
 }
 
 clickUser(){
-  cy.get(HomePageLocators.createLnk).click();
+  cy.contains(HomePageLocators.createLnk).click();
 cy.contains(HomePageLocators.userBtn).click();
 }
 
 clickAuditor(){
-  cy.get(HomePageLocators.createLnk).click();
+  cy.contains(HomePageLocators.createLnk).click();
 cy.contains(HomePageLocators.auditorBtn).click();
 }
 

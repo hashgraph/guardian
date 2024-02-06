@@ -6,7 +6,7 @@ const AuthPageLocators = {
     usernameInput: '[formcontrolname="login"]',
     passInput: '[formcontrolname="password"]',
     submitBtn: '[type="submit"]',
-    logoutBtn: "Log out",
+    logoutBtn: '[mattooltip="Logout"]',
     did: 'did:hedera:testnet',
     nextBtn: " Next ",
     generateBtn: "Generate",
@@ -47,9 +47,7 @@ export class AuthenticationPage {
     }
 
     logOut(username) {
-        const standartRegistry = cy.contains(username);
-        standartRegistry.click({ force: true });
-        cy.contains(AuthPageLocators.logoutBtn).click({ force: true });
+        cy.get(AuthPageLocators.logoutBtn).click({ force: true });
     }
 
     checkSetup(role) {

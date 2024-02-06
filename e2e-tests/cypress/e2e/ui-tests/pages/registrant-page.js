@@ -4,7 +4,7 @@ const d = new Date(2022, 3, 3);
 
 const RegistrantPageLocators = {
     roleSelect: '[formcontrolname="roleOrGroup"]',
-    policiesList: "/api/v1/policies?pageIndex=0&pageSize=100",
+    policiesList: "/api/v1/policies?pageIndex=0&pageSize=10",
     passInput: '[formcontrolname="password"]',
     submitBtn: '[type="submit"]',
     applicationRegBtns: 'div.page-btns',
@@ -15,7 +15,7 @@ const RegistrantPageLocators = {
     inputGroupLabel: '[formcontrolname="groupLabel"]',
     profileTab: "Profile",
     tokensBtn: "TOKENS",
-    createDeviceBtn: "Create New Device",
+    createDeviceBtn: " Create New Device ",
     createIsssueRequestBtn: "Create Issue Request",
     enterTextInput: '[placeholder="Please enter text here"]',
     enterNumInput: '[placeholder="123"]',
@@ -44,10 +44,11 @@ export class RegistrantPage {
 
     createGroup(role) {
         cy.contains("Policies").click({force: true});
+        cy.contains("List of Policies").click({force: true});
         cy.wait(1000)
-        cy.get("td").first().parent().get("td").eq("5").click();
+        cy.get("td").first().parent().get("td").eq("6").contains("Open").click();
         cy.wait(1000)
-        cy.get(RegistrantPageLocators.roleSelect).click().get("mat-option").contains(role).click();
+        cy.get(RegistrantPageLocators.roleSelect).click().get("p-dropdownitem").contains(role).click();
         cy.get(RegistrantPageLocators.submitBtn).click({force: true});
         cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
         cy.wait("@waitForRegister" + role, { timeout: 180000 });
@@ -98,13 +99,14 @@ export class RegistrantPage {
     createDevice() {
         RegistrantPage.waitForRegistrant();
         cy.contains("Policies").click({force: true});
+        cy.contains("List of Policies").click({force: true});
         RegistrantPage.waitForPolicyList();
-        cy.get("td").first().parent().get("td").eq("5").click();
+        cy.get("td").first().parent().get("td").eq("6").contains("Open").click();
         cy.contains("Devices").click({force: true});
         cy.intercept("/api/v1/profiles/Registrant").as("waitForRegisterRegistrant");
         cy.wait("@waitForRegisterRegistrant", { timeout: 180000 });
         cy.contains(RegistrantPageLocators.createDeviceBtn).click();
-        cy.get(RegistrantPageLocators.submitBtn).click();
+        cy.get(RegistrantPageLocators.submitBtn).last().click();
         cy.wait(60000);
         cy.contains("Waiting for approval").should("exist");
     }
@@ -113,7 +115,8 @@ export class RegistrantPage {
     createIssueRequest() {
         RegistrantPage.waitForRegistrant();
         cy.contains("Policies").click({force: true});
-        cy.get("td").first().parent().get("td").eq("5").click();
+        cy.contains("List of Policies").click({force: true});
+        cy.get("td").first().parent().get("td").eq("6").contains("Open").click();
         cy.contains("Devices").click({force: true});
         cy.intercept("/api/v1/profiles/Registrant").as("waitForRegisterRegistrant");
         cy.wait("@waitForRegisterRegistrant", { timeout: 180000 });
@@ -121,7 +124,7 @@ export class RegistrantPage {
         cy.contains(RegistrantPageLocators.requiredFillDateLabel).parent().parent().parent().find('input').type('3/1/2023')
         cy.contains(RegistrantPageLocators.requiredFillDateLabel).parent().parent().parent().find('input').type('3/1/2023')
         cy.contains(RegistrantPageLocators.requiredFillNumberLabel).parent().parent().parent().find('input').type('123')
-        cy.get(RegistrantPageLocators.submitBtn).click();
+        cy.get(RegistrantPageLocators.submitBtn).last().click();
         cy.wait(60000);
         cy.contains("Issue Requests").click({force: true});
         cy.contains("Waiting for approval").should("exist");

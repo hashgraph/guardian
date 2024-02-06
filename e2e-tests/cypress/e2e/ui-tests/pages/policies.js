@@ -3,21 +3,23 @@ import TIMEOUTS from "../../../support/CustomHelpers/timeouts";
 import URL from "../../../support/GuardianUrls";
 
 const PoliciesPageLocators = {
-    importBtn: "Import",
+    importBtn: '[label="Import"]',
+    importContinueBtn: 'p-button[label="Import"]',
+    importIcon: 'p-button[ng-reflect-text="Import"]',
     importFileBtn: "Import from file",
     importMsgBtn: "Import from IPFS",
-    msgInput: '[data-placeholder="Message timestamp"]',
+    msgInput: '[formcontrolname="timestamp"]',
     importFile: '[type="file"]',
     selectFileLink: "../../../../../Demo Artifacts/iREC/Policies/",
     uploadBtn: ".g-dialog-actions-btn",
     policiesList: "/api/v1/policies?pageIndex=0&pageSize=100",
-    continueImportBtn: "*[class^='g-dialog-actions-btn']",
+    continueImportBtn: 'p-button[label="Import"]',
     publishBtn: "Publish",
-    versionInput: '[data-placeholder="1.0.0"]',
-    publishPolicyBtn: ".mat-button-wrapper",
+    versionInput: 'input[id="version"]',
+    publishPolicyBtn: 'button[label="Ok"]',
     actionsMore: "div.btn-icon-import",
     publishedStatus: "Published",
-    dropDawnPublishBtn: "Release version into public domain.",
+    dropDawnPublishBtn: "li[role='option']",
     submitBtn: 'button[type="submit"]',
     createBtn: 'div.g-dialog-actions-btn',
     addBtn: "*[class^='btn-approve btn-option ng-star-inserted']",
@@ -71,7 +73,7 @@ export class PoliciesPage {
     }
 
     importPolicyButton() {
-        cy.contains(PoliciesPageLocators.importBtn).click();
+        cy.get(PoliciesPageLocators.importIcon).click();
     }
 
     createPolicyButton() {
@@ -79,18 +81,18 @@ export class PoliciesPage {
     }
 
     approveUser() {
-        cy.contains("Go").first().click();
+        cy.contains("Register").first().click();
         cy.get(PoliciesPageLocators.approveBtn).click();
         cy.wait(60000);
     }
     approveDevice() {
-        cy.contains("Go").first().click();
+        cy.contains("Register").first().click();
         cy.contains("Devices").click({ force: true });
         cy.contains("Approve").click({ force: true });
         cy.wait(60000);
     }
     approveRequest() {
-        cy.contains("Go").first().click();
+        cy.contains("Register").first().click();
         cy.contains("Issue Requests").click({ force: true });
         cy.contains("Approve").click({ force: true });
         cy.wait(180000);
@@ -160,9 +162,9 @@ export class PoliciesPage {
         cy.intercept(PoliciesPageLocators.taskReq).as(
             "waitForPolicyImport"
         );
-        cy.get(PoliciesPageLocators.submitBtn).click();
+        cy.get(PoliciesPageLocators.importBtn).click();
         cy.wait(['@waitForPolicyImport', '@waitForPolicyImport'], { timeout: 100000 })
-        cy.get(PoliciesPageLocators.continueImportBtn).click();
+        cy.get(PoliciesPageLocators.importContinueBtn).click();
         PoliciesPage.waitForPolicyEdit();
     }
 
@@ -170,16 +172,17 @@ export class PoliciesPage {
         cy.get("tbody>tr").eq("0").find("td").eq("0").within((firstCell) => {
             cy.wrap(firstCell.text()).as("policyName").then(() => {
                 cy.get("@policyName").then((policyName) => {
-                    cy.contains(policyName).parent().find("td").eq("8").click();
+                    cy.wait(3000)
+                    cy.contains(policyName).parent().find("td").eq("7").click();
                 });
             });
         })
-        cy.contains(PoliciesPageLocators.dropDawnPublishBtn).click({force: true})
+        cy.get(PoliciesPageLocators.dropDawnPublishBtn).first().click()
         cy.get(PoliciesPageLocators.versionInput).type("0.0.1")
         cy.intercept(PoliciesPageLocators.policyEditView).as(
             "waitForPolicyEditView"
         );
-        cy.contains(PoliciesPageLocators.publishPolicyBtn, "Publish").click()
+        cy.get(PoliciesPageLocators.publishPolicyBtn).click()
         cy.wait("@waitForPolicyEditView", { timeout: 300000 })
         cy.visit(URL.Root + URL.Policies);
         cy.get("@policyName").then((policyName) => {

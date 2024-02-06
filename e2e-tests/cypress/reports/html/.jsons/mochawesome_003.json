@@ -1,0 +1,109 @@
+{
+  "stats": {
+    "suites": 0,
+    "tests": 1,
+    "passes": 0,
+    "pending": 0,
+    "failures": 1,
+    "start": "2023-12-06T11:42:25.911Z",
+    "end": "2023-12-06T11:42:26.099Z",
+    "duration": 188,
+    "testsRegistered": 1,
+    "passPercent": 0,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "f9020b88-1694-4ebd-bac7-7afb87942157",
+      "title": "",
+      "fullFile": "cypress\\e2e\\ui-tests\\specs\\Schema Validation\\ErrorValidation.cy.js",
+      "file": "cypress\\e2e\\ui-tests\\specs\\Schema Validation\\ErrorValidation.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "5a0a8d9c-e96c-4b09-94f1-f71f1f8dab5f",
+          "title": "Error Validation on schema fields",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "Error Validation on schema fields",
+              "fullTitle": "Error Validation on schema fields Error Validation on schema fields",
+              "timedOut": null,
+              "duration": 151,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\Schema Validation\\\\ErrorValidation.cy.js\\\\Error Validation on schema fields -- before all hook (failed).png\"\n    ]\n  ]\n}",
+              "code": "home.login(\"Registrant\");\nhome.checkSetup(\"Registrant\");\nregistrant.createGroup();\nregistrant.checkAddEntity();\nregistrant.checkErrorcondition('Schematype_Number', errorNumber, incorrectValueNumber, 56);\nregistrant.checkErrorcondition('Schematype_Integer', errorInteger, incorrectValueInteger, 90);\nregistrant.checkErrorcondition('Schematype_String', errorCommmon, incorrectValue, \"string value\");\nregistrant.checkErrorcondition('Schematype_Boolean', errorCommmon, incorrectValue, true);\nregistrant.checkErrorcondition('Schematype_Date', errorDate, incorrectValueDate, \"6/1/2023\");\nregistrant.checkErrorcondition('Schematype_Time', errorCommmon, incorrectValue, \"13:45:30\");\nregistrant.checkErrorcondition('Schematype_DateTime', errorDateTime, incorrectValueDateTime, \"6/21/2023, 2:58 AM\");\nregistrant.checkErrorcondition('Schematype_Duration', errorDuration, incorrectValueDuration, \"P1D\");\nregistrant.checkErrorcondition('Schematype_URL', errorURL, incorrectValueURL, 'http://example.com');\nregistrant.checkErrorcondition('Schematype_URI', errorURI, incorrectValueURI, 'http:resource');\nregistrant.checkErrorcondition('Schematype_Email', errorEmail, incorrectEmail, 'test@gmail.com');\nregistrant.checkErrorcondition('Schematype_Image', errorCommmon, incorrectValue, 'image.png');\nregistrant.checkErrorcondition('Schematype_Enum', errorCommmon, incorrectValue, 'ENUM');\nregistrant.checkErrorcondition('Schematype_Prefix', errorNumber, incorrectValueNumber, 78);\nregistrant.checkErrorcondition('Schematype_Postfix', errorNumber, incorrectValueNumber, 50);\nregistrant.checkErrorcondition('Schematype_Account', errorCommmon, incorrectValueNumber, \"0.0.67677\");\nregistrant.submitApplication();\nhome.logOut(\"Registrant\");",
+              "err": {
+                "message": "CypressError: `cy.request()` failed on:\n\nhttp://localhost:3000/api/v1/profiles/StandardRegistry\n\nThe response we received from your web server was:\n\n  > 401: Unauthorized\n\nThis was considered a failure because the status code was not `2xx` or `3xx`.\n\nIf you do not want status codes to cause failures pass the option: `failOnStatusCode: false`\n\n-----------------------------------------------------------\n\nThe request we sent was:\n\nMethod: GET\nURL: http://localhost:3000/api/v1/profiles/StandardRegistry\nHeaders: {\n  \"Connection\": \"keep-alive\",\n  \"authorization\": \"bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN0YW5kYXJkUmVnaXN0cnkiLCJkaWQiOiJkaWQ6aGVkZXJhOnRlc3RuZXQ6REpkb0FmUmd5em1ScGROY0ZOSDZQcUhQWFd3Nk5QVFhEOVRDa2NicW5qZTNfMC4wLjM5NDM1ODMiLCJyb2xlIjoiU1RBTkRBUkRfUkVHSVNUUlkiLCJpYXQiOjE2ODAwODg4MDN9.qv3sb9rtrowdQqObk8Co15erlkrXFAePvef1DeyTjmc\",\n  \"user-agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/10.11.0 Chrome/106.0.5249.51 Electron/21.0.0 Safari/537.36\",\n  \"accept\": \"*/*\",\n  \"accept-encoding\": \"gzip, deflate\"\n}\n\n-----------------------------------------------------------\n\nThe response we got was:\n\nStatus: 401 - Unauthorized\nHeaders: {\n  \"server\": \"nginx/1.25.1\",\n  \"date\": \"Wed, 06 Dec 2023 11:42:25 GMT\",\n  \"content-type\": \"application/json; charset=utf-8\",\n  \"content-length\": \"43\",\n  \"connection\": \"keep-alive\",\n  \"x-powered-by\": \"Express\",\n  \"etag\": \"W/\\\"2b-hGShxOkieaAVDloBubJVM+h58D8\\\"\"\n}\nBody: {\n  \"statusCode\": 401,\n  \"message\": \"Unauthorized\"\n}\n\n\nhttps://on.cypress.io/request\n\nBecause this error occurred during a `before all` hook we are skipping all of the remaining tests.",
+                "estack": "CypressError: `cy.request()` failed on:\n\nhttp://localhost:3000/api/v1/profiles/StandardRegistry\n\nThe response we received from your web server was:\n\n  > 401: Unauthorized\n\nThis was considered a failure because the status code was not `2xx` or `3xx`.\n\nIf you do not want status codes to cause failures pass the option: `failOnStatusCode: false`\n\n-----------------------------------------------------------\n\nThe request we sent was:\n\nMethod: GET\nURL: http://localhost:3000/api/v1/profiles/StandardRegistry\nHeaders: {\n  \"Connection\": \"keep-alive\",\n  \"authorization\": \"bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN0YW5kYXJkUmVnaXN0cnkiLCJkaWQiOiJkaWQ6aGVkZXJhOnRlc3RuZXQ6REpkb0FmUmd5em1ScGROY0ZOSDZQcUhQWFd3Nk5QVFhEOVRDa2NicW5qZTNfMC4wLjM5NDM1ODMiLCJyb2xlIjoiU1RBTkRBUkRfUkVHSVNUUlkiLCJpYXQiOjE2ODAwODg4MDN9.qv3sb9rtrowdQqObk8Co15erlkrXFAePvef1DeyTjmc\",\n  \"user-agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/10.11.0 Chrome/106.0.5249.51 Electron/21.0.0 Safari/537.36\",\n  \"accept\": \"*/*\",\n  \"accept-encoding\": \"gzip, deflate\"\n}\n\n-----------------------------------------------------------\n\nThe response we got was:\n\nStatus: 401 - Unauthorized\nHeaders: {\n  \"server\": \"nginx/1.25.1\",\n  \"date\": \"Wed, 06 Dec 2023 11:42:25 GMT\",\n  \"content-type\": \"application/json; charset=utf-8\",\n  \"content-length\": \"43\",\n  \"connection\": \"keep-alive\",\n  \"x-powered-by\": \"Express\",\n  \"etag\": \"W/\\\"2b-hGShxOkieaAVDloBubJVM+h58D8\\\"\"\n}\nBody: {\n  \"statusCode\": 401,\n  \"message\": \"Unauthorized\"\n}\n\n\nhttps://on.cypress.io/request\n\nBecause this error occurred during a `before all` hook we are skipping all of the remaining tests.\n    at <unknown> (http://localhost:53574/__cypress/runner/cypress_runner.js:144155:80)\n    at tryCatcher (http://localhost:53574/__cypress/runner/cypress_runner.js:11318:23)\n    at Promise._settlePromiseFromHandler (http://localhost:53574/__cypress/runner/cypress_runner.js:9253:31)\n    at Promise._settlePromise (http://localhost:53574/__cypress/runner/cypress_runner.js:9310:18)\n    at Promise._settlePromise0 (http://localhost:53574/__cypress/runner/cypress_runner.js:9355:10)\n    at Promise._settlePromises (http://localhost:53574/__cypress/runner/cypress_runner.js:9435:18)\n    at _drainQueueStep (http://localhost:53574/__cypress/runner/cypress_runner.js:6025:12)\n    at _drainQueue (http://localhost:53574/__cypress/runner/cypress_runner.js:6018:9)\n    at ../../node_modules/bluebird/js/release/async.js.Async._drainQueues (http://localhost:53574/__cypress/runner/cypress_runner.js:6034:5)\n    at Async.drainQueues (http://localhost:53574/__cypress/runner/cypress_runner.js:5904:14)\nFrom Your Spec Code:\n    at Context.eval (webpack:///./cypress/support/e2e.js:38:7)",
+                "diff": null
+              },
+              "uuid": "74fe4900-c2f2-4cd4-b02e-dd54c18dff43",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [],
+          "failures": [
+            "74fe4900-c2f2-4cd4-b02e-dd54c18dff43"
+          ],
+          "pending": [],
+          "skipped": [],
+          "duration": 151,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.0.1"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.3"
+    },
+    "marge": {
+      "options": {
+        "overwrite": false,
+        "html": false,
+        "json": true,
+        "reportDir": "cypress\\reports\\html\\.jsons"
+      },
+      "version": "6.2.0"
+    }
+  }
+}

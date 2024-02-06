@@ -1,0 +1,205 @@
+{
+  "stats": {
+    "suites": 0,
+    "tests": 1,
+    "passes": 0,
+    "pending": 0,
+    "failures": 1,
+    "start": "2023-12-06T11:43:04.813Z",
+    "end": "2023-12-06T11:43:04.999Z",
+    "duration": 186,
+    "testsRegistered": 6,
+    "passPercent": 0,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 5,
+    "hasSkipped": true
+  },
+  "results": [
+    {
+      "uuid": "3db05591-2810-454a-89ef-32e3fe2c6458",
+      "title": "",
+      "fullFile": "cypress\\e2e\\ui-tests\\specs\\policies\\exportPolicy.cy.js",
+      "file": "cypress\\e2e\\ui-tests\\specs\\policies\\exportPolicy.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "d57f0c9e-3481-4204-bad0-cf565933ca62",
+          "title": "Export Policy",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "Verify if it impossible to Export draft policy using message identifier",
+              "fullTitle": "Export Policy Verify if it impossible to Export draft policy using message identifier",
+              "timedOut": null,
+              "duration": 145,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\policies\\\\exportPolicy.cy.js\\\\Verify if it impossible to Export draft policy using message identifier -- before all hook (failed).png\"\n    ]\n  ]\n}",
+              "code": "policies.checkStatus(name, \"Draft\");\npolicies.clickOnExportButton(name);\npolicies.checkButtonInModalIsNotActive(\"Copy message identifier\");",
+              "err": {
+                "message": "CypressError: `cy.request()` failed on:\n\nhttp://localhost:3000/api/v1/profiles/StandardRegistry\n\nThe response we received from your web server was:\n\n  > 401: Unauthorized\n\nThis was considered a failure because the status code was not `2xx` or `3xx`.\n\nIf you do not want status codes to cause failures pass the option: `failOnStatusCode: false`\n\n-----------------------------------------------------------\n\nThe request we sent was:\n\nMethod: GET\nURL: http://localhost:3000/api/v1/profiles/StandardRegistry\nHeaders: {\n  \"Connection\": \"keep-alive\",\n  \"authorization\": \"bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN0YW5kYXJkUmVnaXN0cnkiLCJkaWQiOiJkaWQ6aGVkZXJhOnRlc3RuZXQ6REpkb0FmUmd5em1ScGROY0ZOSDZQcUhQWFd3Nk5QVFhEOVRDa2NicW5qZTNfMC4wLjM5NDM1ODMiLCJyb2xlIjoiU1RBTkRBUkRfUkVHSVNUUlkiLCJpYXQiOjE2ODAwODg4MDN9.qv3sb9rtrowdQqObk8Co15erlkrXFAePvef1DeyTjmc\",\n  \"user-agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/10.11.0 Chrome/106.0.5249.51 Electron/21.0.0 Safari/537.36\",\n  \"accept\": \"*/*\",\n  \"accept-encoding\": \"gzip, deflate\"\n}\n\n-----------------------------------------------------------\n\nThe response we got was:\n\nStatus: 401 - Unauthorized\nHeaders: {\n  \"server\": \"nginx/1.25.1\",\n  \"date\": \"Wed, 06 Dec 2023 11:43:04 GMT\",\n  \"content-type\": \"application/json; charset=utf-8\",\n  \"content-length\": \"43\",\n  \"connection\": \"keep-alive\",\n  \"x-powered-by\": \"Express\",\n  \"etag\": \"W/\\\"2b-hGShxOkieaAVDloBubJVM+h58D8\\\"\"\n}\nBody: {\n  \"statusCode\": 401,\n  \"message\": \"Unauthorized\"\n}\n\n\nhttps://on.cypress.io/request\n\nBecause this error occurred during a `before all` hook we are skipping all of the remaining tests.",
+                "estack": "CypressError: `cy.request()` failed on:\n\nhttp://localhost:3000/api/v1/profiles/StandardRegistry\n\nThe response we received from your web server was:\n\n  > 401: Unauthorized\n\nThis was considered a failure because the status code was not `2xx` or `3xx`.\n\nIf you do not want status codes to cause failures pass the option: `failOnStatusCode: false`\n\n-----------------------------------------------------------\n\nThe request we sent was:\n\nMethod: GET\nURL: http://localhost:3000/api/v1/profiles/StandardRegistry\nHeaders: {\n  \"Connection\": \"keep-alive\",\n  \"authorization\": \"bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlN0YW5kYXJkUmVnaXN0cnkiLCJkaWQiOiJkaWQ6aGVkZXJhOnRlc3RuZXQ6REpkb0FmUmd5em1ScGROY0ZOSDZQcUhQWFd3Nk5QVFhEOVRDa2NicW5qZTNfMC4wLjM5NDM1ODMiLCJyb2xlIjoiU1RBTkRBUkRfUkVHSVNUUlkiLCJpYXQiOjE2ODAwODg4MDN9.qv3sb9rtrowdQqObk8Co15erlkrXFAePvef1DeyTjmc\",\n  \"user-agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cypress/10.11.0 Chrome/106.0.5249.51 Electron/21.0.0 Safari/537.36\",\n  \"accept\": \"*/*\",\n  \"accept-encoding\": \"gzip, deflate\"\n}\n\n-----------------------------------------------------------\n\nThe response we got was:\n\nStatus: 401 - Unauthorized\nHeaders: {\n  \"server\": \"nginx/1.25.1\",\n  \"date\": \"Wed, 06 Dec 2023 11:43:04 GMT\",\n  \"content-type\": \"application/json; charset=utf-8\",\n  \"content-length\": \"43\",\n  \"connection\": \"keep-alive\",\n  \"x-powered-by\": \"Express\",\n  \"etag\": \"W/\\\"2b-hGShxOkieaAVDloBubJVM+h58D8\\\"\"\n}\nBody: {\n  \"statusCode\": 401,\n  \"message\": \"Unauthorized\"\n}\n\n\nhttps://on.cypress.io/request\n\nBecause this error occurred during a `before all` hook we are skipping all of the remaining tests.\n    at <unknown> (http://localhost:53574/__cypress/runner/cypress_runner.js:144155:80)\n    at tryCatcher (http://localhost:53574/__cypress/runner/cypress_runner.js:11318:23)\n    at Promise._settlePromiseFromHandler (http://localhost:53574/__cypress/runner/cypress_runner.js:9253:31)\n    at Promise._settlePromise (http://localhost:53574/__cypress/runner/cypress_runner.js:9310:18)\n    at Promise._settlePromise0 (http://localhost:53574/__cypress/runner/cypress_runner.js:9355:10)\n    at Promise._settlePromises (http://localhost:53574/__cypress/runner/cypress_runner.js:9435:18)\n    at _drainQueueStep (http://localhost:53574/__cypress/runner/cypress_runner.js:6025:12)\n    at _drainQueue (http://localhost:53574/__cypress/runner/cypress_runner.js:6018:9)\n    at ../../node_modules/bluebird/js/release/async.js.Async._drainQueues (http://localhost:53574/__cypress/runner/cypress_runner.js:6034:5)\n    at Async.drainQueues (http://localhost:53574/__cypress/runner/cypress_runner.js:5904:14)\nFrom Your Spec Code:\n    at Context.eval (webpack:///./cypress/support/e2e.js:38:7)",
+                "diff": null
+              },
+              "uuid": "c5b11bec-50d6-4776-bb4a-a3e37a6c1ce1",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "Verify if it possible to Export dry run policy using message identifier",
+              "fullTitle": "Export Policy Verify if it possible to Export dry run policy using message identifier",
+              "timedOut": null,
+              "duration": 0,
+              "state": "skipped",
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "policies.startDryRun(name);\npolicies.checkStatus(name, \" In Dry Run \");\npolicies.clickOnExportButton(name);\npolicies.checkButtonInModalIsActive(\"Copy message identifier\");",
+              "err": {},
+              "uuid": "15deb2cd-bc19-4725-9a98-9dec066fb37e",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": true
+            },
+            {
+              "title": "Verify if it possible to Export published policy using message identifier",
+              "fullTitle": "Export Policy Verify if it possible to Export published policy using message identifier",
+              "timedOut": null,
+              "duration": 0,
+              "state": "skipped",
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "policies.publishDraftPolicy(name);\npolicies.openPoliciesTab();\n_policies.PoliciesPage.waitForPolicyList();\npolicies.checkStatus(name, \" Published \");\npolicies.clickOnExportButton(name);\npolicies.checkButtonInModalIsActive(\"Copy message identifier\");",
+              "err": {},
+              "uuid": "ecc4a0b1-f109-4b73-a573-2cb266064d9c",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": true
+            },
+            {
+              "title": "Verify if it possible to Export draft policy using file",
+              "fullTitle": "Export Policy Verify if it possible to Export draft policy using file",
+              "timedOut": null,
+              "duration": 0,
+              "state": "skipped",
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "policies.checkStatus(name, \"Draft\");\npolicies.clickOnExportButton(name);\npolicies.clickOnButtonByTextInModal(\"Save to file\");\ncy.wait(1000);\ncy.checkIfFileExistByPartialName(\"policy\");",
+              "err": {},
+              "uuid": "5b27bda3-5434-4266-bb48-c3179929f194",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": true
+            },
+            {
+              "title": "Verify if it possible to Export dry run policy using file",
+              "fullTitle": "Export Policy Verify if it possible to Export dry run policy using file",
+              "timedOut": null,
+              "duration": 0,
+              "state": "skipped",
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "policies.startDryRun(name);\npolicies.checkStatus(name, \" In Dry Run \");\npolicies.clickOnExportButton(name);\npolicies.clickOnButtonByTextInModal(\"Save to file\");\ncy.wait(1000);\ncy.checkIfFileExistByPartialName(\"policy\");",
+              "err": {},
+              "uuid": "753dbffc-e69c-4cb9-b90f-40634636c929",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": true
+            },
+            {
+              "title": "Verify if it possible to Export published policy using file",
+              "fullTitle": "Export Policy Verify if it possible to Export published policy using file",
+              "timedOut": null,
+              "duration": 0,
+              "state": "skipped",
+              "speed": null,
+              "pass": false,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "policies.publishDraftPolicy(name);\npolicies.openPoliciesTab();\npolicies.checkStatus(name, \" Published \");\npolicies.clickOnExportButton(name);\npolicies.clickOnButtonByTextInModal(\"Save to file\");\ncy.wait(1000);\ncy.checkIfFileExistByPartialName(\"policy\");",
+              "err": {},
+              "uuid": "d7f99716-73fc-4acc-a623-6a2aa577f9b9",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": true
+            }
+          ],
+          "suites": [],
+          "passes": [],
+          "failures": [
+            "c5b11bec-50d6-4776-bb4a-a3e37a6c1ce1"
+          ],
+          "pending": [],
+          "skipped": [
+            "15deb2cd-bc19-4725-9a98-9dec066fb37e",
+            "ecc4a0b1-f109-4b73-a573-2cb266064d9c",
+            "5b27bda3-5434-4266-bb48-c3179929f194",
+            "753dbffc-e69c-4cb9-b90f-40634636c929",
+            "d7f99716-73fc-4acc-a623-6a2aa577f9b9"
+          ],
+          "duration": 145,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.0.1"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.3"
+    },
+    "marge": {
+      "options": {
+        "overwrite": false,
+        "html": false,
+        "json": true,
+        "reportDir": "cypress\\reports\\html\\.jsons"
+      },
+      "version": "6.2.0"
+    }
+  }
+}

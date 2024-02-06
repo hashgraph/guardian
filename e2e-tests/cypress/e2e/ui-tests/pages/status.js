@@ -14,7 +14,7 @@ export class StatusPage {
         cy.contains(serviceName)
         .parent()
         .parent()
-        .find('td mat-icon').should('not.have.class', 'stopped-status');
+        .find('div[ng-reflect-ng-switch="READY"]');
     }
 
 }

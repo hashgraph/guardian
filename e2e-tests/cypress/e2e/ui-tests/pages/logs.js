@@ -1,21 +1,21 @@
 import URL from "../../../support/GuardianUrls";
 
 const LogsPageLocators = {
-    LogModal: '.cdk-overlay-pane',
-    detailsBtn: '.btn-settings',
-    apllyBtn: 'button[type="submit"]',
-    messageField: '[formcontrolname="message"]',
-    messageColumn: '.cdk-column-message .long-message',
-    typeSelect: '[formcontrolname="type"]',
-    typeDefaultOption: '[formcontrolname="type"] .mat-select-min-line',
+    LogModal: 'div.p-dialog',
+    detailsBtn: "Details",
+    apllyBtn: 'button[label="Apply"]',
+    messageField: '[placeholder="Message"]',
+    logData: 'tr.row-item',
+    typeSelect: '[ng-reflect-name="type"]',
+    typeDefaultOption: '[ng-reflect-name="type"] .country-item-value',
     typeOption: '.mat-option-text',
     logType: '.log-type',
     tableBody: 'tbody tr',
-    calendarIcon: '[aria-label="Open calendar"]',
-    todayDate: '.mat-calendar-body-today',
+    calendarIcon: 'button.p-datepicker-trigger',
+    todayDate: '.p-datepicker-today>span',
     attributesSelect: '[formcontrolname="attributes"]',
     attributesInput: '[ng-reflect-placeholder="Attributes"]',
-    attributesOption: '[role="option"]',
+    attributesOption: 'p-multiselectitem[ng-reflect-option]',
     attributeReflect: '[ng-reflect-name="attributes"]',
     startDate: '[formcontrolname="startDate"]',
     endDate: '[formcontrolname="endDate"]',
@@ -28,12 +28,12 @@ export class LogsPage {
     }
 
     openDetailsModal() {
-        cy.get(LogsPageLocators.detailsBtn).first().click();
+        cy.contains(LogsPageLocators.detailsBtn).first().click();
     }
 
     verifyLogModalIsDisplayed() {
         cy.get(LogsPageLocators.LogModal).should('be.visible');
-        cy.contains("Log Details").should('be.visible');
+        cy.contains("Details Log").should('be.visible');
         cy.get('[formcontrolname="type"]').should('be.visible');
         cy.get('[formcontrolname="datetime"]').should('be.visible');
         cy.get('[formcontrolname="message"]').should('be.visible');
@@ -50,23 +50,19 @@ export class LogsPage {
     }
 
     verifyIfMessageColumnContains(message) {
-        cy.get(LogsPageLocators.messageColumn).each(($el) => {
-            cy.wrap($el).contains(message);
+        cy.get(LogsPageLocators.logData).each(($el) => {
+            cy.wrap($el).find('td').eq(2).contains(message);
         });
     }
 
     selectMessageType(type) {
         cy.get(LogsPageLocators.typeSelect).click();
-        cy.get(LogsPageLocators.typeOption).contains(type).click();
+        cy.contains(type).click();
     }
 
     verifyIfTypeColumnContains(type) {
-        cy.get("tbody").then($tbody => {
-            if ($tbody.find("tr").length > 0) {   
-                cy.get(LogsPageLocators.logType).each(($el) => {
-                    cy.wrap($el).contains(type);
-                });
-            }
+        cy.get(LogsPageLocators.logData).each(($el) => {
+            cy.wrap($el).find('td').eq(0).contains(type);
         });
     }
 
@@ -97,7 +93,7 @@ export class LogsPage {
     }
 
     verifyIfTypeFieldHasDefaultValue() {
-        cy.get(LogsPageLocators.typeDefaultOption).contains('All').should("be.visible");
+        cy.get(LogsPageLocators.typeDefaultOption).contains('Message Type All').should("be.visible");
     }
 
     verifyIfDateRangeFieldIsEmpty() {

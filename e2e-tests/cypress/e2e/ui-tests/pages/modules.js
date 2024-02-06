@@ -1,17 +1,18 @@
 import URL from "../../../support/GuardianUrls";
 
 const ModulesPageLocators = {
-    createNewButton: "Create New",
+    createNewButton: "Create a Module",
     importButton: "Import",
+    moduleImportButton: 'button[label="Import"]',
     okButton: "Ok",
-    finalImportButton: " Import ",
+    pImportButton: 'p-button[label="Import"]',
     importIPFSButton: "Import from IPFS",
     publishButton: " Publish ",
     nameInput: '[formcontrolname="name"]',
     timestampInput: '[formcontrolname="timestamp"]',
     descriptionInput: '[formcontrolname="description"]',
-    finalCreateButton: "div.g-dialog-actions",
-    modulesList: "/api/v1/modules?pageIndex=0&pageSize=100",
+    finalCreateButton: 'button[label="Create"]',
+    modulesList: "/api/v1/modules?pageIndex=0&pageSize=10",
     publishedStatus: "Published",
     importFileButton: "Import from file",
     postPreviewIPFS: "/api/v1/modules/import/message/preview",
@@ -32,7 +33,8 @@ const ModulesPageLocators = {
     tagsListRequest: "/api/v1/tags/",
     tagsDeleteRequest: "/api/v1/tags/*",
     tagDeleteButton: "div.delete-tag",
-    moduleDeleteButton: "div.btn-icon-delete",
+    moduleDeleteButton: '[ng-reflect-src="/assets/images/icons/delete.sv"]',
+    moduleEditButton: '[ng-reflect-src="/assets/images/icons/edit.svg"]',
 };
 
 export class ModulesPage {
@@ -63,21 +65,32 @@ export class ModulesPage {
         cy.contains(ModulesPageLocators.createNewButton).click();
         cy.get(ModulesPageLocators.nameInput).type(moduleName);
         cy.get(ModulesPageLocators.descriptionInput).type(moduleName);
+        cy.intercept(ModulesPageLocators.modulesList).as(
+            "waitForModulesListAfter" + process
+        );
         cy.get(ModulesPageLocators.finalCreateButton).click();
-        ModulesPage.waitForModulesListAfter("CreateModule");
+        cy.wait("@waitForModulesListAfter" + process, { timeout: 100000 })
         cy.contains(moduleName).should("exist");
     }
 
+    clickEditModule(name) {
+        cy.contains("td", name)
+            .siblings()
+            .find(ModulesPageLocators.moduleEditButton)
+            .click();
+        cy.wait(1000);
+    }
+
     importNewModuleIPFS(messageId){
-        cy.intercept(ModulesPageLocators.postPreviewIPFS).as(
-            "waitForPreviewAfterIPFS"
-        );
         cy.contains(ModulesPageLocators.importButton).click();
         cy.contains(ModulesPageLocators.importIPFSButton).click();
         cy.get(ModulesPageLocators.timestampInput).type(messageId);
-        cy.contains(ModulesPageLocators.okButton).click();
+        cy.intercept(ModulesPageLocators.postPreviewIPFS).as(
+            "waitForPreviewAfterIPFS"
+        );
+        cy.get(ModulesPageLocators.moduleImportButton).click();
         cy.wait("@waitForPreviewAfterIPFS", { timeout: 40000 })
-        cy.contains(ModulesPageLocators.finalImportButton).click();
+        cy.get(ModulesPageLocators.pImportButton).click();
         ModulesPage.waitForModulesListAfter("ImportIPFS");
         cy.contains("IPFSTestModule").should("exist");
     }
@@ -97,9 +110,12 @@ export class ModulesPage {
         ModulesPage.attachModuleFile(fileName);
         cy.wait("@waitForPreviewAfterFile", { timeout: 40000 })
         cy.wait(1000);
-        cy.contains(ModulesPageLocators.finalImportButton).click();
-        ModulesPage.waitForModulesListAfter("ImportFile");
-        cy.contains("FTM").should("exist");
+        cy.intercept(ModulesPageLocators.modulesList).as(
+            "waitForModulesListAfter" + process
+        );
+        cy.get(ModulesPageLocators.pImportButton).click();
+        cy.wait("@waitForModulesListAfter" + process, { timeout: 100000 })
+        cy.contains("importAutomationTest").should("exist");
     }
 
     verifyButtonsAndHeaders() {
@@ -188,7 +204,7 @@ export class ModulesPage {
 
     deleteModule(moduleName) {
         cy.contains(moduleName).parent().find(ModulesPageLocators.moduleDeleteButton).click();
-        cy.contains("OK").click();
+        cy.contains("Delete").click();
         cy.contains(moduleName).should("not.exist")
     }
 

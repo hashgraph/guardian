@@ -10,11 +10,11 @@ export class SettingsPage {
     }
 
     verifyIfFieldHasValidation(field, text) {
-        cy.get(`input[name='${field}']`)
+        cy.get(`input[ng-reflect-name='${field}']`)
         .clear()
         .type(text)
         .trigger('blur');
-        cy.get(`input[name='${field}']`).should("have.class", "ng-invalid");
+        cy.get(`input[ng-reflect-name='${field}']`).should("have.class", "ng-invalid");
     }
 
 }

@@ -65,7 +65,7 @@ before(() => {
                             authorization: authorization,
                         },
                         body: {
-                            hederaAccountId: "0.0.469260",
+                            hederaAccountId: "0.0.2667322",
                             hederaAccountKey:
                                 "3030020100300706052b8104000a04220420fba8a85fb4ed475ab068397da424eb9e2875603c8563d631635733768849a410",
                             vcDocument: {

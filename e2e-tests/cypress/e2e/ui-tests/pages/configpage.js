@@ -4,7 +4,7 @@ const ConfigPageLocators = {
 
 
   generateBtn: "Generate",
-  nextBtn: " Next ",
+  nextBtn: "Next",
   hederaIDInput: '[ng-reflect-name="hederaAccountId"]',
   hederaKeyInput: '[ng-reflect-name="hederaAccountKey"]',
   hederaIDUserInput: '[ng-reflect-name="id"]',
@@ -22,8 +22,7 @@ const ConfigPageLocators = {
   selectadminLst: '[role="combobox"]',
   submitBtn: 'Submit',
   adminList : '.mat-option-text',
-  adminHeader : 'h4.mat-line',
-  userHeader : 'div.account-item-name'
+  adminInfoList : 'div.user-info-container > div.item > span'
 
 
 }
@@ -88,46 +87,35 @@ cy.wait("@waitFor" + task + "ToComplete", { timeout: 100000 })
  
 
   finishsetupUser(admin, username,Option,ID,KEY) {
-
-  
-       
-   
-    
-        cy.get('.standard-registry').find('span').contains(admin).click();
-
-        cy.contains('Next').click();
-        cy.wait(2000);
-        if (Option =='GENERATE'){
+      cy.get('.standard-registry').find('span').contains(admin).click();
+      cy.contains('Next').click();
+      cy.wait(2000);
+      if (Option == 'GENERATE') {
           cy.contains(ConfigPageLocators.generateBtn).click();
           ConfigPage.waitForTask("SetupUser");
-            cy.wait(4000);
-        }
-        if (Option =='NOGENERATE')
-        {
+          cy.wait(4000);
+      }
+      if (Option == 'NOGENERATE') {
           cy.get(ConfigPageLocators.hederaIDUserInput).type(ID);
           cy.get(ConfigPageLocators.hederaKeyUserInput).type(KEY);
           cy.contains(ConfigPageLocators.submitBtn).should('be.enabled');
-        }
-        cy.wait(3000);
-        cy.contains(ConfigPageLocators.submitBtn).click()
-        cy.intercept(ConfigPageLocators.userProfileApi + username).as('waitForuser')
-        cy.wait('@waitForuser', { timeout: 200000 })
-      
-    
-
-
+      }
+      cy.wait(3000);
+      cy.contains(ConfigPageLocators.submitBtn).click()
+      cy.intercept(ConfigPageLocators.userProfileApi + username).as('waitForuser')
+      cy.wait('@waitForuser', {timeout: 200000})
   }
 
   verifyHeaderLabelsOnLoginPageForAdmin() {
   cy.wait(2000);
-    cy.get(ConfigPageLocators.adminHeader).should(($header) => {
+    cy.get(ConfigPageLocators.adminInfoList).should(($header) => {
         expect($header.get(0).innerText).to.eq('DID Document')
         expect($header.get(1).innerText).to.eq('VC Document')
         expect($header.get(2).innerText).to.eq('Balance')
-        expect($header.get(3).innerText).to.eq('Hedera Account Id')
-        expect($header.get(4).innerText).to.eq('DID')
-        expect($header.get(5).innerText).to.eq('User Topic')
-        expect($header.get(6).innerText).to.eq('Initialization topic')
+        expect($header.get(4).innerText).to.eq('Hedera Account ID')
+        expect($header.get(5).innerText).to.eq('DID')
+        expect($header.get(7).innerText).to.eq('User Topic')
+        expect($header.get(8).innerText).to.eq('Initialization Topic')
 
     })
     cy.wait(3000);
@@ -135,13 +123,13 @@ cy.wait("@waitFor" + task + "ToComplete", { timeout: 100000 })
 
 verifyHeaderLabelsOnLoginPageForUser() {
   cy.wait(2000);
-  cy.get(ConfigPageLocators.userHeader).should(($header) => {
+  cy.get(ConfigPageLocators.adminInfoList).should(($header) => {
       expect($header.get(0).innerText).to.eq('HEDERA ID')
       expect($header.get(1).innerText).to.eq('BALANCE')
-      expect($header.get(2).innerText).to.eq('USER TOPIC')
-      expect($header.get(3).innerText).to.eq('Standard Registry')
-      expect($header.get(4).innerText).to.eq('DID')
-      expect($header.get(5).innerText).to.eq('DID Document')
+      expect($header.get(3).innerText).to.eq('USER TOPIC')
+      expect($header.get(4).innerText).to.eq('Standard Registry')
+      expect($header.get(6).innerText).to.eq('DID')
+      expect($header.get(8).innerText).to.eq('DID Document')
    
 
   })

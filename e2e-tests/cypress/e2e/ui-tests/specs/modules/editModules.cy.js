@@ -18,9 +18,9 @@ describe("Edit Modules", {tags: '@ui'}, () => {
         modules.createNewModule(name);
     })
 
-    it("Verify if it possible to edit draft policy", () => {
+    it("Verify if it possible to edit module", () => {
         policies.checkStatus(name, "Draft");
-        policies.clickEditPolicy(name);
+        modules.clickEditModule(name);
         policies.fillFieldInEditPolicyPage("Name", name+"Edited");
         policies.fillFieldInEditPolicyPage("Description", "Description Edited");
         policies.clickSaveButton();
