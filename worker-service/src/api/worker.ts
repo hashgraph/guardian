@@ -1,13 +1,4 @@
-import {
-    Logger,
-    MessageBrokerChannel,
-    MessageResponse,
-    NatsService,
-    NotificationHelper,
-    SecretManager,
-    Users,
-    ValidateConfiguration,
-} from '@guardian/common';
+import { Logger, MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, SecretManager, Users, } from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper';
 import { IpfsClientClass } from './ipfs-client-class';
