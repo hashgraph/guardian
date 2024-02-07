@@ -38,8 +38,8 @@ async function Run() {
     for (let p of pathArray) {
         const proc = spawn('npm start', {
             cwd: p[0],
-            shell: true,
-            detached: true,
+            // shell: true,
+            // detached: true,
             env: Object.assign(process.env, p[1])
         })
         proc.on('message', (message) => {

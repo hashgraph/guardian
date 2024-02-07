@@ -64,7 +64,7 @@ jobs:
           pushd api-tests
           npm install
           npm run test &
-          sleep 10
+          sleep 60
           popd
           pushd e2e-tests
           npm install
