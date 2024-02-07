@@ -49,19 +49,17 @@ async function Run() {
         process.on('exit', (code) => {
             console.log(p, 'exit with code', code)
         })
-        process
         processes.push(
             process
         )
         console.info(`"${path.parse(p[0]).name}"`, 'was started');
         await sleep(20000);
     }
-    await sleep(10000);
-}
 
-var done = (function wait() {
-    if (!done) setTimeout(wait, 1000)
-})();
+    while (true) {
+        await sleep(10000);
+    }
+}
 
 Run().then(() => {
     console.log('services started');
