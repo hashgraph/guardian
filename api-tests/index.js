@@ -1,16 +1,15 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
+function sleep(time) {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve();
+        }, time);
+    })
+}
+
 async function Run() {
-
-    function sleep(time) {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve();
-            }, time);
-        })
-    }
-
     const pathArray = [
         [path.resolve(path.join('..', 'logger-service')), { GUARDIAN_ENV: 'develop' }],
         [path.resolve(path.join('..', 'notification-service')), { GUARDIAN_ENV: 'develop' }],
@@ -44,23 +43,23 @@ async function Run() {
             env: Object.assign(process.env, p[1])
         })
         proc.on('message', (message) => {
-            console.log(p, message);
+            console.log(p[0], message);
         });
         proc.on('error', (error) => {
-            console.log(p, error);
+            console.log(p[0], error);
         });
         proc.on('exit', (code) => {
-            console.log(p, 'exit with code', code)
+            console.log(p[0], 'exit with code', code)
         })
         console.info(`"${path.parse(p[0]).name}"`, 'was started');
         await sleep(20000);
     }
+    await sleep(10000);
+}
 
+Run().then(async () => {
+    console.log('services started');
     while (true) {
         await sleep(10000);
     }
-}
-
-Run().then(() => {
-    console.log('services started');
 });
