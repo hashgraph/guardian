@@ -51,6 +51,10 @@ async function Run() {
     await sleep(10000);
 }
 
+var done = (function wait() {
+    if (!done) setTimeout(wait, 1000)
+})();
+
 Run().then(() => {
     console.log('services started');
 });

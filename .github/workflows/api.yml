@@ -63,7 +63,8 @@ jobs:
         run: |
           pushd api-tests
           npm install
-          npm run test:ci
+          npm run test:ci &
+          sleep 10
           popd
           pushd e2e-tests
           npm install
