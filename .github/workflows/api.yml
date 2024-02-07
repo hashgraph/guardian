@@ -66,6 +66,7 @@ jobs:
           npm run test:ci
           popd
           pushd e2e-tests
+          npm install
           npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
           popd
         env:

@@ -1,3 +1,6 @@
+const { spawn } = require('child_process');
+const path = require('path');
+
 function sleep(time) {
     return new Promise(resolve => {
         setTimeout(() => {
@@ -36,6 +39,7 @@ for (let p of pathArray) {
         spawn('npm start', {
             cwd: p[0],
             shell: true,
+            detached: true,
             env: Object.assign(process.env, p[1])
         })
     )
