@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, Users, ValidateConfiguration } from '@guardian/common';
+import { Logger, MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, SecretManager, Users, } from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper';
 import { IpfsClientClass } from './ipfs-client-class';
@@ -97,8 +97,8 @@ export class Worker extends NatsService {
     private readonly taskTimeout: number;
 
     constructor(
-        private readonly w3cKey: string,
-        private readonly w3cProof: string
+        private w3cKey: string,
+        private w3cProof: string
     ) {
         super();
         this.ipfsClient = new IpfsClientClass(
@@ -191,12 +191,21 @@ export class Worker extends NatsService {
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             try {
-                this.ipfsClient = new IpfsClientClass(
-                    this.w3cKey,
-                    this.w3cProof
+                const ipfsStorageApiKey = msg?.ipfsStorageApiKey;
+                if (!ipfsStorageApiKey) {
+                    throw new Error('Ipfs storage api key setting is empty');
+                }
+                const [w3cKey, w3cProof] = ipfsStorageApiKey.split(';');
+                const ipfsClient = new IpfsClientClass(
+                    w3cKey,
+                    w3cProof
                 );
-                const validator = new ValidateConfiguration();
-                await validator.validate();
+                await ipfsClient.createClient();
+                this.w3cKey = w3cKey;
+                this.w3cProof = w3cProof;
+                this.ipfsClient = ipfsClient;
+                const secretManager = SecretManager.New();
+                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
             } catch (error) {
                 this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
             }
