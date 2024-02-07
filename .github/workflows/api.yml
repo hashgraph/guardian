@@ -19,7 +19,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Setup yarn
         run: |
-          apk add --no-cache git
+          apt-get install -y git
+          git --version
           npm install -g yarn
       - name: Install deps
         run: yarn
