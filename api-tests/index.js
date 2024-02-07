@@ -37,20 +37,20 @@ async function Run() {
         [path.resolve(path.join('..', 'api-gateway')), { GUARDIAN_ENV: 'develop' }]
     ];
     for (let p of pathArray) {
-        const process = spawn('npm start', {
+        const proc = spawn('npm start', {
             cwd: p[0],
             shell: true,
             detached: true,
             env: Object.assign(process.env, p[1])
         })
-        process.on('message', () => {
+        proc.on('message', () => {
             console.log(p, message);
         });
-        process.on('exit', (code) => {
+        proc.on('exit', (code) => {
             console.log(p, 'exit with code', code)
         })
         processes.push(
-            process
+            proc
         )
         console.info(`"${path.parse(p[0]).name}"`, 'was started');
         await sleep(20000);
