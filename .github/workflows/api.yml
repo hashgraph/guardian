@@ -2,11 +2,14 @@ name: Guardian CI API Tests
 on:
   workflow_dispatch:
     description: 'Manual run'
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+      - 'main'
 
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
-    container: ubuntu
     strategy:
       matrix:
         node-version: [ 20.x ]
@@ -17,70 +20,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Setup yarn
-        run: |
-          apt-get install -y git
-          git --version
-          npm install -g yarn
-      - name: Install deps
-        run: yarn
-      - name: Start NatsMQ
-        uses: onichandame/nats-action@master
-        with:
-          port: "4222"
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
       - name: Build
         run: |
-          pushd interfaces
-          yarn run build
-          popd
-          pushd common
-          yarn run build
-          popd
-          pushd notification-service
-          yarn run build
-          popd
-          pushd logger-service
-          yarn run build
-          popd
-          pushd auth-service
-          yarn run build
-          popd
-          pushd guardian-service
-          yarn run build
-          popd
-          pushd policy-service
-          yarn run build
-          popd
-          pushd worker-service
-          yarn run build
-          popd
-          pushd api-gateway
-          yarn run build
-          popd
-        env:
-          CI: true
-      - name: Run tests
-        run: |
-          pushd api-tests
-          npm install
-          npm run test:ci
-          popd
-          pushd e2e-tests
-          npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
-          popd
-        env:
-          CI: true
-          OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
-          OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
-          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
-          HASHICORP_HOST: localhost
-          HASHICORP_PORT: ${{ job.services.hashicorpvault.ports[8200] }}
-      - name: Publish API Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        if: always()
-        with:
-          files: test_results/**/*.xml
+          yarn
