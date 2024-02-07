@@ -49,9 +49,6 @@ async function Run() {
         proc.on('exit', (code) => {
             console.log(p, 'exit with code', code)
         })
-        processes.push(
-            proc
-        )
         console.info(`"${path.parse(p[0]).name}"`, 'was started');
         await sleep(20000);
     }
