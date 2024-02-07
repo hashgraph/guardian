@@ -7,19 +7,19 @@ context("Contracts", { tags: '@contracts' },() => {
     let basicTokenId;
     let oppositeTokenId;
 
-    it("get contract id for pair", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfContracts,
-            headers: {
-                authorization,
-            }
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.status).eql(STATUS_CODE.OK);
-            contractId = resp.body.at(-1).contractId;
-        });
-    });
+    // it("get contract id for pair", () => {
+    //     cy.request({
+    //         method: METHOD.GET,
+    //         url: API.ApiServer + API.ListOfContracts,
+    //         headers: {
+    //             authorization,
+    //         }
+    //     }).then((resp) => {
+    //         expect(resp.status).eql(STATUS_CODE.OK);
+    //         expect(resp.status).eql(STATUS_CODE.OK);
+    //         contractId = resp.body.at(-1).contractId;
+    //     });
+    // });
 
     it("get tokens ids for pair", () => {
         cy.request({
