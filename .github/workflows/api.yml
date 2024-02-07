@@ -59,13 +59,38 @@ jobs:
         uses: supercharge/mongodb-github-action@1.7.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Run Guardian
+        run: |
+          pushd notification-service
+          npm start &
+          sleep 10
+          popd
+          pushd logger-service
+          npm start &
+          sleep 10
+          popd
+          pushd auth-service
+          npm start &
+          sleep 10
+          popd
+          pushd guardian-service
+          npm start &
+          sleep 10
+          popd
+          pushd policy-service
+          npm start &
+          sleep 10
+          popd
+          pushd worker-service
+          npm start &
+          sleep 10
+          popd
+          pushd api-gateway
+          npm start &
+          sleep 10
+          popd
       - name: Run tests
         run: |
-          pushd api-tests
-          npm install
-          npm run test &
-          sleep 60
-          popd
           pushd e2e-tests
           npm install
           npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
