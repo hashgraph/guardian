@@ -2447,7 +2447,7 @@ export class Guardians extends NatsService {
      * @param topicId
      * @param xlsx
      */
-    public async importSchemasByXlsx(user: IAuthUser, topicId: string, xlsx: Buffer) {
+    public async importSchemasByXlsx(user: IAuthUser, topicId: string, xlsx: ArrayBuffer) {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX, { user, xlsx, topicId });
     }
 
@@ -2458,7 +2458,7 @@ export class Guardians extends NatsService {
      * @param versionOfTopicId
      * @param task
      */
-    public async importSchemasByXlsxAsync(user: IAuthUser, topicId: string, xlsx: Buffer, task: NewTask) {
+    public async importSchemasByXlsxAsync(user: IAuthUser, topicId: string, xlsx: ArrayBuffer, task: NewTask) {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, { user, xlsx, topicId, task });
     }
 
@@ -2467,7 +2467,7 @@ export class Guardians extends NatsService {
      * @param user
      * @param zip
      */
-    public async previewSchemasByFileXlsx(user: IAuthUser, xlsx: Buffer) {
+    public async previewSchemasByFileXlsx(user: IAuthUser, xlsx: ArrayBuffer) {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW, { user, xlsx });
     }
 

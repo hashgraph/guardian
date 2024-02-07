@@ -44,14 +44,6 @@ describe('Tests', async function () {
         await sleep(10000);
     })
 
-    beforeEach(GenerateTokens);
-
-    Accounts();
-    Profiles();
-    // Schemas();
-    TrustChains();
-    // Policies();
-
     after(async function () {
         for (let proc of processes) {
             kill(proc.pid);

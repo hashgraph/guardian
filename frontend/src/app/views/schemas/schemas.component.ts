@@ -184,7 +184,6 @@ export class SchemaConfigComponent implements OnInit {
         const topic = this.route.snapshot.queryParams['topic'];
         this.type = this.getType(type);
         this.currentTopic = topic && topic !== 'all' ? topic : '';
-        console.log(this);
         this.loadProfile();
     }
 

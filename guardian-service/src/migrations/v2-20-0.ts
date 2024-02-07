@@ -19,7 +19,9 @@ export class ReleaseMigration extends Migration {
     async removeVpHashIndex() {
         const vpDocumentCollection = this.getCollection('VpDocument');
         try {
-            await vpDocumentCollection.dropIndex('hash_1');
+            if (await vpDocumentCollection.indexExists('hash_1')) {
+                await vpDocumentCollection.dropIndex('hash_1');
+            }
         } catch (error) {
             console.log(error);
         }

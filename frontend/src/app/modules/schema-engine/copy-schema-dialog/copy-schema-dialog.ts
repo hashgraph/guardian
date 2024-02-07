@@ -53,7 +53,6 @@ export class CopySchemaDialog {
         this.policies = data.policies || [];
         this.modules = data.modules || [];
         this.tools = data.tools || [];
-        console.log(this);
     }
 
     public get isSystem(): boolean {

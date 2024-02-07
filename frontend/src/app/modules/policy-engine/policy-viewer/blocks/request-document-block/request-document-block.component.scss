@@ -52,7 +52,7 @@
 }
 
 .form-page {
-    width: 650px;
+    width: 80%;
     margin: 40px auto;
     padding: 10px;
     border: 1px solid #c3c3c3;
@@ -167,10 +167,10 @@
 }
 
 .form-page {
-    width: 60%;
-    border: none;
-    margin: 0;
-    padding: 0;
+    //width: 60%;
+    //border: none;
+    //margin: 0;
+    //padding: 0;
 
     &::ng-deep {
         h1 {

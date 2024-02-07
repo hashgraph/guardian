@@ -64,7 +64,7 @@ Ideally for this flow we will want to import the iREC policy in which all schema
 
 **Step 4**
 
-Once you have decided that you want to import the iREC 7 Policy, you will need to enter **1690484932.571897003** on the ‘Hedera message timestamp” pop up and click on the **“Ok”** button.
+Once you have decided that you want to import the iREC 7 Policy, you will need to enter **1707130249.448431277** on the ‘Hedera message timestamp” pop up and click on the **“Ok”** button.
 
 <figure><img src="../../../.gitbook/assets/image (160).png" alt=""><figcaption></figcaption></figure>
 
