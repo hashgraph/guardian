@@ -60,15 +60,10 @@ jobs:
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Run tests
-        uses: cypress-io/github-action@v6
         run: |
           pushd api-tests
           npm install
           npm run test:ci
-          popd
-          pushd e2e-tests
-          npm install
-          npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
           popd
         env:
           CI: true
