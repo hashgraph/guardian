@@ -63,32 +63,33 @@ jobs:
         run: |
           pushd notification-service
           npm start &
-          sleep 10
+          sleep 20
           popd
           pushd logger-service
           npm start &
-          sleep 10
+          sleep 20
           popd
           pushd auth-service
           npm start &
-          sleep 10
+          sleep 20
           popd
           pushd guardian-service
           npm start &
-          sleep 10
+          sleep 20
           popd
           pushd policy-service
           npm start &
-          sleep 10
+          sleep 20
           popd
           pushd worker-service
           npm start &
-          sleep 10
+          sleep 20
           popd
           pushd api-gateway
           npm start &
-          sleep 10
+          sleep 20
           popd
+          sleep 60
       - name: Run tests
         run: |
           pushd e2e-tests
