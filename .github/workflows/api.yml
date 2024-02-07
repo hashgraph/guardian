@@ -18,7 +18,7 @@ jobs:
         node-version: [ 20.x ]
         mongodb-version: [ 7.0.5 ]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -27,6 +27,8 @@ jobs:
         uses: supercharge/mongodb-github-action@1.7.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Setup yarn
+        run: npm install -g yarn
       - name: Build
         run: |
           yarn
