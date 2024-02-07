@@ -1,11 +1,11 @@
 name: Guardian CI API Tests
 on:
-  workflow_dispatch:
-    description: 'Manual run'
-  push:
-    branches-ignore:
-      - 'dependabot/**'
-      - 'main'
+    workflow_dispatch:
+        description: 'Manual run'
+    push:
+        branches-ignore:
+            - 'dependabot/**'
+            - 'main'
 
 jobs:
   buildAndTest:
@@ -90,18 +90,19 @@ jobs:
           sleep 20
           popd
           sleep 60
-      - name: Run tests
-        run: |
-          pushd e2e-tests
-          npm install
-          npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
-          popd
         env:
           CI: true
           OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
           OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
-          MQ_ADDRESS: natsmq
-          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
+          IPFS_STORAGE_KEY: ${{ secrets.IPFS_STORAGE_KEY }}
+          IPFS_STORAGE_PROOF: ${{ secrets.IPFS_STORAGE_PROOF }}
+          
+      - name: Run tests with Cypress
+        run: |
+          pushd e2e-tests
+          npm install
+          npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
+          popd          
       - name: Publish API Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
