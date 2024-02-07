@@ -71,6 +71,9 @@ jobs:
           npm install
           npm run test:ci
           popd
+          pushd e2e-tests
+          npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
+          popd
         env:
           CI: true
           OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
