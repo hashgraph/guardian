@@ -72,7 +72,6 @@ jobs:
                   MQ_ADDRESS: natsmq
                   IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
             - name: Run tests with Cypress
-              uses: cypress-io/github-action@v6
               run: |
                   pushd e2e-tests
                     npm install
