@@ -43,8 +43,11 @@ async function Run() {
             detached: true,
             env: Object.assign(process.env, p[1])
         })
-        proc.on('message', () => {
+        proc.on('message', (message) => {
             console.log(p, message);
+        });
+        proc.on('error', (error) => {
+            console.log(p, error);
         });
         proc.on('exit', (code) => {
             console.log(p, 'exit with code', code)
