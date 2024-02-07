@@ -17,8 +17,8 @@ jobs:
     #          - 8200/tcp
     strategy:
       matrix:
-        node-version: [ 16.x ]
-        mongodb-version: [ 4.4 ]
+        node-version: [ 20.x ]
+        mongodb-version: [ 7.0.5 ]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
