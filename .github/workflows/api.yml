@@ -60,6 +60,7 @@ jobs:
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Run tests
+        uses: cypress-io/github-action@v6
         run: |
           pushd api-tests
           npm install
@@ -75,6 +76,13 @@ jobs:
           OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
           MQ_ADDRESS: natsmq
           IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
+        - name: Run tests
+            uses: cypress-io/github-action@v6
+                run: |
+                      pushd e2e-tests
+                      npm install
+                      npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
+                      popd
       - name: Publish API Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
