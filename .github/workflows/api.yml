@@ -20,6 +20,62 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Build
+      - name: Install dependencies
+        run: yarn
+      - name: Build packages
         run: |
-          yarn
+          pushd interfaces
+          yarn run build
+          popd
+          pushd common
+          yarn run build
+          popd
+          pushd notification-service
+          yarn run build
+          popd
+          pushd logger-service
+          yarn run build
+          popd
+          pushd auth-service
+          yarn run build
+          popd
+          pushd guardian-service
+          yarn run build
+          popd
+          pushd policy-service
+          yarn run build
+          popd
+          pushd worker-service
+          yarn run build
+          popd
+          pushd api-gateway
+          yarn run build
+          popd
+      - name: Start NatsMQ
+        uses: onichandame/nats-action@master
+        with:
+          port: "4222"
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.7.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Run tests
+        run: |
+          pushd api-tests
+          npm install
+          npm run test:ci
+          popd
+          pushd e2e-tests
+          npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
+          popd
+        env:
+          CI: true
+          OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
+          OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
+          MQ_ADDRESS: natsmq
+          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
+      - name: Publish API Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: test_results/**/*.xml
