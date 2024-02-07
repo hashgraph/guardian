@@ -7,14 +7,12 @@ jobs:
   buildAndTest:
     runs-on: ubuntu-latest
     container: ubuntu
-    #    services:
-    #      hashicorpvault:
-    #        image: vault
-    #        env:
-    #          VAULT_SERVER: "https://0.0.0.0:8200"
-    #          VAULT_DEV_ROOT_TOKEN_ID: "1234"
-    #        ports:
-    #          - 8200/tcp
+    services:
+      natsmq:
+        image: nats:2.10.9
+        ports:
+          - 4222:4222
+          - 8222:8222
     strategy:
       matrix:
         node-version: [ 20.x ]
@@ -78,9 +76,8 @@ jobs:
           CI: true
           OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
           OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
+          MQ_ADDRESS: natsmq
           IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
-          HASHICORP_HOST: localhost
-          HASHICORP_PORT: ${{ job.services.hashicorpvault.ports[8200] }}
       - name: Publish API Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
