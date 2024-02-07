@@ -302,6 +302,7 @@ export class GenerateBlocks {
         body += `        delete document[fieldName];\r\n`;
         body += `    }\r\n`;
         body += `}\r\n`;
+        body += `\r\n`;
 
         //Templates
         for (const [symbol, templates] of functions) {
