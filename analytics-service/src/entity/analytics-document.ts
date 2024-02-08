@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Index, Property, Unique } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 import { DocumentType } from '@interfaces/document.type';
 
@@ -6,7 +6,6 @@ import { DocumentType } from '@interfaces/document.type';
  * Document collection
  */
 @Entity()
-@Unique({ properties: ['uuid'], options: { partialFilterExpression: { did: { $type: 'string' } } } })
 @Index({ name: 'document_type_idx', properties: ['uuid', 'type'] })
 @Index({ name: 'policy_instance_idx', properties: ['uuid', 'instanceTopicId'] })
 @Index({ name: 'policy_idx', properties: ['uuid', 'policyTopicId'] })
@@ -89,6 +88,12 @@ export class AnalyticsDocument extends BaseEntity {
      */
     @Property({ nullable: true })
     action?: string;
+
+    /**
+     * IPFS
+     */
+    @Property({ nullable: true })
+    ipfs?: string;
 
     /**
      * Set defaults

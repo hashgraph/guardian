@@ -5,7 +5,7 @@ import { BaseEntity } from '@guardian/common';
  * Topic collection
  */
 @Entity()
-@Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $type: 'string' } } } })
+@Unique({ name: 'unique_topic_idx', properties: ['uuid', 'topicId'] })
 @Index({ name: 'topic_idx', properties: ['uuid', 'topicId'] })
 export class AnalyticsTopicCache extends BaseEntity {
     /**

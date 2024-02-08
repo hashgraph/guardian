@@ -8,6 +8,7 @@ import {
     SchemaMessage,
     TagMessage,
     TokenMessage,
+    UrlType,
 } from '@guardian/common';
 import { AnalyticsModule as Module } from '@entity/analytics-module';
 import { AnalyticsPolicy as Policy } from '@entity/analytics-policy';
@@ -189,7 +190,8 @@ export class AnalyticsPolicyService {
                             entity: data.entity,
                             version: data.version,
                             owner: sr.did,
-                            action: data.action
+                            action: data.action,
+                            ipfs: data.getDocumentUrl(UrlType.cid)
                         });
                         await new DataBaseHelper(Schema).save(row);
                     }
@@ -225,7 +227,8 @@ export class AnalyticsPolicyService {
                             version: data.version,
                             timeStamp: data.id,
                             owner: policy.owner,
-                            action: data.action
+                            action: data.action,
+                            ipfs: data.getUrlValue(0, UrlType.cid)
                         });
                         await new DataBaseHelper(PolicyInstance).save(row);
                     }
@@ -275,13 +278,15 @@ export class AnalyticsPolicyService {
                             entity: data.entity,
                             version: data.version,
                             owner: policy.owner,
-                            action: data.action
+                            action: data.action,
+                            ipfs: data.getDocumentUrl(UrlType.cid)
                         });
                         await new DataBaseHelper(Schema).save(row);
                     }
                 }
             });
         } catch (error) {
+            console.log('--- policy.topicId 2', policy.topicId, error);
             report.error = String(error);
             return report;
         }
