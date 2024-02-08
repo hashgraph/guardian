@@ -121,7 +121,7 @@ export class PolicyPublisher {
             });
         } catch (error) {
             this._policiesConfig.delete(task.options.file);
-            console.log(error);
+            console.error(error);
         } finally {
             this._tasks.delete(importTaskId);
         }
@@ -139,7 +139,7 @@ export class PolicyPublisher {
                 );
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
         } finally {
             this._policiesConfig.delete(task.options.file);
             this._tasks.delete(publishTaskId);
