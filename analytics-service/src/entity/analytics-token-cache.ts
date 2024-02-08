@@ -5,7 +5,7 @@ import { BaseEntity } from '@guardian/common';
  * Token collection
  */
 @Entity()
-@Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $type: 'string' } } } })
+@Unique({ name: 'unique_token_idx', properties: ['uuid', 'tokenId'] })
 @Index({ name: 'token_idx', properties: ['uuid', 'tokenId'] })
 export class AnalyticsTokenCache extends BaseEntity {
     /**

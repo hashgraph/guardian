@@ -8,7 +8,7 @@ import { ReportType } from '@interfaces/report.type';
  * Report collection
  */
 @Entity()
-@Unique({ properties: ['uuid'], options: { partialFilterExpression: { did: { $type: 'string' } } } })
+@Unique({ properties: ['uuid'] })
 export class AnalyticsStatus extends BaseEntity {
     /**
      * Report UUID
