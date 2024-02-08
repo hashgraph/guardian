@@ -96,7 +96,7 @@ jobs:
       - name: Run tests with Cypress
         run: |
           pushd e2e-tests
-          npm install
+          npm install --force
           npx cypress run --spec cypress/e2e/api-tests/**/*.cy.js            
           popd
       - name: Publish API Test Results

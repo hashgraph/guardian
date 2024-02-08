@@ -1,6 +1,6 @@
 const PORT = 3000;
 const API = {
-    ApiServer: "http://localhost:"+PORT+"",
+    ApiServer: "http://localhost:"+PORT+"/api/v1/",
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
