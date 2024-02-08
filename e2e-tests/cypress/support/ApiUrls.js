@@ -1,4 +1,4 @@
-const PORT = 3000;
+const PORT = 3002;
 const API = {
     ApiServer: "http://localhost:"+PORT+"/",
     //Accounts
