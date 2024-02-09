@@ -1,7 +1,7 @@
 import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, NotificationService, OldSecretManager, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
-import { ApplicationStates } from '@guardian/interfaces';
+import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -12,13 +12,13 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
         NotificationService,
     ]
 })
-class AppModule {}
+class AppModule { }
 
-const channelName = (process.env.SERVICE_CHANNEL || `worker.${Date.now()}`).toUpperCase();
+const channelName = (process.env.SERVICE_CHANNEL || `worker.${GenerateUUIDv4().substring(26)}`).toUpperCase();
 
 Promise.all([
     MessageBrokerChannel.connect('WORKERS_SERVICE'),
-    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
             name: channelName,
@@ -47,6 +47,11 @@ Promise.all([
             clearInterval(timer);
         }
 
+        if (process.env.IPFS_PROVIDER === 'local' && !process.env.IPFS_NODE_ADDRESS) {
+            logger.error('IPFS_NODE_ADDRESS must be set if IPFS_PROVIDER is `local`', [channelName, 'WORKER']);
+            return false
+        }
+
         let IPFS_STORAGE_KEY: string;
         let IPFS_STORAGE_PROOF: string;
         let IPFS_STORAGE_API_KEY: string;
@@ -57,7 +62,7 @@ Promise.all([
             if (!keyAndProof?.IPFS_STORAGE_API_KEY) {
                 IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
                 IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
-                await secretManager.setSecrets('apikey/ipfs', {IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}`});
+                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}` });
             } else {
                 const [key, proof] = keyAndProof.IPFS_STORAGE_API_KEY.split(';')
                 IPFS_STORAGE_KEY = key;
@@ -69,7 +74,7 @@ Promise.all([
             const key = await secretManager.getSecrets('apikey/ipfs');
             if (!key?.IPFS_STORAGE_API_KEY) {
                 IPFS_STORAGE_API_KEY = process.env.IPFS_STORAGE_API_KEY;
-                await secretManager.setSecrets('apikey/ipfs', {IPFS_STORAGE_API_KEY});
+                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
             } else {
                 IPFS_STORAGE_API_KEY = key.IPFS_STORAGE_API_KEY;
             }
@@ -80,14 +85,8 @@ Promise.all([
         });
 
         await state.updateState(ApplicationStates.INITIALIZING);
-        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF, IPFS_STORAGE_API_KEY);
+        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF, IPFS_STORAGE_API_KEY, channelName);
         await w.setConnection(cn).init();
-
-        if (process.env.IPFS_PROVIDER === 'local') {
-            if (!process.env.IPFS_NODE_ADDRESS) {
-                return false
-            }
-        }
 
         return true;
     });
