@@ -48,7 +48,8 @@
         "winston": "^3.8.1",
         "ws": "^8.2.1",
         "zlib": "^1.0.5",
-        "mathjs": "^10.1.0"
+        "mathjs": "^10.1.0",
+        "@formulajs/formulajs": "^4.4.0"
     },
     "description": "Common package share cross all services",
     "devDependencies": {
