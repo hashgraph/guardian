@@ -3,7 +3,7 @@
     "dependencies": {
         "@guardian/common": "^2.21.1",
         "@guardian/interfaces": "^2.21.1",
-        "@hashgraph/sdk": "2.34.1",
+        "@hashgraph/sdk": "2.41.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
