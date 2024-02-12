@@ -7758,10 +7758,10 @@ javascript-natural-sort@^0.7.1:
   resolved "https://registry.yarnpkg.com/javascript-natural-sort/-/javascript-natural-sort-0.7.1.tgz#f9e2303d4507f6d74355a73664d1440fb5a0ef59"
   integrity sha512-nO6jcEfZWQXDhOiBtG2KvKyEptz7RVbpGP4vTD2hLBdmNQSsCiicO2Ioinv6UI4y9ukqnBpy+XZ9H6uLNgJTlw==
 
-jose@4.14.1:
-  version "4.14.1"
-  resolved "https://registry.yarnpkg.com/jose/-/jose-4.14.1.tgz#74f12a621ea2ef850bf0dd8405e2ee4041aea934"
-  integrity sha512-SgjXLpP7jhQkUNKL6RpowoR/IF4QKE+WjLDMpNnh2vmhiFs67NftrNpvFtgbwpvRdtueFliahYYWz9E+XZZQlg==
+jose@5.2.2:
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-5.2.2.tgz#b91170e9ba6dbe609b0c0a86568f9a1fbe4335c0"
+  integrity sha512-/WByRr4jDcsKlvMd1dRJnPfS1GVO3WuKyaurJ/vvXcOaUQO8rnNObCQMlv/5uCceVQIq5Q4WLF44ohsdiTohdg==
 
 jose@^4.3.8:
   version "4.15.4"
