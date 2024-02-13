@@ -58,7 +58,7 @@ Configure the worker-service
    in ./guardian/worker-service/configs/.env.worker.develop
 ```plaintext
 IPFS_TIMEOUT="720"
-IPFS_PROVIDER="web3storage" # 'web3storage' or 'local'
+IPFS_PROVIDER="web3storage" # 'filebase', 'web3storage' or 'local'
 #Single quote IPFS_PUBLIC_GATEWAY
 IPFS_PUBLIC_GATEWAY='https://ipfs.io/ipfs/${cid}'
 IPFS_STORAGE_API_KEY="..."

@@ -82,6 +82,11 @@ Promise.all([
                 return false
             }
         }
+        if (process.env.IPFS_PROVIDER === 'filebase') {
+            if (!IPFS_STORAGE_API_KEY) {
+                return false;
+            }
+        }
         if (process.env.IPFS_PROVIDER === 'local') {
             if (!process.env.IPFS_NODE_ADDRESS) {
                 return false
