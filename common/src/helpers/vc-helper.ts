@@ -86,7 +86,7 @@ export class VcHelper extends VCJS {
             const iri = '#' + type?.split('&')[0];
             if (context && context.length) {
                 for (const c of context) {
-                    if (c.startsWith('schema:')) {
+                    if (c.startsWith('schema#') || c.startsWith('schema:')) {
                         return new Schema(
                             await new DataBaseHelper(SchemaCollection).findOne({
                                 iri,
