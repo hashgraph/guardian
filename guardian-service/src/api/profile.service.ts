@@ -103,6 +103,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         hederaAccountKey,
         parent,
         vcDocument,
+        didDocument,
         entity
     } = profile;
 
@@ -143,6 +144,16 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
+
+
+
+
+
+
+
+
+
+    
     notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
     const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
@@ -336,53 +347,6 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
 
 @Controller()
 export class ProfileController {
-    // @MessagePattern(MessageAPI.GET_BALANCE)
-    // async getBalance(@Payload() msg: any, @Ctx() context: NatsContext) {
-    //     try {
-    //         const { username } = msg;
-    //         const wallet = new Wallet();
-    //         const users = new Users();
-    //         const workers = new Workers();
-    //         const user = await users.getUser(username);
-    //
-    //         if (!user) {
-    //             return new MessageResponse(null);
-    //         }
-    //
-    //         if (!user.hederaAccountId) {
-    //             return new MessageResponse(null);
-    //         }
-    //
-    //         const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-    //         const balance = await workers.addNonRetryableTask({
-    //             type: WorkerTaskType.GET_USER_BALANCE,
-    //             data: {
-    //                 hederaAccountId: user.hederaAccountId,
-    //                 hederaAccountKey: key
-    //             }
-    //         }, 20);
-    //         // return {
-    //         //     balance,
-    //         //     unit: 'Hbar',
-    //         //     user: user ? {
-    //         //         username: user.username,
-    //         //         did: user.did
-    //         //     } : null
-    //         // }
-    //         return new MessageResponse({
-    //             balance,
-    //             unit: 'Hbar',
-    //             user: user ? {
-    //                 username: user.username,
-    //                 did: user.did
-    //             } : null
-    //         });
-    //     } catch (error) {
-    //         new Logger().error(error, ['GUARDIAN_SERVICE']);
-    //         console.error(error);
-    //         return new MessageError(error, 500);
-    //     }
-    // }
 }
 
 /**
@@ -456,21 +420,6 @@ export function profileAPI() {
             }, 20);
 
             return new MessageResponse(balance);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            console.error(error);
-            return new MessageError(error, 500);
-        }
-    });
-
-    /**
-     * @deprecated 2022-07-27
-     */
-    ApiResponse(MessageAPI.CREATE_USER_PROFILE, async (msg) => {
-        try {
-            const userDID = await createUserProfile(msg, emptyNotifier());
-
-            return new MessageResponse(userDID);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
@@ -574,6 +523,24 @@ export function profileAPI() {
         });
 
         return new MessageResponse(task);
+    });
+
+    ApiResponse(MessageAPI.VALIDATE_DID_DOCUMENT, async (msg) => {
+        try {
+            const { document } = msg;
+            const result = {
+                valid: true,
+                error: '',
+                keys: {
+                    'Ed25519VerificationKey2018': ['did-root-key', 'did-key-1'],
+                    'Bls12381G2Key2020': ['did-root-key-bbs', 'did-key-bbs-1']
+                }
+            };
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
     });
 }
 

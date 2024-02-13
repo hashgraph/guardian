@@ -182,44 +182,36 @@ export class RootConfigComponent implements OnInit {
         try {
             const json = this.didDocumentForm.value;
             const document = JSON.parse(json);
-            // this.profileService
-            //     .validateDID(document)
-            //     .subscribe(
-            //         (result) => {
-            //             this.onNextStep('DID_KEYS');
-            //         },
-            //         (e) => {
-            //             this.didDocumentForm.setErrors({ 'incorrect': true });
-            //         }
-            //     );
-
-            const result: any = {
-                valid: true,
-                error: '',
-                keys: {
-                    'Ed25519VerificationKey2018': ['did-root-key', 'did-key-1'],
-                    'Bls12381G2Key2020': ['did-root-key-bbs', 'did-key-bbs-1']
-                }
-            }
-            this.didKeys = [];
-            this.didKeysControl = new FormGroup({});
-            const names = Object.keys(result.keys);
-            for (const name of names) {
-                const keyNameControl = new FormControl('', [Validators.required]);
-                const keyValueControl = new FormControl('', [Validators.required]);
-                const keyControl = new FormGroup({
-                    name: keyNameControl,
-                    value: keyValueControl
-                }, [Validators.required]);
-                this.didKeysControl.addControl(name, keyControl);
-                this.didKeys.push({
-                    name,
-                    keyNameControl,
-                    keyValueControl,
-                    keyNames: result.keys[name]
-                })
-            }
-            this.onNextStep('DID_KEYS');
+            this.loading = true;
+            this.profileService
+                .validateDID(document)
+                .subscribe(
+                    (result) => {
+                        this.didKeys = [];
+                        this.didKeysControl = new FormGroup({});
+                        const names = Object.keys(result.keys);
+                        for (const name of names) {
+                            const keyNameControl = new FormControl('', [Validators.required]);
+                            const keyValueControl = new FormControl('', [Validators.required]);
+                            const keyControl = new FormGroup({
+                                name: keyNameControl,
+                                value: keyValueControl
+                            }, [Validators.required]);
+                            this.didKeysControl.addControl(name, keyControl);
+                            this.didKeys.push({
+                                name,
+                                keyNameControl,
+                                keyValueControl,
+                                keyNames: result.keys[name]
+                            })
+                        }
+                        this.onNextStep('DID_KEYS');
+                        this.loading = false;
+                    },
+                    (e) => {
+                        this.didDocumentForm.setErrors({ 'incorrect': true });
+                    }
+                );
         } catch (error) {
             this.didDocumentForm.setErrors({ 'incorrect': true });
         }
@@ -402,11 +394,15 @@ export class RootConfigComponent implements OnInit {
         if (this.hederaForm.valid && this.vcForm.valid) {
             const hederaForm = this.hederaForm.value;
             const vcDocument = this.vcForm.value;
+            const didDocument = this.didDocumentType.value ?
+                this.didDocumentForm.value : null;
+
             this.prepareDataFrom(vcDocument);
             const data: any = {
                 hederaAccountId: hederaForm.hederaAccountId?.trim(),
                 hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
                 vcDocument: vcDocument,
+                didDocument: didDocument
             };
             this.loading = true;
             this.headerProps.setLoading(true);
