@@ -27,6 +27,9 @@ import { Singleton } from '../decorators/singleton';
 import { DataBaseHelper } from './db-helper';
 import { Schema as SchemaCollection } from '../entity';
 import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
+import { SchemaDocumentLoaderV2 } from '../document-loader/schema-document-loader-v2';
+import { VCSchemaLoaderV2 } from '../document-loader/vc-schema-loader-v2';
+import { SubjectSchemaLoaderV2 } from '../document-loader/subject-schema-loader-v2';
 
 /**
  * Configured VCHelper
@@ -40,20 +43,26 @@ export class VcHelper extends VCJS {
         const didDocumentLoader = new DIDDocumentLoader();
         const hederaLoader = new HederaLoader();
         const schemaDocumentLoader = new SchemaDocumentLoader();
+        const schemaDocumentLoaderV2 = new SchemaDocumentLoaderV2();
         const contextDocumentLoader = new ContextDocumentLoader('');
 
         const vcSchemaObjectLoader = new VCSchemaLoader('');
+        const vcSchemaObjectLoaderV2 = new VCSchemaLoaderV2('');
         const subjectSchemaObjectLoader = new SubjectSchemaLoader('');
+        const subjectSchemaObjectLoaderV2 = new SubjectSchemaLoaderV2('');
 
         this.addDocumentLoader(defaultDocumentLoader);
         this.addDocumentLoader(dryRunLoader);
         this.addDocumentLoader(hederaLoader);
         this.addDocumentLoader(didDocumentLoader);
         this.addDocumentLoader(schemaDocumentLoader);
+        this.addDocumentLoader(schemaDocumentLoaderV2);
         this.addDocumentLoader(contextDocumentLoader);
 
         this.addSchemaLoader(vcSchemaObjectLoader);
+        this.addSchemaLoader(vcSchemaObjectLoaderV2);
         this.addSchemaLoader(subjectSchemaObjectLoader);
+        this.addSchemaLoader(subjectSchemaObjectLoaderV2);
 
         this.buildDocumentLoader();
         this.buildSchemaLoader();
@@ -77,7 +86,7 @@ export class VcHelper extends VCJS {
             const iri = '#' + type?.split('&')[0];
             if (context && context.length) {
                 for (const c of context) {
-                    if (c.startsWith('schema#')) {
+                    if (c.startsWith('schema#') || c.startsWith('schema:')) {
                         return new Schema(
                             await new DataBaseHelper(SchemaCollection).findOne({
                                 iri,
@@ -148,6 +157,7 @@ export class VcHelper extends VCJS {
                     documentLoader: this.loader,
                 }
             );
+            delete derivedProofVc['sec:proof'];
             return VcDocument.fromJsonTree(derivedProofVc);
         } catch (error) {
             return null;

@@ -192,7 +192,7 @@ export async function importSchemaByFiles(
         file.uuid = newUUID;
         file.iri = '#' + newUUID;
         file.documentURL = null;
-        file.contextURL = null;
+        file.contextURL = `schema:${file.uuid}`;
         file.messageId = null;
         file.creator = owner;
         file.owner = owner;

@@ -19,6 +19,7 @@ import {
     BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair
 } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers';
+import { verify, purposes } from 'jsonld-signatures';
 
 /**
  * Suite interface
@@ -229,6 +230,12 @@ export class VCJS {
             suite,
             documentLoader,
         });
+        if (
+            suite instanceof BbsBlsSignature2020 &&
+            verifiableCredential.proof?.type
+        ) {
+            verifiableCredential.proof.type = SignatureType.BbsBlsSignature2020;
+        }
         vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;
     }
@@ -242,11 +249,20 @@ export class VCJS {
      * @returns {boolean} - status
      */
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
-        const result = await vcjs.verifyVerifiableCredential({
-            credential: json,
-            suite: [new Ed25519Signature2018(), new BbsBlsSignature2020(), new BbsBlsSignatureProof2020()],
-            documentLoader,
-        });
+        let result;
+        if (json.proof.type === SignatureType.Ed25519Signature2018) {
+            result = await vcjs.verifyVerifiableCredential({
+                credential: json,
+                suite: [new Ed25519Signature2018()],
+                documentLoader,
+            });
+        } else {
+            result = await verify(json, {
+                purpose: new purposes.AssertionProofPurpose(),
+                suite: [new BbsBlsSignature2020(), new BbsBlsSignatureProof2020()],
+                documentLoader,
+            });
+        }
         if (result.verified) {
             return true;
         } else {
@@ -639,7 +655,7 @@ export class VCJS {
             return subject;
         }
 
-        subject['@context'] = context || [`schema#${subject.type}`];
+        subject['@context'] = context || [`schema:${subject.type}`];
 
         for (const value of Object.values(subject)) {
             this.addDryRunContext(value, subject['@context']);
