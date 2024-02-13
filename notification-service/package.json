@@ -21,6 +21,10 @@
     "reflect-metadata": "^0.1.13"
   },
   "resolutions": {
+    "@azure/core-lro": "2.5.0",
+    "@azure/core-client": "1.7.0",
+    "@azure/core-util": "1.6.1",
+    "@azure/core-auth": "1.5.0",
     "@azure/core-rest-pipeline": "1.12.1",
     "image-size": "1.0.2"
   },
