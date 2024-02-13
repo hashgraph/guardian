@@ -176,8 +176,6 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
    IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
    IPFS_PROVIDER="local"
    ```
-   
-
 
 ##### 4.2 Setting up IPFS Web3Storage node:**
 
@@ -189,6 +187,8 @@ To configure access to the [w3up](https://github.com/web3-storage/w3up) IPFS upl
    IPFS_STORAGE_KEY="..."
    IPFS_STORAGE_PROOF="..."
    ```
+
+> **_NOTE:_**  When Windows OS is used for creating the IPFS values, please use bash shell to prevent issues with base64 encoding.
  
 To obtain the values for these variables please follow the steps below:
 - Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'starter') and enter your payment details.
@@ -205,7 +205,7 @@ The private key (starting with `Mg...`) is the value to be used in the environme
 
 To summarise, the process of configuring delegated access to the w3up API consists of execution the following command sequence:
 1. `w3 login`
-2. `w3 create space`
+2. `w3 space create`
 3. `w3 space use`
 4. `npx ucan-key ed`
 5. `w3 delegation`
