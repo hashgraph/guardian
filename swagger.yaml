@@ -3544,6 +3544,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /profiles/did-document/validate:
+    post:
+      operationId: ProfileApi_importPolicyFromXlsxPreview
+      summary: .
+      description: .
+      parameters: []
+      requestBody:
+        required: true
+        description: A xlsx file containing policy config.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
+      security:
+        - bearerAuth: []
+        - bearer: []
   /policies:
     get:
       tags:
