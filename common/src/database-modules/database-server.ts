@@ -2836,4 +2836,52 @@ export class DatabaseServer {
     public static async getRecord(filters?: any, options?: any): Promise<Record[]> {
         return await new DataBaseHelper(Record).find(filters, options);
     }
+
+    /**
+     * Get Group By UUID
+     * @param policyId
+     * @param uuid
+     *
+     * @returns Group
+     */
+    public static async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection> {
+        return await new DataBaseHelper(PolicyRolesCollection).findOne({ policyId, uuid });
+    }
+
+    /**
+     * Get Groups By User
+     * @param policyId
+     * @param did
+     * @param options
+     *
+     * @returns Groups
+     */
+    public static async getGroupsByUser(policyId: string, did: string, options?: any): Promise<PolicyRolesCollection[]> {
+        if (!did) {
+            return [];
+        }
+        return await new DataBaseHelper(PolicyRolesCollection).find({ policyId, did }, options);
+    }
+
+    /**
+     * Save VCs
+     * @param VCs
+     *
+     * @returns VCs
+     */
+    // tslint:disable-next-line:adjacent-overload-signatures
+    public static async saveVCs<T extends VcDocumentCollection | VcDocumentCollection[]>(data: T): Promise<T> {
+        return (await new DataBaseHelper(VcDocumentCollection).save(data)) as any;
+    }
+
+    /**
+     * Save VPs
+     * @param VPs
+     *
+     * @returns VPs
+     */
+    // tslint:disable-next-line:adjacent-overload-signatures
+    public static async saveVPs<T extends VpDocumentCollection | VpDocumentCollection[]>(data: T): Promise<T> {
+        return (await new DataBaseHelper(VpDocumentCollection).save(data)) as any;
+    }
 }
