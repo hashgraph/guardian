@@ -9,7 +9,7 @@ context("Policy - Import", { tags: '@policies' }, () => {
         cy.request({
             method: "POST",
             url: `${API.ApiServer}policies/push/import/message`,
-            body: {  "messageId":"1650282926.728623821" },
+            body: {  "messageId":"1707125414.999819805" },
             headers: {
                 authorization,
             },

@@ -15,12 +15,10 @@ context('Policies', { tags: '@policies' },() => {
         },
     };
 
-    cy.request(urlPolicies).should((response) => {
+    cy.request(urlPolicies).then((response) => {
         expect(response.status).to.eq(200);
         const policyId = response.body[0].id;
-        
-
-      // const urlPoliciesId = {
+      //   const urlPoliciesId = {
       //   method: 'POST',
       //   url: Cypress.env('api_server') + 'policies/' + policyId + "/groups",
       //   body: {
@@ -30,7 +28,7 @@ context('Policies', { tags: '@policies' },() => {
       //     authorization,
       //   }};
       // cy.request(urlPoliciesId)
-      //     .should((response) => {
+      //     .then((response) => {
       //     expect(response.status).to.eq(200)
       //   })
     })
