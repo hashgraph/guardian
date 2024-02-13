@@ -2,8 +2,8 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
     "@filebase/client": "^0.0.5",
-    "@guardian/common": "^2.17.0",
-    "@guardian/interfaces": "^2.17.0",
+    "@guardian/common": "^2.17.1",
+    "@guardian/interfaces": "^2.17.1",
     "@hashgraph/sdk": "2.24.2",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
@@ -51,16 +51,16 @@
     "src"
   ],
   "name": "worker-service",
-  "scripts": {
-    "build": "tsc",
-    "build:prod": "tsc --project tsconfig.production.json",
-    "debug": "nodemon dist/index.js",
-    "dev:docker": "nodemon .",
-    "dev": "tsc -w",
-    "lint": "tslint --config ../tslint.json --project .",
-    "start": "node dist/index.js",
-    "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit",
-    "test:ipfs": "yarn build && TEST_ENV=develop mocha tests/ipfs-client.test.js -b"
-  },
-  "version": "2.17.0"
+    "scripts": {
+        "build": "tsc",
+        "build:prod": "tsc --project tsconfig.production.json",
+        "debug": "nodemon dist/index.js",
+        "dev:docker": "nodemon .",
+        "dev": "tsc -w",
+        "lint": "tslint --config ../tslint.json --project .",
+        "start": "node dist/index.js",
+        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit",
+        "test:ipfs": "yarn build && TEST_ENV=develop mocha tests/ipfs-client.test.js -b"
+    },
+    "version": "2.17.1"
 }
