@@ -48,6 +48,10 @@
     "ws": "^8.2.1",
     "zlib": "^1.0.5"
   },
+  "resolutions": {
+    "@azure/core-rest-pipeline": "1.12.1",
+    "image-size": "1.0.2"
+  },
   "description": "Common package share cross all services",
   "devDependencies": {
     "@types/express": "^4.17.13",

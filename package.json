@@ -1,7 +1,7 @@
 {
   "name": "guardian",
   "private": true,
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@1.22.21",
   "workspaces": [
     "interfaces",
     "common",

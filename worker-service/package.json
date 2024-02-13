@@ -50,6 +50,10 @@
     "dist",
     "src"
   ],
+  "resolutions": {
+    "@azure/core-rest-pipeline": "1.12.1",
+    "image-size": "1.0.2"
+  },
   "name": "worker-service",
     "scripts": {
         "build": "tsc",

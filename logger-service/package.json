@@ -21,6 +21,10 @@
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13"
   },
+  "resolutions": {
+    "@azure/core-rest-pipeline": "1.12.1",
+    "image-size": "1.0.2"
+  },
   "description": "",
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
@@ -37,7 +41,7 @@
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "name": "logger-service",
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@1.22.21",
   "scripts": {
     "build": "tsc",
     "build:prod": "tsc --project tsconfig.production.json",

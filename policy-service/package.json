@@ -9,6 +9,10 @@
         "@database-modules": "dist/database-modules/index",
         "@analytics": "dist/analytics/index"
     },
+    "resolutions": {
+        "@azure/core-rest-pipeline": "1.12.1",
+        "image-size": "1.0.2"
+    },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@guardian/common": "2.17.1",

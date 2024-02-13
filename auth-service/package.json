@@ -5,6 +5,10 @@
     "@helpers": "dist/helpers"
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+  "resolutions": {
+    "@azure/core-rest-pipeline": "1.12.1",
+    "image-size": "1.0.2"
+  },
   "dependencies": {
     "@guardian/common": "^2.17.1",
     "@guardian/interfaces": "^2.17.1",
@@ -57,7 +61,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "name": "auth-service",
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@1.22.21",
   "scripts": {
     "build": "gulp build:demo",
     "build:prod": "gulp build:prod",

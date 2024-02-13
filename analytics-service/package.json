@@ -1,5 +1,9 @@
 {
-    "packageManager": "yarn@3.2.1",
+    "packageManager": "yarn@1.22.21",
+    "resolutions": {
+        "@azure/core-rest-pipeline": "1.12.1",
+        "image-size": "1.0.2"
+    },
     "_moduleAliases": {
         "@api": "dist/api",
         "@helpers": "dist/helpers",

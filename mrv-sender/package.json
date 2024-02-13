@@ -21,6 +21,10 @@
     "prometheus-api-metrics": "3.2.2"
   },
   "description": "",
+    "resolutions": {
+        "@azure/core-rest-pipeline": "1.12.1",
+        "image-size": "1.0.2"
+    },
   "devDependencies": {
     "@types/express": "^4.17.13",
       "@types/gulp": "^4",
