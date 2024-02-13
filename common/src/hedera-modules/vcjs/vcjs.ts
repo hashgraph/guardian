@@ -199,7 +199,9 @@ export class VCJS {
      */
     public async createBBSSuite(verificationMethod: any): Promise<BbsBlsSignature2020> {
         const key = await Bls12381G2KeyPair.from(verificationMethod);
-        return new BbsBlsSignature2020({ key });
+        const suite: any = new BbsBlsSignature2020({ key });
+        suite.type = SignatureType.BbsBlsSignature2020;
+        return suite;
     }
 
     /**
