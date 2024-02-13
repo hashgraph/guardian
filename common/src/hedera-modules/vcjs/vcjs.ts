@@ -199,9 +199,7 @@ export class VCJS {
      */
     public async createBBSSuite(verificationMethod: any): Promise<BbsBlsSignature2020> {
         const key = await Bls12381G2KeyPair.from(verificationMethod);
-        const suite: any = new BbsBlsSignature2020({ key });
-        suite.type = SignatureType.BbsBlsSignature2020;
-        return suite;
+        return new BbsBlsSignature2020({ key });
     }
 
     /**
@@ -231,6 +229,12 @@ export class VCJS {
             suite,
             documentLoader,
         });
+        if (
+            suite instanceof BbsBlsSignature2020 &&
+            verifiableCredential.proof?.type
+        ) {
+            verifiableCredential.proof.type = SignatureType.BbsBlsSignature2020;
+        }
         vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;
     }
