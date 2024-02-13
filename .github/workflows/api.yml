@@ -88,8 +88,8 @@ jobs:
           sleep 60
         env:
           CI: true
-          OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
-          OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
+          OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
+          OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
           IPFS_STORAGE_KEY: ${{ secrets.IPFS_STORAGE_KEY }}
           IPFS_STORAGE_PROOF: ${{ secrets.IPFS_STORAGE_PROOF }}
 
