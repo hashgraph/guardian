@@ -78,7 +78,7 @@ Introduce the ability to mint Mitigation Asset Type tokens as the result of the 
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/54](https://github.com/hashgraph/guardian/issues/54)
 
-### FireBlocks/ Meetaco Integration
+### FireBlocks Integration
 
 We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
 
