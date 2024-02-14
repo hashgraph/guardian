@@ -33,11 +33,11 @@
         <div *ngIf="mainDocuments" class="display-chain">
             <div
                 *ngFor="let item of mainDocuments"
-                class="verified-presentation"
+                class="verifiable-presentation"
             >
                 <div *ngIf="item.vpDocument" class="header card-block">
                     <div class="card-info">
-                        <h3>Verified Presentation</h3>
+                        <h3>Verifiable Presentation</h3>
                         <mat-icon>check_circle</mat-icon>
                         <span class="vertical-devider"></span>
                         <button (click)="openVPDocument(item.vpDocument)" class="p-button-outlined" icon="pi pi-file" label="VP File"
@@ -238,7 +238,7 @@
                 </div>
             </div>
 
-            <div *ngIf="policyDocument" class="verified-presentation">
+            <div *ngIf="policyDocument" class="verifiable-presentation">
                 <div class="vp-section">
                     <div class="vp-section-header">
                         <h3>Policy Overview</h3>
@@ -296,7 +296,7 @@
                                     !item.notFoundDocuments;
                                     else documentsNotFound
                                 ">
-                                <div 
+                                <div
                                     (click)="onMultipleDocumentClick(document, item)"
                                     *ngFor="let document of item.document"
                                     style="display: inline-block;"
@@ -312,7 +312,7 @@
                                                 item.document.length > 1
                                                     ? 'scale(1, 1) translate(0, 0)'
                                                     : 'scale(1, 0) translate(20px, 0)'
-                                        }" 
+                                        }"
                                         class="item-relationships-delimiter"
                                     ></div>
                                     <mat-icon

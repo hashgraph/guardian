@@ -116,7 +116,7 @@ export class ReportBlock {
         const mint = vcs[mintIndex];
         report.vpDocument = {
             type: 'VP',
-            title: 'Verified Presentation',
+            title: 'Verifiable Presentation',
             tag: vp.tag,
             hash: vp.hash,
             issuer: vp.owner,

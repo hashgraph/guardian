@@ -162,7 +162,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
     <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/86feaf02-269f-4d6e-aa19-cc5c2e88e24a">
      
-23. The Verified Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc.   
+23. The Verifiable Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc.   
 
     <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/3af1d037-5a15-4942-83ce-081d3d23b121">
 
