@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { create } from 'ipfs-client'
 import { FilebaseClient } from '@filebase/client';
-import Blob from 'cross-blob';
 import { CarReader } from '@ipld/car';
 import * as Delegation from '@ucanto/core/delegation';
 import * as Signer from '@ucanto/principal/ed25519';
@@ -116,9 +115,7 @@ export class IpfsClientClass {
         let cid;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
-                const result = await this.client.uploadFile(
-                    new Blob([file])
-                );
+                const result = await this.client.uploadFile(new Blob([file]));
 
                 cid = result.toString()
                 break;
