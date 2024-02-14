@@ -25,9 +25,9 @@ import { INotifier } from '@helpers/notifier';
 
 export class PolicyDataMigrator {
     constructor(
-        private _users: Users,
-        private _wallet: Wallet,
-        private _notifier?: INotifier
+        private readonly _users: Users,
+        private readonly _wallet: Wallet,
+        private readonly _notifier?: INotifier
     ) {}
 
     async migratePolicyData(owner: string, migrationConfig: MigrationConfig) {
