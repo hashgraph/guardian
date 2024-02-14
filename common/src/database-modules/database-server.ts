@@ -2880,7 +2880,6 @@ export class DatabaseServer {
      *
      * @returns VPs
      */
-    // tslint:disable-next-line:adjacent-overload-signatures
     public static async saveVPs<T extends VpDocumentCollection | VpDocumentCollection[]>(data: T): Promise<T> {
         return (await new DataBaseHelper(VpDocumentCollection).save(data)) as any;
     }
