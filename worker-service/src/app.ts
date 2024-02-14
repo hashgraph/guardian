@@ -71,6 +71,11 @@ Promise.all([
         const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF);
         await w.setConnection(cn).init();
 
+        if (process.env.IPFS_PROVIDER === 'filebase') {
+            if (!keyAndProof.IPFS_STORAGE_API_KEY) {
+                return false;
+            }
+        }
         if (process.env.IPFS_PROVIDER === 'local') {
             if (!process.env.IPFS_NODE_ADDRESS) {
                 return false
