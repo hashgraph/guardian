@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocumentDefinition, VcHelper } from '@guardian/common';
+import { HederaDidDocument, VcDocumentDefinition, VcHelper } from '@guardian/common';
 // tslint:disable-next-line:no-duplicate-imports
 import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -12,6 +12,15 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+
+interface IMetadata {
+    owner: IPolicyUser;
+    id: string;
+    reference: string;
+    accounts: any;
+    tokens: any;
+    relationships: any[];
+}
 
 /**
  * Calculate block
@@ -136,7 +145,7 @@ export class CalculateContainerBlock {
     private aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock
-    ) {
+    ): IMetadata {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
         const owner = PolicyUtils.getDocumentOwner(ref, firstDocument);
@@ -191,7 +200,7 @@ export class CalculateContainerBlock {
      */
     private async createDocument(
         json: any,
-        metadata: any,
+        metadata: IMetadata,
         ref: IPolicyCalculateBlock
     ): Promise<IPolicyDocument> {
         const {
@@ -219,11 +228,13 @@ export class CalculateContainerBlock {
             VCHelper.addDryRunContext(vcSubject);
         }
 
-        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const didDocument = await policyOwnerCred.loadDidDocument(ref);
         const uuid = await ref.components.generateUUID();
-        const newVC = await VCHelper.createVcDocument(
+        const newVC = await VCHelper.createVerifiableCredential(
             vcSubject,
-            { did: ref.policyOwner, key: root.hederaAccountKey },
+            didDocument,
+            null,
             { uuid }
         );
 

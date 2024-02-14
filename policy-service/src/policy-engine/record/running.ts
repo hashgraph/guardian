@@ -6,7 +6,7 @@ import { RecordMethod } from './method.type';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { DIDDocument, DatabaseServer, IRecordResult, RecordImportExport } from '@guardian/common';
+import { DatabaseServer, Environment, HederaDidDocument, IRecordResult, RecordImportExport } from '@guardian/common';
 import { RecordItem } from './record-item';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
@@ -428,7 +428,7 @@ export class Running {
                     const topic = await DatabaseServer.getTopicByType(this.owner, TopicType.UserTopic);
                     const newPrivateKey = PrivateKey.generate();
                     const newAccountId = new AccountId(Date.now());
-                    const didObject = await DIDDocument.create(newPrivateKey, topic.topicId);
+                    const didObject = await HederaDidDocument.generate(Environment.network, newPrivateKey, topic.topicId);
                     const userDID = didObject.getDid();
                     const document = didObject.getDocument();
                     const users = await DatabaseServer.getVirtualUsers(this.policyId);
@@ -626,8 +626,9 @@ export class Running {
      * Get next did
      * @public
      */
-    public async nextDID(topicId: string): Promise<DIDDocument> {
-        const didDocument = await DIDDocument.create(null, topicId);
+    public async nextDID(topicId: string): Promise<HederaDidDocument> {
+        const privateKey = PrivateKey.generate();
+        const didDocument = await HederaDidDocument.generate(Environment.network, privateKey, topicId);
         const did = didDocument.getDid();
         const action = this._generateDID.current;
         const old = action?.document?.did;

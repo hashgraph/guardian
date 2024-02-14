@@ -3,8 +3,9 @@ import { ApiResponse } from '@api/helpers/api-response';
 import {
     DataBaseHelper,
     DidDocument as DidDocumentCollection,
-    DIDDocument,
     DIDMessage,
+    Environment,
+    HederaDidDocument,
     IAuthUser,
     KeyType,
     Logger,
@@ -144,19 +145,10 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
-
-
-
-
-
-
-
-
-
-    
     notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
-    const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
+
+    const didObject = await HederaDidDocument.generate(Environment.network, hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
 
     const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({ did: userDID });
@@ -292,7 +284,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
-        const vcObject = await vcHelper.createVcDocument(credentialSubject, { did: userDID, key: hederaAccountKey });
+        const didDocument = await vcHelper.loadDidDocument(userDID);
+        const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vcObject);
         const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
@@ -514,7 +507,11 @@ export function profileAPI() {
 
             notifier.start('Finding all user topics');
             const restore = new RestoreDataFromHedera();
-            const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
+            const result = await restore.findAllUserTopics(
+                username,
+                profile.hederaAccountId,
+                profile.hederaAccountKey
+            )
             notifier.completed();
             notifier.result(result);
         }, async (error) => {

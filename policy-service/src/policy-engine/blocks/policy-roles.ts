@@ -316,8 +316,11 @@ export class PolicyRolesBlock {
             return null;
         }
 
+        const userCred = await PolicyUtils.getUserCredentials(ref, group.owner);
+        const hederaCred = await userCred.loadHederaCredentials(ref);
+        const didDocument = await userCred.loadDidDocument(ref);
+
         const uuid: string = await ref.components.generateUUID();
-        const groupOwner = await PolicyUtils.getHederaAccount(ref, group.owner);
         const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
@@ -339,14 +342,15 @@ export class PolicyRolesBlock {
             vcSubject.groupLabel = group.groupLabel;
         }
 
-        const userVC = await vcHelper.createVcDocument(
+        const userVC = await vcHelper.createVerifiableCredential(
             vcSubject,
-            { did: groupOwner.did, key: groupOwner.hederaAccountKey },
+            didDocument,
+            null,
             { uuid }
         );
 
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
-        const messageServer = new MessageServer(groupOwner.hederaAccountId, groupOwner.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, ref.dryRun);
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
         vcMessage.setDocument(userVC);
         vcMessage.setRole(group);

@@ -1,4 +1,4 @@
-import { DidRootKey, DocumentLoader, IDocumentFormat } from '../hedera-modules';
+import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules';
 import { DataBaseHelper } from '../helpers';
 import { DidDocument, DryRun } from '../entity';
 
@@ -11,7 +11,7 @@ export class DryRunLoader extends DocumentLoader {
      * @param iri
      */
     public async has(iri: string): Promise<boolean> {
-        const did = DidRootKey.create(iri).getController();
+        const did = DidURL.getController(iri);
         const document= await new DataBaseHelper(DryRun).findOne({did, dryRunClass: 'DidDocumentCollection'});
         return !!document;
     }
@@ -21,7 +21,7 @@ export class DryRunLoader extends DocumentLoader {
      * @param iri
      */
     public async get(iri: string): Promise<IDocumentFormat> {
-        const did = DidRootKey.create(iri).getController();
+        const did = DidURL.getController(iri);
         const document= await new DataBaseHelper(DryRun).findOne({did, dryRunClass: 'DidDocumentCollection'});
         return {
             documentUrl: iri,
@@ -34,7 +34,7 @@ export class DryRunLoader extends DocumentLoader {
      * @param iri
      */
     public async getDocument(iri: string): Promise<any> {
-        const did = DidRootKey.create(iri).getController();
+        const did = DidURL.getController(iri);
         const didDocuments = await new DataBaseHelper(DidDocument).findOne({ did });
         if (didDocuments) {
             return didDocuments.document;

@@ -1,5 +1,20 @@
-import { PolicyRoles } from '@guardian/common';
-import { PolicyRole } from '@guardian/interfaces';
+import { HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
+import { PolicyRole, SignatureType } from '@guardian/interfaces';
+import { AnyBlockType, IPolicyDocument } from './policy-engine.interface';
+
+/**
+ * Hedera Account interface
+ */
+export interface IHederaCredentials {
+    /**
+     * Hedera account id
+     */
+    readonly hederaAccountId: string;
+    /**
+     * Hedera account key
+     */
+    readonly hederaAccountKey: string;
+}
 
 /**
  * User in policy
@@ -139,5 +154,156 @@ export class PolicyUser implements IPolicyUser {
     public setUsername(username: string): PolicyUser {
         this.username = username;
         return this;
+    }
+}
+
+/**
+ * Hedera Account interface
+ */
+export class UserCredentials {
+    /**
+     * Is dry run mode
+     */
+    private _dryRun: boolean;
+    /**
+     * User DID
+     */
+    private _did: string;
+    /**
+     * Hedera account id
+     */
+    private _hederaAccountId: string;
+
+    public get did(): string {
+        return this._did;
+    }
+
+    public get hederaAccountId(): string {
+        return this._hederaAccountId;
+    }
+
+    constructor(ref: AnyBlockType, userDid: string) {
+        this._dryRun = !!ref.dryRun;
+        this._did = userDid;
+    }
+
+    public async load(ref: AnyBlockType): Promise<UserCredentials> {
+        let userFull: IAuthUser;
+        if (this._dryRun) {
+            userFull = await ref.databaseServer.getVirtualUser(this._did);
+        } else {
+            const users = new Users();
+            userFull = await users.getUserById(this._did);
+        }
+        if (!userFull) {
+            throw new Error('Virtual User not found');
+        }
+        this._hederaAccountId = userFull.hederaAccountId;
+        this._did = userFull.did;
+        if (!this._did || !this._hederaAccountId) {
+            throw new Error('Hedera Account not found');
+        }
+        return this;
+    }
+
+    public async loadHederaKey(ref: AnyBlockType): Promise<any> {
+        if (this._dryRun) {
+            return await ref.databaseServer.getVirtualKey(this._did, this._did);
+        } else {
+            const wallet = new Wallet();
+            return await wallet.getUserKey(this._did, KeyType.KEY, this._did);
+        }
+    }
+
+    public async loadHederaCredentials(ref: AnyBlockType): Promise<IHederaCredentials> {
+        const hederaKey = await this.loadHederaKey(ref);
+        return {
+            hederaAccountId: this._hederaAccountId,
+            hederaAccountKey: hederaKey
+        }
+    }
+
+    public async loadDidDocument(ref: AnyBlockType): Promise<HederaDidDocument> {
+        return await this.loadSubDidDocument(ref, this._did);
+    }
+
+    public async loadSubDidDocument(ref: AnyBlockType, subDid: string): Promise<HederaDidDocument> {
+        const row = await ref.databaseServer.getDidDocument(subDid);
+        if (!row) {
+            return null;
+        }
+        const document = HederaDidDocument.from(row.document);
+        const keys = row.verificationMethods || {};
+        const keyName1 = keys[SignatureType.Ed25519Signature2018];
+        const keyName2 = keys[SignatureType.BbsBlsSignature2020];
+        const walletToken = this._did;
+
+        if (this._dryRun) {
+            const hederaPrivateKey = await ref.databaseServer.getVirtualKey(walletToken, subDid);
+            if (keyName1) {
+                const keyValue1 = await ref.databaseServer.getVirtualKey(walletToken, keyName1);
+                document.setPrivateKey(keyName1, keyValue1);
+            } else {
+                document.setPrivateKey(HederaEd25519Method.defaultId(subDid), hederaPrivateKey);
+            }
+            if (keyName2) {
+                const keyValue2 = await ref.databaseServer.getVirtualKey(walletToken, keyName2);
+                document.setPrivateKey(keyName2, keyValue2);
+            } else {
+                document.setPrivateKey(HederaBBSMethod.defaultId(subDid), hederaPrivateKey);
+            }
+        } else {
+            const wallet = new Wallet();
+            const hederaPrivateKey = await wallet.getUserKey(walletToken, KeyType.KEY, subDid);
+            if (keyName1) {
+                const keyValue1 = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, keyName1);
+                document.setPrivateKey(keyName1, keyValue1);
+            } else {
+                document.setPrivateKey(HederaEd25519Method.defaultId(subDid), hederaPrivateKey);
+            }
+            if (keyName2) {
+                const keyValue2 = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, keyName2);
+                document.setPrivateKey(keyName2, keyValue2);
+            } else {
+                document.setPrivateKey(HederaBBSMethod.defaultId(subDid), hederaPrivateKey);
+            }
+        }
+    }
+
+    public async saveDidDocument(
+        ref: AnyBlockType,
+        row: IPolicyDocument,
+        document: HederaDidDocument
+    ): Promise<void> {
+        await this.saveSubDidDocument(ref, row, document);
+    }
+
+    public async saveSubDidDocument(
+        ref: AnyBlockType,
+        row: any,
+        document: HederaDidDocument
+    ): Promise<void> {
+        const walletToken = this._did;
+        const verificationMethods = document.getVerificationMethods();
+        row.verificationMethods = {};
+        for (const method of verificationMethods) {
+            if (method.hasPrivateKey()) {
+                const type = method.getType();
+                const methodId = method.getId();
+                const key = method.getPrivateKey();
+                row.verificationMethods[type] = methodId;
+                if (this._dryRun) {
+                    await ref.databaseServer.setVirtualKey(walletToken, methodId, key);
+                } else {
+                    const wallet = new Wallet();
+                    await wallet.setUserKey(walletToken, KeyType.KEY, methodId, key);
+                }
+            }
+        }
+        await ref.databaseServer.saveDid(row);
+    }
+
+    public static async create(ref: AnyBlockType, userDid: string): Promise<UserCredentials> {
+        return await (new UserCredentials(ref, userDid)).load(ref);
     }
 }

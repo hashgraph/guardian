@@ -1,4 +1,4 @@
-import { DIDDocument, DatabaseServer } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
@@ -184,7 +184,7 @@ export class Recording {
      * @param didDocument
      * @public
      */
-    public async generateDidDocument(didDocument: DIDDocument): Promise<void> {
+    public async generateDidDocument(didDocument: HederaDidDocument): Promise<void> {
         const did = didDocument.getDid();
         await DatabaseServer.createRecord({
             uuid: this.uuid,

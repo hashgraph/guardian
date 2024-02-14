@@ -3,7 +3,7 @@ import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, 
 import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Token Config
@@ -63,7 +63,7 @@ export class MintService {
     private static async mintNonFungibleTokens(
         token: TokenConfig,
         tokenValue: number,
-        root: IRootConfig,
+        root: IHederaCredentials,
         targetAccount: string,
         uuid: string,
         transactionMemo: string,
@@ -138,12 +138,11 @@ export class MintService {
                 ref
             );
             notifier?.step(
-                `Mint(${token.tokenName}): Minting and transferring (Chunk: ${
-                    i * MintService.BATCH_NFT_MINT_SIZE + 1
+                `Mint(${token.tokenName}): Minting and transferring (Chunk: ${i * MintService.BATCH_NFT_MINT_SIZE + 1
                 }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
                 (i * MintService.BATCH_NFT_MINT_SIZE +
                     1) / (tasks.length * MintService.BATCH_NFT_MINT_SIZE) *
-                    100
+                100
             );
             try {
                 const results = await Promise.all(dataChunk.map(mintAndTransferNFT));
@@ -157,9 +156,8 @@ export class MintService {
             } catch (error) {
                 notifier?.stop({
                     title: 'Minting tokens',
-                    message: `Mint(${
-                        token.tokenName
-                    }): Error (${PolicyUtils.getErrorMessage(error)})`,
+                    message: `Mint(${token.tokenName
+                        }): Error (${PolicyUtils.getErrorMessage(error)})`,
                 });
                 MintService.error(
                     `Mint(${mintId}): Error (${PolicyUtils.getErrorMessage(
@@ -199,7 +197,7 @@ export class MintService {
     private static async mintFungibleTokens(
         token: TokenConfig,
         tokenValue: number,
-        root: IRootConfig,
+        root: IHederaCredentials,
         targetAccount: string,
         uuid: string,
         transactionMemo: string,
@@ -294,7 +292,7 @@ export class MintService {
     private static async sendMessage(
         ref: AnyBlockType,
         multipleConfig: MultiPolicy,
-        root: IRootConfig,
+        root: IHederaCredentials,
         data: any
     ) {
         const message = new SynchronizationMessage(MessageAction.Mint);
@@ -321,7 +319,7 @@ export class MintService {
         token: Token,
         tokenValue: number,
         documentOwner: IPolicyUser,
-        root: IRootConfig,
+        root: IHederaCredentials,
         targetAccount: string,
         messageId: string,
         transactionMemo: string,
@@ -350,7 +348,7 @@ export class MintService {
                 target: targetAccount
             });
             if (multipleConfig.type === 'Main') {
-                const user = await PolicyUtils.getHederaAccount(ref, documentOwner.did);
+                const user = await PolicyUtils.getUserCredentials(ref, documentOwner.did);
                 await DatabaseServer.createMultiPolicyTransaction({
                     uuid: GenerateUUIDv4(),
                     policyId: ref.policyId,
@@ -418,7 +416,7 @@ export class MintService {
      * @param uuid
      */
     public static async multiMint(
-        root: IRootConfig,
+        root: IHederaCredentials,
         token: Token,
         tokenValue: number,
         targetAccount: string,
@@ -498,7 +496,7 @@ export class MintService {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
-        root: IRootConfig,
+        root: IHederaCredentials,
         targetAccount: string,
         uuid: string
     ): Promise<void> {

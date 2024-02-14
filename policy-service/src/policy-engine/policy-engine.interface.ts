@@ -2,8 +2,7 @@ import { PolicyRole } from '@guardian/interfaces';
 import { BlockCacheType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer, Policy } from '@guardian/common';
-import { IPolicyUser } from './policy-user';
-import { IHederaAccount } from './helpers/utils';
+import { IPolicyUser, UserCredentials } from './policy-user';
 import { ComponentsService } from './helpers/components-service';
 
 /**
@@ -727,7 +726,7 @@ export interface IPolicyTokenAddon extends IPolicyBlock {
      * Run logic
      * @param scope
      */
-    run(scope: any, root: IHederaAccount, user: IPolicyUser): Promise<any>;
+    run(scope: any, root: UserCredentials, user: IPolicyUser): Promise<any>;
 }
 
 /**

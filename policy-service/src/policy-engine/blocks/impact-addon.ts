@@ -2,8 +2,8 @@ import { TokenAddon } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
@@ -89,7 +89,11 @@ export class TokenOperationAddon {
      * @param documents
      * @param user
      */
-    public async run(documents: VcDocument[], root: IHederaAccount, user: IPolicyUser): Promise<any> {
+    public async run(
+        documents: VcDocument[],
+        root: UserCredentials,
+        user: IPolicyUser
+    ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const policySchema = await this.getSchema();
         const amount = PolicyUtils.aggregate(ref.options.amount, documents);
@@ -109,10 +113,12 @@ export class TokenOperationAddon {
         if (ref.options.description) {
             vcSubject.description = ref.options.description;
         }
+        const didDocument = await root.loadDidDocument(ref);
         const uuid = await ref.components.generateUUID();
-        const vc = await vcHelper.createVcDocument(
+        const vc = await vcHelper.createVerifiableCredential(
             vcSubject,
-            { did: root.did, key: root.hederaAccountKey },
+            didDocument,
+            null,
             { uuid }
         );
         return vc;

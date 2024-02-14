@@ -84,6 +84,12 @@ export class DidDocument extends BaseEntity implements IDidObject {
     relationships?: string[];
 
     /**
+     * Verification methods
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    verificationMethods?: any;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

@@ -1,11 +1,13 @@
 import {
-    DIDDocument,
     DatabaseServer,
+    Environment,
+    HederaDidDocument,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,
     Schema as SchemaCollection
 } from '@guardian/common';
 import { GenerateUUIDv4, PolicyType, SchemaEntity } from '@guardian/interfaces';
+import { PrivateKey } from '@hashgraph/sdk';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { Recording, Running } from '@policy-engine/record';
@@ -218,11 +220,12 @@ export class ComponentsService {
     /**
      * Generate new DID
      */
-    public async generateDID(topicId: string): Promise<DIDDocument> {
+    public async generateDID(topicId: string): Promise<HederaDidDocument> {
         if (this._runningController) {
             return await this._runningController.nextDID(topicId);
         }
-        const didDocument = await DIDDocument.create(null, topicId);
+        const privateKey = PrivateKey.generate();
+        const didDocument = await HederaDidDocument.generate(Environment.network, privateKey, topicId);
         if (this._recordingController) {
             await this._recordingController.generateDidDocument(didDocument);
         }

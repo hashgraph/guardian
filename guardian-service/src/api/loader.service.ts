@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { DataBaseHelper, DidDocument, DidRootKey, Logger, MessageError, MessageResponse, Schema, } from '@guardian/common';
+import { DataBaseHelper, DidDocument, DidURL, Logger, MessageError, MessageResponse, Schema, } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
@@ -23,7 +23,7 @@ export async function loaderAPI(
     ApiResponse(MessageAPI.LOAD_DID_DOCUMENT, async (msg) => {
         try {
             const iri = msg.did;
-            const did = DidRootKey.create(iri).getController();
+            const did = DidURL.getController(iri); 
             const reqObj = { where: { did: { $eq: did } } };
             const didDocuments = await didDocumentRepository.findOne(reqObj);
             if (didDocuments) {

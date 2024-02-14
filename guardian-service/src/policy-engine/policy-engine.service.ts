@@ -14,7 +14,6 @@ import {
 import {
     BinaryMessageResponse,
     DatabaseServer,
-    DIDDocument,
     findAllEntities,
     IAuthUser,
     Logger,
@@ -44,7 +43,9 @@ import {
     VpDocumentDefinition,
     XlsxToJson,
     JsonToXlsx,
-    GenerateBlocks
+    GenerateBlocks,
+    HederaDidDocument,
+    Environment
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -1278,7 +1279,8 @@ export class PolicyEngineService {
                 const topic = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
-                const didObject = await DIDDocument.create(newPrivateKey, topic.topicId);
+
+                const didObject = await HederaDidDocument.generate(Environment.network, newPrivateKey, topic.topicId);
                 const did = didObject.getDid();
                 const document = didObject.getDocument();
 
@@ -1567,9 +1569,11 @@ export class PolicyEngineService {
                             });
                             return;
                         }
-                        vc = await _vcHelper.createVcDocument(
+                        const didDocument = await _vcHelper.loadDidDocument(root.did);
+                        vc = await _vcHelper.createVerifiableCredential(
                             credentialSubject,
-                            { did: root.did, key: rootKey },
+                            didDocument,
+                            null,
                             { uuid: doc.document.id }
                         );
                         doc.hash = vc.toCredentialHash();
@@ -1640,9 +1644,11 @@ export class PolicyEngineService {
                     if (vpChanged) {
                         notifier?.info(`Resigning VP ${doc.id}`);
                         const _vcHelper = new VcHelper();
-                        vp = await _vcHelper.createVpDocument(
+                        const didDocument = await _vcHelper.loadDidDocument(root.did);
+                        vp = await _vcHelper.createVerifiablePresentation(
                             vcs,
-                            { did: root.did, key: rootKey },
+                            didDocument,
+                            null,
                             { uuid: doc.document.id }
                         );
                         doc.hash = vp.toCredentialHash();

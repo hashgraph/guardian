@@ -4,8 +4,8 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 import {
     SplitDocuments,
     Schema as SchemaCollection,
@@ -104,7 +104,7 @@ export class SplitBlock {
      */
     private async createNewDoc(
         ref: IPolicyBlock,
-        root: IHederaAccount,
+        root: UserCredentials,
         document: IPolicyDocument,
         newValue: number,
         chunkNumber: number,
@@ -131,9 +131,11 @@ export class SplitBlock {
             });
         }
         const uuid = await ref.components.generateUUID();
-        vc = await this.vcHelper.issueVcDocument(
+        const didDocument = await root.loadDidDocument(ref);
+        vc = await this.vcHelper.issueVerifiableCredential(
             vc,
-            { did: root.did, key: root.hederaAccountKey },
+            didDocument,
+            null,
             { uuid }
         );
         clone.document = vc.toJsonTree();
@@ -153,7 +155,7 @@ export class SplitBlock {
      */
     private async split(
         ref: IPolicyBlock,
-        root: IHederaAccount,
+        root: UserCredentials,
         user: IPolicyUser,
         result: SplitDocuments[][],
         residue: SplitDocuments[],
@@ -242,7 +244,7 @@ export class SplitBlock {
      */
     private async addDocs(ref: IPolicyBlock, user: IPolicyUser, documents: IPolicyDocument[]) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
-        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 
         let current = residue;
 

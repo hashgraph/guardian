@@ -1,7 +1,6 @@
 import {
     DataBaseHelper,
     DidDocument as DidDocumentCollection,
-    DIDDocument,
     DIDMessage,
     KeyType,
     MessageServer,
@@ -472,7 +471,7 @@ export class RestoreDataFromHedera {
     async findAllUserTopics(
         username: string,
         hederaAccountID: string,
-        hederaAccountKey
+        hederaAccountKey: string
     ): Promise<any[]> {
         const mainTopicMessages = await this.getMainTopicMessages();
 
@@ -501,7 +500,7 @@ export class RestoreDataFromHedera {
     async restoreRootAuthority(
         username: string,
         hederaAccountID: string,
-        hederaAccountKey,
+        hederaAccountKey: string,
         userTopic: string
     ): Promise<void> {
         const did = await DIDDocument.create(hederaAccountKey, null);

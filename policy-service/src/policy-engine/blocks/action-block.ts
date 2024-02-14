@@ -1,5 +1,5 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { UserType, Schema } from '@guardian/interfaces';
+import { UserType, Schema, SignatureType } from '@guardian/interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { PrivateKey } from '@hashgraph/sdk';
@@ -101,20 +101,24 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
             const userDID = document.owner;
-            const hederaAccount = await PolicyUtils.getHederaAccount(ref, userDID);
-            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
-            const hederaAccountId = hederaAccount.hederaAccountId;
-            const hederaAccountKey = hederaAccount.hederaAccountKey;
+            const userCred = await PolicyUtils.getUserCredentials(ref, userDID);
+            const hederaCred = await userCred.loadHederaCredentials(ref);
             const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
-            const didDocument = await DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
+            const didDocument = await userCred.loadSubDidDocument(ref, sensorDid);
+            const method = didDocument.getMethodByType(SignatureType.Ed25519Signature2018);
+            const sensorKey = method.getPrivateKey();
+
+            // const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
+            // const didDocument = await DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
+
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
                     'url': ref.options.targetUrl || process.env.MRV_ADDRESS,
-                    'topic':ref.policyInstance?.topicId,
-                    'hederaAccountId': hederaAccountId,
-                    'hederaAccountKey': hederaAccountKey,
+                    'topic': ref.policyInstance?.topicId,
+                    'hederaAccountId': hederaCred.hederaAccountId,
+                    'hederaAccountKey': hederaCred.hederaAccountKey,
                     'installer': userDID,
                     'did': sensorDid,
                     'key': sensorKey,
@@ -124,7 +128,7 @@ export class InterfaceDocumentActionBlock {
                         'type': schema.type,
                         '@context': [schema.contextURL]
                     },
-                    'didDocument': didDocument.getPrivateDidDocument(),
+                    'didDocument': didDocument.getPrivateDocument(),
                     'policyId': ref.policyId,
                     'policyTag': ref.policyInstance?.policyTag,
                     'ref': sensorDid

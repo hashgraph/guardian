@@ -958,6 +958,14 @@ export class DatabaseServer {
     }
 
     /**
+     * Get Did Document
+     * @param topicId
+     */
+    public async getDidDocument(did: string): Promise<DidDocumentCollection> {
+        return await this.findOne(DidDocumentCollection, { did });
+    }
+
+    /**
      * Get Approval Documents
      * @param filters
      * @param options
@@ -2209,8 +2217,8 @@ export class DatabaseServer {
         }
         if (type === DocumentType.VC) {
             otherOptions.fields.push('schema');
-            filters.$and.push({ schema: { $ne: null }});
-            filters.$and.push({ schema: { $nin: ['#UserRole'] }});
+            filters.$and.push({ schema: { $ne: null } });
+            filters.$and.push({ schema: { $nin: ['#UserRole'] } });
             return await new DataBaseHelper(VcDocument).findAndCount(filters, otherOptions);
         } else if (type === DocumentType.VP) {
             return await new DataBaseHelper(VpDocument).findAndCount(filters, otherOptions);
