@@ -21,7 +21,7 @@ export class VcDocument {
     /**
      * BBS Signature context
      */
-    public static readonly BBS_SIGNATURE_CONTEXT = 'https://w3id.org/security/suites/bls12381-2020/v1';
+    public static readonly BBS_SIGNATURE_CONTEXT = 'https://w3id.org/security/bbs/v1';
     /**
      * ID
      */
