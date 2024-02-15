@@ -24,13 +24,13 @@
 
 [Step by Step](verra-vm0041.md#\_toc154152890)
 
-### Introduction <a href="#_toc154152880" id="_toc154152880"></a>
+### Introduction <a href="#toc154152880" id="toc154152880"></a>
 
 VM0041 is a methodology aimed at estimating enteric methane (CH4) emission reductions within the context of livestock production. This methodology focuses on suppressing or inhibiting methanogenesis in ruminant diets, specifically targeting emissions originating from enteric fermentation. By structuring a systematic approach to quantify reductions in CH4 emissions through the introduction of specific feed ingredients, VM0041 provides a framework for assessing and mitigating methane production within livestock operations.
 
 The importance of reducing methane emissions cannot be overstated in the global effort to combat climate change. Methane, a potent greenhouse gas, contributes significantly to atmospheric warming, exerting a disproportionate impact on global warming compared to carbon dioxide over shorter time frames. Addressing methane emissions, particularly those stemming from enteric fermentation in livestock, presents a critical opportunity to mitigate climate change. VM0041's focus on targeted intervention through controlled feed ingredient introduction signifies a proactive step towards curbing methane emissions from ruminants, underscoring the methodology's pivotal role in advancing sustainable practices within the agricultural sector while contributing to broader environmental conservation efforts.
 
-### Key Objectives and Scope <a href="#_toc154152881" id="_toc154152881"></a>
+### Key Objectives and Scope <a href="#toc154152881" id="toc154152881"></a>
 
 #### Objectives:
 
@@ -44,7 +44,7 @@ The importance of reducing methane emissions cannot be overstated in the global 
 * Feed Ingredient Criteria: Compliance with stringent regulations, health considerations, and adherence to provided feeding instructions for the feed ingredient.
 * Project Boundary: Encompasses all stages from ingredient production and transport to locations where the feed ingredient becomes part of the livestock production operation.
 
-### Aspects of Methodology <a href="#_toc154152882" id="_toc154152882"></a>
+### Aspects of Methodology <a href="#toc154152882" id="toc154152882"></a>
 
 #### Quantification Methods:
 
@@ -56,27 +56,27 @@ The importance of reducing methane emissions cannot be overstated in the global 
 * Feed Ingredient Criteria Fulfillment: Stringent compliance conditions ensuring that the introduced feed ingredient meets the highest standards across various jurisdictions and is utilized as per manufacturer-defined instructions.
 * Exclusionary Criteria: Explicitly excluding activities or feed ingredients that do not directly contribute to the suppression or inhibition of methanogenesis, preventing any overestimation of emission reductions.
 
-### Significance and Environmental Impact <a href="#_toc154152883" id="_toc154152883"></a>
+### Significance and Environmental Impact <a href="#toc154152883" id="toc154152883"></a>
 
 VM0041 represents a pivotal methodology in addressing methane emissions within the livestock sector. By targeting enteric fermentation through controlled feed ingredient introduction, it contributes significantly to mitigating greenhouse gas emissions. This methodology not only establishes clear criteria for regulatory compliance but also highlights the importance of sustainable practices within livestock production for environmental conservation on a global scale.
 
-### Demo Video <a href="#_toc154152884" id="_toc154152884"></a>
+### Demo Video <a href="#toc154152884" id="toc154152884"></a>
 
 [https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk](https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk)
 
 ![Video titled: VM0041 - Reduction of Enteric Methane Emissions from Ruminants through the Use of Feed Ingredients](../../../.gitbook/assets/0.jpeg)
 
-### Policy Workflow <a href="#_toc154152885" id="_toc154152885"></a>
+### Policy Workflow <a href="#toc154152885" id="toc154152885"></a>
 
 <figure><img src="../../../.gitbook/assets/1.jpeg" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide <a href="#_toc154152886" id="_toc154152886"></a>
+### Policy Guide <a href="#toc154152886" id="toc154152886"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-Policy: 1702894551.809486643
+Policy: 1707208032.927115206
 
-### Available Roles <a href="#_toc154152887" id="_toc154152887"></a>
+### Available Roles <a href="#toc154152887" id="toc154152887"></a>
 
 Project Proponent - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Verra’s VCS program and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Carbon Units (VCU) as an incentive for their emission reductions.
 
@@ -84,17 +84,17 @@ Verification and Validation Body (VVB) - The VVB plays a critical role in indepe
 
 Registry (Verra) – With Verra as the registry they take on responsibilities that encompass project intake, pipeline management, and final review of project descriptions and monitoring reports. This process ensures that emission reduction projects meet the highest standards before tokens are issued.
 
-### Important Documents & Schemas <a href="#_toc154152888" id="_toc154152888"></a>
+### Important Documents & Schemas <a href="#toc154152888" id="toc154152888"></a>
 
 1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
 2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
 3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
-### Token (Verified Carbon Unit) <a href="#_toc154152889" id="_toc154152889"></a>
+### Token (Verified Carbon Unit) <a href="#toc154152889" id="toc154152889"></a>
 
 Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
-### Step by Step <a href="#_toc154152890" id="_toc154152890"></a>
+### Step by Step <a href="#toc154152890" id="toc154152890"></a>
 
 1. Create a new user and assign role as Project Proponent.
 

@@ -18,7 +18,7 @@
 
 [Step by Step](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc2139421507)
 
-### Introduction <a href="#_toc1946396156" id="_toc1946396156"></a>
+### Introduction <a href="#toc1946396156" id="toc1946396156"></a>
 
 The Plastic Waste Reduction Methodology (PWRM0001) serves as a structured framework providing guidelines and procedures for estimating and quantifying additional plastic waste removed or diverted from the environment. Its focus lies in both informal and formal activities geared towards preventing plastic waste from persisting or ending up in the environment. PWRM0001 offers a systematic approach to assess the effectiveness of plastic waste collection activities while emphasizing their crucial role in curbing environmental pollution.
 
@@ -34,37 +34,37 @@ The need for methodologies like PWRM0001 arises from the urgency to mitigate the
 
 Considering escalating environmental concerns and the imperative to safeguard our ecosystems, PWRM0001 plays a pivotal role. It offers a standardized framework that empowers stakeholders to measure and assess their contributions in curbing plastic waste pollution. By providing a systematic methodology for quantifying plastic waste reduction efforts, PWRM0001 serves as a channel for informed decision-making, fostering collaborations and initiatives aimed at mitigating the adverse impacts of plastic waste on our environment and society.
 
-### Demo Video <a href="#_toc192784261" id="_toc192784261"></a>
+### Demo Video <a href="#toc192784261" id="toc192784261"></a>
 
 [https://youtu.be/Xu0lGnJTT3s?si=hKQLuV-5nuL-lLQY](https://youtu.be/Xu0lGnJTT3s?si=hKQLuV-5nuL-lLQY)
 
 ![](<../../../.gitbook/assets/0 (4).jpeg>)
 
-### Policy Workflow <a href="#_toc895640644" id="_toc895640644"></a>
+### Policy Workflow <a href="#toc895640644" id="toc895640644"></a>
 
 ![](<../../../.gitbook/assets/1 (10).png>)
 
-### Policy Guide <a href="#_toc1368814671" id="_toc1368814671"></a>
+### Policy Guide <a href="#toc1368814671" id="toc1368814671"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp : 1707206885.406272003
 
-### Available Roles <a href="#_toc689999990" id="_toc689999990"></a>
+### Available Roles <a href="#toc689999990" id="toc689999990"></a>
 
 * Project Proponent - The project proponent is responsible for executing the waste reduction project. The project proponent must adhere to the requirements outlined by Verra’s Plastic Waste Reduction Standard and provide evidence of the waste collection achieved. Upon successful verification, the project proponent receives Waste Collection Credits (WCC) as an incentive for their waste reductions.
 * Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's waste reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 * Registry (Verra) – With Verra as the registry they take on responsibilities that encompass project intake, pipeline management, and final review of project descriptions and monitoring reports. This process ensures that waste reduction projects meet the highest standards before tokens are issued.
 
-### Important Documents & Schemas <a href="#_toc1741613673" id="_toc1741613673"></a>
+### Important Documents & Schemas <a href="#toc1741613673" id="toc1741613673"></a>
 
 1. Project Description - Project Participant information, standard project information, methodology information like baseline waste collection, project waste collection, etc.
 2. Plastic Waste Collection – Schema included within the project information form; this is filled out by the project participant to calculate annual project plastic waste collection.
 3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
-### Token (Waste Collection Credit) <a href="#_toc793059434" id="_toc793059434"></a>
+### Token (Waste Collection Credit) <a href="#toc793059434" id="toc793059434"></a>
 
 Waste Collection Credit (WCC), each equivalent to (1) tonne of plastic that has been collected.
 
-### Step by Step <a href="#_toc2139421507" id="_toc2139421507"></a>
+### Step by Step <a href="#toc2139421507" id="toc2139421507"></a>
 
 1. Import policy using IPFS or Policy File.
 
