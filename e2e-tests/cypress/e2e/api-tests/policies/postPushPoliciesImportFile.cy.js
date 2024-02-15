@@ -49,9 +49,7 @@ context("Policies", { tags: '@policies' }, () => {
             .then((file) => {
                 cy.request({
                     method: "POST",
-                    url: `${Cypress.env(
-                        "api_server"
-                    )}policies/push/import/file`,
+                    url: API.ApiServer + 'policies/push/import/file',
                     body: file,
                     headers: {
                         "content-type": "binary/octet-stream",

@@ -8,7 +8,7 @@ context('Policy - Import', { tags: '@policies' },() => {
     it('push imports new policy and all associated artifacts from IPFS into the local DB', () => {
       cy.request({
         method: 'POST',
-        url: `${Cypress.env('api_server')}policies/import/message`,
+        url: API.ApiServer + 'policies/import/message',
         body: { messageId: (Cypress.env('irec_policy')) },
         headers: {
           authorization,
@@ -21,7 +21,7 @@ context('Policy - Import', { tags: '@policies' },() => {
           expect(firstPolicyStatus).to.equal('DRAFT')
           cy.request({
             method: 'PUT',
-            url: Cypress.env('api_server') + 'policies/push/' + firstPolicyId + '/publish',
+            url: API.ApiServer + 'policies/push/' + firstPolicyId + '/publish',
             body: { policyVersion: "1.2.5" },
             headers: { authorization },
             timeout: 600000

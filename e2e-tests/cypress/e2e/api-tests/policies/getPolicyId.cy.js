@@ -22,7 +22,7 @@ context('Policies', { tags: '@policies' }, () => {
 
       const urlPoliciesId = {
         method: 'GET',
-        url: Cypress.env('api_server') + 'policies/' + policyId,
+        url: API.ApiServer + 'policies/' + policyId,
         headers: {
           authorization,
         }};

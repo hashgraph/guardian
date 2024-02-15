@@ -21,7 +21,7 @@ context('Policies', { tags: '@policies' }, () => {
 
     const url = {
       method: 'GET',
-      url: Cypress.env('api_server') + 'policies/' + policyId + '/export/file',
+      url: API.ApiServer + 'policies/' + policyId + '/export/file',
       encoding: null,
       headers: {
         authorization
@@ -40,7 +40,7 @@ context('Policies', { tags: '@policies' }, () => {
       .then((file) => {
         cy.request({
           method: 'POST',
-          url: `${Cypress.env('api_server')}policies/import/file`,
+          url: API.ApiServer + 'policies/import/file',
           body: file,
           headers: {
             'content-type': 'binary/octet-stream',
@@ -55,7 +55,7 @@ context('Policies', { tags: '@policies' }, () => {
             expect(firstPolicyStatus).to.equal('DRAFT')
             cy.request({
               method: 'PUT',
-              url: Cypress.env('api_server') + 'policies/' + firstPolicyId + '/publish',
+              url: API.ApiServer + 'policies/' + firstPolicyId + '/publish',
               body: { policyVersion: "1.2.5" },
               headers: { authorization },
               timeout: 600000
