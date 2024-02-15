@@ -686,28 +686,21 @@
   dependencies:
     tslib "^2.2.0"
 
-"@azure/abort-controller@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@azure/abort-controller/-/abort-controller-2.0.0.tgz#a66d26c7f64977e3ff4b9e0b136296cb4bd47e8b"
-  integrity sha512-RP/mR/WJchR+g+nQFJGOec+nzeN/VvjlwbinccoqfhTsTHbb8X5+mLDp48kHT0ueyum0BNSwGm0kX0UZuIqTGg==
+"@azure/core-auth@1.5.0", "@azure/core-auth@^1.3.0", "@azure/core-auth@^1.4.0", "@azure/core-auth@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@azure/core-auth/-/core-auth-1.5.0.tgz#a41848c5c31cb3b7c84c409885267d55a2c92e44"
+  integrity sha512-udzoBuYG1VBoHVohDTrvKjyzel34zt77Bhp7dQntVGGD0ehVq48owENbBG8fIgkHRNUBQH5k1r0hpoMu5L8+kw==
   dependencies:
-    tslib "^2.2.0"
-
-"@azure/core-auth@^1.3.0", "@azure/core-auth@^1.4.0", "@azure/core-auth@^1.5.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@azure/core-auth/-/core-auth-1.6.0.tgz#1dd09338db12f39d45416746e23d44d76e05ecf8"
-  integrity sha512-3X9wzaaGgRaBCwhLQZDtFp5uLIXCPrGbwJNWPPugvL4xbIGgScv77YzzxToKGLAKvG9amDoofMoP+9hsH1vs1w==
-  dependencies:
-    "@azure/abort-controller" "^2.0.0"
+    "@azure/abort-controller" "^1.0.0"
     "@azure/core-util" "^1.1.0"
     tslib "^2.2.0"
 
-"@azure/core-client@^1.3.0", "@azure/core-client@^1.4.0", "@azure/core-client@^1.5.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@azure/core-client/-/core-client-1.8.0.tgz#fce9b0af62ba469510e4ed6169b75622d31e2216"
-  integrity sha512-+gHS3gEzPlhyQBMoqVPOTeNH031R5DM/xpCvz72y38C09rg4Hui/1sJS/ujoisDZbbSHyuRLVWdFlwL0pIFwbg==
+"@azure/core-client@1.7.0", "@azure/core-client@^1.3.0", "@azure/core-client@^1.4.0", "@azure/core-client@^1.5.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@azure/core-client/-/core-client-1.7.0.tgz#eeaf286f592e0912452bdf96616458ababec1d1c"
+  integrity sha512-fgaLVlF3xGg8JAt7Hl7vkKIJcCAA9NpsvIvb44qaEOW6CaJ+IaHKL7oWe5+oGOVR+y/z2Gd2joyvslqwDvRfTw==
   dependencies:
-    "@azure/abort-controller" "^2.0.0"
+    "@azure/abort-controller" "^1.0.0"
     "@azure/core-auth" "^1.4.0"
     "@azure/core-rest-pipeline" "^1.9.1"
     "@azure/core-tracing" "^1.0.0"
@@ -724,13 +717,12 @@
     "@azure/core-client" "^1.3.0"
     "@azure/core-rest-pipeline" "^1.3.0"
 
-"@azure/core-lro@^2.2.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@azure/core-lro/-/core-lro-2.6.0.tgz#7e8b6067991e874511a0667140ae415065f7163c"
-  integrity sha512-PyRNcaIOfMgoUC01/24NoG+k8O81VrKxYARnDlo+Q2xji0/0/j2nIt8BwQh294pb1c5QnXTDPbNR4KzoDKXEoQ==
+"@azure/core-lro@2.5.0", "@azure/core-lro@^2.2.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@azure/core-lro/-/core-lro-2.5.0.tgz#9294f7c03f7ffc0e4bf00f53cb33b8772c043462"
+  integrity sha512-Vsd5Sl04RG/p5ui/p0dAFMov5I/W4dmRjOrtWGXVs4vY/hNMPefiFH7cZEOr+1u0XrBKkpvt634IyUUD9bVRuQ==
   dependencies:
-    "@azure/abort-controller" "^2.0.0"
-    "@azure/core-util" "^1.2.0"
+    "@azure/abort-controller" "^1.0.0"
     "@azure/logger" "^1.0.0"
     tslib "^2.2.0"
 
@@ -741,16 +733,17 @@
   dependencies:
     tslib "^2.2.0"
 
-"@azure/core-rest-pipeline@^1.1.0", "@azure/core-rest-pipeline@^1.3.0", "@azure/core-rest-pipeline@^1.8.0", "@azure/core-rest-pipeline@^1.9.1":
-  version "1.14.0"
-  resolved "https://registry.yarnpkg.com/@azure/core-rest-pipeline/-/core-rest-pipeline-1.14.0.tgz#9ff394941580a6dee9f0c8a759e16065c524bcfc"
-  integrity sha512-Tp4M6NsjCmn9L5p7HsW98eSOS7A0ibl3e5ntZglozT0XuD/0y6i36iW829ZbBq0qihlGgfaeFpkLjZ418KDm1Q==
+"@azure/core-rest-pipeline@1.12.1", "@azure/core-rest-pipeline@^1.1.0", "@azure/core-rest-pipeline@^1.3.0", "@azure/core-rest-pipeline@^1.8.0", "@azure/core-rest-pipeline@^1.9.1":
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/@azure/core-rest-pipeline/-/core-rest-pipeline-1.12.1.tgz#d49f3daa8d282347dda6395f489af0050087901f"
+  integrity sha512-SsyWQ+T5MFQRX+M8H/66AlaI6HyCbQStGfFngx2fuiW+vKI2DkhtOvbYodPyf9fOe/ARLWWc3ohX54lQ5Kmaog==
   dependencies:
-    "@azure/abort-controller" "^2.0.0"
+    "@azure/abort-controller" "^1.0.0"
     "@azure/core-auth" "^1.4.0"
     "@azure/core-tracing" "^1.0.1"
     "@azure/core-util" "^1.3.0"
     "@azure/logger" "^1.0.0"
+    form-data "^4.0.0"
     http-proxy-agent "^5.0.0"
     https-proxy-agent "^5.0.0"
     tslib "^2.2.0"
@@ -762,12 +755,12 @@
   dependencies:
     tslib "^2.2.0"
 
-"@azure/core-util@^1.0.0", "@azure/core-util@^1.1.0", "@azure/core-util@^1.2.0", "@azure/core-util@^1.3.0", "@azure/core-util@^1.6.1":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@azure/core-util/-/core-util-1.7.0.tgz#3a2f73e8c7eed0666e8b6ff9ca2c1951e175feba"
-  integrity sha512-Zq2i3QO6k9DA8vnm29mYM4G8IE9u1mhF1GUabVEqPNX8Lj833gdxQ2NAFxt2BZsfAL+e9cT8SyVN7dFVJ/Hf0g==
+"@azure/core-util@1.6.1", "@azure/core-util@^1.0.0", "@azure/core-util@^1.1.0", "@azure/core-util@^1.3.0", "@azure/core-util@^1.6.1":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@azure/core-util/-/core-util-1.6.1.tgz#fea221c4fa43c26543bccf799beb30c1c7878f5a"
+  integrity sha512-h5taHeySlsV9qxuK64KZxy4iln1BtMYlNt5jbuEFN3UFSAd1EwKg/Gjl5a6tZ/W8t6li3xPnutOx7zbDyXnPmQ==
   dependencies:
-    "@azure/abort-controller" "^2.0.0"
+    "@azure/abort-controller" "^1.0.0"
     tslib "^2.2.0"
 
 "@azure/identity@^3.2.2":
@@ -6221,10 +6214,10 @@ ignore@^5.2.0:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.3.1.tgz#5073e554cd42c5b33b394375f538b8593e34d4ef"
   integrity sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==
 
-image-size@^1.0.2:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/image-size/-/image-size-1.1.1.tgz#ddd67d4dc340e52ac29ce5f546a09f4e29e840ac"
-  integrity sha512-541xKlUw6jr/6gGuk92F+mYM5zaFAc5ahphvkqvNe2bQ6gVBkd6bfrmVJ2t4KDAfikAYZyIqTnktX3i6/aQDrQ==
+image-size@1.0.2, image-size@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/image-size/-/image-size-1.0.2.tgz#d778b6d0ab75b2737c1556dd631652eb963bc486"
+  integrity sha512-xfOoWjceHntRb3qFCrh5ZFORYH8XCdYpASltMhZ/Q0KZiOwjdE/Yl2QCiWdwD+lygV5bMCvauzgu5PxBX/Yerg==
   dependencies:
     queue "6.0.2"
 
@@ -6372,34 +6365,7 @@ ipaddr.js@1.9.1:
   resolved "https://registry.yarnpkg.com/ipaddr.js/-/ipaddr.js-1.9.1.tgz#bff38543eeb8984825079ff3a2a8e6cbd46781b3"
   integrity sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==
 
-ipfs-car@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/ipfs-car/-/ipfs-car-0.7.0.tgz#72955d2b6904e87edfa17bbe5c00c1b3fcb79bb9"
-  integrity sha512-9ser6WWZ1ZMTCGbcVkRXUzOrpQ4SIiLfzIEnk+3LQsXbV09yeZg3ijhRuEXozEIYE68Go9JmOFshamsK9iKlNQ==
-  dependencies:
-    "@ipld/car" "^3.2.3"
-    "@web-std/blob" "^3.0.1"
-    bl "^5.0.0"
-    blockstore-core "^1.0.2"
-    browser-readablestream-to-it "^1.0.2"
-    idb-keyval "^6.0.3"
-    interface-blockstore "^2.0.2"
-    ipfs-core-types "^0.8.3"
-    ipfs-core-utils "^0.12.1"
-    ipfs-unixfs-exporter "^7.0.4"
-    ipfs-unixfs-importer "^9.0.4"
-    ipfs-utils "^9.0.2"
-    it-all "^1.0.5"
-    it-last "^1.0.5"
-    it-pipe "^1.1.0"
-    meow "^9.0.0"
-    move-file "^2.1.0"
-    multiformats "^9.6.3"
-    stream-to-it "^0.2.3"
-    streaming-iterables "^6.0.0"
-    uint8arrays "^3.0.0"
-
-"ipfs-car@github:filebase/ipfs-car#support-esm":
+ipfs-car@^0.7.0, "ipfs-car@github:filebase/ipfs-car#support-esm":
   version "0.7.0"
   resolved "https://codeload.github.com/filebase/ipfs-car/tar.gz/f6e736359b81f1651c02d4da36ff74fb38065ff8"
   dependencies:
