@@ -36,22 +36,22 @@ context("IPFS",  { tags: '@ipfs' }, () => {
         });
     });
 
-    // it("import the schema file", () => {
-    //     cy.fixture("exportedSchema.schema", "binary")
-    //         .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-    //         .then((file) => {
-    //             cy.request({
-    //                 method: METHOD.POST,
-    //                 url: API.ApiServer + API.IPFSFile,
-    //                 body: file,
-    //                 headers: {
-    //                     "content-type": "binary/octet-stream",
-    //                     authorization,
-    //                 },
-    //                 timeout: 200000
-    //             }).then((response) => {
-    //                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-    //             });
-    //         });
-    // });
+    it("import the schema file", () => {
+        cy.fixture("exportedSchema.schema", "binary")
+            .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+            .then((file) => {
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.IPFSFile,
+                    body: file,
+                    headers: {
+                        "content-type": "binary/octet-stream",
+                        authorization,
+                    },
+                    timeout: 200000
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.SUCCESS);
+                });
+            });
+    });
 });

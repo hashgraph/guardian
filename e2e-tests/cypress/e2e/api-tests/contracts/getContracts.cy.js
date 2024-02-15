@@ -15,9 +15,9 @@ context("Contracts", { tags: '@contracts' },() => {
             if (resp.body.length != 0) {
                 expect(resp.body.at(-1)).to.have.property("_id");
                 expect(resp.body.at(-1)).to.have.property("contractId");
-                expect(resp.body.at(-1)).to.have.property("status");
-                expect(resp.body.at(-1)).to.have.property("isOwnerCreator");
-                expect(resp.body.at(-1)).to.have.property("status");
+                expect(resp.body.at(-1)).to.have.property("type");
+                expect(resp.body.at(-1)).to.have.property("description");
+                expect(resp.body.at(-1)).to.have.property("owner");
             }
         });
     });

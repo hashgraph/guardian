@@ -8,7 +8,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
         cy.request({
             method: "POST",
             url: API.ApiServer + API.PolicisImportMsg,
-            body: { messageId: "1707746623.316119865" }, //Remote Work GHG Policy changed to iRec 3
+            body: { messageId: (Cypress.env('irec_policy')) }, //Remote Work GHG Policy changed to iRec 3
             headers: {
                 authorization,
             },
