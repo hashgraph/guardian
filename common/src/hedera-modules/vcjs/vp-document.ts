@@ -4,7 +4,7 @@ import { VcDocument } from './vc-document';
 import { Issuer } from './issuer';
 import { TimestampUtils } from '../timestamp-utils';
 import { Timestamp } from '@hashgraph/sdk';
-import { CommonDidDocument } from './did-document/common-did-document';
+import { CommonDidDocument } from './did';
 
 /**
  * VP document

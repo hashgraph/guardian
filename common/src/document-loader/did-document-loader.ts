@@ -1,6 +1,6 @@
 import { DataBaseHelper } from '../helpers';
 import { DidDocument } from '../entity';
-import { VerificationMethod, DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules';
+import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules';
 
 /**
  * DID Documents Loader

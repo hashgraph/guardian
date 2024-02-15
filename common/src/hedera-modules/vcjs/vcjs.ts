@@ -4,7 +4,7 @@ import { ld as vcjs } from '@transmute/vc.js';
 import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { PrivateKey } from '@hashgraph/sdk';
 import { CheckResult } from '@transmute/jsonld-schema';
-import { GenerateUUIDv4, ICredentialSubject, IVC, SignatureType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, IVC, IVerificationMethod, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document';
 import { VpDocument } from './vp-document';
 import { VcSubject } from './vc-subject';
@@ -15,13 +15,12 @@ import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-lo
 // import { BBSDidRootKey, DidRootKey } from './did-document';
 import { Issuer } from './issuer';
 import axios from 'axios';
-import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
+import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers';
 import { verify, purposes } from 'jsonld-signatures';
-import { CommonDidDocument } from './did-document/common-did-document';
-import { VerificationMethod } from './did-document/components/verification-method';
-import { HederaDidDocument } from './did-document/hedera-did-document';
-import { Environment } from '../environment';
+import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did';
+
+
 
 /**
  * Suite interface
@@ -420,7 +419,7 @@ export class VCJS {
      *
      * @returns {Ed25519Signature2018} - Ed25519Signature2018
      */
-    public async createEd25519Suite(verificationMethod: any): Promise<Ed25519Signature2018> {
+    public async createEd25519Suite(verificationMethod: KeyPairOptions): Promise<Ed25519Signature2018> {
         const key = await Ed25519VerificationKey2018.from(verificationMethod);
         return new Ed25519Signature2018({ key });
     }
@@ -432,7 +431,7 @@ export class VCJS {
      *
      * @returns {BbsBlsSignature2020} - BbsBlsSignature2020
      */
-    public async createBBSSuite(verificationMethod: any): Promise<BbsBlsSignature2020> {
+    public async createBBSSuite(verificationMethod: KeyPairOptions): Promise<BbsBlsSignature2020> {
         const key = await Bls12381G2KeyPair.from(verificationMethod);
         return new BbsBlsSignature2020({ key });
     }
@@ -523,18 +522,29 @@ export class VCJS {
         didDocument: CommonDidDocument,
         type: SignatureType
     ): Promise<Ed25519Signature2018 | BbsBlsSignature2020> {
-        const verificationMethod = didDocument.getMethodByType(type);
-        if (!verificationMethod) {
-            throw new Error('Verification method not found.');
-        }
-        if (!verificationMethod.hasPrivateKey()) {
-            throw new Error('Private key not found.');
-        }
         switch (type) {
-            case SignatureType.BbsBlsSignature2020:
-                return this.createBBSSuite(verificationMethod);
-            default:
-                return this.createEd25519Suite(verificationMethod);
+            case SignatureType.BbsBlsSignature2020: {
+                const verificationMethod = didDocument.getMethodByType(HederaBBSMethod.DID_ROOT_KEY_TYPE);
+                if (!verificationMethod) {
+                    throw new Error('Verification method not found.');
+                }
+                if (!verificationMethod.hasPrivateKey()) {
+                    throw new Error('Private key not found.');
+                }
+                const option:any = verificationMethod.toObject(true);
+                return this.createBBSSuite(option);
+            }
+            default: {
+                const verificationMethod = didDocument.getMethodByType(HederaEd25519Method.DID_ROOT_KEY_TYPE);
+                if (!verificationMethod) {
+                    throw new Error('Verification method not found.');
+                }
+                if (!verificationMethod.hasPrivateKey()) {
+                    throw new Error('Private key not found.');
+                }
+                const option:any = verificationMethod.toObject(true);
+                return this.createEd25519Suite(option);
+            }
         }
     }
 

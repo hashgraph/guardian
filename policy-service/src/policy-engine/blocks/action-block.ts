@@ -8,6 +8,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { HederaEd25519Method, KeyType } from '@guardian/common';
 
 /**
  * Document action clock with UI
@@ -104,12 +105,7 @@ export class InterfaceDocumentActionBlock {
             const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
             const didDocument = await userCred.loadSubDidDocument(ref, sensorDid);
-            const method = didDocument.getMethodByType(SignatureType.Ed25519Signature2018);
-            const sensorKey = method.getPrivateKey();
-
-            // const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
-            // const didDocument = await DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
-
+            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {

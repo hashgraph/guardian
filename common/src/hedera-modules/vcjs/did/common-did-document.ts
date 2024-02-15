@@ -309,11 +309,13 @@ export class CommonDidDocument {
     /**
      * Get verification method by type
      *
-     * @param {SignatureType} type - Signature type
+     * @param {string} type - Signature type
      */
-    public getMethodByType(type: SignatureType): VerificationMethod | null {
+    public getMethodByType(type: string): VerificationMethod | null {
+        console.debug('--- getMethodByType: ', type);
         if (Array.isArray(this.verificationMethod)) {
             for (const method of this.verificationMethod) {
+                console.debug('---- getMethodByType.getType(): ', method.getType());
                 if (method.getType() === type) {
                     return method;
                 }

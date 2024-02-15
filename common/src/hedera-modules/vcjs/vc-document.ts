@@ -4,7 +4,7 @@ import { TimestampUtils } from '../timestamp-utils';
 import { IVC, SignatureType } from '@guardian/interfaces';
 import { Issuer } from './issuer';
 import { VcSubject } from './vc-subject';
-import { CommonDidDocument } from './did-document/common-did-document';
+import { CommonDidDocument } from './did';
 
 /**
  * VC document

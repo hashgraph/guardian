@@ -104,7 +104,7 @@ export class VerificationMethod {
      * Has private key
      */
     public hasPrivateKey(): boolean {
-        return false;
+        return !!(this.privateKeyJwk || this.privateKeyMultibase || this.privateKeyBase58);
     }
 
     /**
