@@ -1,6 +1,6 @@
 import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
 import { Hashing } from '../../hashing';
-import { DidBase, DidComponents } from './did-base';
+import { CommonDid, DidComponents } from './common-did';
 
 export interface HederaDidComponents extends DidComponents {
     readonly network: string,
@@ -8,7 +8,7 @@ export interface HederaDidComponents extends DidComponents {
     readonly topicId: string
 }
 
-export class HederaDid extends DidBase {
+export class HederaDid extends CommonDid {
     /**
      * DID topic separator
      */
@@ -76,13 +76,13 @@ export class HederaDid extends DidBase {
      */
     private build(): string {
         const methodNetwork = HederaDid.HEDERA_HCS +
-            DidBase.DID_METHOD_SEPARATOR +
+            CommonDid.DID_METHOD_SEPARATOR +
             this.network;
 
-        let ret: string = DidBase.DID_PREFIX +
-            DidBase.DID_METHOD_SEPARATOR +
+        let ret: string = CommonDid.DID_PREFIX +
+            CommonDid.DID_METHOD_SEPARATOR +
             methodNetwork +
-            DidBase.DID_METHOD_SEPARATOR +
+            CommonDid.DID_METHOD_SEPARATOR +
             this.identifier;
 
         if (this.topicId) {
@@ -96,7 +96,8 @@ export class HederaDid extends DidBase {
 
     /**
      * Public key to ID string
-     * @param didRootKey
+     * @param publicKey
+     * @static
      */
     private static publicKeyToIdString(publicKey: PublicKey): string {
         return Hashing.base58.encode(Hashing.sha256.digest(publicKey.toBytes()));
@@ -107,6 +108,7 @@ export class HederaDid extends DidBase {
      * @param network
      * @param key
      * @param topicId
+     * @static
      */
     public static async generate(
         network: string,
@@ -115,7 +117,6 @@ export class HederaDid extends DidBase {
     ): Promise<HederaDid> {
         const privateKey = typeof key === 'string' ? PrivateKey.fromString(key) : key;
         const publicKey = privateKey.publicKey;
-
         const result = new HederaDid();
         result.topicId = null;
         if (topicId) {
@@ -134,6 +135,7 @@ export class HederaDid extends DidBase {
     /**
      * From
      * @param did
+     * @static
      */
     public static override from(did: string): HederaDid {
         const { prefix, method, network, key, topicId } = HederaDid.parse(did);
@@ -157,6 +159,7 @@ export class HederaDid extends DidBase {
      * parse DID
      * @param did
      * @returns {HederaDidComponents}
+     * @static
      */
     public static override parse(did: string): HederaDidComponents {
         if (!did) {
@@ -173,6 +176,7 @@ export class HederaDid extends DidBase {
      * Parse DID
      * @param did
      * @returns {HederaDidComponents}
+     * @static
      */
     public static parseV2(did: string): HederaDidComponents {
         const mainParts = did.split(HederaDid.DID_TOPIC_SEPARATOR);
@@ -203,6 +207,7 @@ export class HederaDid extends DidBase {
      * @param did
      * @returns {HederaDidComponents}
      * @deprecated only for old DID versions
+     * @static
      */
     private static parseV1(did: string): HederaDidComponents {
         const mainParts = did.split(HederaDid.DID_PARAMETER_SEPARATOR);
@@ -230,12 +235,18 @@ export class HederaDid extends DidBase {
         return { prefix, method, identifier, network, key, topicId };
     }
 
+    /**
+     * Check DID type
+     * @param did
+     * @returns {boolean}
+     * @static
+     */
     public static override implement(did: string): boolean {
         if (!did || typeof did !== 'string') {
             return false;
         }
-        const parts = did.split(DidBase.DID_METHOD_SEPARATOR);
-        if (parts[0] !== DidBase.DID_PREFIX || parts[1] !== HederaDid.HEDERA_HCS) {
+        const parts = did.split(CommonDid.DID_METHOD_SEPARATOR);
+        if (parts[0] !== CommonDid.DID_PREFIX || parts[1] !== HederaDid.HEDERA_HCS) {
             return false;
         }
         return true;
@@ -244,6 +255,7 @@ export class HederaDid extends DidBase {
     /**
      * Get topic id
      * @param did
+     * @static
      */
     public static getTopicId(did: string): string {
         const splittedDid = did.split(HederaDid.DID_TOPIC_SEPARATOR);

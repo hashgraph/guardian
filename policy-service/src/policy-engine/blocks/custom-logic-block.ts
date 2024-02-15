@@ -361,7 +361,6 @@ export class CustomLogicBlock {
 
                 const didObject = await ref.components.generateDID(topic.topicId);
 
-
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
 

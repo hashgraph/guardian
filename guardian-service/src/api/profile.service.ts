@@ -4,8 +4,6 @@ import {
     DataBaseHelper,
     DidDocument as DidDocumentCollection,
     DIDMessage,
-    Environment,
-    HederaDidDocument,
     IAuthUser,
     KeyType,
     Logger,
@@ -96,7 +94,11 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
  * @param profile
  * @param notifier
  */
-async function createUserProfile(profile: any, notifier: INotifier, user?: IAuthUser): Promise<string> {
+async function createUserProfile(
+    profile: any,
+    notifier: INotifier,
+    user: IAuthUser
+): Promise<string> {
     const logger = new Logger();
 
     const {
@@ -148,7 +150,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
 
-    const didObject = await HederaDidDocument.generate(Environment.network, hederaAccountKey, topicConfig.topicId);
+    const vcHelper = new VcHelper();
+    const didObject = await vcHelper.generateNewDid(topicConfig.topicId, hederaAccountKey);
     const userDID = didObject.getDid();
 
     const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({ did: userDID });
@@ -158,13 +161,12 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         return userDID;
     }
 
-    const didMessage = new DIDMessage(MessageAction.CreateDID);
-    didMessage.setDocument(didObject);
-    const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
-        did: didMessage.did,
-        document: didMessage.document
-    });
+    const didDoc = await vcHelper.saveDidDocument(didObject, user);
+    const did = didObject.getDid();
+
     try {
+        const didMessage = new DIDMessage(MessageAction.CreateDID);
+        didMessage.setDocument(didObject);
         const didMessageResult = await messageServer
             .setTopicObject(topicConfig)
             .sendMessage(didMessage)
@@ -203,8 +205,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             if (schema) {
                 notifier.info('Publish System Schema (STANDARD_REGISTRY)');
                 logger.info('Publish System Schema (STANDARD_REGISTRY)', ['GUARDIAN_SERVICE']);
-                schema.creator = didMessage.did;
-                schema.owner = didMessage.did;
+                schema.creator = did;
+                schema.owner = did;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 await new DataBaseHelper(SchemaCollection).save(item);
             }
@@ -224,8 +226,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             if (schema) {
                 notifier.info('Publish System Schema (USER)');
                 logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
-                schema.creator = didMessage.did;
-                schema.owner = didMessage.did;
+                schema.creator = did;
+                schema.owner = did;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 await new DataBaseHelper(SchemaCollection).save(item);
             }
@@ -245,8 +247,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             if (schema) {
                 notifier.info('Publish System Schema (RETIRE)');
                 logger.info('Publish System Schema (RETIRE)', ['GUARDIAN_SERVICE']);
-                schema.creator = didMessage.did;
-                schema.owner = didMessage.did;
+                schema.creator = did;
+                schema.owner = did;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 await new DataBaseHelper(SchemaCollection).save(item);
             }
@@ -276,8 +278,6 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     if (vcDocument) {
         logger.info('Create VC Document', ['GUARDIAN_SERVICE']);
 
-        const vcHelper = new VcHelper();
-
         let credentialSubject: any = { ...vcDocument } || {};
         credentialSubject.id = userDID;
         if (schemaObject) {
@@ -290,7 +290,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         vcMessage.setDocument(vcObject);
         const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
             hash: vcMessage.hash,
-            owner: didMessage.did,
+            owner: did,
             document: vcMessage.document,
             type: schemaObject?.entity
         });
@@ -315,10 +315,10 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
 
     notifier.completedAndStart('Save changes');
     if (newTopic) {
-        newTopic.owner = didMessage.did;
+        newTopic.owner = did;
         newTopic.parent = globalTopic?.topicId;
         await new DataBaseHelper(Topic).update(newTopic);
-        topicConfig.owner = didMessage.did;
+        topicConfig.owner = did;
         topicConfig.parent = globalTopic?.topicId;
         await topicConfig.saveKeysByUser(user);
     }
@@ -328,7 +328,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         delete attributes.type;
         delete attributes['@context'];
         const regMessage = new RegistrationMessage(MessageAction.Init);
-        regMessage.setDocument(didMessage.did, topicConfig?.topicId, attributes);
+        regMessage.setDocument(did, topicConfig?.topicId, attributes);
         await messageServer
             .setTopicObject(globalTopic)
             .sendMessage(regMessage)
@@ -480,7 +480,12 @@ export function profileAPI() {
 
             notifier.start('Restore user profile');
             const restore = new RestoreDataFromHedera();
-            await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
+            await restore.restoreRootAuthority(
+                username, 
+                profile.hederaAccountId, 
+                profile.hederaAccountKey, 
+                profile.topicId
+            )
             notifier.completed();
             notifier.result('did');
         }, async (error) => {

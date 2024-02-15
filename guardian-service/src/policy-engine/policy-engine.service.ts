@@ -33,7 +33,8 @@ import {
     JsonToXlsx,
     GenerateBlocks,
     Environment,
-    HederaDidDocument
+    HederaDidDocument,
+    VcHelper
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -1268,12 +1269,15 @@ export class PolicyEngineService {
                 const topic = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
-                const didObject = await HederaDidDocument.generate(Environment.network, newPrivateKey, topic.topicId);
+                
+                const vcHelper = new VcHelper();
+                const didObject = await vcHelper.generateNewDid(topic.topicId, newPrivateKey);
                 const did = didObject.getDid();
                 const document = didObject.getDocument();
 
                 const count = await DatabaseServer.getVirtualUsers(policyId);
                 const username = `Virtual User ${count.length}`;
+
                 await DatabaseServer.createVirtualUser(
                     policyId,
                     username,
@@ -1282,8 +1286,15 @@ export class PolicyEngineService {
                     newPrivateKey.toString()
                 );
 
-                const db = new DatabaseServer(policyId);
-                await db.saveDid({ did, document });
+                const instanceDB = new DatabaseServer(policyId);
+                const keys = didObject.getPrivateKeys();
+                const verificationMethods = {};
+                for (const item of keys) {
+                    const { id, type, key } = item;
+                    verificationMethods[type] = id;
+                    await instanceDB.setVirtualKey(did, id, key);
+                }
+                await instanceDB.saveDid({ did, document });
 
                 await (new GuardiansService())
                     .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {

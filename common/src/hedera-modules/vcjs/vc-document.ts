@@ -4,7 +4,7 @@ import { TimestampUtils } from '../timestamp-utils';
 import { IVC, SignatureType } from '@guardian/interfaces';
 import { Issuer } from './issuer';
 import { VcSubject } from './vc-subject';
-import { DidDocumentBase } from './did-document/did-document-base';
+import { CommonDidDocument } from './did-document/common-did-document';
 
 /**
  * VC document
@@ -176,7 +176,7 @@ export class VcDocument {
      * Set issuer
      * @param issuer
      */
-    public setIssuer(issuer: string | Issuer | DidDocumentBase): void {
+    public setIssuer(issuer: string | Issuer | CommonDidDocument): void {
         if (typeof issuer === 'string') {
             this.issuer = new Issuer(issuer);
         } else if (issuer instanceof Issuer) {

@@ -18,9 +18,10 @@ import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers';
 import { verify, purposes } from 'jsonld-signatures';
-import { DidDocumentBase } from './did-document/did-document-base';
-import { DidDocumentMethod } from './did-document/did-document-method';
+import { CommonDidDocument } from './did-document/common-did-document';
+import { VerificationMethod } from './did-document/components/verification-method';
 import { HederaDidDocument } from './did-document/hedera-did-document';
+import { Environment } from '../environment';
 
 /**
  * Suite interface
@@ -519,7 +520,7 @@ export class VCJS {
      *
      */
     public async createSuiteByMethod(
-        didDocument: DidDocumentBase,
+        didDocument: CommonDidDocument,
         type: SignatureType
     ): Promise<Ed25519Signature2018 | BbsBlsSignature2020> {
         const verificationMethod = didDocument.getMethodByType(type);
@@ -542,10 +543,9 @@ export class VCJS {
      *
      * @param {ISuiteOptions} suiteOptions - Suite Options (DID, Private Key, Signature Type)
      *
-     * @returns {DidDocumentBase} - DID Document
-     *
+     * @returns {HederaDidDocument} - DID Document
      */
-    public async generateDid(suiteOptions: ISuiteOptions): Promise<DidDocumentBase> {
+    public async generateDid(suiteOptions: ISuiteOptions): Promise<HederaDidDocument> {
         return await HederaDidDocument.generateByDid(suiteOptions.did, suiteOptions.key);
     }
 
@@ -639,7 +639,7 @@ export class VCJS {
      * Create VC Document
      *
      * @param {ICredentialSubject} subject - Credential Object
-     * @param {DidDocumentBase} didDocument - DID Document
+     * @param {CommonDidDocument} didDocument - DID Document
      * @param {SignatureType} signatureType - Signature type (Ed25519Signature2018, BbsBlsSignature2020)
      * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
      *
@@ -647,7 +647,7 @@ export class VCJS {
      */
     public async createVerifiableCredential(
         subject: ICredentialSubject,
-        didDocument: DidDocumentBase,
+        didDocument: CommonDidDocument,
         signatureType: SignatureType,
         documentOptions?: IDocumentOptions
     ): Promise<VcDocument> {
@@ -670,7 +670,7 @@ export class VCJS {
      * Create VC Document
      *
      * @param {VcDocument} verifiableCredential - VC Document
-     * @param {DidDocumentBase} didDocument - DID Document
+     * @param {CommonDidDocument} didDocument - DID Document
      * @param {SignatureType} signatureType - Signature type (Ed25519Signature2018, BbsBlsSignature2020)
      * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
      *
@@ -678,7 +678,7 @@ export class VCJS {
      */
     public async issueVerifiableCredential(
         verifiableCredential: VcDocument,
-        didDocument: DidDocumentBase,
+        didDocument: CommonDidDocument,
         signatureType: SignatureType,
         documentOptions?: IDocumentOptions
     ): Promise<VcDocument> {
@@ -743,7 +743,7 @@ export class VCJS {
      */
     public async createVerifiablePresentation(
         vcs: VcDocument[],
-        didDocument: DidDocumentBase,
+        didDocument: CommonDidDocument,
         signatureType: SignatureType,
         documentOptions?: IDocumentOptions
     ): Promise<VpDocument> {

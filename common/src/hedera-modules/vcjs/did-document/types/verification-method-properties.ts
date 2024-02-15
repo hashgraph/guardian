@@ -21,12 +21,10 @@ export enum VerificationMethodProperties {
     PUBLIC_KEY_JWK = 'publicKeyJwk',
     /**
      * A string that conforms to a [MULTIBASE] encoded public key.
-     * @required
      */
     PUBLIC_KEY_MULTIBASE = 'publicKeyMultibase',
     /**
      * A string.
-     * @required
      */
     PUBLIC_KEY_BASE58 = 'publicKeyBase58'
 }

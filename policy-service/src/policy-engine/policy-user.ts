@@ -284,20 +284,16 @@ export class UserCredentials {
         document: HederaDidDocument
     ): Promise<void> {
         const walletToken = this._did;
-        const verificationMethods = document.getVerificationMethods();
+        const keys = document.getPrivateKeys();
         row.verificationMethods = {};
-        for (const method of verificationMethods) {
-            if (method.hasPrivateKey()) {
-                const type = method.getType();
-                const methodId = method.getId();
-                const key = method.getPrivateKey();
-                row.verificationMethods[type] = methodId;
-                if (this._dryRun) {
-                    await ref.databaseServer.setVirtualKey(walletToken, methodId, key);
-                } else {
-                    const wallet = new Wallet();
-                    await wallet.setUserKey(walletToken, KeyType.KEY, methodId, key);
-                }
+        for (const item of keys) {
+            const { id, type, key } = item;
+            row.verificationMethods[type] = id;
+            if (this._dryRun) {
+                await ref.databaseServer.setVirtualKey(walletToken, id, key);
+            } else {
+                const wallet = new Wallet();
+                await wallet.setUserKey(walletToken, KeyType.KEY, id, key);
             }
         }
         await ref.databaseServer.saveDid(row);

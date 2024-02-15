@@ -1,11 +1,12 @@
-import { DidDocumentContext } from './did-document-context';
-import { HederaDid } from './hedera-did';
 import { PrivateKey, TopicId } from '@hashgraph/sdk';
-import { DidDocumentBase } from './did-document-base';
-import { HederaBBSMethod, HederaEd25519Method } from './did-document-method';
-import { IDidDocument } from '@guardian/interfaces';
+import { DocumentContext } from './components/document-context';
+import { HederaDid } from './hedera-did';
+import { CommonDidDocument } from './common-did-document';
+import { HederaEd25519Method } from './components/hedera-ed25519-method';
+import { HederaBBSMethod } from './components/hedera-bbs-method';
+import { IDidDocument } from './types/did-document';
 
-export class HederaDidDocument extends DidDocumentBase {
+export class HederaDidDocument extends CommonDidDocument {
     /**
      * Topic ID
      * @protected
@@ -35,7 +36,7 @@ export class HederaDidDocument extends DidDocumentBase {
         }
 
         let result = new HederaDidDocument();
-        result = DidDocumentBase._from(document, result);
+        result = CommonDidDocument._from(document, result);
         if (result.did instanceof HederaDid) {
             result.setDidTopicId(result.did.getDidTopicId());
         }
@@ -83,18 +84,46 @@ export class HederaDidDocument extends DidDocumentBase {
     ): Promise<HederaDidDocument> {
         const result = new HederaDidDocument();
 
-        //Context
-        result.context = new DidDocumentContext();
-        result.context.add(DidDocumentBase.DID_DOCUMENT_CONTEXT);
-
         //DID
         result.did = did;
         const controller = result.did.toString();
+
+        //Context
+        result.context = new DocumentContext();
+        result.context.add(CommonDidDocument.DID_DOCUMENT_CONTEXT);
+
+        //alsoKnownAs
+        // --- Not set
+
+        //controller
+        // --- Not set
 
         //Verification Method
         result.verificationMethod = [];
         result.verificationMethod.push(await HederaEd25519Method.generate(controller, key));
         result.verificationMethod.push(await HederaBBSMethod.generate(controller, key));
+
+        //authentication
+        result.authentication = [];
+        result.authentication.push(result.verificationMethod[0].getId());
+
+        //assertionMethod
+        result.assertionMethod = [];
+        for (const method of result.verificationMethod) {
+            result.assertionMethod.push(method.getName());
+        }
+
+        //keyAgreement
+        // --- Not set
+
+        //capabilityInvocation
+        // --- Not set
+
+        //capabilityDelegation
+        // --- Not set
+
+        //service
+        // --- Not set
 
         result.setDidTopicId(did.getDidTopicId());
 

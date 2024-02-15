@@ -4,7 +4,7 @@ import { VcDocument } from './vc-document';
 import { Issuer } from './issuer';
 import { TimestampUtils } from '../timestamp-utils';
 import { Timestamp } from '@hashgraph/sdk';
-import { DidDocumentBase } from './did-document/did-document-base';
+import { CommonDidDocument } from './did-document/common-did-document';
 
 /**
  * VP document
@@ -125,7 +125,7 @@ export class VpDocument {
      * Set issuer
      * @param issuer
      */
-    public setIssuer(issuer: string | Issuer | DidDocumentBase): void {
+    public setIssuer(issuer: string | Issuer | CommonDidDocument): void {
         if (typeof issuer === 'string') {
             this.issuer = new Issuer(issuer);
         } else if (issuer instanceof Issuer) {

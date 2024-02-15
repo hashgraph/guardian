@@ -1,7 +1,7 @@
 /**
  * Did document context
  */
-export class DidDocumentContext {
+export class DocumentContext {
     /**
      * Context
      * @private
@@ -32,8 +32,8 @@ export class DidDocumentContext {
         }
     }
 
-    public static from(context: string | string[] | null): DidDocumentContext {
-        const result = new DidDocumentContext();
+    public static from(context: string | string[] | null): DocumentContext {
+        const result = new DocumentContext();
         if (context) {
             if (typeof context === 'string') {
                 result.add(context);

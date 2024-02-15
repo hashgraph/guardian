@@ -4,7 +4,7 @@ export interface DidComponents {
     readonly identifier: string;
 }
 
-export class DidBase {
+export class CommonDid {
     /**
      * DID prefix
      */
@@ -63,9 +63,14 @@ export class DidBase {
         return this.did;
     }
 
-    public static from(did: string): DidBase {
-        const { prefix, method, identifier } = DidBase.parse(did);
-        const result = new DidBase();
+    /**
+     * From
+     * @param did
+     * @static
+     */
+    public static from(did: string): CommonDid {
+        const { prefix, method, identifier } = CommonDid.parse(did);
+        const result = new CommonDid();
         result.prefix = prefix;
         result.did = did;
         result.method = method;
@@ -77,27 +82,34 @@ export class DidBase {
      * parse DID
      * @param did
      * @returns {DidComponents}
+     * @static
      */
     public static parse(did: string): DidComponents {
         if (!did || typeof did !== 'string') {
             throw new Error('DID string cannot be null');
         }
-        const parts = did.split(DidBase.DID_METHOD_SEPARATOR);
-        if (parts.length < 3 || parts[0] !== DidBase.DID_PREFIX) {
+        const parts = did.split(CommonDid.DID_METHOD_SEPARATOR);
+        if (parts.length < 3 || parts[0] !== CommonDid.DID_PREFIX) {
             throw new Error('DID string is invalid: invalid did format.');
         }
         const prefix = parts[0];
         const method = parts[1];
-        const identifier = parts.slice(2).join(DidBase.DID_METHOD_SEPARATOR);
+        const identifier = parts.slice(2).join(CommonDid.DID_METHOD_SEPARATOR);
         return { prefix, method, identifier };
     }
 
+    /**
+     * Check DID type
+     * @param did
+     * @returns {boolean}
+     * @static
+     */
     public static implement(did: string): boolean {
         if (!did || typeof did !== 'string') {
             return false;
         }
-        const parts = did.split(DidBase.DID_METHOD_SEPARATOR);
-        if (parts[0] !== DidBase.DID_PREFIX) {
+        const parts = did.split(CommonDid.DID_METHOD_SEPARATOR);
+        if (parts[0] !== CommonDid.DID_PREFIX) {
             return false;
         }
         return true;

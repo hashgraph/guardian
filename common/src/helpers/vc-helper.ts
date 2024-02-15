@@ -3,10 +3,11 @@ import {
     DefaultDocumentLoader,
     VcDocumentDefinition as VcDocument,
     VpDocumentDefinition as VpDocument,
-    DidDocumentBase,
+    CommonDidDocument,
     HederaDidDocument,
     HederaEd25519Method,
     HederaBBSMethod,
+    Environment,
 } from '../hedera-modules';
 import {
     SchemaDocumentLoader,
@@ -20,7 +21,7 @@ import {
     SchemaEntity,
     SignatureType,
 } from '@guardian/interfaces';
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey, TopicId } from '@hashgraph/sdk';
 // tslint:disable-next-line:no-duplicate-imports
 import { Schema } from '@guardian/interfaces';
 import {
@@ -35,7 +36,8 @@ import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
 import { SchemaDocumentLoaderV2 } from '../document-loader/schema-document-loader-v2';
 import { VCSchemaLoaderV2 } from '../document-loader/vc-schema-loader-v2';
 import { SubjectSchemaLoaderV2 } from '../document-loader/subject-schema-loader-v2';
-import { KeyType, Wallet } from '../helpers';
+import { KeyType, Users, Wallet } from '../helpers';
+import { IAuthUser } from '../interfaces';
 
 /**
  * Configured VCHelper
@@ -115,11 +117,11 @@ export class VcHelper extends VCJS {
     }
 
     /**
-     * Create topic config by json
+     *Load DID document
      * @param topic
      * @param needKey
      */
-    public async loadDidDocument(did: string): Promise<HederaDidDocument> {
+    public async loadDidDocument(did: string, user?: IAuthUser): Promise<HederaDidDocument> {
         if (!did) {
             return null;
         }
@@ -129,29 +131,71 @@ export class VcHelper extends VCJS {
         }
 
         const document = HederaDidDocument.from(row.document);
+        document.setDidTopicId(row.topicId);
+
+        let walletToken: string;
+        if (user) {
+            walletToken = user.walletToken;
+        } else {
+            walletToken = (await (new Users()).getUserById(did))?.walletToken;
+        }
 
         const keys = row.verificationMethods || {};
         const keyName1 = keys[SignatureType.Ed25519Signature2018];
         const keyName2 = keys[SignatureType.BbsBlsSignature2020];
 
         const wallet = new Wallet();
-        const hederaPrivateKey = await wallet.getUserKey(did, KeyType.KEY, did);
+        const hederaPrivateKey = await wallet.getKey(walletToken, KeyType.KEY, did);
 
         if (keyName1) {
-            const keyValue1 = await wallet.getUserKey(did, KeyType.DID_KEYS, keyName1);
+            const keyValue1 = await wallet.getKey(walletToken, KeyType.DID_KEYS, keyName1);
             document.setPrivateKey(keyName1, keyValue1);
         } else {
             document.setPrivateKey(HederaEd25519Method.defaultId(did), hederaPrivateKey);
         }
 
         if (keyName2) {
-            const keyValue2 = await wallet.getUserKey(did, KeyType.DID_KEYS, keyName2);
+            const keyValue2 = await wallet.getKey(walletToken, KeyType.DID_KEYS, keyName2);
             document.setPrivateKey(keyName2, keyValue2);
         } else {
             document.setPrivateKey(HederaBBSMethod.defaultId(did), hederaPrivateKey);
         }
 
         return document;
+    }
+
+    /**
+     * Create topic config by json
+     * @param topic
+     * @param needKey
+     */
+    public async saveDidDocument(document: CommonDidDocument, user: IAuthUser): Promise<DidDocumentCollection> {
+        const wallet = new Wallet();
+        const keys = document.getPrivateKeys();
+        const verificationMethods = {};
+        for (const item of keys) {
+            const { id, type, key } = item;
+            verificationMethods[type] = id;
+            await wallet.setKey(user.walletToken, KeyType.KEY, id, key);
+        }
+        const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
+            did: document.getDid(),
+            document: document.getDocument(),
+            verificationMethods
+        });
+        return didDoc;
+    }
+
+    /**
+     * Generate verification method by Hedera key
+     *
+     * @param {string | TopicId} topicId
+     * @param {string | PrivateKey} privateKey
+     * 
+     * @returns {HederaDidDocument} - DID Document
+     */
+    public async generateNewDid(topicId: string | TopicId, privateKey: string | PrivateKey): Promise<HederaDidDocument> {
+        return await HederaDidDocument.generate(Environment.network, privateKey, topicId);
     }
 
     /**
@@ -341,7 +385,7 @@ export class VcHelper extends VCJS {
      * Create VC Document
      *
      * @param {ICredentialSubject} subject - Credential Object
-     * @param {DidDocumentBase} didDocument - DID Document
+     * @param {CommonDidDocument} didDocument - DID Document
      * @param {SignatureType} signatureType - Signature type (Ed25519Signature2018, BbsBlsSignature2020)
      * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
      *
@@ -349,7 +393,7 @@ export class VcHelper extends VCJS {
      */
     public override async createVerifiableCredential(
         subject: ICredentialSubject,
-        didDocument: DidDocumentBase,
+        didDocument: CommonDidDocument,
         signatureType: SignatureType,
         documentOptions?: IDocumentOptions
     ): Promise<VcDocument> {
@@ -411,7 +455,7 @@ export class VcHelper extends VCJS {
      */
     public override async createVerifiablePresentation(
         vcs: VcDocument[],
-        didDocument: DidDocumentBase,
+        didDocument: CommonDidDocument,
         signatureType: SignatureType,
         documentOptions?: IDocumentOptions
     ): Promise<VpDocument> {

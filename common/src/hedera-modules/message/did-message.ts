@@ -5,7 +5,7 @@ import { MessageType } from './message-type';
 import { DidMessageBody } from './message-body.interface';
 import { Hashing } from '../hashing';
 import { IPFS } from '../../helpers';
-import { DidDocumentBase } from '../vcjs';
+import { CommonDidDocument } from '../vcjs';
 
 /**
  * DID message
@@ -18,7 +18,7 @@ export class DIDMessage extends Message {
     /**
      * DID document
      */
-    public didDocument: DidDocumentBase;
+    public didDocument: CommonDidDocument;
     /**
      * DID
      */
@@ -36,7 +36,7 @@ export class DIDMessage extends Message {
      * Set document
      * @param document
      */
-    public setDocument(document: DidDocumentBase): void {
+    public setDocument(document: CommonDidDocument): void {
         this.didDocument = document;
         this.document = document.getDocument();
         this.did = document.getDid();
