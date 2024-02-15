@@ -1,6 +1,9 @@
 const PORT = 3002;
 const API = {
-    ApiServer: "http://localhost:"+PORT+"/",
+    ApiServer: "http://localhost:"+PORT,
+// const PORT = 3000;
+// const API = {
+//     ApiServer: "http://localhost:"+PORT+"/api/v1/",
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
@@ -17,7 +20,7 @@ const API = {
     //Contracts
     ListOfContracts: "contracts/",
     ListOfPairs: "contracts/pairs/",
-    ListOfRequests: "contracts/retire/request/",
+    ListOfRequests: "contracts/retire/requests/",
     //Modules
     ListOfAllModules: "modules/",
     ListOfModules: "modules/menu/",
@@ -47,14 +50,14 @@ const API = {
     //ipfs
     IPFSFile: "ipfs/file",
     //Demo
-    RandomKey: "demo/push/randomKey",
+    RandomKey: "demo/push/random-key",
     //Policies
     Policies: "policies/",
     PolicisImportMsg: "policies/import/message/",
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     //Artifacts
-    Artifacts: "artifact/",
+    Artifacts: "artifacts/",
     Tags: "tags/",
 };
 export default API;
