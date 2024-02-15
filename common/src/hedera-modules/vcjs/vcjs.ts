@@ -524,7 +524,7 @@ export class VCJS {
     ): Promise<Ed25519Signature2018 | BbsBlsSignature2020> {
         switch (type) {
             case SignatureType.BbsBlsSignature2020: {
-                const verificationMethod = didDocument.getMethodByType(HederaBBSMethod.DID_ROOT_KEY_TYPE);
+                const verificationMethod = didDocument.getMethodByType(HederaBBSMethod.TYPE);
                 if (!verificationMethod) {
                     throw new Error('Verification method not found.');
                 }
@@ -535,7 +535,7 @@ export class VCJS {
                 return this.createBBSSuite(option);
             }
             default: {
-                const verificationMethod = didDocument.getMethodByType(HederaEd25519Method.DID_ROOT_KEY_TYPE);
+                const verificationMethod = didDocument.getMethodByType(HederaEd25519Method.TYPE);
                 if (!verificationMethod) {
                     throw new Error('Verification method not found.');
                 }

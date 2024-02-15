@@ -8,12 +8,17 @@ export class HederaEd25519Method extends VerificationMethod {
     /**
      * DID root key name
      */
-    public static DID_ROOT_KEY_NAME = '#did-root-key';
+    public static readonly DID_ROOT_KEY_NAME = '#did-root-key';
 
     /**
      * DID root key type
      */
-    public static DID_ROOT_KEY_TYPE = 'Ed25519VerificationKey2018';
+    public static readonly DID_ROOT_KEY_TYPE = 'Ed25519VerificationKey2018';
+
+    /**
+     * Method type
+     */
+    public static readonly TYPE = 'Ed25519VerificationKey2018';
 
     /**
      * Get private key
@@ -34,7 +39,7 @@ export class HederaEd25519Method extends VerificationMethod {
      * @param did
      * @param key
      */
-    private static async generateKeyPair(
+    public static async generateKeyPair(
         did: string,
         key: PrivateKey | string
     ) {

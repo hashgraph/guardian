@@ -3,22 +3,20 @@ import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
 import { VerificationMethod } from './verification-method';
 
 export class HederaBBSMethod extends VerificationMethod {
-    // /**
-    //  * Set private key
-    //  */
-    // public setPrivateKey(privateKey: PrivateKey | string): void {
-
-    // }
-
     /**
      * DID root key name
      */
-    public static DID_ROOT_KEY_NAME = '#did-root-key-bbs';
+    public static readonly DID_ROOT_KEY_NAME = '#did-root-key-bbs';
 
     /**
      * DID root key type
      */
-    public static DID_ROOT_KEY_TYPE = 'Bls12381G2Key2020';
+    public static readonly DID_ROOT_KEY_TYPE = 'Bls12381G2Key2020';
+
+    /**
+     * Method type
+     */
+    public static readonly TYPE = 'Bls12381G2Key2020';
 
     /**
      * Get private key
@@ -39,7 +37,7 @@ export class HederaBBSMethod extends VerificationMethod {
      * @param did
      * @param key
      */
-    private static async generateKeyPair(
+    public static async generateKeyPair(
         did: string,
         key: PrivateKey | string
     ): Promise<Bls12381G2KeyPair> {

@@ -141,24 +141,26 @@ export class VcHelper extends VCJS {
         }
 
         const keys = row.verificationMethods || {};
-        const keyName1 = keys[SignatureType.Ed25519Signature2018];
-        const keyName2 = keys[SignatureType.BbsBlsSignature2020];
+        const Ed25519Signature2018 = keys[HederaEd25519Method.TYPE];
+        const BbsBlsSignature2020 = keys[HederaBBSMethod.TYPE];
 
         const wallet = new Wallet();
         const hederaPrivateKey = await wallet.getKey(walletToken, KeyType.KEY, did);
 
-        if (keyName1) {
-            const keyValue1 = await wallet.getKey(walletToken, KeyType.DID_KEYS, keyName1);
-            document.setPrivateKey(keyName1, keyValue1);
+        if (Ed25519Signature2018) {
+            const privateKey = await wallet.getKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018);
+            document.setPrivateKey(HederaEd25519Method.TYPE, privateKey);
         } else {
-            document.setPrivateKey(HederaEd25519Method.defaultId(did), hederaPrivateKey);
+            const keyPair = await HederaEd25519Method.generateKeyPair(did, hederaPrivateKey);
+            document.setPrivateKey(keyPair.id, keyPair.privateKey);
         }
 
-        if (keyName2) {
-            const keyValue2 = await wallet.getKey(walletToken, KeyType.DID_KEYS, keyName2);
-            document.setPrivateKey(keyName2, keyValue2);
+        if (BbsBlsSignature2020) {
+            const privateKey = await wallet.getKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020);
+            document.setPrivateKey(HederaBBSMethod.TYPE, privateKey);
         } else {
-            document.setPrivateKey(HederaBBSMethod.defaultId(did), hederaPrivateKey);
+            const keyPair = await HederaBBSMethod.generateKeyPair(did, hederaPrivateKey);
+            document.setPrivateKey(keyPair.id, keyPair.privateKey);
         }
 
         return document;
@@ -332,10 +334,6 @@ export class VcHelper extends VCJS {
         }
         return vcs;
     }
-
-
-
-
 
     // /**
     //  * Create VC Document
