@@ -26,5 +26,17 @@ export enum VerificationMethodProperties {
     /**
      * A string.
      */
-    PUBLIC_KEY_BASE58 = 'publicKeyBase58'
+    PUBLIC_KEY_BASE58 = 'publicKeyBase58',
+    /**
+     * Private Key.
+     */
+    PRIVATE_KEY_JWK = 'privateKeyJwk',
+    /**
+     * Private Key.
+     */
+    PRIVATE_KEY_MULTIBASE = 'privateKeyMultibase',
+    /**
+     * Private Key.
+     */
+    PRIVATE_KEY_BASE58 = 'privateKeyBase58'
 }

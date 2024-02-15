@@ -42,6 +42,24 @@ export class VerificationMethod {
     protected publicKeyBase58: string | undefined;
 
     /**
+     * Private Key
+     * @protected
+     */
+    protected privateKeyJwk: string | undefined;
+
+    /**
+     * Private Key
+     * @protected
+     */
+    protected privateKeyMultibase: string | undefined;
+
+    /**
+     * Private Key
+     * @protected
+     */
+    protected privateKeyBase58: string | undefined;
+
+    /**
      * Name
      * @protected
      */
@@ -90,17 +108,33 @@ export class VerificationMethod {
     }
 
     /**
-     * Set private key
+     * Get private key
      */
-    public setPrivateKey(privateKey: any): void {
-        throw new Error('Method not implemented.');
+    public getPrivateKey(): any {
+        if (this.privateKeyJwk) {
+            return this.privateKeyJwk;
+        }
+        if (this.privateKeyMultibase) {
+            return this.privateKeyMultibase;
+        }
+        if (this.privateKeyBase58) {
+            return this.privateKeyBase58;
+        }
     }
 
     /**
      * Set private key
      */
-    public getPrivateKey(): any {
-        throw new Error('Method not implemented.');
+    public setPrivateKey(privateKey: any) {
+        if (this.publicKeyJwk) {
+            this.privateKeyJwk = privateKey;
+        }
+        if (this.publicKeyMultibase) {
+            this.privateKeyMultibase = privateKey;
+        }
+        if (this.publicKeyBase58) {
+            this.privateKeyBase58 = privateKey;
+        }
     }
 
     /**
@@ -121,6 +155,15 @@ export class VerificationMethod {
         if (this.publicKeyBase58) {
             result[VerificationMethodProperties.PUBLIC_KEY_BASE58] = this.publicKeyBase58;
         }
+        if (privateKey && this.privateKeyJwk) {
+            result[VerificationMethodProperties.PRIVATE_KEY_JWK] = this.privateKeyJwk;
+        }
+        if (privateKey && this.privateKeyMultibase) {
+            result[VerificationMethodProperties.PRIVATE_KEY_MULTIBASE] = this.privateKeyMultibase;
+        }
+        if (privateKey && this.privateKeyBase58) {
+            result[VerificationMethodProperties.PRIVATE_KEY_BASE58] = this.privateKeyBase58;
+        }
         return result;
     }
 
@@ -135,7 +178,9 @@ export class VerificationMethod {
         const publicKeyJwk = method[VerificationMethodProperties.PUBLIC_KEY_JWK];
         const publicKeyMultibase = method[VerificationMethodProperties.PUBLIC_KEY_MULTIBASE];
         const publicKeyBase58 = method[VerificationMethodProperties.PUBLIC_KEY_BASE58];
-
+        const privateKeyJwk = method[VerificationMethodProperties.PRIVATE_KEY_JWK];
+        const privateKeyMultibase = method[VerificationMethodProperties.PRIVATE_KEY_MULTIBASE];
+        const privateKeyBase58 = method[VerificationMethodProperties.PRIVATE_KEY_BASE58];
         const result = new VerificationMethod();
         if (typeof id === 'string') {
             result.id = id;
@@ -155,11 +200,20 @@ export class VerificationMethod {
         if (publicKeyJwk) {
             result.publicKeyJwk = publicKeyJwk;
         }
-        if (publicKeyJwk) {
+        if (publicKeyMultibase) {
             result.publicKeyMultibase = publicKeyMultibase;
         }
-        if (publicKeyJwk) {
+        if (publicKeyBase58) {
             result.publicKeyBase58 = publicKeyBase58;
+        }
+        if (privateKeyJwk) {
+            result.privateKeyJwk = privateKeyJwk;
+        }
+        if (privateKeyMultibase) {
+            result.privateKeyMultibase = privateKeyMultibase;
+        }
+        if (privateKeyBase58) {
+            result.privateKeyBase58 = privateKeyBase58;
         }
         result.name = id.replace(controller, '');
         return result;
