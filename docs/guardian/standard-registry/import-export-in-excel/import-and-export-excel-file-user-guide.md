@@ -6,6 +6,11 @@ In Guardian schemas usually exist within a Policy, a Tool or embedded into anoth
 
 When schemas are exported, they are packaged into a single Excel file formatted like the template mentioned above. It is recommended to experiment with exporting your existing policies and reviewing the resulting excel files so you can familiarize yourself with the format and the content.
 
+1. [Step By Step Process](import-and-export-excel-file-user-guide.md#id-1.-step-by-step-process)
+2. Demo Video
+
+## 1. Step By Step Process
+
 ## 1. Import
 
 Use the corresponding menu option : **Import schemas from Excel** in the Manage Policies or Policy Schemas pages.
@@ -22,8 +27,7 @@ In case, when the importing engine was unable to parse the content of the given 
 
 ![](<../../../.gitbook/assets/2 (17).png>)
 
-In cases, where the importing engine was not able to parse the content of a field then Guardian would specifically highlight this field in the schema after the import in red color rows:\
-
+In cases, where the importing engine was not able to parse the content of a field then Guardian would specifically highlight this field in the schema after the import in red color rows:\\
 
 ![](<../../../.gitbook/assets/3 (14).png>)
 
@@ -114,3 +118,7 @@ Use the corresponding menu option : **Export schemas to Excel** in the Manage Po
 ![](<../../../.gitbook/assets/9 (13).png>)
 
 ![](<../../../.gitbook/assets/10 (14).png>)
+
+## 2. Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=o-4NHLREyBo\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=14)

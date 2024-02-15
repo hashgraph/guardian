@@ -34,10 +34,14 @@ To import the Schema, click on the Import button.
 Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
 {% endhint %}
 
-Import from IPFS: You can also import Schema from IPFS by entering the correct Schema timestamp. Sample iREC Schema timestamp is below:
+#### Import from IPFS
+
+You can also import Schema from IPFS by entering the correct Schema timestamp.&#x20;
+
+Sample iREC Schema timestamp is below:
 
 ```
-1674821342.619996003 (iREC 3 Policy)
+1707126011.005978889 (iREC 3 Policy)
 ```
 
 <figure><img src="../../../.gitbook/assets/image (31) (1) (2).png" alt=""><figcaption></figcaption></figure>
@@ -49,9 +53,7 @@ Once the Schema is imported, we need to select the Policy from the Policy dropdo
 <figure><img src="../../../.gitbook/assets/image (3) (1) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-**Note:**
-
-The major difference between creating / importing System Schema and Policy Schema is that we only get policy selection dropdown when policy schema is imported.
+**Note:** The major difference between creating / importing System Schema and Policy Schema is that we only get policy selection dropdown when policy schema is imported.
 {% endhint %}
 
 After selecting the required Policy, click on the Import button.
@@ -90,29 +92,6 @@ There are different types of Schema Types:
 To know more details regarding encrypted Verifiable Credential please look at [Selective Disclosure Demo](../selective-disclosure/selective-disclosure-demo.md)
 
 There are different types of Field Types:
-
-* Number
-* Integer
-* String
-* Boolean
-* Date
-* Time
-* DateTime
-* Duration
-* URL
-* Email
-* Image
-* Account
-* Units of Measure
-  * Prefix
-  * Postfix
-* Enum
-* Help Text
-* GeoJSON
-* URI
-* Sentinel Hub
-
-<!---->
 
 * Number
 * Integer

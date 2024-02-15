@@ -1,6 +1,6 @@
 # 💻 Adding Example data using UI
 
-1. Example: To add example values to a schema, we need to click on "Example" option as shown below:
+1. **Example:** To add example values to a schema, we need to click on "Example" option as shown below:
 
 <figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
@@ -8,7 +8,7 @@ Once you click on the above button, you will be able to fill all schema fields w
 
 <figure><img src="../../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-2. Preview – shows a preview of how users will see the policy form during the execution of the policy
+2. **Preview** – shows a preview of how users will see the policy form during the execution of the policy
 
 <figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
