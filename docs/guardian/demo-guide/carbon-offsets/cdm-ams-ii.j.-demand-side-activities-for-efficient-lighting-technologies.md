@@ -16,7 +16,7 @@
 
 [Workflow](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#workflow)
 
-Policy Guide
+[Policy Guide](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#policy-guide)
 
 [Key Documents and Schemas](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#key-documents-and-schemas)
 
@@ -84,4 +84,61 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step-by-Step &#x20;
 
-(Screenshots)&#x20;
+1. Login as Standard Registry and import the policy either by file or through IPFS timestamp.
+2. Create a new user and assign role as Project Proponent.
+
+<figure><img src="https://lh7-us.googleusercontent.com/TZAfzi1oQ4Qhe5XBZQfrbi82cjS7cZ2djHppfRWoJfNInoZ7XEg7_SVttbmtZW1mE8ou5k7KmXVgc-Exge5lv8aL-s3mey2kVwirQB9m-i8zwessRqEV3sM25waNKhyrTjMhsKUYWvCYGt_Wgr8AcZ0" alt=""><figcaption></figcaption></figure>
+
+3. Name new Project Participant.
+
+<figure><img src="https://lh7-us.googleusercontent.com/JZ_nFBEfQ95cm8qwMsZohvvNNrCY2z-fcWje51loRulPdLnrAzIYAV3Hdd0bjXCcMR0yUiGx4FBSX9nenk4seAFFqV85S4lzZ1iGbzQ2r7pqdazMLIvnF5sGKJcvK70rAO3Xm9fja8gYlD731MZ2bVY" alt=""><figcaption></figcaption></figure>
+
+4. Сreate a new user and assign role as VVB.
+
+<figure><img src="https://lh7-us.googleusercontent.com/cq4N1vhVwOsfISgFMSwhY8B0uRa48AlTroOcCo_8ZHgaBxQtf0K2IaSwesWQT3OYLu-cUU5KJi9dODyDWe2r-yFu5VQfCcYyzZ4iHeDAf3lnyzkmVlrWPhDRr7N6hHP98l0uvltDwJO0-LkNap8Guak" alt=""><figcaption></figcaption></figure>
+
+5. Name new VVB.
+
+<figure><img src="https://lh7-us.googleusercontent.com/O3SwkjszdDSWU-qzGXks4pSpgZIw8VONOTq1fMcrIL1UbtwYp5oq-U5Y4HCxl_y36ehoEQ3ULB5IBKgnq2h4sGsawOB-QI7HJ9Hcw9ZDIPmEAiyOrArvBBGG8k-jpqsOtx4ELVjJG-4vYNZe_GgWYsw" alt=""><figcaption></figcaption></figure>
+
+6. Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+
+<figure><img src="https://lh7-us.googleusercontent.com/sHpFEOmhw7uY2S3reDoNqMSXYRqbx9C2aZ207qsAiVUFLkx0saYAznBCB0afq0X8IriARbVDPkboaYSrto3Z4sPwiOorj9sbFPOhGU-1z5jRFAc4ZMVN3ZUqzlFgwjcXVBIUs9R4PWOs9t6aHdH6xGE" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="https://lh7-us.googleusercontent.com/tBB05OqC5Nqp_iSD27qwtFErxk5JIG4Z7kXtHTjfrnPFrpzxDwfsCktTv65wT3KGeuzybmk1BL9YT96GRvvjoGQC76mppSlcM21XXdPY3RaNSfqdD_8_H_RHeUUTJQ4BFeP2QB5WBmWNlCEYhtE_5z0" alt=""><figcaption></figcaption></figure>
+
+7. Once approved, login back as Project Participant and create new project by clicking on" New Project" and entering complete details of the project:
+
+<figure><img src="https://lh7-us.googleusercontent.com/jgadkjhUvFzFPEyZFGUyN3J63n_InzgRv2l1SpJo5FkACg-gJoYQbkN2ZvDBdqKfW8HOgnUSDuL8Y07yHyEdq64ePrmP9VaYhg52qEs7DJmqcXbkAjpMJ_w3Tqs37oKsM0mnv2bAjDTGoslpVkyQ7ls" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="https://lh7-us.googleusercontent.com/LKp9o27aIBY2UGnGf2iALxYvFfW04MEvPMoGe4yRBXTwPHXgVmbpWC_FNWL69hq3Ofvt_cRKADPoxGqPO7jETRet69Bxr1SBnWieq6thifPdlA4xL5YU1RBWwJ-K_aCA5WRBAyZdLAtOLCgbuJNtrro" alt=""><figcaption></figcaption></figure>
+
+8. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+
+<figure><img src="https://lh7-us.googleusercontent.com/0PyKE77NFbl3UJta-NwsX2YcXvSqdseI-kzeefQyFhNv3drvpspBfY8FnXocl7gpGu19YzVlXzBpTEaqPks5K6pFvLZA0cQyV61T2jsc6UdPK8s2lpa87Goqb63HpWbHjoQyRXD5cGvlxCgTU0O3JqY" alt=""><figcaption></figcaption></figure>
+
+9. Project Participant creates monitoring report by clicking on “Add Report” and fills out the monitoring report form”
+
+<figure><img src="https://lh7-us.googleusercontent.com/fzSLTnA47hppjcYbMvWuM6qOTPUL9at0n_bxRAmgEn0mm2A2MXGxgfNSCyP1yiirj7U3rZRkCYYcY7uD7Yo-X8TjBwHczpU2W5-PelYFE67OE_6Je-29T8eeIWHPzBIBpUk3Lwr71SjD2mkDOSz7qYk" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="https://lh7-us.googleusercontent.com/vFYB_ZXmPgnbwEZ8gzIyyMzXLGOZhTkMtGeh9s6Ql2yS2IiTynwwwEvD99holYqBIQhCn_I-Y-zDpXR6tTB6McLMupjTCVaBwJlFJ9BYo5rMV_xUPF_kyN0nHaGsAJXMjJZugkUcaMyqfO0wvARAb8Y" alt=""><figcaption></figcaption></figure>
+
+10. After creating monitoring report, project participant assigns VVB to verify it:&#x20;
+
+<figure><img src="https://lh7-us.googleusercontent.com/m6XwEmM9AJUKgo1w7IFhUJsytJCmhi8aLwCQDyTttZ2UgFmNvvT6GhgDrqQU1hkg_eCdrhTawjohRGxTA554NI_87_rslGy8fU5RHuZkEE3vTjR4_jrPf2fmzr0gN4Fbm-cOttCOCLap6Am1TzvHDFs" alt=""><figcaption></figcaption></figure>
+
+11. Login as VVB and after reviewing the monitoring report, the VVB verifies it.
+
+<figure><img src="https://lh7-us.googleusercontent.com/WPoCMRSFf0lQtq3Zt4FN0T-VKYN_mG3ka9u6xSoUaQFeM-RHfVH7kXiSKwdHwfwLdBOu-Ol-i1VYtgyLSBBkvAnJpacTCYEq55VT0XoJMFW4Wbed3yxOvNlkxfVz67AcTm9StWT1xvzg-rkjy0_eK-E" alt=""><figcaption></figcaption></figure>
+
+12. Login as SR and once it is reviewed, SR approves the Monitoring report.
+
+<figure><img src="https://lh7-us.googleusercontent.com/ud23CErgFKb7bazMpwS2w5l76Oj_rGu3YSWONYx_oXavzLTsh34JWB4TSmJbab-1Y2GrwKUwV5uzNH9rlvugJyOXLI_4M7kLH5lO2UwLPiocktXNCj5VKivQxmbnM8LHvUgCuydDNluOvsURv0h7Ik0" alt=""><figcaption></figcaption></figure>
+
+13. Once minting is completed, we can view tokens in VPs  tab.
+
+<figure><img src="https://lh7-us.googleusercontent.com/gID-vjVenLTBTqZetIOr1rlnAsRAbAsNu2PJS69C2gPzuT7cVVgwYd6cY6g5ot2mj_XeYkL_0RtMWADrUbD9p9UgjDBCy0sk4cMTrmanS_WA5t8V61acVx5E6-CB1Yn24MZTSECGifpQKUkxRwZjBpQ" alt=""><figcaption></figcaption></figure>
+
+14. Trustchain can also be viewed by clicking on “View TrustChain” button.
+
+<figure><img src="https://lh7-us.googleusercontent.com/Gx8iQaGgLgmkybV5AmldIEHoQBULAIoJ_a2lODmes_8ACstjiAobcFZSr30VfDVDjmA_dT6neUfcxj_D6stW5B2nLyOMV8otB_46tQMtc9teZ1kbc0UBHECMb9B3uw7dHpN31R8dBlrK0zUoKzECbh8" alt=""><figcaption></figcaption></figure>

@@ -6,7 +6,7 @@
 
 [Key Objectives and Scope](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#key-objectives-and-scope)
 
-[Need and Use for the AMS-III.D Policy ](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#need-and-use-for-the-ams-iii.d-policy)
+[Need and Use for the AMS-III.AV Policy ](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#need-and-use-for-the-ams-iii.av-policy)
 
 [Policy Workflow ](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#policy-workflow)
 
@@ -28,7 +28,7 @@ AMS-III.AV presents an approach aimed at providing safe drinking water by adopti
 
 The primary objective of AMS-III.AV revolves around mitigating GHG emissions by replacing water boiling practices reliant on non-renewable biomass or fossil fuels with low-emission water purification systems. This methodology encompasses a diverse array of point-of-use (POU) or point-of-entry (POE) water treatment systems tailored for residential or institutional settings. Ranging from membrane filters to solar-powered ultraviolet (UV) disinfection devices and chemical disinfection methods like chlorination, these technologies constitute the core toolkit. Soil filtration schemes, including boreholes and wells with container disinfection, also fall within the scope of this methodology, fostering a comprehensive approach towards sustainable water treatment solutions.&#x20;
 
-### Need and Use for the AMS-III.D Policy &#x20;
+### Need and Use for the AMS-III.AV Policy &#x20;
 
 Access to safe drinking water stands as a fundamental human right, yet millions globally face challenges in securing this basic necessity. Unsafe water sources, often contaminated by pathogens, pollutants, and inadequate sanitation, pose severe health risks, leading to waterborne diseases such as cholera, dysentery, and typhoid. The World Health Organization (WHO) estimates that nearly 2 billion people globally consume water from sources contaminated with feces, emphasizing the urgent need for reliable and safe drinking water solutions.&#x20;
 
@@ -44,7 +44,7 @@ Safe drinking water is an indispensable component of public health and well-bein
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. &#x20;
 
-Policy:
+Policy:&#x20;
 
 ### Available Roles 
 
@@ -69,3 +69,62 @@ Policy:
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step by Step
+
+1. Login as Standard Registry and import the policy either by file or through IPFS timestamp.
+2. Create a new user and assign role as Project Proponent.
+
+<figure><img src="../../../.gitbook/assets/image (424).png" alt=""><figcaption></figcaption></figure>
+
+3. Name new Project Participant.
+
+<figure><img src="../../../.gitbook/assets/image (425).png" alt=""><figcaption></figcaption></figure>
+
+4. Сreate a new user and assign role as VVB.
+
+<figure><img src="../../../.gitbook/assets/image (426).png" alt=""><figcaption></figcaption></figure>
+
+5. Name new VVB.
+
+<figure><img src="../../../.gitbook/assets/image (427).png" alt=""><figcaption></figcaption></figure>
+
+6. Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+
+<figure><img src="../../../.gitbook/assets/image (428).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (429).png" alt=""><figcaption></figcaption></figure>
+
+7. Once approved, login back as Project Participant and create new project by clicking on" New project" and entering complete details of the project:
+
+<figure><img src="../../../.gitbook/assets/image (430).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (431).png" alt=""><figcaption></figcaption></figure>
+
+8. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+
+<figure><img src="../../../.gitbook/assets/image (432).png" alt=""><figcaption></figcaption></figure>
+
+9\.  Project Participant creates monitoring report by clicking on “Add Report” and fills out the monitoring report form.
+
+<figure><img src="../../../.gitbook/assets/image (433).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (434).png" alt=""><figcaption></figcaption></figure>
+
+10. After creating monitoring report, project participant assigns VVB to verify it:
+
+<figure><img src="../../../.gitbook/assets/image (435).png" alt=""><figcaption></figcaption></figure>
+
+11. Login as VVB and after reviewing the monitoring report, the VVB verifies it.
+
+<figure><img src="../../../.gitbook/assets/image (436).png" alt=""><figcaption></figcaption></figure>
+
+12. Login as SR and once it is reviewed, SR approves the Monitoring report.
+
+<figure><img src="../../../.gitbook/assets/image (437).png" alt=""><figcaption></figcaption></figure>
+
+13. Once minting is completed, we can view tokens in VPs  tab.
+
+<figure><img src="../../../.gitbook/assets/image (438).png" alt=""><figcaption></figcaption></figure>
+
+14. Trustchain can also be viewed by clicking on “View TrustChain” button.
+
+<figure><img src="../../../.gitbook/assets/image (439).png" alt=""><figcaption></figcaption></figure>

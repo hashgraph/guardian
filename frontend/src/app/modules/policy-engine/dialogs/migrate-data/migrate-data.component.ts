@@ -38,8 +38,8 @@ class MigrationConfig {
     private _schemasValidity: boolean = true;
 
     constructor(
-        private _src: string = '',
-        private _dst: string = ''
+        private _src?: string,
+        private _dst?: string
     ) {}
 
     updatePolicyValidity() {
@@ -97,7 +97,7 @@ class MigrationConfig {
         return this._src;
     }
 
-    set src(value: string) {
+    set src(value: string | undefined) {
         this._src = value;
         this.updatePolicyValidity();
     }
@@ -106,7 +106,7 @@ class MigrationConfig {
         return this._dst;
     }
 
-    set dst(value: string) {
+    set dst(value: string | undefined) {
         this._dst = value;
         this.updatePolicyValidity();
     }
@@ -162,18 +162,19 @@ class MigrationConfig {
             id: vc.id,
             schema: vc.schema,
         });
+        this.updateVcValidity();
         if (
             !this._systemSchemas.includes(vc.schema) &&
-            this._schemas[vc.schema] === undefined
+            !this._schemas.hasOwnProperty(vc.schema)
         ) {
-            this._schemas[vc.schema] = '';
+            this._schemas[vc.schema] = undefined;
         }
-        this.updateVcValidity();
         this.updateSchemasValidity();
     }
 
     removeVC(vc: any) {
         this._vcs = this._vcs.filter((_vc) => _vc.id !== vc.id);
+        this.updateVcValidity();
         Object.keys(this._schemas)
             .filter(
                 (key) => this._vcs.findIndex((_vc) => _vc.schema === key) < 0
@@ -181,7 +182,6 @@ class MigrationConfig {
             .forEach((key) => {
                 delete this._schemas[key];
             });
-        this.updateVcValidity();
         this.updateSchemasValidity();
     }
 
@@ -240,7 +240,7 @@ export class MigrateData {
         {
             id: 'groups',
             label: 'Groups',
-        }
+        },
     ];
 
     vps: any[] = [];
@@ -286,6 +286,9 @@ export class MigrateData {
     }
 
     loadVCs() {
+        if (!this.migrationConfig.src) {
+            return;
+        }
         this.loadings.vcs = true;
         this._policyEngineService
             .documents(
@@ -313,6 +316,9 @@ export class MigrateData {
     }
 
     loadVPs() {
+        if (!this.migrationConfig.src) {
+            return;
+        }
         this.loadings.vps = true;
         this._policyEngineService
             .documents(
@@ -352,8 +358,8 @@ export class MigrateData {
             return;
         }
         forkJoin([
-            this._schemaService.getSchemasByPolicy(this.migrationConfig.src),
-            this._schemaService.getSchemasByPolicy(this.migrationConfig.dst),
+            this._schemaService.getSchemasByPolicy(this.migrationConfig.src!),
+            this._schemaService.getSchemasByPolicy(this.migrationConfig.dst!),
         ]).subscribe((schemas) => {
             this.srcSchemas = schemas[0];
             this.dstSchemas = schemas[1];
@@ -480,7 +486,7 @@ export class MigrateData {
         }
         this.loadings.vcs = true;
         this._policyEngineService
-            .documents(this.migrationConfig.src, false, 'VC')
+            .documents(this.migrationConfig.src!, false, 'VC')
             .subscribe((response) => {
                 this.migrationConfig.clearVCs();
                 response.body?.forEach(
@@ -505,7 +511,7 @@ export class MigrateData {
         }
         this.loadings.vps = true;
         this._policyEngineService
-            .documents(this.migrationConfig.src, false, 'VP')
+            .documents(this.migrationConfig.src!, false, 'VP')
             .subscribe((response) => {
                 this.migrationConfig.clearVPs();
                 response.body?.forEach(
