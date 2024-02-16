@@ -6,10 +6,10 @@
 * [Need and Use for the AMS-III.H Policy](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#need-and-use-for-the-ams-iiih-policy)
 * [Policy Workflow](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#policy-workflow)
 * [Policy Guide](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#policy-guide)
-  * [Available Roles](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#available-roles)
-  * [Important Documents \\& Schemas](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#important-documents--schemas)
-  * [Token(Carbon Emissions Reduction)](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#tokencarbon-emissions-reduction)
-  * [Step By Step](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#step-by-step)
+* [Available Roles](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#available-roles)
+* [Important Documents \\& Schemas](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#important-documents--schemas)
+* [Token(Carbon Emissions Reduction)](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#tokencarbon-emissions-reduction)
+* [Step By Step](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#step-by-step)
 
 ### Introduction <a href="#introduction" id="introduction"></a>
 
