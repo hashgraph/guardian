@@ -1,0 +1,78 @@
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div *ngIf="policy" class="policy">
+        <div class="field-name">Policy Name</div>
+        <div class="field-value">{{ policy.name }}</div>
+
+        <div *ngIf="policy.description">
+            <div class="field-name">Description</div>
+            <div class="field-value">{{ policy.description }}</div>
+        </div>
+
+        <div *ngIf="policy.version">
+            <div class="field-name">Version</div>
+            <div class="field-value">{{ policy.version }}</div>
+        </div>
+
+        <div class="field">
+            <div class="field-name">Creator</div>
+            <div class="field-value">{{ policy.owner }}</div>
+        </div>
+    </div>
+
+    <div *ngIf="module" class="policy">
+        <div class="field-name">Module Name</div>
+        <div class="field-value">{{ module.name }}</div>
+
+        <div *ngIf="module.description">
+            <div class="field-name">Description</div>
+            <div class="field-value">{{ module.description }}</div>
+        </div>
+
+        <div class="field">
+            <div class="field-name">Creator</div>
+            <div class="field-value">{{ module.owner }}</div>
+        </div>
+    </div>
+
+    <div *ngIf="tool" class="policy">
+        <div class="policy-header">{{ tool.name }}</div>
+
+        <div class="delimiter"></div>
+
+        <div *ngIf="tool.description">
+            <div class="field-name">Description</div>
+            <div class="field-value">{{ tool.description }}</div>
+        </div>
+
+        <div class="field">
+            <div class="field-name">Creator</div>
+            <div class="field-value">{{ tool.owner }}</div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="copy-button">
+            <p-button
+                    (click)="
+                    handleCopyToClipboard(
+                        policy ? policy.messageId : module ? module.messageId : tool ? tool.messageId : ''
+                    )
+                "
+                    [disabled]="policy ? !policy.messageId : module ? !module.messageId : tool ? !tool.messageId : true"
+                    label="Copy message identifier"
+                    styleClass="p-button-outlined"
+            ></p-button>
+        </div>
+        <div>
+            <p-button
+                    (click)="policy ? saveToFile() : module ? moduleToFile() : tool ? toolToFile() : false"
+                    label="Save to file"
+            ></p-button>
+        </div>
+    </div>
+</div>

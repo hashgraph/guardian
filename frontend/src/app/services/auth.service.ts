@@ -1,78 +1,122 @@
-import {HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {ISession, IUser} from 'interfaces';
-import {Observable, of, Subject, Subscription} from 'rxjs';
+import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { ISession, IStandardRegistryResponse, IUser } from '@guardian/interfaces';
+import { Observable, of, Subject, Subscription } from 'rxjs';
+import { API_BASE_URL } from './api';
+import { map } from 'rxjs/operators';
 
 /**
  * Services for working from accounts.
  */
 @Injectable()
 export class AuthService {
-  private accessTokenSubject: Subject<string | null>;
-  
-  constructor(
-    private http: HttpClient
-  ) {
-    this.accessTokenSubject = new Subject();
-  }
+    private accessTokenSubject: Subject<string | null>;
+    private refreshTokenSubject: Subject<string | null>
+    private readonly url: string = `${API_BASE_URL}/accounts`;
 
-  public login(username: string, password: string): Observable<any> {
-    return this.http.post<string>('/api/account/login', {username, password});
-  }
-
-  public logout(): Observable<any> {
-    return this.http.get<any>('/api/account/logout');
-  }
-
-  public getCurrentUser(force:boolean=false): Observable<ISession | null> {
-    if (localStorage.getItem('accessToken')) {
-      return this.http.get<any>(`/api/account/current-user?force=${{force}}`);
-    } else {
-      return of(null);
+    constructor(
+        private http: HttpClient
+    ) {
+        this.accessTokenSubject = new Subject();
+        this.refreshTokenSubject = new Subject();
     }
-  }
 
-  public createUser(username: string, password: string, role: string): Observable<any> {
-    return this.http.post<any>('/api/account/register', {username, password, role})
-  }
+    public login(username: string, password: string): Observable<any> {
+        return this.http.post<string>(`${this.url}/login`, { username, password });
+    }
 
-  public getCurrentUsers(): Observable<IUser[]> {
-    return this.http.get<any>('/api/account/get-all-users');
-  }
+    public updateAccessToken(): Observable<any> {
+        return this.http.post<any>(`${this.url}/access-token`, {refreshToken: this.getRefreshToken()}).pipe(
+            map(result => {
+                const {accessToken} = result;
+                this.setAccessToken(accessToken);
+                return accessToken
+            })
+        );
+    }
 
-  public setAccessToken(accessToken: string) {
-    localStorage.setItem('accessToken', accessToken);
-    this.accessTokenSubject.next(accessToken);
-  }
+    public createUser(username: string, password: string, confirmPassword: string, role: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/register`, {
+            username, password, password_confirmation: confirmPassword, role
+        })
+    }
 
-  public removeAccessToken() {
-    localStorage.removeItem('accessToken');
-    this.accessTokenSubject.next(null);
-  }
+    public sessions(): Observable<ISession | null> {
+        if (!localStorage.getItem('accessToken')) {
+            return of(null);
+        }
+        return this.http.get<ISession>(`${this.url}/session`);
+    }
 
-  public getAccessToken() {
-    return localStorage.getItem('accessToken');
-  }
+    public getUsers(): Observable<IUser[]> {
+        return this.http.get<any[]>(`${this.url}/`);
+    }
 
-  public subscribe(
-    next?: ((accessToken: string | null) => void),
-    error?: ((error: any) => void),
-    complete?: (() => void)
-  ): Subscription {
-    return this.accessTokenSubject.subscribe(next, error, complete);
-  }
+    public setAccessToken(accessToken: string) {
+        localStorage.setItem('accessToken', accessToken);
+        this.accessTokenSubject.next(accessToken);
+    }
+
+    public setRefreshToken(refreshToken: string) {
+        localStorage.setItem('refreshToken', refreshToken);
+        this.refreshTokenSubject.next(refreshToken);
+    }
+
+    public removeAccessToken() {
+        localStorage.removeItem('accessToken');
+        this.accessTokenSubject.next(null);
+    }
+
+    public setUsername(username: string) {
+        localStorage.setItem('username', username);
+    }
+
+    public removeUsername() {
+        localStorage.removeItem('username');
+    }
+
+    public getUsername(): string {
+        return localStorage.getItem('username') as string;
+    }
+
+    public getAccessToken() {
+        return localStorage.getItem('accessToken');
+    }
+
+    public getRefreshToken() {
+        return localStorage.getItem('refreshToken');
+    }
+
+    public subscribe(
+        next?: ((accessToken: string | null) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.accessTokenSubject.subscribe(next, error, complete);
+    }
+
+    public getStandardRegistries(): Observable<IUser[]> {
+        return this.http.get<any>(`${this.url}/standard-registries`);
+    }
+
+    public getAggregatedStandardRegistries(): Observable<IStandardRegistryResponse[]> {
+        return this.http.get<any>(`${this.url}/standard-registries/aggregated`);
+    }
+
+    public balance(): Observable<any> {
+        return this.http.get<any>(`${this.url}/balance`);
+    }
 }
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      return next.handle(req);
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            return next.handle(req);
+        }
+        return next.handle(req.clone({
+            headers: req.headers.set('Authorization', `Bearer ${token}`),
+        }));
     }
-    return next.handle(req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${token}`),
-    }));
-  }
-
 }

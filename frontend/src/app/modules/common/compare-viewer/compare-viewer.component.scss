@@ -1,0 +1,211 @@
+.context ::ng-deep .mat-badge-content {
+    background: #9c27b0 !important;
+}
+
+.compare-header {
+    font-weight: bold;
+    color: #686868;
+    padding-left: 10px;
+}
+
+.compare-btn {
+    background-color: var(--button-primary-color);
+}
+
+.compare-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px 15px 5px 15px;
+}
+
+.compare-item {
+    display: flex;
+    align-items: center;
+    padding: 0px 6px;
+    position: relative;
+    flex-wrap: nowrap;
+    height: 30px;
+
+    &:hover {
+        background: #f1f1f1;
+    }
+
+    .compare-item-select {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .compare-item-name {
+        flex: 1;
+        cursor: pointer;
+        padding: 0px 8px;
+    }
+
+    .compare-item-delete {
+        width: 20px;
+        height: 20px;
+        position: relative;
+        cursor: pointer;
+
+        mat-icon {
+            position: absolute;
+            font-size: 20px;
+            color: #f44336;
+            width: 20px;
+            height: 20px;
+            top: -1px;
+            right: 0;
+        }
+    }
+}
+
+.compare-checkbox {
+    pointer-events: none;
+}
+
+.compare-results-btn {
+    color: var(--button-primary-color);
+    border: 1px solid var(--button-primary-color);
+    margin: 0px;
+    min-width: 105px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    font-size: 14px;
+    height: 34px;
+    padding: 7px 24px 7px 24px;
+    box-sizing: border-box;
+    width: fit-content;
+    margin-right: 8px;
+
+    &[disable="true"] {
+        color: #888;
+        border: 1px solid #888;
+        cursor: not-allowed;
+    }
+
+    &:hover {
+        background-color: rgba(112, 112, 112, 0.04);
+    }
+
+    &[disable="true"]:hover {
+        background-color: transparent;
+    }
+}
+
+.compare-results {
+    display: flex;
+    justify-content: center;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    column-gap: 16px;
+    border-radius: 8px;
+    min-height: 48px;
+    max-height: 48px;
+    padding: 0 16px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 0 16px 8px 16px;
+    transition: background 0.125s ease-in-out,
+        opacity 0.125s ease-in-out,
+        width 0.125s ease-in-out,
+        height 0.125s ease-in-out;
+
+    img {
+        width: 16px;
+        height: 16px;
+    }
+
+    span {
+        display: flex;
+        align-items: center;
+        column-gap: 10px;
+        color: #fff;
+        font-family: Inter, serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 20px;
+
+        strong {
+            color: #fff;
+            font-family: Inter, serif;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 16px;
+        }
+    }
+
+    .span-icon {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .flex-column-gap-10 {
+        display: flex;
+        column-gap: 14px;
+    }
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.collapsed-notify-counter {
+    margin-left: -20px;
+    margin-top: -16px;
+}
+
+.hidden-logotype {
+    display: none !important;
+    opacity: 0 !important;
+}
+
+.current {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.badge {
+    background-color: #9c27b0;
+    width: min-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 8px;
+    border-radius: 16px;
+    cursor: pointer;
+
+    span {
+        color: #fff;
+        font-family: Inter, serif;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 20px;
+    }
+}
+
+.icon {
+    width: 16px;
+    height: 16px;
+    position: relative;
+    color: #fff;
+    font-size: 16px;
+}
+
+.color-white {
+    fill: white;
+    width: 16px;
+    height: 16px;
+}

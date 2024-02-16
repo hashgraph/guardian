@@ -1,0 +1,25 @@
+<div class="dialog-body">
+    <div *ngIf="this.description" class="description">
+        {{ this.description }}
+    </div>
+    <div *ngIf="this.descriptions" class="description">
+        <div *ngFor="let item of this.descriptions">
+            {{ item }}
+        </div>
+    </div>
+    <div class="textarea">
+        <mat-form-field appearance="outline">
+            <textarea matInput rows="4" [formControl]="value"></textarea>
+        </mat-form-field>
+    </div>
+</div>
+<div class="dialog-footer" mat-dialog-actions>
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <p-button (click)="onNoClick()" label="Cancel" styleClass="p-button-outlined"></p-button>
+        </div>
+        <div>
+            <p-button (click)="onSubmit()" [disabled]="value.invalid" label="Save"></p-button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+{
+  "backend": {
+    "consul": {
+      "address": "consul:8500",
+      "path": "vault/"
+    }
+  },
+  "listener": {
+    "tcp":{
+      "address": "0.0.0.0:8200",
+      "tls_disable": false,
+      "tls_client_ca_file": "/vault/client/tls/ca.crt",
+      "tls_cert_file": "/vault/client/tls/tls.crt",
+      "tls_key_file": "/vault/client/tls/tls.key"
+    }
+  },
+  "disable_mlock": true,
+  "default_lease_ttl": "15m",
+  "max_lease_ttl": "30m",
+  "api_addr": "https://vault:8200",
+  "log_level": "Debug",
+  "ui": true
+}
+  

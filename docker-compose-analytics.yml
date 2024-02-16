@@ -1,0 +1,265 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6.0.3
+    command: "--setParameter allowDiskUseByDefault=true"
+    restart: always
+    expose:
+      - 27017
+
+  message-broker:
+    image: nats:2.9.8
+    expose:
+      - 4222
+    ports:
+      - '8222:8222'
+    command: '--http_port 8222'
+
+  # https://docs.docker.com/compose/environment-variables/envvars-precedence/
+  # Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
+  # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
+  # specific service variables defined by "environment" can override what is defined in the ecosystem file
+
+  logger-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    volumes:
+      - ./logger-service/configs:/usr/local/logger-service/configs:ro
+
+  auth-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
+    ports:
+      - '5005:5005'
+    volumes:
+      - ./auth-service/tls:/usr/local/auth-service/tls:ro
+      - ./auth-service/configs:/usr/local/auth-service/configs:ro
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+      - 5005
+
+  worker-service-1:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL:"worker.1"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-2:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.2"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-3:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.3"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-4:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.4"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-5:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.5"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-6:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.6"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-7:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.7"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-8:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.8"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-9:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.9"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  worker-service-10:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.10"
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+
+  analytics-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./analytics-service/Dockerfile
+    depends_on:
+      - message-broker
+      - worker-service-1
+      - worker-service-2
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+    ports:
+      - "3000:3020"
+    volumes:
+      - ./analytics-service/configs:/usr/local/analytics-service/configs:ro
+
+volumes:
+  mongo:
+  # volume-guardian-service:
+  # volume-ui-service:
+  # volume-mrv-sender:
+  #  volume-message-broker:
+
+networks:
+  monitoring:
+    driver: bridge

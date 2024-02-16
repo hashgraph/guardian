@@ -1,0 +1,31 @@
+export default {
+    '@context': {
+        '@version': 1.1,
+        geojson: 'https://purl.org/geojson/vocab#',
+        Feature: 'geojson:Feature',
+        FeatureCollection: 'geojson:FeatureCollection',
+        GeometryCollection: 'geojson:GeometryCollection',
+        LineString: 'geojson:LineString',
+        MultiLineString: 'geojson:MultiLineString',
+        MultiPoint: 'geojson:MultiPoint',
+        MultiPolygon: 'geojson:MultiPolygon',
+        Point: 'geojson:Point',
+        Polygon: 'geojson:Polygon',
+        bbox: {
+            '@container': '@list',
+            '@id': 'geojson:bbox',
+        },
+        coordinates: {
+            '@container': '@list',
+            '@id': 'geojson:coordinates',
+        },
+        features: {
+            '@container': '@set',
+            '@id': 'geojson:features',
+        },
+        geometry: 'geojson:geometry',
+        id: '@id',
+        properties: 'geojson:properties',
+        type: '@type',
+    },
+};

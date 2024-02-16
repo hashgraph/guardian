@@ -1,11 +1,16 @@
 name: Guardian CI
-on: [push]
+on:
+  workflow_dispatch:
+    description: 'Manual run'
+  push:
+    branches-ignore:
+      - 'dependabot/**'
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 16.x ]
+        node-version: [ 20.10.0 ]
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
@@ -14,61 +19,100 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Build
         run: |
+          yarn
           pushd interfaces
-          npm install
-          npm run build
+          yarn run build
           popd
-          pushd vc-modules
-          npm install
-          npm run build
+          pushd common
+          yarn run build
+          popd
+          pushd logger-service
+          yarn run build
+          popd
+          pushd notification-service
+          yarn run build
           popd
           pushd frontend
           npm install
           npm run build
+          npm run build:prod
+          npm run build:demo
+          popd
+          pushd auth-service
+          yarn run build
+          popd
+          pushd policy-service
+          yarn run build
           popd
           pushd guardian-service
-          npm install
-          npm run build
+          yarn run build
           popd
-          pushd message-broker
-          npm install
-          npm run build
+          pushd worker-service
+          yarn run build
           popd
-          pushd ui-service
-          npm install
-          npm run build
+          pushd api-gateway
+          yarn run build
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+      - name: Detect secrets
+        run: |
+          yarn run detect-secrets
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Lint
         run: |
           pushd interfaces
           npm run lint
           popd
-          pushd vc-modules
+          pushd common
+          npm run lint
+          popd
+          pushd logger-service
+          npm run lint
+          popd
+          pushd notification-service
+          npm run lint
+          popd
+          pushd auth-service
+          npm run lint
+          popd
+          pushd policy-service
           npm run lint
           popd
           pushd guardian-service
           npm run lint
           popd
-          pushd ui-service
+          pushd worker-service
+          npm run lint
+          popd
+          pushd api-gateway
           npm run lint
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
       - name: Test
         run: |
-          pushd vc-modules
+          pushd common
+          npm run test
+          popd
+          pushd policy-service
           npm run test
           popd
           pushd guardian-service
           npm run test
           popd
-          pushd ui-service
+          pushd worker-service
           npm run test
           popd
         env:
           CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+          OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
+          OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()

@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>{{title}}</h2>
+<div mat-dialog-content>
+    <div>{{description}}</div>
+    <mat-form-field class="options-form-field" appearance="outline">
+        <mat-label>{{label}}</mat-label>
+        <mat-select [(ngModel)]="result">
+            <mat-option *ngFor="let option of options" [value]="option.value">{{option.name}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+<div mat-dialog-actions>
+    <button mat-flat-button [mat-dialog-close]="{ ok: false }">Cancel</button>
+    <button mat-flat-button color="primary" [mat-dialog-close]="{
+        ok: true,
+        result
+    }">OK</button>
+</div>

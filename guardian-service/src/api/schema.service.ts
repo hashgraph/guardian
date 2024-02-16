@@ -1,682 +1,1163 @@
-import { Schema } from '@entity/schema';
-import { ISchema, MessageAPI, SchemaEntity, SchemaStatus, Schema as SchemaModel } from 'interfaces';
-import { MongoRepository } from 'typeorm';
+import { ApiResponse } from '@api/helpers/api-response';
+import { emptyNotifier, initNotifier } from '@helpers/notifier';
+import { Controller } from '@nestjs/common';
+import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
+import { ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs } from './helpers';
+import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
+import { readFile } from 'fs/promises';
+import path from 'path';
+import process from 'process';
 
-const localSchema = 'https://localhost/schema';
-
-/**
- * Creation of default schemes.
- * 
- * @param schemaRepository - table with schemes
- */
-export const setDefaultSchema = async function (schemaRepository: MongoRepository<Schema>) {
-    if (await schemaRepository.count() === 0) {
-        const _properties = {
-            '@context': {
-                'oneOf': [
-                    {
-                        type: 'string',
-                    },
-                    {
-                        type: 'array',
-                        items: {
-                            type: 'string',
-                        }
-                    },
-                ],
-                'readOnly': true
-            },
-            'type': {
-                'oneOf': [
-                    {
-                        type: 'string',
-                    },
-                    {
-                        type: 'array',
-                        items: {
-                            type: 'string',
-                        }
-                    },
-                ],
-                'readOnly': true
-            },
-            'id': {
-                'type': 'string',
-                'readOnly': true
-            }
-        };
-        const _required = [];
-
-        let item: any;
-        
-        item = schemaRepository.create({
-            name: 'MintToken',
-            uuid: "MintToken",
-            entity: SchemaEntity.MINT_TOKEN,
-            document: JSON.stringify({
-                '$id': '#MintToken',
-                '$comment': `{"term": "MintToken", "@id": "${localSchema}#MintToken"}`,
-                'title': 'MintToken',
-                'description': 'MintToken',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'date': {
-                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
-                        'title': 'date',
-                        'description': 'date',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'amount': {
-                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
-                        'title': 'amount',
-                        'description': 'amount',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'tokenId': {
-                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'tokenId',
-                        'description': 'tokenId',
-                        'type': 'string',
-                        'readOnly': false
-                    }
-                },
-                'required': [
-                    ..._required,
-                    'date',
-                    'amount',
-                    'tokenId'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'WipeToken',
-            uuid: "WipeToken",
-            entity: SchemaEntity.WIPE_TOKEN,
-            document: JSON.stringify({
-                '$id': '#WipeToken',
-                '$comment': `{"term": "WipeToken", "@id": "${localSchema}#WipeToken"}`,
-                'title': 'WipeToken',
-                'description': 'WipeToken',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'date': {
-                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
-                        'title': 'date',
-                        'description': 'date',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'amount': {
-                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
-                        'title': 'amount',
-                        'description': 'amount',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'tokenId': {
-                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'tokenId',
-                        'description': 'tokenId',
-                        'type': 'string',
-                        'readOnly': false
-                    }
-                },
-                'required': [
-                    ..._required,
-                    'date',
-                    'amount',
-                    'tokenId'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'RootAuthority',
-            uuid: "RootAuthority",
-            entity: SchemaEntity.ROOT_AUTHORITY,
-            document: JSON.stringify({
-                '$id': '#RootAuthority',
-                '$comment': `{"term": "RootAuthority", "@id": "${localSchema}#RootAuthority"}`,
-                'title': 'RootAuthority',
-                'description': 'RootAuthority',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'name': {
-                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
-                        'title': 'name',
-                        'description': 'name',
-                        'type': 'string',
-                        'readOnly': false
-                    }
-                },
-                'required': [
-                    ..._required,
-                    'name'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'MintNFToken',
-            uuid: "MintNFToken",
-            entity: SchemaEntity.MINT_NFTOKEN,
-            document: JSON.stringify({
-                '$id': '#MintNFToken',
-                '$comment': `{"term": "MintNFToken", "@id": "${localSchema}#MintNFToken"}`,
-                'title': 'MintNFToken',
-                'description': 'MintNFToken',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'date': {
-                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
-                        'title': 'date',
-                        'description': 'date',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'serials':
-                    {
-                        '$comment': `{"term": "serials", "@id": "https://www.schema.org/text"}`,
-                        'title': 'serials',
-                        'description': 'serials',
-                        'type': 'array',
-                        'items': {
-                            'type': 'string',
-                        },
-                        'readOnly': false
-                    },
-                    'tokenId': {
-                        '$comment': `{"term": "tokenId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'tokenId',
-                        'description': 'tokenId',
-                        'type': 'string',
-                        'readOnly': false
-                    }
-                },
-                'required': [
-                    ..._required,
-                    'date',
-                    'serials',
-                    'tokenId'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'Policy',
-            uuid: "Policy",
-            entity: SchemaEntity.POLICY,
-            document: JSON.stringify({
-                '$id': '#Policy',
-                '$comment': `{"term": "Policy", "@id": "${localSchema}#Policy"}`,
-                'title': 'Policy',
-                'description': 'Policy',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'name': {
-                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
-                        'title': 'name',
-                        'description': 'name',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'description': {
-                        '$comment': `{"term": "description", "@id": "https://www.schema.org/text"}`,
-                        'title': 'description',
-                        'description': 'description',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'topicDescription': {
-                        '$comment': `{"term": "topicDescription", "@id": "https://www.schema.org/text"}`,
-                        'title': 'topicDescription',
-                        'description': 'topicDescription',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'version': {
-                        '$comment': `{"term": "version", "@id": "https://www.schema.org/text"}`,
-                        'title': 'version',
-                        'description': 'version',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'policyTag': {
-                        '$comment': `{"term": "policyTag", "@id": "https://www.schema.org/text"}`,
-                        'title': 'policyTag',
-                        'description': 'policyTag',
-                        'type': 'string',
-                        'readOnly': false
-                    }
-                },
-                'required': [
-                    ..._required,
-                    'name',
-                    'description',
-                    'topicDescription',
-                    'version',
-                    'policyTag'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        
-        item = schemaRepository.create({
-            name: 'Inverter',
-            uuid: "9d31b4ee-2280-43ee-81e7-b225ee208802",
-            entity: SchemaEntity.INVERTER,
-            document: JSON.stringify({
-                '$id': '#9d31b4ee-2280-43ee-81e7-b225ee208802',
-                '$comment': `{"term": "9d31b4ee-2280-43ee-81e7-b225ee208802", "@id": "${localSchema}#9d31b4ee-2280-43ee-81e7-b225ee208802"}`,
-                'title': 'Inverter',
-                'description': 'Inverter',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'policyId': {
-                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'policyId',
-                        'description': 'policyId',
-                        'type': 'string',
-                        'readOnly': true
-                    },
-                    'projectId': {
-                        '$comment': `{"term": "projectId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'projectId',
-                        'description': 'projectId',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'projectName': {
-                        '$comment': `{"term": "projectName", "@id": "https://www.schema.org/text"}`,
-                        'title': 'projectName',
-                        'description': 'projectName',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'sensorType': {
-                        '$comment': `{"term": "sensorType", "@id": "https://www.schema.org/text"}`,
-                        'title': 'sensorType',
-                        'description': 'sensorType',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'capacity': {
-                        '$comment': `{"term": "capacity", "@id": "https://www.schema.org/text"}`,
-                        'title': 'capacity',
-                        'description': 'capacity',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                },
-                'required': [
-                    ..._required,
-                    'policyId',
-                    'projectId',
-                    'projectName',
-                    'sensorType',
-                    'capacity'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'Installer',
-            uuid: "b613e284-5af3-465e-a9a9-329a706180fc",
-            entity: SchemaEntity.INSTALLER,
-            document: JSON.stringify({
-                '$id': '#b613e284-5af3-465e-a9a9-329a706180fc',
-                '$comment': `{"term": "b613e284-5af3-465e-a9a9-329a706180fc", "@id": "${localSchema}#b613e284-5af3-465e-a9a9-329a706180fc"}`,
-                'title': 'Installer',
-                'description': 'Installer',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'policyId': {
-                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'policyId',
-                        'description': 'policyId',
-                        'type': 'string',
-                        'readOnly': true
-                    },
-                    'name': {
-                        '$comment': `{"term": "name", "@id": "https://www.schema.org/text"}`,
-                        'title': 'name',
-                        'description': 'name',
-                        'type': 'string',
-                        'readOnly': false
-                    }
-                },
-                'required': [
-                    ..._required,
-                    'policyId',
-                    'name'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-
-        item = schemaRepository.create({
-            name: 'MRV',
-            uuid: "c4623dbd-2453-4c12-941f-032792a00727",
-            entity: SchemaEntity.MRV,
-            document: JSON.stringify({
-                '$id': '#c4623dbd-2453-4c12-941f-032792a00727',
-                '$comment': `{"term": "c4623dbd-2453-4c12-941f-032792a00727", "@id": "${localSchema}#c4623dbd-2453-4c12-941f-032792a00727"}`,
-                'title': 'MRV',
-                'description': 'MRV',
-                'type': 'object',
-                'properties': {
-                    ..._properties,
-                    'policyId': {
-                        '$comment': `{"term": "policyId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'policyId',
-                        'description': 'policyId',
-                        'type': 'string',
-                        'readOnly': true
-                    },
-                    'accountId': {
-                        '$comment': `{"term": "accountId", "@id": "https://www.schema.org/text"}`,
-                        'title': 'accountId',
-                        'description': 'accountId',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'date': {
-                        '$comment': `{"term": "date", "@id": "https://www.schema.org/text"}`,
-                        'title': 'date',
-                        'description': 'date',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'amount': {
-                        '$comment': `{"term": "amount", "@id": "https://www.schema.org/text"}`,
-                        'title': 'amount',
-                        'description': 'amount',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                    'period': {
-                        '$comment': `{"term": "period", "@id": "https://www.schema.org/text"}`,
-                        'title': 'period',
-                        'description': 'period',
-                        'type': 'string',
-                        'readOnly': false
-                    },
-                },
-                'required': [
-                    ..._required,
-                    'policyId',
-                    'accountId',
-                    'date',
-                    'amount',
-                    'period'
-                ],
-                'additionalProperties': false,
-            }),
-            status: SchemaStatus.PUBLISHED,
-            readonly: true
-        });
-        await schemaRepository.save(item);
-    }
-}
-
-const getRelationships = function (schema: SchemaModel) {
-    const fields = schema.fields;
-    const result = [];
-    for (let i = 0; i < fields.length; i++) {
-        const element = fields[i];
-        if (element.isRef) {
-            result.push(element.type);
-        }
-    }
-    return result;
-}
+@Controller()
+export class SchemaService { }
 
 /**
- * Connect to the message broker methods of working with schemes.
- * 
- * @param channel - channel
- * @param schemaRepository - table with schemes
+ * Connect to the message broker methods of working with schemas.
  */
-export const schemaAPI = async function (
-    channel: any,
-    schemaRepository: MongoRepository<Schema>
-): Promise<void> {
+export async function schemaAPI(): Promise<void> {
     /**
-     * Change the status of a schema on PUBLISHED.
-     * 
-     * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
-     * @returns {ISchema[]} - all schemes
+     * Create schema
+     *
+     * @param {ISchema} payload - schema
+     *
+     * @returns {ISchema[]} - all schemas
      */
-    channel.response(MessageAPI.PUBLISH_SCHEMA, async (msg, res) => {
-        if (msg.payload) {
-            const id = msg.payload as string;
-            const item = await schemaRepository.findOne(id);
-            if (item) {
-                item.status = SchemaStatus.PUBLISHED;
-                await schemaRepository.update(item.id, item);
-            }
+    ApiResponse(MessageAPI.CREATE_SCHEMA, async (msg) => {
+        try {
+            await createSchemaAndArtifacts(msg.category, msg, msg.owner, emptyNotifier());
+            const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
+            return new MessageResponse(schemas);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
-        const schemes = await schemaRepository.find();
-        res.send(schemes);
+    });
+
+    ApiResponse(MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
+        const { item, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            const schema = await createSchemaAndArtifacts(item.category, item, item.owner, notifier);
+            notifier.result(schema.id);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
+    ApiResponse(MessageAPI.COPY_SCHEMA_ASYNC, async (msg) => {
+        const { iri, topicId, name, owner, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            const schema = await copySchemaAsync(iri, topicId, name, owner);
+            notifier.result(schema.iri);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
     });
 
     /**
-     * Change the status of a schema on UNPUBLISHED.
-     * 
-     * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
-     * @returns {ISchema[]} - all schemes
+     * Update schema
+     *
+     * @param {ISchema} payload - schema
+     *
+     * @returns {ISchema[]} - all schemas
      */
-    channel.response(MessageAPI.UNPUBLISHED_SCHEMA, async (msg, res) => {
-        if (msg.payload) {
-            const id = msg.payload as string;
-            const item = await schemaRepository.findOne(id);
+    ApiResponse(MessageAPI.UPDATE_SCHEMA, async (msg) => {
+        try {
+            const id = msg.id as string;
+            const item = await DatabaseServer.getSchema(id);
             if (item) {
-                item.status = SchemaStatus.UNPUBLISHED;
-                await schemaRepository.update(item.id, item);
+                if (checkForCircularDependency(item)) {
+                    throw new Error(`There is circular dependency in schema: ${item.iri}`);
+                }
+                item.name = msg.name;
+                item.description = msg.description;
+                item.entity = msg.entity;
+                item.document = msg.document;
+                item.status = SchemaStatus.DRAFT;
+                item.errors = [];
+                SchemaHelper.setVersion(item, null, item.version);
+                SchemaHelper.updateIRI(item);
+                await DatabaseServer.updateSchema(item.id, item);
+                await updateSchemaDefs(item.iri);
             }
+            const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
+            return new MessageResponse(schemas);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
-        const schemes = await schemaRepository.find();
-        res.send(schemes);
+    });
+
+    /**
+     * Return schema
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            if (msg.id) {
+                const schema = await DatabaseServer.getSchema(msg.id);
+                return new MessageResponse(schema);
+            }
+            if (msg.type) {
+                const iri = `#${msg.type}`;
+                const schema = await DatabaseServer.getSchema({ iri });
+                return new MessageResponse(schema);
+            }
+            return new MessageError('Invalid load schema parameter');
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return parent schemas
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {ISchema[]} - Parent schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_PARENTS, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+
+            const { id, owner } = msg;
+            if (!id) {
+                return new MessageError('Invalid schema id');
+            }
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
+
+            const schema = await DatabaseServer.getSchema({
+                id,
+                owner
+            });
+            if (!schema) {
+                return new MessageError('Schema is not found');
+            }
+
+            return new MessageResponse(await DatabaseServer.getSchemas({
+                defs: schema.iri,
+                owner
+            }, {
+                fields: [
+                    'name',
+                    'version',
+                    'sourceVersion',
+                    'status'
+                ]
+            }));
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schema tree
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {any} - Schema tree
+     */
+    ApiResponse(MessageAPI.GET_SCHEMA_TREE, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+
+            const { id, owner } = msg;
+            if (!id) {
+                return new MessageError('Invalid schema id');
+            }
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
+
+            const schema = await DatabaseServer.getSchemaById(id);
+            if (!schema) {
+                return new MessageError('Schema is not found');
+            }
+
+            // tslint:disable-next-line:no-shadowed-variable
+            const getChildrenTypes = (schema: any) => {
+                return (new Schema(schema)).fields.filter(field => field.isRef && field.type !== '#GeoJSON' && field.type !== '#SentinelHUB').map(field => field.type);
+            }
+            // tslint:disable-next-line:no-shadowed-variable
+            const createNode = async (schema: any) => {
+                const nestedSchemas = getChildrenTypes(schema);
+                const node: SchemaNode = {
+                    name: schema.name,
+                    type: schema.iri,
+                    children: await getNestedSchemas(nestedSchemas)
+                };
+                return node;
+            }
+            const getNestedSchemas = async (types: string[]) => {
+                const result = [];
+                if (!Array.isArray(types)) {
+                    return result;
+                }
+                for (const type of types) {
+                    // tslint:disable-next-line:no-shadowed-variable
+                    const schema = await DatabaseServer.getSchema({
+                        iri: type
+                    });
+                    if (result.findIndex(item => item.type === schema.iri) === -1) {
+                        result.push(await createNode(schema));
+                    }
+                }
+                return result;
+            }
+            return new MessageResponse(await createNode(schema));
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMAS, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            const otherOptions: any = getPageOptions(msg);
+            const filter: any = {
+                readonly: false,
+                system: false
+            }
+            if (msg.owner) {
+                filter.owner = msg.owner;
+            }
+            if (Array.isArray(msg.category)) {
+                filter.category = { $in: msg.category };
+            } else if (typeof msg.category === 'string') {
+                filter.category = msg.category;
+            }
+            if (msg.policyId) {
+                filter.category = SchemaCategory.POLICY;
+                const policy = await DatabaseServer.getPolicyById(msg.policyId);
+                filter.topicId = policy?.topicId;
+            } else if (msg.moduleId) {
+                filter.category = SchemaCategory.MODULE;
+                const module = await DatabaseServer.getModuleById(msg.moduleId);
+                filter.topicId = module?.topicId;
+            } else if (msg.toolId) {
+                filter.category = SchemaCategory.TOOL;
+                const tool = await DatabaseServer.getToolById(msg.toolId);
+                filter.topicId = tool?.topicId;
+                if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                    delete filter.owner;
+                }
+            }
+            if (msg.topicId) {
+                filter.topicId = msg.topicId;
+                if (filter.category === SchemaCategory.TOOL) {
+                    const tool = await DatabaseServer.getTool({ topicId: msg.topicId });
+                    if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                        delete filter.owner;
+                    }
+                }
+            } else {
+                if (filter.category === SchemaCategory.TOOL) {
+                    const tools = await DatabaseServer.getTools({
+                        $or: [{
+                            owner: msg.owner
+                        }, {
+                            status: ModuleStatus.PUBLISHED
+                        }]
+                    }, {
+                        fields: ['topicId']
+                    });
+                    const ids = tools.map(t => t.topicId);
+                    delete filter.owner;
+                    filter.topicId = { $in: ids }
+                }
+            }
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            return new MessageResponse({ items, count });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMAS_BY_UUID, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            const items = await DatabaseServer.getSchemas({
+                uuid: msg.uuid,
+                readonly: false,
+                system: false
+            });
+            return new MessageResponse(items);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {any[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SUB_SCHEMAS, async (msg) => {
+        try {
+            const { topicId, owner, category } = msg;
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
+
+            const topicMaps = new Set<string>();
+            const nameMaps = new Map<string, string>();
+            if (topicId) {
+                topicMaps.add(topicId);
+                nameMaps.set(topicId, 'Current');
+            }
+
+            let parents: any[];
+            const options = {
+                fields: [
+                    'name',
+                    'topicId',
+                    'tools'
+                ]
+            };
+            if (category === SchemaCategory.POLICY) {
+                parents = await DatabaseServer.getPolicies({ owner, topicId }, options);
+            } else if (category === SchemaCategory.TOOL) {
+                parents = await DatabaseServer.getTools({ owner, topicId }, options);
+            }
+            if (Array.isArray(parents)) {
+                for (const parent of parents) {
+                    if (Array.isArray(parent.tools)) {
+                        for (const tool of parent.tools) {
+                            if (tool.topicId) {
+                                topicMaps.add(tool.topicId);
+                                nameMaps.set(tool.topicId, tool.name);
+                            }
+                        }
+                    }
+                }
+            }
+            const topicIds = Array.from(topicMaps.values());
+            const schemas = await DatabaseServer.getSchemas({
+                $or: [{
+                    owner,
+                    system: false,
+                    readonly: false,
+                    topicId
+                }, {
+                    system: false,
+                    readonly: false,
+                    topicId: { $in: topicIds },
+                    category: SchemaCategory.TOOL,
+                    status: SchemaStatus.PUBLISHED
+                }]
+            });
+            for (const schema of schemas) {
+                (schema as any).__component = nameMaps.get(schema.topicId);
+            }
+            return new MessageResponse(schemas);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Change the status of a schema on PUBLISHED.
+     *
+     * @param {Object} payload - filters
+     * @param {string} payload.id - schema id
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.PUBLISH_SCHEMA, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid id');
+            }
+            const { id, version, owner } = msg;
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+            return new MessageResponse(item);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.PUBLISH_SCHEMA_ASYNC, async (msg) => {
+        const { id, version, owner, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid id');
+            }
+
+            notifier.completedAndStart('Resolve Hedera account');
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await findAndPublishSchema(id, version, owner, root, notifier);
+            notifier.result(item.id);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
     });
 
     /**
      * Delete a schema.
-     * 
+     *
      * @param {Object} payload - filters
-     * @param {string} payload.id - schema id 
-     * 
-     * @returns {ISchema[]} - all schemes
+     * @param {string} payload.id - schema id
+     *
+     * @returns {ISchema[]} - all schemas
      */
-    channel.response(MessageAPI.DELETE_SCHEMA, async (msg, res) => {
-        if (msg.payload) {
-            const id = msg.payload as string;
-            const item = await schemaRepository.findOne(id);
-            if (item) {
-                await schemaRepository.delete(item.id);
-            }
-        }
-        const schemes = await schemaRepository.find();
-        res.send(schemes);
-    });
-
-    /**
-     * Create or update schema
-     * 
-     * @param {ISchema} payload - schema
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.SET_SCHEMA, async (msg, res) => {
-        if (msg.payload.id) {
-            const id = msg.payload.id as string;
-            const item = await schemaRepository.findOne(id);
-            if (item) {
-                item.name = msg.payload.name;
-                item.entity = msg.payload.entity;
-                item.document = msg.payload.document;
-                await schemaRepository.update(item.id, item);
-            }
-        } else {
-            const schemaObject = schemaRepository.create(msg.payload);
-            await schemaRepository.save(schemaObject);
-        }
-        const schemes = await schemaRepository.find();
-        res.send(schemes);
-    });
-
-    /**
-     * Return schemes
-     * 
-     * @param {Object} [payload] - filters
-     * @param {string} [payload.type] - schema type 
-     * @param {string} [payload.entity] - schema entity type
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.GET_SCHEMES, async (msg, res) => {
-        let schemes: ISchema[] = null;
-        if (msg.payload) {
-            const { type, entity } = msg.payload;
-            const reqObj: any = { where: {} };
-            if (type !== undefined) {
-                reqObj.where['type'] = { $eq: type }
-            } else if (entity !== undefined) {
-                reqObj.where['entity'] = { $eq: entity }
-            }
-            schemes = await schemaRepository.find(reqObj);
-        } else {
-            schemes = await schemaRepository.find();
-        }
-        schemes = schemes || [];
-        res.send(schemes);
-    });
-
-    /**
-     * Import schemes
-     * 
-     * @param {ISchema[]} payload - schemes
-     * 
-     * @returns {ISchema[]} - all schemes
-     */
-    channel.response(MessageAPI.IMPORT_SCHEMA, async (msg, res) => {
+    ApiResponse<any>(MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
-            let items: ISchema[] = msg.payload;
-            if (!Array.isArray(items)) {
-                items = [items];
+            if (!msg) {
+                return new MessageError('Invalid delete schema parameter');
             }
 
-            items = items.filter((e) => e.uuid && e.document);
-            const schemes = await schemaRepository.find();
-            const mapName = {};
-            for (let i = 0; i < schemes.length; i++) {
-                mapName[schemes[i].uuid] = true;
+            const { id, owner, needResult } = msg;
+            if (!id) {
+                return new MessageError('Invalid schema id');
             }
-            items = items.filter((e) => !mapName[e.uuid]);
+            if (!owner) {
+                return new MessageError('Invalid schema owner');
+            }
 
-            const schemaObject = schemaRepository.create(items);
-            await schemaRepository.save(schemaObject);
+            const schema = await DatabaseServer.getSchema({
+                id, owner
+            });
+            if (!schema) {
+                return new MessageError('Schema is not found');
+            }
 
-            const newSchemes = await schemaRepository.find();
-            res.send(newSchemes);
+            const parents = await DatabaseServer.getSchemas({
+                defs: schema.iri,
+                owner
+            }, {
+                fields: [
+                    'name',
+                    'version',
+                    'sourceVersion',
+                    'status'
+                ]
+            });
+            if (parents.length > 0) {
+                return new MessageError(
+                    `There are some schemas that depend on this schema:\r\n${parents.map((parent) =>
+                        SchemaHelper.getSchemaName(
+                            parent.name,
+                            parent.version || parent.sourceVersion,
+                            parent.status
+                        )
+                    ).join('\r\n')}`
+                );
+            }
+
+            await deleteSchema(id, emptyNotifier());
+
+            if (needResult) {
+                const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
+                return new MessageResponse(schemas);
+            } else {
+                return new MessageResponse(true);
+            }
         } catch (error) {
-            console.error(error)
+            return new MessageError(error);
         }
     });
 
     /**
-     * Export schemes
-     * 
+     * Load schema by message identifier
+     *
+     * @param {string} [payload.messageId] Message identifier
+     *
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid import schema parameter');
+            }
+            const { owner, messageIds, topicId } = msg;
+            if (!owner || !messageIds) {
+                return new MessageError('Invalid import schema parameter');
+            }
+
+            const category = await getSchemaCategory(topicId);
+            const schemasMap = await importSchemasByMessages(
+                category, owner, messageIds, topicId, emptyNotifier()
+            );
+            return new MessageResponse(schemasMap);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, async (msg) => {
+        const { owner, messageIds, topicId, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid import schema parameter');
+            }
+            if (!owner || !messageIds) {
+                notifier.error('Invalid import schema parameter');
+            }
+
+            const category = await getSchemaCategory(topicId);
+            const schemasMap = await importSchemasByMessages(
+                category, owner, messageIds, topicId, notifier
+            );
+            notifier.result(schemasMap);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
+    /**
+     * Load schema by files
+     *
+     * @param {string} [payload.files] files
+     *
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_FILE, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid import schema parameter');
+            }
+            const { owner, files, topicId } = msg;
+            if (!owner || !files) {
+                return new MessageError('Invalid import schema parameter');
+            }
+            const { schemas, tags } = files;
+            const notifier = emptyNotifier();
+
+            const category = await getSchemaCategory(topicId);
+            let result = await importSchemaByFiles(
+                category,
+                owner,
+                schemas,
+                topicId,
+                notifier
+            );
+            result = await importTagsByFiles(result, tags, notifier);
+
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
+        const { owner, files, topicId, task } = msg;
+        const { schemas, tags } = files;
+
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid import schema parameter');
+            }
+            if (!owner || !files) {
+                notifier.error('Invalid import schema parameter');
+            }
+
+            const category = await getSchemaCategory(topicId);
+            let result = await importSchemaByFiles(
+                category,
+                owner,
+                schemas,
+                topicId,
+                notifier
+            );
+            result = await importTagsByFiles(result, tags, notifier);
+
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
+    /**
+     * Preview schema by message identifier
+     *
+     * @param {string} [payload.messageId] Message identifier
+     *
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(MessageAPI.PREVIEW_SCHEMA, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid preview schema parameters');
+            }
+            const { messageIds } = msg as {
+                /**
+                 * Message ids
+                 */
+                messageIds: string[];
+            };
+            if (!messageIds) {
+                return new MessageError('Invalid preview schema parameters');
+            }
+
+            const result = await prepareSchemaPreview(messageIds, emptyNotifier());
+            return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            console.error(error);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Async preview schema by message identifier
+     *
+     * @param {string} [payload.messageId] Message identifier
+     *
+     * @returns {Schema} Found or uploaded schema
+     */
+    ApiResponse(MessageAPI.PREVIEW_SCHEMA_ASYNC, async (msg) => {
+        const { messageIds, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid preview schema parameters');
+                return;
+            }
+            if (!messageIds) {
+                notifier.error('Invalid preview schema parameters');
+                return;
+            }
+
+            const result = await prepareSchemaPreview(messageIds, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+
+        return new MessageResponse(task);
+    });
+
+    /**
+     * Export schemas
+     *
      * @param {Object} payload - filters
      * @param {string[]} payload.ids - schema ids
-     * 
-     * @returns {ISchema[]} - array of selected and nested schemas
+     *
+     * @returns {any} - Response result
      */
-    channel.response(MessageAPI.EXPORT_SCHEMES, async (msg, res) => {
+    ApiResponse(MessageAPI.EXPORT_SCHEMAS, async (msg) => {
         try {
-            const ids = msg.payload as string[];
-            const data = await schemaRepository.find();
-            const schemes = data.map(s => new SchemaModel(s));
-            const mapType: any = {};
-            const mapSchemes: any = {};
-            const result = [];
-            for (let i = 0; i < schemes.length; i++) {
-                const schema = schemes[i];
-                mapType[schema.ref] = false;
-                mapSchemes[schema.ref] = schema;
-                if (ids.indexOf(schema.uuid) != -1) {
-                    mapType[schema.ref] = true;
-                    result.push(schema);
-                }
-            }
-            let index = 0;
-            while (index < result.length) {
-                const relationships = getRelationships(result[index]);
-                for (let i = 0; i < relationships.length; i++) {
-                    const id = relationships[i];
-                    if (mapType[id] === false) {
-                        mapType[id] = true;
-                        result.push(mapSchemes[id]);
-                    }
-                }
-                result[index].relationships = relationships;
-                index++;
-            }
-            const documents = [];
-            for (let i = 0; i < result.length; i++) {
-                const element = result[i];
-                documents.push({
-                    name: element.name,
-                    uuid: element.uuid,
-                    entity: element.entity,
-                    document: element.document,
-                    relationships: element.relationships,
-                })
-            }
-            res.send(documents);
+            return new MessageResponse(await exportSchemas(msg));
         } catch (error) {
-            console.error(error);
-            res.send(null);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg) => {
+        try {
+            const { owner, iri } = msg as {
+                /**
+                 * Owner
+                 */
+                owner: string,
+                /**
+                 * IRI
+                 */
+                iri: string
+            };
+            const schema = await incrementSchemaVersion(iri, owner);
+            return new MessageResponse(schema);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Create schema
+     *
+     * @param {ISchema} payload - schema
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.CREATE_SYSTEM_SCHEMA, async (msg) => {
+        try {
+            const schemaObject = msg as ISchema;
+            SchemaHelper.setVersion(schemaObject, null, null);
+            SchemaHelper.updateIRI(schemaObject);
+            schemaObject.status = SchemaStatus.DRAFT;
+            schemaObject.topicId = null;
+            schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
+            schemaObject.system = true;
+            schemaObject.active = false;
+            schemaObject.category = SchemaCategory.SYSTEM;
+            schemaObject.readonly = false;
+            const item = await DatabaseServer.createAndSaveSchema(schemaObject);
+            return new MessageResponse(item);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+
+            const { pageIndex, pageSize } = msg;
+            const filter: any = {
+                where: {
+                    system: true
+                }
+            }
+            const otherOptions: any = {};
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = 100;
+            }
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            return new MessageResponse({
+                items,
+                count
+            });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Delete a schema.
+     *
+     * @param {Object} payload - filters
+     * @param {string} payload.id - schema id
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.ACTIVE_SCHEMA, async (msg) => {
+        try {
+            if (msg && msg.id) {
+                const item = await DatabaseServer.getSchema(msg.id);
+                if (item) {
+                    const schemas = await DatabaseServer.getSchemas({
+                        entity: item.entity
+                    });
+                    for (const schema of schemas) {
+                        schema.active = schema.id.toString() === item.id.toString();
+                    }
+                    await DatabaseServer.saveSchemas(schemas);
+                }
+            }
+            return new MessageResponse(null);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schema
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SYSTEM_SCHEMA, async (msg) => {
+        try {
+            if (!msg || !msg.entity) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            const schema = await DatabaseServer.getSchema({
+                entity: msg.entity,
+                system: true,
+                active: true
+            });
+            return new MessageResponse(schema);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {any[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_LIST_SCHEMAS, async (msg) => {
+        try {
+            if (!msg || !msg.owner) {
+                return new MessageError('Invalid schema owner');
+            }
+            const schema = await DatabaseServer.getSchemas({
+                where: {
+                    owner: msg.owner,
+                    system: false,
+                    readonly: false,
+                    category: { $ne: SchemaCategory.TAG }
+                }
+            }, {
+                fields: [
+                    'id',
+                    'name',
+                    'description',
+                    'topicId',
+                    'version',
+                    'sourceVersion',
+                    'status',
+                ]
+            });
+            return new MessageResponse(schema);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_TAG_SCHEMAS, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid load schema parameter');
+            }
+            const filter: any = {
+                system: false,
+                category: SchemaCategory.TAG
+            }
+            if (msg.owner) {
+                filter.owner = msg.owner;
+            }
+            const otherOptions: any = getPageOptions(msg);
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            return new MessageResponse({ items, count });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Create schema
+     *
+     * @param {Object} [payload] - schema
+     *
+     * @returns {ISchema} - schema
+     */
+    ApiResponse(MessageAPI.CREATE_TAG_SCHEMA, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid schema');
+            }
+            const schemaObject = msg as ISchema;
+            SchemaHelper.setVersion(schemaObject, null, null);
+            SchemaHelper.updateIRI(schemaObject);
+            schemaObject.status = SchemaStatus.DRAFT;
+            schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
+            schemaObject.category = SchemaCategory.TAG;
+            schemaObject.readonly = false;
+            schemaObject.system = false;
+            const topic = await DatabaseServer.getTopicByType(schemaObject.owner, TopicType.UserTopic);
+            schemaObject.topicId = topic.topicId;
+            const item = await DatabaseServer.createAndSaveSchema(schemaObject);
+            return new MessageResponse(item);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Publish Schema
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.PUBLISH_TAG_SCHEMA, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid id');
+            }
+            const { id, version, owner } = msg;
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+            return new MessageResponse(item);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Return schemas
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS, async (msg) => {
+        try {
+            const schema = await DatabaseServer.getSchemas({
+                system: false,
+                readonly: false,
+                category: SchemaCategory.TAG,
+                status: SchemaStatus.PUBLISHED
+            }, {
+                fields: [
+                    'id',
+                    'name',
+                    'description',
+                    'topicId',
+                    'uuid',
+                    'version',
+                    'iri',
+                    'documentFileId'
+                ]
+            });
+            return new MessageResponse(schema);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Export schemas
+     */
+    ApiResponse(MessageAPI.SCHEMA_EXPORT_XLSX, async (msg) => {
+        try {
+            const { ids } = msg;
+            const schemas = await exportSchemas(ids);
+            const buffer = await JsonToXlsx.generate(schemas, [], []);
+            return new BinaryMessageResponse(buffer);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Load schema by xlsx
+     */
+    ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX, async (msg) => {
+        try {
+            const { user, xlsx, topicId } = msg;
+            const notifier = emptyNotifier();
+            const policy = await DatabaseServer.getPolicy({ topicId });
+            if (!xlsx) {
+                throw new Error('file in body is empty');
+            }
+            if (!policy) {
+                throw new Error('Unknown policy');
+            }
+            const users = new Users();
+            const owner = (await users.getUser(user.username))?.did;
+            const root = await users.getHederaAccount(owner);
+
+            const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+            const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), notifier);
+            for (const tool of tools) {
+                const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                xlsxResult.updateTool(tool, subSchemas);
+            }
+            xlsxResult.updateSchemas(false);
+            xlsxResult.updatePolicy(policy);
+            xlsxResult.addErrors(errors);
+            GenerateBlocks.generate(xlsxResult);
+            const category = await getSchemaCategory(policy.topicId);
+            const result = await importSchemaByFiles(
+                category,
+                owner,
+                xlsxResult.schemas,
+                policy.topicId,
+                notifier,
+                true
+            );
+            await PolicyImportExportHelper.updatePolicyComponents(policy);
+
+            return new MessageResponse({
+                policyId: policy.id,
+                errors: result.errors
+            });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Load schema by xlsx
+     */
+    ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, async (msg) => {
+        const { user, xlsx, topicId, task } = msg;
+        const notifier = await initNotifier(task);
+        RunFunctionAsync(async () => {
+            const policy = await DatabaseServer.getPolicy({ topicId });
+
+            if (!xlsx) {
+                throw new Error('file in body is empty');
+            }
+            if (!policy) {
+                throw new Error('Unknown policy');
+            }
+
+            new Logger().info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
+            const users = new Users();
+            const owner = (await users.getUser(user.username))?.did;
+            const root = await users.getHederaAccount(owner);
+            notifier.start('File parsing');
+
+            const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+            const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), notifier);
+            for (const tool of tools) {
+                const subSchemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
+                xlsxResult.updateTool(tool, subSchemas);
+            }
+            xlsxResult.updateSchemas(false);
+            xlsxResult.updatePolicy(policy);
+            xlsxResult.addErrors(errors);
+            GenerateBlocks.generate(xlsxResult);
+            const category = await getSchemaCategory(policy.topicId);
+            const result = await importSchemaByFiles(
+                category,
+                owner,
+                xlsxResult.schemas,
+                policy.topicId,
+                notifier,
+                true
+            );
+            await PolicyImportExportHelper.updatePolicyComponents(policy);
+
+            notifier.result({
+                schemas: xlsxResult.schemas,
+                errors: result.errors
+            });
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
+        });
+        return new MessageResponse(task);
+    });
+
+    /**
+     * Preview schema by xlsx
+     */
+    ApiResponse(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW, async (msg) => {
+        try {
+            const { xlsx } = msg;
+            if (!xlsx) {
+                throw new Error('file in body is empty');
+            }
+            const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
+            for (const toolId of xlsxResult.getToolIds()) {
+                try {
+                    const tool = await previewToolByMessage(toolId.messageId);
+                    xlsxResult.updateTool(tool.tool, tool.schemas);
+                } catch (error) {
+                    xlsxResult.addErrors([{
+                        text: `Failed to load tool (${toolId.messageId})`,
+                        worksheet: toolId.worksheet,
+                        message: error?.toString()
+                    }]);
+                }
+            }
+            xlsxResult.updateSchemas(false);
+            GenerateBlocks.generate(xlsxResult);
+
+            return new MessageResponse(xlsxResult.toJson());
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Preview schema by xlsx
+     */
+    ApiResponse(MessageAPI.GET_TEMPLATE, async (msg) => {
+        try {
+            const {filename} = msg;
+            const filePath = path.join(process.cwd(), 'artifacts', filename);
+            const file = await readFile(filePath);
+            return new BinaryMessageResponse(file.buffer);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
         }
     });
 }

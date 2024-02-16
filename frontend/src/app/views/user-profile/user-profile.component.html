@@ -1,0 +1,278 @@
+<div class="content user-profile">
+    <div *ngIf="loading && !taskId" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <async-progress
+        (completed)="onAsyncCompleted()"
+        (error)="onAsyncError($event)"
+        *ngIf="loading && taskId"
+        [taskId]="taskId"
+    ></async-progress>
+
+    <ng-container *ngIf="isConfirmed; else elseTemplate">
+        <div *ngIf="profile" class="profile">
+            <div class="header">
+                <h1>Profile</h1>
+            </div>
+            <div class="user-info-container">
+                <div class="item">
+                    <span>HEDERA ID</span>
+                    <div>
+                        <hedera-explorer
+                            [params]="profile.hederaAccountId || ''"
+                            type="accounts"
+                        >{{ profile.hederaAccountId }}
+                        </hedera-explorer>
+                    </div>
+                </div>
+                <div class="item">
+                    <span>BALANCE</span>
+                    <span>{{ balance }}</span>
+                </div>
+                <div *ngIf="profile.topicId" class="item">
+                    <span>USER TOPIC</span>
+                    <div>
+                        <hedera-explorer
+                            [params]="profile.topicId"
+                            type="topics"
+                        >{{ profile.topicId }}</hedera-explorer>
+                    </div>
+                </div>
+                <div class="item">
+                    <span>Standard Registry</span>
+                    <span>{{ profile.parent }}</span>
+                </div>
+                <div class="item">
+                    <span>DID</span>
+                    <span>{{ profile.did }}</span>
+                </div>
+                <div class="item">
+                    <span>DID Document</span>
+                    <div
+                        (click)="openDIDDocument(didDocument, 'DID')"
+                        class="view-document-button"
+                    >
+                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                        </svg-icon>
+                        <span>View document</span>
+                    </div>
+                </div>
+                <div *ngIf="vcDocument" class="item">
+                    <span>VC Document</span>
+                    <div
+                        (click)="openVCDocument(vcDocument, 'VC')"
+                        class="view-document-button"
+                    >
+                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
+                        </svg-icon>
+                        <span>View document</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+    <ng-template #elseTemplate>
+        <div *ngIf="isNewAccount && !isFailed && !loading" class="finish-setup-main-container">
+            <div class="user-profile-setup-title">User Profile Setup</div>
+
+            <div class="content-main-block-container">
+                <div class="progress-container">
+                    <div
+                        *ngFor="let step of steps"
+                        [ngClass]="{ active: step.index === currentStep }"
+                        class="step-item"
+                    >
+                        <i
+                            [ngClass]="step.index === currentStep
+                                ? 'pi-check'
+                                : 'pi-angle-right'"
+                            class="pi"
+                        ></i>
+                        <p>{{ step.label }}</p>
+                    </div>
+                </div>
+
+                <div class="forms-container">
+                    <ng-container *ngIf="currentStep === 0">
+                        <div class="user-onboarding-wizard__header">
+                            <form
+                                *ngIf="hasRegistries"
+                                [formGroup]="filtersForm"
+                                class="user-onboarding-wizard__filters"
+                            >
+                                <div class="search-inputs">
+                                    <label
+                                        class="form-label"
+                                        htmlFor="policyName"
+                                    >
+                                        Filter by
+                                    </label>
+
+                                    <span class="p-input-icon-right">
+                                        <input
+                                            formControlName="policyName"
+                                            id="policyName"
+                                            pInputText
+                                            placeholder="Policy name"
+                                            type="text"
+                                        />
+                                        <i class="pi pi-search"></i>
+                                    </span>
+
+                                    <span class="p-input-icon-right">
+                                        <input
+                                            formControlName="geography"
+                                            pInputText
+                                            placeholder="Geography"
+                                            type="text"
+                                        />
+                                        <i class="pi pi-search"></i>
+                                    </span>
+                                </div>
+
+                                <div class="user-onboarding-wizard__filter-btns">
+                                    <p-button
+                                        (click)="applyFilters()"
+                                        [disabled]="isFilterButtonDisabled"
+                                        class="apply-filters-button"
+                                        label="Apply"
+                                    ></p-button>
+                                    <p-button
+                                        (click)="clearFilters()"
+                                        [disabled]="!filtersForm.dirty"
+                                        class="clear-filters-button"
+                                        styleClass="p-button-outlined"
+                                    >Clear filters</p-button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="user-onboarding-wizard__content">
+                            <ng-container *ngIf="!noFilterResults; else noResults">
+                                <p *ngIf="!hasRegistries" class="no-results">
+                                    Standard registries have not been created
+                                    yet.
+                                </p>
+
+                                <ul class="standard-registry">
+                                    <app-standard-registry-card 
+                                        (registrySelected)="selectStandardRegistry($event)" 
+                                        *ngFor="let registry of standardRegistriesList; trackBy: trackByDid" 
+                                        [isRegistrySelected]="isRegistrySelected(registry.did)" 
+                                        [registry]="registry"></app-standard-registry-card>
+                                </ul>
+                            </ng-container>
+
+                            <ng-template #noResults>
+                                <p *ngIf="noFilterResults" class="no-results">
+                                    No results found.
+                                </p>
+                            </ng-template>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="currentStep === 1">
+                        <div class="hedera-credentials-title">
+                            Hedera Credentials
+                        </div>
+
+                        <div class="hedera-credentials-form-container">
+                            <form [formGroup]="hederaForm" class="hedera-form">
+                                <div *ngIf="schema" class="list-item">
+                                    <app-schema-form
+                                            (change)="onChangeForm()"
+                                            [formGroup]="vcForm"
+                                            [private-fields]="hideVC"
+                                            [schema]="schema"
+                                            [showButtons]="false"
+                                    >
+                                    </app-schema-form>
+                                </div>
+
+                                <div class="input-field-container">
+                                    <label class="form-label" htmlFor="operatorId">
+                                        * OPERATOR ID (Hedera Account):
+                                    </label>
+                                    <input
+                                        formControlName="id"
+                                        id="operatorId"
+                                        pInputText
+                                        placeholder="0.0.1548173"
+                                        type="text"
+                                    />
+                                </div>
+                                <div class="input-field-container">
+                                    <label class="form-label" htmlFor="operatorKey">
+                                        * OPERATOR KEY (Hedera Account Private Key):
+                                    </label>
+                                    <input
+                                        formControlName="key"
+                                        id="operatorKey"
+                                        pInputText
+                                        placeholder="302e020100300506032b657004220420e..."
+                                        type="text"
+                                    />
+                                </div>
+                                <p-button
+                                    (click)="randomKey()"
+                                    class="generate-btn"
+                                    label="Generate"
+                                    styleClass="p-button-outlined"
+                                >
+                                </p-button>
+                            </form>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="user-profile-setup-buttons-container">
+                <div *ngIf="currentStep === 0" class="user-profile-next-button">
+                    <p-button
+                        (click)="changeStep(true)"
+                        [disabled]="!isStandardRegistrySelected"
+                        label="Next"
+                    >
+                    </p-button>
+                </div>
+                <div
+                    *ngIf="currentStep === 1"
+                    class="user-profile-finish-buttons"
+                >
+                    <div class="previous-button">
+                        <p-button
+                            (click)="changeStep(false)"
+                            label="Previous"
+                            styleClass="p-button-outlined"
+                        ></p-button>
+                    </div>
+                    <div class="confirm-button">
+                        <p-button
+                            (click)="onHederaSubmit()"
+                            [disabled]="hederaForm.invalid"
+                            label="Submit"
+                        >
+                        </p-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
+            <div class="clock-loader"></div>
+            <p>Creating DID ...</p>
+        </div>
+        <div *ngIf="isFailed" class="error-list">
+            <p>An error occurred while creating the document.</p>
+            <p>Please try again later.</p>
+            <button
+                (click)="retry()"
+                class="generate-btn"
+                color="primary"
+                mat-raised-button
+                type="button"
+            >
+                Retry
+            </button>
+        </div>
+    </ng-template>
+</div>

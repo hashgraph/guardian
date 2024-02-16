@@ -1,16 +1,68 @@
-import {DocumentStatus} from '../type/document-status.type';
-import {IVC} from './vc.interface';
+import { DocumentStatus } from '../type/document-status.type';
+import { IVC } from './vc.interface';
 
+/**
+ * VC document interface
+ */
 export interface IVCDocument {
+    /**
+     * ID
+     */
     id?: string;
-    owner: string;
-    hash: string;
-    document: IVC;
+    /**
+     * Owner
+     */
+    owner?: string;
+    /**
+     * Assign
+     */
+    assignedTo?: string;
+    /**
+     * Assign
+     */
+    assignedToGroup?: string;
+    /**
+     * Hash
+     */
+    hash?: string;
+    /**
+     * Document instance
+     */
+    document?: IVC;
+    /**
+     * Creation date
+     */
     createDate?: Date;
+    /**
+     * Last update
+     */
     updateDate?: Date;
-    status?: DocumentStatus;
-    type: string;
+    /**
+     * Hedera status
+     */
+    hederaStatus?: DocumentStatus;
+    /**
+     * Comment
+     */
+    comment?: string;
+    /**
+     * Type
+     */
+    type?: string;
+    /**
+     * Signature
+     */
     signature?: number;
-    policyId: string;
-    tag: string;
+    /**
+     * Policy ID
+     */
+    policyId?: string;
+    /**
+     * Tag
+     */
+    tag?: string;
+    /**
+     * Option
+     */
+    option?: any;
 }

@@ -1,0 +1,68 @@
+.select-menu {
+    background: #4caf50;
+    color: #fff;
+    border-radius: 6px;
+    display: inline-block;
+    padding: 6px 40px 6px 12px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+}
+
+.select-menu-min {
+    background: #4caf50;
+    color: #fff;
+    border-radius: 6px;
+    display: inline-block;
+    padding: 6px 12px 6px 12px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+}
+
+.select-menu mat-icon {
+    position: absolute;
+    right: 4px;
+    top: 5px;
+    border-left: 1px solid #fff;
+    padding-left: 2px;
+    pointer-events: none;
+}
+
+.select-menu-item {
+    padding: 8px 10px;
+    border-bottom: 1px solid #979797;
+    cursor: pointer;
+}
+
+.select-menu-item:hover {
+    background: #e9f3fe;
+}
+
+.select-menu-item-title {
+    display: block;
+    max-width: 300px;
+    font-size: 16px;
+    font-weight: 600;
+    pointer-events: none;
+    margin-bottom: 5px;
+}
+
+.select-menu-item-description {
+    display: block;
+    max-width: 300px;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.select-menu-item:last-child {
+    border-bottom: none;
+}

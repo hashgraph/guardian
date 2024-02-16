@@ -1,0 +1,13 @@
+{
+  "document": {
+    "field0": "Name of farm",
+    "field1": "Farm location",
+    "field2": 100,
+    "field3": "What type of soil does your farm/land has?",
+    "field4": "Have you got any animals on the farm?",
+    "field5": "What are your current farming practices?",
+    "field6": "How do you irrigate your property?",
+    "field7": "Do you fertilise the soil?",
+    "field8": "Do you use heavy machinery (tractors, combine, etc.) on the farm?"
+  }
+}

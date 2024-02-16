@@ -1,0 +1,14 @@
+<div class="content">
+    <div class="content-header">
+        <mat-icon (click)="onNoClick()">close</mat-icon>
+    </div>
+
+    <app-file-drag-n-drop 
+        [fileExtension]="fileExtension" 
+        (onFileLoaded)="importFromFile($event)"
+        [dropZoneLabel]="label"></app-file-drag-n-drop>
+
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</div>

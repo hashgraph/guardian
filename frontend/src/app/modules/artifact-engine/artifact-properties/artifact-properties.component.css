@@ -1,0 +1,80 @@
+.artifact-list {
+    border: solid 1px #ccc;
+    min-height: 60px;
+    background: white;
+    border-radius: 4px;
+    display: block;
+    width: 97%;
+    overflow-y: scroll;
+    max-height: 400px;
+}
+
+.artifact-row {
+    padding: 20px 10px;
+    border-bottom: solid 1px #ccc;
+    color: rgba(0, 0, 0, 0.87);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    cursor: move;
+    background: white;
+    font-size: 14px;
+    position: relative;
+}
+
+.artifact-row.cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+        0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.artifact-row.cdk-drag-placeholder {
+    opacity: 0;
+}
+
+.artifact-row:last-child {
+    border: none;
+}
+
+.artifact-row.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.artifact-list.cdk-drop-list-dragging .artifact-row:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.remove-prop {
+    position: absolute;
+    top: 14px;
+    right: 17px;
+    color: #f00;
+    cursor: pointer;
+}
+
+.remove-prop mat-icon {
+    font-size: 30px;
+}
+
+.remove-prop[readonly="true"] {
+    display: none;
+}
+
+.artifact-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    height: 90%;
+}
+
+.artifact-container .add-artifact-button {
+    width: 50%;
+    margin-bottom: 10px;
+    height: 50px;
+    min-height: 50px;
+}

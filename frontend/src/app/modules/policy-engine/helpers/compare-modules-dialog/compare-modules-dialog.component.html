@@ -1,0 +1,52 @@
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="loading">
+            <div class="preloader-image preloader-image-l-size"></div>
+        </div>
+
+        <div class="policy-dropdown-container">
+            <label class="form-label" for="firstModule">* First {{ type }}</label>
+            <p-dropdown
+                (onChange)="onChange()"
+                [(ngModel)]="itemId1"
+                [options]="list1"
+                [placeholder]="'Select ' + type"
+                [showClear]="true"
+                appendTo="body"
+                id="firstModule"
+                optionLabel="name"
+                optionValue="id"
+            ></p-dropdown>
+        </div>
+
+        <div class="policy-dropdown-container">
+            <label class="form-label" for="secondaryModule">* Secondary  {{ type }}</label>
+            <p-multiSelect
+                (onChange)="onChange()"
+                [(ngModel)]="itemId2"
+                [options]="list2"
+                [placeholder]="'Select ' + type + '(-s)'"
+                appendTo="body"
+                id="secondaryModule"
+                optionLabel="name"
+                optionValue="id"
+            ></p-multiSelect>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button
+                (click)="onClose()"
+                class="button secondary"
+                label="Cancel"
+                pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onCompare()" [disabled]="!(itemId1 && itemId2)" class="button" label="Compare"
+                    pButton></button>
+        </div>
+    </div>
+</div>

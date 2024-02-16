@@ -1,0 +1,126 @@
+<div class="container">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader preloader-image-l-size"></div>
+    </div>
+    <ng-container *ngIf="!loading">
+        <ng-container *ngIf="history?.items?.length || history?.history?.length else emptyContainer">
+
+            <div class="tabs">
+                <div class="tab-item" (click)="openTab(1)" [attr.selected]="tab===1">Current Tags</div>
+                <div (click)="openTab(2)" *ngIf="history.history?.length" [attr.selected]="tab===2" class="tab-item">
+                    Imported Tags
+                </div>
+            </div>
+
+            <div class="tag-container">
+                <div (click)="onSelect(item)"
+                     *ngFor="let item of selectedTags"
+                    [class.selected]="item === select"
+                    class="item"
+                >
+                    <svg-icon class="svg-icon-16"
+                              src="/assets/images/icons/16/label.svg"
+                        [svgClass]="item === select ? 'white-color' : 'primary-color'"></svg-icon>
+                    <div class="name">
+                        {{item.name}}
+                    </div>
+                    <div *ngIf="item.count > 1" class="count">
+                        {{item.count}}
+                    </div>
+                </div>
+            </div>
+
+            <button (click)="onAdd()"
+                *ngIf="this.tab === 1"
+                [label]="'Create a Tag'"
+                class="button secondary"
+                icon="pi pi-plus"
+                pButton>
+            </button>
+
+            <div *ngIf="select" class="details-container">
+                <div *ngFor="let item of select.items"
+                     [attr.open]="item.open"
+                    [attr.owner]="item.owner === owner"
+                     [attr.status]="item.status"
+                    class="item"
+                >
+                    <div (click)="onOpen(item)" [class.collapsed]="!item.open" class="header">
+                        <svg-icon class="svg-icon-16"
+                            [class.rotate-180]="!item.open"
+                                  src="/assets/images/icons/16/top-arrow.svg"
+                                  svgClass="collapse-color"></svg-icon>
+                        <span>{{item.owner}}</span>
+                        <svg-icon (click)="onDelete($event, item)"
+                                  class="svg-icon-16"
+                            *ngIf="item.owner === owner"
+                                  src="/assets/images/icons/16/delete.svg"
+                            svgClass="accent-color-red"></svg-icon>
+                    </div>
+                    <div [style.display]="item.open ? 'flex' : 'none'" class="expand-items">
+                        <div *ngIf="item.name" class="item">
+                            <h6>Label</h6>
+                            <span>{{ item.name }}</span>
+                        </div>
+                        <div *ngIf="item.status" class="item">
+                            <h6>Status</h6>
+                            <div [class.p-tag-error]="item.status === 'History'"
+                                 [class.p-tag-grey]="item.status === 'Draft'"
+                                 [class.p-tag-success]="item.status === 'Published'"
+                                 class="p-tag"
+                            >{{ item.status }}</div>
+                        </div>
+                        <div *ngIf="item.description" class="item">
+                            <h6>Description</h6>
+                            <span>{{ item.description }}</span>
+                        </div>
+                        <div *ngIf="item.date" class="item">
+                            <h6>Date</h6>
+                            <span>{{ item.date }}</span>
+                        </div>
+                        <div *ngIf="item.topicId" class="item">
+                            <h6>Topic Id</h6>
+                            <hedera-explorer [params]="item.topicId" type="topics">{{ item.topicId }}</hedera-explorer>
+                        </div>
+                        <div *ngIf="item.messageId" class="item">
+                            <h6>Message Id</h6>
+                            <span>{{ item.messageId }}</span>
+                        </div>
+                        <div *ngIf="item.uri" class="item">
+                            <h6>Document URL</h6>
+                            <file-explorer [params]="item.uri" type="ipfs">{{ item.uri }}</file-explorer>
+                        </div>
+                        <div *ngIf="item.document" class="item">
+                            <h6>Document</h6>
+                            <a (click)="openVCDocument(item, 'VC')" class="view-document-link">View Document</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="synchronization-time">
+                    <div class="synchronization-time-label">Last Synchronization Time:</div>
+                    <div *ngIf="time" class="synchronization-time-time">{{ time }}</div>
+                    <div *ngIf="!time" class="synchronization-time-time">
+                        never
+                    </div>
+                    <div (click)="onUpdate()" class="synchronization-time-update">
+                        <mat-icon>sync</mat-icon>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </ng-container>
+</div>
+<div class="footer">
+    <button (click)="dialogRef.close()" [disabled]="loading" class="button secondary" label="Close" pButton></button>
+</div>
+<ng-template #emptyContainer>
+    <div class="empty-container">
+        <svg-icon class="svg-icon-32"
+                  src="/assets/images/icons/32/list.svg"
+            svgClass="grey-color">
+        </svg-icon>
+        <span>There were no Tags created yet</span>
+        <button (click)="onAdd()" [label]="'Create a Tag'" class="button secondary" icon="pi pi-plus" pButton></button>
+    </div>
+</ng-template>

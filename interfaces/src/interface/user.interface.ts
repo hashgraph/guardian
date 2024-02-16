@@ -1,32 +1,75 @@
-import {UserRole} from '../type/user-role.type';
-import {UserState} from '../type/user-state.type';
-import {IDidDocument} from './did-document.interface';
-import {IVCDocument} from './vc-document.interface';
+import { UserRole } from '../type/user-role.type';
+import { IDidObject } from './did-object.interface';
+import { IVCDocument } from './vc-document.interface';
 
-export class IUser {
-    id: string;
-    username: string;
-    password: string;
-    did: string;
-    walletToken: string;
-    hederaAccountId: string;
-    role: UserRole;
-    state: UserState;
-}
-
+/**
+ * Session interface
+ */
 export class ISession {
+    /**
+     * Username
+     */
     username: string;
-    state: UserState;
+    /**
+     * User role
+     */
     role: UserRole;
-    did?: string;
 }
 
-export interface IUserProfile {
-    username: string,
-    state: UserState,
-    did?: string,
-    walletToken: string,
-    hederaAccountId: string,
-    didDocument?: IDidDocument
-    vcDocuments?: IVCDocument[]
+/**
+ * User interface
+ */
+export interface IUser {
+    /**
+     * Was confirmed
+     */
+    confirmed?: boolean;
+    /**
+     * Was failed
+     */
+    failed?: boolean;
+    /**
+     * Username
+     */
+    username?: string;
+    /**
+     * Role
+     */
+    role?: UserRole;
+    /**
+     * Hedera account id
+     */
+    hederaAccountId?: string;
+    /**
+     * Hedera account private key
+     */
+    hederaAccountKey?: string;
+    /**
+     * Wallet token
+     */
+    walletToken?: string;
+    /**
+     * DID
+     */
+    did?: string;
+    /**
+     * Topic ID
+     */
+    topicId?: string;
+    /**
+     * Parent topic ID
+     */
+    parentTopicId?: string;
+    /**
+     * Parent
+     */
+    parent?: string;
+    /**
+     * DID document instance
+     */
+    didDocument?: IDidObject;
+    /**
+     * VC document instance
+     */
+    vcDocument?: IVCDocument;
 }

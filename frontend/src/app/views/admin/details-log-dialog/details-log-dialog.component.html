@@ -1,0 +1,43 @@
+<form [formGroup]="dataForm">
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">Type</div>
+            <div class="form-field-value">
+                <input [readonly]="true" class="p-field-input" formControlName="type" pInputText>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">DATETIME</div>
+            <div class="form-field-value">
+                <input [readonly]="true" class="p-field-input" formControlName="datetime" pInputText>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">MESSAGE</div>
+            <div class="form-field-value">
+                <textarea [readonly]="true" class="p-field-input" formControlName="message" pInputTextarea></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">ATTRIBUTES</div>
+            <div class="form-field-value">
+                <textarea [readonly]="true" class="p-field-input" formControlName="attributes"
+                          pInputTextarea></textarea>
+            </div>
+        </div>
+    </div>
+
+
+    <div style="display: flex; align-items: center; justify-content: end; margin-top: 10px;">
+        <button (click)="dialogRef.destroy()" class="button secondary" pButton>Close</button>
+    </div>
+</form>

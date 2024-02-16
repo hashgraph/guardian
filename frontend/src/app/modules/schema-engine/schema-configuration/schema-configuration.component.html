@@ -1,0 +1,348 @@
+<div class="context">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+    <form *ngIf="started" [formGroup]="dataForm" class="context">
+        <div class="configurator-block-title">Schema Properties</div>
+        <div class="input-field-container">
+            <label class="form-label" htmlFor="schemaName">* Schema Name</label>
+            <input
+                formControlName="name"
+                id="schemaName"
+                pInputText
+                placeholder="Schema Name"
+                type="text"
+            />
+        </div>
+
+        <div class="optional-row">
+            <div *ngIf="isPolicy" class="dropdown-field">
+                <label class="form-label" htmlFor="policy">* Policy</label>
+                <p-dropdown
+                    (onChange)="onFilter($event)"
+                    [options]="policies"
+                    [showClear]="true"
+                    appendTo="body"
+                    formControlName="topicId"
+                    id="policy"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Policy"
+                ></p-dropdown>
+            </div>
+
+            <div *ngIf="isTool" class="dropdown-field">
+                <label class="form-label" htmlFor="tools">* Tool</label>
+                <p-dropdown
+                    [options]="tools"
+                    appendTo="body"
+                    formControlName="topicId"
+                    id="tools"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="No binding"
+                ></p-dropdown>
+            </div>
+
+            <div *ngIf="isSystem" class="dropdown-field">
+                <label class="form-label" htmlFor="forSystemEntity">For (Entity)</label>
+                <p-dropdown
+                    [options]="systemEntityOptions"
+                    appendTo="body"
+                    formControlName="entity"
+                    id="forSystemEntity"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Entity"
+                ></p-dropdown>
+            </div>
+
+            <div *ngIf="isPolicy || isModule" class="dropdown-field">
+                <label class="form-label" htmlFor="forPolicyModuleEntity">For (Entity)</label>
+                <p-dropdown
+                    [options]="policyModuleEntityOptions"
+                    appendTo="body"
+                    formControlName="entity"
+                    id="forPolicyModuleEntity"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Entity"
+                ></p-dropdown>
+            </div>
+        </div>
+
+        <div class="input-field-container">
+            <label class="form-label" htmlFor="descriptionForSchema">Description</label>
+            <input
+                formControlName="description"
+                id="descriptionForSchema"
+                pInputText
+                placeholder="Description for Schema (optional)"
+                type="text"
+            />
+        </div>
+
+        <ng-container *ngIf="defaultFieldsMap[currentEntity]; let fields">
+            <div class="configurator-block-title">System Fields</div>
+            <div class="fields">
+                <div class="custom-fields">
+                    <div *ngFor="let field of fields" class="custom-schema-field">
+                        <schema-field-configuration
+                            [extended]="extended"
+                            [readonly]="true"
+                            [value]="field"
+                            [errors]="errors"
+                        >
+                        </schema-field-configuration>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+        <div class="configurator-block-title">Fields</div>
+
+        <div *ngIf="fields && fields.length" class="fields">
+            <div (cdkDropListDropped)="drop($event)"
+                [cdkDropListData]="fields"
+                cdkDropList
+                class="custom-fields"
+            >
+                <div *ngFor="let field of fields" class="custom-schema-field">
+                    <schema-field-configuration
+                            (remove)="onRemove(field)"
+                            [extended]="extended"
+                            [types]="types"
+                            [field]="field"
+                            [form]="dataForm"
+                            [measureTypes]="measureTypes"
+                            [private]="dataForm.value?.entity === 'EVC'"
+                            [properties]="properties"
+                            [schemaTypes]="schemaTypes"
+                            [errors]="errors"
+                    >
+                    </schema-field-configuration>
+                </div>
+            </div>
+        </div>
+
+        <div (click)="onAdd($event)" class="add-btn">
+            <mat-icon>add</mat-icon>
+            Add Field
+        </div>
+
+        <div class="configurator-block-title">Conditions</div>
+
+        <ng-template [ngIf]="fields && fields.length > 0">
+            <div
+                *ngIf="conditions && conditions.length"
+                class="conditions-container"
+            >
+                <div *ngFor="let condition of conditions">
+                    <div class="condition-item">
+                        <div class="condition-if-container">
+                            <div class="condition-label">IF</div>
+
+                            <div class="if-condition-equality-container">
+                                <div class="if-dropdown-field">
+                                    <label class="form-label">* Field</label>
+                                    <p-dropdown 
+                                        (onChange)="onIfConditionFieldChange(condition,$event)"
+                                        [formControl]="condition.field"
+                                        [options]="getFieldsForCondition()"
+                                        appendTo="body"
+                                        optionLabel="controlDescription.value"
+                                        placeholder="Field"
+                                    ></p-dropdown>
+                                </div>
+
+                                <div *ngIf="condition.field?.value" class="equal-label">=</div>
+                                <div
+                                    *ngIf="isConditionType1(condition)"
+                                    class="input-field-container"
+                                    style="margin-bottom: unset"
+                                >
+                                    <label class="form-label">
+                                        {{
+                                            condition.field.value.controlRequired
+                                                .value
+                                                ? "Field value"
+                                                : "Field value"
+                                        }}
+                                    </label>
+                                    <input
+                                        [formControl]="condition.fieldValue"
+                                        pInputText
+                                        placeholder="Field value"
+                                        type="text"
+                                    />
+                                </div>
+
+                                <div
+                                    *ngIf="isConditionType2(condition)"
+                                    class="input-field-container"
+                                    style="margin-bottom: unset"
+                                >
+                                    <label class="form-label">
+                                        {{
+                                            condition.field.value.controlRequired
+                                                .value
+                                                ? "* Field value"
+                                                : "* Field value"
+                                        }}
+                                    </label>
+                                    <input
+                                        [formControl]="condition.fieldValue"
+                                        pInputText
+                                        placeholder="Field value"
+                                        step="1"
+                                        type="time"
+                                    />
+                                </div>
+
+                                <mat-form-field
+                                    *ngIf="isConditionType3(condition)"
+                                    appearance="outline"
+                                    class="example-full-width required-form-field"
+                                >
+                                    <mat-label>Choose a date & time</mat-label>
+                                    <input
+                                        [formControl]="condition.fieldValue"
+                                        [ngxMatDatetimePicker]="dateTimePicker"
+                                        matInput
+                                    />
+                                    <mat-datepicker-toggle
+                                        [for]="$any(dateTimePicker)"
+                                        matSuffix
+                                    ></mat-datepicker-toggle>
+                                    <ngx-mat-datetime-picker
+                                        #dateTimePicker
+                                        [enableMeridian]="true"
+                                    ></ngx-mat-datetime-picker>
+                                </mat-form-field>
+
+                                <mat-form-field
+                                    *ngIf="isConditionType4(condition)"
+                                    appearance="outline"
+                                    class="example-full-width required-form-field"
+                                >
+                                    <mat-label>Choose a date</mat-label>
+                                    <input
+                                        [formControl]="condition.fieldValue"
+                                        [matDatepicker]="dateItem"
+                                        matInput
+                                    />
+                                    <mat-datepicker-toggle
+                                        [for]="dateItem"
+                                        matSuffix
+                                    ></mat-datepicker-toggle>
+                                    <mat-datepicker #dateItem></mat-datepicker>
+                                </mat-form-field>
+
+                                <div *ngIf="isConditionType5(condition)">
+                                    <mat-radio-group [formControl]="condition.fieldValue">
+                                        <mat-radio-button
+                                            [value]="true"
+                                            class="boolean-option"
+                                            color="primary"
+                                        >True
+                                        </mat-radio-button>
+                                        <mat-radio-button
+                                            [value]="false"
+                                            class="boolean-option"
+                                            color="primary"
+                                        >False
+                                        </mat-radio-button>
+                                    </mat-radio-group>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="condition-label">THEN</p>
+                        <div
+                            *ngIf="condition.thenControls"
+                            class="condition-container"
+                        >
+                            <div
+                                (cdkDropListDropped)="drop($event)"
+                                [cdkDropListAutoScrollDisabled]
+                                [cdkDropListData]="condition.thenControls"
+                                cdkDropList
+                                class="custom-fields"
+                            >
+                                <div *ngFor="let conditionField of condition.thenControls" class="custom-schema-field">
+                                    <schema-field-configuration
+                                        (remove)="onConditionFieldRemove(condition,conditionField,'then')"
+                                        [field]="conditionField"
+                                        [types]="types"
+                                        [form]="dataForm"
+                                        [measureTypes]="measureTypes"
+                                        [properties]="properties"
+                                        [extended]="extended"
+                                        [schemaTypes]="schemaTypes"
+                                        [errors]="errors"
+                                    >
+                                    </schema-field-configuration>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            (click)="onConditionFieldAdd(condition, 'then')"
+                            class="add-btn"
+                        >
+                            <mat-icon>add</mat-icon>
+                            Add THEN Field
+                        </div>
+
+                        <p class="condition-label">ELSE</p>
+                        <div
+                            *ngIf="condition.elseControls"
+                            class="condition-container"
+                        >
+                            <div
+                                (cdkDropListDropped)="drop($event)"
+                                [cdkDropListAutoScrollDisabled]
+                                [cdkDropListData]="condition.elseControls"
+                                cdkDropList
+                                class="custom-fields"
+                            >
+                                <div *ngFor="let conditionField of condition.elseControls" class="custom-schema-field">
+                                    <schema-field-configuration
+                                        (remove)="onConditionFieldRemove(condition,conditionField,'else')"
+                                        [field]="conditionField"
+                                        [types]="types"
+                                        [form]="dataForm"
+                                        [measureTypes]="measureTypes"
+                                        [properties]="properties"
+                                        [extended]="extended"
+                                        [schemaTypes]="schemaTypes"
+                                        [errors]="errors"
+                                    >
+                                    </schema-field-configuration>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div (click)="onConditionFieldAdd(condition, 'else')" class="add-btn">
+                            <mat-icon>add</mat-icon>
+                            Add ELSE Field
+                        </div>
+                    </div>
+
+                    <div (click)="onConditionRemove(condition)" class="rmv-btn">
+                        <mat-icon>remove</mat-icon>
+                        Remove Condition
+                    </div>
+                </div>
+            </div>
+
+            <div (click)="onConditionAdd()" class="add-btn">
+                <mat-icon>add</mat-icon>
+                Add Condition
+            </div>
+        </ng-template>
+
+        <ng-template [ngIf]="fields?.length == 0">
+            <div class="no-conditions-label">To add Conditions first you need to add field</div>
+        </ng-template>
+    </form>
+</div>

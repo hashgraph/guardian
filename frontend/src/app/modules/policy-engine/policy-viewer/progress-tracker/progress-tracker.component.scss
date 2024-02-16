@@ -1,0 +1,192 @@
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  width: 264px;
+  padding: 8px 0;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3, #E1E7EF);
+  background: var(--color-grey-white, #FFF);
+}
+
+.progress-footer-container {
+  position: relative;
+  height: 64px;
+}
+
+.progress-footer {
+  padding: 12px 48px;
+  padding-left: calc(var(--header-width-expand) + 48px);
+  display: flex;
+  justify-content: space-between;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  border-top: 1px solid var(--color-grey-3, #E1E7EF);
+  background: #FFF;
+
+  ::ng-deep {
+    .p-button {
+      padding: 5px 12px;
+      min-width: 120px;
+      border-radius: 8px;
+      background: var(--color-primary, #0681EE);
+
+      .p-button-label {
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 30px;
+        color: var(--color-grey-white, #FFF);
+      }
+
+      &:disabled {
+        border-radius: 8px;
+        border: 1px solid var(--color-grey-3, #E1E7EF);
+        background: var(--color-grey-1, #F9FAFC);
+
+        .p-button-label {
+          font-family: Inter;
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 30px;
+          color: var(--color-grey-4, #AAB7C4);
+        }
+      }
+    }
+
+    .p-button-outlined {
+      border-radius: 8px;
+      border: 1px solid var(--color-secondary, #CDDDFD);
+      background: var(--color-color-grey-white, #FFF);
+
+      .p-button-label {
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 30px;
+        color: var(--color-primary, #0681EE);
+      }
+    }
+  }
+}
+
+.step-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 8px 24px;
+
+  i {
+    padding: 4px;
+    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 24px;
+    background: var(--color-grey-3, #E1E7EF);
+    color: white;
+  }
+
+  p {
+    margin: 0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    color: var(--color-grey-5, #C4D0E1);
+  }
+
+  &.stepWithAction {
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(6, 129, 238, 0.08) !important;
+    }
+
+    i {
+      border-radius: 24px;
+      border: 1px solid var(--color-grey-4, #AAB7C4);
+      background: var(--color-grey-2, #EFF3F7);
+      color: var(--color-grey-6, #848FA9);
+    }
+
+    p {
+      font-family: Inter;
+      font-size: 16px;
+      font-style: normal;
+      font-weight: 500;
+      line-height: normal;
+      color: var(--color-grey-6, #848FA9);
+    }
+  }
+
+  &:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 36px;
+    top: 56px;
+    width: 1px;
+    height: 24px;
+    stroke-width: 1px;
+    background-color: var(--color-secondary, #CDDDFD);
+  }
+}
+
+.step-item.active {
+  background: rgba(6, 129, 238, 0.08);
+
+  i {
+    padding: 4px;
+    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 24px;
+    background: var(--color-primary, #0681EE);
+    color: white;
+  }
+
+  p {
+    margin: 0;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+    color: var(--color-primary, #0681EE);
+  }
+}
+
+.step-item.spaceAfter {
+  margin-bottom: 24px;
+}
+
+.step-item.subStep {
+  cursor: default;
+  margin-left: 36px;
+
+  &.active {
+    background: none;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 56px;
+    stroke-width: 1px;
+    background-color: var(--color-secondary, #CDDDFD);
+  }
+}

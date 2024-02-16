@@ -1,0 +1,95 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6.0.3
+    command: "--setParameter allowDiskUseByDefault=true"
+    restart: always
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    expose:
+      - 8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin
+    depends_on:
+      - mongo
+
+#   ipfs-node:
+#     image: ipfs/kubo:v0.22.0
+#     ports:
+#       - "5001:5001"
+#       - "4001:4001"
+#       - "8080:8080"
+#     volumes:
+#       - ./runtime-data/ipfs/staging:/export:rw
+#       - ./runtime-data/ipfs/data:/data/ipfs:rw
+
+
+  message-broker:
+    image: nats:2.9.8
+    expose:
+      - 4222
+    ports:
+      - '8222:8222'
+      - '4222:4222'
+      - '6222:6222'
+    command: '--http_port 8222'
+
+  consul:
+    image: consul:1.12.4
+    container_name: consul
+    restart: "on-failure"
+    volumes:
+      - ./vault/hashicorp/consul/config/consul.json:/consul/config/consul.json:ro
+      - ./vault/hashicorp/certs/consul/tls:/consul/tls
+    ports:
+      - 8500:8500
+    entrypoint:
+      - sh
+      - -ca
+      - |
+        chown consul:consul /consul/tls
+        consul agent -config-file=/consul/config/consul.json
+        
+  vault:
+    image: vault:1.12.2
+    container_name: vault
+    restart: "on-failure"
+    tty: true
+    volumes:
+      - ./vault/hashicorp/vault/config/vault.json:/vault/config/vault.json
+      - ./vault/hashicorp/vault/repository/policies:/vault/policies
+      - ./vault/hashicorp/vault/repository/data:/vault/data
+      - ./vault/hashicorp/vault/repository/logs:/vault/logs
+      - ./vault/hashicorp/certs/vault/tls:/vault/tls:ro
+      - ./vault/hashicorp/certs/vault/client:/vault/client/tls
+    environment:
+      ROOT_TOKEN_PATH: /vault/.root
+      VAULT_ADDR: https://vault:8200
+      VAULT_CACERT: /vault/tls/ca.crt
+      VAULT_CLIENT_CERT: /vault/client/tls/tls.crt
+      VAULT_CLIENT_KEY: /vault/client/tls/tls.key
+    entrypoint:
+      - sh
+      - -c
+      - |
+        vault server -config=/vault/config/vault.json
+    expose:
+      - 8200
+    ports:
+      - 8200:8200
+    healthcheck:
+      test: [ "CMD", "curl", "-i", "https://127.0.0.1:8200/v1/sys/health?drsecondarycode=200" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    depends_on:
+      - consul
+   

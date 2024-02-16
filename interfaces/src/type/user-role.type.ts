@@ -1,6 +1,17 @@
+/**
+ * User role
+ */
 export enum UserRole {
-    ROOT_AUTHORITY = 'ROOT_AUTHORITY',
-    INSTALLER = 'INSTALLER',
-    AUDITOR = 'AUDITOR',
-    ORIGINATOR = 'ORIGINATOR'
+    STANDARD_REGISTRY = 'STANDARD_REGISTRY',
+    USER = 'USER',
+    AUDITOR = 'AUDITOR'
+}
+
+/**
+ * Policy role
+ */
+export type PolicyRole = 'NO_ROLE' | 'OWNER' | 'ANY_ROLE' | 'STANDARD_REGISTRY' | string;
+
+export enum ExternalProviders {
+  MEECO = 'MEECO',
 }

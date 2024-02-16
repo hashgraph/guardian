@@ -1,28 +1,56 @@
-FROM node:16
-ENV PLATFORM="docker"
-#ENV NODE_ENV="production"
-
-WORKDIR /usr/vc-modules
-COPY ./vc-modules/package*.json ./
-COPY ./vc-modules/tsconfig.json ./
-RUN npm install
-ADD ./vc-modules/src ./src/.
-RUN npm run build
-
-WORKDIR /usr/interfaces
-COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig.json ./
-RUN npm install
+FROM node:20 AS interfacesModuleBuilder
+WORKDIR /usr/local/interfaces
+COPY ./interfaces/package.json ./
+COPY ./interfaces/tsconfig*.json ./
+COPY ./yarn.lock ./
+COPY ./package-lock.json ./
 ADD ./interfaces/src ./src/.
-RUN npm run build
+RUN yarn install
+RUN yarn pack
 
-WORKDIR /usr/guardian-service
-COPY ./guardian-service/package*.json ./
-COPY ./guardian-service/tsconfig.json ./
-COPY ./guardian-service/config.json ./
-COPY ./guardian-service/.env.docker ./.env
-RUN npm install
+FROM node:20 AS commonModuleBuilder
+WORKDIR /usr/local/common
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY ./common/package.json ./
+COPY ./common/tsconfig*.json ./
+COPY ./yarn.lock ./
+COPY ./package-lock.json ./
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN yarn install
+ADD ./common/src ./src/.
+RUN yarn pack
+
+FROM node:20 AS guardianServiceBuilder
+WORKDIR /usr/local/guardian-service
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
+COPY ./guardian-service/package.json ./
+COPY ./guardian-service/tsconfig*.json ./
+COPY ./yarn.lock ./
+COPY ./package-lock.json ./
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN yarn install
 ADD ./guardian-service/src ./src/.
-RUN npm run build
+RUN yarn run build:prod
 
-CMD npm start
+FROM node:20
+ENV PLATFORM="docker"
+ENV NODE_ENV="production"
+WORKDIR /usr/local/guardian-service
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
+COPY --from=guardianServiceBuilder  /usr/local/guardian-service/yarn.lock ./
+ADD ./guardian-service/src/migrations/artifacts ./src/migrations/artifacts/.
+COPY ./guardian-service/package.json ./
+COPY ./yarn.lock ./
+COPY ./package-lock.json ./
+COPY ./guardian-service/system-schemas ./system-schemas/.
+COPY ./guardian-service/artifacts ./artifacts/.
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN yarn install
+COPY --from=guardianServiceBuilder /usr/local/guardian-service/dist ./dist
+RUN rm /tmp/interfaces.tgz /tmp/common.tgz
+
+CMD yarn start

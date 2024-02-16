@@ -1,0 +1,16 @@
+<div class="container">
+    <select class="select" [(ngModel)]="startPath" (change)="onInput()">
+        <option value="" title=" ">Root</option>
+        <option value="document." title="document.">Document</option>
+        <option value="document.credentialSubject." title="document.credentialSubject.">Credential Subjects</option>
+        <option value="document.credentialSubject.0." title="document.credentialSubject.0.">First Credential Subjects</option>
+        <option value="document.credentialSubject.L." title="document.credentialSubject.L.">Last Credential Subjects</option>
+        <option value="document.verifiableCredential." title="document.verifiableCredential.">Verifiable Credentials</option>
+        <option value="document.verifiableCredential.0." title="document.verifiableCredential.0.">First Verifiable Credential</option>
+        <option value="document.verifiableCredential.L." title="document.verifiableCredential.L.">Last Verifiable Credential</option>
+        <option value="option." title="option.">Attributes</option>
+    </select>
+    <div></div>
+    <input [(ngModel)]="endPath" [readonly]="readonly" class="input-end" (input)="onInput()">
+    <mat-icon [matTooltip]="value" *ngIf="displayTooltip" matTooltipPosition="above" class="input-end-tooltip">more_horiz</mat-icon>
+</div>

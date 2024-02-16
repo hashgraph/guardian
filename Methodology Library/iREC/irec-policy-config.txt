@@ -1,0 +1,596 @@
+{
+  "blockType": "interfaceContainerBlock",
+  "id": "36425bbc-8a45-41bd-88ba-c80d0c0ffa2b",
+  "permissions": [
+    "ANY_ROLE"
+  ],
+  "defaultActive": true,
+  "children": [
+    {
+      "id": "78f149fe-63b0-4045-9385-39310cc413de",
+      "tag": "choose_role",
+      "blockType": "policyRolesBlock",
+      "defaultActive": true,
+      "children": [],
+      "permissions": [
+        "NO_ROLE"
+      ],
+      "uiMetaData": {
+        "title": "Registration",
+        "description": "Choose a role"
+      },
+      "roles": [
+        "INSTALLER"
+      ]
+    },
+    {
+      "id": "bdfb763b-950e-463e-a7af-43b8353ef816",
+      "tag": "init_installer_steps",
+      "blockType": "interfaceStepBlock",
+      "defaultActive": true,
+      "children": [
+        {
+          "id": "42a91a0c-26d5-4217-82b9-3904a7e43d48",
+          "tag": "add_new_installer_request",
+          "blockType": "requestVcDocumentBlock",
+          "defaultActive": true,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {
+            "privateFields": [],
+            "type": "page",
+            "title": "New Installer",
+            "description": "Description"
+          },
+          "idType": "OWNER",
+          "schema": "1643997352.894020620"
+        },
+        {
+          "id": "afc3c09b-c149-4be7-9fbb-77e537415d5f",
+          "tag": "save_new_approve_document",
+          "blockType": "sendToGuardianBlock",
+          "defaultActive": false,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {},
+          "dataType": "approve",
+          "entityType": "Installer"
+        },
+        {
+          "id": "4dda9e8a-c98a-4d0e-a9d3-afd27107b58a",
+          "tag": "wait_fo_approve",
+          "blockType": "informationBlock",
+          "defaultActive": true,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {
+            "title": "Waiting for approval",
+            "description": "Waiting for approval",
+            "type": "text"
+          },
+          "stopPropagation": true
+        },
+        {
+          "id": "2636988f-cbd2-4c53-bb65-960a74b5191e",
+          "tag": "update_approve_document_status",
+          "blockType": "sendToGuardianBlock",
+          "defaultActive": false,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {},
+          "dataType": "approve",
+          "entityType": "Installer"
+        },
+        {
+          "id": "9937df86-0035-4eff-a824-aaecb06dee5b",
+          "tag": "send_installer_vc_to_hedera",
+          "blockType": "sendToGuardianBlock",
+          "defaultActive": false,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {},
+          "entityType": "Installer",
+          "dataType": "hedera"
+        },
+        {
+          "id": "4094b77f-4b6d-4aeb-b0ad-ca5c342a3e94",
+          "tag": "Submission_of_CSD01_Documentation",
+          "blockType": "sendToGuardianBlock",
+          "defaultActive": false,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {},
+          "dataType": "vc-documents",
+          "entityType": "Installer"
+        },
+        {
+          "id": "222f0fa5-0fd7-460c-9706-a699218c4b95",
+          "tag": "installer_header",
+          "blockType": "interfaceContainerBlock",
+          "defaultActive": true,
+          "children": [
+            {
+              "id": "c70b3213-db7e-4bae-a2f5-da97f48179c3",
+              "tag": "sensors_page",
+              "blockType": "interfaceContainerBlock",
+              "defaultActive": true,
+              "children": [
+                {
+                  "id": "f1fc20b1-14f4-451a-b351-7cf1055b8c6e",
+                  "tag": "sensors_grid",
+                  "blockType": "interfaceDocumentsSourceBlock",
+                  "defaultActive": true,
+                  "children": [
+                    {
+                      "id": "af64afb4-f0c7-4e8f-912e-5554ae606a2c",
+                      "tag": "sensors_grid_source",
+                      "blockType": "documentsSourceAddon",
+                      "defaultActive": true,
+                      "children": [],
+                      "permissions": [
+                        "INSTALLER"
+                      ],
+                      "filters": [
+                        {
+                          "title": "",
+                          "name": "",
+                          "tooltip": "",
+                          "type": "equal",
+                          "value": "Inverter",
+                          "field": "type"
+                        }
+                      ],
+                      "dataType": "vc-documents",
+                      "schema": "1643997099.474610000",
+                      "onlyOwnDocuments": true
+                    }
+                  ],
+                  "permissions": [
+                    "INSTALLER"
+                  ],
+                  "uiMetaData": {
+                    "fields": [
+                      {
+                        "name": "document.id",
+                        "title": "ID",
+                        "type": "test"
+                      },
+                      {
+                        "name": "document.credentialSubject.0.id",
+                        "title": "DID",
+                        "type": "text"
+                      },
+                      {
+                        "name": "document",
+                        "title": "Document",
+                        "tooltip": "",
+                        "type": "button",
+                        "action": "dialog",
+                        "content": "View Document",
+                        "uiClass": "link",
+                        "dialogContent": "VC",
+                        "dialogClass": "",
+                        "dialogType": "json"
+                      },
+                      {
+                        "name": "document.id",
+                        "title": "Config",
+                        "tooltip": "",
+                        "type": "block",
+                        "action": "block",
+                        "content": "download",
+                        "uiClass": "",
+                        "bindBlock": "download_config_btn"
+                      }
+                    ]
+                  },
+                  "dependencies": [
+                    "CSD02_device_registration"
+                  ]
+                },
+                {
+                  "id": "54a39d18-fc75-4988-a342-98e6aa1680ff",
+                  "tag": "download_config_btn",
+                  "blockType": "interfaceActionBlock",
+                  "defaultActive": false,
+                  "children": [],
+                  "permissions": [
+                    "INSTALLER"
+                  ],
+                  "uiMetaData": {
+                    "options": [],
+                    "content": "download"
+                  },
+                  "stopPropagation": true,
+                  "type": "download",
+                  "targetUrl": "http://message-broker:3003/mrv",
+                  "schema": "1643997257.576274198"
+                },
+                {
+                  "id": "bd273bf5-510a-474f-9f5d-683936081422",
+                  "tag": "create_new_sensor_steps",
+                  "blockType": "interfaceStepBlock",
+                  "defaultActive": true,
+                  "children": [
+                    {
+                      "id": "0f424cc7-3e2c-44c2-9eb0-343fce70e40b",
+                      "tag": "add_sensor_bnt",
+                      "blockType": "requestVcDocumentBlock",
+                      "defaultActive": true,
+                      "children": [],
+                      "permissions": [
+                        "INSTALLER"
+                      ],
+                      "uiMetaData": {
+                        "privateFields": [],
+                        "type": "dialog",
+                        "content": "New Sensors",
+                        "dialogContent": "New Sensors",
+                        "description": "Description"
+                      },
+                      "idType": "DID",
+                      "schema": "1643997099.474610000"
+                    },
+                    {
+                      "id": "6f6d36ce-7846-478f-b12e-d01ca7002ce6",
+                      "tag": "send_sensor_vc_to_hedera",
+                      "blockType": "sendToGuardianBlock",
+                      "defaultActive": true,
+                      "children": [],
+                      "permissions": [
+                        "INSTALLER"
+                      ],
+                      "uiMetaData": {},
+                      "dataType": "hedera",
+                      "entityType": "Inverter"
+                    },
+                    {
+                      "id": "da927309-0cff-439a-afcc-a6bc9046b964",
+                      "tag": "CSD02_device_registration",
+                      "blockType": "sendToGuardianBlock",
+                      "defaultActive": true,
+                      "children": [],
+                      "permissions": [
+                        "INSTALLER"
+                      ],
+                      "uiMetaData": {},
+                      "dataType": "vc-documents",
+                      "entityType": "Inverter"
+                    }
+                  ],
+                  "permissions": [
+                    "INSTALLER"
+                  ],
+                  "uiMetaData": {
+                    "type": "blank"
+                  },
+                  "cyclic": true
+                }
+              ],
+              "permissions": [
+                "INSTALLER"
+              ],
+              "uiMetaData": {
+                "title": "Sensors",
+                "type": "blank"
+              }
+            },
+            {
+              "id": "386c056b-c490-4754-a80d-c8ee3eec341a",
+              "tag": "mrv_page",
+              "blockType": "interfaceContainerBlock",
+              "defaultActive": true,
+              "children": [
+                {
+                  "id": "74a90ccf-c1a7-4a66-aa2b-efb789d39f75",
+                  "tag": "mrv_grid",
+                  "blockType": "interfaceDocumentsSourceBlock",
+                  "defaultActive": true,
+                  "children": [
+                    {
+                      "id": "066740ce-9072-4dcb-8473-c5ec72611a84",
+                      "tag": "mrv_grid_source",
+                      "blockType": "documentsSourceAddon",
+                      "defaultActive": true,
+                      "children": [],
+                      "permissions": [
+                        "INSTALLER"
+                      ],
+                      "filters": [
+                        {
+                          "title": "",
+                          "name": "",
+                          "tooltip": "",
+                          "type": "equal",
+                          "value": "MRV",
+                          "field": "type"
+                        }
+                      ],
+                      "dataType": "vc-documents",
+                      "onlyOwnDocuments": true
+                    }
+                  ],
+                  "permissions": [
+                    "INSTALLER"
+                  ],
+                  "uiMetaData": {
+                    "fields": [
+                      {
+                        "name": "document.id",
+                        "title": "ID",
+                        "type": "button"
+                      },
+                      {
+                        "name": "document.issuer",
+                        "title": "Sensor DID",
+                        "type": "text"
+                      },
+                      {
+                        "name": "document",
+                        "title": "Document",
+                        "tooltip": "",
+                        "type": "button",
+                        "action": "dialog",
+                        "content": "View Document",
+                        "uiClass": "link",
+                        "dialogContent": "VC",
+                        "dialogClass": "",
+                        "dialogType": "json"
+                      }
+                    ]
+                  },
+                  "dependencies": [
+                    "CSD04_requesting_i_Rec_issuance"
+                  ]
+                }
+              ],
+              "permissions": [
+                "INSTALLER"
+              ],
+              "uiMetaData": {
+                "title": "MRV",
+                "type": "blank"
+              }
+            }
+          ],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {
+            "type": "tabs"
+          }
+        },
+        {
+          "id": "43b9fda3-94e8-43fe-bd99-7e58f1328291",
+          "tag": "rejected_approve_document_status",
+          "blockType": "sendToGuardianBlock",
+          "defaultActive": false,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {},
+          "dataType": "approve",
+          "entityType": "Installer"
+        },
+        {
+          "id": "dba6192c-1489-46f2-8484-ca88d79f7f1b",
+          "tag": "installer_rejected",
+          "blockType": "informationBlock",
+          "defaultActive": true,
+          "children": [],
+          "permissions": [
+            "INSTALLER"
+          ],
+          "uiMetaData": {
+            "title": "Rejected",
+            "description": "Your application was rejected",
+            "type": "text"
+          },
+          "stopPropagation": true
+        }
+      ],
+      "permissions": [
+        "INSTALLER"
+      ],
+      "uiMetaData": {
+        "type": "blank"
+      }
+    },
+    {
+      "id": "9afff85d-2d4a-4874-9a1d-e9c5ec35e923",
+      "tag": "standard_registry_header",
+      "blockType": "interfaceContainerBlock",
+      "defaultActive": true,
+      "children": [
+        {
+          "id": "9ef41e8f-af46-47f9-bd1b-a6d3c693d1a9",
+          "tag": "approve_page",
+          "blockType": "interfaceContainerBlock",
+          "defaultActive": true,
+          "children": [
+            {
+              "id": "e48a1947-7c46-4f10-9dd3-7d5225fbea21",
+              "tag": "approve_documents_grid",
+              "blockType": "interfaceDocumentsSourceBlock",
+              "defaultActive": true,
+              "children": [
+                {
+                  "id": "46b47948-ae2f-44b9-b7ae-1f22a2d8262c",
+                  "tag": "approve_documents_grid_source",
+                  "blockType": "documentsSourceAddon",
+                  "defaultActive": true,
+                  "children": [],
+                  "permissions": [
+                    "OWNER"
+                  ],
+                  "filters": [
+                    {
+                      "title": "",
+                      "name": "",
+                      "tooltip": "",
+                      "type": "equal",
+                      "value": "Installer",
+                      "field": "type"
+                    }
+                  ],
+                  "dataType": "approve",
+                  "schema": "1643997352.894020620",
+                  "dependencies": []
+                }
+              ],
+              "permissions": [
+                "OWNER"
+              ],
+              "uiMetaData": {
+                "fields": [
+                  {
+                    "name": "document.issuer",
+                    "title": "Owner",
+                    "type": "text",
+                    "tooltip": "Installer did"
+                  },
+                  {
+                    "name": "createDate",
+                    "title": "Create Date",
+                    "type": "text"
+                  },
+                  {
+                    "name": "document",
+                    "title": "Document",
+                    "tooltip": "",
+                    "type": "button",
+                    "action": "dialog",
+                    "content": "View Document",
+                    "uiClass": "link",
+                    "dialogContent": "VC",
+                    "dialogClass": "",
+                    "dialogType": "json"
+                  },
+                  {
+                    "name": "status",
+                    "title": "Status",
+                    "type": "text"
+                  },
+                  {
+                    "name": "status",
+                    "title": "Operation",
+                    "tooltip": "",
+                    "type": "block",
+                    "action": "block",
+                    "content": "",
+                    "uiClass": "",
+                    "bindBlock": "approve_documents_btn"
+                  }
+                ]
+              },
+              "dependencies": [
+                "save_new_approve_document"
+              ]
+            },
+            {
+              "id": "c2916df4-6987-4aac-81ba-34705388bcfa",
+              "tag": "approve_documents_btn",
+              "blockType": "interfaceActionBlock",
+              "defaultActive": false,
+              "children": [],
+              "permissions": [
+                "OWNER"
+              ],
+              "type": "selector",
+              "uiMetaData": {
+                "field": "status",
+                "options": [
+                  {
+                    "name": "Approve",
+                    "value": "APPROVED",
+                    "uiClass": "btn-approve",
+                    "bindBlock": "update_approve_document_status"
+                  },
+                  {
+                    "name": "Reject",
+                    "value": "REJECTED",
+                    "uiClass": "btn-reject",
+                    "bindBlock": "rejected_approve_document_status"
+                  }
+                ]
+              },
+              "field": "option.status"
+            }
+          ],
+          "permissions": [
+            "OWNER"
+          ],
+          "uiMetaData": {
+            "title": "Approve Documents",
+            "type": "blank"
+          }
+        }
+      ],
+      "permissions": [
+        "OWNER"
+      ],
+      "uiMetaData": {
+        "type": "tabs"
+      }
+    },
+    {
+      "id": "4752a038-acf3-4519-a8b6-e69446dd9af2",
+      "tag": "mint_events",
+      "blockType": "interfaceContainerBlock",
+      "defaultActive": false,
+      "children": [
+        {
+          "id": "f96616a7-863d-441b-9bfd-57f5274f82d3",
+          "tag": "mrv_source",
+          "blockType": "externalDataBlock",
+          "defaultActive": true,
+          "children": [],
+          "permissions": [],
+          "uiMetaData": {}
+        },
+        {
+          "id": "148e1e66-47f0-4736-a932-7f5606d0b417",
+          "tag": "CSD04_requesting_i_Rec_issuance",
+          "blockType": "sendToGuardianBlock",
+          "defaultActive": true,
+          "children": [],
+          "permissions": [],
+          "uiMetaData": {},
+          "entityType": "MRV",
+          "dataType": "vc-documents"
+        },
+        {
+          "id": "802d9209-35b6-4851-864f-1c425e5fae81",
+          "tag": "mint_token",
+          "blockType": "mintDocumentBlock",
+          "defaultActive": true,
+          "children": [],
+          "permissions": [],
+          "uiMetaData": {},
+          "tokenId": "0.0.26564691",
+          "rule": "1"
+        }
+      ],
+      "permissions": [],
+      "uiMetaData": {
+        "type": "blank"
+      }
+    }
+  ],
+  "uiMetaData": {
+    "type": "blank"
+  }
+}

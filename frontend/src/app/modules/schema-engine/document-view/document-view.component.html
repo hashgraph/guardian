@@ -1,0 +1,98 @@
+<form>
+    <div *ngIf="loading > 0" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+    <div *ngIf="loading < 1 && this.document">
+        <div class="form-input-container">
+            <label class="p-field-label">Id</label>
+            <input [readOnly]="true" [value]="this.document.id || ''" class="p-field-input" pInputText type="text"/>
+        </div>
+        <hr>
+        <ng-template [ngIf]="this.type === 'VC'">
+            <div *ngIf="!isIssuerObject" class="form-field">
+                <div class="form-input-container">
+                    <label class="p-field-label">Issuer</label>
+                    <input [readOnly]="true" [value]="this.document.issuer || ''" class="p-field-input" pInputText
+                           type="text"/>
+                </div>
+            </div>
+            <div *ngIf="isIssuerObject" class="form-field">
+                <div class="label-field">Issuer</div>
+                <div class="issuer-option">
+                    <div class="form-input-container">
+                        <label class="p-field-label">Issuer ID</label>
+                        <input [readOnly]="true" [value]="this.document.issuer.id || ''" class="p-field-input" pInputText
+                               type="text"/>
+                    </div>
+                    <div *ngFor="let item of issuerOptions" class="form-field">
+                        <div class="form-input-container">
+                            <label class="p-field-label">{{ item[0] }}</label>
+                            <input [readOnly]="true" [value]="item[1]" class="p-field-input" formControlName="name" pInputText
+                                   type="text"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="form-field">
+                <div class="form-input-container">
+                    <label class="p-field-label">Issuance Date</label>
+                    <input [readOnly]="true" [value]="this.document.issuanceDate | date: 'short'" class="p-field-input" pInputText
+                           type="text"/>
+                </div>
+            </div>
+            <hr>
+        </ng-template>
+
+        <div *ngIf="this.evidenceJson" class="form-field">
+            <div class="form-input-container">
+                <label class="p-field-label">Evidence</label>
+                <textarea [readOnly]="true" [rows]="5" [value]="this.evidenceJson" class="p-field-input" pInputTextarea
+                          type="text"></textarea>
+            </div>
+        </div>
+        <hr>
+        <div class="form-field">
+            <div class="form-input-container">
+                <label class="p-field-label">Proof</label>
+                <textarea [readOnly]="true" [rows]="5" [value]="this.proofJson || ''" class="p-field-input" pInputTextarea
+                          type="text"></textarea>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="form-field-group schema-form-field-array-group" [ngSwitch]="this.type">
+            <ng-template [ngSwitchCase]="'VC'">
+                <div class="label-field">Credential Subject</div>
+                <div *ngFor="let credentialSubject of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
+                     [attr.index]="this.subjects.indexOf(credentialSubject)">
+                    <div class="form-field-group">
+                        <app-schema-form-view [private-fields]="hideFields" [schema]="schemaMap[credentialSubject.type]"
+                                              [delimiter-hide]="true" [values]="credentialSubject">
+                        </app-schema-form-view>
+                    </div>
+                </div>
+                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
+                               (page)="pageEvent = $event" [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize">
+                </mat-paginator>
+                <hr>
+            </ng-template>
+
+            <ng-template [ngSwitchCase]="'VP'">
+                <div class="label-header">Verifiable Credential</div>
+                <div *ngFor="let vcDocument of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
+                     [attr.index]="this.subjects.indexOf(vcDocument)">
+                    <div class="form-field-group">
+                        <app-document-view [document]="vcDocument" [hide-fields]="this.hideFields" type="VC">
+                        </app-document-view>
+                    </div>
+                </div>
+                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
+                               (page)="pageEvent = $event" [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize">
+                </mat-paginator>
+                <hr>
+            </ng-template>
+        </div>
+    </div>
+</form>

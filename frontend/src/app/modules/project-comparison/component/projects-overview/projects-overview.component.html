@@ -1,0 +1,226 @@
+<div class="projects-overview">
+    <div class="inner">
+        <div class="header">
+            <h1>Projects Overview</h1>
+        </div>
+        <div class="container">
+            <ng-container *ngIf="!loading">
+                <div class="left-container">
+                    <div class="card">
+                        <div class="container">
+                            <form [formGroup]="filterFormGroup">
+                                <div class="input-item">
+                                    <span>Sectoral scopes</span>
+                                    <p-multiSelect
+                                        [formControlName]="'sectoralScopes'"
+                                        [options]="sectoralScopesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                    ></p-multiSelect>
+                                </div>
+                                <div class="input-item">
+                                    <span>Activity Scale</span>
+                                    <p-multiSelect
+                                        [formControlName]="'activityScales'"
+                                        [options]="activityScalesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                    ></p-multiSelect>
+                                </div>
+                                <div class="input-item">
+                                    <span>Applied Technologies</span>
+                                    <p-multiSelect
+                                        [formControlName]="'appliedTechnologies'"
+                                        [options]="appliedTechnologiesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                    ></p-multiSelect>
+                                </div>
+                                <div class="input-item">
+                                    <span>Project Scales</span>
+                                    <p-multiSelect
+                                        [formControlName]="'projectScales'"
+                                        [options]="projectScalesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                    ></p-multiSelect>
+                                </div>
+                                <div class="input-item">
+                                    <span>Sub Types</span>
+                                    <p-multiSelect
+                                        [formControlName]="'subTypes'"
+                                        [options]="subTypesList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                    ></p-multiSelect>
+                                </div>
+                                <div class="input-item">
+                                    <span>Methodologies Used</span>
+                                    <p-multiSelect
+                                        [formControlName]="'methodologiesUsed'"
+                                        [options]="methodologiesUsedList"
+                                        class="sort-by-dropdown"
+                                        optionLabel="name"
+                                        optionValue="id"
+                                    ></p-multiSelect>
+                                </div>
+                                <!-- <div class="input-item">
+                                  <span>Amount of Reductions</span>
+                                  <div class="inline-fields">
+                                    <input
+                                      pInputText
+                                      class="divide"
+                                      type="number"
+                                      [placeholder]="'From'"
+                                      [formControlName]="'amountOfReductionsFrom'"
+                                    />
+                                    <input
+                                      pInputText
+                                      class="divide"
+                                      type="number"
+                                      [placeholder]="'To'"
+                                      [formControlName]="'amountOfReductionsTo'"
+                                    />
+                                  </div>
+                                </div>
+                                <div class="input-item">
+                                  <span>Fee level</span>
+                                  <div class="inline-fields">
+                                    <input
+                                      pInputText
+                                      class="divide"
+                                      type="number"
+                                      [placeholder]="'From'"
+                                      [formControlName]="'feeLevelFrom'"
+                                    />
+                                    <input
+                                      pInputText
+                                      class="divide"
+                                      type="number"
+                                      [placeholder]="'To'"
+                                      [formControlName]="'feeLevelTo'"
+                                    />
+                                  </div>
+                                </div> -->
+                            </form>
+                        </div>
+                        <div class="footer">
+                            <button
+                                (click)="searchByFilter()"
+                                [disabled]="!filterFormGroup.dirty"
+                                class="button height-28"
+                                pButton
+                            >
+                                Apply filter
+                            </button>
+                            <button (click)="clearFilters()" class="button secondary height-28" pButton>Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-container">
+                    <div class="toolbar">
+                        <span class="p-input-icon-right">
+                            <i>
+                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/search.svg" svgClass="color-search">
+                                </svg-icon>
+                            </i>
+                            <form [formGroup]="filterFormGroup">
+                                <input (ngModelChange)="filterByInput()" [formControlName]="'search'" class="search-input" pInputText
+                                    placeholder="Search by Project Title" />
+                            </form>
+                        </span>
+                        <p-dropdown (onChange)="sortData()" [(ngModel)]="selectedSortByOption" [options]="sortByOption"
+                            class="sort-by-dropdown offset">
+                            <ng-template pTemplate="selectedItem">
+                                <span class="sort-by-label">Sort By</span>
+                                {{ selectedSortByOption.name }}
+                            </ng-template>
+                            <ng-template let-sort pTemplate="item">
+                                <div>{{ sort.name }}</div>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                    <div class="table">
+                        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+                    </div>
+                </div>
+            </ng-container>
+            <div *ngIf="loading"
+                 style="display: flex; justify-content: center; width: 100%; height: calc(100vh - 240px); align-items: center;">
+                <div class="preloader-image preloader-image-l-size"></div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="!loading" class="actions-container">
+        <div class="projects-selected-counter">
+            <strong>{{ selectedProjectsCount }} Projects</strong> added for Comparison
+        </div>
+        <button (click)="compareExecute()" [disabled]="projectsToComparing.length< 2" class="button secondary w-180"
+            label="Open the Comparison" pButton>
+        </button>
+    </div>
+</div>
+
+<ng-template #tableContainer>
+    <ng-container
+            *ngIf="!loadingProjects && projectsWithSelected && projectsWithSelected.length > 0 else loadingProjects ? dataInLoad : noData">
+        <div class="table-container">
+            <table>
+                <tr class="row-header">
+                    <th>Registered</th>
+                    <th>Project title</th>
+                    <th>Company</th>
+                    <th>Sectoral Scope</th>
+                    <th>Methodology</th>
+                </tr>
+                <ng-container *ngFor="let project of projectsWithSelected">
+                    <tr class="row-item">
+                        <td>
+                            {{ project.registered | date:'d MMM yyyy' }}
+                        </td>
+                        <td>
+                            {{ project.title || 'N/A' }}
+                        </td>
+                        <td>
+                            {{ project.companyName || 'N/A' }}
+                        </td>
+                        <td>
+                            {{ project.sectoralScope || 'N/A' }}
+                        </td>
+                        <td>
+                            {{ project.policyName || 'N/A' }}
+                        </td>
+                        <td>
+                            <p-button
+                                (click)="alreadyInCompare(project) ? removeFromCompare(project) : addToCompare(project)"
+                                [icon]="'pi ' + (alreadyInCompare(project) ? 'pi-minus' : 'pi-plus')"
+                                class="choose-button"
+                            >
+                            </p-button>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">Projects not found</span>
+        <span class="info-text">Please change filter`s parameters and try again</span>
+    </div>
+</ng-template>
+
+<ng-template #dataInLoad>
+    <div class="not-exist">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</ng-template>

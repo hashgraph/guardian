@@ -1,7 +1,11 @@
+/**
+ * Document status
+ */
 export enum DocumentStatus {
     NEW = 'NEW',
     ISSUE = 'ISSUE',
     REVOKE = 'REVOKE',
     SUSPEND = 'SUSPEND',
-    RESUME = 'RESUME'
+    RESUME = 'RESUME',
+    FAILED = 'FAILED'
 }

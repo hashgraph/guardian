@@ -1,0 +1,119 @@
+.textarea-code {
+    position: absolute;
+    left: 0px;
+    top: 32px;
+    bottom: 0px;
+    right: 0px;
+    resize: none;
+    overflow: scroll;
+    width: 100%;
+    margin: 0px;
+    border: none;
+    padding: 0;
+}
+
+.toolbar {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    height: 31px;
+    overflow: hidden;
+    background: #f7f7f7;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #ddd;
+}
+
+.toolbar__save-btn[readonly="true"],
+.toolbar__close-btn[readonly="true"] {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+.toolbar__save-btn {
+    color: #3f51b5
+}
+
+.toolbar-btn.toolbar__close-btn {
+    width: 80px;
+}
+
+.toolbar__close-btn {
+    color: #c90000;
+}
+
+.toolbar-btn {
+    cursor: pointer;
+    margin: 2px 6px 2px 3px;
+    position: relative;
+    height: 27px;
+    padding: 1px;
+    box-sizing: border-box;
+    width: 70px;
+    border: 1px solid #e7e7e7;
+    border-radius: 4px;
+}
+
+.toolbar-btn:hover {
+    background: #f0f0f0;
+}
+
+.toolbar-btn span {
+    position: absolute;
+    left: 28px;
+    top: 4px;
+}
+
+.json-errors {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    z-index: 99;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #c9c9c9;
+}
+
+.errors-properties {
+    margin: 6px 17px 3px 7px;
+    max-height: 200px;
+    flex: 0;
+}
+
+.errors-property {
+    border-radius: 3px;
+    border: 1px solid #f90000;
+    padding: 5px;
+    color: #f90000;
+    background: #fff2f2;
+    margin-bottom: 5px;
+    position: relative;
+    padding-left: 20px;
+}
+
+.errors-property span {
+    position: absolute;
+    left: 9px;
+    top: 13px;
+    background: #df0000;
+    width: 6px;
+    height: 3px;
+}
+
+.loading {
+    background: rgb(255 255 255 / 60%);
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}

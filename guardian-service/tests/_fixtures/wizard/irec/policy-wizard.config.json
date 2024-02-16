@@ -1,0 +1,2168 @@
+{
+    "id": "200858bc-6330-46ec-b14c-fad41de74bab",
+    "blockType": "interfaceContainerBlock",
+    "permissions": [
+        "ANY_ROLE"
+    ],
+    "children": [
+        {
+            "id": "04d5cc70-e6ce-4c00-80dd-1c4ffa971fb6",
+            "tag": "choose_role",
+            "roles": [
+                "Registrant"
+            ],
+            "blockType": "policyRolesBlock",
+            "defaultActive": true,
+            "children": [],
+            "permissions": [
+                "NO_ROLE"
+            ],
+            "events": [],
+            "artifacts": [],
+            "uiMetaData": {
+                "title": "Choose role",
+                "description": "Please select your role"
+            }
+        },
+        {
+            "id": "c5da9b4e-3b98-44fa-a00c-c28d26a979d3",
+            "tag": "OWNER_interfaceContainerBlock_1",
+            "blockType": "interfaceContainerBlock",
+            "defaultActive": true,
+            "children": [
+                {
+                    "id": "f53c518b-a18d-49c0-9afd-43bc9f7e5b6a",
+                    "tag": "OWNER_interfaceContainerBlock_8",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "children": [
+                        {
+                            "id": "5907fc9d-2488-453e-b508-d3180167e727",
+                            "blockType": "interfaceDocumentsSourceBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "fields": [
+                                    {
+                                        "name": "document.credentialSubject.0.field0",
+                                        "title": "Name",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "name": "document",
+                                        "title": "Document",
+                                        "tooltip": "",
+                                        "type": "button",
+                                        "action": "dialog",
+                                        "content": "View Document",
+                                        "uiClass": "link",
+                                        "dialogContent": "VC",
+                                        "dialogClass": "",
+                                        "dialogType": "json"
+                                    },
+                                    {
+                                        "title": "Operation",
+                                        "name": "option.status",
+                                        "tooltip": "",
+                                        "type": "block",
+                                        "action": "",
+                                        "url": "",
+                                        "dialogContent": "",
+                                        "dialogClass": "",
+                                        "dialogType": "",
+                                        "bindBlock": "OWNER_buttonBlock_16",
+                                        "width": "250px",
+                                        "bindGroup": "OWNER_documentsSourceAddon_11"
+                                    }
+                                ]
+                            },
+                            "tag": "OWNER_interfaceDocumentsSourceBlock_9",
+                            "children": [
+                                {
+                                    "id": "11a278ab-b6f7-4d57-85aa-9298f775c6ae",
+                                    "blockType": "historyAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "tag": "OWNER_historyAddon_10"
+                                },
+                                {
+                                    "id": "ff827fcc-9e06-4127-bf42-5c3b64de8af4",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "Waiting for approval",
+                                            "field": "option.status",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#b6bad72d-f13d-411c-aff3-18eb831be626",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_11"
+                                },
+                                {
+                                    "id": "38676679-6ef6-4559-b16f-37d176d38176",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "approved_entity",
+                                            "field": "type",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#b6bad72d-f13d-411c-aff3-18eb831be626",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_12"
+                                },
+                                {
+                                    "id": "8267c085-cbf3-4f4c-adf3-b2c705390a75",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "rejected_entity",
+                                            "field": "type",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#b6bad72d-f13d-411c-aff3-18eb831be626",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_13"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "99c5a698-02df-43f9-bb51-0e71850587c2",
+                            "blockType": "buttonBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "buttons": [
+                                    {
+                                        "tag": "Button_0",
+                                        "name": "Approve",
+                                        "type": "selector",
+                                        "filters": [],
+                                        "field": "option.status",
+                                        "value": "Approved",
+                                        "uiClass": "btn-approve"
+                                    },
+                                    {
+                                        "tag": "Button_1",
+                                        "name": "Reject",
+                                        "type": "selector-dialog",
+                                        "filters": [],
+                                        "field": "option.status",
+                                        "value": "Rejected",
+                                        "uiClass": "btn-reject",
+                                        "title": "Reject",
+                                        "description": "Enter reject reason"
+                                    }
+                                ]
+                            },
+                            "tag": "OWNER_buttonBlock_16",
+                            "events": [
+                                {
+                                    "target": "OWNER_sendToGuardianBlock_14",
+                                    "source": "OWNER_buttonBlock_16",
+                                    "input": "RunEvent",
+                                    "output": "Button_0",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "OWNER_sendToGuardianBlock_15",
+                                    "source": "OWNER_buttonBlock_16",
+                                    "input": "RunEvent",
+                                    "output": "Button_1",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        {
+                            "id": "14201c78-7928-49ab-aeb9-e9d3d55de146",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "Approved"
+                                }
+                            ],
+                            "stopPropagation": false,
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_14"
+                        },
+                        {
+                            "id": "6aef31f2-3d72-4973-9b3c-a6ed5d17176a",
+                            "blockType": "reassigningBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "issuer": "",
+                            "actor": "",
+                            "tag": "OWNER_reassigningBlock_18"
+                        },
+                        {
+                            "id": "063972de-1dad-49b1-8f13-35183d381ee2",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [],
+                            "dataSource": "auto",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_17",
+                            "stopPropagation": true,
+                            "entityType": "approved_entity",
+                            "events": [
+                                {
+                                    "target": "Registrant_interfaceContainerBlock_2",
+                                    "source": "OWNER_sendToGuardianBlock_17",
+                                    "input": "RunEvent",
+                                    "output": "RunEvent",
+                                    "actor": "owner",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "OWNER_interfaceDocumentsSourceBlock_9",
+                                    "source": "OWNER_sendToGuardianBlock_17",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        {
+                            "id": "34cd078b-4883-4e7d-ac57-d0c96a8365e5",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "Rejected"
+                                }
+                            ],
+                            "stopPropagation": false,
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_15"
+                        },
+                        {
+                            "id": "501e1020-b928-4622-8cfe-94e3e288ed90",
+                            "blockType": "reassigningBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "issuer": "",
+                            "actor": "",
+                            "tag": "OWNER_reassigningBlock_20"
+                        },
+                        {
+                            "id": "3495a7c1-b9d5-456b-a415-85dec1b7f7de",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [],
+                            "dataSource": "auto",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_19",
+                            "stopPropagation": true,
+                            "entityType": "rejected_entity",
+                            "events": [
+                                {
+                                    "target": "Registrant_informationBlock_7",
+                                    "source": "OWNER_sendToGuardianBlock_19",
+                                    "input": "RunEvent",
+                                    "output": "RunEvent",
+                                    "actor": "owner",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "OWNER_interfaceDocumentsSourceBlock_9",
+                                    "source": "OWNER_sendToGuardianBlock_19",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        }
+                    ],
+                    "permissions": [
+                        "OWNER"
+                    ],
+                    "events": [],
+                    "artifacts": [],
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Profile"
+                    }
+                },
+                {
+                    "id": "baec0e12-d150-49c5-8888-ce488bfacd6a",
+                    "tag": "OWNER_interfaceContainerBlock_21",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "children": [
+                        {
+                            "id": "5251ac00-53bb-46f5-84f0-3e4c508a7fff",
+                            "blockType": "interfaceDocumentsSourceBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "fields": [
+                                    {
+                                        "name": "document.credentialSubject.0.field0",
+                                        "title": "Device ID",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "name": "document",
+                                        "title": "Document",
+                                        "tooltip": "",
+                                        "type": "button",
+                                        "action": "dialog",
+                                        "content": "View Document",
+                                        "uiClass": "link",
+                                        "dialogContent": "VC",
+                                        "dialogClass": "",
+                                        "dialogType": "json"
+                                    },
+                                    {
+                                        "title": "Operation",
+                                        "name": "option.status",
+                                        "tooltip": "",
+                                        "type": "block",
+                                        "action": "",
+                                        "url": "",
+                                        "dialogContent": "",
+                                        "dialogClass": "",
+                                        "dialogType": "",
+                                        "bindBlock": "OWNER_buttonBlock_29",
+                                        "width": "250px",
+                                        "bindGroup": "OWNER_documentsSourceAddon_24"
+                                    }
+                                ]
+                            },
+                            "tag": "OWNER_interfaceDocumentsSourceBlock_22",
+                            "children": [
+                                {
+                                    "id": "30730628-6525-4c57-9fca-ea8ee41053b7",
+                                    "blockType": "historyAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "tag": "OWNER_historyAddon_23"
+                                },
+                                {
+                                    "id": "7afed1be-0033-4717-9d27-4f63423e80f8",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "Waiting for approval",
+                                            "field": "option.status",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_24"
+                                },
+                                {
+                                    "id": "9dd7e3ae-60b7-43dd-9181-70471639aed1",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "approved_entity",
+                                            "field": "type",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_25"
+                                },
+                                {
+                                    "id": "381c77ce-60ef-4c59-b1a2-bb42ec23fd93",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "rejected_entity",
+                                            "field": "type",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_26"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "1431ace7-ed48-423e-b929-ef9d560ba0e4",
+                            "blockType": "buttonBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "buttons": [
+                                    {
+                                        "tag": "Button_0",
+                                        "name": "Approve",
+                                        "type": "selector",
+                                        "filters": [],
+                                        "field": "option.status",
+                                        "value": "Approved",
+                                        "uiClass": "btn-approve"
+                                    },
+                                    {
+                                        "tag": "Button_1",
+                                        "name": "Reject",
+                                        "type": "selector-dialog",
+                                        "filters": [],
+                                        "field": "option.status",
+                                        "value": "Rejected",
+                                        "uiClass": "btn-reject",
+                                        "title": "Reject",
+                                        "description": "Enter reject reason"
+                                    }
+                                ]
+                            },
+                            "tag": "OWNER_buttonBlock_29",
+                            "events": [
+                                {
+                                    "target": "OWNER_sendToGuardianBlock_27",
+                                    "source": "OWNER_buttonBlock_29",
+                                    "input": "RunEvent",
+                                    "output": "Button_0",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "OWNER_sendToGuardianBlock_28",
+                                    "source": "OWNER_buttonBlock_29",
+                                    "input": "RunEvent",
+                                    "output": "Button_1",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        {
+                            "id": "75bbc35a-a10a-4e1a-be40-d6480e1d7cfa",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "Approved"
+                                }
+                            ],
+                            "stopPropagation": false,
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_27"
+                        },
+                        {
+                            "id": "55191867-5d6c-4f96-a5b5-ec03cf97153b",
+                            "blockType": "reassigningBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "issuer": "",
+                            "actor": "",
+                            "tag": "OWNER_reassigningBlock_31"
+                        },
+                        {
+                            "id": "568a6ae9-733e-4552-a2be-3c63669f9482",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [],
+                            "dataSource": "auto",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_30",
+                            "stopPropagation": true,
+                            "entityType": "approved_entity",
+                            "events": [
+                                {
+                                    "target": "OWNER_interfaceDocumentsSourceBlock_22",
+                                    "source": "OWNER_sendToGuardianBlock_30",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "Registrant_interfaceDocumentsSourceBlock_35",
+                                    "source": "OWNER_sendToGuardianBlock_30",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        {
+                            "id": "4bf9a1d1-5842-4604-8ea5-0ef38976f9d5",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "Rejected"
+                                }
+                            ],
+                            "stopPropagation": false,
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_28"
+                        },
+                        {
+                            "id": "f13c7cd5-2e22-4653-afac-66f8ee27ef74",
+                            "blockType": "reassigningBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "issuer": "",
+                            "actor": "",
+                            "tag": "OWNER_reassigningBlock_33"
+                        },
+                        {
+                            "id": "68aa0c88-0aa6-4a64-b7f4-95c7c7e02a99",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [],
+                            "dataSource": "auto",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_32",
+                            "stopPropagation": true,
+                            "entityType": "rejected_entity",
+                            "events": [
+                                {
+                                    "target": "OWNER_interfaceDocumentsSourceBlock_22",
+                                    "source": "OWNER_sendToGuardianBlock_32",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "Registrant_interfaceDocumentsSourceBlock_35",
+                                    "source": "OWNER_sendToGuardianBlock_32",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        }
+                    ],
+                    "permissions": [
+                        "OWNER"
+                    ],
+                    "events": [],
+                    "artifacts": [],
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Device"
+                    }
+                },
+                {
+                    "id": "badadc8b-868a-41d5-88bc-cdb4d2e7ae17",
+                    "tag": "OWNER_interfaceContainerBlock_46",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "children": [
+                        {
+                            "id": "42aa0b91-3da2-43a4-9319-54adfdfe4798",
+                            "blockType": "interfaceDocumentsSourceBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "fields": [
+                                    {
+                                        "name": "document.credentialSubject.0.field0",
+                                        "title": "Emissions Count",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "name": "document",
+                                        "title": "Document",
+                                        "tooltip": "",
+                                        "type": "button",
+                                        "action": "dialog",
+                                        "content": "View Document",
+                                        "uiClass": "link",
+                                        "dialogContent": "VC",
+                                        "dialogClass": "",
+                                        "dialogType": "json"
+                                    },
+                                    {
+                                        "title": "Operation",
+                                        "name": "option.status",
+                                        "tooltip": "",
+                                        "type": "block",
+                                        "action": "",
+                                        "url": "",
+                                        "dialogContent": "",
+                                        "dialogClass": "",
+                                        "dialogType": "",
+                                        "bindBlock": "OWNER_buttonBlock_54",
+                                        "width": "250px",
+                                        "bindGroup": "OWNER_documentsSourceAddon_49"
+                                    }
+                                ]
+                            },
+                            "tag": "OWNER_interfaceDocumentsSourceBlock_47",
+                            "children": [
+                                {
+                                    "id": "4d79bbc5-ad88-4935-8457-6830eb46505b",
+                                    "blockType": "historyAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "tag": "OWNER_historyAddon_48"
+                                },
+                                {
+                                    "id": "943799fd-69c6-40f4-b16b-8f7d655e4318",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "Waiting for approval",
+                                            "field": "option.status",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_49"
+                                },
+                                {
+                                    "id": "44aee81a-e8e2-42b8-9201-b80eb6bf415a",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "approved_entity",
+                                            "field": "type",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_50"
+                                },
+                                {
+                                    "id": "e099dcb2-9482-4fe5-bfd3-3dcb828fe108",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "rejected_entity",
+                                            "field": "type",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_51"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "59f75f89-c4a6-4be8-8e66-65e5d7abb10f",
+                            "blockType": "buttonBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "buttons": [
+                                    {
+                                        "tag": "Button_0",
+                                        "name": "Approve",
+                                        "type": "selector",
+                                        "filters": [],
+                                        "field": "option.status",
+                                        "value": "Approved",
+                                        "uiClass": "btn-approve"
+                                    },
+                                    {
+                                        "tag": "Button_1",
+                                        "name": "Reject",
+                                        "type": "selector-dialog",
+                                        "filters": [],
+                                        "field": "option.status",
+                                        "value": "Rejected",
+                                        "uiClass": "btn-reject",
+                                        "title": "Reject",
+                                        "description": "Enter reject reason"
+                                    }
+                                ]
+                            },
+                            "tag": "OWNER_buttonBlock_54",
+                            "events": [
+                                {
+                                    "target": "OWNER_sendToGuardianBlock_52",
+                                    "source": "OWNER_buttonBlock_54",
+                                    "input": "RunEvent",
+                                    "output": "Button_0",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "OWNER_sendToGuardianBlock_53",
+                                    "source": "OWNER_buttonBlock_54",
+                                    "input": "RunEvent",
+                                    "output": "Button_1",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        {
+                            "id": "0a4958ad-5145-4d11-b606-5ee62cef2fbb",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "Approved"
+                                }
+                            ],
+                            "stopPropagation": false,
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_52"
+                        },
+                        {
+                            "id": "cadf1ff4-12ec-4ffd-8e23-1e1ad6bb93a6",
+                            "blockType": "reassigningBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "issuer": "",
+                            "actor": "",
+                            "tag": "OWNER_reassigningBlock_56"
+                        },
+                        {
+                            "id": "87a37c98-bc0d-4ab4-b575-0d8e10a4128b",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [],
+                            "dataSource": "auto",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_55",
+                            "stopPropagation": false,
+                            "entityType": "approved_entity",
+                            "events": [
+                                {
+                                    "target": "OWNER_interfaceDocumentsSourceBlock_47",
+                                    "source": "OWNER_sendToGuardianBlock_55",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "Registrant_interfaceDocumentsSourceBlock_61",
+                                    "source": "OWNER_sendToGuardianBlock_55",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        {
+                            "id": "58f5f78c-83f8-417c-84b6-4ba721838e39",
+                            "blockType": "mintDocumentBlock",
+                            "stopPropagation": true,
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "tokenId": "09f61063-5c3a-454e-80cf-36542639da0e",
+                            "rule": "field0",
+                            "accountType": "default",
+                            "tag": "OWNER_mintDocumentBlock_57",
+                            "events": [
+                                {
+                                    "target": "OWNER_interfaceDocumentsSourceBlock_76",
+                                    "source": "OWNER_mintDocumentBlock_57",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "Registrant_interfaceDocumentsSourceBlock_88",
+                                    "source": "OWNER_mintDocumentBlock_57",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        },
+                        {
+                            "id": "6190938a-ec4b-433a-b56b-bfcf9bcd7a9c",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "Rejected"
+                                }
+                            ],
+                            "stopPropagation": false,
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_53"
+                        },
+                        {
+                            "id": "8db2f8eb-bb44-40b5-9bbf-0bb3f51f92c0",
+                            "blockType": "reassigningBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "issuer": "",
+                            "actor": "",
+                            "tag": "OWNER_reassigningBlock_59"
+                        },
+                        {
+                            "id": "7415b4ff-6d3f-4ecf-be65-67cb36e677f3",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [],
+                            "dataSource": "auto",
+                            "documentType": "vc",
+                            "tag": "OWNER_sendToGuardianBlock_58",
+                            "stopPropagation": true,
+                            "entityType": "rejected_entity",
+                            "events": [
+                                {
+                                    "target": "OWNER_interfaceDocumentsSourceBlock_47",
+                                    "source": "OWNER_sendToGuardianBlock_58",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "Registrant_interfaceDocumentsSourceBlock_61",
+                                    "source": "OWNER_sendToGuardianBlock_58",
+                                    "input": "RefreshEvent",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ]
+                        }
+                    ],
+                    "permissions": [
+                        "OWNER"
+                    ],
+                    "events": [],
+                    "artifacts": [],
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Issue Request"
+                    }
+                },
+                {
+                    "id": "4842edf3-bfe9-4b66-bac9-a0f2f2b3ffd9",
+                    "tag": "OWNER_interfaceContainerBlock_75",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "children": [
+                        {
+                            "id": "529ca798-2bf5-4b4e-8411-632659833512",
+                            "blockType": "interfaceDocumentsSourceBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "fields": [
+                                    {
+                                        "title": "HASH",
+                                        "name": "hash",
+                                        "tooltip": "",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "title": "Date",
+                                        "name": "document.verifiableCredential.1.credentialSubject.0.date",
+                                        "tooltip": "",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "title": "Token Id",
+                                        "name": "document.verifiableCredential.1.credentialSubject.0.tokenId",
+                                        "tooltip": "",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "title": "Serials",
+                                        "name": "document.verifiableCredential.1.credentialSubject.0.serials",
+                                        "tooltip": "",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "title": "TrustChain",
+                                        "name": "hash",
+                                        "tooltip": "",
+                                        "type": "button",
+                                        "action": "link",
+                                        "url": "",
+                                        "dialogContent": "",
+                                        "dialogClass": "",
+                                        "dialogType": "",
+                                        "bindBlock": "OWNER_reportBlock_67",
+                                        "content": "View TrustChain",
+                                        "width": "150px"
+                                    }
+                                ]
+                            },
+                            "tag": "OWNER_interfaceDocumentsSourceBlock_76",
+                            "children": [
+                                {
+                                    "id": "1ca3d9cc-aa90-4591-af13-4692bf062c86",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vp-documents",
+                                    "schema": "",
+                                    "onlyOwnDocuments": false,
+                                    "tag": "OWNER_documentsSourceAddon_77"
+                                }
+                            ]
+                        }
+                    ],
+                    "permissions": [
+                        "OWNER"
+                    ],
+                    "events": [],
+                    "artifacts": [],
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Token History"
+                    }
+                },
+                {
+                    "id": "01ae3086-1078-480d-8f77-7949c167f23f",
+                    "tag": "OWNER_interfaceContainerBlock_66",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "children": [
+                        {
+                            "id": "61bc0469-f507-4a8c-9ad7-23500fea18f3",
+                            "blockType": "reportBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "tag": "OWNER_reportBlock_67",
+                            "children": [
+                                {
+                                    "id": "5c909480-0bd1-4a8a-b9e2-b708f0493086",
+                                    "blockType": "reportItemBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "type": "equal",
+                                            "typeValue": "variable",
+                                            "field": "document.id",
+                                            "value": "actionId"
+                                        }
+                                    ],
+                                    "variables": [],
+                                    "visible": true,
+                                    "iconType": "COMMON",
+                                    "title": "Token",
+                                    "description": "Token[s] minted.",
+                                    "dynamicFilters": [],
+                                    "tag": "OWNER_reportItemBlock_68"
+                                },
+                                {
+                                    "id": "e903aa1a-8464-449d-8e66-8a080f6a1171",
+                                    "blockType": "reportItemBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "type": "equal",
+                                            "typeValue": "variable",
+                                            "field": "document.id",
+                                            "value": "documentId"
+                                        }
+                                    ],
+                                    "variables": [
+                                        {
+                                            "name": "b3c7cf04-ed99-42e5-bfc7-8fbed92ceed2",
+                                            "value": "relationships"
+                                        }
+                                    ],
+                                    "visible": true,
+                                    "iconType": "COMMON",
+                                    "title": "Issue Request approved",
+                                    "description": "Issue Request approved",
+                                    "dynamicFilters": [],
+                                    "tag": "OWNER_reportItemBlock_69"
+                                },
+                                {
+                                    "id": "8d8f0b34-066d-40c9-a7d3-707770514067",
+                                    "blockType": "reportItemBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "type": "in",
+                                            "typeValue": "variable",
+                                            "field": "messageId",
+                                            "value": "b3c7cf04-ed99-42e5-bfc7-8fbed92ceed2"
+                                        }
+                                    ],
+                                    "variables": [
+                                        {
+                                            "value": "relationships",
+                                            "name": "3d73a732-9fe9-4688-a936-b379a8512620"
+                                        }
+                                    ],
+                                    "visible": true,
+                                    "iconType": "COMMON",
+                                    "title": "Issue Request created",
+                                    "description": "Issue Request created",
+                                    "dynamicFilters": [],
+                                    "tag": "OWNER_reportItemBlock_70"
+                                },
+                                {
+                                    "id": "aa5a526b-d7a7-403b-86aa-9da6110202bb",
+                                    "blockType": "reportItemBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "type": "in",
+                                            "typeValue": "variable",
+                                            "field": "messageId",
+                                            "value": "3d73a732-9fe9-4688-a936-b379a8512620"
+                                        }
+                                    ],
+                                    "variables": [
+                                        {
+                                            "value": "relationships",
+                                            "name": "ab8438e0-fa24-44d7-a087-d3f965851ba7"
+                                        }
+                                    ],
+                                    "visible": true,
+                                    "iconType": "COMMON",
+                                    "title": "Device approved",
+                                    "description": "Device approved",
+                                    "dynamicFilters": [],
+                                    "tag": "OWNER_reportItemBlock_71"
+                                },
+                                {
+                                    "id": "7518c25f-67c8-4a14-bcaa-6a1c17dc304e",
+                                    "blockType": "reportItemBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "type": "in",
+                                            "typeValue": "variable",
+                                            "field": "messageId",
+                                            "value": "ab8438e0-fa24-44d7-a087-d3f965851ba7"
+                                        }
+                                    ],
+                                    "variables": [
+                                        {
+                                            "value": "relationships",
+                                            "name": "d199c5c2-2ed8-4476-ace7-4a55e1ec1931"
+                                        }
+                                    ],
+                                    "visible": true,
+                                    "iconType": "COMMON",
+                                    "title": "Device created",
+                                    "description": "Device created",
+                                    "dynamicFilters": [],
+                                    "tag": "OWNER_reportItemBlock_72"
+                                },
+                                {
+                                    "id": "c47d7442-8ffa-4b93-8a45-104d998cc8ba",
+                                    "blockType": "reportItemBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "type": "in",
+                                            "typeValue": "variable",
+                                            "field": "messageId",
+                                            "value": "d199c5c2-2ed8-4476-ace7-4a55e1ec1931"
+                                        }
+                                    ],
+                                    "variables": [
+                                        {
+                                            "value": "relationships",
+                                            "name": "3672afcc-30ff-4452-a212-a4dfc31abf6d"
+                                        }
+                                    ],
+                                    "visible": true,
+                                    "iconType": "COMMON",
+                                    "title": "Profile approved",
+                                    "description": "Profile approved",
+                                    "dynamicFilters": [],
+                                    "tag": "OWNER_reportItemBlock_73"
+                                },
+                                {
+                                    "id": "5083bc70-197b-431e-ba1f-c3c3c2420f2d",
+                                    "blockType": "reportItemBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "type": "in",
+                                            "typeValue": "variable",
+                                            "field": "messageId",
+                                            "value": "3672afcc-30ff-4452-a212-a4dfc31abf6d"
+                                        }
+                                    ],
+                                    "variables": [
+                                        {
+                                            "value": "relationships",
+                                            "name": "77eb3eae-32e2-42ea-be95-0cbe10741217"
+                                        }
+                                    ],
+                                    "visible": true,
+                                    "iconType": "COMMON",
+                                    "title": "Profile created",
+                                    "description": "Profile created",
+                                    "dynamicFilters": [],
+                                    "tag": "OWNER_reportItemBlock_74"
+                                }
+                            ]
+                        }
+                    ],
+                    "permissions": [
+                        "OWNER"
+                    ],
+                    "events": [],
+                    "artifacts": [],
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Trust Chain"
+                    }
+                }
+            ],
+            "permissions": [
+                "OWNER"
+            ],
+            "events": [],
+            "artifacts": [],
+            "uiMetaData": {
+                "type": "tabs"
+            }
+        },
+        {
+            "id": "a88cff7c-8b53-4fe5-b30a-eaa192ab7b87",
+            "tag": "Registrant_interfaceStepBlock_3",
+            "blockType": "interfaceStepBlock",
+            "defaultActive": true,
+            "children": [
+                {
+                    "id": "823512c9-94f2-492d-873e-5506b4206b1d",
+                    "blockType": "requestVcDocumentBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "Registrant"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "type": "page",
+                        "title": "Enter description"
+                    },
+                    "schema": "#b6bad72d-f13d-411c-aff3-18eb831be626",
+                    "idType": "UUID",
+                    "tag": "Registrant_requestVcDocumentBlock_4"
+                },
+                {
+                    "id": "14a3fdc0-245e-4aab-be86-2a3db6049300",
+                    "blockType": "sendToGuardianBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                        "Registrant"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {},
+                    "options": [
+                        {
+                            "name": "status",
+                            "value": "Waiting for approval"
+                        }
+                    ],
+                    "dataSource": "auto",
+                    "documentType": "vc",
+                    "tag": "Registrant_sendToGuardianBlock_5",
+                    "stopPropagation": false,
+                    "events": [
+                        {
+                            "target": "OWNER_interfaceDocumentsSourceBlock_9",
+                            "source": "Registrant_sendToGuardianBlock_5",
+                            "input": "RefreshEvent",
+                            "output": "RefreshEvent",
+                            "actor": "",
+                            "disabled": false
+                        }
+                    ]
+                },
+                {
+                    "id": "dd0d72f1-d79b-400c-a87b-085c3dd398db",
+                    "blockType": "informationBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "Registrant"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "description": "The page will be automatically refreshed",
+                        "type": "text",
+                        "title": "Submitted to approve"
+                    },
+                    "stopPropagation": true,
+                    "tag": "Registrant_informationBlock_6"
+                },
+                {
+                    "id": "3efa70ff-7e01-42b7-a4d7-ddd806897794",
+                    "tag": "Registrant_interfaceContainerBlock_2",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "children": [
+                        {
+                            "id": "dafa2bf2-5098-4798-ad73-d06a42e0202f",
+                            "tag": "Registrant_interfaceContainerBlock_34",
+                            "blockType": "interfaceContainerBlock",
+                            "defaultActive": true,
+                            "children": [
+                                {
+                                    "id": "68a075d8-4a41-49f1-b977-77cd7ee2780a",
+                                    "blockType": "interfaceDocumentsSourceBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "fields": [
+                                            {
+                                                "name": "document.credentialSubject.0.field0",
+                                                "title": "Device ID",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "name": "document",
+                                                "title": "Document",
+                                                "tooltip": "",
+                                                "type": "button",
+                                                "action": "dialog",
+                                                "content": "View Document",
+                                                "uiClass": "link",
+                                                "dialogContent": "VC",
+                                                "dialogClass": "",
+                                                "dialogType": "json"
+                                            },
+                                            {
+                                                "title": "Create Issue Request",
+                                                "name": "",
+                                                "type": "block",
+                                                "action": "",
+                                                "url": "",
+                                                "dialogContent": "",
+                                                "dialogClass": "",
+                                                "dialogType": "",
+                                                "bindBlock": "Registrant_requestVcDocumentBlock_44",
+                                                "width": "150px",
+                                                "bindGroup": "Registrant_documentsSourceAddon_38"
+                                            }
+                                        ]
+                                    },
+                                    "tag": "Registrant_interfaceDocumentsSourceBlock_35",
+                                    "children": [
+                                        {
+                                            "id": "d3eef195-3d70-49e4-a94b-fb396f1314ca",
+                                            "blockType": "historyAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "tag": "Registrant_historyAddon_36"
+                                        },
+                                        {
+                                            "id": "58a2acc4-bcc9-4a43-a8cd-272ca5a48fba",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "Waiting for approval",
+                                                    "field": "option.status",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_37"
+                                        },
+                                        {
+                                            "id": "63ef1827-7994-4d78-ba63-aa2451767ac0",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "approved_entity",
+                                                    "field": "type",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_38"
+                                        },
+                                        {
+                                            "id": "e197a725-2738-4a7d-8a0a-2e92946ee919",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "rejected_entity",
+                                                    "field": "type",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_39"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "466c088e-6f83-40f6-9c07-eebd6de4ebdc",
+                                    "blockType": "requestVcDocumentBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "type": "dialog",
+                                        "content": "Create Device",
+                                        "dialogContent": "Enter data",
+                                        "buttonClass": ""
+                                    },
+                                    "presetFields": [],
+                                    "idType": "UUID",
+                                    "schema": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+                                    "tag": "Registrant_requestVcDocumentBlock_40"
+                                },
+                                {
+                                    "id": "11fc4fbf-495f-4e62-b727-9ac3e374bcee",
+                                    "blockType": "setRelationshipsBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "includeAccounts": false,
+                                    "tag": "Registrant_setRelationshipsBlock_41",
+                                    "children": [
+                                        {
+                                            "id": "d5afc348-db35-4dad-ad5f-8dbdda73f4d8",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "approved_entity",
+                                                    "field": "type",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "#b6bad72d-f13d-411c-aff3-18eb831be626",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_42"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "c1b44f56-3dcd-488c-a046-a51028eeadd8",
+                                    "blockType": "sendToGuardianBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "options": [
+                                        {
+                                            "name": "status",
+                                            "value": "Waiting for approval"
+                                        }
+                                    ],
+                                    "dataSource": "auto",
+                                    "documentType": "vc",
+                                    "tag": "Registrant_sendToGuardianBlock_43",
+                                    "stopPropagation": true,
+                                    "events": [
+                                        {
+                                            "target": "OWNER_interfaceDocumentsSourceBlock_22",
+                                            "source": "Registrant_sendToGuardianBlock_43",
+                                            "input": "RefreshEvent",
+                                            "output": "RefreshEvent",
+                                            "actor": "",
+                                            "disabled": false
+                                        },
+                                        {
+                                            "target": "Registrant_interfaceDocumentsSourceBlock_35",
+                                            "source": "Registrant_sendToGuardianBlock_43",
+                                            "input": "RefreshEvent",
+                                            "output": "RefreshEvent",
+                                            "actor": "",
+                                            "disabled": false
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "407db302-a565-43ce-a786-eff0fc178c84",
+                                    "blockType": "requestVcDocumentBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "type": "dialog",
+                                        "content": "Create Issue Request",
+                                        "dialogContent": "Enter data",
+                                        "buttonClass": "link"
+                                    },
+                                    "presetFields": [],
+                                    "idType": "UUID",
+                                    "schema": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+                                    "tag": "Registrant_requestVcDocumentBlock_44"
+                                },
+                                {
+                                    "id": "80da77f4-84bc-4ece-bf77-9ea89785f083",
+                                    "blockType": "sendToGuardianBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "options": [
+                                        {
+                                            "name": "status",
+                                            "value": "Waiting for approval"
+                                        }
+                                    ],
+                                    "dataSource": "auto",
+                                    "documentType": "vc",
+                                    "tag": "Registrant_sendToGuardianBlock_45",
+                                    "stopPropagation": false,
+                                    "events": [
+                                        {
+                                            "target": "OWNER_interfaceDocumentsSourceBlock_47",
+                                            "source": "Registrant_sendToGuardianBlock_45",
+                                            "input": "RefreshEvent",
+                                            "output": "RefreshEvent",
+                                            "actor": "",
+                                            "disabled": false
+                                        },
+                                        {
+                                            "target": "Registrant_interfaceDocumentsSourceBlock_61",
+                                            "source": "Registrant_sendToGuardianBlock_45",
+                                            "input": "RefreshEvent",
+                                            "output": "RefreshEvent",
+                                            "actor": "",
+                                            "disabled": false
+                                        }
+                                    ]
+                                }
+                            ],
+                            "permissions": [
+                                "Registrant"
+                            ],
+                            "events": [],
+                            "artifacts": [],
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "Device"
+                            }
+                        },
+                        {
+                            "id": "ced150ea-1801-4d9c-9ca7-a4e3f4c69eeb",
+                            "tag": "Registrant_interfaceContainerBlock_60",
+                            "blockType": "interfaceContainerBlock",
+                            "defaultActive": true,
+                            "children": [
+                                {
+                                    "id": "e6a8c6f8-df16-41fd-bfe9-9844019b2ad1",
+                                    "blockType": "interfaceDocumentsSourceBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "fields": [
+                                            {
+                                                "name": "document.credentialSubject.0.field0",
+                                                "title": "Emissions Count",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "name": "document",
+                                                "title": "Document",
+                                                "tooltip": "",
+                                                "type": "button",
+                                                "action": "dialog",
+                                                "content": "View Document",
+                                                "uiClass": "link",
+                                                "dialogContent": "VC",
+                                                "dialogClass": "",
+                                                "dialogType": "json"
+                                            }
+                                        ]
+                                    },
+                                    "tag": "Registrant_interfaceDocumentsSourceBlock_61",
+                                    "children": [
+                                        {
+                                            "id": "e000d774-03f6-4f3e-bc18-ada2ed12fa70",
+                                            "blockType": "historyAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "tag": "Registrant_historyAddon_62"
+                                        },
+                                        {
+                                            "id": "82fe9de0-59ce-42ad-8731-ccba8873bbd0",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "Waiting for approval",
+                                                    "field": "option.status",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_63"
+                                        },
+                                        {
+                                            "id": "67062be3-97c8-4029-9f91-0c51266d132a",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "approved_entity",
+                                                    "field": "type",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_64"
+                                        },
+                                        {
+                                            "id": "a9e6e102-8475-45f9-bee3-c608db141e2e",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "rejected_entity",
+                                                    "field": "type",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_65"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "permissions": [
+                                "Registrant"
+                            ],
+                            "events": [],
+                            "artifacts": [],
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "Issue Request"
+                            }
+                        },
+                        {
+                            "id": "43b775fa-fde4-46c9-b96e-d51491dcb065",
+                            "tag": "Registrant_interfaceContainerBlock_87",
+                            "blockType": "interfaceContainerBlock",
+                            "defaultActive": true,
+                            "children": [
+                                {
+                                    "id": "c04e3f04-0e5e-45d3-a1fa-746a9ad9063f",
+                                    "blockType": "interfaceDocumentsSourceBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "fields": [
+                                            {
+                                                "title": "HASH",
+                                                "name": "hash",
+                                                "tooltip": "",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "title": "Date",
+                                                "name": "document.verifiableCredential.1.credentialSubject.0.date",
+                                                "tooltip": "",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "title": "Token Id",
+                                                "name": "document.verifiableCredential.1.credentialSubject.0.tokenId",
+                                                "tooltip": "",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "title": "Serials",
+                                                "name": "document.verifiableCredential.1.credentialSubject.0.serials",
+                                                "tooltip": "",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "title": "TrustChain",
+                                                "name": "hash",
+                                                "tooltip": "",
+                                                "type": "button",
+                                                "action": "link",
+                                                "url": "",
+                                                "dialogContent": "",
+                                                "dialogClass": "",
+                                                "dialogType": "",
+                                                "bindBlock": "Registrant_reportBlock_79",
+                                                "content": "View TrustChain",
+                                                "width": "150px"
+                                            }
+                                        ]
+                                    },
+                                    "tag": "Registrant_interfaceDocumentsSourceBlock_88",
+                                    "children": [
+                                        {
+                                            "id": "2a3fb7aa-cadb-4b6b-b1a4-e7bba032b793",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [],
+                                            "dataType": "vp-documents",
+                                            "schema": "",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "Registrant_documentsSourceAddon_89"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "permissions": [
+                                "Registrant"
+                            ],
+                            "events": [],
+                            "artifacts": [],
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "Token History"
+                            }
+                        },
+                        {
+                            "id": "1372704a-95e7-4556-abeb-dd98ee80bf45",
+                            "tag": "Registrant_interfaceContainerBlock_78",
+                            "blockType": "interfaceContainerBlock",
+                            "defaultActive": true,
+                            "children": [
+                                {
+                                    "id": "cbe32e7a-d015-4d85-9fe1-41d2c5fa2c03",
+                                    "blockType": "reportBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Registrant"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "tag": "Registrant_reportBlock_79",
+                                    "children": [
+                                        {
+                                            "id": "662597c1-6e8b-4c8a-8703-ca4b27668c34",
+                                            "blockType": "reportItemBlock",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "type": "equal",
+                                                    "typeValue": "variable",
+                                                    "field": "document.id",
+                                                    "value": "actionId"
+                                                }
+                                            ],
+                                            "variables": [],
+                                            "visible": true,
+                                            "iconType": "COMMON",
+                                            "title": "Token",
+                                            "description": "Token[s] minted.",
+                                            "dynamicFilters": [],
+                                            "tag": "Registrant_reportItemBlock_80"
+                                        },
+                                        {
+                                            "id": "359acc2f-7210-48dd-b783-35a0062fca14",
+                                            "blockType": "reportItemBlock",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "type": "equal",
+                                                    "typeValue": "variable",
+                                                    "field": "document.id",
+                                                    "value": "documentId"
+                                                }
+                                            ],
+                                            "variables": [
+                                                {
+                                                    "name": "e3171dca-a907-4b65-a820-d0941a3f39ba",
+                                                    "value": "relationships"
+                                                }
+                                            ],
+                                            "visible": true,
+                                            "iconType": "COMMON",
+                                            "title": "Issue Request approved",
+                                            "description": "Issue Request approved",
+                                            "dynamicFilters": [],
+                                            "tag": "Registrant_reportItemBlock_81"
+                                        },
+                                        {
+                                            "id": "3e9344cf-f4e6-4e51-9ecd-02f05715fb84",
+                                            "blockType": "reportItemBlock",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "type": "in",
+                                                    "typeValue": "variable",
+                                                    "field": "messageId",
+                                                    "value": "e3171dca-a907-4b65-a820-d0941a3f39ba"
+                                                }
+                                            ],
+                                            "variables": [
+                                                {
+                                                    "value": "relationships",
+                                                    "name": "0efb940b-19f4-4b43-9c9a-b4d230973f23"
+                                                }
+                                            ],
+                                            "visible": true,
+                                            "iconType": "COMMON",
+                                            "title": "Issue Request created",
+                                            "description": "Issue Request created",
+                                            "dynamicFilters": [],
+                                            "tag": "Registrant_reportItemBlock_82"
+                                        },
+                                        {
+                                            "id": "cd315010-1b64-4340-866c-f7b12184c9cb",
+                                            "blockType": "reportItemBlock",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "type": "in",
+                                                    "typeValue": "variable",
+                                                    "field": "messageId",
+                                                    "value": "0efb940b-19f4-4b43-9c9a-b4d230973f23"
+                                                }
+                                            ],
+                                            "variables": [
+                                                {
+                                                    "value": "relationships",
+                                                    "name": "5235c886-a414-4940-a4df-2210acb10950"
+                                                }
+                                            ],
+                                            "visible": true,
+                                            "iconType": "COMMON",
+                                            "title": "Device approved",
+                                            "description": "Device approved",
+                                            "dynamicFilters": [],
+                                            "tag": "Registrant_reportItemBlock_83"
+                                        },
+                                        {
+                                            "id": "3ac01361-7d1a-4e3b-a27e-255b8ee23bcc",
+                                            "blockType": "reportItemBlock",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "type": "in",
+                                                    "typeValue": "variable",
+                                                    "field": "messageId",
+                                                    "value": "5235c886-a414-4940-a4df-2210acb10950"
+                                                }
+                                            ],
+                                            "variables": [
+                                                {
+                                                    "value": "relationships",
+                                                    "name": "9abf4ce4-2516-4d38-9ab9-ae934f643af8"
+                                                }
+                                            ],
+                                            "visible": true,
+                                            "iconType": "COMMON",
+                                            "title": "Device created",
+                                            "description": "Device created",
+                                            "dynamicFilters": [],
+                                            "tag": "Registrant_reportItemBlock_84"
+                                        },
+                                        {
+                                            "id": "2572f616-cb3f-406c-a527-fb74b5b65807",
+                                            "blockType": "reportItemBlock",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "type": "in",
+                                                    "typeValue": "variable",
+                                                    "field": "messageId",
+                                                    "value": "9abf4ce4-2516-4d38-9ab9-ae934f643af8"
+                                                }
+                                            ],
+                                            "variables": [
+                                                {
+                                                    "value": "relationships",
+                                                    "name": "9b90034f-6ff7-4f02-a667-c04be5e826e0"
+                                                }
+                                            ],
+                                            "visible": true,
+                                            "iconType": "COMMON",
+                                            "title": "Profile approved",
+                                            "description": "Profile approved",
+                                            "dynamicFilters": [],
+                                            "tag": "Registrant_reportItemBlock_85"
+                                        },
+                                        {
+                                            "id": "da27a13f-6d26-4973-bfd5-f9b8295b7b10",
+                                            "blockType": "reportItemBlock",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Registrant"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "type": "in",
+                                                    "typeValue": "variable",
+                                                    "field": "messageId",
+                                                    "value": "9b90034f-6ff7-4f02-a667-c04be5e826e0"
+                                                }
+                                            ],
+                                            "variables": [
+                                                {
+                                                    "value": "relationships",
+                                                    "name": "ce0f5a8b-eade-4906-8268-593d2ae24155"
+                                                }
+                                            ],
+                                            "visible": true,
+                                            "iconType": "COMMON",
+                                            "title": "Profile created",
+                                            "description": "Profile created",
+                                            "dynamicFilters": [],
+                                            "tag": "Registrant_reportItemBlock_86"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "permissions": [
+                                "Registrant"
+                            ],
+                            "events": [],
+                            "artifacts": [],
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "Trust Chain"
+                            }
+                        }
+                    ],
+                    "permissions": [
+                        "Registrant"
+                    ],
+                    "events": [],
+                    "artifacts": [],
+                    "uiMetaData": {
+                        "type": "tabs"
+                    }
+                },
+                {
+                    "id": "ebf1d56c-acc2-4702-bc11-486775a7f06c",
+                    "blockType": "informationBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "Registrant"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "description": "Document was rejected",
+                        "type": "text",
+                        "title": "Rejected"
+                    },
+                    "stopPropagation": true,
+                    "tag": "Registrant_informationBlock_7"
+                }
+            ],
+            "permissions": [
+                "Registrant"
+            ],
+            "events": [],
+            "artifacts": []
+        }
+    ]
+}

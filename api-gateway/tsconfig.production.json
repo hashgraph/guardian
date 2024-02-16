@@ -1,0 +1,45 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "inlineSourceMap": false,
+    "skipLibCheck": true,
+    "lib": [
+      "es5",
+      "es6"
+    ],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "dist/",
+    "paths": {
+      "@api/*": [
+        "api/*"
+      ],
+      "@entities/*": [
+        "entities/*"
+      ],
+      "@helpers/*": [
+        "helpers/*"
+      ],
+      "@auth/*": [
+        "auth/*"
+      ],
+      "@middlewares/*": [
+        "middlewares/*"
+      ]
+    },
+    "target": "es6"
+  },
+  "exclude": [
+    "node_modules",
+    "public",
+    "dist"
+  ],
+  "include": [
+    "src/**/*"
+  ]
+}

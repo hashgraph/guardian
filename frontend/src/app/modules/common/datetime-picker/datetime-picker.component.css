@@ -1,0 +1,23 @@
+.container {
+    display: flex;
+    padding: 0px 0px 0px 5px;
+}
+
+.mat-input-element {
+    font: inherit;
+    background: transparent;
+    color: currentColor;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    vertical-align: bottom;
+    text-align: inherit;
+    box-sizing: content-box;
+}
+
+.container ::ng-deep .mat-icon-button.cdk-program-focused .mat-button-focus-overlay {
+    opacity: 0;
+}

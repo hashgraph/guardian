@@ -1,0 +1,87 @@
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div class="row-container">
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="firstPolicy">Policy</label>
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="topicId1"
+                    [options]="policies"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="firstPolicy"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Select Policy"
+            ></p-dropdown>
+        </div>
+
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="firstSchema">First Schema</label>
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="schemaId1"
+                    [options]="list1"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="firstSchema"
+                    optionLabel="fullName"
+                    optionValue="id"
+                    placeholder="Select Schema"
+            ></p-dropdown>
+        </div>
+    </div>
+
+    <div class="row-container">
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="secondPolicy">Policy</label>
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="topicId2"
+                    [options]="policies"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="secondPolicy"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Select Policy"
+            ></p-dropdown>
+        </div>
+
+        <div class="policy-dropdown-container">
+            <label class="form-label" htmlFor="secondPolicy"
+            >Second Schema</label
+            >
+            <p-dropdown
+                    (onChange)="onChange()"
+                    [(ngModel)]="schemaId2"
+                    [options]="list2"
+                    [showClear]="true"
+                    appendTo="body"
+                    id="secondPolicy"
+                    optionLabel="fullName"
+                    optionValue="id"
+                    placeholder="Select Schema"
+            ></p-dropdown>
+        </div>
+    </div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button
+                    (click)="onClose()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onCompare()" class="button" label="Compare" pButton></button>
+        </div>
+    </div>
+</div>

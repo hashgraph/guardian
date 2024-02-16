@@ -1,0 +1,148 @@
+{
+	"Registrant Application": {
+		"Date": "2023-04-20",
+		"Applicant Details": {
+			"Applicant Legal Name": "John Doe",
+			"Registered address line 1": "4325 hunter st",
+			"Registered address line 2": "Apt 4501W",
+			"Registered address line 3": "Long Island city NY",
+			"Postal (ZIP) code": "11101",
+			"Country": "	",
+			"Legal Status": "Limited liability company",
+			"Country of company registration/private residence": "USA",
+			"Corporate registration number/passport number": "25752831",
+			"VAT number": "925-66-1263",
+			"Website URL": "https://superpowerplant.test",
+			"Main business (e.g. food retailer)": "Electricity",
+			"Year of registration": 1905,
+			"Approximate number of employees": 26000,
+			"Name of the Chief Executive Officer/General Manager": "Nathan Smith",
+			"Chief Executive Officer/General Manager passport number": "E00007735",
+			"Please state in which countries the organization is active": "USA",
+			"Please list the main (>10%) shareholders": "Pacific Gas & Electric",
+			"Balance sheet total for last financial year (in USD)": 2586000000,
+			"Email address for Accounts Department": "pacificgas@test.test"
+		},
+		"Primary Contact Details": {
+			"Organization Name": "Pacific Gas & Electric company",
+			"Address line 1": "555 Beverly Hills",
+			"Address line 2": "BWW Ste 001",
+			"Address line 3": "Los Angeles CA",
+			"Postal code": "90016",
+			"Country": "USA",
+			"Contact person": "James Comben",
+			"e-mail": "j.comben@test.test",
+			"Telephone": "555-1285",
+			"Fax": "555-1284",
+			"Existing I-REC Registry organization(s) to become subsidiary": ""
+		},
+		"Lead User Details": {
+			"Family Name (surname)": "Bradley",
+			"Other (Given) Names": "Vanessa",
+			"Title": "Mrs",
+			"e-mail": "vanessa.bradley@test.test",
+			"Telephone": "555-2368",
+			"Fax": "555-2367",
+		}
+	}
+	
+	
+	
+	"Device Registration": {
+		"Registrant Id": "did:hedera:testnet:HSFhfBKAX67pkCqyNrUqBZiSm2EXpbjTr7YfnowEA9oq_0.0.4276581",
+		"Date": "2023-04-20",
+		"Is the Registrant also the owner of the Device? (provide evidence)": "Yes",
+		"Registrant Details": {
+			"Organization Name": "Pacific Gas & Electric company",
+			"Address line 1": "555 Beverly Hills",
+			"Address line 2": "BWW Ste 001",
+			"Address line 3": "Los Angeles CA",
+			"Postal code": "90016",
+			"Country": "USA",
+			"Contact person": "James Comben",
+			"e-mail": "j.comben@test.test",
+			"Telephone": "555-1285",
+			"Fax": "555-1284",
+			"Existing I-REC Registry organization(s) to become subsidiary": ""
+		},
+		"Production Device Details": {
+			"Device Name": "Ormond Beach power station",
+			"Address": "Oxnard, Ventura, California",
+			"Postal code": "93031",
+			"Country": "USA",
+			"Longitude": "-119.1689",
+			"Latitude": "34.1292",
+			"TSO’s ID for measurement point": "QW9968675",
+			"Installed capacity (kW)": 1612,
+			"Number of generating units": 2,
+			"Date of commissioning": "2023-04-22",
+			"Owner of the network to which the Production Device is connected and the voltage of that connection": "California Independent System Operator, 11kV",
+			"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers": "",
+			"Expected form of volume evidence": "Metering data",
+			"If other please specify": ""
+		},
+		"Energy Sources": {
+			"Energy Source (Input) – see Appendix 2": "Natural gas",
+			"Technology – see Appendix 2": "Steam turbine",
+			"On-site consumer present?": false,
+			"Auxiliary/standby energy sources present?": false,
+			"Please give details of how the site can import electricity by means other than through the meter(s) specified above": "There is no other import",
+			"Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case": "None",
+			"Please identify any labeling schemes for which the Device is accredited": "Product Certificate Label",
+			"Has the Device ever received public (government) funding (e.g. Feed in Tariff)?": true,
+			"If public (government) funding has been received when did/will it finish?": "2020",
+			"Requested effective date of registration (no earlier than 12 months prior to submitting this form)": "2023-04-18",
+			"Preferred I-REC Device Verifier": "World Green Economy Organization"
+		}
+	}
+	
+	
+	
+	
+	
+	"New Issue Request": {
+		"Registrant Id": "did:hedera:testnet:HSFhfBKAX67pkCqyNrUqBZiSm2EXpbjTr7YfnowEA9oq_0.0.4276581",
+		"Production Device/Production Group Id": "did:hedera:testnet:63UcRKzS4ucgjPKTi9h8DnJGcLuA76HXFfVx8uGNGgYJ_0.0.4276743",
+		"Registrant Details": {
+			"Organization Name": "Pacific Gas & Electric company",
+			"Address line 1": "555 Beverly Hills",
+			"Address line 2": "BWW Ste 001",
+			"Address line 3": "Los Angeles CA",
+			"Postal code": "90016",
+			"Country": "USA",
+			"Contact person": "James Comben",
+			"e-mail": "j.comben@test.test",
+			"Telephone": "555-1285",
+			"Fax": "555-1284",
+			"Existing I-REC Registry organization(s) to become subsidiary": ""
+		},
+		"Production Device Details": {
+			"Device Name": "Ormond Beach power station",
+			"Address": "Oxnard, Ventura, California",
+			"Postal code": "93031",
+			"Country": "USA",
+			"Longitude": "-119.1689",
+			"Latitude": "34.1292",
+			"TSO’s ID for measurement point": "QW9968675",
+			"Installed capacity (kW)": 1612,
+			"Number of generating units": 2,
+			"Date of commissioning": "2023-04-22",
+			"Owner of the network to which the Production Device is connected and the voltage of that connection": "California Independent System Operator, 11kV",
+			"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers": "",
+			"Expected form of volume evidence": "Metering data",
+			"If other please specify": ""
+		},
+		"labeling scheme(s)": "Product Certificate Label",
+		"Last registration date": "2023-04-21",
+		"Production Period Start Date": "2023-04-19",
+		"Total kWh Produced in this period": 25,
+		"Production Period End Date": "2023-04-20",
+		"Percentage of eligible total applied for": 70,
+		"Type a: Settlement Metering data": "1850",
+		"Is the production of this electricity counted towards a national, sub-national or regulatory target?": true,
+		"Is any of this production subject to a public consumption obligation?": true,
+		"Do you retain the right to obtain emissions reduction certificates or carbon offsets for the energy nominated in this Issue Request?": true,
+		"I-REC Participant name": "Installer",
+		"Account number": "0.0.10815"
+	}
+}

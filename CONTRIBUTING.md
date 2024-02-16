@@ -82,7 +82,7 @@ Before submitting your pull request, refer to the pull request readiness checkli
 * [ ] Git commit message is detailed and includes context behind the change
 * [ ] If the change is related to an existing Bug Report or Feature Request, please include its issue number
 
-To contribute, please fork the GitHub repository and submit a pull request to the `main` branch.
+To contribute, please fork the GitHub repository and submit a pull request to the `develop` branch if it's a new feature, or `main` branch for a hotfix.
 
 ### Getting Your Pull Request Merged
 

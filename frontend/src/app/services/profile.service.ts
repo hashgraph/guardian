@@ -1,43 +1,43 @@
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {ISession, IUser, IUserProfile} from 'interfaces';
-import {Observable} from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { IUser } from '@guardian/interfaces';
+import { Observable, of } from 'rxjs';
+import { API_BASE_URL } from './api';
+import { AuthService } from './auth.service';
 
 /**
  * Services for working from user profile.
  */
 @Injectable()
 export class ProfileService {
-  constructor(
-    private http: HttpClient
-  ) {
-  }
+    private readonly url: string = `${API_BASE_URL}/profiles`;
+    constructor(
+        private http: HttpClient,
+        private auth: AuthService,
+    ) {
+    }
 
-  public getCurrentState(): Observable<ISession> {
-    return this.http.get<any>('/api/profile/user-state');
-  }
+    public getProfile(): Observable<IUser> {
+        return this.http.get<any>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}`);
+    }
 
-  public getCurrentProfile(): Observable<IUserProfile> {
-    return this.http.get<any>('/api/profile/');
-  }
+    public setProfile(profile: IUser): Observable<void> {
+        return this.http.put<void>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}`, profile);
+    }
 
-  public updateHederaProfile(hederaAccountId: string, hederaAccountKey: string): Observable<IUserProfile> {
-    return this.http.post<any>('/api/profile/set-hedera-profile', {hederaAccountId, hederaAccountKey});
-  }
+    public pushSetProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${encodeURIComponent(this.auth.getUsername())}`, profile);
+    }
 
-  public updateVCProfile(data: any): Observable<IUserProfile> {
-    return this.http.post<any>('/api/profile/set-vc-profile', data);
-  }
+    public restoreProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/${encodeURIComponent(this.auth.getUsername())}`, profile);
+    }
 
-  public getRandomKey(): Observable<any> {
-    return this.http.get<any>('/api/profile/random-key');
-  }
+    public getAllUserTopics(profile: IUser): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/topics/${encodeURIComponent(this.auth.getUsername())}`, profile);
+    }
 
-  public getRootBalance(): Observable<string | null> {
-    return this.http.get<string | null>('/api/profile/user-balance');
-  }
-
-  public getRootAuthorities(): Observable<IUser[]> {
-    return this.http.get<IUser[]>('/api/profile/get-root-authority');
-  }
+    public getBalance(): Observable<string | null> {
+        return this.http.get<string | null>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/balance`);
+    }
 }

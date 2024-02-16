@@ -1,0 +1,99 @@
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading">
+        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+    </ng-container>
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Notifications</h1>
+    </div>
+</ng-template>
+
+<ng-template #tableContainer>
+    <ng-container *ngIf="notifications && notifications.length > 0 else noData">
+        <div class="table-container">
+            <table>
+                <colgroup>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col style="width: 100px;"/>
+                </colgroup>
+                <tr class="row-header">
+                    <th>DATE & TIME</th>
+                    <th>TYPE</th>
+                    <th>TITLE</th>
+                    <th>MESSAGE</th>
+                    <th>OPERATIONS</th>
+                </tr>
+                <ng-container *ngFor="let notification of notifications">
+                    <tr class="row-item">
+                        <td style="min-width: 200px;">{{ notification.updateDate | date: 'yyyy-MM-dd h:mm a' }}</td>
+                        <td style="min-width: 200px;">
+                            <div [class.p-tag-error]="notification.type === 'ERROR'"
+                                 [class.p-tag-grey]="notification.type === 'INFO'"
+                                 [class.p-tag-success]="notification.type === 'SUCCESS'"
+                                 class="p-tag"
+                            >{{ notification.type | titlecase }}
+                            </div>
+                        </td>
+                        <td style="min-width: 250px;">{{ notification.title }}</td>
+                        <td style="width: 100%;">{{ notification.message }}</td>
+                        <td>
+                            <div class="flex flex-sb-c">
+                                <div class="flex flex-column-gap-20">
+                                    <div (click)="deleteUpToThis(notification.id)" class="cursor-pointer"
+                                         pTooltip="Delete up to this point" tooltipPosition="top">
+                                        <svg fill="none" height="18"
+                                             viewBox="0 0 12 18"
+                                             width="12" xmlns="http://www.w3.org/2000/svg">
+                                            <path clip-rule="evenodd" d="M6 18C6.47339 18 6.85714 17.5971 6.85714 17.1V6.67279L9.67962 9.6364C10.0144 9.98787 10.5571 9.98787 10.8918 9.6364C11.2265 9.28492 11.2265 8.71508 10.8918 8.3636L6.60609 3.8636C6.27136 3.51213 5.72864 3.51213 5.39391 3.8636L1.10819 8.3636C0.773459 8.71508 0.773459 9.28492 1.10819 9.6364C1.44293 9.98787 1.98564 9.98787 2.32038 9.6364L5.14286 6.67279V17.1C5.14286 17.5971 5.52661 18 6 18ZM0 0.9C0 1.39706 0.383756 1.8 0.857143 1.8H11.1429C11.6162 1.8 12 1.39706 12 0.9C12 0.402945 11.6162 0 11.1429 0H0.857143C0.383756 0 0 0.402945 0 0.9Z"
+                                                  fill="#FF432A"
+                                                  fill-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <div (click)="viewDetails(notification)" *ngIf="notification.action"
+                                         class="cursor-pointer" pTooltip="View Details"
+                                         tooltipPosition="top">
+                                        <svg class="opacity-icon"
+                                             fill="none" height="16"
+                                             viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                    class="primary-color"
+                                                    d="M2.94226 2.39505C1.3173 2.39505 -2.06679e-08 3.7003 0 5.3104V13.0847C-1.65343e-07 14.6948 1.3173 16 2.94226 16L10.7883 16C12.4133 16 13.7306 14.6948 13.7306 13.0847L13.7306 10.6552C13.7306 10.1185 13.2915 9.68342 12.7498 9.68342C12.2082 9.68342 11.7691 10.1185 11.7691 10.6552V13.0847C11.7691 13.6214 11.33 14.0564 10.7883 14.0564L2.94226 14.0564C2.40061 14.0564 1.96151 13.6214 1.96151 13.0847V5.3104C1.96151 4.7737 2.40061 4.33862 2.94226 4.33862H5.39415C5.93581 4.33862 6.3749 3.90354 6.3749 3.36683C6.3749 2.83013 5.93581 2.39505 5.39415 2.39505H2.94226Z"/>
+                                            <path
+                                                    class="primary-color"
+                                                    d="M6.69727 7.84346C6.31426 8.22296 6.31426 8.83826 6.69727 9.21777C7.08028 9.59727 7.70126 9.59727 8.08426 9.21777L14.0385 3.31802V6.46925C14.0385 7.00595 14.4776 7.44103 15.0192 7.44103C15.5609 7.44103 16 7.00595 16 6.46925L16 0.974997C16.0008 0.725273 15.905 0.475303 15.7127 0.284769C15.5212 0.0950159 15.2702 0.000139911 15.0192 0.000141549L9.47125 0C8.9296 -1.6383e-07 8.4905 0.43508 8.4905 0.971781C8.4905 1.50848 8.9296 1.94356 9.47125 1.94356L12.6516 1.94356L6.69727 7.84346Z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="notificationsCount"
+                (page)="onPage($event)"
+            ></app-paginator>
+
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">No notifications</span>
+        <span class="info-text"></span>
+    </div>
+</ng-template>

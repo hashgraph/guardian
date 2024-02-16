@@ -1,0 +1,23 @@
+<div class="content-{{type}}" [hidden]="!isExist">
+    <ng-container *ngIf="type=='page'">
+        <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-{{type}}">
+            <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
+            <div *ngIf="description" class="description">{{description}}</div>
+            <div class="schema-form">
+                <app-token-configuration [dataForm]="dataForm" [preset]="templatePreset" [contracts]="contracts"
+                    [hide-type]="true"></app-token-configuration>
+            </div>
+            <div class="page-btns">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
+            </div>
+        </form>
+    </ng-container>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

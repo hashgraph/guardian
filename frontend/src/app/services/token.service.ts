@@ -1,47 +1,104 @@
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {ISession, IToken} from 'interfaces';
-import {Observable} from 'rxjs';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { IToken, ITokenInfo, IUser } from '@guardian/interfaces';
+import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from Tokens.
  */
 @Injectable()
 export class TokenService {
-  constructor(
-    private http: HttpClient
-  ) {
-  }
+    private readonly url: string = `${API_BASE_URL}/tokens`;
 
-  public createToken(data: any): Observable<IToken[]> {
-    return this.http.post<IToken[]>('/api/tokens/create', data);
-  }
+    constructor(
+        private http: HttpClient
+    ) {
+    }
 
-  public getTokens(): Observable<IToken[]> {
-    return this.http.get<IToken[]>('/api/tokens');
-  }
+    public create(data: any): Observable<IToken[]> {
+        return this.http.post<IToken[]>(`${this.url}`, data);
+    }
 
-  public getUserTokens(): Observable<IToken[]> {
-    return this.http.get<IToken[]>('/api/tokens/user-tokens');
-  }
+    public pushCreate(data: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
+    }
 
-  public associate(tokenId: string, associated: boolean): Observable<IToken> {
-    return this.http.post<IToken>('/api/tokens/associate', {tokenId, associated});
-  }
+    public pushUpdate(data: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
+    }
 
-  public getAssociatedUsers(tokenId: string, username: string): Observable<any> {
-    return this.http.get<any[]>(`/api/tokens/associate-users?tokenId=${tokenId}&username=${username}`);
-  }
+    public pushDelete(tokenId: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}`);
+    }
 
-  public getUsers(): Observable<ISession[]> {
-    return this.http.get<any[]>(`/api/tokens/all-users`);
-  }
+    public getTokens(policyId?: string): Observable<ITokenInfo[]> {
+        if (policyId) {
+            return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`);
+        }
+        return this.http.get<ITokenInfo[]>(`${this.url}`);
+    }
 
-  public grantKYC(tokenId: string, username: any, grantKYC: boolean) {
-    return this.http.post<any>(`/api/tokens/user-kyc`, {tokenId, username, value: grantKYC});
-  }
+    public getTokensPage(policyId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
+        if (policyId) {
+            if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+                return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}&pageIndex=${pageIndex}&pageSize=${pageSize}`, {observe: 'response'});
+            }
+            return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`, {observe: 'response'});
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            return this.http.get<ITokenInfo[]>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, {observe: 'response'});
+        }
+        return this.http.get<ITokenInfo[]>(`${this.url}`, {observe: 'response'});
+    }
 
-  public getFreezeUser(tokenId: string, username: any, freeze: boolean) {
-    return this.http.post<any>(`/api/tokens/user-freeze`, {tokenId, username, value: freeze});
-  }
+    public associate(tokenId: string, associate: boolean): Observable<void> {
+        if (associate) {
+            return this.http.put<void>(`${this.url}/${tokenId}/associate`, null);
+        }
+        return this.http.put<void>(`${this.url}/${tokenId}/dissociate`, null);
+    }
+
+    public pushAssociate(tokenId: string, associate: boolean): Observable<{ taskId: string, expectation: number }> {
+        if (associate) {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/associate`, null);
+        }
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/dissociate`, null);
+    }
+
+    public kyc(tokenId: string, username: string, kyc: boolean): Observable<void> {
+        if (kyc) {
+            return this.http.put<void>(`${this.url}/${tokenId}/${username}/grant-kyc`, null);
+        }
+        return this.http.put<void>(`${this.url}/${tokenId}/${username}/revoke-kyc`, null);
+    }
+
+    public pushKyc(tokenId: string, username: string, kyc: boolean): Observable<{ taskId: string, expectation: number }> {
+        if (kyc) {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/grant-kyc`, null);
+        }
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/revoke-kyc`, null);
+    };
+
+    public freeze(tokenId: string, username: string, freeze: boolean): Observable<void> {
+        if (freeze) {
+            return this.http.put<void>(`${this.url}/${tokenId}/${username}/freeze`, null);
+        }
+        return this.http.put<void>(`${this.url}/${tokenId}/${username}/unfreeze`, null);
+    }
+
+    public pushFreeze(tokenId: string, username: string, freeze: boolean): Observable<{ taskId: string, expectation: number }> {
+        if (freeze) {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/freeze`, null);
+        }
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/unfreeze`, null);
+    };
+
+    public info(tokenId: string, username: string): Observable<ITokenInfo> {
+        return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/${username}/info`);
+    }
+
+    public serials(tokenId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${tokenId}/serials`);
+    }
 }

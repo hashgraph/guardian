@@ -1,0 +1,331 @@
+<div [attr.status]="policyInfo?.status" [attr.instance]="!!policy" class="content">
+    <ng-container *ngIf="!isConfirmed">
+        <div class="not-exist">
+            Before starting work you need to get DID
+            <a [routerLink]="['/profile']">here</a>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && (!policyId || !policy)">
+        <div class="not-exist">
+            Policy doesn't exist
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && policyId && policy">
+        <div *ngIf="isDryRun" class="dry-run-content">
+            <div
+                [queryParams]="{ policyId }"
+                [routerLink]="['/policy-configuration']"
+                class="dry-run-action-btn"
+                title="Edit Policy"
+            >
+                <mat-icon>edit</mat-icon>
+                <span>Edit</span>
+            </div>
+
+            <div
+                (click)="restartDryRun()"
+                class="dry-run-action-btn"
+                title="Save Policy"
+            >
+                <mat-icon>restart_alt</mat-icon>
+                <span>Restart</span>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div class="dry-run-action-btn" (click)="createVirtualUser()">
+                <mat-icon>person_add</mat-icon>
+                <span>Create User</span>
+            </div>
+
+            <div class="dry-run-group-btn" [matMenuTriggerFor]="menu">
+                <mat-icon>group</mat-icon>
+                <span>Users</span>
+                <div class="expand-group">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div
+                class="dry-run-action-btn record-btn"
+                (click)="startRecord()"
+                title="Start Record"
+                [attr.disabled]="recordingActive">
+                <mat-icon>radio_button_checked</mat-icon>
+                <span>Record</span>
+            </div>
+
+            <div
+                class="dry-run-action-btn run-btn"
+                (click)="runRecord()"
+                title="Run Record"
+                [attr.disabled]="recordingActive">
+                <mat-icon>play_arrow</mat-icon>
+                <span>Run</span>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div
+                (click)="onView('policy')"
+                [attr.action]="view === 'policy'"
+                class="dry-run-btn"
+            >
+                Policy View
+            </div>
+            <div
+                (click)="onView('transactions')"
+                [attr.action]="view === 'transactions'"
+                class="dry-run-btn"
+            >
+                Transactions
+            </div>
+            <div
+                (click)="onView('artifacts')"
+                [attr.action]="view === 'artifacts'"
+                class="dry-run-btn"
+            >
+                Artifacts
+            </div>
+            <div
+                (click)="onView('ipfs')"
+                [attr.action]="view === 'ipfs'"
+                class="dry-run-btn"
+            >
+                IPFS
+            </div>
+
+            <div class="delimiter"></div>
+        </div>
+
+        <div class="policy-header" [attr.policy-status]="policyInfo.status" [attr.expired]="!!policyInfo.discontinuedDate">
+            <div>
+                <a routerLink="/policy-viewer">
+                    <p-button
+                        [ngClass]="{ 'back-button': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
+                        icon="pi pi-arrow-left"
+                        label="Back to Manage Policies"
+                        styleClass="p-button-outlined p-button-sm"
+                    ></p-button>
+                </a>
+            </div>
+            <div *ngIf="policyInfo" class="policy-info-container">
+                <div class="policy-name-container">
+                    <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
+                </div>
+
+                <div class="policy-additional-info-container">
+                    <span
+                        *ngIf="policyInfo && policyInfo.version"
+                        [ngClass]="{ 'white-additional-policy-info-text': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
+                        class="additional-policy-info-text"
+                    >
+                        Version: ({{ policyInfo.version }})
+                    </span>
+                    <span
+                        *ngIf="!groups.length && !isMultipleGroups"
+                        [ngClass]="{ 'white-additional-policy-info-text': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
+                        class="additional-policy-info-text"
+                    >
+                        Role: {{ policyInfo.userRoles.join(", ") }}
+                    </span>
+                    <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
+                        <span
+                            [ngClass]="policyInfo.status === 'DRY-RUN' ? 'white-additional-policy-info-text' : ''"
+                            class="additional-policy-info-text"
+                            title="Group: {{userGroup}} / Role: {{userRole}}"
+                        >
+                            Group: {{userGroup}} / Role: {{userRole}}</span>
+                            <div>
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </div>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div
+            [attr.hidden-container]="view !== 'policy'"
+            [attr.policy-status]="policyInfo.status"
+            class="policy-container"
+        >
+            <progress-tracker
+                *ngIf="steps && steps.length > 0"
+                [steps]="steps"
+            ></progress-tracker>
+            <div style="width: 100%; overflow-y: scroll;">
+                <render-block
+                    [block]="policy"
+                    [policyId]="policyId"
+                    [dryRun]="isDryRun"
+                    style="width: 100%;"
+                ></render-block>
+
+                <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
+                    <div class="progress-footer">
+                        <button (click)="onNavigationPrevButton()" [disabled]="prevButtonDisabled" class="button" label="Previous" pButton
+                                type="button"></button>
+                        <div *ngIf="!nextButtonDisabled">
+                            <!-- <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button> -->
+                            <button (click)="onNavigationNextButton()" class="p-button" label="Next" pButton
+                                    type="button"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            [attr.hidden-container]="view === 'policy'"
+            *ngIf="isDryRun"
+            [attr.policy-status]="policyInfo.status"
+            class="second-policy-container"
+        >
+            <div class="table-container">
+                <table
+                    [dataSource]="documents"
+                    class="document-table"
+                    mat-table
+                >
+                    <ng-container matColumnDef="createDate">
+                        <th *matHeaderCellDef mat-header-cell>Create Date</th>
+                        <td *matCellDef="let element" mat-cell>
+                            {{ element.createDate }}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="type">
+                        <th *matHeaderCellDef mat-header-cell>Type</th>
+                        <td *matCellDef="let element" mat-cell>
+                            {{ element.__type }}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="owner">
+                        <th *matHeaderCellDef mat-header-cell>Owner</th>
+                        <td *matCellDef="let element" mat-cell>
+                            {{ element.owner }}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="size">
+                        <th *matHeaderCellDef mat-header-cell>Size</th>
+                        <td *matCellDef="let element" mat-cell>
+                            {{ element.document?.size }} Byte
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="url">
+                        <th *matHeaderCellDef mat-header-cell>Url</th>
+                        <td *matCellDef="let element" mat-cell>
+                            {{ element.documentURL }}
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="document">
+                        <th mat-header-cell *matHeaderCellDef></th>
+                        <td mat-cell *matCellDef="let element">
+                            <div
+                                (click)="openDocument(element)"
+                                class="btn-settings"
+                                matTooltip="Document"
+                                matTooltipClass="guardian-tooltip"
+                                matTooltipPosition="above"
+                            >
+                                <svg
+                                    fill="none"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        class="icon-color"
+                                        clip-rule="evenodd"
+                                        d="M7.36842 3C6.06037 3 5 4.09894 5 5.45455V18.5455C5 19.9011 6.06038 21 7.36842 21H17.6316C18.9397 21 20 19.9011 20 18.5455V10.3636C20 10.1466 19.9168 9.93853 19.7688 9.78509L13.453 3.23966C13.3774 3.16136 13.2881 3.10055 13.191 3.05979C13.0978 3.02068 12.9973 3 12.8947 3H7.36842ZM12.1053 4.63636H7.36842C6.9324 4.63636 6.57895 5.00267 6.57895 5.45455V18.5455C6.57895 18.9973 6.93241 19.3636 7.36842 19.3636H17.6316C18.0676 19.3636 18.4211 18.9973 18.4211 18.5455V11.1818H12.8947C12.4587 11.1818 12.1053 10.8155 12.1053 10.3636V4.63636ZM17.3046 9.54548L13.6842 5.79347V9.54548H17.3046Z"
+                                        fill="#23252E"
+                                        fill-rule="evenodd"
+                                    />
+                                </svg>
+                            </div>
+                        </td>
+                    </ng-container>
+                    <tr *matHeaderRowDef="columns; sticky: true" mat-header-row></tr>
+                    <tr *matRowDef="let row; columns: columns" mat-row></tr>
+                </table>
+            </div>
+
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
+                [length]="documentCount"
+                (page)="onPage($event)"
+            ></app-paginator>
+
+        </div>
+    </ng-container>
+
+    <app-record-controller
+        *ngIf="isDryRun"
+        #recordController
+        [policyId]="policyId"
+        (update)="updatePolicy()"
+        [(active)]="recordingActive"
+    ></app-record-controller>
+</div>
+
+<mat-menu #menu="matMenu">
+    <div
+        (click)="setVirtualUser(item)"
+        *ngFor="let item of virtualUsers"
+        [attr.active]="item.active"
+        class="debug-user"
+    >
+        <div class="debug-user-name">{{ item.username }}</div>
+        <div class="debug-user-did">{{ item.hederaAccountId }}</div>
+        <div class="debug-user-did">{{ item.did }}</div>
+    </div>
+</mat-menu>
+
+<mat-menu #group="matMenu">
+    <div class="group-header">
+        Select Group
+    </div>
+    <div class="group-container">
+        <div
+            (click)="setGroup(item)"
+            *ngFor="let item of groups"
+            [attr.active]="item.active"
+            class="user-group"
+        >
+            <div class="user-group-header">
+                <span *ngIf="item.groupLabel">{{ item.groupLabel }}</span>
+                <span *ngIf="!item.groupLabel">{{ item.uuid }}</span>
+            </div>
+            <div class="user-group-value">
+                <span>Group: </span><span>{{ item.groupName }}</span>
+            </div>
+            <div class="user-group-value">
+                <span>Role: </span><span>{{ item.role }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="user-group user-group-default" (click)="setGroup(null)">
+        <div class="user-group-header">
+            Default state
+        </div>
+        <div class="user-group-value">
+            <span>Group: </span><span>Not Set</span>
+        </div>
+        <div class="user-group-value">
+            <span>Role: </span><span>Not Set</span>
+        </div>
+    </div>
+</mat-menu>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

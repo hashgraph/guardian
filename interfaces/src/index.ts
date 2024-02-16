@@ -1,30 +1,47 @@
-export {ApproveStatus} from './type/approve-status.type';
-export {DidDocumentStatus} from './type/did-status.type';
-export {DocumentSignature} from './type/document-signature.type';
-export {DocumentStatus} from './type/document-status.type';
-export {PolicyType} from './type/policy.type';
-export {RootState} from './type/root-state.type';
-export {SchemaEntity} from './type/schema-entity.type';
-export {UserRole} from './type/user-role.type';
-export {UserState} from './type/user-state.type';
-export {MessageAPI} from './type/message-api.type';
-export {IApprovalDocument} from './interface/approval-document.interface';
-export {ICredentialSubject} from './interface/credential-subject.interface';
-export {IDidDocument} from './interface/did-document.interface';
-export {did} from './interface/did.interface';
-export {IRootConfig, IFullConfig, IAddressBookConfig} from './interface/root-config.interface';
-export {ISchema} from './interface/schema.interface';
-export {IToken, ITokenInfo} from './interface/token.interface';
-export {uuid} from './interface/uuid.interface';
-export {IVCDocument} from './interface/vc-document.interface';
-export {IVC} from './interface/vc.interface';
-export {IVPDocument} from './interface/vp-document.interface';
-export {IVP} from './interface/vp.interface';
-export {IUser, ISession, IUserProfile} from './interface/user.interface';
-export {IWalletAccount} from './interface/wallet-account.interface';
-export {IChainItem} from './interface/chain-item.interface';
-export {Token} from './models/token';
-export {Schema} from './models/schema';
-export {SchemaStatus} from './type/schema-status.type';
-export {ISchemaDocument} from './interface/schema-document.interface';
-export {SchemaField} from './models/schema';
+import EventEmitter from 'events';
+import fs, { WatchOptions } from 'fs';
+import 'reflect-metadata';
+
+declare class FSWatcher extends EventEmitter implements fs.FSWatcher {
+    options: WatchOptions
+
+    ref(): this; // <-- added
+    unref(): this; // <-- added
+
+    close(): void;
+
+    /**
+     * events.EventEmitter
+     *   1. change
+     *   2. error
+     */
+    addListener(event: string, listener: (...args: any[]) => void): this;
+    addListener(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    addListener(event: 'error', listener: (error: Error) => void): this;
+    addListener(event: 'close', listener: () => void): this;
+
+    on(event: string, listener: (...args: any[]) => void): this;
+    on(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    on(event: 'error', listener: (error: Error) => void): this;
+    on(event: 'close', listener: () => void): this;
+
+    once(event: string, listener: (...args: any[]) => void): this;
+    once(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    once(event: 'error', listener: (error: Error) => void): this;
+    once(event: 'close', listener: () => void): this;
+
+    prependListener(event: string, listener: (...args: any[]) => void): this;
+    prependListener(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    prependListener(event: 'error', listener: (error: Error) => void): this;
+    prependListener(event: 'close', listener: () => void): this;
+
+    prependOnceListener(event: string, listener: (...args: any[]) => void): this;
+    prependOnceListener(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    prependOnceListener(event: 'error', listener: (error: Error) => void): this;
+    prependOnceListener(event: 'close', listener: () => void): this;
+}
+
+export * from './type';
+export * from './interface';
+export * from './helpers';
+export * from './models';

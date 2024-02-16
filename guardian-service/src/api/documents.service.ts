@@ -1,216 +1,113 @@
-import { DidDocument } from '@entity/did-document';
-import { VcDocument } from '@entity/vc-document';
-import { VpDocument } from '@entity/vp-document';
-import { DidMethodOperation, HcsVcOperation } from 'did-sdk-js';
-import { 
-    DidDocumentStatus, 
-    DocumentSignature, 
-    DocumentStatus, 
-    IDidDocument, 
-    IVCDocument, 
-    IVPDocument, 
-    MessageAPI 
-} from 'interfaces';
-import { MongoRepository } from 'typeorm';
-import { VCHelper } from 'vc-modules';
+import { IDidObject, IVCDocument, MessageAPI, PolicyType, } from '@guardian/interfaces';
+import { ApiResponse } from '@api/helpers/api-response';
+import { DataBaseHelper, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
- * 
- * @param channel - channel
+ *
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
  * @param vpDocumentRepository - table with VP Documents
- * @param vc - verification methods VC and VP Documents
  */
-export const documentsAPI = async function (
-    channel: any,
-    didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>,
-    vpDocumentRepository: MongoRepository<VpDocument>,
-    vc: VCHelper
+export async function documentsAPI(
+    didDocumentRepository: DataBaseHelper<DidDocument>,
+    vcDocumentRepository: DataBaseHelper<VcDocument>,
+    vpDocumentRepository: DataBaseHelper<VpDocument>,
+    policyRepository: DataBaseHelper<Policy>,
 ): Promise<void> {
-    const getDIDOperation = function (operation: DidMethodOperation) {
-        switch (operation) {
-            case DidMethodOperation.CREATE:
-                return DidDocumentStatus.CREATE;
-            case DidMethodOperation.DELETE:
-                return DidDocumentStatus.DELETE;
-            case DidMethodOperation.UPDATE:
-                return DidDocumentStatus.UPDATE;
-            default:
-                return DidDocumentStatus.NEW;
-        }
-    }
-    
-    const getVCOperation = function (operation: HcsVcOperation) {
-        switch (operation) {
-            case HcsVcOperation.ISSUE:
-                return DocumentStatus.ISSUE;
-            case HcsVcOperation.RESUME:
-                return DocumentStatus.RESUME;
-            case HcsVcOperation.REVOKE:
-                return DocumentStatus.REVOKE;
-            case HcsVcOperation.SUSPEND:
-                return DocumentStatus.SUSPEND;
-            default:
-                return DocumentStatus.NEW;
-        }
-    }
-    
     /**
      * Return DID Documents by DID
-     * 
+     *
      * @param {Object} payload - filters
      * @param {string} payload.did - DID
-     * 
+     *
      * @returns {IDidDocument[]} - DID Documents
      */
-    channel.response(MessageAPI.GET_DID_DOCUMENTS, async (msg, res) => {
-        const reqObj = { where: { did: { $eq: msg.payload.did } } };
-        const didDocuments: IDidDocument[] = await didDocumentRepository.find(reqObj);
-        res.send(didDocuments);
+    ApiResponse(MessageAPI.GET_DID_DOCUMENTS, async (msg) => {
+        const reqObj = { where: { did: { $eq: msg.did } } };
+        const didDocuments: IDidObject[] = await didDocumentRepository.find(reqObj);
+        return new MessageResponse(didDocuments);
     });
 
     /**
      * Return VC Documents
-     * 
+     *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.id] - filter by id 
-     * @param {string} [payload.type] - filter by type 
-     * @param {string} [payload.owner] - filter by owner 
-     * @param {string} [payload.issuer] - filter by issuer 
-     * @param {string} [payload.hash] - filter by hash 
-     * @param {string} [payload.policyId] - filter by policy id 
-     * 
+     * @param {string} [payload.type] - filter by type
+     * @param {string} [payload.owner] - filter by owner
+     *
      * @returns {IVCDocument[]} - VC Documents
      */
-    channel.response(MessageAPI.GET_VC_DOCUMENTS, async (msg, res) => {
-        if (msg.payload) {
-            const reqObj: any = { where: {} };
-            if (msg.payload.type) {
-                reqObj.where['type'] = { $eq: msg.payload.type }
-            }
-            if (msg.payload.owner) {
-                reqObj.where['owner'] = { $eq: msg.payload.owner }
-            }
-            if (msg.payload.issuer) {
-                reqObj.where['document.issuer'] = { $eq: msg.payload.issuer }
-            }
-            if (msg.payload.id) {
-                reqObj.where['document.id'] = { $eq: msg.payload.id }
-            }
-            if (msg.payload.hash) {
-                reqObj.where['hash'] = { $in: msg.payload.hash }
-            }
-            if (msg.payload.policyId) {
-                reqObj.where['policyId'] = { $eq: msg.payload.policyId }
-            }
-            const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
-            res.send(vcDocuments);
-        } else {
-            const vcDocuments: IVCDocument[] = await vcDocumentRepository.find();
-            res.send(vcDocuments);
-        }
-    });
-
-    /**
-     * Create or update DID Documents
-     * 
-     * @param {IDidDocument} payload - document
-     * @param {string} [payload.did] - did
-     * @param {string} [payload.operation] - document status
-     * 
-     * @returns {IDidDocument} - new DID Document
-     */
-    channel.response(MessageAPI.SET_DID_DOCUMENT, async (msg, res) => {
-        if (msg.payload.did && msg.payload.operation) {
-            const did = msg.payload.did;
-            const operation = msg.payload.operation;
-            const item = await didDocumentRepository.findOne({ where: { did: { $eq: did } } });
-            if (item) {
-                item.status = getDIDOperation(operation);
-                const result: IDidDocument = await didDocumentRepository.save(item);
-                res.send(result);
-            } else {
-                res.send(null);
-            }
-        } else {
-            const didDocumentObject = didDocumentRepository.create(msg.payload);
-            const result: IDidDocument[] = await didDocumentRepository.save(didDocumentObject);
-            res.send(result);
-        }
-    });
-
-    /**
-     * Create or update VC Documents
-     * 
-     * @param {IVCDocument} payload - document
-     * @param {string} [payload.hash] - hash
-     * @param {string} [payload.operation] - document status
-     * 
-     * @returns {IVCDocument} - new VC Document
-     */
-    channel.response(MessageAPI.SET_VC_DOCUMENT, async (msg, res) => {
-        let result: IVCDocument
-        if (msg.payload.hash && msg.payload.operation) {
-            const hash = msg.payload.hash;
-            const operation = msg.payload.operation;
-            result = await vcDocumentRepository.findOne({ where: { hash: { $eq: hash } } });
-            if (result) {
-                result.status = getVCOperation(operation);
-            } else {
-                res.send(null);
-                return;
-            }
-        } else {
-            result = vcDocumentRepository.create(msg.payload as VcDocument);
-        }
-        let verify: boolean;
+    ApiResponse(MessageAPI.GET_VC_DOCUMENTS, async (msg) => {
         try {
-            verify = await vc.verifySchema(result.document);
-            if(verify) {
-                verify = await vc.verifyVC(result.document);
+            if (msg) {
+                const reqObj: any = {};
+                const { owner, type, ...otherArgs } = msg;
+                if (owner) {
+                    reqObj.owner = { $eq: owner }
+                }
+                if (type) {
+                    reqObj.type = { $eq: type }
+                }
+                Object.assign(reqObj, otherArgs);
+                const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
+                return new MessageResponse(vcDocuments);
+            } else {
+                const vcDocuments: IVCDocument[] = await vcDocumentRepository.findAll();
+                return new MessageResponse(vcDocuments);
             }
-        } catch (error) {
-            verify = false;
         }
-        result.signature = verify ? DocumentSignature.VERIFIED : DocumentSignature.INVALID;
-        result = await vcDocumentRepository.save(result);
-        res.send(result);
-    });
-
-    /**
-     * Create new VP Document
-     * 
-     * @param {IVPDocument} payload - document
-     * 
-     * @returns {IVPDocument} - new VP Document
-     */
-    channel.response(MessageAPI.SET_VP_DOCUMENT, async (msg, res) => {
-        const vpDocumentObject = vpDocumentRepository.create(msg.payload);
-        const result: any = await vpDocumentRepository.save(vpDocumentObject);
-        res.send(result);
+        catch (error) {
+            return new MessageError(error);
+        }
     });
 
     /**
      * Return VP Documents
-     * 
+     *
      * @param {Object} [payload] - filters
-     * 
+     *
      * @returns {IVPDocument[]} - VP Documents
      */
-    channel.response(MessageAPI.GET_VP_DOCUMENTS, async (msg, res) => {
-        if (msg.payload) {
-            const document: IVPDocument = await vpDocumentRepository.findOne(msg.payload);
-            if (document) {
-                res.send([document]);
+    ApiResponse(MessageAPI.GET_VP_DOCUMENTS, async (msg) => {
+        if (msg) {
+            const { filters, pageIndex, pageSize } = msg;
+            const otherOptions: any = {};
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
+            }
+            if (filters?.policyOwner) {
+                const policies = await policyRepository.find({
+                    owner: filters.policyOwner,
+                    status: PolicyType.PUBLISH
+                }, {
+                    fields: ['id', 'owner']
+                });
+                if (policies && policies.length) {
+                    const policyIds = policies.map(p => p.id.toString());
+                    const [items, count] = await vpDocumentRepository.findAndCount({
+                        where: {
+                            policyId: { $in: policyIds }
+                        }
+                    }, otherOptions);
+                    return new MessageResponse({ items, count });
+                } else {
+                    return new MessageResponse({ items: [], count: 0 });
+                }
             } else {
-                res.send([]);
+                const [items, count] = await vpDocumentRepository.findAndCount(filters, otherOptions);
+                return new MessageResponse({ items, count });
             }
         } else {
-            const documents: IVPDocument[] = await vpDocumentRepository.find();
-            res.send(documents);
+            const [items, count] = await vpDocumentRepository.findAndCount(null, {
+                limit: 100,
+                orderBy: { createDate: 'DESC' }
+            });
+            return new MessageResponse({ items, count });
         }
     });
 }

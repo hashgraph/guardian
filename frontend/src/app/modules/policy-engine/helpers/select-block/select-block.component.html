@@ -1,0 +1,20 @@
+<mat-select [(value)]="value" [disabled]="readonly" (selectionChange)="onChange()">
+    <mat-select-trigger>
+        <span class="custom">{{text}}</span>
+    </mat-select-trigger>
+    <div class="components-search">
+        <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
+        <mat-icon class="components-search-icon">search</mat-icon>
+    </div>
+    <mat-option *ngFor="let item of searchData" [value]="item.value">
+        <div class="block-name" [attr.root]="item.root">
+            <div *ngIf="item.svg" class="block-icon">
+                <mat-icon class="svg-icon" [svgIcon]="item.icon"></mat-icon>
+            </div>
+            <div *ngIf="!item.svg" class="block-icon">
+                <mat-icon>{{item.icon}}</mat-icon>
+            </div>
+            {{item.name}}
+        </div>
+    </mat-option>
+</mat-select>

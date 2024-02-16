@@ -1,0 +1,27 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            {{title}}
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onSubmit()" [attr.disabled]="!dataForm.valid">
+                {{button}}
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>* NAME:</mat-label>
+                    <input matInput type="text" placeholder="Theme name" formControlName="name">
+                </mat-form-field>
+            </form>
+        </div>
+    </div>
+</div>

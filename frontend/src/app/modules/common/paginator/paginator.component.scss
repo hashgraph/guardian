@@ -1,0 +1,33 @@
+.table-paginator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    column-gap: 24px;
+    padding: 0 16px 0 0;
+
+    color: var(--color-grey-black-2, #23252e);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    /* 114.286% */
+
+    height: 64px !important;
+    border-radius: 8px !important;
+    background: #fff;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
+}
+
+.svg-btn {
+    cursor: pointer;
+    border-radius: 4px;
+
+    &:hover {
+        box-shadow: 0px 0px 0px 1px #2196F3;
+    }
+}
+
+.svg-color {
+    fill: #848FA9;
+}

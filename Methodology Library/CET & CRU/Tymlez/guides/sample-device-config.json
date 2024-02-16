@@ -1,0 +1,87 @@
+{
+  "url": "http://localhost:3003/mrv",
+  "topic": "0.0.48673660",
+  "hederaAccountId": "0.0.48700529",
+  "hederaAccountKey": "302e020100300506032b6570042204205d16a87d359b69c1476cf8fcfaa4e0717f78ddadbd832cb64f249c45055f859c",
+  "installer": "did:hedera:testnet:GmBmodz8jCRZ1rP6QbYhd4r65ZfX5g8KswY8DCmnhFXU;hedera:testnet:tid=0.0.48673640",
+  "did": "did:hedera:testnet:BzTosrr5FmcE3qpDXVK1bGWZkNbdFARCpziDEUSTtBpJ;hedera:testnet:tid=0.0.48673669",
+  "key": "302e020100300506032b6570042204200bade7f7ca649d6b7742ccd7ec983eebdf0e8221af8c96a7f662d8e7de3b97e5",
+  "type": "a305f206-4107-47a6-87fb-571ef7655527&1.0.0",
+  "schema": {
+    "@context": {
+      "@version": 1.1,
+      "@vocab": "https://w3id.org/traceability/#undefinedTerm",
+      "id": "@id",
+      "type": "@type",
+      "2cdca418-e007-4c11-a73b-59be2fb94432&1.0.0": {
+        "@id": "https://ipfs.io/ipfs/bafkreiaufyghcnsabus5g5uzpkhir5zaerz6db2mjr27oyyhtqzoghhlbi#2cdca418-e007-4c11-a73b-59be2fb94432&1.0.0",
+        "@context": {
+          "readingId": { "@id": "https://www.schema.org/text" },
+          "hashId": { "@id": "https://www.schema.org/text" }
+        }
+      },
+      "a305f206-4107-47a6-87fb-571ef7655527&1.0.0": {
+        "@id": "#a305f206-4107-47a6-87fb-571ef7655527&1.0.0",
+        "@context": {
+          "readingId": { "@id": "https://www.schema.org/text" },
+          "policyId": { "@id": "https://www.schema.org/text" },
+          "ref": { "@id": "https://www.schema.org/text" },
+          "deviceId": { "@id": "https://www.schema.org/text" },
+          "readingDate": { "@id": "https://www.schema.org/text" },
+          "intervalStartDateTime": { "@id": "https://www.schema.org/text" },
+          "intervalEndDateTime": { "@id": "https://www.schema.org/text" },
+          "intervalDuration": { "@id": "https://www.schema.org/text" },
+          "intervalDurationUOM": { "@id": "https://www.schema.org/text" },
+          "value": { "@id": "https://www.schema.org/text" },
+          "valueUOM": { "@id": "https://www.schema.org/text" },
+          "quality": { "@id": "https://www.schema.org/text" },
+          "greenhouseGasEmissionsScope": {
+            "@id": "https://www.schema.org/text"
+          },
+          "greenhouseGasEmissionsSource": {
+            "@id": "https://www.schema.org/text"
+          },
+          "CO2Emissions": { "@id": "https://www.schema.org/text" },
+          "CH4Emissions": { "@id": "https://www.schema.org/text" },
+          "N2OEmissions": { "@id": "https://www.schema.org/text" },
+          "CO2eqEmissions": { "@id": "https://www.schema.org/text" },
+          "CO2eqEmissionsTYMLEZ": { "@id": "https://www.schema.org/text" },
+          "emissionsUOM": { "@id": "https://www.schema.org/text" },
+          "emissionsFactorsLink": { "@id": "https://www.schema.org/text" },
+          "CO2eqFormula": { "@id": "https://www.schema.org/text" },
+          "CO2eqFormulaLink": { "@id": "https://www.schema.org/text" },
+          "otherMRVData": { "@id": "https://www.schema.org/text" },
+          "tokenOwnerId": { "@id": "https://www.schema.org/text" },
+          "sourceData": { "@id": "#2cdca418-e007-4c11-a73b-59be2fb94432&1.0.0" }
+        }
+      }
+    }
+  },
+  "context": {
+    "type": "a305f206-4107-47a6-87fb-571ef7655527&1.0.0",
+    "@context": [
+      "https://ipfs.io/ipfs/bafkreiarrpieuodeamv4ix75iv4bxp3d6drzdknqaaagwp3x7g2bm73zmy"
+    ]
+  },
+  "didDocument": {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://ns.did.ai/transmute/v1"
+    ],
+    "id": "did:hedera:testnet:BzTosrr5FmcE3qpDXVK1bGWZkNbdFARCpziDEUSTtBpJ;hedera:testnet:tid=0.0.48673669",
+    "verificationMethod": [
+      {
+        "id": "did:hedera:testnet:BzTosrr5FmcE3qpDXVK1bGWZkNbdFARCpziDEUSTtBpJ;hedera:testnet:tid=0.0.48673669#did-root-key",
+        "type": "Ed25519VerificationKey2018",
+        "controller": "did:hedera:testnet:BzTosrr5FmcE3qpDXVK1bGWZkNbdFARCpziDEUSTtBpJ;hedera:testnet:tid=0.0.48673669",
+        "publicKeyBase58": "4w1dNxCRWseyQJ27YWA3vTzG7qKgqaZHpFRTkB87dkdA",
+        "privateKeyBase58": "EYX2PGpBtBnAbtmCR38rHzonvsmGe8iqgtCuHCeS3MLb5w8fx4xjJvFp3jKvZ146f4RX1st5Gx7zcxjtLXBm3Sk"
+      }
+    ],
+    "authentication": "did:hedera:testnet:BzTosrr5FmcE3qpDXVK1bGWZkNbdFARCpziDEUSTtBpJ;hedera:testnet:tid=0.0.48673669#did-root-key",
+    "assertionMethod": ["#did-root-key"]
+  },
+  "policyId": "63522e5da6aa8d8218b27385",
+  "policyTag": "Tag_1666330134735",
+  "ref": "did:hedera:testnet:BzTosrr5FmcE3qpDXVK1bGWZkNbdFARCpziDEUSTtBpJ;hedera:testnet:tid=0.0.48673669"
+}

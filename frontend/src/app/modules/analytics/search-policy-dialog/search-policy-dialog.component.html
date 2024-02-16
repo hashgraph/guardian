@@ -1,0 +1,73 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-title">
+            {{header}}
+        </div>
+        <div mat-dialog-actions>
+            <div class="g-dialog-title-btn open-in-new" (click)="onNewPage()">
+                <mat-icon>open_in_new</mat-icon>
+            </div>
+            <div class="g-dialog-title-btn" (click)="onOk()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="search-toolbar">
+            <div class="policy-filters">
+                <mat-form-field class="policy-filters__control" appearance="outline">
+                    <input matInput placeholder="Search" (change)="onSearch($event)">
+                </mat-form-field>
+            </div>
+            <div class="policy-actions">
+                <div class="compare-btn" [attr.disable]="count<2" (click)="onCompare()">
+                    <mat-icon>compare</mat-icon>
+                    <span>Compare ({{count}})</span>
+                </div>
+            </div>
+        </div>
+        <div class="search-header">
+            <div>
+                <input class="prop-input" type="checkbox" [checked]="selectedAll"  (change)="onSelectAll()">
+            </div>
+            <div class="policy-id-field">ID</div>
+            <div>Name</div>
+            <div>Tags</div>
+            <div>Rate</div>
+        </div>
+        <div *ngIf="policy" class="search-result disabled-result">
+            <div>
+                <input class="prop-input" type="checkbox" checked="true" disabled="true">
+            </div>
+            <div class="policy-id-field">
+                {{policy.id}}
+            </div>
+            <div>
+                {{policy.name}}
+            </div>
+            <div>
+                {{policy._tags}}
+            </div>
+            <div>
+                
+            </div>
+        </div>
+        <div *ngFor="let item of _list" class="search-result" (click)="select(item)">
+            <div>
+                <input class="prop-input" type="checkbox" [checked]="item._select" (change)="onSelect()">
+            </div>
+            <div class="policy-id-field">
+                {{item.id}}
+            </div>
+            <div>
+                {{item.name}}
+            </div>
+            <div>
+                {{item._tags}}
+            </div>
+            <div class="{{item._color}} color-field">
+                {{item.rate}}%
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,98 @@
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+<div *ngIf="recording" class="recording-container">
+    <div class="recording-menu">
+        <div class="recording-menu-label">
+            <div class="recording-animation">
+                <div class="recording-circle"></div>
+                <div class="recording-text">REC</div>
+            </div>
+        </div>
+        <div class="recording-menu-btn" title="Stop" (click)="stopRecording()">
+            <mat-icon>stop</mat-icon>
+        </div>
+        <!-- <div class="recording-menu-btn" title="Pause">
+            <mat-icon>pause</mat-icon>
+        </div> -->
+        <div class="recording-menu-btn" title="Actions" (click)="onShowActions()">
+            <mat-icon>menu</mat-icon>
+        </div>
+    </div>
+
+    <div 
+        *ngIf="showActions"
+        class="record-logs" 
+        [attr.record-status]="recordStatus">
+        <div *ngIf="this.recordError" class="record-error">
+            {{this.recordError}}
+        </div>
+        <div 
+            *ngFor="let item of recordItems" 
+            class="record-item" 
+            [attr.selected]="item._selected"
+        >
+            <div class="record-item-index">{{item._index}}</div>
+            <div class="record-item-method">{{item._title}}</div>
+            <div class="record-item-time">{{item._time}}</div>
+        </div>
+    </div>
+
+</div>
+
+
+<div *ngIf="running" class="running-container">
+    <div class="running-menu">
+        <div class="running-menu-label">
+            <div class="running-animation">
+                <div class="running-circle"></div>
+                <div class="running-text">{{recordIndex}}/{{recordCount}}</div>
+            </div>
+        </div>
+
+        <div *ngIf="this.recordError" class="running-menu-btn" title="Retry step" (click)="retryStep()">
+            <mat-icon>play_arrow</mat-icon>
+        </div>
+        <div *ngIf="this.recordError" class="running-menu-btn" title="Skip step" (click)="skipStep()">
+            <mat-icon>redo</mat-icon>
+        </div>
+        <!-- <div class="running-menu-btn" title="Pause">
+            <mat-icon>pause</mat-icon>
+        </div> -->
+        <div class="running-menu-btn" title="Fast Forward" (click)="fastForward()">
+            <mat-icon>skip_next</mat-icon>
+        </div>
+        <div class="running-menu-btn" title="Stop" (click)="stopRunning()">
+            <mat-icon>stop</mat-icon>
+        </div>
+        <div class="running-menu-btn" title="Actions" (click)="onShowActions()">
+            <mat-icon>menu</mat-icon>
+        </div>
+    </div>
+
+    <div 
+        *ngIf="showActions"
+        class="record-logs" 
+        [attr.record-status]="recordStatus">
+        <div *ngIf="this.recordError" class="record-error">
+            {{this.recordError}}
+        </div>
+        <div 
+            *ngFor="let item of recordItems" 
+            class="record-item" 
+            [attr.selected]="item._selected"
+            matTooltipPosition="left"
+            matTooltipClass="record-tooltip"
+            [matTooltip]="item._tooltip"
+        >
+            <div class="record-item-index">{{item._index}}</div>
+            <div class="record-item-method">{{item._title}}</div>
+            <div class="record-item-time">{{item._time}}</div>
+        </div>
+    </div>
+
+    <div *ngIf="overlay" class="running-overlay" (click)="onOverlay()">
+
+    </div>
+</div>

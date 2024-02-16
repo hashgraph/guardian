@@ -1,0 +1,61 @@
+<div class="content" [hidden]="!isActive">
+    <div class="dialog">
+        <div class="title">Token {{ action }}</div>
+        <div class="description">
+            Please enter the private key for the account 
+            (<hedera-explorer [params]="accountId" type="accounts">{{ accountId }}</hedera-explorer>) 
+            to <span>{{ action }}</span> it with the token <span>{{ tokenName }}</span> 
+            (<hedera-explorer [params]="tokenId" type="tokens">{{ tokenId }}</hedera-explorer>)
+        </div>
+        <form class="form" [formGroup]="dataForm">
+            <mat-form-field appearance="outline">
+                <mat-label>* Private Key</mat-label>
+                <input #privateKeyInput formControlName="privateKey" matInput placeholder="Private Key" type="password" />
+                <button 
+                    (click)="privateKeyInput.type === 'password'
+                            ? (privateKeyInput.type = 'text')
+                            : (privateKeyInput.type = 'password')" 
+                    aria-label="Visibility" 
+                    mat-icon-button 
+                    matSuffix
+                >
+                    <mat-icon>
+                        {{privateKeyInput.type === "password" ? "visibility" : "visibility_off"}}
+                    </mat-icon>
+                </button>
+            </mat-form-field>
+            <div style="margin-top: 15px; margin-left: auto;">
+                <p-button 
+                    (click)="onSkip()" 
+                    [label]="
+                        'I have ' +
+                        (action === 'associate'
+                            ? 'associated'
+                            : action === 'dissociate'
+                            ? 'dissociated'
+                            : action) +
+                        ' manually'
+                    " 
+                    style="margin-left: 20px;" 
+                    styleClass="p-button-outlined" 
+                    type="submit"
+                ></p-button>
+                <p-button 
+                    (click)="onConfirm()" 
+                    [disabled]="!dataForm.valid" 
+                    label="Enter" 
+                    style="margin-left: 20px;"
+                    type="submit"
+                ></p-button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

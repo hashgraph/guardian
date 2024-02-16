@@ -1,0 +1,26 @@
+<div class="view-dialog-bar">
+    <app-compare-btn *ngIf="!dryRun && id" [id]="id" type="document"  class="compare-container"></app-compare-btn>
+    <div *ngIf="(isVcDocument || isVpDocument) && toggle" class="toggle-container">
+        <label class="switch">
+            <input [(ngModel)]="viewDocument" type="checkbox">
+            <span class="slider round"></span>
+        </label>
+        <span class="slider-text">View as Form</span>
+    </div>
+</div>
+<div class="view-dialog-content">
+    <ng-container *ngIf="viewDocument">
+        <app-document-view [document]="document" [schema]="schema" [type]="type"></app-document-view>
+    </ng-container>
+    <ng-container *ngIf="!viewDocument">
+        <div *ngIf="type !== 'TEXT'" class="json">
+            {{ json }}
+        </div>
+        <div *ngIf="type === 'TEXT'" class="text">
+            {{ text }}
+        </div>
+    </ng-container>
+</div>
+<div class="actions-container">
+    <button (click)="onClick()" class="button secondary">Close</button>
+</div>

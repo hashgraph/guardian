@@ -1,0 +1,130 @@
+<div>
+    <div class="main-container">
+        <div class="categories-container">
+            <h3>Methodologies by Scale</h3>
+            <div class="categories-options radio">
+                <ng-container *ngIf="projectScaleOptions && projectScaleOptions.length > 0; else noCategoriesTemplate">
+                    <div style="width: 100%; display: flex; align-items: center; justify-content: flex-start; column-gap: 16px;">
+                        <div class="p-field-checkbox">
+                            <p-radioButton (onChange)="onRadioSelect()"
+                                           [(ngModel)]="policyScale"
+                                           [value]="''"
+                                           id="any-scale"
+                                           name="category"
+                            ></p-radioButton>
+                            <label for="any-scale">Any</label>
+                        </div>
+                        <div *ngFor="let category of projectScaleOptions" class="p-field-checkbox">
+                            <p-radioButton (onChange)="onRadioSelect()"
+                                           [(ngModel)]="policyScale"
+                                           [inputId]="category.id"
+                                           [value]="category.id"
+                                           name="category"
+                            ></p-radioButton>
+                            <label [for]="category.id">{{ category.name }}</label>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-template #noCategoriesTemplate class="filter-categories">
+                    <p>No categories selected.</p>
+                </ng-template>
+            </div>
+            <h3>Methodologies by Applied Technology Type/Measure</h3>
+            <div class="categories-options">
+                <ng-container
+                        *ngIf="appliedTechnologyTypeOptions && appliedTechnologyTypeOptions.length > 0; else noCategoriesTemplate">
+                    <button (click)="onSelectCategory(category.id)"
+                            *ngFor="let category of appliedTechnologyTypeOptions"
+                            [label]="category.name"
+                            [ngClass]="{ 'active': isOptionSelected(category.id) }"
+                            pButton
+                            type="button"
+                    ></button>
+                </ng-container>
+                <ng-template #noCategoriesTemplate class="filter-categories">
+                    <p>No categories selected.</p>
+                </ng-template>
+            </div>
+            <h3>Methodologies by Mitigation Activity Type</h3>
+            <div class="categories-options">
+                <ng-container
+                        *ngIf="migrationActivityTypeOptions && migrationActivityTypeOptions.length > 0; else noCategoriesTemplate">
+                    <button (click)="onSelectCategory(category.id)"
+                            *ngFor="let category of migrationActivityTypeOptions"
+                            [label]="category.name"
+                            [ngClass]="{ 'active': isOptionSelected(category.id) }"
+                            pButton
+                            type="button"
+                    ></button>
+                </ng-container>
+                <ng-template #noCategoriesTemplate class="filter-categories">
+                    <p>No categories selected.</p>
+                </ng-template>
+            </div>
+            <h3>Methodologies by Sub Type</h3>
+            <div class="categories-options">
+                <ng-container *ngIf="subTypeOptions && subTypeOptions.length > 0; else noCategoriesTemplate">
+                    <button (click)="onSelectCategory(category.id)"
+                            *ngFor="let category of subTypeOptions"
+                            [label]="category.name"
+                            [ngClass]="{ 'active': isOptionSelected(category.id) }"
+                            pButton
+                            type="button"
+                    ></button>
+                </ng-container>
+                <ng-template #noCategoriesTemplate class="filter-categories">
+                    <p>No categories selected.</p>
+                </ng-template>
+            </div>
+            <h3>Methodologies Sectoral Scope Name</h3>
+            <div class="categories-options">
+                <ng-container
+                        *ngIf="sectoralScopeOptions && sectoralScopeOptions.length > 0; else noCategoriesTemplate">
+                    <button (click)="onSelectCategory(category.id)"
+                            *ngFor="let category of sectoralScopeOptions"
+                            [label]="category.name"
+                            [ngClass]="{ 'active': isOptionSelected(category.id) }"
+                            pButton
+                            type="button"
+                    ></button>
+                </ng-container>
+                <ng-template #noCategoriesTemplate class="filter-categories">
+                    <p>No options loaded.</p>
+                </ng-template>
+            </div>
+        </div>
+        <div class="results-container">
+            <div style="display: flex; align-items: center; justify-content: end; column-gap: 8px;">
+                <span class="search-input p-input-icon-right">
+                    <i class="pi pi-search"></i>
+                    <input [formControl]="searchFilter"
+                           class="p-inputtext-md"
+                           pInputText placeholder="Search by methodology name"
+                           type="text"
+                    />
+                </span>
+                <button (click)="clearOptions()" class="button secondary" pButton>Clear filters</button>
+            </div>
+            <div class="results-info">
+                <p class="search-text">{{ canDisplayResults() ? 'Search Results' : 'No categories selected.' }}</p>
+                <p class="found-text">{{ results.length }} matching methodologies found</p>
+            </div>
+            <div *ngIf="canDisplayResults() && this.results && this.results.length > 0" class="results-items">
+                <app-search-result-card *ngFor="let policy of results"
+                                        [detailsUrl]="policy.detailsUrl"
+                                        [id]="policy.id"
+                                        [label]="policy.name"
+                                        [text]="policy.description"
+                ></app-search-result-card>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

@@ -1,326 +1,417 @@
-import { ISchemaDocument, SchemaDataTypes } from '../interface/schema-document.interface';
+import { ModelHelper } from '../helpers/model-helper';
+import { SchemaHelper } from '../helpers/schema-helper';
+import { SchemaCondition } from '../interface/schema-condition.interface';
+import { ISchemaDocument } from '../interface/schema-document.interface';
 import { ISchema } from '../interface/schema.interface';
 import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
+import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4';
+import { SchemaField } from '../interface/schema-field.interface';
+import { SchemaCategory } from '../type/schema-category.type';
 
-export interface SchemaField {
-    name: string;
-    title?: string;
-    description?: string;
-    required: boolean;
-    isArray: boolean;
-    isRef: boolean;
-    type: string;
-    format?: string;
-    pattern?: string;
-    readOnly: boolean;
-    fields?: SchemaField[];
-    context?: {
-        type: string;
-        context: string;
-    }
-}
+/**
+ * Schema class
+ */
+export class Schema implements ISchema {
+    /**
+     * Id
+     */
+    public _id: string;
 
-export class Schema {
-    public static LOCAL_SCHEMA = 'https://localhost/schema';
+    /**
+     * Serialized Id
+     */
     public id: string;
-    public uuid: string;
-    public hash: string;
-    public name: string;
-    public description: string;
-    public entity: SchemaEntity;
-    public status: SchemaStatus;
-    public readonly: boolean;
-    public document: string;
-    public schema: ISchemaDocument;
+    /**
+     * UUID
+     */
+    public uuid?: string;
+    /**
+     * Hash
+     */
+    public hash?: string;
+    /**
+     * Name
+     */
+    public name?: string;
+    /**
+     * Description
+     */
+    public description?: string;
+    /**
+     * Entity
+     */
+    public entity?: SchemaEntity;
+    /**
+     * Status
+     */
+    public status?: SchemaStatus;
+    /**
+     * Readonly
+     */
+    public readonly?: boolean;
+    /**
+     * Schema document instance
+     */
+    public document?: ISchemaDocument;
+    /**
+     * Context
+     */
+    public context?: any;
+    /**
+     * Version
+     */
+    public version?: string;
+    /**
+     * Source version
+     */
+    public sourceVersion?: string;
+    /**
+     * Creator
+     */
+    public creator?: string;
+    /**
+     * Owner
+     */
+    public owner?: string;
+    /**
+     * Topic ID
+     */
+    public topicId?: string;
+    /**
+     * Message ID
+     */
+    public messageId?: string;
+    /**
+     * Document URL
+     */
+    public documentURL?: string;
+    /**
+     * Context URL
+     */
+    public contextURL?: string;
+    /**
+     * IRI
+     */
+    public iri?: string;
+    /**
+     * Type
+     */
+    public type?: string;
+    /**
+     * Fields
+     */
     public fields: SchemaField[];
-    public ref: string;
-    public context: {
-        type: string;
-        context: string[];
-    };
-
-    constructor(data?: ISchema) {
-        if (data) {
-            this.id = data.id || "";
-            this.uuid = data.uuid || Schema.randomUUID();
-            this.hash = data.hash || "";
-            this.name = data.name || "";
-            this.description = data.description || "";
-            this.entity = data.entity || SchemaEntity.NONE;
-            this.status = data.status || SchemaStatus.DRAFT;
-            this.readonly = data.readonly || false;
-
+    /**
+     * Conditions
+     */
+    public conditions: SchemaCondition[];
+    /**
+     * Previous version
+     */
+    public previousVersion: string;
+    /**
+     * Active
+     */
+    public active?: boolean;
+    /**
+     * System
+     */
+    public system?: boolean;
+    /**
+     * Schema Category
+     */
+    public category?: SchemaCategory;
+    /**
+     * Parent component
+     */
+    public component?: string;
+    /**
+     * Errors
+     */
+    public errors?: any[];
+    /**
+     * User DID
+     * @private
+     */
+    private userDID: string;
+    /**
+     * Schema constructor
+     * @param schema
+     * @param includeSystemProperties
+     * @constructor
+     */
+    constructor(schema?: ISchema, includeSystemProperties: boolean = false) {
+        this.userDID = null;
+        if (schema) {
+            this._id = schema._id || undefined;
+            this.id = schema.id || undefined;
+            this.uuid = schema.uuid || GenerateUUIDv4();
+            this.hash = schema.hash || '';
+            this.name = schema.name || '';
+            this.description = schema.description || '';
+            this.entity = schema.entity || SchemaEntity.NONE;
+            this.status = schema.status || SchemaStatus.DRAFT;
+            this.readonly = schema.readonly || false;
+            this.system = schema.system || false;
+            this.active = schema.active || false;
+            this.version = schema.version || '';
+            this.sourceVersion = schema.sourceVersion || '';
+            this.creator = schema.creator || '';
+            this.owner = schema.owner || '';
+            this.topicId = schema.topicId || '';
+            this.messageId = schema.messageId || '';
+            this.documentURL = schema.documentURL || '';
+            this.contextURL = schema.contextURL || '';
+            this.iri = schema.iri || '';
+            this.category = schema.category || (
+                this.system ?
+                    SchemaCategory.SYSTEM :
+                    SchemaCategory.POLICY
+            );
+            if (schema.isOwner) {
+                this.userDID = this.owner;
+            }
+            if (schema.isCreator) {
+                this.userDID = this.creator;
+            }
+            if (schema.document) {
+                if (typeof schema.document === 'string') {
+                    this.document = JSON.parse(schema.document);
+                } else {
+                    this.document = schema.document;
+                }
+            } else {
+                this.document = null;
+            }
+            if (schema.context) {
+                if (typeof schema.context === 'string') {
+                    this.context = JSON.parse(schema.context);
+                } else {
+                    this.context = schema.context;
+                }
+            } else {
+                this.context = null;
+            }
+            this.component = (schema as any).component || (schema as any).__component;
+            this.errors = schema.errors;
         } else {
-            this.uuid = Schema.randomUUID();
-            this.hash = "";
-            this.id = "";
+            this._id = undefined;
+            this.id = undefined;
+            this.uuid = GenerateUUIDv4();
+            this.hash = '';
+            this.name = '';
+            this.description = '';
+            this.entity = SchemaEntity.NONE;
             this.status = SchemaStatus.DRAFT;
             this.readonly = false;
-            this.name = "";
-            this.description = "";
-            this.entity = SchemaEntity.NONE;
-        }
-        if (data && data.document) {
-            this.document = data.document;
-            this.schema = JSON.parse(data.document);
-            this.context = {
-                type: this.getType(this.schema.$id),
-                context: [Schema.LOCAL_SCHEMA]
-            };
-            this.getFields();
-        } else {
+            this.system = false;
+            this.active = false;
             this.document = null;
-            this.schema = null;
-            this.ref = null;
-            this.fields = [];
             this.context = null;
+            this.version = '';
+            this.sourceVersion = '';
+            this.creator = '';
+            this.owner = '';
+            this.topicId = '';
+            this.messageId = '';
+            this.documentURL = '';
+            this.contextURL = '';
+            this.iri = '';
+            this.errors = [];
+        }
+        if (this.document) {
+            this.parseDocument(includeSystemProperties);
         }
     }
 
-    private getId(type: string) {
-        return `#${type}`;
+    /**
+     * Parse document
+     * @private
+     */
+    private parseDocument(includeSystemProperties: boolean): void {
+        this.type = SchemaHelper.buildType(this.uuid, this.version);
+        const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
+        this.previousVersion = previousVersion;
+        const schemaCache = new Map<string, any>();
+        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
+        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
     }
 
-    private getType(ref: string) {
-        if (ref) {
-            const id = ref.split("#");
-            return id[id.length - 1];
+    /**
+     * Set user
+     * @param userDID
+     */
+    public setUser(userDID: string): void {
+        this.userDID = userDID;
+    }
+
+    /**
+     * Is owner
+     */
+    public get isOwner(): boolean {
+        return this.owner && this.owner === this.userDID;
+    }
+
+    /**
+     * Is creator
+     */
+    public get isCreator(): boolean {
+        return this.creator && this.creator === this.userDID;
+    }
+
+    /**
+     * Set version
+     * @param version
+     */
+    public setVersion(version: string): void {
+        const currentVersion = this.version;
+        if (!ModelHelper.checkVersionFormat(version)) {
+            throw new Error('Invalid version format');
         }
-        return ref;
-    }
-
-    private getUrl(type: string) {
-        return `${Schema.LOCAL_SCHEMA}${type}`
-    }
-
-    private getComment(term: string, id: string) {
-        return `{"term": "${term}", "@id": "${id}"}`
-    }
-
-    private getFields() {
-        this.fields = [];
-        this.ref = null;
-
-        if (!this.schema || !this.schema.properties) {
-            return;
-        }
-
-        this.ref = this.schema.$id;
-        const required = {};
-        if (this.schema.required) {
-            for (let i = 0; i < this.schema.required.length; i++) {
-                const element = this.schema.required[i];
-                required[element] = true;
-            }
-        }
-
-        const properties = Object.keys(this.schema.properties);
-        for (let i = 0; i < properties.length; i++) {
-            const name = properties[i];
-            let property = this.schema.properties[name];
-            if (property.readOnly) {
-                continue;
-            }
-            if (property.oneOf && property.oneOf.length) {
-                property = property.oneOf[0];
-            }
-            const title = property.title || name;
-            const description = property.description || name;
-            const isArray = property.type == SchemaDataTypes.array;
-            if (isArray) {
-                property = property.items;
-            }
-            const isRef = !!property.$ref;
-            let type = String(property.type);
-            let context = null;
-            if (isRef) {
-                type = property.$ref;
-                context = {
-                    type: this.getType(property.$ref),
-                    context: [Schema.LOCAL_SCHEMA]
-                }
-            }
-            const format = isRef || !property.format ? null : String(property.format);
-            const pattern = isRef || !property.pattern ? null : String(property.pattern);
-            const readOnly = !!property.readOnly;
-            this.fields.push({
-                name: name,
-                title: title,
-                description: description,
-                type: type,
-                format: format,
-                pattern: pattern,
-                required: !!required[name],
-                isRef: isRef,
-                isArray: isArray,
-                readOnly: readOnly,
-                fields: null,
-                context: context
-            })
+        if (ModelHelper.versionCompare(version, currentVersion) > 0) {
+            this.version = version;
+            this.previousVersion = currentVersion;
+        } else {
+            throw new Error('Version must be greater than ' + currentVersion);
         }
     }
 
-    public update(fields?: SchemaField[]) {
+    /**
+     * Clone
+     */
+    public clone(): Schema {
+        const clone = new Schema();
+        clone._id = this._id;
+        clone.id = this.id;
+        clone.uuid = this.uuid;
+        clone.hash = this.hash;
+        clone.name = this.name;
+        clone.description = this.description;
+        clone.entity = this.entity;
+        clone.status = this.status;
+        clone.readonly = this.readonly;
+        clone.system = this.system;
+        clone.active = this.active;
+        clone.document = this.document;
+        clone.context = this.context;
+        clone.version = this.version;
+        clone.creator = this.creator;
+        clone.owner = this.owner;
+        clone.topicId = this.topicId;
+        clone.messageId = this.messageId;
+        clone.documentURL = this.documentURL;
+        clone.contextURL = this.contextURL;
+        clone.iri = this.iri;
+        clone.type = this.type;
+        clone.previousVersion = this.previousVersion;
+        clone.fields = this.fields;
+        clone.conditions = this.conditions;
+        clone.userDID = this.userDID;
+        return clone;
+    }
+
+    /**
+     * Set new fields
+     * @param fields
+     * @param conditions
+     * @param force
+     */
+    public setFields(
+        fields?: SchemaField[],
+        conditions?: SchemaCondition[],
+        force = false
+    ): void {
+        if (force) {
+            this.fields = fields || [];
+            this.conditions = conditions || [];
+        } else {
+            if (Array.isArray(fields)) {
+                this.fields = fields;
+            }
+            if (Array.isArray(conditions)) {
+                this.conditions = conditions;
+            }
+        }
+    }
+
+    /**
+     * Update Document
+     */
+    public updateDocument(): void {
+        this.document = SchemaHelper.buildDocument(this, this.fields, this.conditions);
+    }
+
+    /**
+     * Update
+     * @param fields
+     * @param conditions
+     */
+    public update(fields?: SchemaField[], conditions?: SchemaCondition[]): void {
         if (fields) {
             this.fields = fields;
         }
+
         if (!this.fields) {
             return null;
         }
 
-        const document = {
-            '$id': this.getId(this.uuid),
-            '$comment': this.getComment(this.uuid, this.getUrl(this.getId(this.uuid))),
-            'title': this.name,
-            'description': this.description,
-            'type': 'object',
-            'properties': {
-                '@context': {
-                    'oneOf': [
-                        { 'type': 'string' },
-                        {
-                            'type': 'array',
-                            'items': { 'type': 'string' }
-                        },
-                    ],
-                    'readOnly': true
-                },
-                'type': {
-                    'oneOf': [
-                        { 'type': 'string' },
-                        {
-                            'type': 'array',
-                            'items': { 'type': 'string' }
-                        },
-                    ],
-                    'readOnly': true
-                },
-                'id': {
-                    'type': 'string',
-                    'readOnly': true
-                }
-            },
-            'required': ['@context', 'type'],
-            'additionalProperties': false,
-        }
-        const properties = document.properties;
-        const required = document.required;
-        for (let i = 0; i < this.fields.length; i++) {
-            const field = this.fields[i];
-            field.title = field.title || field.name;
-            field.description = field.description || field.name;
-            if (!field.readOnly) {
-                field.name = `field${i}`;
-            }
-
-            let item: any;
-            let property: any;
-            if (field.isArray) {
-                item = {};
-                property = {
-                    'title': field.title,
-                    'description': field.description,
-                    'readOnly': !!field.readOnly,
-                    'type': 'array',
-                    'items': item
-                }
-            } else {
-                item = {
-                    'title': field.title,
-                    'description': field.description,
-                    'readOnly': !!field.readOnly
-                };
-                property = item;
-            }
-            if (field.isRef) {
-                property.$comment = this.getComment(field.name, this.getUrl(field.type));
-                item.$ref = field.type;
-            } else {
-                property.$comment = this.getComment(field.name, "https://www.schema.org/text");
-                item.type = field.type;
-                if (field.format) {
-                    item.format = field.format;
-                }
-                if (field.pattern) {
-                    item.pattern = field.pattern;
-                }
-            }
-            if (field.required) {
-                required.push(field.name);
-            }
-            properties[field.name] = property;
-        }
-        this.schema = document as any;
-        this.document = JSON.stringify(document);
+        this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 
-    public static mapRef(data: ISchema[]): Schema[] {
-        if (!data) {
-            return null;
-        }
+    /**
+     * Update refs
+     * @param schemas
+     */
+    public updateRefs(schemas: Schema[]): void {
+        this.document.$defs = SchemaHelper.findRefs(this, schemas);
+    }
 
-        const ids: any = {};
-        const schemes = data.map(e => new Schema(e));
-        for (let i = 0; i < schemes.length; i++) {
-            const schema = schemes[i];
-            ids[schema.ref] = schema;
+    /**
+     * Search Fields
+     * @param filter
+     */
+    public searchFields(filter: (field: SchemaField) => boolean): SchemaField[] {
+        const result: SchemaField[] = [];
+        if (this.fields) {
+            this._searchFields(this.fields, filter, result, '');
         }
-        for (let i = 0; i < schemes.length; i++) {
-            const schema = schemes[i];
-            for (let j = 0; j < schema.fields.length; j++) {
-                const field = schema.fields[j];
-                if (field.isRef && ids[field.type]) {
-                    field.fields = ids[field.type].fields;
+        return result;
+    }
+
+    /**
+     * Search Fields
+     * @param filter
+     */
+    private _searchFields(
+        fields: SchemaField[],
+        filter: (field: SchemaField) => boolean,
+        result: SchemaField[],
+        path: string
+    ): void {
+        for (const f of fields) {
+            f.path = path + f.name;
+            if (filter(f)) {
+                result.push(f);
+            }
+            if (Array.isArray(f.fields)) {
+                this._searchFields(f.fields, filter, result, f.path + '.');
+            }
+        }
+    }
+
+    /**
+     * Set example data
+     * @param data
+     */
+    public setExample(data: any): void {
+        if (data) {
+            this.document = SchemaHelper.updateFields(this.document, (name: string, property: any) => {
+                if (!(property.$ref && !property.type) && data.hasOwnProperty(name)) {
+                    property.examples = [data[name]];
                 }
-            }
+                return property;
+            });
         }
-        return schemes;
-    }
-
-    public clone(): Schema {
-        const clone = new Schema();
-        clone.id = clone.id;
-        clone.uuid = clone.uuid;
-        clone.hash = clone.hash;
-        clone.name = clone.name;
-        clone.description = clone.description;
-        clone.entity = clone.entity;
-        clone.status = clone.status;
-        clone.readonly = clone.readonly;
-        clone.document = clone.document;
-        clone.schema = clone.schema;
-        clone.fields = clone.fields;
-        clone.ref = clone.ref;
-        clone.context = clone.context;
-        return clone
-    }
-
-    public static randomUUID(): string {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
-
-    public static validate(schema: any) {
-        try {
-            if (!schema.name) {
-                return false;
-            }
-            if (!schema.uuid) {
-                return false;
-            }
-            if (!schema.document) {
-                return false;
-            }
-            const doc = JSON.parse(schema.document);
-            if (!doc.$id) {
-                return false;
-            }
-        } catch (error) {
-            return false;
-        }
-        return true;
     }
 }

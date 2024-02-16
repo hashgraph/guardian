@@ -1,0 +1,68 @@
+<div class="dialog-body">
+    <div class="g-dialog-header">
+        <!--        <div class="restore-data">-->
+        <!--            <button-->
+        <!--                class="restore-data-button"-->
+        <!--                *ngIf="restoreData && restoreData.id == scheme?.id"-->
+        <!--                mat-raised-button-->
+        <!--                aria-label="Restore Values"-->
+        <!--                type="button"-->
+        <!--                (click)="onRestoreClick()"-->
+        <!--            >-->
+        <!--                Restore Values<mat-icon>restore</mat-icon>-->
+        <!--            </button>-->
+        <!--        </div>-->
+
+        <p-tabView>
+            <p-tabPanel *ngFor="let tab of items; let i = index">
+                <ng-template pTemplate="header">
+                    <div (click)="handleChangeTab(i)" class="tabview-label">
+                        {{ tab.label }}
+                    </div>
+                </ng-template>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+    <div
+            (cdkDropListDropped)="drop($event)"
+            [cdkDropListData]="fields"
+            cdkDropList
+            class="g-dialog-body"
+    >
+        <div style="padding-right: 12px;">
+            <app-schema-configuration
+                #document
+                [type]="type"
+                [value]="scheme"
+                [extended]="extended"
+                (change-fields)="onChangeFields($event)"
+                [schemaType]="schemaType"
+                [modules]="modules"
+                (change-form)="onChangeForm($event)"
+                [policies]="policies"
+                [topicId]="topicId"
+                [properties]="properties"
+                [tools]="tools"
+            >
+            </app-schema-configuration>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onClose()" class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onCreate()" [disabled]="!(valid && started)"
+                    class="button"
+                    label="Save"
+                    pButton
+            >
+            </button>
+        </div>
+    </div>
+</div>

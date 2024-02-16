@@ -1,0 +1,12 @@
+<div mat-dialog-title>
+    <div class="dialog-header" [attr.type]="type">
+        <mat-icon>{{icon}}</mat-icon>
+        <span>{{type}}</span>
+    </div>
+</div>
+<mat-dialog-content>
+    <pre>{{text}}</pre>
+</mat-dialog-content>
+<mat-dialog-actions align="center">
+    <button mat-flat-button mat-dialog-close>OK</button>
+</mat-dialog-actions>

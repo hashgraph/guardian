@@ -1,6 +1,10 @@
+/**
+ * Policy type
+ */
 export enum PolicyType {
-    MINT = 'MINT',
-    TRANSFER = 'TRANSFER',
-    RETIREMENT = 'RETIREMENT',
-    AGGREGATE = 'AGGREGATE'
+    DRY_RUN = 'DRY-RUN',
+    DRAFT = 'DRAFT',
+    PUBLISH_ERROR = 'PUBLISH_ERROR',
+    PUBLISH = 'PUBLISH',
+    DISCONTINUED = 'DISCONTINUED'
 }

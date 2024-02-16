@@ -1,0 +1,364 @@
+{
+  "uuid": "TymlezStandardRegistry",
+  "name": "TymlezStandardRegistry",
+  "entity": "STANDARD_REGISTRY",
+  "document": {
+    "$id": "#TymlezStandardRegistry&1.0.0",
+    "$comment": "{ \"term\": \"TymlezStandardRegistry&1.0.0\", \"@id\": \"undefined#TymlezStandardRegistry&1.0.0\" }",
+    "title": "TymlezStandardRegistry",
+    "description": "TymlezStandardRegistry",
+    "type": "object",
+    "properties": {
+      "@context": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "type": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "readOnly": true
+      },
+      "id": {
+        "type": "string",
+        "readOnly": true
+      },
+      "rootAuthorityId": {
+        "title": "rootAuthorityId",
+        "description": "Unique identifier for the root authority",
+        "readOnly": false,
+        "$comment": "{\"term\": \"rootAuthorityId\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "rootAuthorityName": {
+        "title": "rootAuthorityName",
+        "description": "Business name for the Root Authority",
+        "readOnly": false,
+        "$comment": "{\"term\": \"rootAuthorityName\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "registrationCountry": {
+        "title": "registrationCountry",
+        "description": "Name of the country where the business is registered",
+        "readOnly": false,
+        "$comment": "{\"term\": \"registrationCountry\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "businessRegistrationNumber": {
+        "title": "businessRegistrationNumber",
+        "description": "Registration number for the business",
+        "readOnly": false,
+        "$comment": "{\"term\": \"businessRegistrationNumber\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "businessRegistrationNumberType": {
+        "title": "businessRegistrationNumberType",
+        "description": "Registration number type e.g. ACN for Austrlia",
+        "readOnly": false,
+        "$comment": "{\"term\": \"businessRegistrationNumberType\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "businessRegistrationDate": {
+        "title": "businessRegistrationDate",
+        "description": "Date the business was first registered",
+        "readOnly": false,
+        "$comment": "{\"term\": \"businessRegistrationDate\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string",
+        "format": "date"
+      },
+      "registeredOfficeAddress": {
+        "title": "registeredOfficeAddress",
+        "description": "Official address of the business",
+        "readOnly": false,
+        "$comment": "{\"term\": \"registeredOfficeAddress\", \"@id\": \"#1d735afd-0dbb-4fc6-819b-c7de3c469d45\"}",
+        "$ref": "#1d735afd-0dbb-4fc6-819b-c7de3c469d45"
+      },
+      "businessType": {
+        "title": "businessType",
+        "description": "Legal status/type of business",
+        "readOnly": false,
+        "$comment": "{\"term\": \"businessType\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "primaryBusinessFunction": {
+        "title": "primaryBusinessFunction",
+        "description": "Main function/activity of the business",
+        "readOnly": false,
+        "$comment": "{\"term\": \"primaryBusinessFunction\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      },
+      "businessLead": {
+        "title": "businessLead",
+        "description": "Details of the CEO or General Manager",
+        "readOnly": false,
+        "$comment": "{\"term\": \"businessLead\", \"@id\": \"https://www.schema.org/text\"}",
+        "$ref": "#0852bcad-44c4-40d5-a4c5-df056e97c949"
+      },
+      "websiteLink": {
+        "title": "websiteLink",
+        "description": "URL of the company website",
+        "readOnly": false,
+        "$comment": "{\"term\": \"websiteLink\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string",
+        "format": "url"
+      },
+      "ref": {
+        "title": "ref",
+        "description": "ref",
+        "readOnly": true,
+        "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+        "type": "string"
+      }
+    },
+    "required": [
+      "@context",
+      "type",
+      "rootAuthorityId",
+      "rootAuthorityName",
+      "registrationCountry",
+      "businessRegistrationNumber",
+      "businessRegistrationNumberType",
+      "businessRegistrationDate",
+      "registeredOfficeAddress",
+      "businessType",
+      "primaryBusinessFunction",
+      "businessLead"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "#0852bcad-44c4-40d5-a4c5-df056e97c949": {
+        "$id": "#0852bcad-44c4-40d5-a4c5-df056e97c949",
+        "$comment": "{\"term\": \"0852bcad-44c4-40d5-a4c5-df056e97c949\", \"@id\": \"#0852bcad-44c4-40d5-a4c5-df056e97c949\"}",
+        "title": "Person",
+        "description": "Person data",
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "readOnly": true
+          },
+          "type": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true
+          },
+          "personId": {
+            "title": "personId",
+            "description": "Unique identifier for the person",
+            "readOnly": false,
+            "$comment": "{\"term\": \"personId\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "title": {
+            "title": "title",
+            "description": "Title/name prefix",
+            "readOnly": false,
+            "$comment": "{\"term\": \"title\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "familyName": {
+            "title": "familyName",
+            "description": "Family name/Surname",
+            "readOnly": false,
+            "$comment": "{\"term\": \"familyName\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "givenNames": {
+            "title": "givenNames",
+            "description": "Given name/first name",
+            "readOnly": false,
+            "$comment": "{\"term\": \"givenNames\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "identificationNumber": {
+            "title": "identificationNumber",
+            "description": "Numer from the identification document",
+            "readOnly": false,
+            "$comment": "{\"term\": \"identificationNumber\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "identificationNumberType": {
+            "title": "identificationNumberType",
+            "description": "Type of ID e.g. passport, driver licence",
+            "readOnly": false,
+            "$comment": "{\"term\": \"identificationNumberType\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "identificationNumberAuthority": {
+            "title": "identificationNumberAuthority",
+            "description": "Authority that issued the ID e.g. Australian Government",
+            "readOnly": false,
+            "$comment": "{\"term\": \"identificationNumberAuthority\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+
+          "ref": {
+            "title": "ref",
+            "description": "ref",
+            "readOnly": true,
+            "$comment": "{\"term\": \"ref\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          }
+        },
+        "required": [
+          "@context",
+          "type",
+          "personId",
+          "title",
+          "familyName",
+          "givenNames"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      },
+      "#1d735afd-0dbb-4fc6-819b-c7de3c469d45": {
+        "$id": "#1d735afd-0dbb-4fc6-819b-c7de3c469d45",
+        "$comment": "{\"term\": \"1d735afd-0dbb-4fc6-819b-c7de3c469d45\", \"@id\": \"#1d735afd-0dbb-4fc6-819b-c7de3c469d45\"}",
+        "title": "Address",
+        "description": "Address",
+        "type": "object",
+        "properties": {
+          "@context": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "readOnly": true
+          },
+          "type": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true
+          },
+          "addressId": {
+            "title": "addressId",
+            "description": "addressId",
+            "readOnly": false,
+            "$comment": "{\"term\": \"addressId\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "addressLine1": {
+            "title": "addressLine1",
+            "description": "addressLine1",
+            "readOnly": false,
+            "$comment": "{\"term\": \"addressLine1\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "addressLine2": {
+            "title": "addressLine2",
+            "description": "addressLine2",
+            "readOnly": false,
+            "$comment": "{\"term\": \"addressLine2\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "city": {
+            "title": "city",
+            "description": "city",
+            "readOnly": false,
+            "$comment": "{\"term\": \"city\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "state": {
+            "title": "state",
+            "description": "state",
+            "readOnly": false,
+            "$comment": "{\"term\": \"state\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "postalCode": {
+            "title": "postalCode",
+            "description": "postalCode",
+            "readOnly": false,
+            "$comment": "{\"term\": \"postalCode\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "country": {
+            "title": "country",
+            "description": "country",
+            "readOnly": false,
+            "$comment": "{\"term\": \"country\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          },
+          "GPSLocation": {
+            "title": "GPSLocation",
+            "description": "GPSLocation",
+            "readOnly": false,
+            "$comment": "{\"term\": \"GPSLocation\", \"@id\": \"https://www.schema.org/text\"}",
+            "type": "string"
+          }
+        },
+        "required": [
+          "@context",
+          "type",
+          "addressId",
+          "addressLine1",
+          "city",
+          "country"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,850 @@
+{
+	"info": {
+		"_postman_id": "09b1171a-1225-407c-86c2-4580825b96fc",
+		"name": "Atma Scope 2 Policy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Initialize Collection",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/**\r",
+									" * Extracts the JWT token from the login response and stores it in `AUTH_TOKEN` variable\r",
+									" */\r",
+									"const jsonData = JSON.parse(responseBody);\r",
+									"const token = jsonData.accessToken\r",
+									"pm.collectionVariables.set(\"AUTH_TOKEN\",`Bearer ${token}`)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//clear all transient collection variables such as tag ids, schema ids, context ids\r",
+									"const remove_patterns = [\r",
+									"        /(T|S|(CTX))_\\w+/, \r",
+									"        /POLICY_TOPIC_ID/,\r",
+									"        /PROD_QUANTITY/,\r",
+									"        /\\w+_((EF)|(GWP))/,\r",
+									"        /\\w+_((EF)|(GWP)|(DOC)|(DID)|(ID))/\r",
+									"]\r",
+									"for(const [key, _] of Object.entries(pm.collectionVariables.toObject())){\r",
+									"   if(remove_patterns.some((p) => p.test(key))){\r",
+									"       pm.collectionVariables.unset(key)\r",
+									"   }\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"{{POLICY_USER}}\",\r\n  \"password\": \"{{POLICY_PASSWORD}}\"\r\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}accounts/login",
+							"host": [
+								"{{BASE_URL}}accounts"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Parse Policy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/**\r",
+									" * Publishes as policy blocks by their tag name as postman variable, so that they can be\r",
+									" * re-used in subsequent requests. \r",
+									" */\r",
+									"function addVariable(curBlock){\r",
+									"    const tagName = `T_${curBlock.tag}`\r",
+									"    const blockId = curBlock.id\r",
+									"    pm.collectionVariables.set(tagName,blockId);\r",
+									"}\r",
+									"const policy = JSON.parse(responseBody);\r",
+									"\r",
+									"pm.collectionVariables.set(\"POLICY_TOPIC_ID\",policy.topicId)\r",
+									"utils.walkPolicy(policy.config, addVariable);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}",
+							"host": [
+								"{{POLICY_URL}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Parse Schemas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/**\r",
+									" * Parses retrieved schemas and publishes schema ids and schema contexts\r",
+									" * as collection variable for sub-sequent request.\r",
+									" */\r",
+									"const jsonData = JSON.parse(responseBody);\r",
+									"const policyId = pm.collectionVariables.get(\"POLICY_NAME\")\r",
+									"\r",
+									"for(const curSchema of jsonData){\r",
+									"    if(curSchema.status !== \"PUBLISHED\") continue\r",
+									"    \r",
+									"    const id = curSchema.iri.substring(1)\r",
+									"    const contextValue = JSON.stringify([curSchema.contextURL])\r",
+									"    pm.collectionVariables.set(`S_${curSchema.name}`, id);\r",
+									"    pm.collectionVariables.set(`CTX_${curSchema.name}`, contextValue);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/schemas/{{POLICY_TOPIC_ID}}?pageSize=1000",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"schemas",
+								"{{POLICY_TOPIC_ID}}"
+							],
+							"query": [
+								{
+									"key": "pageSize",
+									"value": "1000"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Setup Policy",
+			"item": [
+				{
+					"name": "Create OrgEntity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"nameOfOrganization\": \"Innovative Manufacturing Inc.\",\r\n        \"naicsTitle\": [\r\n            \"Advanced Manufacturing Technology\"\r\n        ],\r\n        \"naicsCode\": [\r\n            \"334516\"\r\n        ],\r\n        \"sicTitle\": [\r\n            \"Manufacturing Machinery, Not Elsewhere Classified\"\r\n        ],\r\n        \"sicCode\": [\r\n            \"3599\"\r\n        ],\r\n        \"locationOfHQ\": [\r\n            \"Munich, Germany\"\r\n        ],\r\n        \"descriptionOfProductsAndServices\": \"Innovative Manufacturing Inc. is a leading provider of advanced manufacturing technology solutions. We design and produce state-of-the-art equipment and machinery for use in a variety of industries. Our products are designed to increase efficiency, reduce costs, and improve overall productivity for our customers. With a team of highly skilled engineers and technicians, we are dedicated to pushing the boundaries of what is possible in manufacturing.\",\r\n        \"numberOfEmployees\": \"200\",\r\n        \"accoutingApproach\": \"n/a\",\r\n        \"canProvideCertificates\": false,\r\n        \"scopes\": [\r\n            \"Scope 2\"\r\n        ],\r\n        \"baseYear\": 2023,\r\n        \"justifyBaseYear\": \"n/a\",\r\n        \"currentReportingPeriodFrom\": \"2023-01-01\",\r\n        \"currentReportingPeriodTo\": \"2023-12-31\",\r\n        \"mintingIntervals\": \"Monthly\",\r\n        \"recalculationPolicy\": [\r\n            \"n/a\"\r\n        ],\r\n        \"type\": \"{{S_GHPG.OrgProfile}}\",\r\n        \"@context\": {{CTX_GHPG.OrgProfile}}\r\n    },\r\n    \"ref\": null\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_CreateOrgProfile}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_CreateOrgProfile}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last OrgEntity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables,\"ORGANIZATION\",responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function() {}, pm.collectionVariables.get(\"DELAY_MS\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_OrganizationGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_OrganizationGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const orgDoc = pm.collectionVariables.get(\"ORG2_DOC\")\r",
+									"console.log(orgDoc)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"document\": {\r\n        \"organizationDid\": \"{{ORGANIZATION_ID}}\",\r\n        \"name\": \"Innovative Manufacturing Inc. - Germany\",\r\n        \"entityId\": \"InnovativeManufacturingGermany\",\r\n        \"ceoOrGeneralManager\": \"Johann Schmidt\",\r\n        \"includedInInventory\": true,\r\n        \"activities\": \"Advanced manufacturing solutions\",\r\n        \"address\": \"Karl-Benz-Straße 15\",\r\n        \"city\": \"Stuttgart\",\r\n        \"state\": \"Baden-Württemberg\",\r\n        \"zipCode\": \"70376\",\r\n        \"country\": \"Germany\",\r\n        \"employees\": \"100\",\r\n        \"legalStatus\": \"GmbH\",\r\n        \"equityOwnership\": [],\r\n        \"listShareholders\": [\r\n        ],\r\n        \"shareholderEquity\": [\r\n        ],\r\n        \"type\": \"{{S_GHPG.Entity}}\",\r\n        \"@context\": {{CTX_GHPG.Entity}}\r\n    },\r\n    \"ref\": {{ORGANIZATION_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewEntityForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewEntityForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables,\"ENTITY\", responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_EntityGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_EntityGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"productName\": \"Opti-Pro\",\r\n        \"productDescription\": \"Opti-Pro is a state-of-the-art, high-performance device designed to optimize productivity in the workplace. With its advanced features and sleek design, Opti-Pro is the perfect solution for any business looking to streamline their operations and increase efficiency..\",\r\n        \"productId\": \"OP-123\",\r\n        \"productCategory\": \"Office Equipment\",\r\n        \"standardOProtocols\": [\r\n            \"GHGP Product Standard\"\r\n        ],\r\n        \"lcaScope\": \"Cradle-to-grave\",\r\n        \"intermediateOrFinal\": \"Intermediate\",\r\n        \"unitOfAnalysis\": \"1 Unit\",\r\n        \"functionalUnit\": \"1 Unit\",\r\n        \"referenceFlow\": \"1 Unit\",\r\n        \"goalsOfInventory\": [\r\n            \"Carbon Neutral Certification\"\r\n        ],\r\n        \"inputMaterials\": [\r\n            {\r\n                \"material\": \"Aluminum (g)\",\r\n                \"amount\": 120,\r\n                \"type\": \"{{S_GHPG.InputMaterial}}\",\r\n                \"@context\": {{CTX_GHPG.InputMaterial}}\r\n            },\r\n            {\r\n                \"material\": \"Glass\",\r\n                \"amount\": 20,\r\n                \"type\": \"{{S_GHPG.InputMaterial}}\",\r\n                \"@context\": {{CTX_GHPG.InputMaterial}}\r\n            },\r\n            {\r\n                \"material\": \"Plastic - High-density polyethylene (g)\",\r\n                \"amount\": 101.4,\r\n                \"type\": \"{{S_GHPG.InputMaterial}}\",\r\n                \"@context\": {{CTX_GHPG.InputMaterial}}\r\n            },\r\n            {\r\n                \"material\": \"Microcontroller (g)\",\r\n                \"amount\": 10.3,\r\n                \"type\": \"{{S_GHPG.InputMaterial}}\",\r\n                \"@context\": {{CTX_GHPG.InputMaterial}}\r\n            },\r\n            {\r\n                \"material\": \"Adhesive (g)\",\r\n                \"amount\": 3.5,\r\n                \"type\": \"{{S_GHPG.InputMaterial}}\",\r\n                \"@context\": {{CTX_GHPG.InputMaterial}}\r\n            }\r\n        ],\r\n        \"recycledMaterialAfterProduction\": [\r\n            {\r\n                \"name\": \"Pure Aluminum\",\r\n                \"amount\": 12.1,\r\n                \"type\": \"{{S_GHGP.RecycledMaterial}}\",\r\n                \"@context\": {{CTX_GHPG.InputMaterial}}\r\n            }\r\n        ],\r\n        \"nonAttributableProcesses\": [\r\n            \"Facility Lighting\", \r\n            \"Facility HVAC\"\r\n        ],\r\n        \"manufacturingLocation\": \r\n            {\r\n                \"name\": \"Berlin Factory\",\r\n                \"address\": \"Schweriner Strasse 23\",\r\n                \"city\": \"Berlin\",\r\n                \"state\": \"Berlin\",\r\n                \"zipCode\": \"10249\",\r\n                \"country\": \"Germany\",\r\n                \"geoLocation\": \"52°31'38.2\\\"N, 13°24'44.4\\\"E\",\r\n                \"type\": \"{{S_GHGP.ManufacturingLocation}}\",\r\n                \"@context\": {{CTX_GHGP.ManufacturingLocation}}\r\n            }\r\n        ,\r\n        \"productionQuantityDuringTheDataPeriod\": 1000,\r\n        \"details\": {\r\n            \"productionBasedOnActualOrForcast\": \"Forecast\",\r\n            \"inventoryTimePeriod\": \"Inventory time period\",\r\n            \"dataPeriodStartFrom\": \"2023-01-01\",\r\n            \"dataPeriodEndTo\": \"2023-12-31\",\r\n            \"declarationFrequency\": \"yearly\",\r\n            \"mintingIntervals\": \"per Batch\",\r\n            \"netGhgEmmisonsTargets\": \"Carbon Neutral\",\r\n            \"trackingOverTime\": true,\r\n            \"baseInventory\": 100,\r\n            \"recalculationPolicy\": [\"Methodology changes\", \"Errors\"],\r\n            \"percentReduction\": 10,\r\n            \"internalAbatementTargets\": [],\r\n            \"internalAbatementStrategies\": [\"SBti\"],\r\n            \"ghgsIncluded\": [\r\n                \"CO2\",\r\n                \"CH4\",\r\n                \"N2O\"\r\n            ],\r\n            \"type\": \"{{S_GHGP.ProductDetails}}\",\r\n            \"@context\": {{CTX_GHGP.ProductDetails}}\r\n        },\r\n        \"@context\": {{CTX_GHPG.Product}},\r\n        \"type\": \"{{S_GHPG.Product}}\"\r\n    },\r\n    \"ref\": {{ENTITY_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewProductForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewProductForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const doc = utils.fetchLastItem(pm.collectionVariables,\"PROD\", responseBody)\r",
+									"const prodQuantity = doc.document.credentialSubject[0].productionQuantityDuringTheDataPeriod\r",
+									"const prodId =  doc.document.credentialSubject[0].productId\r",
+									"pm.collectionVariables.set(\"PROD_ID\",prodId)\r",
+									"pm.collectionVariables.set(\"PROD_QUANTITY\", prodQuantity)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"entityDid\": \"{{ENTITY_DID}}\",\r\n        \"productName\": \"Product Name\",\r\n        \"productDescription\": \"Product Description\",\r\n        \"productId\": \"ProductId\",\r\n        \"productCategory\": \"Product Category\",\r\n        \"standardOProtocols\": [\r\n            \"Standard Protocol\"\r\n        ],\r\n        \"lcaScope\": \"LCA Scope\",\r\n        \"intermediateOrFinal\": \"Intermediate\",\r\n        \"unitOfAnalysis\": \"Unit of Analysis (UoA)\",\r\n        \"functionalUnit\": \"Functional Unit\",\r\n        \"referenceFlow\": \"Reference Flow\",\r\n        \"goalsOfInventory\": [\r\n            \"Goals of Inventory\"\r\n        ],\r\n        \"inputMaterials\": [\r\n            {\r\n                \"material\": \"Material\",\r\n                \"Amount\": 100,\r\n                \"type\": \"{{GHPG.InputMaterial}}\",\r\n                \"@context\": []\r\n            }\r\n        ],\r\n        \"recycledMaterialAfterProduction\": [\r\n            {\r\n                \"field0\": \"Recycled Material\",\r\n                \"field1\": 100,\r\n                \"type\": \"{{GHGP.RecycledMaterial}}\",\r\n                \"@context\": []\r\n            }\r\n        ],\r\n        \"nonAttributableProcesses\": [\r\n            \"Non-attributable processes\"\r\n        ],\r\n        \"assuranceStatement\": {\r\n            \"firstOrThirdParty\": \"first party\",\r\n            \"assurerID\": \"Assurer ID\",\r\n            \"certificationId\": \"Certificate Id\",\r\n            \"certificationStandard\": \"Certificate Standard\",\r\n            \"certificationPeriod\": \"Certificate period\",\r\n            \"levelOfAssurance\": \"limited\",\r\n            \"assuranceProcessSummary\": \"Assurance process summary\",\r\n            \"assurerQualifications\": [\r\n                \"Assurer qualifications\"\r\n            ],\r\n            \"avoidingConflictsOfInterests\": \"Avoiding conflicts of interests (for first party)\",\r\n            \"assuranceOpinion\": \"Assurance opinion\",\r\n            \"type\": \"{{GHGP.AssuranceStatement}}\",\r\n            \"@context\": []\r\n        },\r\n        \"details\": {\r\n            \"productionQuantityDuringDataPeriod\": 12000,\r\n            \"productionBasedOnActualOrForcast\": \"forecast\",\r\n            \"inventoryTimePeriod\": \"Inventory time period\",\r\n            \"dataPeriodStartFrom\": \"2022-01-01\",\r\n            \"dataPeriodEndTo\": \"2022-12-31\",\r\n            \"declarationFrequency\": \"yearly\",\r\n            \"mintingIntervals\": \"monthly\",\r\n            \"netGhgEmmisonsTargets\": \"Net GHG Emissions Targets\",\r\n            \"trackingOverTime\": true,\r\n            \"baseInventory\": 100,\r\n            \"recalculationPolicy\": \"Recalculation policy\",\r\n            \"percentReduction\": 10,\r\n            \"internalAbatementTargets\": [],\r\n            \"internalAbatementStrategies\": [],\r\n            \"ghgsIncluded\": [\r\n                \"CO2\"\r\n            ],\r\n            \"lifecycleStagesIncluded\": [\r\n                \"Lifecycle Stages Included\"\r\n            ],\r\n            \"type\": \"{{S_GHPG.ProductDetails}}\",\r\n            \"@context\": []\r\n        },\r\n        \"@context\": [],\r\n        \"type\": \"{{S_GHPG.Product}}\"\r\n    },\r\n    \"ref\": {{ENTITY_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_ProductGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_ProductGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lifecycle Stage",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"lifecycleStage\": \"Production\",\r\n        \"processingDescription\": \"Processing Description\",\r\n        \"lifeCycleStageId\": \"Life cycle stage ID\",\r\n        \"ownershipOrControl\": \"Ownership/Control\",\r\n        \"significance\": \"significant\",\r\n        \"allocation\": \"Allocation\",\r\n        \"allocationUncertainty\": \"Allocation uncertainty\",\r\n        \"serviceFlows\": [\r\n            \"Service Flow -1\"\r\n        ],\r\n        \"materialFlows\": [\r\n            \"Material Flow - 1\"\r\n        ],\r\n        \"energyFlows\": [\r\n            \"Energy Flow - 1\"\r\n        ],\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"productionQuantityDuringDataPeriod\": {{PROD_QUANTITY}},\r\n        \"type\": \"{{S_GHGP.LifecycleStage}}\",\r\n        \"@context\": {{CTX_GHGP.LifecycleStage}}\r\n    },\r\n    \"ref\": {{PROD_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewLifeCycleStageForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewLifeCycleStageForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Lifecycle Stage",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables, \"LIFECYCLE\", responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_LifeCycleStageGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_LifeCycleStageGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create GHG Source",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"ghgSourceName\": \"Purchased Electricity (Factory 1)\",\r\n        \"ghgSourceId\": \"P1_DEMO_GHG_S2 Electric\",\r\n        \"scope\": \"Scope 2\",\r\n        \"type\": \"{{S_GHGP.GHGSource}}\",\r\n        \"@context\": {{CTX_GHGP.GHGSource}},\r\n        \"dataSource\": {\r\n            \"dataSourceDescription\": \"Data Source Description\",\r\n            \"dataSourceIds\": [\r\n                \"M1XYZ\",\r\n                \"M2XYZ\",\r\n                \"M3XYX\"\r\n            ],\r\n            \"sourceVerificationIds\": [\r\n                \"SourceVerificationId-1\",\r\n                \"SourceVerificationId-2\"\r\n            ],\r\n            \"primary\": true,\r\n            \"facilityId\": \"FactoryO1\",\r\n            \"location\": \"Detroit\",\r\n            \"type\": \"{{S_GHGP.DataSource}}\",\r\n            \"@context\": {{CTX_GHGP.DataSource}}\r\n        },\r\n        \"activityData\": {\r\n            \"activityDataUnits\": \"kWh\",\r\n            \"productionOutputUnits\": \"Unit\",\r\n            \"dataQuality\": \"High\",\r\n            \"descriptionOfDataQuality\": \"Data is collected directly from machines and undergoes QA/QC checks to ensure accuracy. After QA/QC, the data source is verified and the produced data is considered quality assured. \",\r\n            \"effortsTakenToImproveDataQuality\": \"Data quality is currently the highest feasible. The feasibility for increased data granularity will be assessed on an ongoing bases and implemented if/when it becomes feasible. \",\r\n            \"type\": \"{{S_GHGP.ActivityData}}\",\r\n            \"@context\": {{CTX_GHGP.ActivityData}}\r\n        },\r\n        \"co2Gwp\": 1,\r\n        \"ch4Gwp\": 28,\r\n        \"n2oGwp\": 265,\r\n        \"co2EmissionFactor\": 992.25,\r\n        \"ch4EmissionFactor\": 0.037,\r\n        \"n2oEmissionFactor\": 0.0051,\r\n        \"locationBasedCalculation\": {\r\n            \"calculationMethodology\": \"Activity Data/Location-based Emission Factors\",\r\n            \"eGRIDSubregion\": \"NA\",\r\n            \"emissionFactorSources\": [\r\n                \"The World Bank Group Greenhouse Gas Emissions Inventory Management Plan for Internal Business Operations 2019\"\r\n            ],\r\n            \"gwp100ySource\": \"IPCC Fifth Assessment Report, 2014 (AR5)\",\r\n            \"calculationUncertainty\": \"Calculation uncertainty is low, equations used are based on established industry standards and best practices. \",\r\n            \"scenarioUncertainty\": \"Scenario uncertainty is low as methodological choices are limited and based on established industry standards and best practices. \",\r\n            \"modelUncertainty\": \"Modeling uncertainty is low as modeling approaches accurately reflect the real world\",\r\n            \"parameterUncertainty\": \"Parameter uncertainty is moderate.  The values used in the inventory accurately represents the process or activity in the product’s life cycle. However, location-based emission factors currently include sold renewable energy, which can lead to double counting. Location based emission factors are based on national averages, which lack geographic granularity. The best available emission factors were used. Going forward, we will use improved emission factors as they become available. \",\r\n            \"type\": \"{{S_GHGP.Calculation}}\",\r\n            \"@context\": {{CTX_GHGP.ActivityData}}\r\n        },\r\n        \"productionQuantityDuringDataPeriod\":{{PROD_QUANTITY}}\r\n    },\r\n    \"ref\": {{LIFECYCLE_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewGHGSourceForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewGHGSourceForm}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Send Example Production DAta",
+			"item": [
+				{
+					"name": "Get Last GHG Source",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"ghgSource = utils.fetchLastItem(pm.collectionVariables,\"GHG_SOURCE\", responseBody)\r",
+									"const doc = ghgSource.document.credentialSubject[0]\r",
+									"\r",
+									"//set various emission factors of current GHG soource, will be sent along with production output data \r",
+									"pm.collectionVariables.set(\"CO2_GWP\",doc.co2Gwp)\r",
+									"pm.collectionVariables.set(\"CH4_GWP\",doc.ch4Gwp)\r",
+									"pm.collectionVariables.set(\"N2O_GWP\",doc.n2oGwp)\r",
+									"pm.collectionVariables.set(\"CO2_EF\",doc.co2EmissionFactor)\r",
+									"pm.collectionVariables.set(\"CH4_EF\",doc.ch4EmissionFactor)\r",
+									"pm.collectionVariables.set(\"N2O_EF\",doc.n2oEmissionFactor)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function() {}, 2000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_GHGSourceGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_GHGSourceGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Production Data - 1",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function() {}, pm.collectionVariables.get(\"DELAY_MS\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n  \"document\": {\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"activityTimestamp\": \"2023-01-01T15:50:00Z\",\r\n        \"productionOutput\": 500000,\r\n        \"itemId\": \"BatchId-1\",\r\n        \"dataSourceId\": \"MachineA\",\r\n        \"facilityId\": \"BerlinFactory1\",\r\n        \"activityDataQuantity\": 113.05,\r\n        \"productionQuantityDuringDataPeriod\":{{PROD_QUANTITY}},\r\n        \"co2EmissionFactor\": {{CO2_EF}},\r\n        \"ch4EmissionFactor\": {{CH4_EF}},\r\n        \"n2oEmissionFactor\": {{N2O_EF}},\r\n        \"co2Gwp\": {{CO2_GWP}},\r\n        \"ch4Gwp\": {{CH4_GWP}},\r\n        \"n2oGwp\": {{N2O_GWP}},\r\n        \"metadata\": [\r\n            {\r\n                \"key\": \"ExampleMetaDataKey\",\r\n                \"value\": \"Example Meta Data Value\",\r\n                \"type\": \"{{S_GHGP.Metadata}}\",\r\n                \"@context\": {{CTX_GHGP.Metadata}}\r\n            }\r\n        ],\r\n        \"type\": \"{{S_GHGP.ProductionData}}\",\r\n        \"@context\": {{CTX_GHGP.ProductionData}}\r\n    },\r\n    \"ref\": {{GHG_SOURCE_DOC}}\r\n }"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewProductionDataForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewProductionDataForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Production Data - 2",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function() {}, pm.collectionVariables.get(\"DELAY_MS\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n  \"document\": {\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"activityTimestamp\": \"2023-01-01T16:50:00Z\",\r\n        \"productionOutput\": 500000,\r\n        \"itemId\": \"BatchId-2\",\r\n        \"dataSourceId\": \"MachineA\",\r\n        \"facilityId\": \"BerlinFactory1\",\r\n        \"activityDataQuantity\": 113.05,\r\n        \"productionQuantityDuringDataPeriod\":{{PROD_QUANTITY}},\r\n        \"co2EmissionFactor\": {{CO2_EF}},\r\n        \"ch4EmissionFactor\": {{CH4_EF}},\r\n        \"n2oEmissionFactor\": {{N2O_EF}},\r\n        \"co2Gwp\": {{CO2_GWP}},\r\n        \"ch4Gwp\": {{CH4_GWP}},\r\n        \"n2oGwp\": {{N2O_GWP}},\r\n        \"metadata\": [\r\n            {\r\n                \"key\": \"ExampleMetaDataKey\",\r\n                \"value\": \"Example Meta Data Value\",\r\n                \"type\": \"{{S_GHGP.Metadata}}\",\r\n                \"@context\": {{CTX_GHGP.Metadata}}\r\n            }\r\n        ],\r\n        \"type\": \"{{S_GHGP.ProductionData}}\",\r\n        \"@context\": {{CTX_GHGP.ProductionData}}\r\n    },\r\n    \"ref\": {{GHG_SOURCE_DOC}}\r\n }"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewProductionDataForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewProductionDataForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Production Data -  3",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function() {}, pm.collectionVariables.get(\"DELAY_MS\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n  \"document\": {\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"activityTimestamp\": \"2023-01-01T17:50:00Z\",\r\n        \"productionOutput\": 500000,\r\n        \"itemId\": \"BatchId-3\",\r\n        \"dataSourceId\": \"MachineA\",\r\n        \"facilityId\": \"BerlinFactory1\",\r\n        \"activityDataQuantity\": 113.05,\r\n        \"productionQuantityDuringDataPeriod\":{{PROD_QUANTITY}},\r\n        \"co2EmissionFactor\": {{CO2_EF}},\r\n        \"ch4EmissionFactor\": {{CH4_EF}},\r\n        \"n2oEmissionFactor\": {{N2O_EF}},\r\n        \"co2Gwp\": {{CO2_GWP}},\r\n        \"ch4Gwp\": {{CH4_GWP}},\r\n        \"n2oGwp\": {{N2O_GWP}},\r\n        \"metadata\": [\r\n            {\r\n                \"key\": \"ExampleMetaDataKey\",\r\n                \"value\": \"Example Meta Data Value\",\r\n                \"type\": \"{{S_GHGP.Metadata}}\",\r\n                \"@context\": {{CTX_GHGP.Metadata}}\r\n            }\r\n        ],\r\n        \"type\": \"{{S_GHGP.ProductionData}}\",\r\n        \"@context\": {{CTX_GHGP.ProductionData}}\r\n    },\r\n    \"ref\": {{GHG_SOURCE_DOC}}\r\n }"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewProductionDataForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewProductionDataForm}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"utils = {",
+					"    /**",
+					"     * Fetches the last item from get trequest on a grid",
+					"     * Also publishes common elements such as Id,Did and the document as variable",
+					"     * based on the `name` param",
+					"     */",
+					"    fetchLastItem(vars, name, responseBody){",
+					"        const jsonData = JSON.parse(responseBody);",
+					"        const data = jsonData.data.pop()",
+					"        const dataId = data.document.id",
+					"        const dataDid = data.document.credentialSubject[0].id",
+					"        vars.set(`${name}_ID`, dataId)",
+					"        vars.set(`${name}_DID`, dataDid)",
+					"        vars.set(`${name}_DOC`, JSON.stringify(data))",
+					"        return data",
+					"    },",
+					"    /**",
+					"     * Walks the document recursivly and applies the `onVisit` method to each ",
+					"     * block of the policy.",
+					"     */",
+					"    walkPolicy(rootBlock, onVisit){",
+					"        onVisit(rootBlock);",
+					"        for(const curChild of rootBlock.children){",
+					"            utils.walkPolicy(curChild,onVisit);",
+					"        }",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "https://guardian-instance-name.io/api/v1/",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_URL",
+			"value": "{{BASE_URL}}policies/{{POLICY_NAME}}/",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_USER",
+			"value": "⚠Replace Me!⚠",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_PASSWORD",
+			"value": "⚠Replace Me!⚠",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_NAME",
+			"value": "⚠Replace Me!⚠",
+			"type": "default"
+		},
+		{
+			"key": "AUTH_TOKEN",
+			"value": ""
+		}
+	]
+}

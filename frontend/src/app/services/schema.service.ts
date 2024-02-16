@@ -1,62 +1,226 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISchema, Schema, SchemaEntity } from 'interfaces';
+import { ISchema, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api';
+import { AuthService } from './auth.service';
+
+type ITask = { taskId: string, expectation: number };
 
 /**
- * Services for working from Schemes.
+ * Services for working from Schemas.
  */
 @Injectable()
 export class SchemaService {
-  constructor(
-    private http: HttpClient
-  ) {
-  }
+    private readonly url: string = `${API_BASE_URL}/schemas`;
+    private readonly singleSchemaUrl: string = `${API_BASE_URL}/schema`;
 
-  public createSchema(schema: Schema): Observable<ISchema[]> {
-    const data = {
-      uuid: schema.uuid,
-      hash: schema.hash,
-      name: schema.name,
-      entity: schema.entity,
-      document: schema.document
+    constructor(
+        private http: HttpClient,
+        private auth: AuthService
+    ) {
     }
-    return this.http.post<any[]>('/api/schema/create', data);
-  }
 
-  public updateSchema(schema: Schema, id?: string): Observable<ISchema[]> {
-    const data = {
-      id: id || schema.id,
-      uuid: schema.uuid,
-      hash: schema.hash,
-      name: schema.name,
-      entity: schema.entity,
-      document: schema.document
+    public create(category: SchemaCategory, schema: ISchema, topicId: any): Observable<ISchema[]> {
+        schema.category = category;
+        return this.http.post<any[]>(`${this.url}/${topicId}`, schema);
     }
-    return this.http.post<any[]>('/api/schema/update', data);
-  }
 
-  public getSchemes(): Observable<ISchema[]> {
-    return this.http.get<any[]>('/api/schema');
-  }
+    public pushCreate(category: SchemaCategory, schema: ISchema, topicId: any): Observable<ITask> {
+        schema.category = category;
+        return this.http.post<ITask>(`${this.url}/push/${topicId}`, schema);
+    }
 
-  public importSchemes(schemes: any[]): Observable<ISchema[]> {
-    return this.http.post<any[]>(`/api/schema/import`, { schemes });
-  }
+    public update(schema: ISchema, id?: string): Observable<ISchema[]> {
+        const data = Object.assign({}, schema, { id: id || schema.id });
+        return this.http.put<any[]>(`${this.url}`, data);
+    }
 
-  public exportSchemes(ids: string[]): Observable<any> {
-    return this.http.post<any[]>(`/api/schema/export`, { ids });
-  }
+    public newVersion(category: SchemaCategory, schema: ISchema, id?: string): Observable<ITask> {
+        const data = Object.assign({}, schema, { id: id || schema.id });
+        schema.category = category;
+        return this.http.post<ITask>(`${this.url}/push/${data.topicId}`, data);
+    }
 
-  public publishSchema(id: string): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/publish', { id });
-  }
+    public list(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/list/all`);
+    }
 
-  public unpublishedSchema(id: string): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/unpublished', { id });
-  }
+    public getSchemas(topicId?: string): Observable<ISchema[]> {
+        if (topicId) {
+            return this.http.get<ISchema[]>(`${this.url}/${topicId}`);
+        }
+        return this.http.get<ISchema[]>(`${this.url}`);
+    }
 
-  public deleteSchema(id: string): Observable<ISchema[]> {
-    return this.http.post<any[]>('/api/schema/delete', { id });
-  }
+    public getSubSchemas(
+        topicId?: string,
+        category?: SchemaCategory
+    ): Observable<any[]> {
+        if (topicId && category) {
+            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}&category=${category}`);
+        } else if (topicId) {
+            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}`);
+        } else if (category) {
+            return this.http.get<any[]>(`${this.url}/list/sub?category=${category}`);
+        } else {
+            return this.http.get<any[]>(`${this.url}/list/sub`);
+        }
+    }
+
+    public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
+    }
+
+    public getSchemasByPage(
+        category?: SchemaCategory,
+        topicId?: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<ISchema[]>> {
+        let url = `${this.url}`;
+        if (topicId) {
+            url += `/${topicId}`
+        }
+        if (category) {
+            url += `?category=${category}`;
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        return this.http.get<any>(url, { observe: 'response' });
+    }
+
+    public getSchemasByType(type: string): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.url}/type/${type}`);
+    }
+
+    public publish(id: string, version: string): Observable<ISchema[]> {
+        return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
+    }
+
+    public pushPublish(id: string, version: string): Observable<ITask> {
+        return this.http.put<ITask>(`${this.url}/push/${id}/publish`, { version });
+    }
+
+    public unpublished(id: string): Observable<ISchema[]> {
+        return this.http.put<any[]>(`${this.url}/${id}/unpublish`, null);
+    }
+
+    public delete(id: string): Observable<ISchema[]> {
+        return this.http.delete<any[]>(`${this.url}/${id}`);
+    }
+
+    public exportInFile(id: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${id}/export/file`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public exportInMessage(id: string): Observable<ISchema[]> {
+        return this.http.get<any[]>(`${this.url}/${id}/export/message`);
+    }
+
+    public pushImportByMessage(messageId: string, topicId: any): Observable<ITask> {
+        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/message`, { messageId });
+    }
+
+    public pushImportByFile(schemasFile: any, topicId: any): Observable<ITask> {
+        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/file`, schemasFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public previewByMessage(messageId: string): Observable<ISchema> {
+        return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+    }
+
+    public pushPreviewByMessage(messageId: string): Observable<ITask> {
+        return this.http.post<ITask>(`${this.url}/push/import/message/preview`, { messageId });
+    }
+
+    public previewByFile(schemasFile: any): Observable<ISchema[]> {
+        return this.http.post<any[]>(`${this.url}/import/file/preview`, schemasFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public createSystemSchemas(schema: ISchema): Observable<ISchema> {
+        const username = encodeURIComponent(this.auth.getUsername());
+        return this.http.post<any>(`${this.url}/system/${username}`, schema);
+    }
+
+    public getSystemSchemas(pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+        const username = encodeURIComponent(this.auth.getUsername());
+        let url = `${this.url}/system/${username}`;
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        return this.http.get<any>(url, { observe: 'response' });
+    }
+
+    public deleteSystemSchema(id: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/system/${id}`);
+    }
+
+    public updateSystemSchema(schema: ISchema, id?: string): Observable<ISchema[]> {
+        const data = Object.assign({}, schema, { id: id || schema.id });
+        return this.http.put<any[]>(`${this.url}/system/${id}`, data);
+    }
+
+    public activeSystemSchema(id: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/system/${id}/active`, null);
+    }
+
+    public getSystemSchemasByEntity(entity: SchemaEntity): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.url}/system/entity/${entity}`);
+    }
+
+    public getSchemaParents(id: string): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
+    }
+
+    public copySchema(copyInfo: any) {
+        return this.http.post<ITask>(`${this.url}/push/copy`, copyInfo);
+    }
+
+    public getSchemaTree(id: string): Observable<SchemaNode> {
+        return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
+    }
+
+    public properties(): Observable<any[]> {
+        return this.http.get<any>(`${API_BASE_URL}/projects/properties`);
+    }
+
+    public exportToExcel(id: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${id}/export/xlsx`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public downloadExcelExample(): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/export/template`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public previewByXlsx(file: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public pushImportByXlsx(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<ITask>(`${this.url}/push/${topicId}/import/xlsx`, schemasFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
 }

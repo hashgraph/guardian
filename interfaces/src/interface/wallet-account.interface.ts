@@ -1,6 +1,17 @@
+/**
+ * Wallet account interface
+ */
 export interface IWalletAccount {
-    id: string;
-    token: string;
-    type: string;
-    key: string;
+    /**
+     * Token
+     */
+    token?: string;
+    /**
+     * Type
+     */
+    type?: string;
+    /**
+     * Key
+     */
+    key?: string;
 }

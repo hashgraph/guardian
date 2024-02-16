@@ -3,7 +3,26 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+    accessTokenUpdateInterval: 29 * 1000,
+    displayDemoAccounts: true,
+    isMeecoConfigured: true,
+  explorerSettings: {
+    url: 'https://explore.lworks.io/${network}/${type}/${value}/${subType}/${subValue}',
+    networkMap: {
+        'mainnet': 'mainnet',
+        'testnet': 'testnet',
+        'local': 'testnet'
+    },
+    typeMap: {
+        'tokens': 'tokens',
+        'topics': 'topics',
+        'accounts': 'accounts',
+        'messages': 'messages',
+        'serials': 'nfts',
+        'contracts': 'contracts',
+    }
+  }
 };
 
 /*

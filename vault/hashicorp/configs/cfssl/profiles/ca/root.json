@@ -1,0 +1,16 @@
+{
+  "CN": "Guardian Root CA",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+  {
+    "C": "FR",
+    "L": "Paris",
+    "ST": "Paris",
+    "O": "Guardian",
+    "OU": "Guardian team Root CA"
+  }
+ ]
+}

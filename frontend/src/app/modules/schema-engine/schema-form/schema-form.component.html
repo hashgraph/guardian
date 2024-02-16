@@ -1,0 +1,359 @@
+<form
+        *ngIf="options"
+        [attr.childSchema]="isChildSchema"
+        [attr.dialogForm]="comesFromDialog"
+        [formGroup]="options"
+    [attr.showButtons]="showButtons"
+    [attr.pageButtons]="fields && showButtons && !isChildSchema"
+    [attr.example]="example"
+>
+    <ng-container *ngFor="let item of fields; let i = index">
+        <div *ngIf="!item.hide && !item.hidden" [attr.showMobileField]="isShown[i] || isChildSchema"
+             class="form-field-container">
+            <!-- simple field -->
+            <div *ngIf="!item.isArray && !item.isRef" class="form-field">
+                <div class="invalid-field-label"
+                     *ngIf="!isFormForFinishSetup && options.controls[item.name] && !options.controls[item.name].valid && !options.controls[item.name].disabled">
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
+                    <span>
+                        <b>{{getInvalidMessageByFieldType(item)}}</b>
+                    </span>
+                </div>
+                <div *ngIf="!isFormForFinishSetup && item.required" class="required-field">* Required</div>
+                <div *ngIf="!isFormForFinishSetup && !isHelpText(item)" class="label-field">{{ item.description }}</div>
+                <div *ngIf="!isFormForFinishSetup && isHelpText(item)" class="label-field help-text"
+                    [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
+                    <b *ngIf="item.textBold; else plainDescription">{{item.description}}</b>
+                    <ng-template #plainDescription>{{item.description}}</ng-template>
+                </div>
+                <div class="form-field-value">
+                    <div *ngIf="!isFormForFinishSetup && isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
+
+                    <ng-container *ngIf="isFormForFinishSetup">
+                        <div class="input-field-container">
+                            <label class="form-label"
+                            >{{ item.description }}</label
+                            >
+                            <input
+                                    [formControlName]="item.name"
+                                    [placeholder]="getPlaceholderByFieldType(item)"
+                                    pInputText
+                                    type="text"
+                            />
+                        </div>
+                    </ng-container>
+
+                    <mat-form-field *ngIf="!isFormForFinishSetup && isInput(item)"
+                                    class="example-full-width required-form-field"
+                        appearance="outline" [ngClass]="{'ipfs-url' : isIPFS(item)}">
+                        <input matInput [formControlName]="item.name" [placeholder]="getPlaceholderByFieldType(item)">
+                        <div *ngIf="isIPFS(item)">
+                            <input type="file" class="file-input" style="display:none;" accept="image/*"
+                                (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
+                            <div class="file-upload">
+                                <ng-container [ngSwitch]="item.fileUploading">
+                                    <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
+                                    <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
+                                        (click)="fileUpload.click()">
+                                        <mat-icon>attach_file</mat-icon>
+                                    </button>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </mat-form-field>
+
+                    <mat-form-field *ngIf="isTime(item)" class="example-full-width required-form-field"
+                        appearance="outline">
+                        <input matInput type="time" step="1" [formControlName]="item.name"
+                            [placeholder]="getPlaceholderByFieldType(item)">
+                    </mat-form-field>
+
+                    <mat-form-field *ngIf="isDateTime(item)" class="example-full-width required-form-field"
+                        appearance="outline">
+                        <mat-label>Choose a date & time</mat-label>
+                        <input matInput [ngxMatDatetimePicker]="dateTimePicker" [formControlName]="item.name">
+                        <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
+                        <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true"></ngx-mat-datetime-picker>
+                    </mat-form-field>
+
+                    <mat-form-field *ngIf="isDate(item)" class="example-full-width required-form-field"
+                        appearance="outline">
+                        <mat-label>Choose a date</mat-label>
+                        <input [formControlName]="item.name" matInput [matDatepicker]="dateItem">
+                        <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+                        <mat-datepicker #dateItem></mat-datepicker>
+                    </mat-form-field>
+
+                    <div *ngIf="isBoolean(item)" class="boolean-form-field"
+                        [ngClass]="{'required-boolean-field': item.required && !options.controls[item.name].valid && !options.controls[item.name].disabled }">
+                        <mat-radio-group [formControlName]="item.name">
+                            <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+                            <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
+                            <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+
+                    <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
+                        <mat-select [formControlName]="item.name">
+                            <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue" [title]="enumValue">
+                                {{enumValue}}
+                            </mat-option>
+                            <mat-option *ngIf="item.fileUploading">
+                                <mat-spinner class="loading-enum-values" [diameter]="35"></mat-spinner>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
+                </div>
+            </div>
+
+            <!-- sub schema -->
+            <div *ngIf="!item.isArray && item.isRef" class="form-field-group sub-schema">
+                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
+                    <span>
+                        <b>Please make sure all fields in schema contain a valid value</b>
+                    </span>
+                </div>
+                <div *ngIf="item.required && item.displayRequired" class="required-field">* Required</div>
+                <div class="label-field" id="detail-section">
+                    <div *ngIf="!isChildSchema && fields" class="page-number">{{i + 1}}/{{fields.length}}</div>
+                    <span class="detail-section-title">{{ item.description }}</span>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 2}}</div>
+                </div>
+                <div *ngIf="item.control" class="form-field-array-item">
+                    <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
+                        <ng-container [ngSwitch]="item.customType">
+                            <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="item.control" [preset]="item.preset"
+                                [disabled]="item.control?.disabled">
+                            </app-geojson-type>
+                            <app-sentinel-hub-type *ngSwitchCase="'sentinel'" [disabled]="item.control?.disabled"
+                                                   [formGroup]="item.control"
+                                                   [preset]="item.preset">
+                            </app-sentinel-hub-type>
+                            <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="item.preset" [isChildSchema]="true">
+                            </app-schema-form>
+                        </ng-container>
+                    </div>
+                </div>
+                <div *ngIf="!item.control && !item.readonly" class="add-btn" (click)="addGroup(item)">
+                    <span>
+                        <mat-icon>add</mat-icon> Add Entity
+                    </span>
+                </div>
+                <div *ngIf="item.control && !item.required && !item.control.disabled" class="remove-btn"
+                    (click)="removeGroup(item)">
+                    <span>
+                        <mat-icon>remove</mat-icon> Remove Entity
+                    </span>
+                </div>
+            </div>
+
+            <!-- array of simple fields -->
+            <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
+                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
+                    <span>
+                        <b>{{getInvalidMessageByFieldType(item)}}</b>
+                    </span>
+                </div>
+                <div *ngIf="item.required" class="required-field">* Required</div>
+                <div class="label-field" id="detail-section">
+                    <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>
+                    <span>{{item.description}}</span>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 1}}</div>
+                </div>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item" [attr.index]="listItem.index"
+                    [attr.required]="item.required" [formGroup]="item.control">
+                    <div class="form-field">
+                        <div class="form-field-value">
+                            <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
+
+                            <mat-form-field *ngIf="isInput(item)" class="example-full-width required-form-field"
+                                appearance="outline" [ngClass]="{'ipfs-url' : isIPFS(item)}">
+                                <input matInput [formControl]="listItem.control"
+                                    [placeholder]="getPlaceholderByFieldType(item)">
+
+                                <div *ngIf="isIPFS(item)">
+                                    <input type="file" class="file-input" style="display:none;" accept="image/*"
+                                        (change)="onFileSelected($event, listItem.control, listItem)" #fileUpload>
+                                    <div class="file-upload">
+                                        <ng-container [ngSwitch]="listItem.fileUploading">
+                                            <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
+                                            <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
+                                                (click)="fileUpload.click()">
+                                                <mat-icon>attach_file</mat-icon>
+                                            </button>
+                                        </ng-container>
+                                    </div>
+                                </div>
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="isTime(item)" class="example-full-width required-form-field"
+                                appearance="outline">
+                                <input matInput type="time" step="1" [formControl]="listItem.control"
+                                    [placeholder]="getPlaceholderByFieldType(item)">
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="isDateTime(item)" class="example-full-width required-form-field"
+                                appearance="outline">
+                                <mat-label>Choose a date & time</mat-label>
+                                <input matInput [ngxMatDatetimePicker]="dateTimePicker"
+                                    [formControl]="listItem.control">
+                                <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
+                                <ngx-mat-datetime-picker #dateTimePicker [enableMeridian]="true">
+                                </ngx-mat-datetime-picker>
+                            </mat-form-field>
+
+                            <mat-form-field *ngIf="isDate(item)" class="example-full-width required-form-field"
+                                appearance="outline">
+                                <mat-label>Choose a date</mat-label>
+                                <input [formControl]="listItem.control" matInput [matDatepicker]="dateItem">
+                                <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
+                                <mat-datepicker #dateItem></mat-datepicker>
+                            </mat-form-field>
+
+                            <div *ngIf="isBoolean(item)" class="boolean-form-field"
+                                [ngClass]="{'required-boolean-field': item.required && !listItem.control.valid}">
+                                <mat-radio-group [formControl]="listItem.control">
+                                    <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
+                                    <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
+                                    <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset
+                                    </mat-radio-button>
+                                </mat-radio-group>
+                            </div>
+
+                            <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
+                                <mat-select [formControl]="listItem.control">
+                                    <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue" [title]="enumValue">
+                                        {{enumValue}}
+                                    </mat-option>
+                                    <mat-option *ngIf="item.fileUploading">
+                                        <mat-spinner class="loading-enum-values" [diameter]="35"></mat-spinner>
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
+                        </div>
+                    </div>
+                    <div class="fields-remove" *ngIf="!item.control.disabled" (click)="removeItem(item, listItem)">
+                        <mat-icon>delete</mat-icon>
+                    </div>
+                </div>
+                <div class="add-btn" *ngIf="!item.control.disabled" (click)="addItem(item)">
+                    <span>
+                        <mat-icon>add</mat-icon> Add Field
+                    </span>
+                </div>
+            </div>
+
+            <!-- array of sub schemas -->
+            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group sub-schemas">
+                <div class="invalid-field-label" *ngIf="!item.control.valid && !item.control.disabled">
+                    <!--                    <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>-->
+                    <span>
+                        <b>Please make sure all fields in schemas contain a valid value</b>
+                    </span>
+                </div>
+                <div *ngIf="item.required" class="required-field">* Required</div>
+                <div class="label-field" id="detail-section">
+                    <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>
+                    <span>{{item.description}}</span>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
+                    <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 1}}</div>
+                </div>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item" [attr.index]="listItem.index"
+                    [attr.required]="item.required">
+                    <div class="form-field-group">
+                        <ng-container [ngSwitch]="item.customType">
+                            <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="listItem.control"
+                                [disabled]="item.control?.disabled" [preset]="listItem.preset">
+                            </app-geojson-type>
+                            <app-sentinel-hub-type *ngSwitchCase="'sentinel'" [disabled]="item.control?.disabled"
+                                                   [formGroup]="listItem.control" [preset]="listItem.preset">
+                            </app-sentinel-hub-type>
+                            <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="listItem.preset" [isChildSchema]="true">
+                            </app-schema-form>
+                        </ng-container>
+
+                        <div class="remove-btn" *ngIf="!item.control.disabled" (click)="removeItem(item, listItem)">
+                            <span>
+                                <mat-icon>remove</mat-icon> Remove Entity
+                            </span>
+                        </div>
+                    </div>
+                    <div class="short-delimiter-container">
+                        <div class="delimiter"></div>
+                    </div>
+                </div>
+                <div class="add-btn" *ngIf="!item.control.disabled" (click)="addItem(item)">
+                    <span>
+                        <mat-icon>add</mat-icon> Add Entity
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <ng-template [ngIf]="getConditions(item).length > 0">
+            <div *ngFor="let condition of getConditions(item)">
+                <app-schema-form
+                    *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition"
+                    [fields]="condition.thenFields" [formGroup]="condition.conditionForm" [preset]="condition.preset"
+                    [readonly-fields]="readonly"
+                    (destroy)="removeConditionFields(condition.thenFields, condition)"
+                    [isChildSchema]="true"></app-schema-form>
+                <ng-template #elseCondition>
+                    <app-schema-form *ngIf="condition.elseFields && condition.elseFields.length > 0"
+                        [readonly-fields]="readonly" [fields]="condition.elseFields"
+                        [formGroup]="condition.conditionForm" [preset]="condition.preset"
+                        (destroy)="removeConditionFields(condition.elseFields, condition)"
+                        [isChildSchema]="true">
+                    </app-schema-form>
+                </ng-template>
+            </div>
+        </ng-template>
+
+    </ng-container>
+
+    <div *ngIf="fields && showButtons && !comesFromDialog && !isChildSchema" class="progress-footer page-btns">
+        <button (click)="onCancelBtnClick()"
+                *ngIf="currentIndex === 0  && !cancelHidden"
+                [label]="cancelText"
+                class="p-button-outlined"
+                pButton
+                type="button"
+        ></button>
+        <button (click)="getPrevShownFields(fields)"
+                *ngIf="currentIndex !== 0"
+                class="p-button-outlined"
+                label="Previous"
+                pButton
+                type="button"
+        ></button>
+        <div>
+            <button (click)="getNextShownFields(fields)"
+                    *ngIf="!isShown[fields.length - 1]"
+                    class="p-button"
+                    label="Next"
+                    pButton
+                    style="margin-right: 16px;"
+                    type="button"
+            ></button>
+            <button (click)="onSubmitBtnClick(fields)"
+                    *ngIf="isShown[fields.length - 1] && !submitHidden"
+                    [disabled]="!group.valid"
+                    [label]="submitText"
+                    class="p-button"
+                    pButton
+                    style="margin-right: 16px;"
+                    type="button"
+            ></button>
+        </div>
+    </div>
+</form>

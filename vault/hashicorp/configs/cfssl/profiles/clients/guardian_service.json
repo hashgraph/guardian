@@ -1,0 +1,23 @@
+{
+  "CN": "guardian_svc",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "FR",
+      "L": "Paris",
+      "O": "Guardian",
+      "OU": "Vault Guardian",
+      "ST": "Paris"
+    }
+  ],
+  "hosts": [
+    "localhost",
+    "127.0.0.1",
+    "consul",
+    "server.dc1.consul"
+  ]
+}
+  

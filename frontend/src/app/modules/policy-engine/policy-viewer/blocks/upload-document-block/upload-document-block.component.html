@@ -1,0 +1,46 @@
+<div class="content-{{type}}" [hidden]="!isExist">
+    <ng-container *ngIf="type=='page'">
+        <div class="upload-area">
+            <div class="page-header">
+                <h1 *ngIf="pageTitle" mat-dialog-title>{{pageTitle}}</h1>
+                <div *ngIf="pageDescription" class="description">{{pageDescription}}</div>
+            </div>
+            <app-file-drag-n-drop fileExtension="json" [dropZoneLabel]="uploadText()" (onFileLoaded)="onDrop($event)" [multiple]="true"></app-file-drag-n-drop>
+            <button *ngIf="items.length > 0" style="top: 10px;" class="registrant-application-create-btn" mat-raised-button color="primary" type="submit" (click)="onSubmit($event)">Send</button>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="type=='dialog'">
+        <button mat-raised-button color="primary" class="btn-block-{{buttonClass}}"
+            (click)="onDialog()">{{buttonText}}</button>
+    </ng-container>
+</div>
+
+<ng-template #dialogTemplate let-data>
+    <div>
+        <h1 mat-dialog-title class="title">{{data.dialogTitle}}</h1>
+        <div class="description">
+            {{dialogDescription}}
+        </div>
+        <div *ngIf="data.schema" mat-dialog-content class="body-dialog-template">
+            <ng-template #preloader>
+                <div class="preloader-image"></div>
+            </ng-template>
+
+            <div *ngIf="dialogLoading" class="loading">
+                <div class="preloader-image preloader-image-l-size"></div>
+            </div>
+            <app-file-drag-n-drop fileExtension="json" dropZoneLabel="Drop file here" (onFileLoaded)="onDrop($event)" [multiple]="true"></app-file-drag-n-drop>
+        </div>
+        <div *ngIf="!data.schema" mat-dialog-actions>
+            <button mat-button type="button" (click)="data.onCancel()">Cancel</button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>
