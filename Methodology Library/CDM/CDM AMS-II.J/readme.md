@@ -77,5 +77,62 @@ Policy Timestamp: 1706881157.848214003
 
 ### Step By Step 
 
-Coming Soon
+1. Login as Standard Registry and import the policy either by file or through IPFS timestamp.
 
+2. Create a new user and assign role as Project Proponent.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/a4b7bbf0-d33b-4ddf-b4da-da97bd28d6fe)
+
+3. Name new Project Participant.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/907e0cad-360a-4ae0-bddb-7aa27f2634e3)
+
+4. Сreate a new user and assign role as VVB.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/89d1c59f-d6b0-49be-b4d1-11b2be7f1103)
+
+5. Name new VVB.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/d6f21000-7e04-40fb-8e87-fdbc9c594137)
+
+6. Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/5d53a6a5-dc61-41e6-a8a2-e558900b3565)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/140e323d-2afb-4e35-9bbc-6ec147a640ed)
+
+7. Once approved, login back as Project Participant and create new project by clicking on" New Project" and entering complete details of the project
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/1343057f-351f-4d8c-96ee-a6f305cba703)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/1846004a-7e8f-42fc-b9a1-c19847bc07db)
+
+8. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/9ab67eea-47bb-4bb0-8870-23e56aae9bdd)
+
+9. Project Participant creates monitoring report by clicking on “Add Report” and fills out the monitoring report form
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/4966abc3-cd08-49a3-919b-ba8ad1681bc7)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/436b883f-3864-4b90-8883-0e97141b4a11)
+
+10. After creating monitoring report, project participant assigns VVB to verify it:
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/9ec899cd-1daf-4d9c-9714-cfacfe4d94b0)
+
+11. Login as VVB and after reviewing the monitoring report, the VVB verifies it.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/33a3a46b-c554-4316-a9b9-b99e19613d02)
+
+12. Login as SR and once it is reviewed, SR approves the Monitoring report.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/2f97eb46-146c-42cf-8e39-6a536dbaa2b9)
+
+13. Once minting is completed, we can view tokens in VPs  tab.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/90f387f1-2a9d-4868-af66-c7c2a8d96923)
+
+14. Trustchain can also be viewed by clicking on “View TrustChain” button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/fdf7a5bd-2770-46f5-a8d0-7d03792b5867)
