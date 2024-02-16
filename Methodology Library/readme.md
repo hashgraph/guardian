@@ -42,10 +42,9 @@ This folder contains sub folders for each Methodology and their authors (with ma
 20. CDM ACM0001 (Coming Soon)
 21. CDM ACM0002 (Coming Soon)
 22. CDM AMS-III.F (Coming Soon)
-23. CDM ACM0006 (Coming Soon)
-24. CDM ACM0018 (Coming Soon)
-25. CDM AMS-I.F (Coming Soon)
-26. CDM AMS-I.A (Coming Soon)
+23. CDM ACM0018 (Coming Soon)
+24. CDM AMS-I.F (Coming Soon)
+25. CDM AMS-I.A (Coming Soon)
 
 ### Emission Policies
 
