@@ -21,7 +21,7 @@ context("Policies", { tags: '@policies' },() => {
           expect(firstPolicyStatus).to.equal('DRAFT')
           cy.request({
             method: 'PUT',
-            url: Cypress.env('api_server') + 'policies/' + firstPolicyId + '/publish',
+            url: API.ApiServer + 'policies/' + firstPolicyId + '/publish',
             body: { policyVersion: "1.2.5" },
             headers: { authorization },
             timeout: 600000
