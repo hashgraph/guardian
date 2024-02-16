@@ -37,6 +37,8 @@ In the modern landscape of emission reduction initiatives, transparency and cred
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
+Policy Timestamp:&#x20;
+
 #### Available Roles <a href="#available-roles" id="available-roles"></a>
 
 * Project participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
@@ -61,3 +63,63 @@ Tools referenced in this methodology:  - Tool 03- Tool to calculate project or
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 #### Step By Step <a href="#step-by-step" id="step-by-step"></a>
+
+1.Login as Standard Registry and import the policy either by file or through IPFS timestamp.
+
+2.Create a new user and assign role as Project Proponent.
+
+<figure><img src="../../../.gitbook/assets/image (440).png" alt=""><figcaption></figcaption></figure>
+
+3\. Name new Project Participant.
+
+<figure><img src="../../../.gitbook/assets/image (441).png" alt=""><figcaption></figcaption></figure>
+
+4\. Сreate a new user and assign role as VVB.
+
+<figure><img src="../../../.gitbook/assets/image (442).png" alt=""><figcaption></figcaption></figure>
+
+5\. Name new VVB.
+
+<figure><img src="../../../.gitbook/assets/image (443).png" alt=""><figcaption></figcaption></figure>
+
+6.Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+
+<figure><img src="../../../.gitbook/assets/image (444).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (445).png" alt=""><figcaption></figcaption></figure>
+
+7.Once approved, login back as Project Participant and create new project by clicking on" New project" and entering complete details of the project:
+
+<figure><img src="../../../.gitbook/assets/image (446).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (447).png" alt=""><figcaption></figcaption></figure>
+
+8\. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+
+<figure><img src="../../../.gitbook/assets/image (448).png" alt=""><figcaption></figcaption></figure>
+
+9\.  Project Participant creates monitoring report by clicking on “Add Report” and fills out the monitoring report form”
+
+<figure><img src="../../../.gitbook/assets/image (449).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (450).png" alt=""><figcaption></figcaption></figure>
+
+10.After creating monitoring report, project participant assigns VVB to verify it:
+
+<figure><img src="../../../.gitbook/assets/image (451).png" alt=""><figcaption></figcaption></figure>
+
+11.Login as VVB and after reviewing the monitoring report, the VVB verifies it.
+
+<figure><img src="../../../.gitbook/assets/image (452).png" alt=""><figcaption></figcaption></figure>
+
+12.Login as SR and once it is reviewed, SR approves the Monitoring report.
+
+<figure><img src="../../../.gitbook/assets/image (453).png" alt=""><figcaption></figcaption></figure>
+
+13.Once minting is completed, we can view tokens in VPs  tab.
+
+<figure><img src="../../../.gitbook/assets/image (454).png" alt=""><figcaption></figcaption></figure>
+
+14.Trustchain can also be viewed by clicking on “View TrustChain” button.
+
+<figure><img src="../../../.gitbook/assets/image (455).png" alt=""><figcaption></figcaption></figure>
