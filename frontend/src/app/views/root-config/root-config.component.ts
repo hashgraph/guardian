@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import {
     FormBuilder,
     FormControl,
@@ -69,14 +69,15 @@ export class RootConfigComponent implements OnInit {
     constructor(
         private router: Router,
         private auth: AuthService,
+        private fb: FormBuilder,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private otherService: DemoService,
         private informService: InformService,
         private taskService: TasksService,
-        private fb: FormBuilder,
+        private headerProps: HeaderPropsService,
         public dialog: DialogService,
-        private headerProps: HeaderPropsService
+        private cdRef: ChangeDetectorRef
     ) {
         this.profile = null;
         this.balance = null;
@@ -178,6 +179,18 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
+    private setErrors(form: FormControl | FormGroup, type?: string): void {
+        const errors: any = {};
+        errors[type || 'incorrect'] = true;
+        form.setErrors(errors);
+        form.markAsDirty();
+        setTimeout(() => {
+            form.setErrors(errors);
+            form.markAsDirty();
+        })
+        // form.setValue('');
+    }
+
     public parseDidDocument() {
         try {
             const json = this.didDocumentForm.value;
@@ -187,6 +200,15 @@ export class RootConfigComponent implements OnInit {
                 .validateDID(document)
                 .subscribe(
                     (result) => {
+                        if (!result.valid) {
+                            if (result.error === 'DID Document already exists.') {
+                                this.setErrors(this.didDocumentForm, 'exists');
+                            } else {
+                                this.setErrors(this.didDocumentForm, 'incorrect');
+                            }
+                            this.loading = false;
+                            return;
+                        }
                         this.didKeys = [];
                         this.didKeysControl = new FormGroup({});
                         const names = Object.keys(result.keys);
@@ -209,11 +231,59 @@ export class RootConfigComponent implements OnInit {
                         this.loading = false;
                     },
                     (e) => {
-                        this.didDocumentForm.setErrors({ 'incorrect': true });
+                        this.setErrors(this.didDocumentForm, 'incorrect');
                     }
                 );
         } catch (error) {
-            this.didDocumentForm.setErrors({ 'incorrect': true });
+            this.setErrors(this.didDocumentForm, 'incorrect');
+        }
+    }
+
+    public parseDidKeys() {
+        try {
+            const json = this.didDocumentForm.value;
+            const document = JSON.parse(json);
+            const keys: any[] = [];
+            for (const didKey of this.didKeys) {
+                keys.push({
+                    id: didKey.keyNameControl.value,
+                    key: didKey.keyValueControl.value
+                })
+            }
+            this.loading = true;
+            this.profileService
+                .validateDIDKeys(document, keys)
+                .subscribe(
+                    (result) => {
+                        let valid = true;
+                        if (Array.isArray(result)) {
+                            for (const didKey of this.didKeys) {
+                                const item = result.find(k => k.id === didKey.keyNameControl.value);
+                                if (!item || !item.valid) {
+                                    this.setErrors(didKey.keyValueControl, 'incorrect');
+                                    valid = false;
+                                }
+                            }
+                        } else {
+                            for (const didKey of this.didKeys) {
+                                this.setErrors(didKey.keyValueControl, 'incorrect');
+                                valid = false;
+                            }
+                        }
+                        if (valid) {
+                            this.onNextStep('VC')
+                        } else {
+                            this.setErrors(this.didKeysControl, 'incorrect');
+                        }
+                        this.cdRef.detectChanges();
+                        this.loading = false;
+                    },
+                    (e) => {
+                        this.setErrors(this.didKeysControl, 'incorrect');
+                    }
+                );
+        } catch (error) {
+            this.setErrors(this.didKeysControl, 'incorrect');
         }
     }
 

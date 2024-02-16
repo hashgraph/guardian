@@ -44,4 +44,8 @@ export class ProfileService {
     public validateDID(document: any): Observable<any> {
         return this.http.post<any>(`${this.url}/did-document/validate`, document);
     }
+
+    public validateDIDKeys(document: any, keys: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/did-keys/validate`, { document, keys });
+    }
 }

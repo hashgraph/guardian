@@ -1,9 +1,12 @@
 import { DidDocumentStatus, DocumentStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
+    CommonDidDocument,
     DataBaseHelper,
     DidDocument as DidDocumentCollection,
     DIDMessage,
+    HederaBBSMethod,
+    HederaEd25519Method,
     IAuthUser,
     KeyType,
     Logger,
@@ -100,7 +103,6 @@ async function createUserProfile(
     user: IAuthUser
 ): Promise<string> {
     const logger = new Logger();
-
     const {
         hederaAccountId,
         hederaAccountKey,
@@ -109,15 +111,15 @@ async function createUserProfile(
         didDocument,
         entity
     } = profile;
-
-    let topicConfig: TopicConfig = null;
-    let newTopic: Topic = null;
-
-    notifier.start('Resolve topic');
-    const globalTopic = await getGlobalTopic();
-
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
+    // ------------------------
+    // <-- Resolve topic
+    // ------------------------
+    notifier.start('Resolve topic');
+    let topicConfig: TopicConfig = null;
+    let newTopic: Topic = null;
+    const globalTopic = await getGlobalTopic();
     if (parent) {
         topicConfig = await TopicConfig.fromObject(
             await new DataBaseHelper(Topic).findOne({
@@ -125,7 +127,6 @@ async function createUserProfile(
                 type: TopicType.UserTopic
             }), true);
     }
-
     if (!topicConfig) {
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
@@ -141,8 +142,10 @@ async function createUserProfile(
         await topicHelper.oneWayLink(topicConfig, globalTopic, null);
         newTopic = await new DataBaseHelper(Topic).save(topicConfig.toObject());
     }
-
     messageServer.setTopicObject(topicConfig);
+    // ------------------------
+    // Resolve topic -->
+    // ------------------------
 
     // ------------------------
     // <-- Publish DID Document
@@ -151,8 +154,8 @@ async function createUserProfile(
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
 
     const vcHelper = new VcHelper();
-    const didObject = await vcHelper.generateNewDid(topicConfig.topicId, hederaAccountKey);
-    const userDID = didObject.getDid();
+    const newDidDocument = await vcHelper.generateNewDid(topicConfig.topicId, hederaAccountKey);
+    const userDID = newDidDocument.getDid();
 
     const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({ did: userDID });
     if (existingUser) {
@@ -161,23 +164,22 @@ async function createUserProfile(
         return userDID;
     }
 
-    const didDoc = await vcHelper.saveDidDocument(didObject, user);
-    const did = didObject.getDid();
+    const didRow = await vcHelper.saveDidDocument(newDidDocument, user);
 
     try {
         const didMessage = new DIDMessage(MessageAction.CreateDID);
-        didMessage.setDocument(didObject);
+        didMessage.setDocument(newDidDocument);
         const didMessageResult = await messageServer
             .setTopicObject(topicConfig)
             .sendMessage(didMessage)
-        didDoc.status = DidDocumentStatus.CREATE;
-        didDoc.messageId = didMessageResult.getId();
-        didDoc.topicId = didMessageResult.getTopicId();
-        await new DataBaseHelper(DidDocumentCollection).update(didDoc);
+        didRow.status = DidDocumentStatus.CREATE;
+        didRow.messageId = didMessageResult.getId();
+        didRow.topicId = didMessageResult.getTopicId();
+        await new DataBaseHelper(DidDocumentCollection).update(didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE']);
-        didDoc.status = DidDocumentStatus.FAILED;
-        await new DataBaseHelper(DidDocumentCollection).update(didDoc);
+        didRow.status = DidDocumentStatus.FAILED;
+        await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
     // ------------------------
     // Publish DID Document -->
@@ -205,8 +207,8 @@ async function createUserProfile(
             if (schema) {
                 notifier.info('Publish System Schema (STANDARD_REGISTRY)');
                 logger.info('Publish System Schema (STANDARD_REGISTRY)', ['GUARDIAN_SERVICE']);
-                schema.creator = did;
-                schema.owner = did;
+                schema.creator = userDID;
+                schema.owner = userDID;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 await new DataBaseHelper(SchemaCollection).save(item);
             }
@@ -226,8 +228,8 @@ async function createUserProfile(
             if (schema) {
                 notifier.info('Publish System Schema (USER)');
                 logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
-                schema.creator = did;
-                schema.owner = did;
+                schema.creator = userDID;
+                schema.owner = userDID;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 await new DataBaseHelper(SchemaCollection).save(item);
             }
@@ -247,8 +249,8 @@ async function createUserProfile(
             if (schema) {
                 notifier.info('Publish System Schema (RETIRE)');
                 logger.info('Publish System Schema (RETIRE)', ['GUARDIAN_SERVICE']);
-                schema.creator = did;
-                schema.owner = did;
+                schema.creator = userDID;
+                schema.owner = userDID;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 await new DataBaseHelper(SchemaCollection).save(item);
             }
@@ -284,13 +286,12 @@ async function createUserProfile(
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
-        const didDocument = await vcHelper.loadDidDocument(userDID);
-        const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
+        const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, newDidDocument, null, null);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vcObject);
         const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
             hash: vcMessage.hash,
-            owner: did,
+            owner: userDID,
             document: vcMessage.document,
             type: schemaObject?.entity
         });
@@ -315,10 +316,10 @@ async function createUserProfile(
 
     notifier.completedAndStart('Save changes');
     if (newTopic) {
-        newTopic.owner = did;
+        newTopic.owner = userDID;
         newTopic.parent = globalTopic?.topicId;
         await new DataBaseHelper(Topic).update(newTopic);
-        topicConfig.owner = did;
+        topicConfig.owner = userDID;
         topicConfig.parent = globalTopic?.topicId;
         await topicConfig.saveKeysByUser(user);
     }
@@ -328,7 +329,7 @@ async function createUserProfile(
         delete attributes.type;
         delete attributes['@context'];
         const regMessage = new RegistrationMessage(MessageAction.Init);
-        regMessage.setDocument(did, topicConfig?.topicId, attributes);
+        regMessage.setDocument(userDID, topicConfig?.topicId, attributes);
         await messageServer
             .setTopicObject(globalTopic)
             .sendMessage(regMessage)
@@ -481,9 +482,9 @@ export function profileAPI() {
             notifier.start('Restore user profile');
             const restore = new RestoreDataFromHedera();
             await restore.restoreRootAuthority(
-                username, 
-                profile.hederaAccountId, 
-                profile.hederaAccountKey, 
+                username,
+                profile.hederaAccountId,
+                profile.hederaAccountKey,
                 profile.topicId
             )
             notifier.completed();
@@ -533,12 +534,70 @@ export function profileAPI() {
             const result = {
                 valid: true,
                 error: '',
-                keys: {
-                    'Ed25519VerificationKey2018': ['did-root-key', 'did-key-1'],
-                    'Bls12381G2Key2020': ['did-root-key-bbs', 'did-key-bbs-1']
-                }
+                keys: {}
             };
+            try {
+                const didDocument = CommonDidDocument.from(document);
+                const methods = didDocument.getVerificationMethods();
+                const ed25519 = [];
+                const blsBbs = [];
+                for (const method of methods) {
+                    if (method.getType() === HederaEd25519Method.TYPE) {
+                        ed25519.push({
+                            name: method.getName(),
+                            id: method.getId()
+                        });
+                    }
+                    if (method.getType() === HederaBBSMethod.TYPE) {
+                        blsBbs.push({
+                            name: method.getName(),
+                            id: method.getId()
+                        });
+                    }
+                }
+                result.keys[HederaEd25519Method.TYPE] = ed25519;
+                result.keys[HederaBBSMethod.TYPE] = blsBbs;
+                if (ed25519.length === 0) {
+                    result.valid = false;
+                    result.error = `${HederaEd25519Method.TYPE} method not found.`;
+                }
+                if (blsBbs.length === 0) {
+                    result.valid = false;
+                    result.error = `${HederaBBSMethod.TYPE} method not found.`;
+                }
+            } catch (error) {
+                result.valid = false;
+                result.error = 'Invalid DID Document.';
+            }
             return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(MessageAPI.VALIDATE_DID_KEY, async (msg) => {
+        try {
+            const { document, keys } = msg;
+            for (const item of keys) {
+                item.valid = false;
+            }
+            try {
+                const helper = new VcHelper();
+                const didDocument = CommonDidDocument.from(document);
+                for (const item of keys) {
+                    const method = didDocument.getMethodByName(item.id);
+                    if (method) {
+                        method.setPrivateKey(item.key);
+                        item.valid = await helper.validateKey(method);
+                    } else {
+                        item.valid = false;
+                    }
+                }
+                return new MessageResponse(keys);
+            } catch (error) {
+                return new MessageResponse(keys);
+            }
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

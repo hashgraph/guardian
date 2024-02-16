@@ -231,7 +231,7 @@ export class ProfileApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async importPolicyFromXlsxPreview(
+    async validateDidDocument(
         @AuthUser() user: IAuthUser,
         @Body() document: any
     ) {
@@ -241,6 +241,64 @@ export class ProfileApi {
         try {
             const guardians = new Guardians();
             return await guardians.validateDidDocument(document);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /**
+     * .
+     */
+    @Post('/did-keys/validate')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: '.',
+        description: '.',
+    })
+    @ApiBody({
+        description: 'A xlsx file containing policy config.',
+        required: true,
+        type: String
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async validateDidKeys(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ) {
+        if (!body) {
+            throw new HttpException('Body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        const { document, keys } = body;
+        if (!document) {
+            throw new HttpException('Document is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        if (!keys) {
+            throw new HttpException('Keys is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        try {
+            const guardians = new Guardians();
+            return await guardians.validateDidKeys(document, keys);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

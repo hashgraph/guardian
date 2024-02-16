@@ -162,7 +162,13 @@
                         </mat-radio-group>
                         <mat-form-field appearance="outline" class="example-full-width" [attr.active-field]="didDocumentType.value">
                             <mat-label>DID Document:</mat-label>
-                            <textarea matInput [formControl]="didDocumentForm" style="height: 150px"></textarea>
+                            <textarea matInput [formControl]="didDocumentForm" style="height: 150px"></textarea>        
+                            <mat-error *ngIf="didDocumentForm.hasError('incorrect')">
+                                Invalid DID Document.
+                            </mat-error>
+                            <mat-error *ngIf="didDocumentForm.hasError('exists')">
+                                DID Document already exists.
+                            </mat-error>
                         </mat-form-field>
                     </div>
 
@@ -174,14 +180,17 @@
                             <mat-form-field appearance="outline" class="example-full-width">
                                 <mat-label>* Method:</mat-label>
                                 <mat-select [formControl]="item.keyNameControl">
-                                    <mat-option *ngFor="let keyName of item.keyNames" [value]="keyName">
-                                        {{keyName}}
+                                    <mat-option *ngFor="let keyItem of item.keyNames" [value]="keyItem.id">
+                                        {{keyItem.name}}
                                     </mat-option>
                                 </mat-select>
                             </mat-form-field>
                             <mat-form-field class="example-full-width" appearance="outline">
                                 <mat-label>* Key:</mat-label>
                                 <input matInput placeholder="FRs4qVjqvP9Dh..." [formControl]="item.keyValueControl">
+                                <mat-error *ngIf="item.keyValueControl.hasError('incorrect')">
+                                    Invalid DID Key
+                                </mat-error>
                             </mat-form-field>
                         </div>
                     </div>
@@ -278,7 +287,7 @@
                         >
                         </p-button>
                         <p-button
-                            (click)="onNextStep('VC')"
+                            (click)="parseDidKeys()"
                             [disabled]="!didKeysControl.valid"
                             class="next-btn"
                             label="Next"

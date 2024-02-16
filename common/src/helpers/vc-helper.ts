@@ -8,6 +8,7 @@ import {
     HederaEd25519Method,
     HederaBBSMethod,
     Environment,
+    VerificationMethod,
 } from '../hedera-modules';
 import {
     SchemaDocumentLoader,
@@ -38,6 +39,8 @@ import { VCSchemaLoaderV2 } from '../document-loader/vc-schema-loader-v2';
 import { SubjectSchemaLoaderV2 } from '../document-loader/subject-schema-loader-v2';
 import { KeyType, Users, Wallet } from '../helpers';
 import { IAuthUser } from '../interfaces';
+import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
+import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 
 /**
  * Configured VCHelper
@@ -133,13 +136,15 @@ export class VcHelper extends VCJS {
         const document = HederaDidDocument.from(row.document);
         document.setDidTopicId(row.topicId);
 
-        let walletToken: string;
-        if (user) {
-            walletToken = user.walletToken;
-        } else {
-            walletToken = (await (new Users()).getUserById(did))?.walletToken;
+        if (!user) {
+            user = await (new Users()).getUserById(did);
         }
 
+        if (!user) {
+            throw new Error('User not found.');
+        }
+
+        const walletToken = user.walletToken;
         const keys = row.verificationMethods || {};
         const Ed25519Signature2018 = keys[HederaEd25519Method.TYPE];
         const BbsBlsSignature2020 = keys[HederaBBSMethod.TYPE];
@@ -149,18 +154,18 @@ export class VcHelper extends VCJS {
 
         if (Ed25519Signature2018) {
             const privateKey = await wallet.getKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018);
-            document.setPrivateKey(HederaEd25519Method.TYPE, privateKey);
+            document.setPrivateKey(Ed25519Signature2018, privateKey);
         } else {
-            const keyPair = await HederaEd25519Method.generateKeyPair(did, hederaPrivateKey);
-            document.setPrivateKey(keyPair.id, keyPair.privateKey);
+            const { id, privateKey } = await HederaEd25519Method.generateKeyPair(did, hederaPrivateKey);
+            document.setPrivateKey(id, privateKey);
         }
 
         if (BbsBlsSignature2020) {
             const privateKey = await wallet.getKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020);
-            document.setPrivateKey(HederaBBSMethod.TYPE, privateKey);
+            document.setPrivateKey(BbsBlsSignature2020, privateKey);
         } else {
-            const keyPair = await HederaBBSMethod.generateKeyPair(did, hederaPrivateKey);
-            document.setPrivateKey(keyPair.id, keyPair.privateKey);
+            const { id, privateKey } = await HederaBBSMethod.generateKeyPair(did, hederaPrivateKey);
+            document.setPrivateKey(id, privateKey);
         }
 
         return document;
@@ -172,13 +177,17 @@ export class VcHelper extends VCJS {
      * @param needKey
      */
     public async saveDidDocument(document: CommonDidDocument, user: IAuthUser): Promise<DidDocumentCollection> {
+        if (!user) {
+            throw new Error('User not found.');
+        }
+        const walletToken = user.walletToken;
         const wallet = new Wallet();
         const keys = document.getPrivateKeys();
         const verificationMethods = {};
         for (const item of keys) {
             const { id, type, key } = item;
             verificationMethods[type] = id;
-            await wallet.setKey(user.walletToken, KeyType.KEY, id, key);
+            await wallet.setKey(walletToken, KeyType.DID_KEYS, id, key);
         }
         const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
             did: document.getDid(),
@@ -459,5 +468,37 @@ export class VcHelper extends VCJS {
     ): Promise<VpDocument> {
         vcs = await this.prepareVCs(vcs);
         return await super.createVerifiablePresentation(vcs, didDocument, signatureType, documentOptions);
+    }
+
+    /**
+     * Validate private key
+     */
+    public async validateKey(method: VerificationMethod): Promise<boolean> {
+        try {
+            const option: any = method.toObject(true);
+            let keyPair: any;
+            switch (option.type) {
+                case 'Ed25519VerificationKey2018': {
+                    keyPair = await Ed25519VerificationKey2018.from(option);
+                    break;
+                }
+                case 'Bls12381G2Key2020': {
+                    keyPair = await Bls12381G2KeyPair.from(option);
+                    break;
+                }
+                default: {
+                    //Unsupported
+                    return false;
+                }
+            }
+            const singleMessage = new Uint8Array(Buffer.from('singleMessage'));
+            const signer = keyPair.signer();
+            const verifier = keyPair.verifier();
+            const signature = await signer.sign({ data: singleMessage });
+            const result = await verifier.verify({ data: singleMessage, signature });
+            return result;
+        } catch (error) {
+            return false;
+        }
     }
 }

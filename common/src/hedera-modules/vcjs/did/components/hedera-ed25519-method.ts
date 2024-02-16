@@ -1,8 +1,6 @@
 import { PrivateKey } from '@hashgraph/sdk';
 import { Hashing } from '../../../hashing';
-import { HederaBBSMethod } from './hedera-bbs-method';
 import { VerificationMethod } from './verification-method';
-
 
 export class HederaEd25519Method extends VerificationMethod {
     /**
@@ -81,7 +79,7 @@ export class HederaEd25519Method extends VerificationMethod {
         result.type = keyPair.type;
         result.publicKeyBase58 = keyPair.publicKey;
         result.privateKeyBase58 = keyPair.privateKey;
-        result.name = HederaBBSMethod.DID_ROOT_KEY_NAME;
+        result.name = HederaEd25519Method.DID_ROOT_KEY_NAME;
         return result;
     }
 
@@ -90,6 +88,6 @@ export class HederaEd25519Method extends VerificationMethod {
      * @param controller
      */
     public static defaultId(controller: string): string {
-        return controller + HederaBBSMethod.DID_ROOT_KEY_NAME;
+        return controller + HederaEd25519Method.DID_ROOT_KEY_NAME;
     }
 }
