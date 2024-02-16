@@ -2,27 +2,27 @@
 
 ## Table of Contents
 
-[Introduction](verra-vm0041.md#\_toc154152880)
+[Introduction](verra-vm0041.md#toc154152880)
 
-[Key Objectives and Scope](verra-vm0041.md#\_toc154152881)
+[Key Objectives and Scope](verra-vm0041.md#toc154152881)
 
-[Aspects of Methodology](verra-vm0041.md#\_toc154152882)
+[Aspects of Methodology](verra-vm0041.md#toc154152882)
 
-[Significance and Environmental Impact](verra-vm0041.md#\_toc154152883)
+[Significance and Environmental Impact](verra-vm0041.md#toc154152883)
 
-[Demo Video](verra-vm0041.md#\_toc154152884)
+[Demo Video](verra-vm0041.md#toc154152884)
 
-[Policy Workflow](verra-vm0041.md#\_toc154152885)
+[Policy Workflow](verra-vm0041.md#toc154152885)
 
-[Policy Guide](verra-vm0041.md#\_toc154152886)
+[Policy Guide](verra-vm0041.md#toc154152886)
 
-[Available Roles](verra-vm0041.md#\_toc154152887)
+[Available Roles](verra-vm0041.md#toc154152887)
 
-[Important Documents & Schemas](verra-vm0041.md#\_toc154152888)
+[Important Documents & Schemas](verra-vm0041.md#toc154152888)
 
-[Token (Verified Carbon Unit)](verra-vm0041.md#\_toc154152889)
+[Token (Verified Carbon Unit)](verra-vm0041.md#toc154152889)
 
-[Step by Step](verra-vm0041.md#\_toc154152890)
+[Step by Step](verra-vm0041.md#toc154152890)
 
 ### Introduction <a href="#toc154152880" id="toc154152880"></a>
 

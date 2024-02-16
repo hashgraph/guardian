@@ -7,9 +7,9 @@
 * [Demo Video](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#demo-video)
 * [Policy Workflow](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#policy-workflow)
 * [Policy Guide](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#policy-guide)
-  * [Important Documents & Schemas](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#important-documents-and-schemas)
-  * [Token (Carbon Credit)](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#token-carbon-credit)
-  * [Step By Step](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#step-by-step)
+* [Important Documents & Schemas](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#important-documents-and-schemas)
+* [Token (Carbon Credit)](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#token-carbon-credit)
+* [Step By Step](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#step-by-step)
 
 ## **Introduction**
 
