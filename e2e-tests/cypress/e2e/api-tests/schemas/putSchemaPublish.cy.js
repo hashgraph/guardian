@@ -45,24 +45,22 @@ context("Schemas", { tags: '@schemas' }, () => {
             },
         }).then((response) => {
 
-            let schemaId = response.body.at(-1).id;
+            let schemaId = response.body.at(0).id;
 
             const versionNum = "1." + Math.floor(Math.random() * 999);
-            // //Publish schema
-            // cy.request({
-            //     method: "PUT",
-            //     url:
-            //         API.ApiServer +
-            //         API.Schemas +
-            //         schemaId +
-            //         "/publish",
-            //     headers: { authorization },
-            //     body: {
-            //         version: versionNum,
-            //     },
-            // }).then((response) => {
-               
-            // });
+            //Publish schema
+            cy.request({
+                method: "PUT",
+                url:
+                    API.ApiServer +
+                    API.Schemas +
+                    schemaId +
+                    "/publish",
+                headers: { authorization },
+                body: {
+                    version: versionNum,
+                },
+            })
         });
     });
 });

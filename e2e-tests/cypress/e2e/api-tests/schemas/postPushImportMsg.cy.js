@@ -25,7 +25,7 @@ context("Schemas",{ tags: '@schemas' },  () => {
                     authorization,
                 },
                 body: {
-                    messageId: "1663856382.530222947",
+                    messageId: Cypress.env("schema_for_import"),
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.ACCEPTED);
