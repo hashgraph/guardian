@@ -5,3 +5,5 @@ export * from './subject-schema-loader';
 export * from './vc-schema-loader';
 export * from './dry-run-loader';
 export * from './remote-did-loader';
+export * from './local-subject-schema-loader';
+export * from './local-vc-schema-loader';

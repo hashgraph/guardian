@@ -4,13 +4,9 @@ import { SchemaLoader } from '../hedera-modules';
 import { DataBaseHelper } from '../helpers';
 
 /**
- * VC schema loader
+ * Local VC schema loader
  */
-export class VCSchemaLoader extends SchemaLoader {
-    constructor(context: string) {
-        super('vc', context);
-    }
-
+export class LocalVCSchemaLoader extends SchemaLoader {
     /**
      * Get document
      * @param context
@@ -19,11 +15,10 @@ export class VCSchemaLoader extends SchemaLoader {
      */
     public async get(context: string | string[], iri: string, type: string): Promise<any> {
         const _iri = '#' + iri;
-        const _context = Array.isArray(context) ? context : [context];
-        const schemas = await this.loadSchemaContexts(_context, _iri);
+        const schemas = await this.loadSchemaContexts(_iri);
 
         if (!schemas || !schemas.length) {
-            throw new Error(`Schema not found: ${_context.join(',')}, ${_iri}`);
+            throw new Error(`Schema not found: ${_iri}`);
         }
 
         const schema = schemas[0];
@@ -40,15 +35,9 @@ export class VCSchemaLoader extends SchemaLoader {
      * @param contexts
      * @private
      */
-    private async loadSchemaContexts(contexts: string[], iri: string): Promise<ISchema[]> {
+    private async loadSchemaContexts(iri: string): Promise<ISchema[]> {
         try {
-            if (contexts && contexts.length) {
-                return await new DataBaseHelper(Schema).find({
-                    contextURL: { $in: contexts },
-                    iri: { $eq: iri },
-                });
-            }
-            return null;
+            return await new DataBaseHelper(Schema).find({ iri });
         }
         catch (error) {
             return null;

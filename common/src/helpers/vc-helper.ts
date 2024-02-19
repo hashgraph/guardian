@@ -15,7 +15,11 @@ import {
     VCSchemaLoader,
     SubjectSchemaLoader,
     LocalDIDLoader,
-    ContextDocumentLoader, DryRunLoader, RemoteDIDLoader,
+    ContextDocumentLoader,
+    DryRunLoader,
+    RemoteDIDLoader,
+    LocalVCSchemaLoader,
+    LocalSubjectSchemaLoader,
 } from '../document-loader';
 import {
     ICredentialSubject,
@@ -54,7 +58,11 @@ export class VcHelper extends VCJS {
         const schemaDocumentLoaderV2 = new SchemaDocumentLoader('schema:');
         const contextDocumentLoader = new ContextDocumentLoader('');
 
+        const localVcSchemaObjectLoaderV1 = new LocalVCSchemaLoader('schema#');
+        const localVcSchemaObjectLoaderV2 = new LocalVCSchemaLoader('schema:');
         const vcSchemaObjectLoader = new VCSchemaLoader('');
+        const localSubjectSchemaObjectLoaderV1 = new LocalSubjectSchemaLoader('schema#');
+        const localSubjectSchemaObjectLoaderV2 = new LocalSubjectSchemaLoader('schema:');
         const subjectSchemaObjectLoader = new SubjectSchemaLoader('');
 
         this.addDocumentLoader(defaultDocumentLoader);
@@ -65,7 +73,11 @@ export class VcHelper extends VCJS {
         this.addDocumentLoader(schemaDocumentLoaderV2);
         this.addDocumentLoader(contextDocumentLoader);
 
+        this.addSchemaLoader(localVcSchemaObjectLoaderV1);
+        this.addSchemaLoader(localVcSchemaObjectLoaderV2);
         this.addSchemaLoader(vcSchemaObjectLoader);
+        this.addSchemaLoader(localSubjectSchemaObjectLoaderV1);
+        this.addSchemaLoader(localSubjectSchemaObjectLoaderV2);
         this.addSchemaLoader(subjectSchemaObjectLoader);
 
         this.buildDocumentLoader();
