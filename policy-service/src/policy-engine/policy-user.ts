@@ -201,7 +201,7 @@ export class UserCredentials {
         this._hederaAccountId = userFull.hederaAccountId;
         this._did = userFull.did;
         if (!this._did || !this._hederaAccountId) {
-            throw new Error('Hedera Account not found');
+            throw new Error('Hedera Account not found.');
         }
         return this;
     }
@@ -230,7 +230,7 @@ export class UserCredentials {
     public async loadSubDidDocument(ref: AnyBlockType, subDid: string): Promise<HederaDidDocument> {
         const row = await ref.databaseServer.getDidDocument(subDid);
         if (!row) {
-            return null;
+            throw new Error('DID Document not found.');
         }
         const document = HederaDidDocument.from(row.document);
         const keys = row.verificationMethods || {};
@@ -272,6 +272,8 @@ export class UserCredentials {
                 document.setPrivateKey(id, privateKey);
             }
         }
+
+        return document;
     }
 
     public async saveDidDocument(
