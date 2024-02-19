@@ -59,8 +59,8 @@ export class VcHelper extends VCJS {
 
         this.addDocumentLoader(defaultDocumentLoader);
         this.addDocumentLoader(dryRunLoader);
-        this.addDocumentLoader(hederaLoader);
         this.addDocumentLoader(didDocumentLoader);
+        this.addDocumentLoader(hederaLoader);
         this.addDocumentLoader(schemaDocumentLoaderV1);
         this.addDocumentLoader(schemaDocumentLoaderV2);
         this.addDocumentLoader(contextDocumentLoader);
