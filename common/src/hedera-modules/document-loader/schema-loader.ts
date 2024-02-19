@@ -10,7 +10,7 @@ export type SchemaLoaderFunction = (context: string | string[], iri: string, typ
 export abstract class SchemaLoader {
     constructor(
         private readonly _type: string,
-        private readonly _context: string = ''
+        private readonly _contexts: string[] = []
     ) {}
 
     /**
@@ -18,7 +18,7 @@ export abstract class SchemaLoader {
      * @param iri
      */
     private _has(iri: string): boolean {
-        return !!iri?.startsWith(this._context);
+        return !!this._contexts?.some(context => iri?.startsWith(context));
     }
 
     /**

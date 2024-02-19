@@ -7,8 +7,8 @@ import { DataBaseHelper } from '../helpers';
  * Subject schema loader
  */
 export class SubjectSchemaLoader extends SchemaLoader {
-    constructor(context: string) {
-        super('subject', context);
+    constructor(contexts: string[] = [], type: string = 'subject') {
+        super(type, contexts);
     }
 
     /**
@@ -40,7 +40,7 @@ export class SubjectSchemaLoader extends SchemaLoader {
      * @param contexts
      * @private
      */
-    private async loadSchemaContexts(contexts: string[], iri: string): Promise<ISchema[]> {
+    protected async loadSchemaContexts(contexts: string[], iri: string): Promise<ISchema[]> {
         try {
             if (contexts && contexts.length) {
                 return await new DataBaseHelper(Schema).find({
