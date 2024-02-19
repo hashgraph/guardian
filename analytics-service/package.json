@@ -25,7 +25,7 @@
         "class-transformer": "^0.5.1",
         "class-validator": "^0.14.0",
         "cron": "^2.0.0",
-        "dotenv": "^16.0.0",
+        "dotenv": "^16.4.4",
         "excel4node": "^1.8.2",
         "express": "^4.17.1",
         "express-fileupload": "^1.4.0",
