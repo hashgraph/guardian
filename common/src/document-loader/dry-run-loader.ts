@@ -12,7 +12,10 @@ export class DryRunLoader extends DocumentLoader {
      */
     public async has(iri: string): Promise<boolean> {
         const did = DidURL.getController(iri);
-        const document= await new DataBaseHelper(DryRun).findOne({did, dryRunClass: 'DidDocumentCollection'});
+        const document = await new DataBaseHelper(DryRun).findOne({
+            did,
+            dryRunClass: 'DidDocumentCollection',
+        });
         return !!document;
     }
 
@@ -22,10 +25,13 @@ export class DryRunLoader extends DocumentLoader {
      */
     public async get(iri: string): Promise<IDocumentFormat> {
         const did = DidURL.getController(iri);
-        const document= await new DataBaseHelper(DryRun).findOne({did, dryRunClass: 'DidDocumentCollection'});
+        const document = await new DataBaseHelper(DryRun).findOne({
+            did,
+            dryRunClass: 'DidDocumentCollection',
+        });
         return {
             documentUrl: iri,
-            document: document.document
+            document: document.document,
         };
     }
 
@@ -35,7 +41,9 @@ export class DryRunLoader extends DocumentLoader {
      */
     public async getDocument(iri: string): Promise<any> {
         const did = DidURL.getController(iri);
-        const didDocuments = await new DataBaseHelper(DidDocument).findOne({ did });
+        const didDocuments = await new DataBaseHelper(DidDocument).findOne({
+            did,
+        });
         if (didDocuments) {
             return didDocuments.document;
         }

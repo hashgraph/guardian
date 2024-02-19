@@ -8,13 +8,30 @@ export type SchemaLoaderFunction = (context: string | string[], iri: string, typ
  * Used for VC validation.
  */
 export abstract class SchemaLoader {
+    constructor(private readonly _context: string = '') {}
+
+    /**
+     * Has iri
+     * @param iri
+     */
+    private _has(iri: string): boolean {
+        return !!iri?.startsWith(this._context);
+    }
+
     /**
      * Has context
      * @param context
      * @param iri
      * @param type
      */
-    public abstract has(context: string | string[], iri: string, type: string): Promise<boolean>;
+    public async has(contexts: string | string[], iri: string, type: string): Promise<boolean> {
+        if (type !== 'subject') {
+            return false;
+        }
+        return Array.isArray(contexts)
+            ? contexts.some(this._has.bind(this))
+            : this._has(contexts);
+    }
 
     /**
      * Get document

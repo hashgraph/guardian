@@ -6,13 +6,9 @@ import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules';
  * DID Documents Loader
  * Used for signatures validation.
  */
-export class DIDDocumentLoader extends DocumentLoader {
-    /**
-     * Has context
-     * @param iri
-     */
+export class LocalDIDLoader extends DocumentLoader {
     public async has(iri: string): Promise<boolean> {
-        return iri.startsWith('did:hedera:');
+        return (await super.has(iri)) && (await this._hasDocument(iri));
     }
 
     /**
@@ -22,7 +18,7 @@ export class DIDDocumentLoader extends DocumentLoader {
     public async get(iri: string): Promise<IDocumentFormat> {
         return {
             documentUrl: iri,
-            document: await this.getDocument(iri)
+            document: await this.getDocument(iri),
         };
     }
 
@@ -32,10 +28,22 @@ export class DIDDocumentLoader extends DocumentLoader {
      */
     public async getDocument(iri: string): Promise<any> {
         const did = DidURL.getController(iri);
-        const didDocuments = await new DataBaseHelper(DidDocument).findOne({ did });
+        const didDocuments = await new DataBaseHelper(DidDocument).findOne({
+            did,
+        });
         if (didDocuments) {
             return didDocuments.document;
         }
         throw new Error(`DID not found: ${iri}`);
+    }
+
+    /**
+     * Document exists
+     * @param iri IRI
+     * @returns Document exists flag
+     */
+    private async _hasDocument(iri: string): Promise<boolean> {
+        const did = DidURL.getController(iri);
+        return !!(await new DataBaseHelper(DidDocument).findOne({ did }));
     }
 }

@@ -9,38 +9,14 @@ import { DocumentLoader, IDocumentFormat } from '../hedera-modules';
  */
 export class ContextDocumentLoader extends DocumentLoader {
     /**
-     * Context
-     * @private
-     */
-    private readonly context: string;
-
-    constructor(
-        context: string
-    ) {
-        super();
-        this.context = context;
-    }
-
-    /**
-     * Hs context
-     * @param iri
-     */
-    public async has(iri: string): Promise<boolean> {
-        return iri && iri.startsWith(this.context);
-    }
-
-    /**
      * Get document format
      * @param iri
      */
     public async get(iri: string): Promise<IDocumentFormat> {
-        if (iri && iri.startsWith(this.context)) {
-            return {
-                documentUrl: iri,
-                document: await this.getDocument(iri),
-            };
-        }
-        throw new Error('IRI not found');
+        return {
+            documentUrl: iri,
+            document: await this.getDocument(iri),
+        };
     }
 
     /**
@@ -53,10 +29,9 @@ export class ContextDocumentLoader extends DocumentLoader {
             throw new Error('Schema not found');
         }
         if (!schema.context) {
-            throw new Error('context not found');
+            throw new Error('Context not found');
         }
-        const document = schema.context;
-        return document;
+        return schema.context;
     }
 
     /**

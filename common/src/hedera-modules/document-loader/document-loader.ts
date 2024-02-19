@@ -6,11 +6,15 @@ import { DocumentLoaderFunction } from './document-loader-function';
  * Used for VC validation.
  */
 export abstract class DocumentLoader {
+    constructor(protected _context: string = '') {}
+
     /**
      * Has context
      * @param iri
      */
-    public abstract has(iri: string): Promise<boolean>;
+    public async has(iri: string): Promise<boolean> {
+        return !!iri?.startsWith(this._context)
+    }
 
     /**
      * Get document
