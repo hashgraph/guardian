@@ -1,22 +1,24 @@
 # ⬇ Verra PWRM0001: Plastic Waste Reduction Methodology
 
-[Introduction](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc1946396156)
+## Table of Contents
+
+[Introduction](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc1946396156)
 
 [Need and Use of PWRM0001](verra-pwrm0001-plastic-waste-reduction-methodology.md#need-and-use-for-pwrm0001)
 
-[Demo Video](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc192784261)
+[Demo Video](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc192784261)
 
 [Policy Workflow](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc895640644)
 
-[Policy Guide](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc1368814671)
+[Policy Guide](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc1368814671)
 
-[Available Roles](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc689999990)
+[Available Roles](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc689999990)
 
-[Important Documents & Schemas](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc1741613673)
+[Important Documents & Schemas](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc1741613673)
 
-[Token (Waste Collection Credit)](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc793059434)
+[Token (Waste Collection Credit)](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc793059434)
 
-[Step by Step](verra-pwrm0001-plastic-waste-reduction-methodology.md#\_toc2139421507)
+[Step by Step](verra-pwrm0001-plastic-waste-reduction-methodology.md#toc2139421507)
 
 ### Introduction <a href="#toc1946396156" id="toc1946396156"></a>
 

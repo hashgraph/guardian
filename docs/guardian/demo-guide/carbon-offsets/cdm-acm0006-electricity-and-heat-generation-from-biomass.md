@@ -6,10 +6,10 @@
 * [Need and Use for the ACM0006 Policy](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#need-and-use-for-the-acm0006-policy)
 * [Policy Workflow](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#policy-workflow)
 * [Policy Guide](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#policy-guide)
-  * [Available Roles](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#available-roles)
-  * [Important Documents \\& Schemas](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#important-documents--schemas)
-  * [Token(Carbon Emissions Reduction)](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#tokencarbon-emissions-reduction)
-  * [Step By Step](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#step-by-step)
+* [Available Roles](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#available-roles)
+* [Important Documents \\& Schemas](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#important-documents--schemas)
+* [Token(Carbon Emissions Reduction)](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#tokencarbon-emissions-reduction)
+* [Step By Step](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#step-by-step)
 
 ### Introduction <a href="#introduction" id="introduction"></a>
 

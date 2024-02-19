@@ -2,31 +2,31 @@
 
 ## Table of Contents
 
-[Introduction](ghgp-corporate-standard-v2.md#\_toc146717947)
+[Introduction](ghgp-corporate-standard-v2.md#toc146717947)
 
-[Need and Use for the GHGP Corporate Standard Policy](ghgp-corporate-standard-v2.md#\_toc146717948)
+[Need and Use for the GHGP Corporate Standard Policy](ghgp-corporate-standard-v2.md#toc146717948)
 
-[Policy Workflow](ghgp-corporate-standard-v2.md#\_toc146717950)
+[Policy Workflow](ghgp-corporate-standard-v2.md#toc146717950)
 
-[Policy Guide](ghgp-corporate-standard-v2.md#\_toc146717951)
+[Policy Guide](ghgp-corporate-standard-v2.md#toc146717951)
 
-[Available Roles](ghgp-corporate-standard-v2.md#\_toc146717952)
+[Available Roles](ghgp-corporate-standard-v2.md#toc146717952)
 
-[Important Documents & Schemas](ghgp-corporate-standard-v2.md#\_toc146717953)
+[Important Documents & Schemas](ghgp-corporate-standard-v2.md#toc146717953)
 
-[Token (Carbon Emission)](ghgp-corporate-standard-v2.md#\_toc146717954)
+[Token (Carbon Emission)](ghgp-corporate-standard-v2.md#toc146717954)
 
-[Step by Step](ghgp-corporate-standard-v2.md#\_toc146717955)
+[Step by Step](ghgp-corporate-standard-v2.md#toc146717955)
 
-&#x20;       [Organization Flow](ghgp-corporate-standard-v2.md#\_toc146717956)
+&#x20;       [Organization Flow](ghgp-corporate-standard-v2.md#toc146717956)
 
-&#x20;       [VVB Flow](ghgp-corporate-standard-v2.md#\_toc146717957)
+&#x20;       [VVB Flow](ghgp-corporate-standard-v2.md#toc146717957)
 
-&#x20;       [Administrator (Registry) Flow](ghgp-corporate-standard-v2.md#\_toc146717958)
+&#x20;       [Administrator (Registry) Flow](ghgp-corporate-standard-v2.md#toc146717958)
 
-[Futureproofing (Automated GHG Inventories)](ghgp-corporate-standard-v2.md#\_toc146717959)
+[Futureproofing (Automated GHG Inventories)](ghgp-corporate-standard-v2.md#toc146717959)
 
-[TODO](ghgp-corporate-standard-v2.md#\_toc146717960)
+[TODO](ghgp-corporate-standard-v2.md#toc146717960)
 
 ### Introduction <a href="#toc146717947" id="toc146717947"></a>
 
