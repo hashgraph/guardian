@@ -219,12 +219,17 @@ export class RootConfigComponent implements OnInit {
                                 name: keyNameControl,
                                 value: keyValueControl
                             }, [Validators.required]);
+                            const keyNames = result.keys[name] || [];
+                            keyControl.setValue({
+                                name: keyNames[0]?.id || '',
+                                value: ''
+                            });
                             this.didKeysControl.addControl(name, keyControl);
                             this.didKeys.push({
                                 name,
                                 keyNameControl,
                                 keyValueControl,
-                                keyNames: result.keys[name]
+                                keyNames
                             })
                         }
                         this.onNextStep('DID_KEYS');

@@ -30,16 +30,19 @@ export class HederaDidDocument extends CommonDidDocument {
     }
 
     public static override from(document: IDidDocument): HederaDidDocument {
-        if (typeof document !== 'object') {
+        let result: HederaDidDocument;
+        if (typeof document === 'object') {
+            result = new HederaDidDocument();
+            result = CommonDidDocument._from(document, result);
+        } else if (typeof document === 'string') {
+            result = new HederaDidDocument();
+            result = CommonDidDocument._from(document, result);
+        } else {
             throw new Error('Invalid document format');
         }
-
-        let result = new HederaDidDocument();
-        result = CommonDidDocument._from(document, result);
         if (result.did instanceof HederaDid) {
             result.setDidTopicId(result.did.getDidTopicId());
         }
-
         return result;
     }
 

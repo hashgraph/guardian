@@ -169,13 +169,16 @@ export class CommonDidDocument {
         return result;
     }
 
-    public static from(document: IDidDocument): CommonDidDocument {
-        if (typeof document !== 'object') {
+    public static from(document: IDidDocument | string): CommonDidDocument {
+        if (typeof document === 'object') {
+            const result = new CommonDidDocument();
+            return CommonDidDocument._from(document, result);
+        } else if (typeof document === 'string') {
+            const result = new CommonDidDocument();
+            return CommonDidDocument._from(JSON.parse(document), result);
+        } else {
             throw new Error('Invalid document format');
         }
-
-        const result = new CommonDidDocument();
-        return CommonDidDocument._from(document, result);
     }
 
     /**

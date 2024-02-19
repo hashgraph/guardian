@@ -524,8 +524,7 @@ export class UserProfileComponent implements OnInit {
         return true;
     }
 
-
-    public onSubmit() {
+    private onSubmit() {
         if (this.validForm) {
             this.createDID();
         }
@@ -569,13 +568,18 @@ export class UserProfileComponent implements OnInit {
                                 name: keyNameControl,
                                 value: keyValueControl
                             }, [Validators.required]);
+                            const keyNames = result.keys[name] || [];
+                            keyControl.setValue({
+                                name: keyNames[0]?.id || '',
+                                value: ''
+                            });
                             this.didKeysForm.addControl(name, keyControl);
                             this.didKeys.push({
                                 name,
                                 keyNameControl,
                                 keyValueControl,
-                                keyNames: result.keys[name]
-                            })
+                                keyNames
+                            });
                         }
                         done();
                         this.loading = false;

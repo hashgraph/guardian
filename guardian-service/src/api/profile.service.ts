@@ -34,6 +34,7 @@ import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 /**
  * Get global topic
@@ -93,14 +94,14 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
     return did;
 }
 
-async function validateCommonDid(json: any, keys: any[]): Promise<CommonDidDocument> {
+async function validateCommonDid(json: string | any, keys: any[]): Promise<CommonDidDocument> {
     const vcHelper = new VcHelper();
     if (!Array.isArray(keys)) {
         throw new Error(`Invalid did document or keys.`);
     }
     const document = CommonDidDocument.from(json);
     for (const item of keys) {
-        const method = json.getMethodByName(item.id);
+        const method = document.getMethodByName(item.id);
         if (method) {
             method.setPrivateKey(item.key);
             if (!(await vcHelper.validateKey(method))) {
@@ -143,6 +144,20 @@ async function createUserProfile(
         entity
     } = profile;
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+
+    // ------------------------
+    // <-- Check hedera key
+    // ------------------------
+    try {
+        AccountId.fromString(hederaAccountId);
+        PrivateKey.fromString(hederaAccountKey);
+    } catch (error) {
+        throw new Error(`Invalid Hedera account or key.`);
+    }
+
+    // ------------------------
+    // Check hedera key -->
+    // ------------------------
 
     // ------------------------
     // <-- Resolve topic
