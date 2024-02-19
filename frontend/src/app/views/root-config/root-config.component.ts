@@ -232,10 +232,12 @@ export class RootConfigComponent implements OnInit {
                     },
                     (e) => {
                         this.setErrors(this.didDocumentForm, 'incorrect');
+                        this.loading = false;
                     }
                 );
         } catch (error) {
             this.setErrors(this.didDocumentForm, 'incorrect');
+            this.loading = false;
         }
     }
 
@@ -280,10 +282,12 @@ export class RootConfigComponent implements OnInit {
                     },
                     (e) => {
                         this.setErrors(this.didKeysControl, 'incorrect');
+                        this.loading = false;
                     }
                 );
         } catch (error) {
             this.setErrors(this.didKeysControl, 'incorrect');
+            this.loading = false;
         }
     }
 
@@ -466,13 +470,20 @@ export class RootConfigComponent implements OnInit {
             const vcDocument = this.vcForm.value;
             const didDocument = this.didDocumentType.value ?
                 this.didDocumentForm.value : null;
-
+            const didKeys: any[] = [];
+            for (const didKey of this.didKeys) {
+                didKeys.push({
+                    id: didKey.keyNameControl.value,
+                    key: didKey.keyValueControl.value
+                })
+            }
             this.prepareDataFrom(vcDocument);
             const data: any = {
                 hederaAccountId: hederaForm.hederaAccountId?.trim(),
                 hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
                 vcDocument: vcDocument,
-                didDocument: didDocument
+                didDocument: didDocument,
+                didKeys
             };
             this.loading = true;
             this.headerProps.setLoading(true);

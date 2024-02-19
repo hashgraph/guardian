@@ -198,21 +198,21 @@ export class ProfileApi {
     }
 
     /**
-     * .
+     * Validate DID document format.
      */
     @Post('/did-document/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        UserRole.STANDARD_REGISTRY, UserRole.USER
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
-        summary: '.',
-        description: '.',
+        summary: 'Validate DID document format.',
+        description: 'Validate DID document format.',
     })
     @ApiBody({
-        description: 'A xlsx file containing policy config.',
+        description: 'DID Document.',
         required: true,
-        type: String
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -248,21 +248,21 @@ export class ProfileApi {
     }
 
     /**
-     * .
+     * Validate DID document keys.
      */
     @Post('/did-keys/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        UserRole.STANDARD_REGISTRY, UserRole.USER
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
-        summary: '.',
-        description: '.',
+        summary: 'Validate DID document keys.',
+        description: 'Validate DID document keys.',
     })
     @ApiBody({
-        description: 'A xlsx file containing policy config.',
+        description: 'DID Document and keys.',
         required: true,
-        type: String
+        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',

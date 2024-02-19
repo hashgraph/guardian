@@ -139,7 +139,7 @@ async function createUserProfile(
         parent,
         vcDocument,
         didDocument,
-        keys,
+        didKeys,
         entity
     } = profile;
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
@@ -187,7 +187,7 @@ async function createUserProfile(
     const vcHelper = new VcHelper();
     let currentDidDocument: CommonDidDocument
     if (didDocument) {
-        currentDidDocument = await validateCommonDid(didDocument, keys);
+        currentDidDocument = await validateCommonDid(didDocument, didKeys);
     } else {
         currentDidDocument = await vcHelper.generateNewDid(topicConfig.topicId, hederaAccountKey);
     }
