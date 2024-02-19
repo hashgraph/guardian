@@ -9,13 +9,12 @@ import {
     DIDMessage,
     MessageAction,
     MessageServer,
-    KeyType,
     HederaDidDocument
 } from '@guardian/common';
 import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { IHederaCredentials, IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
+import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';

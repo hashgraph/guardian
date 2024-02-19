@@ -2,7 +2,7 @@ import { BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import { IHederaCredentials, IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
+import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
 import { SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import {

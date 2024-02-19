@@ -6,7 +6,7 @@ import { RecordMethod } from './method.type';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { DatabaseServer, Environment, HederaDidDocument, IRecordResult, RecordImportExport, VcHelper } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcHelper } from '@guardian/common';
 import { RecordItem } from './record-item';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
@@ -447,7 +447,7 @@ export class Running {
                         newPrivateKey.toString()
                     );
 
-                    const instanceDB =  this.policyInstance.components.databaseServer;
+                    const instanceDB = this.policyInstance.components.databaseServer;
                     const keys = didObject.getPrivateKeys();
                     const verificationMethods = {};
                     for (const item of keys) {

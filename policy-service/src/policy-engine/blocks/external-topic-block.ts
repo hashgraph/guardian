@@ -6,7 +6,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
-import { IHederaCredentials, IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
+import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import {
     VcDocument as VcDocumentCollection,

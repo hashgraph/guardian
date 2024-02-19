@@ -1,6 +1,5 @@
 import {
     DatabaseServer,
-    Environment,
     HederaDidDocument,
     Policy as PolicyCollection,
     PolicyTool as PolicyToolCollection,

@@ -20,8 +20,6 @@ import { IPFS } from '../../helpers';
 import { verify, purposes } from 'jsonld-signatures';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did';
 
-
-
 /**
  * Suite interface
  */

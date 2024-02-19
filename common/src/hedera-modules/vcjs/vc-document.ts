@@ -114,8 +114,8 @@ export class VcDocument {
      * @deprecated
      */
     constructor(hasBBSSignature: boolean)
-    constructor(...args: any[]) {
-        const type = (args[0] === true || args[0] === SignatureType.BbsBlsSignature2020)
+    constructor(arg?: string | boolean) {
+        const type = (arg === true || arg === SignatureType.BbsBlsSignature2020)
             ? SignatureType.BbsBlsSignature2020
             : SignatureType.Ed25519Signature2018;
         this.subject = [];

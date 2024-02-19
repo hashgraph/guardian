@@ -29,7 +29,6 @@ export class HederaDidDocument extends CommonDidDocument {
             topicId;
     }
 
-
     public static override from(document: IDidDocument): HederaDidDocument {
         if (typeof document !== 'object') {
             throw new Error('Invalid document format');

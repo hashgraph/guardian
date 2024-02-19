@@ -32,8 +32,6 @@ import {
     XlsxToJson,
     JsonToXlsx,
     GenerateBlocks,
-    Environment,
-    HederaDidDocument,
     VcHelper
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -1269,7 +1267,7 @@ export class PolicyEngineService {
                 const topic = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
-                
+
                 const vcHelper = new VcHelper();
                 const didObject = await vcHelper.generateNewDid(topic.topicId, newPrivateKey);
                 const did = didObject.getDid();

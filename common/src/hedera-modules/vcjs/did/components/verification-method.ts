@@ -244,4 +244,3 @@ export class VerificationMethod {
         return result;
     }
 }
-

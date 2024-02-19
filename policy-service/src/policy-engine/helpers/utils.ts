@@ -4,10 +4,8 @@ import {
     DidDocumentStatus,
     DocumentSignature,
     DocumentStatus,
-    IRootConfig,
     Schema,
     SchemaEntity,
-    SignatureType,
     TopicType,
     WorkerTaskType
 } from '@guardian/interfaces';
@@ -27,9 +25,7 @@ import {
     Workers,
     NotificationHelper,
     VcSubject,
-    HederaDidDocument,
-    HederaEd25519Method,
-    HederaBBSMethod
+    HederaDidDocument
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, UserCredentials, PolicyUser, IHederaCredentials } from '@policy-engine/policy-user';

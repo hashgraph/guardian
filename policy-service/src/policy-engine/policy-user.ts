@@ -1,5 +1,5 @@
-import { HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { PolicyRole, SignatureType } from '@guardian/interfaces';
+import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
+import { PolicyRole } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument } from './policy-engine.interface';
 
 /**
@@ -164,7 +164,7 @@ export class UserCredentials {
     /**
      * Is dry run mode
      */
-    private _dryRun: boolean;
+    private readonly _dryRun: boolean;
     /**
      * User DID
      */
@@ -173,6 +173,10 @@ export class UserCredentials {
      * Hedera account id
      */
     private _hederaAccountId: string;
+    /**
+     * Policy Owner
+     */
+    private _owner: string;
 
     public get did(): string {
         return this._did;
@@ -185,6 +189,7 @@ export class UserCredentials {
     constructor(ref: AnyBlockType, userDid: string) {
         this._dryRun = !!ref.dryRun;
         this._did = userDid;
+        this._owner = ref.policyOwner;
     }
 
     public async load(ref: AnyBlockType): Promise<UserCredentials> {
@@ -228,10 +233,21 @@ export class UserCredentials {
     }
 
     public async loadSubDidDocument(ref: AnyBlockType, subDid: string): Promise<HederaDidDocument> {
-        const row = await ref.databaseServer.getDidDocument(subDid);
+        let row: DidDocument;
+        if (this._dryRun) {
+            if(subDid === this._owner) {
+                row = await DatabaseServer.getDidDocument(subDid);
+            } else {
+                row = await ref.databaseServer.getDidDocument(subDid);
+            }
+        } else {
+            row = await ref.databaseServer.getDidDocument(subDid);
+        }
+
         if (!row) {
             throw new Error('DID Document not found.');
         }
+
         const document = HederaDidDocument.from(row.document);
         const keys = row.verificationMethods || {};
         const Ed25519Signature2018 = keys[HederaEd25519Method.TYPE];

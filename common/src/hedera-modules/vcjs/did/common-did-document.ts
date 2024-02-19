@@ -1,4 +1,3 @@
-import { SignatureType } from '@guardian/interfaces';
 import { DidDocumentProperties } from './types/did-document-properties';
 import { DocumentContext } from './components/document-context';
 import { CommonDid } from './common-did';
@@ -216,7 +215,6 @@ export class CommonDidDocument {
         if (this.controller) {
             result[DidDocumentProperties.CONTROLLER] = this.controller;
         }
-
 
         //verificationMethod
         if (Array.isArray(this.verificationMethod)) {

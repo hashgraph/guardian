@@ -300,7 +300,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVirtualUser(did: string): Promise<any> {
+    public async getVirtualUser(did: string): Promise<any | null> {
         return (await new DataBaseHelper(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualUsers',
@@ -315,7 +315,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVirtualKey(did: string, keyName: string): Promise<string> {
+    public async getVirtualKey(did: string, keyName: string): Promise<string | null> {
         const item = (await new DataBaseHelper(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualKey',
@@ -556,7 +556,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getBlockState(policyId: string, uuid: string): Promise<BlockState> {
+    public async getBlockState(policyId: string, uuid: string): Promise<BlockState | null> {
         return await this.findOne(BlockState, {
             policyId,
             blockId: uuid
@@ -617,7 +617,7 @@ export class DatabaseServer {
         blockId: string,
         did: string,
         name: string
-    ): Promise<any> {
+    ): Promise<any | null> {
         return await this.findOne(BlockCache, {
             policyId,
             blockId,
@@ -741,7 +741,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getPolicy(policyId: string): Promise<Policy> {
+    public async getPolicy(policyId: string): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
@@ -845,7 +845,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVcDocument(filters: any): Promise<VcDocumentCollection> {
+    public async getVcDocument(filters: any): Promise<VcDocumentCollection | null> {
         return await this.findOne(VcDocumentCollection, filters);
     }
 
@@ -855,7 +855,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVpDocument(filters: any): Promise<VpDocumentCollection> {
+    public async getVpDocument(filters: any): Promise<VpDocumentCollection | null> {
         return await this.findOne(VpDocumentCollection, filters);
     }
 
@@ -865,7 +865,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection> {
+    public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection | null> {
         return await this.findOne(ApprovalDocumentCollection, filters);
     }
 
@@ -961,7 +961,7 @@ export class DatabaseServer {
      * Get Did Document
      * @param topicId
      */
-    public async getDidDocument(did: string): Promise<DidDocumentCollection> {
+    public async getDidDocument(did: string): Promise<DidDocumentCollection | null> {
         return await this.findOne(DidDocumentCollection, { did });
     }
 
@@ -1018,7 +1018,7 @@ export class DatabaseServer {
              */
             topicId?: string
         }
-    ): Promise<TopicCollection> {
+    ): Promise<TopicCollection | null> {
         return await this.findOne(TopicCollection, filters);
     }
 
@@ -1059,7 +1059,7 @@ export class DatabaseServer {
      * Get topic by id
      * @param topicId
      */
-    public async getTopicById(topicId: string): Promise<TopicCollection> {
+    public async getTopicById(topicId: string): Promise<TopicCollection | null> {
         return await this.findOne(TopicCollection, { topicId });
     }
 
@@ -1067,7 +1067,7 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public async getToken(tokenId: string, dryRun: any = null): Promise<TokenCollection> {
+    public async getToken(tokenId: string, dryRun: any = null): Promise<TokenCollection | null> {
         if (dryRun) {
             return this.findOne(TokenCollection, { tokenId });
         } else {
@@ -1091,7 +1091,7 @@ export class DatabaseServer {
      * @param iri
      * @param topicId
      */
-    public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection> {
+    public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null> {
         if (topicId) {
             return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId });
         } else {
@@ -1104,7 +1104,7 @@ export class DatabaseServer {
      * @param topicId
      * @param entity
      */
-    public async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
+    public async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne({
             entity,
             readonly: true,
@@ -1149,7 +1149,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection> {
+    public async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection | null> {
         return await this.findOne(PolicyRolesCollection, { policyId, uuid });
     }
 
@@ -1160,7 +1160,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getGlobalGroup(policyId: string, groupName: string): Promise<PolicyRolesCollection> {
+    public async getGlobalGroup(policyId: string, groupName: string): Promise<PolicyRolesCollection | null> {
         return await this.findOne(PolicyRolesCollection, { policyId, groupName });
     }
 
@@ -1172,7 +1172,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getUserInGroup(policyId: string, did: string, uuid: string): Promise<PolicyRolesCollection> {
+    public async getUserInGroup(policyId: string, did: string, uuid: string): Promise<PolicyRolesCollection | null> {
         if (!did && !uuid) {
             return null;
         }
@@ -1185,7 +1185,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async checkUserInGroup(group: any): Promise<PolicyRolesCollection> {
+    public async checkUserInGroup(group: any): Promise<PolicyRolesCollection | null> {
         return await this.findOne(PolicyRolesCollection, {
             policyId: group.policyId,
             did: group.did,
@@ -1216,7 +1216,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
+    public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection | null> {
         if (!did) {
             return null;
         }
@@ -1318,7 +1318,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async parseInviteToken(policyId: string, invitationId: string): Promise<PolicyInvitations> {
+    public async parseInviteToken(policyId: string, invitationId: string): Promise<PolicyInvitations | null> {
         const invitation = await this.findOne(PolicyInvitations, invitationId);
         if (invitation && invitation.policyId === policyId && invitation.active === true) {
             invitation.active = false;
@@ -1523,7 +1523,7 @@ export class DatabaseServer {
         policyId: string,
         blockId: string,
         userId: string
-    ): Promise<ExternalDocument> {
+    ): Promise<ExternalDocument | null> {
         return await this.findOne(ExternalDocument, {
             where: {
                 policyId: { $eq: policyId },
@@ -1621,7 +1621,7 @@ export class DatabaseServer {
      * Get tag By UUID
      * @param uuid
      */
-    public async getTagById(uuid: string): Promise<Tag> {
+    public async getTagById(uuid: string): Promise<Tag | null> {
         return await this.findOne(Tag, { uuid });
     }
 
@@ -1648,7 +1648,7 @@ export class DatabaseServer {
      * @param topicId
      * @param entity
      */
-    public static async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
+    public static async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne({
             entity,
             readonly: true,
@@ -1660,7 +1660,7 @@ export class DatabaseServer {
      * Get system schema
      * @param entity
      */
-    public static async getSystemSchema(entity: SchemaEntity): Promise<SchemaCollection> {
+    public static async getSystemSchema(entity: SchemaEntity): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne({
             entity,
             system: true,
@@ -1705,7 +1705,7 @@ export class DatabaseServer {
      * Get schemas
      * @param filters
      */
-    public static async getSchema(filters?: any): Promise<SchemaCollection> {
+    public static async getSchema(filters?: any): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne(filters);
     }
 
@@ -1765,7 +1765,7 @@ export class DatabaseServer {
      * Get schema
      * @param ids
      */
-    public static async getSchemaById(id: string): Promise<SchemaCollection> {
+    public static async getSchemaById(id: string): Promise<SchemaCollection | null> {
         if (id) {
             return await new DataBaseHelper(SchemaCollection).findOne(id);
         }
@@ -1796,7 +1796,7 @@ export class DatabaseServer {
      * Get policy
      * @param filters
      */
-    public static async getPolicy(filters: any): Promise<Policy> {
+    public static async getPolicy(filters: any): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(filters);
     }
 
@@ -1840,7 +1840,7 @@ export class DatabaseServer {
      * Get policy by id
      * @param policyId
      */
-    public static async getPolicyById(policyId: string): Promise<Policy> {
+    public static async getPolicyById(policyId: string): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
@@ -1848,7 +1848,7 @@ export class DatabaseServer {
      * Get policy by uuid
      * @param uuid
      */
-    public static async getPolicyByUUID(uuid: string): Promise<Policy> {
+    public static async getPolicyByUUID(uuid: string): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne({ uuid });
     }
 
@@ -1856,7 +1856,7 @@ export class DatabaseServer {
      * Get policy by tag
      * @param policyTag
      */
-    public static async getPolicyByTag(policyTag: string): Promise<Policy> {
+    public static async getPolicyByTag(policyTag: string): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne({ policyTag });
     }
 
@@ -1914,7 +1914,7 @@ export class DatabaseServer {
      * Get topic by id
      * @param topicId
      */
-    public static async getTopicById(topicId: string): Promise<TopicCollection> {
+    public static async getTopicById(topicId: string): Promise<TopicCollection | null> {
         return await new DataBaseHelper(TopicCollection).findOne({ topicId });
     }
 
@@ -1923,7 +1923,7 @@ export class DatabaseServer {
      * @param owner
      * @param type
      */
-    public static async getTopicByType(owner: string, type: TopicType): Promise<TopicCollection> {
+    public static async getTopicByType(owner: string, type: TopicType): Promise<TopicCollection | null> {
         return await new DataBaseHelper(TopicCollection).findOne({ owner, type });
     }
 
@@ -1955,7 +1955,7 @@ export class DatabaseServer {
      * Get VC
      * @param id
      */
-    public static async getVCById(id: string): Promise<VcDocumentCollection> {
+    public static async getVCById(id: string): Promise<VcDocumentCollection> | null {
         return await new DataBaseHelper(VcDocumentCollection).findOne(id);
     }
 
@@ -1963,7 +1963,7 @@ export class DatabaseServer {
      * Get VC
      * @param id
      */
-    public static async getVC(filters?: any, options?: any): Promise<VcDocumentCollection> {
+    public static async getVC(filters?: any, options?: any): Promise<VcDocumentCollection | null> {
         return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
     }
 
@@ -1980,7 +1980,7 @@ export class DatabaseServer {
      * Get VC
      * @param id
      */
-    public static async getVPById(id: string): Promise<VpDocumentCollection> {
+    public static async getVPById(id: string): Promise<VpDocumentCollection | null> {
         return await new DataBaseHelper(VpDocumentCollection).findOne(id);
     }
 
@@ -1988,7 +1988,7 @@ export class DatabaseServer {
      * Get VC
      * @param id
      */
-    public static async getVP(filters?: any, options?: any): Promise<VpDocumentCollection> {
+    public static async getVP(filters?: any, options?: any): Promise<VpDocumentCollection | null> {
         return await new DataBaseHelper(VpDocumentCollection).findOne(filters, options);
     }
 
@@ -2067,7 +2067,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public static async getVirtualUser(policyId: string): Promise<any> {
+    public static async getVirtualUser(policyId: string): Promise<any | null> {
         return await new DataBaseHelper(DryRun).findOne({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -2293,7 +2293,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public static async getVirtualMessage(dryRun: string, messageId: string): Promise<any> {
+    public static async getVirtualMessage(dryRun: string, messageId: string): Promise<any | null> {
         return (await new DataBaseHelper(DryRun).findOne({
             dryRunId: dryRun,
             dryRunClass: 'Message',
@@ -2345,7 +2345,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Artifact
      */
-    public static async getArtifact(filters?: any): Promise<ArtifactCollection> {
+    public static async getArtifact(filters?: any): Promise<ArtifactCollection | null> {
         return await new DataBaseHelper(ArtifactCollection).findOne(filters);
     }
 
@@ -2421,7 +2421,7 @@ export class DatabaseServer {
      * @param owner
      * @returns MultiPolicy
      */
-    public static async getMultiPolicy(instanceTopicId: string, owner: string): Promise<MultiPolicy> {
+    public static async getMultiPolicy(instanceTopicId: string, owner: string): Promise<MultiPolicy | null> {
         return await new DataBaseHelper(MultiPolicy).findOne({ instanceTopicId, owner });
     }
 
@@ -2447,7 +2447,7 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public static async getToken(tokenId: string): Promise<TokenCollection> {
+    public static async getToken(tokenId: string): Promise<TokenCollection | null> {
         return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
     }
 
@@ -2455,7 +2455,7 @@ export class DatabaseServer {
      * Get Token by ID
      * @param id
      */
-    public static async getTokenById(id: string): Promise<TokenCollection> {
+    public static async getTokenById(id: string): Promise<TokenCollection | null> {
         return await new DataBaseHelper(TokenCollection).findOne(id);
     }
 
@@ -2463,7 +2463,7 @@ export class DatabaseServer {
      * Get Contract by ID
      * @param id
      */
-    public static async getContractById(id: string): Promise<ContractCollection> {
+    public static async getContractById(id: string): Promise<ContractCollection | null> {
         return await new DataBaseHelper(ContractCollection).findOne(id);
     }
 
@@ -2533,7 +2533,7 @@ export class DatabaseServer {
      * Get Module By UUID
      * @param uuid
      */
-    public static async getModuleByUUID(uuid: string): Promise<PolicyModule> {
+    public static async getModuleByUUID(uuid: string): Promise<PolicyModule | null> {
         return await new DataBaseHelper(PolicyModule).findOne({ uuid });
     }
 
@@ -2541,7 +2541,7 @@ export class DatabaseServer {
      * Get Module By ID
      * @param uuid
      */
-    public static async getModuleById(id: string): Promise<PolicyModule> {
+    public static async getModuleById(id: string): Promise<PolicyModule | null> {
         return await new DataBaseHelper(PolicyModule).findOne(id);
     }
 
@@ -2549,7 +2549,7 @@ export class DatabaseServer {
      * Get Module
      * @param filters
      */
-    public static async getModule(filters: any): Promise<PolicyModule> {
+    public static async getModule(filters: any): Promise<PolicyModule | null> {
         return await new DataBaseHelper(PolicyModule).findOne(filters);
     }
 
@@ -2611,7 +2611,7 @@ export class DatabaseServer {
      * Get Tool By UUID
      * @param uuid
      */
-    public static async getToolByUUID(uuid: string): Promise<PolicyTool> {
+    public static async getToolByUUID(uuid: string): Promise<PolicyTool | null> {
         return await new DataBaseHelper(PolicyTool).findOne({ uuid });
     }
 
@@ -2619,7 +2619,7 @@ export class DatabaseServer {
      * Get Tool By ID
      * @param uuid
      */
-    public static async getToolById(id: string): Promise<PolicyTool> {
+    public static async getToolById(id: string): Promise<PolicyTool | null> {
         return await new DataBaseHelper(PolicyTool).findOne(id);
     }
 
@@ -2627,7 +2627,7 @@ export class DatabaseServer {
      * Get Tool
      * @param filters
      */
-    public static async getTool(filters: any): Promise<PolicyTool> {
+    public static async getTool(filters: any): Promise<PolicyTool | null> {
         return await new DataBaseHelper(PolicyTool).findOne(filters);
     }
 
@@ -2677,7 +2677,7 @@ export class DatabaseServer {
      * Get tag By UUID
      * @param uuid
      */
-    public static async getTagById(uuid: string): Promise<Tag> {
+    public static async getTagById(uuid: string): Promise<Tag | null> {
         return await new DataBaseHelper(Tag).findOne({ uuid });
     }
 
@@ -2737,7 +2737,7 @@ export class DatabaseServer {
      * Get Theme
      * @param filters
      */
-    public static async getTheme(filters: any): Promise<Theme> {
+    public static async getTheme(filters: any): Promise<Theme | null> {
         return await new DataBaseHelper(Theme).findOne(filters);
     }
 
@@ -2791,7 +2791,7 @@ export class DatabaseServer {
      */
     public static async getSuggestionsConfig(
         did: string
-    ): Promise<SuggestionsConfig> {
+    ): Promise<SuggestionsConfig | null> {
         return await new DataBaseHelper(SuggestionsConfig).findOne({
             user: did,
         });
@@ -2852,7 +2852,7 @@ export class DatabaseServer {
      *
      * @returns Group
      */
-    public static async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection> {
+    public static async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection | null> {
         return await new DataBaseHelper(PolicyRolesCollection).findOne({ policyId, uuid });
     }
 
@@ -2890,5 +2890,13 @@ export class DatabaseServer {
      */
     public static async saveVPs<T extends VpDocumentCollection | VpDocumentCollection[]>(data: T): Promise<T> {
         return (await new DataBaseHelper(VpDocumentCollection).save(data)) as any;
+    }
+
+    /**
+     * Get Did Document
+     * @param topicId
+     */
+    public static async getDidDocument(did: string): Promise<DidDocumentCollection | null> {
+        return await (new DataBaseHelper(DidDocumentCollection)).findOne({ did });
     }
 }

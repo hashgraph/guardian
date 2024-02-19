@@ -23,7 +23,7 @@ export async function loaderAPI(
     ApiResponse(MessageAPI.LOAD_DID_DOCUMENT, async (msg) => {
         try {
             const iri = msg.did;
-            const did = DidURL.getController(iri); 
+            const did = DidURL.getController(iri);
             const reqObj = { where: { did: { $eq: did } } };
             const didDocuments = await didDocumentRepository.findOne(reqObj);
             if (didDocuments) {

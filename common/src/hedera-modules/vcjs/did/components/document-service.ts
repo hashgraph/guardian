@@ -1,6 +1,5 @@
-import { IService } from "../types/did-document";
-import { ServiceProperties } from "../types/service-properties";
-
+import { IService } from '../types/did-document';
+import { ServiceProperties } from '../types/service-properties';
 
 export class DocumentService {
     /**

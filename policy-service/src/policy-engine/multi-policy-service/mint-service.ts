@@ -1,5 +1,5 @@
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
+import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
