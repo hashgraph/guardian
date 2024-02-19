@@ -6,6 +6,7 @@ import {
     DidDocument as DidDocumentCollection,
     DIDMessage,
     HederaBBSMethod,
+    HederaDidDocument,
     HederaEd25519Method,
     IAuthUser,
     KeyType,
@@ -76,7 +77,7 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
         profile.entity = SchemaEntity.USER;
         did = await createUserProfile(profile, notifier, user);
     } else {
-        throw new Error('Unknow user role');
+        throw new Error('Unknown user role.');
     }
 
     notifier.start('Update user');
@@ -90,6 +91,35 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
     notifier.completed();
 
     return did;
+}
+
+async function validateCommonDid(json: any, keys: any[]): Promise<CommonDidDocument> {
+    const vcHelper = new VcHelper();
+    if (!Array.isArray(keys)) {
+        throw new Error(`Invalid did document or keys.`);
+    }
+    const document = CommonDidDocument.from(json);
+    for (const item of keys) {
+        const method = json.getMethodByName(item.id);
+        if (method) {
+            method.setPrivateKey(item.key);
+            if (!(await vcHelper.validateKey(method))) {
+                throw new Error(`Invalid did document or keys.`);
+            }
+        } else {
+            throw new Error(`Invalid did document or keys.`);
+        }
+    }
+    for (const type of [HederaBBSMethod.TYPE, HederaEd25519Method.TYPE]) {
+        const verificationMethod = document.getMethodByType(type);
+        if (!verificationMethod) {
+            throw new Error(`Invalid did document or keys.`);
+        }
+        if (!verificationMethod.hasPrivateKey()) {
+            throw new Error(`Invalid did document or keys.`);
+        }
+    }
+    return document;
 }
 
 /**
@@ -109,6 +139,7 @@ async function createUserProfile(
         parent,
         vcDocument,
         didDocument,
+        keys,
         entity
     } = profile;
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
@@ -154,8 +185,13 @@ async function createUserProfile(
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
 
     const vcHelper = new VcHelper();
-    const newDidDocument = await vcHelper.generateNewDid(topicConfig.topicId, hederaAccountKey);
-    const userDID = newDidDocument.getDid();
+    let currentDidDocument: CommonDidDocument
+    if (didDocument) {
+        currentDidDocument = await validateCommonDid(didDocument, keys);
+    } else {
+        currentDidDocument = await vcHelper.generateNewDid(topicConfig.topicId, hederaAccountKey);
+    }
+    const userDID = currentDidDocument.getDid();
 
     const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({ did: userDID });
     if (existingUser) {
@@ -164,11 +200,11 @@ async function createUserProfile(
         return userDID;
     }
 
-    const didRow = await vcHelper.saveDidDocument(newDidDocument, user);
+    const didRow = await vcHelper.saveDidDocument(currentDidDocument, user);
 
     try {
         const didMessage = new DIDMessage(MessageAction.CreateDID);
-        didMessage.setDocument(newDidDocument);
+        didMessage.setDocument(currentDidDocument);
         const didMessageResult = await messageServer
             .setTopicObject(topicConfig)
             .sendMessage(didMessage)
@@ -286,7 +322,7 @@ async function createUserProfile(
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
-        const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, newDidDocument, null, null);
+        const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, currentDidDocument, null, null);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vcObject);
         const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({

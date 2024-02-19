@@ -233,17 +233,14 @@ export class UserCredentials {
     }
 
     public async loadSubDidDocument(ref: AnyBlockType, subDid: string): Promise<HederaDidDocument> {
-        let row: DidDocument;
-        if (this._dryRun) {
-            if(subDid === this._owner) {
-                row = await DatabaseServer.getDidDocument(subDid);
-            } else {
-                row = await ref.databaseServer.getDidDocument(subDid);
-            }
-        } else {
-            row = await ref.databaseServer.getDidDocument(subDid);
-        }
+        const virtualUser = this._dryRun && subDid !== this._owner;
 
+        let row: DidDocument;
+        if (virtualUser) {
+            row = await ref.databaseServer.getDidDocument(subDid);
+        } else {
+            row = await DatabaseServer.getDidDocument(subDid);
+        }
         if (!row) {
             throw new Error('DID Document not found.');
         }
@@ -254,8 +251,10 @@ export class UserCredentials {
         const BbsBlsSignature2020 = keys[HederaBBSMethod.TYPE];
         const walletToken = this._did;
 
-        if (this._dryRun) {
+        if (virtualUser) {
+            //Default key
             const hederaPrivateKey = await ref.databaseServer.getVirtualKey(walletToken, subDid);
+            //Ed25519Signature2018
             if (Ed25519Signature2018) {
                 const privateKey = await ref.databaseServer.getVirtualKey(walletToken, Ed25519Signature2018);
                 document.setPrivateKey(Ed25519Signature2018, privateKey);
@@ -263,6 +262,7 @@ export class UserCredentials {
                 const { id, privateKey } = await HederaEd25519Method.generateKeyPair(subDid, hederaPrivateKey);
                 document.setPrivateKey(id, privateKey);
             }
+            //BbsBlsSignature2020
             if (BbsBlsSignature2020) {
                 const privateKey = await ref.databaseServer.getVirtualKey(walletToken, BbsBlsSignature2020);
                 document.setPrivateKey(BbsBlsSignature2020, privateKey);
@@ -272,7 +272,9 @@ export class UserCredentials {
             }
         } else {
             const wallet = new Wallet();
+            //Default key
             const hederaPrivateKey = await wallet.getUserKey(walletToken, KeyType.KEY, subDid);
+            //Ed25519Signature2018
             if (Ed25519Signature2018) {
                 const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018);
                 document.setPrivateKey(Ed25519Signature2018, privateKey);
@@ -280,6 +282,7 @@ export class UserCredentials {
                 const { id, privateKey } = await HederaEd25519Method.generateKeyPair(subDid, hederaPrivateKey);
                 document.setPrivateKey(id, privateKey);
             }
+            //BbsBlsSignature2020
             if (BbsBlsSignature2020) {
                 const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020);
                 document.setPrivateKey(BbsBlsSignature2020, privateKey);
