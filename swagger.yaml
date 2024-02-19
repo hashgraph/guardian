@@ -3547,16 +3547,16 @@ paths:
   /profiles/did-document/validate:
     post:
       operationId: ProfileApi_validateDidDocument
-      summary: .
-      description: .
+      summary: Validate DID document format.
+      description: Validate DID document format.
       parameters: []
       requestBody:
         required: true
-        description: A xlsx file containing policy config.
+        description: DID Document.
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -3581,16 +3581,16 @@ paths:
   /profiles/did-keys/validate:
     post:
       operationId: ProfileApi_validateDidKeys
-      summary: .
-      description: .
+      summary: Validate DID document keys.
+      description: Validate DID document keys.
       parameters: []
       requestBody:
         required: true
-        description: A xlsx file containing policy config.
+        description: DID Document and keys.
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -10539,6 +10539,9 @@ components:
         - token
         - count
         - serials
+    Object:
+      type: object
+      properties: {}
     MigrationConfigPoliciesDTO:
       type: object
       properties:
@@ -10845,9 +10848,6 @@ components:
         - id
         - title
         - value
-    Object:
-      type: object
-      properties: {}
     RecordStatusDTO:
       type: object
       properties:
