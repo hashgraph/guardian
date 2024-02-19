@@ -14,7 +14,7 @@
     "@guardian/interfaces": "^2.21.1",
     "@meeco/cryppo": "^2.0.2",
     "@mikro-orm/core": "5.7.12",
-    "@mikro-orm/mongodb": "5.7.12",
+    "@mikro-orm/mongodb": "6.1.4",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
