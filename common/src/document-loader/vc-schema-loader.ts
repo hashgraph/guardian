@@ -14,6 +14,18 @@ export class VCSchemaLoader extends SchemaLoader {
     }
 
     /**
+     * Has iri
+     * @param iri
+     */
+    public _has(iri: string): boolean {
+        return iri && (
+            iri.startsWith(this.context) ||
+            iri.startsWith('schema#') ||
+            iri.startsWith('schema:')
+        );
+    }
+
+    /**
      * Has context
      * @param context
      * @param iri
@@ -25,12 +37,12 @@ export class VCSchemaLoader extends SchemaLoader {
         }
         if (Array.isArray(context)) {
             for (const element of context) {
-                if (element.startsWith(this.context) || element.startsWith('schema#')) {
+                if (this._has(element)) {
                     return true;
                 }
             }
         } else {
-            return context && (context.startsWith(this.context) || context.startsWith('schema#'));
+            return this._has(context);
         }
         return false;
     }
@@ -61,23 +73,21 @@ export class VCSchemaLoader extends SchemaLoader {
 
     /**
      * Load schema contexts
-     * @param context
+     * @param contexts
      * @private
      */
-    private async loadSchemaContexts(context: string[], iri: string): Promise<ISchema[]> {
+    private async loadSchemaContexts(contexts: string[], iri: string): Promise<ISchema[]> {
         try {
-            if (context && context.length) {
-                for (const c of context) {
-                    if (c.startsWith('schema#')) {
-                        return await new DataBaseHelper(Schema).find({ iri });
-                    }
-                }
-                return await new DataBaseHelper(Schema).find({
-                    where: {
-                        contextURL: { $in: context },
+            if (contexts && contexts.length) {
+                const localSchema = contexts.find((context) => context.startsWith('schema#') || context.startsWith('schema:'));
+                if (localSchema) {
+                    return await new DataBaseHelper(Schema).find({ iri });
+                } else {
+                    return await new DataBaseHelper(Schema).find({
+                        contextURL: { $in: contexts },
                         iri: { $eq: iri },
-                    }
-                });
+                    });
+                }
             }
             return null;
         }

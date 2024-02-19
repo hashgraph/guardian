@@ -12,7 +12,7 @@ export class SchemaDocumentLoader extends DocumentLoader {
      * @param iri
      */
     public async has(iri: string): Promise<boolean> {
-        return iri.startsWith('schema#');
+        return iri.startsWith('schema#') || iri.startsWith('schema:');
     }
 
     /**
@@ -31,10 +31,8 @@ export class SchemaDocumentLoader extends DocumentLoader {
      * @param iri
      */
     public async getDocument(iri: string): Promise<any> {
-        const _iri = iri.substring(6);
-        const schema = await new DataBaseHelper(Schema).findOne({
-            iri: _iri
-        });
+        const _iri = '#' + iri.substring(7);
+        const schema = await new DataBaseHelper(Schema).findOne({ iri: _iri });
         if (schema) {
             return schema.context;
         }
