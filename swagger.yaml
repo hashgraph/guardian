@@ -3386,30 +3386,27 @@ paths:
         - bearerAuth: []
   /profiles/{username}:
     get:
-      tags:
-        - profiles
+      operationId: ProfileApi_getProfile
+      summary: Returns user account info.
       description: >-
         Returns user account information. For users with the Standard Registry
         role it also returns address book and VC document information.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to fetch the information
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to fetch the information.
-      security:
-        - bearerAuth: []
-      summary: Returns user account info.
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ProfileDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3417,35 +3414,37 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-    put:
-      tags:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_5
         - profiles
+      security:
+        - bearerAuth: []
+        - bearer: []
+    put:
+      operationId: ProfileApi_setUserProfile
+      summary: Sets Hedera credentials for the user.
       description: >-
         Sets Hedera credentials for the user. For users with the Standard
         Registry role it also creates an address book.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to update the information.
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to update the information.
-      security:
-        - bearerAuth: []
-      summary: Sets Hedera credentials for the user.
       requestBody:
-        description: Object that contains the Hedera account data.
         required: true
+        description: Object that contains the Hedera account data.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/CredentialsDTO'
       responses:
-        '201':
+        '200':
           description: Created.
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3453,38 +3452,41 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /profiles/push/{username}:
-    put:
-      tags:
-        - profiles
-      description: Sets Hedera credentials for the user
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
       security:
         - bearerAuth: []
-      summary: Sets Hedera credentials for the user
+        - bearer: []
+  /profiles/push/{username}:
+    put:
+      operationId: ProfileApi_setUserProfileAsync
+      summary: Sets Hedera credentials for the user.
+      description: >-
+        Sets Hedera credentials for the user. For users with the Standard
+        Registry role it also creates an address book.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to update the information.
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to update the information.
       requestBody:
-        description: Object that contains the Hedera account data.
         required: true
+        description: Object that contains the Hedera account data.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/CredentialsDTO'
       responses:
-        '202':
+        '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
+                $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3492,41 +3494,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /profiles/restore/{username}:
-    put:
-      operationId: ProfileApi_resoreUserProfile
-      parameters: []
-      responses:
-        '202':
-          description: ''
-      tags: &ref_5
-        - profiles
-  /profiles/restore/topics/{username}:
-    put:
-      operationId: ProfileApi_restoreTopic
-      parameters: []
-      responses:
-        '202':
-          description: ''
+                $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
+      security:
+        - bearerAuth: []
+        - bearer: []
   /profiles/{username}/balance:
     get:
-      tags:
-        - profiles
+      operationId: ProfileApi_getUserBalance
+      summary: Returns user's Hedera account balance.
       description: >-
         Requests Hedera account balance. Only users with the Installer role are
         allowed to make the request.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to fetch the balance.
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to fetch the balance.
-      security:
-        - bearerAuth: []
-      summary: Returns user's Hedera account balance.
       responses:
         '200':
           description: Successful operation.
@@ -3535,7 +3521,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3543,7 +3529,91 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /profiles/restore/{username}:
+    put:
+      operationId: ProfileApi_restoreUserProfile
+      summary: .
+      description: .
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: .
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: .
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /profiles/restore/topics/{username}:
+    put:
+      operationId: ProfileApi_restoreTopic
+      summary: .
+      description: .
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: .
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: .
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Object'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_5
+      security:
+        - bearerAuth: []
+        - bearer: []
   /profiles/did-document/validate:
     post:
       operationId: ProfileApi_validateDidDocument
@@ -3556,14 +3626,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object'
+              $ref: '#/components/schemas/DidDocumentDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/DidDocumentStatusDTO'
         '401':
           description: Unauthorized
         '403':
@@ -3590,14 +3660,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object'
+              $ref: '#/components/schemas/DidDocumentWithKeyDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/DidKeyStatusDTO'
         '401':
           description: Unauthorized
         '403':
@@ -10511,9 +10581,233 @@ components:
         - token
         - count
         - serials
+    ProfileDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: false
+        role:
+          type: string
+          nullable: false
+        did:
+          type: string
+          nullable: true
+        parent:
+          type: string
+          nullable: true
+        hederaAccountId:
+          type: string
+          nullable: true
+        confirmed:
+          type: boolean
+          nullable: true
+        failed:
+          type: boolean
+          nullable: true
+        topicId:
+          type: string
+          nullable: true
+        parentTopicId:
+          type: string
+          nullable: true
+        didDocument:
+          type: object
+          nullable: true
+        vcDocument:
+          type: object
+          nullable: true
+      required:
+        - username
+        - role
+    SubjectDTO:
+      type: object
+      properties:
+        '@context':
+          nullable: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+      required:
+        - '@context'
+    DidDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        context:
+          nullable: true
+          type: array
+          items:
+            type: string
+        alsoKnownAs:
+          nullable: true
+          type: array
+          items:
+            type: string
+        controller:
+          nullable: true
+          type: array
+          items:
+            type: string
+        verificationMethod:
+          nullable: true
+          type: array
+          items:
+            type: object
+        authentication:
+          nullable: true
+          type: array
+          items:
+            type: object
+        assertionMethod:
+          nullable: true
+          type: array
+          items:
+            type: object
+        keyAgreement:
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityInvocation:
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityDelegation:
+          nullable: true
+          type: array
+          items:
+            type: object
+        service:
+          nullable: true
+          type: array
+          items:
+            type: object
+      required:
+        - id
+        - context
+        - alsoKnownAs
+        - controller
+        - verificationMethod
+        - authentication
+        - assertionMethod
+        - keyAgreement
+        - capabilityInvocation
+        - capabilityDelegation
+        - service
+    DidKeyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        key:
+          type: string
+          nullable: false
+      required:
+        - id
+        - key
+    CredentialsDTO:
+      type: object
+      properties:
+        entity:
+          type: string
+          nullable: false
+        hederaAccountId:
+          type: string
+          nullable: false
+        hederaAccountKey:
+          type: string
+          nullable: false
+        parent:
+          type: string
+          nullable: true
+        vcDocument:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SubjectDTO'
+        didDocument:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        didKeys:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/DidKeyDTO'
+      required:
+        - entity
+        - hederaAccountId
+        - hederaAccountKey
+    TaskDTO:
+      type: object
+      properties:
+        taskId:
+          type: string
+        expectation:
+          type: number
+      required:
+        - taskId
+        - expectation
     Object:
       type: object
       properties: {}
+    DidDocumentStatusDTO:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          nullable: false
+        error:
+          type: string
+          nullable: true
+        didDocument:
+          type: object
+          nullable: false
+      required:
+        - valid
+        - error
+        - didDocument
+    DidDocumentWithKeyDTO:
+      type: object
+      properties:
+        document:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        keys:
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/DidKeyDTO'
+      required:
+        - document
+        - keys
+    DidKeyStatusDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        key:
+          type: string
+          nullable: false
+        valid:
+          type: boolean
+          nullable: false
+      required:
+        - id
+        - key
+        - valid
     MigrationConfigPoliciesDTO:
       type: object
       properties:
@@ -10606,16 +10900,6 @@ components:
         - version
         - owner
         - messageId
-    TaskDTO:
-      type: object
-      properties:
-        taskId:
-          type: string
-        expectation:
-          type: number
-      required:
-        - taskId
-        - expectation
     VersionSchemaDTO:
       type: object
       properties:
