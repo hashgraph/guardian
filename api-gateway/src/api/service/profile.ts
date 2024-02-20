@@ -271,7 +271,8 @@ export class ProfileApi {
         if (isNaN(parseFloat(balance))) {
             throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY);
         }
-        return balance;
+        //For backward compatibility
+        return JSON.stringify(balance);
     }
 
     /**

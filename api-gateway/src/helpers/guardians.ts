@@ -465,9 +465,8 @@ export class Guardians extends NatsService {
      * Get balance
      * @param username
      */
-    public async getBalance(username: string): Promise<string> {
-        const b = await this.sendMessage(MessageAPI.GET_BALANCE, { username });
-        return b as string;
+    public async getBalance(username: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_BALANCE, { username });
     }
 
     /**
