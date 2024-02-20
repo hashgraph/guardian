@@ -8982,13 +8982,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -9110,13 +9103,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -9238,13 +9224,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -9280,13 +9259,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
