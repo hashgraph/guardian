@@ -18,25 +18,26 @@ import {
     ContextDocumentLoader, DryRunLoader, HederaLoader,
 } from '../document-loader';
 import {
+    Schema,
     ICredentialSubject,
     SchemaEntity,
     SignatureType,
 } from '@guardian/interfaces';
 import { PrivateKey, TopicId } from '@hashgraph/sdk';
-// tslint:disable-next-line:no-duplicate-imports
-import { Schema } from '@guardian/interfaces';
 import {
     BbsBlsSignatureProof2020,
+    Bls12381G2KeyPair,
     deriveProof,
 } from '@mattrglobal/jsonld-signatures-bbs';
 import { Singleton } from '../decorators/singleton';
 import { DataBaseHelper } from './db-helper';
-import { Schema as SchemaCollection } from '../entity';
-import { DidDocument as DidDocumentCollection } from '../entity';
+import {
+    Schema as SchemaCollection,
+    DidDocument as DidDocumentCollection
+} from '../entity';
 import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
 import { KeyType, Users, Wallet } from '../helpers';
 import { IAuthUser } from '../interfaces';
-import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 
 /**
@@ -111,7 +112,7 @@ export class VcHelper extends VCJS {
     }
 
     /**
-     *Load DID document
+     * Load DID document
      * @param topic
      * @param needKey
      */
@@ -193,7 +194,7 @@ export class VcHelper extends VCJS {
      *
      * @param {string | TopicId} topicId
      * @param {string | PrivateKey} privateKey
-     * 
+     *
      * @returns {HederaDidDocument} - DID Document
      */
     public async generateNewDid(topicId: string | TopicId, privateKey: string | PrivateKey): Promise<HederaDidDocument> {
@@ -285,7 +286,7 @@ export class VcHelper extends VCJS {
 
     /**
      * Get signature type by schema
-     * 
+     *
      * @param subject Subject
      * @returns SignatureType
      */
@@ -301,10 +302,10 @@ export class VcHelper extends VCJS {
 
     /**
      * Prepare Subject
-     * 
+     *
      * @param subject Subject
      * @param signatureType Signature Type
-     * 
+     *
      * @returns ICredentialSubject
      */
     private prepareSubject(subject: ICredentialSubject, signatureType: SignatureType): ICredentialSubject {
@@ -317,10 +318,10 @@ export class VcHelper extends VCJS {
 
     /**
      * Prepare VCs
-     * 
+     *
      * @param subject Subject
      * @param signatureType Signature Type
-     * 
+     *
      * @returns ICredentialSubject
      */
     private async prepareVCs(vcs: VcDocument[]): Promise<VcDocument[]> {
@@ -335,49 +336,49 @@ export class VcHelper extends VCJS {
         return vcs;
     }
 
-    // /**
-    //  * Create VC Document
-    //  *
-    //  * @param {string} did - DID
-    //  * @param {PrivateKey | string} key - Private Key
-    //  * @param {any} subject - Credential Object
-    //  * @param {any} [group] - Issuer
-    //  *
-    //  * @returns {VcDocument} - VC Document
-    //  *
-    //  * @deprecated
-    //  */
-    // public override async createVC(
-    //     did: string,
-    //     key: string | PrivateKey,
-    //     subject: ICredentialSubject,
-    //     group?: any,
-    // ): Promise<VcDocument> {
-    //     const signatureType = await this.getSignatureTypeBySchema(subject);
-    //     subject = this.prepareSubject(subject, signatureType);
-    //     return await super.createVC(did, key, subject, group, signatureType);
-    // }
+    /**
+     * Create VC Document
+     *
+     * @param {string} did - DID
+     * @param {PrivateKey | string} key - Private Key
+     * @param {any} subject - Credential Object
+     * @param {any} [group] - Issuer
+     *
+     * @returns {VcDocument} - VC Document
+     *
+     * @deprecated 2024-02-12
+     */
+    public override async createVC(
+        did: string,
+        key: string | PrivateKey,
+        subject: ICredentialSubject,
+        group?: any,
+    ): Promise<VcDocument> {
+        const signatureType = await this.getSignatureTypeBySchema(subject);
+        subject = this.prepareSubject(subject, signatureType);
+        return await super.createVC(did, key, subject, group, signatureType);
+    }
 
-    // /**
-    //  * Create VC Document
-    //  *
-    //  * @param {ICredentialSubject} subject - Credential Object
-    //  * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
-    //  * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-    //  *
-    //  * @returns {VcDocument} - VC Document
-    //  * 
-    //  * @deprecated
-    //  */
-    // public override async createVcDocument(
-    //     subject: ICredentialSubject,
-    //     suiteOptions: ISuiteOptions,
-    //     documentOptions?: IDocumentOptions
-    // ): Promise<VcDocument> {
-    //     suiteOptions.signatureType = await this.getSignatureTypeBySchema(subject);
-    //     subject = this.prepareSubject(subject, suiteOptions.signatureType);
-    //     return await super.createVcDocument(subject, suiteOptions, documentOptions);
-    // }
+    /**
+     * Create VC Document
+     *
+     * @param {ICredentialSubject} subject - Credential Object
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VcDocument} - VC Document
+     *
+     * @deprecated 2024-02-12
+     */
+    public override async createVcDocument(
+        subject: ICredentialSubject,
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
+    ): Promise<VcDocument> {
+        suiteOptions.signatureType = await this.getSignatureTypeBySchema(subject);
+        subject = this.prepareSubject(subject, suiteOptions.signatureType);
+        return await super.createVcDocument(subject, suiteOptions, documentOptions);
+    }
 
     /**
      * Create VC Document
@@ -400,47 +401,47 @@ export class VcHelper extends VCJS {
         return await super.createVerifiableCredential(subject, didDocument, signatureType, documentOptions);
     }
 
-    // /**
-    //  * Create VP Document
-    //  *
-    //  * @param {string} did - DID
-    //  * @param {PrivateKey | string} key - Private Key
-    //  * @param {VcDocument[]} vcs - VC Documents
-    //  * @param {string} [uuid] - new uuid
-    //  *
-    //  * @returns {VpDocument} - VP Document
-    //  *
-    //  * @deprecated
-    //  */
-    // public override async createVP(
-    //     did: string,
-    //     key: string | PrivateKey,
-    //     vcs: VcDocument[],
-    //     uuid?: string
-    // ): Promise<VpDocument> {
-    //     vcs = await this.prepareVCs(vcs);
-    //     return await super.createVP(did, key, vcs, uuid);
-    // }
+    /**
+     * Create VP Document
+     *
+     * @param {string} did - DID
+     * @param {PrivateKey | string} key - Private Key
+     * @param {VcDocument[]} vcs - VC Documents
+     * @param {string} [uuid] - new uuid
+     *
+     * @returns {VpDocument} - VP Document
+     *
+     * @deprecated 2024-02-12
+     */
+    public override async createVP(
+        did: string,
+        key: string | PrivateKey,
+        vcs: VcDocument[],
+        uuid?: string
+    ): Promise<VpDocument> {
+        vcs = await this.prepareVCs(vcs);
+        return await super.createVP(did, key, vcs, uuid);
+    }
 
-    // /**
-    //  * Create VP Document
-    //  *
-    //  * @param {VcDocument[]} vcs - VC Documents
-    //  * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
-    //  * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-    //  *
-    //  * @returns {VpDocument} - VP Document
-    //  * 
-    //  * @deprecated
-    //  */
-    // public override async createVpDocument(
-    //     vcs: VcDocument[],
-    //     suiteOptions: ISuiteOptions,
-    //     documentOptions?: IDocumentOptions
-    // ): Promise<VpDocument> {
-    //     vcs = await this.prepareVCs(vcs);
-    //     return await super.createVpDocument(vcs, suiteOptions, documentOptions);
-    // }
+    /**
+     * Create VP Document
+     *
+     * @param {VcDocument[]} vcs - VC Documents
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VpDocument} - VP Document
+     *
+     * @deprecated 2024-02-12
+     */
+    public override async createVpDocument(
+        vcs: VcDocument[],
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
+    ): Promise<VpDocument> {
+        vcs = await this.prepareVCs(vcs);
+        return await super.createVpDocument(vcs, suiteOptions, documentOptions);
+    }
 
     /**
      * Create VP Document

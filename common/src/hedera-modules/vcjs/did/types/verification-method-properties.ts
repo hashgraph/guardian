@@ -1,4 +1,6 @@
-
+/**
+ * DID verification method properties
+ */
 export enum VerificationMethodProperties {
     /**
      * A string that conforms to the rules in 3.2 DID URL Syntax.

@@ -166,6 +166,10 @@ export class UserCredentials {
      */
     private readonly _dryRun: boolean;
     /**
+     * Policy Owner
+     */
+    private readonly _owner: string;
+    /**
      * User DID
      */
     private _did: string;
@@ -173,10 +177,6 @@ export class UserCredentials {
      * Hedera account id
      */
     private _hederaAccountId: string;
-    /**
-     * Policy Owner
-     */
-    private _owner: string;
 
     public get did(): string {
         return this._did;

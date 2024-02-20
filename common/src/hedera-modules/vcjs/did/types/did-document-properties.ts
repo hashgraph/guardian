@@ -1,4 +1,6 @@
-
+/**
+ * DID document properties
+ */
 export enum DidDocumentProperties {
     /**
      * Context

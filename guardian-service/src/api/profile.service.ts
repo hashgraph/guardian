@@ -6,7 +6,6 @@ import {
     DidDocument as DidDocumentCollection,
     DIDMessage,
     HederaBBSMethod,
-    HederaDidDocument,
     HederaEd25519Method,
     IAuthUser,
     KeyType,

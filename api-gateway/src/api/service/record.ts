@@ -60,11 +60,6 @@ export class RecordApi {
         required: true,
         example: '000000000000000000000001'
     })
-    @ApiBody({
-        description: 'Object that contains options',
-        required: true,
-        type: Object
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RecordStatusDTO
@@ -228,11 +223,6 @@ export class RecordApi {
         required: true,
         example: '000000000000000000000001'
     })
-    @ApiBody({
-        description: 'Object that contains options',
-        required: true,
-        type: Object
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -391,11 +381,6 @@ export class RecordApi {
         required: true,
         example: '000000000000000000000001'
     })
-    @ApiBody({
-        description: 'Object that contains options',
-        required: true,
-        type: Object
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: RunningResultDTO
@@ -443,11 +428,6 @@ export class RecordApi {
         description: 'Policy Id',
         required: true,
         example: '000000000000000000000001'
-    })
-    @ApiBody({
-        description: 'Object that contains options',
-        required: true,
-        type: Object
     })
     @ApiOkResponse({
         description: 'Successful operation.',

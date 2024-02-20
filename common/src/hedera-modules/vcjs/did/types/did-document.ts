@@ -1,3 +1,6 @@
+/**
+ * DID document
+ */
 export interface IDidDocument {
     /**
      * DID
@@ -55,6 +58,9 @@ export interface IDidDocument {
     service?: IService[];
 }
 
+/**
+ * DID verification method
+ */
 export interface IVerificationMethod {
     /**
      * Id
@@ -102,6 +108,9 @@ export interface IVerificationMethod {
     privateKeyBase58?: string;
 }
 
+/**
+ * DID verification service
+ */
 export interface IService {
     /**
      * Id

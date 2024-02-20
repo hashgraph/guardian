@@ -1,6 +1,9 @@
 import { IService } from '../types/did-document';
 import { ServiceProperties } from '../types/service-properties';
 
+/**
+ * Did document service
+ */
 export class DocumentService {
     /**
      * Id
@@ -22,7 +25,10 @@ export class DocumentService {
 
     /**
      * From
-     * @param method
+     * @param service - service
+     * @returns {DocumentService} - service
+     * @public
+     * @static
      */
     public static from(service: IService): DocumentService {
         const result = new DocumentService();
@@ -33,8 +39,11 @@ export class DocumentService {
     }
 
     /**
-     * From
-     * @param method
+     * From array
+     * @param services - services
+     * @returns {DocumentService[]} - service
+     * @public
+     * @static
      */
     public static fromArray(services: IService[]): DocumentService[] {
         const result: DocumentService[] = [];
@@ -45,8 +54,9 @@ export class DocumentService {
     }
 
     /**
-     * Convert method to object
-     * @param privateKey
+     * Convert service to object
+     * @returns {IService} - service
+     * @public
      */
     public toObject(): IService {
         const result: any = {};

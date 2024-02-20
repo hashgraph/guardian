@@ -2,24 +2,36 @@ import { PrivateKey } from '@hashgraph/sdk';
 import { Hashing } from '../../../hashing';
 import { VerificationMethod } from './verification-method';
 
+/**
+ * DID document method (Ed25519VerificationKey2018)
+ * @interface VerificationMethod
+ */
 export class HederaEd25519Method extends VerificationMethod {
     /**
      * DID root key name
+     * @public
+     * @static
      */
     public static readonly DID_ROOT_KEY_NAME = '#did-root-key';
 
     /**
      * DID root key type
+     * @public
+     * @static
      */
     public static readonly DID_ROOT_KEY_TYPE = 'Ed25519VerificationKey2018';
 
     /**
      * Method type
+     * @public
+     * @static
      */
     public static readonly TYPE = 'Ed25519VerificationKey2018';
 
     /**
      * Get private key
+     * @returns {string} - privateKeyBase58
+     * @public
      */
     public override getPrivateKey(): string {
         return this.privateKeyBase58;
@@ -27,6 +39,8 @@ export class HederaEd25519Method extends VerificationMethod {
 
     /**
      * Set private key
+     * @param {string} privateKeyBase58 - privateKey
+     * @public
      */
     public override setPrivateKey(privateKeyBase58: string) {
         this.privateKeyBase58 = privateKeyBase58;
@@ -34,8 +48,11 @@ export class HederaEd25519Method extends VerificationMethod {
 
     /**
      * Generate KeyPair
-     * @param did
-     * @param key
+     * @param {string} did - Hedera DID
+     * @param {PrivateKey | string} key - Hedera private key
+     * @returns - key pair
+     * @public
+     * @static
      */
     public static async generateKeyPair(
         did: string,
@@ -65,8 +82,11 @@ export class HederaEd25519Method extends VerificationMethod {
 
     /**
      * Generate by private key
-     * @param did
-     * @param key
+     * @param {string} did - Hedera DID
+     * @param {PrivateKey | string} key - Hedera private key
+     * @returns {HederaEd25519Method} - DID document method
+     * @public
+     * @static
      */
     public static async generate(
         did: string,
@@ -85,7 +105,10 @@ export class HederaEd25519Method extends VerificationMethod {
 
     /**
      * Get default id
-     * @param controller
+     * @param {string} controller - DID
+     * @returns {string} - DID document method id
+     * @public
+     * @static
      */
     public static defaultId(controller: string): string {
         return controller + HederaEd25519Method.DID_ROOT_KEY_NAME;

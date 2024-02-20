@@ -13,10 +13,14 @@ import { IDidDocument } from './types/did-document';
 export class CommonDidDocument {
     /**
      * DID document context
+     * @public
+     * @static
      */
     public static readonly DID_DOCUMENT_CONTEXT = 'https://www.w3.org/ns/did/v1';
     /**
      * DID document transmute context
+     * @public
+     * @static
      */
     public static readonly DID_DOCUMENT_TRANSMUTE_CONTEXT = 'https://ns.did.ai/transmute/v1';
 
@@ -91,11 +95,21 @@ export class CommonDidDocument {
 
     /**
      * Get DID
+     * @returns {string} - DID
+     * @public
      */
     public getDid(): string {
         return this.did?.toString();
     }
 
+    /**
+     * From document
+     * @param {IDidDocument} document - DID document
+     * @param {CommonDidDocument} result - result
+     * @returns {CommonDidDocument} - result
+     * @static
+     * @protected
+     */
     protected static _from<T extends CommonDidDocument>(document: IDidDocument, result: T): T {
         const id = document[DidDocumentProperties.ID];
         const context = document[DidDocumentProperties.CONTEXT];
@@ -169,6 +183,13 @@ export class CommonDidDocument {
         return result;
     }
 
+    /**
+     * From document
+     * @param {IDidDocument | string} document - DID document
+     * @returns {CommonDidDocument} - DID document
+     * @public
+     * @static
+     */
     public static from(document: IDidDocument | string): CommonDidDocument {
         if (typeof document === 'object') {
             const result = new CommonDidDocument();
@@ -183,6 +204,8 @@ export class CommonDidDocument {
 
     /**
      * Get document
+     * @returns {IDidDocument} - DID Document
+     * @public
      */
     public getDocument(): IDidDocument {
         return this.toObject(false);
@@ -190,6 +213,8 @@ export class CommonDidDocument {
 
     /**
      * Get document
+     * @returns {IDidDocument} - DID Document
+     * @public
      */
     public getPrivateDocument(): IDidDocument {
         return this.toObject(true);
@@ -197,6 +222,9 @@ export class CommonDidDocument {
 
     /**
      * Get document
+     * @param {any} privateKey - include private key
+     * @returns {IDidDocument} - DID Document
+     * @public
      */
     public toObject(privateKey: boolean = false): IDidDocument {
         const result: any = {};
@@ -291,6 +319,8 @@ export class CommonDidDocument {
 
     /**
      * To credential hash
+     * @returns {string} - hash
+     * @public
      */
     public toCredentialHash(): string {
         const map = this.getDocument();
@@ -301,7 +331,8 @@ export class CommonDidDocument {
 
     /**
      * Get verification methods
-     *
+     * @returns {VerificationMethod[]} - all verification methods
+     * @public
      */
     public getVerificationMethods(): VerificationMethod[] {
         return Array.isArray(this.verificationMethod) ? this.verificationMethod : [];
@@ -309,8 +340,9 @@ export class CommonDidDocument {
 
     /**
      * Get verification method by type
-     *
      * @param {string} type - Signature type
+     * @returns {VerificationMethod[]} - first find verification method
+     * @public
      */
     public getMethodByType(type: string): VerificationMethod | null {
         if (Array.isArray(this.verificationMethod)) {
@@ -325,8 +357,9 @@ export class CommonDidDocument {
 
     /**
      * Get verification method by name
-     *
      * @param {string} id - method name
+     * @returns {VerificationMethod[]} - first find verification method
+     * @public
      */
     public getMethodByName(id: string): VerificationMethod | null {
         if (Array.isArray(this.verificationMethod)) {
@@ -341,9 +374,9 @@ export class CommonDidDocument {
 
     /**
      * Set private key
-     * 
      * @param {string} id - method name
-     * @param {string} privateKey - private key
+     * @param {any} privateKey - private key
+     * @public
      */
     public setPrivateKey(id: string, privateKey: any): void {
         if (Array.isArray(this.verificationMethod)) {
@@ -357,6 +390,8 @@ export class CommonDidDocument {
 
     /**
      * Get private keys
+     * @returns {any[]} - get all private keys
+     * @public
      */
     public getPrivateKeys(): any[] {
         const result = [];

@@ -1,36 +1,50 @@
 import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
 import { Hashing } from '../../hashing';
-import { CommonDid, DidComponents } from './common-did';
+import { CommonDid } from './common-did';
+import { HederaDidComponents } from './types/did-components';
 
-export interface HederaDidComponents extends DidComponents {
-    readonly network: string,
-    readonly key: string,
-    readonly topicId: string
-}
-
+/**
+ * Hedera DID
+ * @interface CommonDid
+ */
 export class HederaDid extends CommonDid {
     /**
      * DID topic separator
+     * @public
+     * @static
      */
     public static readonly DID_TOPIC_SEPARATOR = '_';
 
     /**
      * DID parameter separator
      * @deprecated only for old DID versions
+     * @public
+     * @static
      */
     public static readonly DID_PARAMETER_SEPARATOR = ';';
 
     /**
      * DID parameter value separator
      * @deprecated only for old DID versions
+     * @public
+     * @static
      */
     public static readonly DID_PARAMETER_VALUE_SEPARATOR = '=';
 
     /**
      * DID topic id
      * @deprecated only for old DID versions
+     * @public
+     * @static
      */
     public static readonly DID_TOPIC_ID = 'tid';
+
+    /**
+     * Hedera HCS
+     * @public
+     * @static
+     */
+    public static readonly HEDERA_HCS = 'hedera';
 
     /**
      * Topic ID
@@ -45,12 +59,9 @@ export class HederaDid extends CommonDid {
     protected network: string;
 
     /**
-     * Hedera HCS
-     */
-    public static readonly HEDERA_HCS = 'hedera';
-
-    /**
      * Get method
+     * @returns {string} - DID Method
+     * @public
      */
     public override getMethod(): string {
         return HederaDid.HEDERA_HCS;
@@ -58,6 +69,8 @@ export class HederaDid extends CommonDid {
 
     /**
      * Get DID topic ID
+     * @returns {TopicId} - Hedera Topic Id
+     * @public
      */
     public getDidTopicId(): TopicId {
         return this.topicId;
@@ -65,6 +78,8 @@ export class HederaDid extends CommonDid {
 
     /**
      * Get network
+     * @returns {string} - Hedera network
+     * @public
      */
     public getNetwork(): string {
         return this.network;
@@ -72,6 +87,7 @@ export class HederaDid extends CommonDid {
 
     /**
      * Build DID
+     * @returns {string} - DID
      * @private
      */
     private build(): string {
@@ -96,7 +112,9 @@ export class HederaDid extends CommonDid {
 
     /**
      * Public key to ID string
-     * @param publicKey
+     * @param {PublicKey} publicKey - Hedera public key
+     * @returns {string} - DID identifier
+     * @private
      * @static
      */
     private static publicKeyToIdString(publicKey: PublicKey): string {
@@ -105,9 +123,11 @@ export class HederaDid extends CommonDid {
 
     /**
      * Generate new DID
-     * @param network
-     * @param key
-     * @param topicId
+     * @param {string} network - Hedera network
+     * @param {PrivateKey | string} key - Hedera private key
+     * @param {TopicId | string} topicId - Hedera topic id
+     * @returns {HederaDid} - DID
+     * @public
      * @static
      */
     public static async generate(
@@ -134,7 +154,9 @@ export class HederaDid extends CommonDid {
 
     /**
      * From
-     * @param did
+     * @param {string} did - DID
+     * @returns {HederaDid} - DID
+     * @public
      * @static
      */
     public static override from(did: string): HederaDid {
@@ -156,9 +178,10 @@ export class HederaDid extends CommonDid {
     }
 
     /**
-     * parse DID
-     * @param did
-     * @returns {HederaDidComponents}
+     * Parse DID
+     * @param {string} did - DID
+     * @returns {HederaDidComponents} - DID components
+     * @public
      * @static
      */
     public static override parse(did: string): HederaDidComponents {
@@ -173,9 +196,10 @@ export class HederaDid extends CommonDid {
     }
 
     /**
-     * Parse DID
-     * @param did
-     * @returns {HederaDidComponents}
+     * Parse DID (v2)
+     * @param {string} did - DID
+     * @returns {HederaDidComponents} - DID components
+     * @public
      * @static
      */
     public static parseV2(did: string): HederaDidComponents {
@@ -204,9 +228,10 @@ export class HederaDid extends CommonDid {
 
     /**
      * Parse old DID
-     * @param did
-     * @returns {HederaDidComponents}
+     * @param {string} did - DID
+     * @returns {HederaDidComponents} - DID components
      * @deprecated only for old DID versions
+     * @private
      * @static
      */
     private static parseV1(did: string): HederaDidComponents {
@@ -237,8 +262,9 @@ export class HederaDid extends CommonDid {
 
     /**
      * Check DID type
-     * @param did
+     * @param {string} did - DID
      * @returns {boolean}
+     * @public
      * @static
      */
     public static override implement(did: string): boolean {
@@ -254,7 +280,9 @@ export class HederaDid extends CommonDid {
 
     /**
      * Get topic id
-     * @param did
+     * @param {string} did - DID
+     * @returns {string} - Hedera topic id
+     * @public
      * @static
      */
     public static getTopicId(did: string): string {

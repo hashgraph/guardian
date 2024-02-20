@@ -6,6 +6,10 @@ import { HederaEd25519Method } from './components/hedera-ed25519-method';
 import { HederaBBSMethod } from './components/hedera-bbs-method';
 import { IDidDocument } from './types/did-document';
 
+/**
+ * Hedera DID document
+ * @interface CommonDidDocument
+ */
 export class HederaDidDocument extends CommonDidDocument {
     /**
      * Topic ID
@@ -15,6 +19,8 @@ export class HederaDidDocument extends CommonDidDocument {
 
     /**
      * Get DID topic ID
+     * @returns {TopicId} - Hedera Topic Id
+     * @public
      */
     public getDidTopicId(): TopicId {
         return this.topicId;
@@ -22,6 +28,8 @@ export class HederaDidDocument extends CommonDidDocument {
 
     /**
      * Get DID topic ID
+     * @param {TopicId | string} topicId - Hedera Topic Id
+     * @public
      */
     public setDidTopicId(topicId: string | TopicId): void {
         this.topicId = typeof topicId === 'string' ?
@@ -29,14 +37,21 @@ export class HederaDidDocument extends CommonDidDocument {
             topicId;
     }
 
-    public static override from(document: IDidDocument): HederaDidDocument {
+    /**
+     * From document
+     * @param {IDidDocument | string} document - DID document
+     * @returns {HederaDidDocument} - DID document
+     * @public
+     * @static
+     */
+    public static override from(document: IDidDocument | string): HederaDidDocument {
         let result: HederaDidDocument;
         if (typeof document === 'object') {
             result = new HederaDidDocument();
             result = CommonDidDocument._from(document, result);
         } else if (typeof document === 'string') {
             result = new HederaDidDocument();
-            result = CommonDidDocument._from(document, result);
+            result = CommonDidDocument._from(JSON.parse(document), result);
         } else {
             throw new Error('Invalid document format');
         }
@@ -48,9 +63,12 @@ export class HederaDidDocument extends CommonDidDocument {
 
     /**
      * Generate new DID Document
-     * @param network
-     * @param key
-     * @param topicId
+     * @param {string} network - Hedera network
+     * @param {PrivateKey | string} key - Hedera private key
+     * @param {TopicId | string} topicId - Hedera topic id
+     * @returns {HederaDidDocument} - DID document
+     * @public
+     * @static
      */
     public static async generate(
         network: string,
@@ -63,8 +81,11 @@ export class HederaDidDocument extends CommonDidDocument {
 
     /**
      * Generate DID Document by DID
-     * @param did
-     * @param key
+     * @param {string} did - DID
+     * @param {PrivateKey | string} key - Hedera private key
+     * @returns {HederaDidDocument} - DID document
+     * @public
+     * @static
      */
     public static async generateByDid(
         did: string,
@@ -76,9 +97,11 @@ export class HederaDidDocument extends CommonDidDocument {
 
     /**
      * Generate new DID Document
-     * @param network
-     * @param key
-     * @param topicId
+     * @param {HederaDid} did - Hedera DID
+     * @param {PrivateKey | string} key - Hedera private key
+     * @returns {HederaDidDocument} - DID document
+     * @private
+     * @static
      */
     private static async _generate(
         did: HederaDid,
@@ -134,7 +157,10 @@ export class HederaDidDocument extends CommonDidDocument {
 
     /**
      * From JSON tree
-     * @param json
+     * @param {IDidDocument} json - DID document
+     * @returns {HederaDidDocument} - DID document
+     * @public
+     * @static
      */
     public static fromJsonTree(json: IDidDocument): HederaDidDocument {
         return HederaDidDocument.from(json);
@@ -142,6 +168,8 @@ export class HederaDidDocument extends CommonDidDocument {
 
     /**
      * To JSON tree
+     * @returns {IDidDocument} - DID document
+     * @public
      */
     public toJsonTree(): IDidDocument {
         return this.getDocument();

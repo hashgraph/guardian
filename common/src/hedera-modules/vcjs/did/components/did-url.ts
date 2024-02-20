@@ -1,7 +1,13 @@
+/**
+ * DID URL utils
+ */
 export class DidURL {
     /**
      * Get did controller
-     * @param didPath
+     * @param {string} didPath - full DID URL
+     * @returns {string} - controller DID
+     * @public
+     * @static
      */
     public static getController(didPath: string): string {
         if (!didPath || typeof didPath !== 'string') {
@@ -11,8 +17,11 @@ export class DidURL {
     }
 
     /**
-     * Get did controller
-     * @param didPath
+     * Get did params
+     * @param {string} didPath - full DID URL
+     * @returns {string} - DID URL params
+     * @public
+     * @static
      */
     public static getPath(didPath: string): string {
         if (!didPath || typeof didPath !== 'string') {

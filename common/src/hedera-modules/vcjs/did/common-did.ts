@@ -1,17 +1,20 @@
-export interface DidComponents {
-    readonly prefix: string;
-    readonly method: string;
-    readonly identifier: string;
-}
+import { IDidComponents } from './types/did-components';
 
+/**
+ * DID base
+ */
 export class CommonDid {
     /**
      * DID prefix
+     * @public
+     * @static
      */
     public static readonly DID_PREFIX = 'did';
 
     /**
      * DID method separator
+     * @public
+     * @static
      */
     public static readonly DID_METHOD_SEPARATOR = ':';
 
@@ -44,13 +47,17 @@ export class CommonDid {
 
     /**
      * Get method
+     * @returns {string} - DID Method
+     * @public
      */
     public getMethod(): string {
         return this.method;
     }
 
     /**
-     * Get method
+     * Get identifier
+     * @returns {string} - DID Identifier
+     * @public
      */
     public getIdentifier(): string {
         return this.identifier;
@@ -58,6 +65,8 @@ export class CommonDid {
 
     /**
      * To string
+     * @returns {string} - DID
+     * @public
      */
     public toString(): string {
         return this.did;
@@ -65,7 +74,9 @@ export class CommonDid {
 
     /**
      * From
-     * @param did
+     * @param {string} did - DID
+     * @returns {CommonDid} - DID
+     * @public
      * @static
      */
     public static from(did: string): CommonDid {
@@ -79,12 +90,13 @@ export class CommonDid {
     }
 
     /**
-     * parse DID
-     * @param did
-     * @returns {DidComponents}
+     * Parse DID
+     * @param {string} did - DID
+     * @returns {IDidComponents} - DID Components
+     * @public
      * @static
      */
-    public static parse(did: string): DidComponents {
+    public static parse(did: string): IDidComponents {
         if (!did || typeof did !== 'string') {
             throw new Error('DID string cannot be null');
         }
@@ -100,8 +112,9 @@ export class CommonDid {
 
     /**
      * Check DID type
-     * @param did
+     * @param {string} did - DID
      * @returns {boolean}
+     * @public
      * @static
      */
     public static implement(did: string): boolean {

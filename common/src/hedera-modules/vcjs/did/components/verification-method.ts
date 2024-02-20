@@ -67,6 +67,8 @@ export class VerificationMethod {
 
     /**
      * Get ID
+     * @returns {string} - method id
+     * @public
      */
     public getId(): string {
         return this.id;
@@ -74,6 +76,8 @@ export class VerificationMethod {
 
     /**
      * Get type
+     * @returns {string} - method type
+     * @public
      */
     public getType(): string {
         return this.type;
@@ -81,6 +85,8 @@ export class VerificationMethod {
 
     /**
      * Get controller
+     * @returns {string} - controller
+     * @public
      */
     public getController(): string {
         return this.controller;
@@ -88,6 +94,8 @@ export class VerificationMethod {
 
     /**
      * Get name
+     * @returns {string} - method name
+     * @public
      */
     public getName(): string {
         return this.name;
@@ -95,6 +103,8 @@ export class VerificationMethod {
 
     /**
      * Get method
+     * @returns {string} - method name
+     * @public
      */
     public getMethod(): string {
         return this.name;
@@ -102,6 +112,8 @@ export class VerificationMethod {
 
     /**
      * Has private key
+     * @returns {boolean} - method has private key
+     * @public
      */
     public hasPrivateKey(): boolean {
         return !!(this.privateKeyJwk || this.privateKeyMultibase || this.privateKeyBase58);
@@ -109,6 +121,8 @@ export class VerificationMethod {
 
     /**
      * Get private key
+     * @returns {any} - private key
+     * @public
      */
     public getPrivateKey(): any {
         if (this.privateKeyJwk) {
@@ -124,6 +138,8 @@ export class VerificationMethod {
 
     /**
      * Set private key
+     * @param {any} privateKey - private key
+     * @public
      */
     public setPrivateKey(privateKey: any) {
         if (this.publicKeyJwk) {
@@ -139,7 +155,9 @@ export class VerificationMethod {
 
     /**
      * Convert method to object
-     * @param privateKey
+     * @param {any} privateKey - include private key
+     * @returns {IVerificationMethod} - verification method
+     * @public
      */
     public toObject(privateKey: boolean = false): IVerificationMethod {
         const result: any = {};
@@ -169,7 +187,10 @@ export class VerificationMethod {
 
     /**
      * From
-     * @param method
+     * @param {IVerificationMethod} method - verification method
+     * @returns {VerificationMethod} - verification method
+     * @public
+     * @static
      */
     public static from(method: IVerificationMethod): VerificationMethod {
         const id = method[VerificationMethodProperties.ID];
@@ -221,13 +242,19 @@ export class VerificationMethod {
 
     /**
      * From array (without links)
-     * @param methods
+     * @param {IVerificationMethod[]} methods - verification methods
+     * @returns {VerificationMethod[]} - verification methods
+     * @public
+     * @static
      */
     public static fromArray(methods: IVerificationMethod[]): VerificationMethod[]
     /**
      * From array (with links)
-     * @param methods
-     * @param containsLinks
+     * @param {(IVerificationMethod | string)[]} methods - verification methods
+     * @param {boolean} containsLinks - can contain links
+     * @returns {(VerificationMethod | string)[]} - verification methods
+     * @public
+     * @static
      */
     public static fromArray(methods: (IVerificationMethod | string)[], containsLinks: boolean): (VerificationMethod | string)[]
     public static fromArray(...arg: any[]) {

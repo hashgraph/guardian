@@ -12,6 +12,11 @@ export class DocumentContext {
         this.context = [];
     }
 
+    /**
+     * Get context object
+     * @returns {string | string[] | null} - context
+     * @public
+     */
     public toObject(): string | string[] | null {
         if (this.context.length === 0) {
             return null;
@@ -22,16 +27,33 @@ export class DocumentContext {
         return this.context.slice();
     }
 
+    /**
+     * Check context
+     * @returns {boolean} - is empty
+     * @public
+     */
     public isEmpty(): boolean {
         return this.context.length === 0;
     }
 
+    /**
+     * Add new context
+     * @param {string} context - new context
+     * @public
+     */
     public add(context: string) {
         if (this.context.indexOf(context) === -1) {
             this.context.push(context);
         }
     }
 
+    /**
+     * From context object
+     * @param {string | string[] | null} context - context object
+     * @returns {DocumentContext} - context
+     * @public
+     * @static
+     */
     public static from(context: string | string[] | null): DocumentContext {
         const result = new DocumentContext();
         if (context) {

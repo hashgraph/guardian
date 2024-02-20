@@ -102,17 +102,20 @@ export class VcDocument {
     /**
      * Constructor
      */
+    // tslint:disable-next-line:unified-signatures
     constructor()
     /**
      * Constructor
      * @param signatureType
      */
+    // tslint:disable-next-line:unified-signatures
     constructor(signatureType: string)
     /**
      * Constructor
      * @param hasBBSSignature
      * @deprecated
      */
+    // tslint:disable-next-line:unified-signatures
     constructor(hasBBSSignature: boolean)
     constructor(arg?: string | boolean) {
         const type = (arg === true || arg === SignatureType.BbsBlsSignature2020)

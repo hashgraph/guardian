@@ -1,4 +1,6 @@
-
+/**
+ * DID service properties
+ */
 export enum ServiceProperties {
     /**
      * A string that conforms to the rules of [RFC3986] for URIs.
