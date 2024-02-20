@@ -11,7 +11,7 @@ RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
 RUN npm install
 RUN npm run build:prod
 
-FROM nginx:1.25.1
+FROM nginx:1.25.2
 ENV PLATFORM="docker"
 COPY ./web-proxy/configs/image.conf /etc/nginx/templates/default.conf.template
 COPY --from=frontendBuilder /usr/local/frontend/dist/guardian /usr/share/nginx/html
