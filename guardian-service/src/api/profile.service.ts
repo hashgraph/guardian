@@ -149,8 +149,13 @@ async function createUserProfile(
     // <-- Check hedera key
     // ------------------------
     try {
+        const workers = new Workers();
         AccountId.fromString(hederaAccountId);
         PrivateKey.fromString(hederaAccountKey);
+        await workers.addNonRetryableTask({
+            type: WorkerTaskType.GET_USER_BALANCE,
+            data: { hederaAccountId, hederaAccountKey }
+        }, 20);
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
