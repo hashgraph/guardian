@@ -2467,7 +2467,7 @@ export class Guardians extends NatsService {
      * Validate DID document
      * @param document
      */
-    public async validateDidDocument(document: any) {
+    public async validateDidDocument(document: any): Promise<any> {
         return await this.sendMessage(MessageAPI.VALIDATE_DID_DOCUMENT, { document });
     }
 
@@ -2476,7 +2476,7 @@ export class Guardians extends NatsService {
      * @param document
      * @param keys
      */
-    public async validateDidKeys(document: any, keys: any) {
+    public async validateDidKeys(document: any, keys: any): Promise<any> {
         return await this.sendMessage(MessageAPI.VALIDATE_DID_KEY, { document, keys });
     }
 }

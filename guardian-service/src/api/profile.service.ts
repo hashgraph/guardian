@@ -36,6 +36,27 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 /**
+ * User credentials
+ */
+interface ICredentials {
+    entity: SchemaEntity,
+    parent: string,
+    hederaAccountId: string,
+    hederaAccountKey: string,
+    vcDocument: any,
+    didDocument: any,
+    didKeys: IDidKey[]
+}
+
+/**
+ * User credentials
+ */
+interface IDidKey {
+    id: string,
+    key: string
+}
+
+/**
  * Get global topic
  */
 // tslint:disable-next-line:completed-docs
@@ -62,7 +83,11 @@ async function getGlobalTopic(): Promise<TopicConfig | null> {
  * @param profile
  * @param notifier
  */
-async function setupUserProfile(username: string, profile: any, notifier: INotifier): Promise<string> {
+async function setupUserProfile(
+    username: string,
+    profile: ICredentials,
+    notifier: INotifier
+): Promise<string> {
     const users = new Users();
     const wallet = new Wallet();
 
@@ -93,7 +118,7 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
     return did;
 }
 
-async function validateCommonDid(json: string | any, keys: any[]): Promise<CommonDidDocument> {
+async function validateCommonDid(json: string | any, keys: IDidKey[]): Promise<CommonDidDocument> {
     const vcHelper = new VcHelper();
     if (!Array.isArray(keys)) {
         throw new Error(`Invalid did document or keys.`);
@@ -128,7 +153,7 @@ async function validateCommonDid(json: string | any, keys: any[]): Promise<Commo
  * @param notifier
  */
 async function createUserProfile(
-    profile: any,
+    profile: ICredentials,
     notifier: INotifier,
     user: IAuthUser
 ): Promise<string> {

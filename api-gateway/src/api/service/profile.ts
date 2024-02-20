@@ -1,28 +1,58 @@
 import { Guardians } from '@helpers/guardians';
-import { Users } from '@helpers/users';
 import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Req, Response, Post, Body } from '@nestjs/common';
-import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
+import { AuthUser } from '@auth/authorization-helper';
 import { Auth } from '@auth/auth.decorator';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
+import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '@middlewares/validation/schemas';
 
 @Controller('profiles')
 @ApiTags('profiles')
 export class ProfileApi {
+    /**
+     * Get user.profile
+     */
     @Get('/:username/')
     @Auth(
         UserRole.STANDARD_REGISTRY,
         UserRole.USER,
         UserRole.AUDITOR
     )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns user account info.',
+        description: 'Returns user account information. For users with the Standard Registry role it also returns address book and VC document information.',
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: 'The name of the user for whom to fetch the information',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: ProfileDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.OK)
-    async getProfile(@AuthUser() user): Promise<any> {
+    async getProfile(
+        @AuthUser() user: IAuthUser
+    ): Promise<any> {
         const guardians = new Guardians();
-
         try {
             let didDocument: any = null;
             if (user.did) {
@@ -85,45 +115,104 @@ export class ProfileApi {
         }
     }
 
+    /**
+     * Update user profile
+     */
     @Put('/:username')
+    @Auth(
+        UserRole.STANDARD_REGISTRY,
+        UserRole.USER,
+        UserRole.AUDITOR
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Sets Hedera credentials for the user.',
+        description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: 'The name of the user for whom to update the information.',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: 'Object that contains the Hedera account data.',
+        required: true,
+        type: CredentialsDTO
+    })
+    @ApiOkResponse({
+        description: 'Created.',
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.NO_CONTENT)
-    async setUserProfile(@Req() req, @Response() res): Promise<any> {
-        const authHeader = req.headers.authorization;
-        const token = authHeader?.split(' ')[1];
-        const users = new Users();
+    async setUserProfile(
+        @AuthUser() user: IAuthUser,
+        @Body() profile: any
+    ): Promise<any> {
+        const username: string = user.username;
         const guardians = new Guardians();
-        let user;
-        try {
-            user = await users.getUserByToken(token) as IAuthUser;
-        } catch (e) {
-            user = null;
-        }
-
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
-        try {
-
-            const profile: any = req.body;
-            const username: string = user.username;
-
-            await guardians.createUserProfileCommon(username, profile);
-
-            return res.status(204).send();
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        await guardians.createUserProfileCommon(username, profile);
+        return;
     }
 
+    /**
+     * Update user profile (async)
+     */
     @Put('/push/:username')
+    @Auth(
+        UserRole.STANDARD_REGISTRY,
+        UserRole.USER,
+        UserRole.AUDITOR
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Sets Hedera credentials for the user.',
+        description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: 'The name of the user for whom to update the information.',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: 'Object that contains the Hedera account data.',
+        required: true,
+        type: CredentialsDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.ACCEPTED)
-    async setUserProfileAsync(@Req() req, @Response() res): Promise<any> {
+    async setUserProfileAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() profile: any
+    ): Promise<any> {
         const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.CONNECT_USER, req.user.id);
-
-        const profile: any = req.body;
-        const username: string = req.user.username;
+        const task = taskManager.start(TaskAction.CONNECT_USER, user.id);
+        const username: string = user.username;
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.createUserProfileCommonAsync(username, profile, task);
@@ -131,70 +220,170 @@ export class ProfileApi {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
-    @Put('/restore/:username')
-    @HttpCode(HttpStatus.ACCEPTED)
-    async resoreUserProfile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.RESTORE_USER_PROFILE, req.user.id);
+    /**
+     * Get user balance
+     */
+    @Get('/:username/balance')
+    @Auth(
+        UserRole.STANDARD_REGISTRY,
+        UserRole.USER,
+        UserRole.AUDITOR
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Returns user\'s Hedera account balance.',
+        description: 'Requests Hedera account balance. Only users with the Installer role are allowed to make the request.'
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: 'The name of the user for whom to fetch the balance.',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getUserBalance(
+        @AuthUser() user: IAuthUser,
+        @Param('username') username: string
+    ): Promise<any> {
+        if (!user.did) {
+            return null;
+        }
+        const guardians = new Guardians();
+        const balance = await guardians.getUserBalance(username);
+        if (isNaN(parseFloat(balance))) {
+            throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        return balance;
+    }
 
-        const profile: any = req.body;
-        const username: string = req.user.username;
+    /**
+     * Restore user profile
+     */
+    @Put('/restore/:username')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: '.',
+        description: '.'
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: '.',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: '.',
+        required: true,
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async restoreUserProfile(
+        @AuthUser() user: IAuthUser,
+        @Body() profile: any
+    ): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.RESTORE_USER_PROFILE, user.id);
+        const username: string = user.username;
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.restoreUserProfileCommonAsync(username, profile, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-        })
-
-        return res.status(202).send(task);
+        });
+        return task;
     }
 
+    /**
+     * Restore
+     */
     @Put('/restore/topics/:username')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: '.',
+        description: '.'
+    })
+    @ApiImplicitParam({
+        name: 'username',
+        type: String,
+        description: '.',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: '.',
+        required: true,
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @HttpCode(HttpStatus.ACCEPTED)
-    async restoreTopic(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async restoreTopic(
+        @AuthUser() user: IAuthUser,
+        @Body() profile: any
+    ): Promise<any> {
         const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.GET_USER_TOPICS, req.user.id);
-
-        const profile: any = req.body;
-        const username: string = req.user.username;
+        const task = taskManager.start(TaskAction.GET_USER_TOPICS, user.id);
+        const username: string = user.username;
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
             await guardians.getAllUserTopicsAsync(username, profile, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-        })
-
-        return res.status(202).send(task);
-    }
-
-    @Get('/:username/balance')
-    @HttpCode(HttpStatus.OK)
-    async getUserBalance(@Req() req, @Response() res): Promise<any> {
-        if (!req.headers.authorization || !req.user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
-        }
-        try {
-            const guardians = new Guardians();
-            const balance = await guardians.getUserBalance(req.params.username);
-            if (!req.user.did) {
-                return res.json(null);
-            }
-            if (isNaN(parseFloat(balance))) {
-                throw new HttpException(balance, HttpStatus.UNPROCESSABLE_ENTITY)
-            }
-            return res.json(balance);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
-        }
+        });
+        return task;
     }
 
     /**
@@ -202,7 +391,8 @@ export class ProfileApi {
      */
     @Post('/did-document/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY, UserRole.USER
+        UserRole.STANDARD_REGISTRY,
+        UserRole.USER
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -212,13 +402,11 @@ export class ProfileApi {
     @ApiBody({
         description: 'DID Document.',
         required: true,
-        type: Object
+        type: DidDocumentDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: DidDocumentStatusDTO,
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
@@ -252,7 +440,8 @@ export class ProfileApi {
      */
     @Post('/did-keys/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY, UserRole.USER
+        UserRole.STANDARD_REGISTRY,
+        UserRole.USER
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -262,13 +451,11 @@ export class ProfileApi {
     @ApiBody({
         description: 'DID Document and keys.',
         required: true,
-        type: Object
+        type: DidDocumentWithKeyDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: DidKeyStatusDTO,
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
