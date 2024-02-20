@@ -100,10 +100,10 @@ context("Tags", {tags: '@tags'}, () => {
             timeout: 200000
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.OK);
-            expect(response.body.at(-1).category).to.eq("TAG");
-            expect(response.body.at(-1).description).to.eq(tagName);
-            expect(response.body.at(-1).name).to.eq(tagName);
-            expect(response.body.at(-1).id).to.eq(schemaId);
+            expect(response.body.at(0).category).to.eq("TAG");
+            expect(response.body.at(0).description).to.eq(tagName);
+            expect(response.body.at(0).name).to.eq(tagName);
+            expect(response.body.at(0).id).to.eq(schemaId);
         });
     })
 })

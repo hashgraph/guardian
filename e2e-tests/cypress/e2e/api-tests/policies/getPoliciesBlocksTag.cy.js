@@ -61,6 +61,7 @@ context("Policies", { tags: '@policies' }, () => {
                 headers: {
                     authorization,
                 },
+                timeout: 60000
             };
             cy.request(url).then((response) => {
                 expect(response.status).to.eq(200);

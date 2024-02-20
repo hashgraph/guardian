@@ -50,8 +50,8 @@ context('Policies', { tags: '@policies' }, () => {
         })
           .then(response => {
             let responseTextJSon = JSON.parse(Cypress.Blob.arrayBufferToBinaryString(response.body))
-            let firstPolicyId = responseTextJSon.at(-1).id
-            let firstPolicyStatus = responseTextJSon.at(-1).status
+            let firstPolicyId = responseTextJSon.at(0).id
+            let firstPolicyStatus = responseTextJSon.at(0).status
             expect(firstPolicyStatus).to.equal('DRAFT')
             cy.request({
               method: 'PUT',

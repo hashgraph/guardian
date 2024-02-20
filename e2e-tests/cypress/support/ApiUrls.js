@@ -41,7 +41,7 @@ const API = {
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
     //TrustChains
-    Trustchains: "trustchains/",
+    Trustchains: "trust-chains/",
     //Settings
     SettingsEnv: "settings/environment",
     //External
