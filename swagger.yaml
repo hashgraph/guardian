@@ -3537,22 +3537,22 @@ paths:
   /profiles/restore/{username}:
     put:
       operationId: ProfileApi_restoreUserProfile
-      summary: .
-      description: .
+      summary: Restore user data (policy, DID documents, VC documents).
+      description: Restore user data (policy, DID documents, VC documents).
       parameters:
         - name: username
           required: true
           in: path
-          description: .
+          description: The name of the user for whom to restore the information.
           schema:
             type: string
       requestBody:
         required: true
-        description: .
+        description: Object that contains the Hedera account data.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object'
+              $ref: '#/components/schemas/CredentialsDTO'
       responses:
         '200':
           description: Successful operation.
@@ -3577,22 +3577,22 @@ paths:
   /profiles/restore/topics/{username}:
     put:
       operationId: ProfileApi_restoreTopic
-      summary: .
-      description: .
+      summary: List of available recovery topics.
+      description: List of available recovery topics.
       parameters:
         - name: username
           required: true
           in: path
-          description: .
+          description: The name of the user for whom to restore the information.
           schema:
             type: string
       requestBody:
         required: true
-        description: .
+        description: Object that contains the Hedera account data.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Object'
+              $ref: '#/components/schemas/HederaCredentialsDTO'
       responses:
         '200':
           description: Successful operation.
@@ -10758,9 +10758,18 @@ components:
       required:
         - taskId
         - expectation
-    Object:
+    HederaCredentialsDTO:
       type: object
-      properties: {}
+      properties:
+        hederaAccountId:
+          type: string
+          nullable: false
+        hederaAccountKey:
+          type: string
+          nullable: false
+      required:
+        - hederaAccountId
+        - hederaAccountKey
     DidDocumentStatusDTO:
       type: object
       properties:
@@ -11120,6 +11129,9 @@ components:
         - policyId
         - uuid
         - status
+    Object:
+      type: object
+      properties: {}
     RecordActionDTO:
       type: object
       properties:
