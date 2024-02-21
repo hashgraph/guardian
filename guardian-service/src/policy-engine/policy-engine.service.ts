@@ -1292,6 +1292,7 @@ export class PolicyEngineService {
                     verificationMethods[type] = id;
                     await instanceDB.setVirtualKey(did, id, key);
                 }
+                await instanceDB.setVirtualKey(did, did, newPrivateKey.toString());
                 await instanceDB.saveDid({ did, document, verificationMethods });
 
                 await (new GuardiansService())
