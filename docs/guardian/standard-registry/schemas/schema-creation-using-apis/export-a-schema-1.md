@@ -1,7 +1,5 @@
 # Export Files from Schema
 
-### [NextCreation of Schema related to the topic](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/bOsLGPRQ1YXxw4wDcVrE/\~/changes/334/guardian/standard-registry/schemas/schema-creation-using-apis/creation-of-schema-related-to-the-topic)EXPORTING SCHEMA FILES FOR THE SCHEMA
-
 {% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/file" summary="Return zip file with schemas" %}
 {% swagger-description %}
 Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request.
