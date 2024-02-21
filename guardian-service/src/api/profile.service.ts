@@ -5,7 +5,9 @@ import {
     DataBaseHelper,
     DidDocument as DidDocumentCollection,
     DIDMessage,
+    Environment,
     HederaBBSMethod,
+    HederaDid,
     HederaEd25519Method,
     IAuthUser,
     KeyType,
@@ -574,7 +576,7 @@ export function profileAPI() {
             }
 
             const vcHelper = new VcHelper();
-            let oldDidDocument: CommonDidDocument
+            let oldDidDocument: CommonDidDocument;
             if (didDocument) {
                 oldDidDocument = await validateCommonDid(didDocument, didKeys);
             } else {
@@ -605,21 +607,39 @@ export function profileAPI() {
         const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
-            if (!profile.hederaAccountId) {
+            const {
+                hederaAccountId,
+                hederaAccountKey,
+                didDocument
+            } = profile;
+
+            if (!hederaAccountId) {
                 notifier.error('Invalid Hedera Account Id');
                 return;
             }
-            if (!profile.hederaAccountKey) {
+            if (!hederaAccountKey) {
                 notifier.error('Invalid Hedera Account Key');
                 return;
+            }
+
+            let did: string;
+            try {
+                if (didDocument) {
+                    did = CommonDidDocument.from(didDocument).getDid();
+                } else {
+                    did = (await HederaDid.generate(Environment.network, hederaAccountKey, null)).toString();
+                }
+            } catch (error) {
+                throw new Error('Invalid DID Document.')
             }
 
             notifier.start('Finding all user topics');
             const restore = new RestoreDataFromHedera();
             const result = await restore.findAllUserTopics(
                 username,
-                profile.hederaAccountId,
-                profile.hederaAccountKey
+                hederaAccountId,
+                hederaAccountKey,
+                did
             )
             notifier.completed();
             notifier.result(result);

@@ -97,6 +97,7 @@ export class RootConfigComponent implements OnInit {
         });
         this.vcForm.setValue({});
         this.loadProfile();
+        this.step = 'HEDERA';
     }
 
     ngOnDestroy(): void {
@@ -297,33 +298,6 @@ export class RootConfigComponent implements OnInit {
         }
     }
 
-    public onRestore() {
-        const value = this.hederaForm.value;
-        const topicId = this.selectedTokenId.value;
-        this.loading = true;
-        this.headerProps.setLoading(true);
-        this.profileService
-            .restoreProfile({
-                hederaAccountId: value.hederaAccountId?.trim(),
-                hederaAccountKey: value.hederaAccountKey?.trim(),
-                topicId,
-            })
-            .subscribe(
-                (result) => {
-                    const { taskId, expectation } = result;
-                    this.router.navigate(['task', taskId], {
-                        queryParams: {
-                            last: btoa(location.href),
-                        },
-                    });
-                },
-                (e) => {
-                    this.loading = false;
-                    this.taskId = undefined;
-                }
-            );
-    }
-
     public onPrevStep() {
         switch (this.step) {
             case 'HEDERA': {
@@ -331,17 +305,9 @@ export class RootConfigComponent implements OnInit {
                 this.isRestore = false;
                 break;
             }
-            case 'RESTORE': {
+            case 'DID': {
                 this.step = 'HEDERA';
                 this.isRestore = false;
-                break;
-            }
-            case 'DID': {
-                if (this.isRestore) {
-                    this.step = 'RESTORE';
-                } else {
-                    this.step = 'HEDERA';
-                }
                 break;
             }
             case 'DID_KEYS': {
@@ -349,6 +315,14 @@ export class RootConfigComponent implements OnInit {
                 break;
             }
             case 'VC': {
+                if (this.didDocumentType.value) {
+                    this.step = 'DID_KEYS';
+                } else {
+                    this.step = 'DID';
+                }
+                break;
+            }
+            case 'RESTORE': {
                 if (this.didDocumentType.value) {
                     this.step = 'DID_KEYS';
                 } else {
@@ -372,31 +346,43 @@ export class RootConfigComponent implements OnInit {
                 }
                 break;
             }
-            case 'RESTORE': {
-                if (this.hederaForm.valid && this.selectedTokenId.valid) {
-                    this.step = 'DID';
-                }
-                break;
-            }
             case 'DID': {
                 if (this.didDocumentType.value) {
                     if (this.didDocumentForm.valid) {
                         this.step = 'DID_KEYS';
                     }
                 } else {
-                    this.step = 'VC';
+                    if (this.isRestore) {
+                        this.userTopics = [];
+                        this.selectedTokenId.setValue('');
+                        this.step = 'RESTORE';
+                    } else {
+                        this.step = 'VC';
+                    }
                 }
                 break;
             }
             case 'DID_KEYS': {
                 if (this.didKeysControl.valid) {
-                    this.step = 'VC';
+                    if (this.isRestore) {
+                        this.userTopics = [];
+                        this.selectedTokenId.setValue('');
+                        this.step = 'RESTORE';
+                    } else {
+                        this.step = 'VC';
+                    }
                 }
                 break;
             }
             case 'VC': {
                 if (this.validVC) {
                     this.onSubmit();
+                }
+                break;
+            }
+            case 'RESTORE': {
+                if (this.selectedTokenId.valid) {
+                    this.onRestore()
                 }
                 break;
             }
@@ -410,12 +396,14 @@ export class RootConfigComponent implements OnInit {
     public onRestoreStep() {
         if (this.hederaForm.valid) {
             this.isRestore = true;
-            this.step = 'RESTORE';
+            this.step = 'DID';
         }
     }
 
     public onChangeDidType() {
-        this.didDocumentForm.reset();
+        if (!this.didDocumentType.value) {
+            this.didDocumentForm.reset();
+        }
     }
 
     public onChangeForm() {
@@ -495,17 +483,23 @@ export class RootConfigComponent implements OnInit {
     public getAllUserTopics(event: any) {
         event.stopPropagation();
         event.preventDefault();
+
         if (this.hederaForm.invalid) {
             return;
         }
 
-        const value = this.hederaForm.value;
-        const profile = {
-            hederaAccountId: value.hederaAccountId?.trim(),
-            hederaAccountKey: value.hederaAccountKey?.trim(),
+        const hederaForm = this.hederaForm.value;
+        const didDocument = this.didDocumentType.value
+            ? this.didDocumentForm.value
+            : null;
+
+        const data = {
+            hederaAccountId: hederaForm.hederaAccountId?.trim(),
+            hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
+            didDocument: JSON.parse(didDocument),
         };
         this.loading = true;
-        this.profileService.getAllUserTopics(profile).subscribe(
+        this.profileService.getAllUserTopics(data).subscribe(
             (result) => {
                 const { taskId, expectation } = result;
                 this.taskId = taskId;
@@ -543,7 +537,7 @@ export class RootConfigComponent implements OnInit {
                 hederaAccountId: hederaForm.hederaAccountId?.trim(),
                 hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
                 vcDocument: vcDocument,
-                didDocument: didDocument,
+                didDocument: JSON.parse(didDocument),
                 didKeys
             };
             this.loading = true;
@@ -564,6 +558,48 @@ export class RootConfigComponent implements OnInit {
                 }
             );
         }
+    }
+
+    public onRestore() {
+        const topicId = this.selectedTokenId.value;
+        const hederaForm = this.hederaForm.value;
+        const didDocument = this.didDocumentType.value
+            ? this.didDocumentForm.value
+            : null;
+        const didKeys: any[] = [];
+        for (const didKey of this.didKeys) {
+            didKeys.push({
+                id: didKey.keyNameControl.value,
+                key: didKey.keyValueControl.value
+            })
+        }
+        const data: any = {
+            topicId,
+            hederaAccountId: hederaForm.hederaAccountId?.trim(),
+            hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
+            didDocument: JSON.parse(didDocument),
+            didKeys
+        };
+
+        this.loading = true;
+        this.headerProps.setLoading(true);
+
+        this.profileService
+            .restoreProfile(data)
+            .subscribe(
+                (result) => {
+                    const { taskId, expectation } = result;
+                    this.router.navigate(['task', taskId], {
+                        queryParams: {
+                            last: btoa(location.href),
+                        },
+                    });
+                },
+                (e) => {
+                    this.loading = false;
+                    this.taskId = undefined;
+                }
+            );
     }
 
     public openVCDocument(document: any, title: string) {

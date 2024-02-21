@@ -83,16 +83,16 @@
         [formGroup]="hederaForm"
         class="finish-setup-form"
     >
-            <div *ngIf="step === 'HEDERA'" class="finish-setup-title">Hedera Account</div>
-            <div *ngIf="step === 'RESTORE'" class="finish-setup-title">Restore Data</div>
-            <div *ngIf="step === 'DID'" class="finish-setup-title">DID Document</div>
-            <div *ngIf="step === 'DID_KEYS'" class="finish-setup-title">DID Document signing keys</div>
-            <div *ngIf="step === 'VC'" class="finish-setup-title">VC Document</div>
+            <div *ngIf="!isRestore && step === 'HEDERA'" class="finish-setup-title">Hedera Account</div>
+            <div *ngIf="!isRestore && step === 'DID'" class="finish-setup-title">DID Document</div>
+            <div *ngIf="!isRestore && step === 'DID_KEYS'" class="finish-setup-title">DID Document signing keys</div>
+            <div *ngIf="!isRestore && step === 'VC'" class="finish-setup-title">VC Document</div>
+            <div *ngIf="isRestore" class="finish-setup-title">Restore Data</div>
 
             <div class="finish-setup-form-container">
                 <div class="list">
 
-                    <div *ngIf="step === 'HEDERA' || step === 'RESTORE'" class="list-item">
+                    <div *ngIf="step === 'HEDERA'" class="list-item">
                         <div class="input-field-container">
                             <label class="form-label" htmlFor="operatorId">
                                 * OPERATOR ID (Hedera Account):
@@ -117,36 +117,40 @@
                                 type="text"
                             />
                         </div>
-    
-                        <div *ngIf="step === 'RESTORE'" class="topic-id-field">
-                            <mat-form-field appearance="outline" class="example-full-width">
-                                <mat-label>Topic ID:</mat-label>
-                                <mat-select [formControl]="selectedTokenId">
-                                    <mat-select-trigger>
-                                        {{selectedTokenId.value}}
-                                    </mat-select-trigger>
-                                    <mat-option *ngFor="let topic of userTopics" [value]="topic.topicId">
-                                        <div class="topic-item">
-                                            <span>{{ topic.topicId }}</span>
-                                            <span>
-                                                <hedera-explorer [params]="topic.topicId" type="topics">
-                                                    {{topic.date}}
-                                                </hedera-explorer>
-                                            </span>
-                                        </div>
-                                    </mat-option>
-                                </mat-select>
-                            </mat-form-field>
-                            <div class="list-button">
-                                <button
-                                    (click)="getAllUserTopics($event)"
-                                    [disabled]="!hederaForm.valid"
-                                    aria-label="Refresh topics"
-                                    color="primary"
-                                    mat-mini-fab
-                                >
-                                    <mat-icon>refresh</mat-icon>
-                                </button>
+                    </div>
+
+                    <div *ngIf="step === 'RESTORE'" class="list-item">
+                        <div class="topic-id-field">     
+                            <div class="group-body">
+                                <mat-form-field appearance="outline" class="example-full-width">
+                                    <mat-label>Topic ID:</mat-label>
+                                    <mat-select [formControl]="selectedTokenId">
+                                        <mat-select-trigger>
+                                            {{selectedTokenId.value}}
+                                        </mat-select-trigger>
+                                        <mat-option *ngFor="let topic of userTopics" [value]="topic.topicId">
+                                            <div class="topic-item">
+                                                <span>{{ topic.topicId }}</span>
+                                                <span>
+                                                    <hedera-explorer [params]="topic.topicId" type="topics">
+                                                        {{topic.date}}
+                                                    </hedera-explorer>
+                                                </span>
+                                            </div>
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                                <div class="list-button">
+                                    <p-button
+                                        (click)="getAllUserTopics($event)"
+                                        [disabled]="!hederaForm.valid"
+                                        class="generate-btn"
+                                        label="Load topics"
+                                        styleClass="p-button-outlined"
+                                    >
+                                        <i class="pi pi-replay"></i>
+                                    </p-button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -233,22 +237,6 @@
                     >
                     </p-button>
                 </div>
-                <div *ngIf="step === 'RESTORE'" class="action-btns">
-                    <p-button
-                        (click)="onPrevStep()"
-                        class="generate-btn"
-                        label="Cancel"
-                        styleClass="p-button-outlined"
-                    >
-                    </p-button>
-                    <p-button
-                        (click)="onNextStep()"
-                        [disabled]="!hederaForm.valid || !selectedTokenId.valid"
-                        class="next-btn"
-                        label="Next"
-                    >
-                    </p-button>
-                </div>
 
                 <div *ngIf="step === 'DID'" class="action-btns">
                     <div class="row-btns">
@@ -268,18 +256,10 @@
                         >
                         </p-button>
                         <p-button
-                            *ngIf="!didDocumentType.value && !isRestore"
+                            *ngIf="!didDocumentType.value"
                             (click)="onNextStep()"
                             class="next-btn"
                             label="Next"
-                        >
-                        </p-button>
-                        <p-button
-                            *ngIf="!didDocumentType.value && isRestore"
-                            (click)="onRestore()"
-                            [disabled]="!didKeysControl.valid"
-                            class="next-btn"
-                            label="Proceed"
                         >
                         </p-button>
                     </div>
@@ -295,22 +275,30 @@
                         >
                         </p-button>
                         <p-button
-                            *ngIf="!isRestore"
                             (click)="parseDidKeys()"
                             [disabled]="!didKeysControl.valid"
                             class="next-btn"
                             label="Next"
                         >
                         </p-button>
-                        <p-button
-                            *ngIf="isRestore"
-                            (click)="onRestore()"
-                            [disabled]="!didKeysControl.valid"
-                            class="next-btn"
-                            label="Proceed"
-                        >
-                        </p-button>
                     </div>
+                </div>
+
+                <div *ngIf="step === 'RESTORE'" class="action-btns">
+                    <p-button
+                        (click)="onPrevStep()"
+                        class="generate-btn"
+                        label="Prev"
+                        styleClass="p-button-outlined"
+                    >
+                    </p-button>
+                    <p-button
+                        (click)="onRestore()"
+                        [disabled]="!selectedTokenId.valid"
+                        class="next-btn"
+                        label="Proceed"
+                    >
+                    </p-button>
                 </div>
 
                 <div *ngIf="step === 'VC'" class="action-btns">

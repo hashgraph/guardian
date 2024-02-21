@@ -122,10 +122,30 @@
     align-items: center;
 
     .list-button {
-        width: auto;
-        margin-left: 20px;
-        margin-bottom: 13px;
+        margin: 0;
+        height: 60px;
+        overflow: hidden;
+        width: 160px;
+        min-width: 160px;
+        padding-left: 16px;
+        padding-top: 4px;
+
+        ::ng-deep {
+            .p-button {
+                height: 50px;
+            }
+        }
     }
+
+    mat-radio-group {
+        width: 100%;
+        padding: 5px 0px 5px 5px;
+    }
+}
+
+.group-body {
+    display: flex;
+    width: 100%;
 }
 
 .topic-item {

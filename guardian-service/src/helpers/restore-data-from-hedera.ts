@@ -22,7 +22,6 @@ import {
     Workers,
     PolicyImportExport,
     HederaDid,
-    Environment,
     CommonDidDocument,
     Message,
     RegistrationMessage,
@@ -499,21 +498,12 @@ export class RestoreDataFromHedera {
         username: string,
         hederaAccountID: string,
         hederaAccountKey: string,
-        didDocument?: CommonDidDocument
+        did: string
     ): Promise<any[]> {
         const mainTopicMessages = await this.getMainTopicMessages();
-
-        let didString: string;
-        if (didDocument) {
-            didString = didDocument.getDid();
-        } else {
-            const hederaDid = await HederaDid.generate(Environment.network, hederaAccountKey, null);
-            didString = hederaDid.toString();
-        }
-
         return mainTopicMessages
             .filter((m: Message) => m.type === MessageType.StandardRegistry)
-            .filter((m: RegistrationMessage) => m.did?.includes(didString))
+            .filter((m: RegistrationMessage) => m.did?.includes(did))
             .map((m: RegistrationMessage) => {
                 let registrantTopicId = m.registrantTopicId;
                 if (!registrantTopicId && HederaDid.implement(m.did)) {
@@ -587,9 +577,6 @@ export class RestoreDataFromHedera {
         if (existingUser) {
             throw new Error('The DID document already exists.');
         }
-
-        console.debug(didDocument.getDocument());
-        console.debug(didDocumentMessage.document);
 
         if (!didDocument.compare(didDocumentMessage.document)) {
             throw new Error('The DID documents don\'t match.');

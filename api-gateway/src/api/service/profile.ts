@@ -8,7 +8,7 @@ import { AuthUser } from '@auth/authorization-helper';
 import { Auth } from '@auth/auth.decorator';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, HederaCredentialsDTO } from '@middlewares/validation/schemas';
+import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '@middlewares/validation/schemas';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -353,7 +353,7 @@ export class ProfileApi {
     @ApiBody({
         description: 'Object that contains the Hedera account data.',
         required: true,
-        type: HederaCredentialsDTO
+        type: CredentialsDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
