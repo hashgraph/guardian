@@ -32,7 +32,8 @@ import {
     SchemaMessage,
     MessageAction,
     VcHelper,
-    UrlType
+    UrlType,
+    RoleMessage
 } from '@guardian/common';
 import {
     DidDocumentStatus,
@@ -285,6 +286,11 @@ export class RestoreDataFromHedera {
                     break;
                 }
 
+                case RoleMessage: {
+                    //Skip message
+                    break;
+                }
+
                 default:
                     console.error('Unknown message type', row);
             }
@@ -360,7 +366,7 @@ export class RestoreDataFromHedera {
             }
 
             // Restore policy
-            const publishedPolicies = this.findMessagesByType<PolicyMessage>(MessageType.Policy, policyMessages)
+            const publishedPolicies = this.findMessagesByType<PolicyMessage>(MessageType.InstancePolicy, policyMessages)
                 .filter((m) => m.action === MessageAction.PublishPolicy);
 
             for (const policy of publishedPolicies) {
@@ -581,6 +587,9 @@ export class RestoreDataFromHedera {
         if (existingUser) {
             throw new Error('The DID document already exists.');
         }
+
+        console.debug(didDocument.getDocument());
+        console.debug(didDocumentMessage.document);
 
         if (!didDocument.compare(didDocumentMessage.document)) {
             throw new Error('The DID documents don\'t match.');

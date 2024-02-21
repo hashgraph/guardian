@@ -186,6 +186,33 @@ export class VerificationMethod {
     }
 
     /**
+     * Compare DID Document
+     * @returns {boolean[]}
+     * @public
+     */
+    public compare(method: IVerificationMethod | VerificationMethod): boolean {
+        try {
+            let json: IVerificationMethod;
+            if (method instanceof VerificationMethod) {
+                json = method.toObject(false);
+            } else {
+                json = method;
+            }
+            const current = this.toObject(false);
+            return (
+                json.id === current.id &&
+                json.controller === current.controller &&
+                json.type === current.type &&
+                json.publicKeyBase58 === current.publicKeyBase58 &&
+                json.publicKeyJwk === current.publicKeyJwk &&
+                json.publicKeyMultibase === current.publicKeyMultibase
+            );
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
      * From
      * @param {IVerificationMethod} method - verification method
      * @returns {VerificationMethod} - verification method

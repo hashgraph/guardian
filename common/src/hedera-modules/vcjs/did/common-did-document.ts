@@ -414,7 +414,41 @@ export class CommonDidDocument {
      * @returns {boolean[]}
      * @public
      */
-    public compare(document: string | CommonDidDocument): boolean {
-        return true;
+    public compare(document: string | CommonDidDocument | IDidDocument): boolean {
+        try {
+            let json: IDidDocument;
+            if (typeof document === 'string') {
+                json = JSON.parse(document);
+            } else if (document instanceof CommonDidDocument) {
+                json = document.getDocument();
+            } else {
+                json = document;
+            }
+
+            const current = this.getDocument();
+            if (current.id !== json.id) {
+                return false;
+            }
+            if (current.verificationMethod.length !== json.verificationMethod.length) {
+                return false;
+            }
+            const methods = new Map<string, VerificationMethod>();
+            for (const a of current.verificationMethod) {
+                methods.set(a.id, VerificationMethod.from(a));
+            }
+            for (const b of json.verificationMethod) {
+                if (methods.has(b.id)) {
+                    const a = methods.get(b.id);
+                    if (!a.compare(b)) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }
