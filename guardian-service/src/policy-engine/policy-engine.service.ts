@@ -1292,7 +1292,7 @@ export class PolicyEngineService {
                     verificationMethods[type] = id;
                     await instanceDB.setVirtualKey(did, id, key);
                 }
-                await instanceDB.saveDid({ did, document });
+                await instanceDB.saveDid({ did, document, verificationMethods });
 
                 await (new GuardiansService())
                     .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {
