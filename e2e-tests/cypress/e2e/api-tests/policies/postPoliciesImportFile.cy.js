@@ -50,8 +50,10 @@ context('Policies', { tags: '@policies' }, () => {
                 })
                     .then(response => {
                         let responseTextJSon = JSON.parse(Cypress.Blob.arrayBufferToBinaryString(response.body))
-                        let firstPolicyId = responseTextJSon.at(0).id
-                        let firstPolicyStatus = responseTextJSon.at(0).status
+                        cy.log(responseTextJSon)
+                        let firstPolicyId = responseTextJSon.at(-1).id
+                        let firstPolicyStatus = responseTextJSon.at(-1).status
+                        cy.log(firstPolicyId)
                         expect(firstPolicyStatus).to.equal('DRAFT')
                         cy.request({
                             method: 'PUT',
@@ -61,8 +63,9 @@ context('Policies', { tags: '@policies' }, () => {
                             timeout: 600000
                         })
                             .then((response) => {
-                                let secondPolicyId = response.body.policies.at(0).id
-                                let policyStatus = response.body.policies.at(0).status
+                                cy.log(response.body)
+                                let secondPolicyId = response.body.policies.at(-1).id
+                                let policyStatus = response.body.policies.at(-1).status
                                 expect(response.status).to.eq(200)
                                 expect(response.body).to.not.be.oneOf([null, ""])
                                 expect(firstPolicyId).to.equal(secondPolicyId)

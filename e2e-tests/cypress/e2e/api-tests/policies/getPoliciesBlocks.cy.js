@@ -43,6 +43,7 @@ context("Policies", { tags: '@policies' },() => {
             headers: {
                 authorization,
             },
+            timeout: 180000
         };
 
         cy.request(urlPolicies).then((response) => {

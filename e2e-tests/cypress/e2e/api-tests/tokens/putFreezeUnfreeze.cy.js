@@ -15,7 +15,7 @@ context("Tokens", { tags: "@tokens" }, () => {
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
 
-            const tokenId = resp.body[0].tokenId;
+            const tokenId = resp.body.at(0).tokenId;
 
             cy.request({
                 method: METHOD.PUT,

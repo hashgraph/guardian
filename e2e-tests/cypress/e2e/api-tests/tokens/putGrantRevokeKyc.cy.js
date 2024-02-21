@@ -31,7 +31,7 @@ context("Tokens", { tags: "@tokens" }, () => {
                         authorization: accessToken
                     }
                 }).then((response) => {
-                    tokenId = response.body[-1].tokenId
+                    tokenId = response.body.at(-1).tokenId
                     cy.request({
                         method: 'PUT',
                         url: API.ApiServer + 'tokens/' + tokenId + '/associate',
