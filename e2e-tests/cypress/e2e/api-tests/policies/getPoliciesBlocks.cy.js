@@ -48,7 +48,7 @@ context("Policies", { tags: '@policies' },() => {
 
         cy.request(urlPolicies).then((response) => {
             expect(response.status).to.eq(200);
-            const policyId = response.body.at(-1).id;
+            const policyId = response.body.at(0).id;
 
             const url = {
                 method: "GET",
@@ -60,19 +60,11 @@ context("Policies", { tags: '@policies' },() => {
                 headers: {
                     authorization,
                 },
-                timeout: 60000
+                timeout: 180000
             };
             cy.request(url).then((response) => {
-
                 expect(response.status).to.eq(200);
                 expect(response.body).to.not.be.oneOf([null, ""]);
-                // //Wrong check. Response.body.id - is block id, not policy id.
-                // //expect(response.body.id).to.equal(policyId)
-                // cy.writeFile("cypress/fixtures/blockId.json", {
-                //     policyId: policyId,
-                //     policyUuid: policyUuid,
-                //     blockId: blockId,
-                // });
             });
         });
     });

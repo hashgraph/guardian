@@ -7,41 +7,6 @@ context("Tokens", { tags: "@tokens" }, () => {
     let tokenId
 
     it("sets the KYC flag for the user", () => {
-        //associate token
-        cy.request({
-            method: 'POST',
-            url: API.ApiServer + 'accounts/login',
-            body: {
-                username: user,
-                password: "test",
-            }
-        }).then((response) => {
-            cy.request({
-                method: 'POST',
-                url: API.ApiServer + 'accounts/access-token',
-                body: {
-                    refreshToken: response.body.refreshToken
-                }
-            }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
-                cy.request({
-                    method: 'GET',
-                    url: API.ApiServer + 'tokens',
-                    headers: {
-                        authorization: accessToken
-                    }
-                }).then((response) => {
-                    tokenId = response.body.at(-1).tokenId
-                    cy.request({
-                        method: 'PUT',
-                        url: API.ApiServer + 'tokens/' + tokenId + '/associate',
-                        headers: {
-                            authorization: accessToken
-                        }
-                    })
-                })
-            })
-        })
         //grant kyc
         cy.request({
             method: METHOD.GET,
