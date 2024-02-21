@@ -8,7 +8,7 @@ import { AuthUser } from '@auth/authorization-helper';
 import { Auth } from '@auth/auth.decorator';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '@middlewares/validation/schemas';
+import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, HederaCredentialsDTO } from '@middlewares/validation/schemas';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -284,20 +284,20 @@ export class ProfileApi {
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
-        summary: '.',
-        description: '.'
+        summary: 'Restore user data (policy, DID documents, VC documents).',
+        description: 'Restore user data (policy, DID documents, VC documents).'
     })
     @ApiImplicitParam({
         name: 'username',
         type: String,
-        description: '.',
+        description: 'The name of the user for whom to restore the information.',
         required: true,
         example: 'username'
     })
     @ApiBody({
-        description: '.',
+        description: 'Object that contains the Hedera account data.',
         required: true,
-        type: Object
+        type: CredentialsDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -332,7 +332,7 @@ export class ProfileApi {
     }
 
     /**
-     * Restore
+     * List of available recovery topics
      */
     @Put('/restore/topics/:username')
     @Auth(
@@ -340,20 +340,20 @@ export class ProfileApi {
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
-        summary: '.',
-        description: '.'
+        summary: 'List of available recovery topics.',
+        description: 'List of available recovery topics.'
     })
     @ApiImplicitParam({
         name: 'username',
         type: String,
-        description: '.',
+        description: 'The name of the user for whom to restore the information.',
         required: true,
         example: 'username'
     })
     @ApiBody({
-        description: '.',
+        description: 'Object that contains the Hedera account data.',
         required: true,
-        type: Object
+        type: HederaCredentialsDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',

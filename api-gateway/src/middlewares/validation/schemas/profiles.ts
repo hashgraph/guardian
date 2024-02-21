@@ -143,3 +143,11 @@ export class CredentialsDTO {
     @ApiProperty({ isArray: true, nullable: true, required: false, type: () => DidKeyDTO })
     didKeys?: DidKeyDTO[];
 }
+
+export class HederaCredentialsDTO {
+    @ApiProperty({ type: 'string', nullable: false, required: true })
+    hederaAccountId: string;
+
+    @ApiProperty({ type: 'string', nullable: false, required: true })
+    hederaAccountKey: string;
+}
