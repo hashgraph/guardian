@@ -408,4 +408,13 @@ export class CommonDidDocument {
         }
         return result;
     }
+
+    /**
+     * Compare DID Document
+     * @returns {boolean[]}
+     * @public
+     */
+    public compare(document: string | CommonDidDocument): boolean {
+        return true;
+    }
 }

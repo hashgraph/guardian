@@ -183,7 +183,6 @@ async function createUserProfile(
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
-
     // ------------------------
     // Check hedera key -->
     // ------------------------
@@ -550,22 +549,46 @@ export function profileAPI() {
         const notifier = await initNotifier(task);
 
         RunFunctionAsync(async () => {
-            if (!profile.hederaAccountId) {
-                notifier.error('Invalid Hedera Account Id');
+            if (!profile) {
+                notifier.error('Invalid profile');
                 return;
             }
-            if (!profile.hederaAccountKey) {
-                notifier.error('Invalid Hedera Account Key');
-                return;
+            const {
+                hederaAccountId,
+                hederaAccountKey,
+                topicId,
+                didDocument,
+                didKeys
+            } = profile;
+
+            try {
+                const workers = new Workers();
+                AccountId.fromString(hederaAccountId);
+                PrivateKey.fromString(hederaAccountKey);
+                await workers.addNonRetryableTask({
+                    type: WorkerTaskType.GET_USER_BALANCE,
+                    data: { hederaAccountId, hederaAccountKey }
+                }, 20);
+            } catch (error) {
+                throw new Error(`Invalid Hedera account or key.`);
+            }
+
+            const vcHelper = new VcHelper();
+            let oldDidDocument: CommonDidDocument
+            if (didDocument) {
+                oldDidDocument = await validateCommonDid(didDocument, didKeys);
+            } else {
+                oldDidDocument = await vcHelper.generateNewDid(topicId, hederaAccountKey);
             }
 
             notifier.start('Restore user profile');
             const restore = new RestoreDataFromHedera();
             await restore.restoreRootAuthority(
                 username,
-                profile.hederaAccountId,
-                profile.hederaAccountKey,
-                profile.topicId
+                hederaAccountId,
+                hederaAccountKey,
+                topicId,
+                oldDidDocument
             )
             notifier.completed();
             notifier.result('did');

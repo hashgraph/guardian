@@ -26,12 +26,13 @@ import {
     CommonDidDocument,
     Message,
     RegistrationMessage,
-    HederaDidDocument,
     PolicyMessage,
     IAuthUser,
     TokenMessage,
     SchemaMessage,
-    MessageAction
+    MessageAction,
+    VcHelper,
+    UrlType
 } from '@guardian/common';
 import {
     DidDocumentStatus,
@@ -88,7 +89,7 @@ export class RestoreDataFromHedera {
      * MainTopicMessages
      * @private
      */
-    private mainTopicMessages: any[] = [];
+    private mainTopicMessages: Message[] = [];
 
     constructor() {
         this.workers = new Workers();
@@ -102,10 +103,7 @@ export class RestoreDataFromHedera {
      * @param loadIPFS
      * @private
      */
-    private async readTopicMessages(
-        topicId: string,
-        loadIPFS = true
-    ): Promise<Message[]> {
+    private async readTopicMessages(topicId: string): Promise<Message[]> {
         if (typeof topicId !== 'string') {
             throw new Error('Bad topicId');
         }
@@ -129,17 +127,30 @@ export class RestoreDataFromHedera {
                 const r = MessageServer.fromMessage<Message>(m.message);
                 r.setTopicId(topicId);
                 r.setId(m.id);
-                if (loadIPFS) {
-                    await MessageServer.loadIPFS(r);
-                    console.log('loadIPFS', r);
-                }
                 result.push(r);
             } catch (e) {
                 ++errors;
             }
         }
-        console.error('errors', errors, result.length);
+        if (errors) {
+            console.error(`Error: ${errors}/${result.length}`);
+        }
         return result;
+    }
+
+    /**
+     * Load documents
+     * @param topicId
+     * @param loadIPFS
+     * @private
+     */
+    private async loadIPFS<T extends Message>(message: T): Promise<T> {
+        try {
+            console.log(`Load file: ${message.type}.`);
+            return await MessageServer.loadIPFS(message);
+        } catch (error) {
+            console.error('Error: ', error);
+        }
     }
 
     /**
@@ -147,13 +158,13 @@ export class RestoreDataFromHedera {
      * @param s
      * @private
      */
-    private async restoreSchema(s: any): Promise<void> {
+    private async restoreSchema(s: SchemaMessage): Promise<void> {
         const [schema, context] = s.documents;
         const schemaObj: Partial<ISchema> = {
             uuid: s.uuid,
             name: s.name,
             description: s.description,
-            entity: s.entity,
+            entity: s.entity as any,
             status: SchemaStatus.PUBLISHED,
             readonly: false,
             document: schema,
@@ -161,10 +172,10 @@ export class RestoreDataFromHedera {
             version: s.version,
             creator: s.owner,
             owner: s.owner,
-            topicId: s.topicId,
+            topicId: s.topicId?.toString(),
             messageId: s.id,
-            documentURL: s.getUrls()[0],
-            contextURL: s.getUrls()[1],
+            documentURL: s.getDocumentUrl(UrlType.url),
+            contextURL: s.getContextUrl(UrlType.url),
             iri: `#${s.uuid}&${s.version}`, // restore iri
             isOwner: true,
             isCreator: true,
@@ -195,6 +206,7 @@ export class RestoreDataFromHedera {
         hederaAccountKey: string
     ): Promise<void> {
         for (const row of topicMessages) {
+            await this.loadIPFS(row);
             switch (row.constructor) {
                 case DIDMessage: {
                     const message = row as DIDMessage;
@@ -343,6 +355,7 @@ export class RestoreDataFromHedera {
 
             // Restore schemas
             for (const s of publishedSchemas) {
+                await this.loadIPFS(s);
                 await this.restoreSchema(s);
             }
 
@@ -351,6 +364,7 @@ export class RestoreDataFromHedera {
                 .filter((m) => m.action === MessageAction.PublishPolicy);
 
             for (const policy of publishedPolicies) {
+                await this.loadIPFS(policy);
                 const parsedPolicyFile = await PolicyImportExport.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
@@ -434,7 +448,7 @@ export class RestoreDataFromHedera {
      */
     private async restoreTopic(
         topic: any,
-        user: any,
+        user: IAuthUser,
         topicAdminKey: string,
         topicSubmitKey: string
     ): Promise<void> {
@@ -520,24 +534,19 @@ export class RestoreDataFromHedera {
         hederaAccountID: string,
         hederaAccountKey: string,
         registrantTopicId: string,
-        didDocument?: CommonDidDocument
+        didDocument: CommonDidDocument
     ): Promise<void> {
-        if (!didDocument) {
-            didDocument = await HederaDidDocument.generate(Environment.network, hederaAccountKey, registrantTopicId);
-        }
-
-        // didString = 'did:hedera:testnet:zYVrjgg5HmNJVdn9j81P3k8ZeJfmdFv8SzsKAwPk5cB'
-        const didString = didDocument.getDid();
+        const did = didDocument.getDid();
         const user = await this.users.getUser(username);
 
         if (user.role !== UserRole.STANDARD_REGISTRY) {
-            throw new Error('User is not a Standard Registry');
+            throw new Error('User is not a Standard Registry.');
         }
 
         const mainTopicMessages = await this.getMainTopicMessages();
         const registrationMessage = mainTopicMessages
             .filter((m: Message) => m.type === MessageType.StandardRegistry)
-            .filter((m: RegistrationMessage) => m.did?.includes(didString))
+            .filter((m: RegistrationMessage) => m.did === did)
             .find((m: RegistrationMessage) => {
                 if (m.registrantTopicId) {
                     return m.registrantTopicId === registrantTopicId
@@ -550,49 +559,53 @@ export class RestoreDataFromHedera {
             });
 
         if (!registrationMessage) {
-            throw new Error('User not found');
+            throw new Error('User not found.');
         }
 
         const allMessages = await this.readTopicMessages(registrantTopicId);
 
         // Restore account
-        const topicMessage = this.findMessageByType<TopicMessage>(
-            MessageType.Topic,
-            allMessages
-        );
-        const didDocumentMessage = this.findMessageByType<DIDMessage>(
-            MessageType.DIDDocument,
-            allMessages
-        );
-        const vcDocumentMessage = this.findMessageByType<VCMessage>(
-            MessageType.VCDocument,
-            allMessages
-        );
+        const topicMessage = this.findMessageByType<TopicMessage>(MessageType.Topic, allMessages);
+        const didDocumentMessage = this.findMessageByType<DIDMessage>(MessageType.DIDDocument, allMessages);
+        const vcDocumentMessage = this.findMessageByType<VCMessage>(MessageType.VCDocument, allMessages);
+        const allPolicies = this.findMessagesByType(MessageType.Policy, allMessages) as PolicyMessage[];
 
         if (!didDocumentMessage) {
-            throw new Error('Couldn\'t find DID document');
+            throw new Error('Couldn\'t find DID document.');
         }
 
-        await new DataBaseHelper(DidDocumentCollection).save({
-            did: didDocumentMessage.document.id,
-            document: didDocumentMessage.document,
-            status: DidDocumentStatus.CREATE,
-            messageId: didDocumentMessage.id,
-            topicId: didDocumentMessage.topicId,
-        });
+        await this.loadIPFS(didDocumentMessage);
+
+        const existingUser = await new DataBaseHelper(DidDocumentCollection)
+            .findOne({ did });
+        if (existingUser) {
+            throw new Error('The DID document already exists.');
+        }
+
+        if (!didDocument.compare(didDocumentMessage.document)) {
+            throw new Error('The DID documents don\'t match.');
+        }
+
+        const vcHelper = new VcHelper();
+        const didRow = await vcHelper.saveDidDocument(didDocument, user);
+        didRow.status = DidDocumentStatus.CREATE;
+        didRow.messageId = didDocumentMessage.id;
+        didRow.topicId = didDocumentMessage.topicId.toString();
+        await new DataBaseHelper(DidDocumentCollection).update(didRow);
 
         if (vcDocumentMessage) {
+            await this.loadIPFS(vcDocumentMessage);
             const vcDoc = VcDocument.fromJsonTree(vcDocumentMessage.document);
             await new DataBaseHelper(VcDocumentCollection).save({
                 hash: vcDoc.toCredentialHash(),
-                owner: didDocumentMessage.document.id,
+                owner: did,
                 document: vcDoc.toJsonTree(),
                 type: 'STANDARD_REGISTRY',
             });
         }
 
         await this.users.updateCurrentUser(username, {
-            did: didDocumentMessage.document.id,
+            did,
             parent: undefined,
             hederaAccountId: hederaAccountID,
         });
@@ -604,7 +617,7 @@ export class RestoreDataFromHedera {
                 topicId: registrantTopicId,
                 name: topicMessage?.name,
                 description: topicMessage?.description,
-                owner: didDocumentMessage.document.id,
+                owner: did,
                 type: TopicType.UserTopic,
                 policyId: null,
                 policyUUID: null,
@@ -618,19 +631,15 @@ export class RestoreDataFromHedera {
         await this.wallet.setKey(
             user.walletToken,
             KeyType.KEY,
-            didDocumentMessage.document.id,
+            did,
             hederaAccountKey
         );
 
         // Restore policies
-        const allPolicies = this.findMessagesByType(
-            MessageType.Policy,
-            allMessages
-        ) as PolicyMessage[];
         for (const policyMessage of allPolicies) {
             await this.restorePolicy(
                 policyMessage.policyTopicId,
-                didDocumentMessage.document.id,
+                did,
                 user,
                 hederaAccountID,
                 hederaAccountKey
@@ -645,6 +654,7 @@ export class RestoreDataFromHedera {
         }
         userDIDs.shift();
         for (const message of userDIDs) {
+            await this.loadIPFS(message);
             await new DataBaseHelper(DidDocumentCollection).save({
                 did: message.document.id,
                 document: message.document,
