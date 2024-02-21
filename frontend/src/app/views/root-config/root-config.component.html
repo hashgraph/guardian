@@ -217,7 +217,7 @@
                     >
                     </p-button>
                     <p-button
-                        (click)="onNextStep('RESTORE')"
+                        (click)="onRestoreStep()"
                         [disabled]="!hederaForm.valid"
                         class="generate-btn"
                         label="Restore data"
@@ -226,7 +226,7 @@
                         <i class="pi pi-replay"></i>
                     </p-button>
                     <p-button
-                        (click)="onNextStep('DID')"
+                        (click)="onNextStep()"
                         [disabled]="!hederaForm.valid"
                         class="next-btn"
                         label="Next"
@@ -235,17 +235,17 @@
                 </div>
                 <div *ngIf="step === 'RESTORE'" class="action-btns">
                     <p-button
-                        (click)="onPrevStep('HEDERA')"
+                        (click)="onPrevStep()"
                         class="generate-btn"
                         label="Cancel"
                         styleClass="p-button-outlined"
                     >
                     </p-button>
                     <p-button
-                        (click)="onRestore()"
+                        (click)="onNextStep()"
                         [disabled]="!hederaForm.valid || !selectedTokenId.valid"
                         class="next-btn"
-                        label="Proceed"
+                        label="Next"
                     >
                     </p-button>
                 </div>
@@ -253,7 +253,7 @@
                 <div *ngIf="step === 'DID'" class="action-btns">
                     <div class="row-btns">
                         <p-button
-                            (click)="onPrevStep('HEDERA')"
+                            (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
                             styleClass="p-button-outlined"
@@ -268,10 +268,18 @@
                         >
                         </p-button>
                         <p-button
-                            *ngIf="!didDocumentType.value"
-                            (click)="onNextStep('VC')"
+                            *ngIf="!didDocumentType.value && !isRestore"
+                            (click)="onNextStep()"
                             class="next-btn"
                             label="Next"
+                        >
+                        </p-button>
+                        <p-button
+                            *ngIf="!didDocumentType.value && isRestore"
+                            (click)="onRestore()"
+                            [disabled]="!didKeysControl.valid"
+                            class="next-btn"
+                            label="Proceed"
                         >
                         </p-button>
                     </div>
@@ -280,17 +288,26 @@
                 <div *ngIf="step === 'DID_KEYS'" class="action-btns">
                     <div class="row-btns">
                         <p-button
-                            (click)="onPrevStep('DID')"
+                            (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
                             styleClass="p-button-outlined"
                         >
                         </p-button>
                         <p-button
+                            *ngIf="!isRestore"
                             (click)="parseDidKeys()"
                             [disabled]="!didKeysControl.valid"
                             class="next-btn"
                             label="Next"
+                        >
+                        </p-button>
+                        <p-button
+                            *ngIf="isRestore"
+                            (click)="onRestore()"
+                            [disabled]="!didKeysControl.valid"
+                            class="next-btn"
+                            label="Proceed"
                         >
                         </p-button>
                     </div>
@@ -299,7 +316,7 @@
                 <div *ngIf="step === 'VC'" class="action-btns">
                     <div class="row-btns">
                         <p-button
-                            (click)="onPrevStep('DID')"
+                            (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
                             styleClass="p-button-outlined"
@@ -310,7 +327,7 @@
                             class="connect-btn"
                             label="Connect"
                             type="submit"
-                        >
+                        >   
                         </p-button>
                     </div>
                 </div>

@@ -48,7 +48,7 @@ export class RootConfigComponent implements OnInit {
     public schema!: Schema;
     public hederaForm = this.fb.group({
         hederaAccountId: ['', Validators.required],
-        hederaAccountKey: ['', Validators.required],
+        hederaAccountKey: ['', Validators.required]
     });
     public selectedTokenId = new FormControl(null, Validators.required);
     public vcForm = new FormGroup({});
@@ -65,6 +65,7 @@ export class RootConfigComponent implements OnInit {
 
     private operationMode: OperationMode = OperationMode.None;
     private expectedTaskMessages: number = 0;
+    public isRestore = false;
 
     constructor(
         private router: Router,
@@ -232,7 +233,7 @@ export class RootConfigComponent implements OnInit {
                                 keyNames
                             })
                         }
-                        this.onNextStep('DID_KEYS');
+                        this.onNextStep();
                         this.loading = false;
                     },
                     (e) => {
@@ -278,7 +279,7 @@ export class RootConfigComponent implements OnInit {
                             }
                         }
                         if (valid) {
-                            this.onNextStep('VC')
+                            this.onNextStep()
                         } else {
                             this.setErrors(this.didKeysControl, 'incorrect');
                         }
@@ -323,39 +324,94 @@ export class RootConfigComponent implements OnInit {
             );
     }
 
-    public onPrevStep(step: 'HEDERA' | 'RESTORE' | 'DID' | 'DID_KEYS' | 'VC') {
-        this.step = step;
+    public onPrevStep() {
+        switch (this.step) {
+            case 'HEDERA': {
+                this.step = 'HEDERA';
+                this.isRestore = false;
+                break;
+            }
+            case 'RESTORE': {
+                this.step = 'HEDERA';
+                this.isRestore = false;
+                break;
+            }
+            case 'DID': {
+                if (this.isRestore) {
+                    this.step = 'RESTORE';
+                } else {
+                    this.step = 'HEDERA';
+                }
+                break;
+            }
+            case 'DID_KEYS': {
+                this.step = 'DID';
+                break;
+            }
+            case 'VC': {
+                if (this.didDocumentType.value) {
+                    this.step = 'DID_KEYS';
+                } else {
+                    this.step = 'DID';
+                }
+                break;
+            }
+            default: {
+                this.step = 'HEDERA';
+                this.isRestore = false;
+                break;
+            }
+        }
     }
 
-    public onNextStep(step: 'HEDERA' | 'RESTORE' | 'DID' | 'DID_KEYS' | 'VC') {
+    public onNextStep() {
         switch (this.step) {
-            case 'HEDERA':
-                if (!this.hederaForm.valid) {
-                    return;
+            case 'HEDERA': {
+                if (this.hederaForm.valid) {
+                    this.step = 'DID';
                 }
                 break;
-            case 'RESTORE':
-                if (!this.hederaForm.valid || !this.selectedTokenId.valid) {
-                    return;
+            }
+            case 'RESTORE': {
+                if (this.hederaForm.valid && this.selectedTokenId.valid) {
+                    this.step = 'DID';
                 }
                 break;
-            case 'DID':
-                if (this.didDocumentType.value && !this.didDocumentForm.valid) {
-                    return;
+            }
+            case 'DID': {
+                if (this.didDocumentType.value) {
+                    if (this.didDocumentForm.valid) {
+                        this.step = 'DID_KEYS';
+                    }
+                } else {
+                    this.step = 'VC';
                 }
                 break;
-            case 'DID_KEYS':
-                if (!this.didKeysControl.valid) {
-                    return;
+            }
+            case 'DID_KEYS': {
+                if (this.didKeysControl.valid) {
+                    this.step = 'VC';
                 }
                 break;
-            case 'VC':
-                if (!this.validVC) {
-                    return;
+            }
+            case 'VC': {
+                if (this.validVC) {
+                    this.onSubmit();
                 }
                 break;
+            }
+            default: {
+                this.step = 'HEDERA';
+                break;
+            }
         }
-        this.step = step;
+    }
+
+    public onRestoreStep() {
+        if (this.hederaForm.valid) {
+            this.isRestore = true;
+            this.step = 'RESTORE';
+        }
     }
 
     public onChangeDidType() {
