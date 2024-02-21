@@ -3592,7 +3592,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/HederaCredentialsDTO'
+              $ref: '#/components/schemas/CredentialsDTO'
       responses:
         '200':
           description: Successful operation.
@@ -10758,18 +10758,6 @@ components:
       required:
         - taskId
         - expectation
-    HederaCredentialsDTO:
-      type: object
-      properties:
-        hederaAccountId:
-          type: string
-          nullable: false
-        hederaAccountKey:
-          type: string
-          nullable: false
-      required:
-        - hederaAccountId
-        - hederaAccountKey
     DidDocumentStatusDTO:
       type: object
       properties:
