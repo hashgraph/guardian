@@ -2,6 +2,34 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 context("Tokens",{ tags: '@tokens' }, () => {
+    before(() => {
+        cy.request({
+            method: 'POST',
+            url: API.ApiServer + 'policies/import/message',
+            body: {messageId: (Cypress.env('irec_policy'))},
+            headers: {
+                authorization,
+            },
+            timeout: 180000
+        })
+            .then(response => {
+                let firstPolicyId = response.body.at(-1).id
+                let firstPolicyStatus = response.body.at(-1).status
+                expect(firstPolicyStatus).to.equal('DRAFT')
+                cy.request({
+                    method: 'PUT',
+                    url: API.ApiServer + 'policies/push/' + firstPolicyId + '/publish',
+                    body: {policyVersion: "1.2.5"},
+                    headers: {authorization},
+                    timeout: 600000
+                })
+                    .then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
+                    })
+            })
+    })
+
+
     const authorization = Cypress.env("authorization");
     it("should be able to dissociate and associate token", () => {
         let username = "Installer";
@@ -28,7 +56,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
                         authorization: accessToken
                     }
                 }).then((response) => {
-                    let tokenId = response.body[0].tokenId
+                    let tokenId = response.body[-1].tokenId
                     cy.request({
                         method: 'PUT',
                         url: API.ApiServer + 'tokens/' + tokenId + '/associate',

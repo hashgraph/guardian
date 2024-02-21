@@ -31,14 +31,14 @@ context("Tokens", { tags: "@tokens" }, () => {
                         authorization: accessToken
                     }
                 }).then((response) => {
-                    tokenId = response.body[0].tokenId
-                    // cy.request({
-                    //     method: 'PUT',
-                    //     url: API.ApiServer + 'tokens/' + tokenId + '/associate',
-                    //     headers: {
-                    //         authorization: accessToken
-                    //     }
-                    // })
+                    tokenId = response.body[-1].tokenId
+                    cy.request({
+                        method: 'PUT',
+                        url: API.ApiServer + 'tokens/' + tokenId + '/associate',
+                        headers: {
+                            authorization: accessToken
+                        }
+                    })
                 })
             })
         })

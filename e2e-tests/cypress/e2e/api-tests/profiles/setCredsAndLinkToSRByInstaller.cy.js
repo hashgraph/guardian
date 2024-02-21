@@ -38,30 +38,20 @@ context('Profiles', { tags: '@profiles' },() => {
                 }).then((response) => {
                     let SRDid = response.body[0].did
                     cy.request({
-                        method: 'GET',
-                        url: API.ApiServer + 'demo/random-key',
+                        method: 'PUT',
+                        url: API.ApiServer + 'profiles/' + username,
+                        body: {
+                            hederaAccountId: "0.0.2667351",
+                            hederaAccountKey: "3030020100300706052b8104000a04220420ba60bfa2abafe3e54644ba77a83d21890f58ac264d6231262105af93a376b88c",
+                            parent: SRDid
+                        },
                         headers: {
-                            authorization
-                        }
-                    }).then((response) => {
-                        let hederaId = response.body.id
-                        let hederaKey = response.body.key
-                        cy.request({
-                            method: 'PUT',
-                            url: API.ApiServer + 'profiles/' + username,
-                            body: {
-                                hederaAccountId: hederaId,
-                                hederaAccountKey: hederaKey,
-                                parent: SRDid
-                            },
-                            headers: {
-                                authorization: accessToken
-                            },
-                            timeout: 180000
-                        })
+                            authorization: accessToken
+                        },
+                        timeout: 180000
                     })
-
                 })
+
             })
         })
     })
