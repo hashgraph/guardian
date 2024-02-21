@@ -110,4 +110,4 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
-          files: e2e-test/cypress/test_results/**/*.xml
+          files: e2e-tests/cypress/test_results/**/*.xml
