@@ -39,6 +39,8 @@ import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
 import { KeyType, Users, Wallet } from '../helpers';
 import { IAuthUser } from '../interfaces';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
+import { bls12_381 } from '@noble/curves/bls12-381';
+import bs58 from 'bs58';
 
 /**
  * Configured VCHelper
@@ -467,14 +469,33 @@ export class VcHelper extends VCJS {
      */
     public async validateKey(method: VerificationMethod): Promise<boolean> {
         try {
-            const option: any = method.toObject(true);
             let keyPair: any;
+            const option = method.toObject(true) as any;
             switch (option.type) {
                 case 'Ed25519VerificationKey2018': {
+                    const privateKeyHex = bs58
+                        .decode(option.privateKeyBase58)
+                        .toString('hex')
+                    const publicKeyHex = bs58
+                        .decode(option.publicKeyBase58)
+                        .toString('hex')
+                    if (!privateKeyHex.endsWith(publicKeyHex)) {
+                        return false;
+                    }
                     keyPair = await Ed25519VerificationKey2018.from(option);
                     break;
                 }
                 case 'Bls12381G2Key2020': {
+                    const privateKeyBase58 = option.privateKeyBase58;
+                    const publicKeyBase58 = option.publicKeyBase58;
+                    const privateKeyHex = bs58
+                        .decode(privateKeyBase58)
+                        .toString('hex')
+                        .toUpperCase();
+                    const publicKey = bls12_381.getPublicKeyForShortSignatures(privateKeyHex);
+                    if (publicKeyBase58 !== bs58.encode(publicKey)) {
+                        return false;
+                    }
                     keyPair = await Bls12381G2KeyPair.from(option);
                     break;
                 }
@@ -483,12 +504,12 @@ export class VcHelper extends VCJS {
                     return false;
                 }
             }
-            const singleMessage = new Uint8Array(Buffer.from('singleMessage'));
+
+            const singleMessage = new Uint8Array(Buffer.from('message'));
             const signer = keyPair.signer();
             const verifier = keyPair.verifier();
             const signature = await signer.sign({ data: singleMessage });
-            const result = await verifier.verify({ data: singleMessage, signature });
-            return result;
+            return await verifier.verify({ data: singleMessage, signature });
         } catch (error) {
             return false;
         }
