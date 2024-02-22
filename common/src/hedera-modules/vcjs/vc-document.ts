@@ -1,10 +1,10 @@
 import { Timestamp } from '@hashgraph/sdk';
 import { Hashing } from '../hashing';
 import { TimestampUtils } from '../timestamp-utils';
-import { IVC } from '@guardian/interfaces';
-import { DIDDocument } from './did-document';
+import { IVC, SignatureType } from '@guardian/interfaces';
 import { Issuer } from './issuer';
 import { VcSubject } from './vc-subject';
+import { CommonDidDocument } from './did';
 
 /**
  * VC document
@@ -99,9 +99,30 @@ export class VcDocument {
      */
     protected evidences: any[];
 
-    constructor(hasBBSSignature?: boolean) {
+    /**
+     * Constructor
+     */
+    // tslint:disable-next-line:unified-signatures
+    constructor()
+    /**
+     * Constructor
+     * @param signatureType
+     */
+    // tslint:disable-next-line:unified-signatures
+    constructor(signatureType: string)
+    /**
+     * Constructor
+     * @param hasBBSSignature
+     * @deprecated
+     */
+    // tslint:disable-next-line:unified-signatures
+    constructor(hasBBSSignature: boolean)
+    constructor(arg?: string | boolean) {
+        const type = (arg === true || arg === SignatureType.BbsBlsSignature2020)
+            ? SignatureType.BbsBlsSignature2020
+            : SignatureType.Ed25519Signature2018;
         this.subject = [];
-        this.context = hasBBSSignature
+        this.context = type === SignatureType.BbsBlsSignature2020
             ? [VcDocument.FIRST_CONTEXT_ENTRY, VcDocument.BBS_SIGNATURE_CONTEXT]
             : [VcDocument.FIRST_CONTEXT_ENTRY];
         this.type = [VcDocument.VERIFIABLE_CREDENTIAL_TYPE];
@@ -158,12 +179,12 @@ export class VcDocument {
      * Set issuer
      * @param issuer
      */
-    public setIssuer(issuer: string | Issuer | DIDDocument): void {
+    public setIssuer(issuer: string | Issuer | CommonDidDocument): void {
         if (typeof issuer === 'string') {
             this.issuer = new Issuer(issuer);
         } else if (issuer instanceof Issuer) {
             this.issuer = issuer;
-        } else if (issuer instanceof DIDDocument) {
+        } else if (typeof issuer.getDid === 'function') {
             this.issuer = new Issuer(issuer.getDid());
         }
     }
@@ -188,8 +209,22 @@ export class VcDocument {
      * @param context
      */
     public addContext(context: string): void {
-        if (this.context.indexOf(context) === -1) {
+        if (context && this.context.indexOf(context) === -1) {
             this.context.push(context);
+        }
+    }
+
+    /**
+     * Add contexts
+     * @param contexts
+     */
+    public addContexts(contexts: string | string[]): void {
+        if (Array.isArray(contexts)) {
+            for (const context of contexts) {
+                this.addContext(context);
+            }
+        } else {
+            this.addContext(contexts);
         }
     }
 
@@ -499,5 +534,16 @@ export class VcDocument {
             return Hashing.base58.encode(hash);
         }
         return null
+    }
+
+    /**
+     * Get document
+     */
+    public getSignatureType(): SignatureType {
+        if (this.context.includes(VcDocument.BBS_SIGNATURE_CONTEXT)) {
+            return SignatureType.BbsBlsSignature2020;
+        } else {
+            return SignatureType.Ed25519Signature2018;
+        }
     }
 }

@@ -28,7 +28,7 @@ export class PolicyDataMigrator {
         private readonly _users: Users,
         private readonly _wallet: Wallet,
         private readonly _notifier?: INotifier
-    ) {}
+    ) { }
 
     async migratePolicyData(owner: string, migrationConfig: MigrationConfig) {
         if (!owner) {
@@ -166,6 +166,7 @@ export class PolicyDataMigrator {
                     this._notifier?.info(`Resigning VC ${doc.id}`);
 
                     const _vcHelper = new VcHelper();
+                    const didDocument = await _vcHelper.loadDidDocument(root.did);
                     const credentialSubject = SchemaHelper.updateObjectContext(
                         new Schema(schema),
                         doc.document.credentialSubject[0]
@@ -180,9 +181,10 @@ export class PolicyDataMigrator {
                         });
                         return;
                     }
-                    vc = await _vcHelper.createVcDocument(
+                    vc = await _vcHelper.createVerifiableCredential(
                         credentialSubject,
-                        { did: root.did, key: rootKey },
+                        didDocument,
+                        null,
                         { uuid: doc.document.id }
                     );
                     doc.hash = vc.toCredentialHash();
@@ -242,7 +244,7 @@ export class PolicyDataMigrator {
                             if (
                                 element.getId() === vcDef.getId() &&
                                 element.toCredentialHash() !==
-                                    vcDef.toCredentialHash()
+                                vcDef.toCredentialHash()
                             ) {
                                 vpChanged = true;
                                 vcs[j] = vcDef;
@@ -255,9 +257,11 @@ export class PolicyDataMigrator {
                 if (vpChanged) {
                     this._notifier?.info(`Resigning VP ${doc.id}`);
                     const _vcHelper = new VcHelper();
-                    vp = await _vcHelper.createVpDocument(
+                    const didDocument = await _vcHelper.loadDidDocument(root.did);
+                    vp = await _vcHelper.createVerifiablePresentation(
                         vcs,
-                        { did: root.did, key: rootKey },
+                        didDocument,
+                        null,
                         { uuid: doc.document.id }
                     );
                     doc.hash = vp.toCredentialHash();

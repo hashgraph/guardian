@@ -3,6 +3,12 @@ import {
     DefaultDocumentLoader,
     VcDocumentDefinition as VcDocument,
     VpDocumentDefinition as VpDocument,
+    CommonDidDocument,
+    HederaDidDocument,
+    HederaEd25519Method,
+    HederaBBSMethod,
+    Environment,
+    VerificationMethod,
 } from '../hedera-modules';
 import {
     SchemaDocumentLoader,
@@ -12,24 +18,27 @@ import {
     ContextDocumentLoader, DryRunLoader, HederaLoader,
 } from '../document-loader';
 import {
+    Schema,
     ICredentialSubject,
     SchemaEntity,
     SignatureType,
 } from '@guardian/interfaces';
-import { PrivateKey } from '@hashgraph/sdk';
-// tslint:disable-next-line:no-duplicate-imports
-import { Schema } from '@guardian/interfaces';
+import { PrivateKey, TopicId } from '@hashgraph/sdk';
 import {
     BbsBlsSignatureProof2020,
+    Bls12381G2KeyPair,
     deriveProof,
 } from '@mattrglobal/jsonld-signatures-bbs';
 import { Singleton } from '../decorators/singleton';
 import { DataBaseHelper } from './db-helper';
-import { Schema as SchemaCollection } from '../entity';
+import {
+    Schema as SchemaCollection,
+    DidDocument as DidDocumentCollection
+} from '../entity';
 import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
-import { SchemaDocumentLoaderV2 } from '../document-loader/schema-document-loader-v2';
-import { VCSchemaLoaderV2 } from '../document-loader/vc-schema-loader-v2';
-import { SubjectSchemaLoaderV2 } from '../document-loader/subject-schema-loader-v2';
+import { KeyType, Users, Wallet } from '../helpers';
+import { IAuthUser } from '../interfaces';
+import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 
 /**
  * Configured VCHelper
@@ -43,26 +52,20 @@ export class VcHelper extends VCJS {
         const didDocumentLoader = new DIDDocumentLoader();
         const hederaLoader = new HederaLoader();
         const schemaDocumentLoader = new SchemaDocumentLoader();
-        const schemaDocumentLoaderV2 = new SchemaDocumentLoaderV2();
         const contextDocumentLoader = new ContextDocumentLoader('');
 
         const vcSchemaObjectLoader = new VCSchemaLoader('');
-        const vcSchemaObjectLoaderV2 = new VCSchemaLoaderV2('');
         const subjectSchemaObjectLoader = new SubjectSchemaLoader('');
-        const subjectSchemaObjectLoaderV2 = new SubjectSchemaLoaderV2('');
 
         this.addDocumentLoader(defaultDocumentLoader);
         this.addDocumentLoader(dryRunLoader);
         this.addDocumentLoader(hederaLoader);
         this.addDocumentLoader(didDocumentLoader);
         this.addDocumentLoader(schemaDocumentLoader);
-        this.addDocumentLoader(schemaDocumentLoaderV2);
         this.addDocumentLoader(contextDocumentLoader);
 
         this.addSchemaLoader(vcSchemaObjectLoader);
-        this.addSchemaLoader(vcSchemaObjectLoaderV2);
         this.addSchemaLoader(subjectSchemaObjectLoader);
-        this.addSchemaLoader(subjectSchemaObjectLoaderV2);
 
         this.buildDocumentLoader();
         this.buildSchemaLoader();
@@ -106,6 +109,96 @@ export class VcHelper extends VCJS {
         } catch (error) {
             return null;
         }
+    }
+
+    /**
+     * Load DID document
+     * @param topic
+     * @param needKey
+     */
+    public async loadDidDocument(did: string, user?: IAuthUser): Promise<HederaDidDocument> {
+        if (!did) {
+            return null;
+        }
+        const row = await new DataBaseHelper(DidDocumentCollection).findOne({ did });
+        if (!row) {
+            return null;
+        }
+
+        const document = HederaDidDocument.from(row.document);
+        document.setDidTopicId(row.topicId);
+
+        if (!user) {
+            user = await (new Users()).getUserById(did);
+        }
+
+        if (!user) {
+            throw new Error('User not found.');
+        }
+
+        const walletToken = user.walletToken;
+        const keys = row.verificationMethods || {};
+        const Ed25519Signature2018 = keys[HederaEd25519Method.TYPE];
+        const BbsBlsSignature2020 = keys[HederaBBSMethod.TYPE];
+
+        const wallet = new Wallet();
+        const hederaPrivateKey = await wallet.getKey(walletToken, KeyType.KEY, did);
+
+        if (Ed25519Signature2018) {
+            const privateKey = await wallet.getKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018);
+            document.setPrivateKey(Ed25519Signature2018, privateKey);
+        } else {
+            const { id, privateKey } = await HederaEd25519Method.generateKeyPair(did, hederaPrivateKey);
+            document.setPrivateKey(id, privateKey);
+        }
+
+        if (BbsBlsSignature2020) {
+            const privateKey = await wallet.getKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020);
+            document.setPrivateKey(BbsBlsSignature2020, privateKey);
+        } else {
+            const { id, privateKey } = await HederaBBSMethod.generateKeyPair(did, hederaPrivateKey);
+            document.setPrivateKey(id, privateKey);
+        }
+
+        return document;
+    }
+
+    /**
+     * Create topic config by json
+     * @param topic
+     * @param needKey
+     */
+    public async saveDidDocument(document: CommonDidDocument, user: IAuthUser): Promise<DidDocumentCollection> {
+        if (!user) {
+            throw new Error('User not found.');
+        }
+        const walletToken = user.walletToken;
+        const wallet = new Wallet();
+        const keys = document.getPrivateKeys();
+        const verificationMethods = {};
+        for (const item of keys) {
+            const { id, type, key } = item;
+            verificationMethods[type] = id;
+            await wallet.setKey(walletToken, KeyType.DID_KEYS, id, key);
+        }
+        const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
+            did: document.getDid(),
+            document: document.getDocument(),
+            verificationMethods
+        });
+        return didDoc;
+    }
+
+    /**
+     * Generate verification method by Hedera key
+     *
+     * @param {string | TopicId} topicId
+     * @param {string | PrivateKey} privateKey
+     *
+     * @returns {HederaDidDocument} - DID Document
+     */
+    public async generateNewDid(topicId: string | TopicId, privateKey: string | PrivateKey): Promise<HederaDidDocument> {
+        return await HederaDidDocument.generate(Environment.network, privateKey, topicId);
     }
 
     /**
@@ -192,6 +285,58 @@ export class VcHelper extends VCJS {
     }
 
     /**
+     * Get signature type by schema
+     *
+     * @param subject Subject
+     * @returns SignatureType
+     */
+    private async getSignatureTypeBySchema(subject: ICredentialSubject): Promise<SignatureType> {
+        const vcSchema = await VcHelper.getSchemaByContext(subject['@context'], subject.type);
+        const entity: SchemaEntity = vcSchema?.entity;
+        if (entity === SchemaEntity.EVC) {
+            return SignatureType.BbsBlsSignature2020;
+        } else {
+            return SignatureType.Ed25519Signature2018;
+        }
+    }
+
+    /**
+     * Prepare Subject
+     *
+     * @param subject Subject
+     * @param signatureType Signature Type
+     *
+     * @returns ICredentialSubject
+     */
+    private prepareSubject(subject: ICredentialSubject, signatureType: SignatureType): ICredentialSubject {
+        if (signatureType === SignatureType.BbsBlsSignature2020) {
+            return this.setNestedNodeIds(JSON.parse(JSON.stringify(subject)));
+        } else {
+            return subject;
+        }
+    }
+
+    /**
+     * Prepare VCs
+     *
+     * @param subject Subject
+     * @param signatureType Signature Type
+     *
+     * @returns ICredentialSubject
+     */
+    private async prepareVCs(vcs: VcDocument[]): Promise<VcDocument[]> {
+        for (let i = 0; i < vcs.length; i++) {
+            const item = vcs[i];
+            if (item.getProof().type !== SignatureType.BbsBlsSignature2020) {
+                continue;
+            }
+            const revealVc = await this.createRevealVC(item);
+            vcs[i] = await this.vcDeriveProof(item, revealVc);
+        }
+        return vcs;
+    }
+
+    /**
      * Create VC Document
      *
      * @param {string} did - DID
@@ -201,7 +346,7 @@ export class VcHelper extends VCJS {
      *
      * @returns {VcDocument} - VC Document
      *
-     * @deprecated
+     * @deprecated 2024-02-12
      */
     public override async createVC(
         did: string,
@@ -209,17 +354,51 @@ export class VcHelper extends VCJS {
         subject: ICredentialSubject,
         group?: any,
     ): Promise<VcDocument> {
-        const vcSchema = await VcHelper.getSchemaByContext(subject['@context'], subject.type);
-        const entity: SchemaEntity = vcSchema?.entity;
-        if (entity === SchemaEntity.EVC) {
-            return await super.createVC(did, key,
-                this.setNestedNodeIds(JSON.parse(JSON.stringify(subject))),
-                group,
-                SignatureType.BbsBlsSignature2020
-            );
-        } else {
-            return await super.createVC(did, key, subject, group);
-        }
+        const signatureType = await this.getSignatureTypeBySchema(subject);
+        subject = this.prepareSubject(subject, signatureType);
+        return await super.createVC(did, key, subject, group, signatureType);
+    }
+
+    /**
+     * Create VC Document
+     *
+     * @param {ICredentialSubject} subject - Credential Object
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VcDocument} - VC Document
+     *
+     * @deprecated 2024-02-12
+     */
+    public override async createVcDocument(
+        subject: ICredentialSubject,
+        suiteOptions: ISuiteOptions,
+        documentOptions?: IDocumentOptions
+    ): Promise<VcDocument> {
+        suiteOptions.signatureType = await this.getSignatureTypeBySchema(subject);
+        subject = this.prepareSubject(subject, suiteOptions.signatureType);
+        return await super.createVcDocument(subject, suiteOptions, documentOptions);
+    }
+
+    /**
+     * Create VC Document
+     *
+     * @param {ICredentialSubject} subject - Credential Object
+     * @param {CommonDidDocument} didDocument - DID Document
+     * @param {SignatureType} signatureType - Signature type (Ed25519Signature2018, BbsBlsSignature2020)
+     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
+     *
+     * @returns {VcDocument} - VC Document
+     */
+    public override async createVerifiableCredential(
+        subject: ICredentialSubject,
+        didDocument: CommonDidDocument,
+        signatureType: SignatureType,
+        documentOptions?: IDocumentOptions
+    ): Promise<VcDocument> {
+        signatureType = await this.getSignatureTypeBySchema(subject);
+        subject = this.prepareSubject(subject, signatureType);
+        return await super.createVerifiableCredential(subject, didDocument, signatureType, documentOptions);
     }
 
     /**
@@ -232,7 +411,7 @@ export class VcHelper extends VCJS {
      *
      * @returns {VpDocument} - VP Document
      *
-     * @deprecated
+     * @deprecated 2024-02-12
      */
     public override async createVP(
         did: string,
@@ -240,41 +419,28 @@ export class VcHelper extends VCJS {
         vcs: VcDocument[],
         uuid?: string
     ): Promise<VpDocument> {
-        for (let i = 0; i < vcs.length; i++) {
-            const item = vcs[i];
-            if (item.getProof().type !== SignatureType.BbsBlsSignature2020) {
-                continue;
-            }
-            const revealVc = await this.createRevealVC(item);
-            vcs[i] = await this.vcDeriveProof(item, revealVc);
-        }
+        vcs = await this.prepareVCs(vcs);
         return await super.createVP(did, key, vcs, uuid);
     }
 
     /**
-     * Create VC Document
+     * Create VP Document
      *
-     * @param {ICredentialSubject} subject - Credential Object
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
+     * @param {VcDocument[]} vcs - VC Documents
+     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
      * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
      *
-     * @returns {VcDocument} - VC Document
+     * @returns {VpDocument} - VP Document
+     *
+     * @deprecated 2024-02-12
      */
-    public override async createVcDocument(
-        subject: ICredentialSubject,
+    public override async createVpDocument(
+        vcs: VcDocument[],
         suiteOptions: ISuiteOptions,
         documentOptions?: IDocumentOptions
-    ): Promise<VcDocument> {
-        const vcSchema = await VcHelper.getSchemaByContext(subject['@context'], subject.type);
-        const entity: SchemaEntity = vcSchema?.entity;
-        if (entity === SchemaEntity.EVC) {
-            suiteOptions.signatureType = SignatureType.BbsBlsSignature2020;
-            subject = this.setNestedNodeIds(JSON.parse(JSON.stringify(subject)));
-            return await super.createVcDocument(subject, suiteOptions, documentOptions);
-        } else {
-            suiteOptions.signatureType = SignatureType.Ed25519Signature2018;
-            return await super.createVcDocument(subject, suiteOptions, documentOptions);
-        }
+    ): Promise<VpDocument> {
+        vcs = await this.prepareVCs(vcs);
+        return await super.createVpDocument(vcs, suiteOptions, documentOptions);
     }
 
     /**
@@ -286,19 +452,45 @@ export class VcHelper extends VCJS {
      *
      * @returns {VpDocument} - VP Document
      */
-    public override async createVpDocument(
+    public override async createVerifiablePresentation(
         vcs: VcDocument[],
-        suiteOptions: ISuiteOptions,
+        didDocument: CommonDidDocument,
+        signatureType: SignatureType,
         documentOptions?: IDocumentOptions
     ): Promise<VpDocument> {
-        for (let i = 0; i < vcs.length; i++) {
-            const item = vcs[i];
-            if (item.getProof().type !== SignatureType.BbsBlsSignature2020) {
-                continue;
+        vcs = await this.prepareVCs(vcs);
+        return await super.createVerifiablePresentation(vcs, didDocument, signatureType, documentOptions);
+    }
+
+    /**
+     * Validate private key
+     */
+    public async validateKey(method: VerificationMethod): Promise<boolean> {
+        try {
+            const option: any = method.toObject(true);
+            let keyPair: any;
+            switch (option.type) {
+                case 'Ed25519VerificationKey2018': {
+                    keyPair = await Ed25519VerificationKey2018.from(option);
+                    break;
+                }
+                case 'Bls12381G2Key2020': {
+                    keyPair = await Bls12381G2KeyPair.from(option);
+                    break;
+                }
+                default: {
+                    //Unsupported
+                    return false;
+                }
             }
-            const revealVc = await this.createRevealVC(item);
-            vcs[i] = await this.vcDeriveProof(item, revealVc);
+            const singleMessage = new Uint8Array(Buffer.from('singleMessage'));
+            const signer = keyPair.signer();
+            const verifier = keyPair.verifier();
+            const signature = await signer.sign({ data: singleMessage });
+            const result = await verifier.verify({ data: singleMessage, signature });
+            return result;
+        } catch (error) {
+            return false;
         }
-        return await super.createVpDocument(vcs, suiteOptions, documentOptions);
     }
 }

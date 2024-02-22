@@ -1,4 +1,4 @@
-import { DidRootKey, DocumentLoader, IDocumentFormat } from '../hedera-modules';
+import { DidURL, DocumentLoader, HederaDid, IDocumentFormat } from '../hedera-modules';
 import { DataBaseHelper, IPFS, Workers } from '../helpers';
 import { DidDocument } from '../entity';
 import { WorkerTaskType } from '@guardian/interfaces';
@@ -25,10 +25,8 @@ export class HederaLoader extends DocumentLoader {
      * @param iri
      */
     public async get(iri: string): Promise<IDocumentFormat> {
-        const did = DidRootKey.create(iri).getController();
-        const splittedDid = did.split('_');
-        const topicId = splittedDid[splittedDid.length - 1];
-
+        const did = DidURL.getController(iri);
+        const topicId = HederaDid.getTopicId(iri);
         const messages = await new Workers().addRetryableTask(
             {
                 type: WorkerTaskType.GET_TOPIC_MESSAGES,
@@ -68,7 +66,7 @@ export class HederaLoader extends DocumentLoader {
      * @param iri
      */
     public async getDocument(iri: string): Promise<any> {
-        const did = DidRootKey.create(iri).getController();
+        const did = DidURL.getController(iri);
         const didDocuments = await new DataBaseHelper(DidDocument).findOne({ did });
         if (didDocuments) {
             return didDocuments.document;

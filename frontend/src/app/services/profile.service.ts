@@ -40,4 +40,12 @@ export class ProfileService {
     public getBalance(): Observable<string | null> {
         return this.http.get<string | null>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/balance`);
     }
+
+    public validateDID(document: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/did-document/validate`, document);
+    }
+
+    public validateDIDKeys(document: any, keys: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/did-keys/validate`, { document, keys });
+    }
 }

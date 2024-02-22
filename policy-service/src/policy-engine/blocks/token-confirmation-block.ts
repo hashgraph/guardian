@@ -140,7 +140,6 @@ export class TokenConfirmationBlock {
      */
     private async confirm(ref: IPolicyBlock, data: any, state: any, skip: boolean = false) {
         const account = {
-            did: null,
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
@@ -159,8 +158,9 @@ export class TokenConfirmationBlock {
         }
 
         await PolicyUtils.checkAccountId(account);
-        const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        const hederaAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
+        const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const hederaCredentials = await policyOwner.loadHederaCredentials(ref);
+        const hederaAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, hederaCredentials);
 
         if (skip) {
             switch (ref.options.action) {

@@ -11,7 +11,6 @@ import {
 import {
     BinaryMessageResponse,
     DatabaseServer,
-    DIDDocument,
     findAllEntities,
     IAuthUser,
     Logger,
@@ -32,7 +31,8 @@ import {
     Wallet,
     XlsxToJson,
     JsonToXlsx,
-    GenerateBlocks
+    GenerateBlocks,
+    VcHelper
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -1267,12 +1267,15 @@ export class PolicyEngineService {
                 const topic = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
-                const didObject = await DIDDocument.create(newPrivateKey, topic.topicId);
+
+                const vcHelper = new VcHelper();
+                const didObject = await vcHelper.generateNewDid(topic.topicId, newPrivateKey);
                 const did = didObject.getDid();
                 const document = didObject.getDocument();
 
                 const count = await DatabaseServer.getVirtualUsers(policyId);
                 const username = `Virtual User ${count.length}`;
+
                 await DatabaseServer.createVirtualUser(
                     policyId,
                     username,
@@ -1281,8 +1284,16 @@ export class PolicyEngineService {
                     newPrivateKey.toString()
                 );
 
-                const db = new DatabaseServer(policyId);
-                await db.saveDid({ did, document });
+                const instanceDB = new DatabaseServer(policyId);
+                const keys = didObject.getPrivateKeys();
+                const verificationMethods = {};
+                for (const item of keys) {
+                    const { id, type, key } = item;
+                    verificationMethods[type] = id;
+                    await instanceDB.setVirtualKey(did, id, key);
+                }
+                await instanceDB.setVirtualKey(did, did, newPrivateKey.toString());
+                await instanceDB.saveDid({ did, document, verificationMethods });
 
                 await (new GuardiansService())
                     .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {

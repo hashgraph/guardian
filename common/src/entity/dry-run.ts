@@ -618,6 +618,12 @@ export class DryRun extends BaseEntity {
     serials?: any;
 
     /**
+     * Verification methods
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    verificationMethods?: any;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

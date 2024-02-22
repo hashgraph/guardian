@@ -1,6 +1,6 @@
 import { DataBaseHelper } from '../helpers';
 import { DidDocument } from '../entity';
-import { DidRootKey, DocumentLoader, IDocumentFormat } from '../hedera-modules';
+import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules';
 
 /**
  * DID Documents Loader
@@ -31,7 +31,7 @@ export class DIDDocumentLoader extends DocumentLoader {
      * @param iri
      */
     public async getDocument(iri: string): Promise<any> {
-        const did = DidRootKey.create(iri).getController();
+        const did = DidURL.getController(iri);
         const didDocuments = await new DataBaseHelper(DidDocument).findOne({ did });
         if (didDocuments) {
             return didDocuments.document;
