@@ -1,12 +1,12 @@
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity';
 import { DataBaseHelper } from '../helpers';
-import { SubjectSchemaLoader } from './subject-schema-loader';
+import { LocalVcSchemaDocumentLoader } from './local-vc-schema-document-loader';
 
 /**
- * Local subject schema loader
+ * Local VC schema loader
  */
-export class LocalSubjectSchemaLoader extends SubjectSchemaLoader {
+export class DraftVcSchemaDocumentLoader extends LocalVcSchemaDocumentLoader {
     protected override async loadSchemaContexts(
         contexts: string[],
         iri: string

@@ -5,7 +5,7 @@ import { DidDocument, DryRun } from '../entity';
 /**
  * Dry Run loader
  */
-export class DryRunLoader extends DocumentLoader {
+export class DraftDidLoader extends DocumentLoader {
     /**
      * Has context
      * @param iri

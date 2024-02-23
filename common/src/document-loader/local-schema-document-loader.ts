@@ -6,9 +6,9 @@ import { DataBaseHelper } from '../helpers';
 /**
  * Subject schema loader
  */
-export class SubjectSchemaLoader extends SchemaLoader {
-    constructor(contexts: string[] = [], type: string = 'subject') {
-        super(type, contexts);
+export class LocalSchemaDocumentLoader extends SchemaLoader {
+    constructor(filters?: string | string[]) {
+        super('subject', filters);
     }
 
     /**

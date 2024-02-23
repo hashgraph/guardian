@@ -6,7 +6,7 @@ import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules';
  * DID Documents Loader
  * Used for signatures validation.
  */
-export class LocalDIDLoader extends DocumentLoader {
+export class LocalDidLoader extends DocumentLoader {
     public async has(iri: string): Promise<boolean> {
         return (await super.has(iri)) && (await this._hasDocument(iri));
     }

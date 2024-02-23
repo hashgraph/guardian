@@ -8,17 +8,52 @@ export type SchemaLoaderFunction = (context: string | string[], iri: string, typ
  * Used for VC validation.
  */
 export abstract class SchemaLoader {
+    /**
+     * Schema type
+     */
+    protected type: string;
+
+    /**
+     * Filters
+     */
+    protected filters: string[];
+
     constructor(
-        private readonly _type: string,
-        private readonly _contexts: string[] = []
-    ) {}
+        type?: string,
+        filters?: string | string[]
+    ) {
+        this.filters = [];
+        if (Array.isArray(filters)) {
+            for (const filter of filters) {
+                if (typeof filter === 'string') {
+                    this.filters.push(filter);
+                }
+            }
+        } else if (typeof filters === 'string') {
+            this.filters.push(filters);
+        }
+        this.type = type;
+    }
 
     /**
      * Has iri
-     * @param iri
+     * @param context
      */
-    private _has(iri: string): boolean {
-        return !!this._contexts?.some(context => iri?.startsWith(context));
+    private _has(context: string): boolean {
+        if (context) {
+            if (this.filters.length) {
+                for (const filter of this.filters) {
+                    if (context.startsWith(filter)) {
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -28,7 +63,7 @@ export abstract class SchemaLoader {
      * @param type
      */
     public async has(contexts: string | string[], iri: string, type: string): Promise<boolean> {
-        if (type !== this._type) {
+        if (this.type && type !== this.type) {
             return false;
         }
         return Array.isArray(contexts)

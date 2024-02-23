@@ -5,7 +5,7 @@ import { WorkerTaskType } from '@guardian/interfaces';
 /**
  * Remote DID Document loader
  */
-export class RemoteDIDLoader extends DocumentLoader {
+export class RemoteDidLoader extends DocumentLoader {
     /**
      * Get formatted document
      * @param iri

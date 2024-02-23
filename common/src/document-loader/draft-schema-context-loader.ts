@@ -1,21 +1,21 @@
+import { DocumentLoader, IDocumentFormat } from '../hedera-modules';
 import { DataBaseHelper } from '../helpers';
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity';
-import { DocumentLoader, IDocumentFormat } from '../hedera-modules';
 
 /**
- * Schema Documents Loader.
- * Used for schema validation.
+ * Schema Documents Loader
+ * Used for signatures validation.
  */
-export class ContextDocumentLoader extends DocumentLoader {
+export class DraftSchemaContextLoader extends DocumentLoader {
     /**
-     * Get document format
+     * Get formatted document
      * @param iri
      */
     public async get(iri: string): Promise<IDocumentFormat> {
         return {
             documentUrl: iri,
-            document: await this.getDocument(iri),
+            document: await this.getDocument(iri)
         };
     }
 
@@ -26,10 +26,10 @@ export class ContextDocumentLoader extends DocumentLoader {
     public async getDocument(iri: string): Promise<any> {
         const schema = await this.loadSchemaContext(iri);
         if (!schema) {
-            throw new Error('Schema not found');
+            throw new Error(`Schema not found: ${iri}`);
         }
         if (!schema.context) {
-            throw new Error('Context not found');
+            throw new Error(`Context not found: ${iri}`);
         }
         return schema.context;
     }
@@ -39,15 +39,13 @@ export class ContextDocumentLoader extends DocumentLoader {
      * @param context
      * @private
      */
-    private async loadSchemaContext(context: string): Promise<ISchema> {
+    private async loadSchemaContext(iri: string): Promise<ISchema> {
         try {
-            if (!context) {
+            if (!iri) {
                 return null;
             }
-            const schema = await new DataBaseHelper(Schema).findOne({
-                where: { contextURL: { $eq: context } }
-            });
-            return schema;
+            const _iri = '#' + iri.substring(7);
+            return await new DataBaseHelper(Schema).findOne({ iri: _iri });
         }
         catch (error) {
             return null;
