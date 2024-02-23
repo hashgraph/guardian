@@ -123,9 +123,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             }
         });
         this.fieldPropertySub = this.property.valueChanges.subscribe(val => {
-            if (val) {
-                this.field.property.setValue(val);
-            }
+            this.field.property.setValue(val);
         });
     }
 
@@ -142,10 +140,10 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         }
         if (changes?.schemaTypes?.firstChange && this.schemaTypes) {
             const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                return { 
+                return {
                     ...schemaType,
-                    label: schemaType.name, 
-                    value: schemaType.value 
+                    label: schemaType.name,
+                    value: schemaType.value
                 };
             });
             this.groupedFieldTypes.push({
