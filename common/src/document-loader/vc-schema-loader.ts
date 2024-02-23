@@ -1,6 +1,3 @@
-import { ISchema } from '@guardian/interfaces';
-import { Schema } from '../entity';
-import { DataBaseHelper } from '../helpers';
 import { SubjectSchemaLoader } from './subject-schema-loader';
 
 /**

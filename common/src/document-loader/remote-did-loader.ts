@@ -1,6 +1,5 @@
 import { DidURL, DocumentLoader, HederaDid, IDocumentFormat } from '../hedera-modules';
-import { DataBaseHelper, IPFS, Workers } from '../helpers';
-import { DidDocument } from '../entity';
+import { IPFS, Workers } from '../helpers';
 import { WorkerTaskType } from '@guardian/interfaces';
 
 /**
