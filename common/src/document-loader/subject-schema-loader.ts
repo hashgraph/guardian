@@ -7,42 +7,8 @@ import { DataBaseHelper } from '../helpers';
  * Subject schema loader
  */
 export class SubjectSchemaLoader extends SchemaLoader {
-    constructor(private readonly context: string) {
-        super();
-    }
-
-    /**
-     * Has iri
-     * @param iri
-     */
-    public _has(iri: string): boolean {
-        return iri && (
-            iri.startsWith(this.context) ||
-            iri.startsWith('schema#') ||
-            iri.startsWith('schema:')
-        );
-    }
-
-    /**
-     * Has context
-     * @param context
-     * @param iri
-     * @param type
-     */
-    public async has(context: string | string[], iri: string, type: string): Promise<boolean> {
-        if (type !== 'subject') {
-            return false;
-        }
-        if (Array.isArray(context)) {
-            for (const element of context) {
-                if (this._has(element)) {
-                    return true;
-                }
-            }
-            return false;
-        } else {
-            return this._has(context);
-        }
+    constructor(contexts: string[] = [], type: string = 'subject') {
+        super(type, contexts);
     }
 
     /**
@@ -74,18 +40,13 @@ export class SubjectSchemaLoader extends SchemaLoader {
      * @param contexts
      * @private
      */
-    private async loadSchemaContexts(contexts: string[], iri: string): Promise<ISchema[]> {
+    protected async loadSchemaContexts(contexts: string[], iri: string): Promise<ISchema[]> {
         try {
             if (contexts && contexts.length) {
-                const localSchema = contexts.find((context) => context.startsWith('schema#') || context.startsWith('schema:'));
-                if (localSchema) {
-                    return await new DataBaseHelper(Schema).find({ iri });
-                } else {
-                    return await new DataBaseHelper(Schema).find({
-                        contextURL: { $in: contexts },
-                        iri: { $eq: iri },
-                    });
-                }
+                return await new DataBaseHelper(Schema).find({
+                    contextURL: { $in: contexts },
+                    iri: { $eq: iri },
+                });
             }
             return null;
         }

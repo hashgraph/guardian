@@ -8,14 +8,6 @@ import { DataBaseHelper } from '../helpers';
  */
 export class SchemaDocumentLoader extends DocumentLoader {
     /**
-     * Has context
-     * @param iri
-     */
-    public async has(iri: string): Promise<boolean> {
-        return iri.startsWith('schema#') || iri.startsWith('schema:');
-    }
-
-    /**
      * Get formatted document
      * @param iri
      */

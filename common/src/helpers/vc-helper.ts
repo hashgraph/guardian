@@ -14,8 +14,12 @@ import {
     SchemaDocumentLoader,
     VCSchemaLoader,
     SubjectSchemaLoader,
-    DIDDocumentLoader,
-    ContextDocumentLoader, DryRunLoader, HederaLoader,
+    LocalDIDLoader,
+    ContextDocumentLoader,
+    DryRunLoader,
+    RemoteDIDLoader,
+    LocalVCSchemaLoader,
+    LocalSubjectSchemaLoader,
 } from '../document-loader';
 import {
     Schema,
@@ -51,22 +55,26 @@ export class VcHelper extends VCJS {
         super();
         const defaultDocumentLoader = new DefaultDocumentLoader();
         const dryRunLoader = new DryRunLoader();
-        const didDocumentLoader = new DIDDocumentLoader();
-        const hederaLoader = new HederaLoader();
-        const schemaDocumentLoader = new SchemaDocumentLoader();
-        const contextDocumentLoader = new ContextDocumentLoader('');
+        const didDocumentLoader = new LocalDIDLoader(['did:']);
+        const hederaLoader = new RemoteDIDLoader(['did:hedera:']);
+        const schemaDocumentLoader = new SchemaDocumentLoader(['schema#', 'schema:']);
+        const contextDocumentLoader = new ContextDocumentLoader(['']);
 
-        const vcSchemaObjectLoader = new VCSchemaLoader('');
-        const subjectSchemaObjectLoader = new SubjectSchemaLoader('');
+        const localVcSchemaObjectLoader = new LocalVCSchemaLoader(['schema#', 'schema:']);
+        const vcSchemaObjectLoader = new VCSchemaLoader(['']);
+        const localSubjectSchemaObjectLoader = new LocalSubjectSchemaLoader(['schema#', 'schema:']);
+        const subjectSchemaObjectLoader = new SubjectSchemaLoader(['']);
 
         this.addDocumentLoader(defaultDocumentLoader);
         this.addDocumentLoader(dryRunLoader);
-        this.addDocumentLoader(hederaLoader);
         this.addDocumentLoader(didDocumentLoader);
+        this.addDocumentLoader(hederaLoader);
         this.addDocumentLoader(schemaDocumentLoader);
         this.addDocumentLoader(contextDocumentLoader);
 
+        this.addSchemaLoader(localVcSchemaObjectLoader);
         this.addSchemaLoader(vcSchemaObjectLoader);
+        this.addSchemaLoader(localSubjectSchemaObjectLoader);
         this.addSchemaLoader(subjectSchemaObjectLoader);
 
         this.buildDocumentLoader();
