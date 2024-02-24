@@ -1,6 +1,6 @@
 # 🏢 CDM ACM0007: Conversion from Single Cycle to Combined Cycle Power Generation
 
-## Table of contents <a href="#table-of-contents" id="table-of-contents"></a>
+Table of contents
 
 * [Introduction](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#introduction)
 * [Need and Use for the ACM0007 Policy](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#need-and-use-for-the-acm0007-policy)
@@ -70,61 +70,84 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 #### Step By Step <a href="#step-by-step" id="step-by-step"></a>
 
-1. Login as Standard Registry and import the policy either by file or through IPFS timestamp.
-2. Create a new user and assign role as Project Proponent.
+1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 
-<figure><img src="https://lh7-us.googleusercontent.com/Nke1BcLmBlisfvKy7FKjOGoQhnAeN3QJYVIVFWyG5fS1OO9REroFJbR4A1kUO2a9e9EgEK4UR0NMWdnyqU6MzwlUVgTPZpGKIxM_TyPPekjozfRZpyx7tRvfAUuTk2hnPiDlXFQR7xIQlcn5ARNQvYTvaR7gy8QTzZiPfbB_U51EsLi0CR8ECmPzIbuowg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
-3. Name new Project Participant.
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/DBWq2gcOT3ard8zE2mOLB5cwpEcsgi-lFJ_a0bB_y7t8l2FmXxQTfpwE4ZKfotBXRTfPhqHXm-MNyNLHgI5dMT9NQczBvikjGmybNdL4b36mZ2i0vWEyz_iTPlqYLBIjNKitwtEbXLVESwF9VQqz3bUW2ogAle_AlCuc2iUAmRXNPPqTzMXRWCOv7_O0JA" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
-4. Сreate a new user and assign role as VVB.
+2. To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” button.
 
-<figure><img src="https://lh7-us.googleusercontent.com/14za4Eu9s1C61AjLnl5lQT9omGztYd7W_yQGXl9UM0arqLYn1tN7z1geGShhgalyCR88QqoRLXOFhxbTVWQolrmCsDEO8hYgzljhlrQVn-fKn9klEzOFeUCyBGiU1dwiCGaPutXhcHvwLr7I8nEw1db9Mz558MXFP5MKWDNg-y5tFNC6MqJdykOGzbNSqA" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
-5. Name new VVB.
+<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/J1TFJnhRYfQE2ku_pd3egky_opL663g8Du8SJcEN7TucVkugNG1F17EWoIunZWL_-bf05eG5kW4umGK-6ILCOY249izRIy1v1XNCxdP30RAVjSY7zgecuauDRnuuh51Mkk3djm9Dtn0iFyewuqe1sOj_Prbe_htogEo0M-oOLYflWvVEm0OR8UhHyor50Q" alt=""><figcaption></figcaption></figure>
+3. Create a new user by clicking the “Create User” button and assign their role as Project Participant.
 
-6. Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/CUWuMU-jaWS6g0SBd92fYC5eNvcPAQ9MO0H1iJIVR35X-Q4Nu-g0w5aGYhhVn39dkFl9TfaAyyQhPMi0ZCerLWhJTD7PGylg8bfPkhg_GU_cjCSYH9BjH2f0Yj-0NogQY7KYanhj7Bm7qbfwzqZQOOfObKPyO5XMcBQZXgqlR9JOlBZpD18scLYC1Ucf-g" alt=""><figcaption></figcaption></figure>
+4. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
 
-<figure><img src="https://lh7-us.googleusercontent.com/7jGdD-HXU3q8W1ShSZYW0YMIIgMkn_kzAooQh3yfFFvnzBHo-nwoTULpgRrhK5-cjvWRFLvK8q6mzA_a7znQboXf_3l0zT-lRJwrO1iISFUbzyWJ6im021zF6LzWLLpCjFs41qJvCUnSZqoa8r0fQLal93Dhmhde6dasMaI6ZAKf4S94p6HVQpvWDsxJSw" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 
-7. Login back as Project Participant and create a New project by clicking on "New Project" button and enter all the required details.
+5. Сreate a new user again and assign their role as VVB.
 
-<figure><img src="https://lh7-us.googleusercontent.com/rGiq3cMv-D_rbiAg9vh_6i68OOobvYFiGXiM2q2pUeyx8SUU1Q1iCE47m98uW4m51xXd9Sw_vKfjIhbZDIU4-O8GlJ0RnZowU7mVrP9uZrXqwVNF9oa2xZscyKrKfB448xDSYHP54PDtpmZSBj4BOwRGa8BdILeUAWPp7DfhXT0lE6jsa2d0-aUM-588CQ" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/lVfaCpZRw_5gC-NTl2cEz9uZZ7ZJdcO1ZIC9EVayismjU-dXEh7mKq5JvgypNaIcWM58R3YYco2sniNW79_SYTckqnEJiD2h3HismnmfVG2YGfA19E_cjEgBWE1jq4KwvuTfCS2PD0tcBZwmbQ_uf_0iQnomBAxdu65765_5_QCi7QhtXikuAY68maBNlA" alt=""><figcaption></figcaption></figure>
+6. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
 
-8. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/JEp-T-UBriAmBr0GmxWZ6JnDnCj8iRVtQKVUFuintjJ0CgJIxrptRho2QyFImkeeNncRZOeFuvNx9f14cghYVBR3hAp33-AOHmS0-wgRU_IaOjJequPX-sQNm3V2WC3Nve05YeLOdnA2YEgbrG4Q4Q3pxW3rsCw7mYHPjqIcMFu5-0BDl2g4QrQeHRFWfg" alt=""><figcaption></figcaption></figure>
+7. Log in as the SR and select the “Approve PP” or the “Approve VVB” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
 
-9. Project Participant creates monitoring report by clicking on Add Report and fills out the monitoring report form.
+<figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/CEJkGVxNcF5-IVxPJcYfbvWluMXfYYuNplnTrhm92if_BSmDYZ8N9pjfyaR1wCPqWruHsXf54T3Gl3fC_fr_NswX3bhcNGh8LUGe8G_FGPEjR6g8KrLkGWIXB6sK9hUw2gTU_1Fn1Wnx5X_7estcFWHiJBonNzwtkUVYG7acAw1puumtuQXDSQJ-tUSwEA" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/wL5tRSgtsSUdpTENByiv6FBrAvaTuuBfmHTa_eiWn6w9pLcIqOM5Gt6tH0iFGPB9uFgOmjxrCs5AUHBc-rkkHjAgNYIQpZ-voY2FSYRaGZ-ASNjK-YSgbZ_LJAdPvcEVz8x0ZpyWTKFgM85RA7y926fCvAgkaKmqKQIA5Yn8LqyPNwlcGTfIqHyMopVfAg" alt=""><figcaption></figcaption></figure>
+8. Log in as the Project Participant and create a new project by clicking on the "New Project" button. This form is used to collect information about the project, organization, and all the data needed to run the emission reduction calculations. Once all the required fields have been filled the “Create” button will turn dark blue. By selecting the “Create” button all the data will be sent to the SR for review/approval.
 
-10. After creating monitoring report, project participant assigns VVB to verify it.
+<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/b7zERnUjSmv5TqkwsqOJF7xVl89PfXTgDMNaLRH0eBjXVmh7fpz4CX2H_mdv_8-bp28ZOwFn2iAUHYa_jTOXgbiYsQN28OoBUZPpS_wDTGGkpvQEn1DGstV6VAwrmVKD1B2kA3nox5cM_ay5HLIWNQoE-y3-3XnMsr1nxA6jP4XgVgX7Dq1IQvHF_qj_Ww" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
 
-11. Log in as a VVB and, after reviewing the monitoring report, the VVB verifies it.
+9. Log back in as the SR and after reviewing the document by selecting the “View Document” button, the SR can validate the project submitted by the Project Participant by clicking the “Validate” button. If the data does not satisfy the rules set by the SR, then the “Reject” button can be used.
 
-<figure><img src="https://lh7-us.googleusercontent.com/G2gobI1yw7daHLDiT8_cIqd6gpSikOfyccPOmtWOHkNOLcVhI6wLYIo4qMTBmbV8iUvLZWg3VbG7cNSwwrglG6Xl4zG62usMG_8x4YJtGzakZrhc49WlfIihMYxPXVBAP5PXufU_jBQ4mM5eovgojUm99GdXqEWbewYMLDy2ymJbwPTf8A5C_St9KLRf2Q" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
 
-12. Login as SR and once it is reviewed, SR approves the Monitoring report.
+<figure><img src="../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/DbwKg3FPYvdY4Vs7jFn7hWK1ofLtSYwi0ICyix77Iuk2bSg-TSh-tXMw5RRO9yjiJ9Df1E-N7pPLPEOrrERtUZOQjruP60eBHXqY9o8aLWLwzrzmlGbIOktZod90J8mkZScZSIKSoHTAQWCJ0Aq0q7upb6h8bzo8ojFsPEaWsCzDMEbETSQdLbhwFj4qkA" alt=""><figcaption></figcaption></figure>
+10. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
 
-13\. Once minting is completed, we can view tokens in VPs  tab.
+<figure><img src="../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/rLGjmWqMQ4mA9Nzoh2d8FwWEu1pZatfeits243pd_9fJMfntsE8n1aBAYd1-A9c5cPmCP1hVPVK9bmDvv_QdCdQpTdspWRLSHoL-f2GKBQGVq9bvnZ_GvVB-pIP2fRjY6Pm_aWPsAIl5l6DRCb20Xabfo19zy_x2TJJx2I9lXezLLURzZnyqG1zv62lwoA" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
 
-14\. TrustChain can also be viewed by clicking on View “TrustChain” button.
+<figure><img src="../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="https://lh7-us.googleusercontent.com/f5Y1xDPhg1pC50A6YrOgHPML-UQ2cbOM1myiYBAFKqy62irnE1fMZI8iO4ZKMAcyYej1HyzRmLl_V7qojBSOJRLb8zhMHmE8D4TVta2tnnoRRf9tU9Mwrai5aWpzGDxfYkCj5XvUEM_X5GnK5ezQbif-V2Q6HKb5Xtk-YLV8dIXXjhBppuQXmlPxKLdXqQ" alt=""><figcaption></figcaption></figure>
+11. After creating the monitoring report, the project participant assigns the VVB to verify it by navigating to the “Monitoring Reports” tab and selecting the dropdown under “Assign”.
+
+<figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
+
+12. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Participant. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
+
+<figure><img src="../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+
+13. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”. This will also trigger the minting process. You can see the minting status under “Status” change from “Minting” to “Minted”.
+
+<figure><img src="../../../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
+
+14. Once the minting process is completed, you can view the token amount by selecting the “Token History” tab.
+
+<figure><img src="../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
+
+15. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1/47191” when the tokens are still minting like the example provided below.
+
+<figure><img src="../../../.gitbook/assets/image (26).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (27).png" alt=""><figcaption></figcaption></figure>

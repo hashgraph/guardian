@@ -14,7 +14,7 @@ This block allows to manage group membership, add and remove users from the grou
 | Can Invite       | specifies who can create invites                                                  | <p>· Group Owner – only the creator of the group</p><p>· All – all members of the group</p> |        |
 | Can Delete       | specifies who can remove users from the group                                     | <p>· Group Owner – only the creator of the group</p><p>. All – all members of the group</p> |        |
 
-<figure><img src="../../../../../.gitbook/assets/image (23) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (23) (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Usage
 
