@@ -1,6 +1,6 @@
 # 🏨 CDM AMS II.G: Energy Efficiency Measures in Thermal Applications of Non-Renewable Biomass
 
-## Table of Contents
+Table of Contents
 
 [Introduction](cdm-ams-ii.g.md#\_toc975016542)
 
@@ -79,98 +79,82 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step by Step <a href="#toc619173481" id="toc619173481"></a>
 
-1. The policy can be imported using IPFS timestamp 1698751171.908275443
+1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 
-![](<../../../.gitbook/assets/1 (2).png>)
+<figure><img src="../../../.gitbook/assets/image (478).png" alt=""><figcaption></figcaption></figure>
 
-2. Select “Import”.
+<figure><img src="../../../.gitbook/assets/image (479).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/2 (4).png>)
+<figure><img src="../../../.gitbook/assets/image (480).png" alt=""><figcaption></figcaption></figure>
 
-3. Place status in “Dry Run” and select “Go”.
+2. To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” button.
 
-![](<../../../.gitbook/assets/3 (2).png>)
+<figure><img src="../../../.gitbook/assets/image (481).png" alt=""><figcaption></figcaption></figure>
 
-4. By selecting the edit button in the operations tab, you can access the policy configurator and view the workflow blocks.
+<figure><img src="../../../.gitbook/assets/image (482).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/4 (3).png>)
+3. Create a new user by clicking the “Create User” button and assign their role as Project Participant.
 
-5. You can access and view the module by selecting the module tab in the policy configurator.
+<figure><img src="../../../.gitbook/assets/image (483).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/5 (2).png>)
+4. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
 
-6. Going back to the policy workflow, add users by selecting the “create user” button. Then select the dropdown user menu and select “Virtual User 1”.
+<figure><img src="../../../.gitbook/assets/image (484).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/6 (2).png>)
+5. Сreate a new user again and assign their role as VVB.
 
-7. Virtual User 1 will be assigned to the Project\_Proponent
+<figure><img src="../../../.gitbook/assets/image (485).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/7 (2) (3).png>)
+6. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
 
-8. Virtual User 2 will be assigned to the VVB
+<figure><img src="../../../.gitbook/assets/image (486).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/8 (8).png>)
+7. Log in as the SR and select the “Approve PP” or the “Approve VVB” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
 
-9. Add the VVBs name
+<figure><img src="../../../.gitbook/assets/image (487).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/9 (7).png>)
+<figure><img src="../../../.gitbook/assets/image (488).png" alt=""><figcaption></figcaption></figure>
 
-10. The final role that will be assigned to Virtual User 3 is the Designated National Authority
+8. Log in as the Project Participant and create a new project by clicking on the "New Project" button. This form is used to collect information about the project, organization, and all the data needed to run the emission reduction calculations. Once all the required fields have been filled the “Create” button will turn dark blue. By selecting the “Create” button all the data will be sent to the SR for review/approval.
 
-![](<../../../.gitbook/assets/10 (3).png>)
+<figure><img src="../../../.gitbook/assets/image (489).png" alt=""><figcaption></figcaption></figure>
 
-11. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
+<figure><img src="../../../.gitbook/assets/image (490).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/11 (1) (1) (1).png>)
+9. Log back in as the SR and after reviewing the document by selecting the “View Document” button, the SR can validate the project submitted by the Project Participant by clicking the “Validate” button. If the data does not satisfy the rules set by the SR, then the “Reject” button can be used.
 
-12. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.
+<figure><img src="../../../.gitbook/assets/image (491).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/12 (1) (1).png>)
+<figure><img src="../../../.gitbook/assets/image (492).png" alt=""><figcaption></figcaption></figure>
 
-13. Go to the Administrator’s (Standard Registry) profile. The Standard Registry can now approve the VVB.
+10. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
 
-![](<../../../.gitbook/assets/13 (6).png>)
+<figure><img src="../../../.gitbook/assets/image (493).png" alt=""><figcaption></figcaption></figure>
 
-14. Stay on the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
+<figure><img src="../../../.gitbook/assets/image (494).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/14 (1) (1).png>)
+11. After creating the monitoring report, the project participant assigns the VVB to verify it by navigating to the “Monitoring Reports” tab and selecting the dropdown under “Assign”.
 
-15. Navigate back to Virtual User 1’s (Project Proponent) profile and assign the VVB.
+<figure><img src="../../../.gitbook/assets/image (495).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/15 (1) (1).png>)
+12. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Participant. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
 
-16. Go to the Virtual User 2’s (VVB) profile. The VVB has access to the project form by selecting “View Document”. Then the VVB can select Verify or Reject.
+<figure><img src="../../../.gitbook/assets/image (496).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/16 (1) (1).png>)
+<figure><img src="../../../.gitbook/assets/image (497).png" alt=""><figcaption></figcaption></figure>
 
-17. Navigate back to the Administrator and select Add.
+13. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”. This will also trigger the minting process. You can see the minting status under “Status” change from “Minting” to “Minted”.
 
-![](<../../../.gitbook/assets/17 (1) (1).png>)
+<figure><img src="../../../.gitbook/assets/image (498).png" alt=""><figcaption></figcaption></figure>
 
-18. Navigate back to Virtual User 1’s (Project Proponent) profile and select “Add Report”.
+<figure><img src="../../../.gitbook/assets/image (499).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/18 (5).png>)
+14. Once the minting process is completed, you can view the token amount by selecting the “Token History” tab.
 
-19. Go to the Virtual User 2’s (VVB) profile. The VVB has access to the monitoring report form by selecting “View Document”. Then the VVB can select Verify or Reject.
+<figure><img src="../../../.gitbook/assets/image (500).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/19 (1).png>)
+15. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1/83152” when the tokens are still minting like the example provided below.
 
-20. Navigate back to the Administrator’s profile and select the “Mint” button.
+<figure><img src="../../../.gitbook/assets/image (501).png" alt=""><figcaption></figcaption></figure>
 
-![](<../../../.gitbook/assets/20 (3) (1).png>)
-
-21. The status should now say “Minted”.
-
-<figure><img src="../../../.gitbook/assets/image (195).png" alt=""><figcaption></figcaption></figure>
-
-22. By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”
-
-<figure><img src="../../../.gitbook/assets/image (1) (2).png" alt=""><figcaption></figcaption></figure>
-
-23. The Verifiable Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc.
-
-<figure><img src="../../../.gitbook/assets/image (2) (8).png" alt=""><figcaption></figcaption></figure>
-
-24. By scrolling to the bottom of the page you can view the TrustChain.
-
-<figure><img src="../../../.gitbook/assets/image (3) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (502).png" alt=""><figcaption></figcaption></figure>
