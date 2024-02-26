@@ -420,6 +420,7 @@
 * [🤵 Users](guardian/users/README.md)
   * [🛠️ User Operations](guardian/users/user-operations/README.md)
     * [⚙️ Account APIs](guardian/users/user-operations/account-apis/README.md)
+      * [Authentication Process](guardian/users/user-operations/account-apis/authentication-process.md)
       * [User listing except Standard Registry and Auditor](guardian/users/user-operations/account-apis/user-listing-except-root-authority-and-auditor.md)
       * [User Balance](guardian/users/user-operations/account-apis/user-balance.md)
       * [User Session](guardian/users/user-operations/account-apis/user-session.md)
