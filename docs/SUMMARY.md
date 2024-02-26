@@ -338,6 +338,7 @@
     * [💻 Bring your own (BYO) DIDs UI](guardian/standard-registry/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
     * [⚙️ APIs](guardian/standard-registry/bring-your-own-dids/apis/README.md)
       * [Validate DID Format](guardian/standard-registry/bring-your-own-dids/apis/validate-did-format.md)
+      * [Validate DID Keys](guardian/standard-registry/bring-your-own-dids/apis/validate-did-keys.md)
   * [📁 Import/Export in Excel](guardian/standard-registry/import-export-in-excel/README.md)
     * [💻 Import and Export Excel file User Guide](guardian/standard-registry/import-export-in-excel/import-and-export-excel-file-user-guide.md)
     * [⚙️ Import/Export Schemas/Policies APIs](guardian/standard-registry/import-export-in-excel/import-export-schemas-policies-apis/README.md)
