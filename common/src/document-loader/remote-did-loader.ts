@@ -1,25 +1,11 @@
 import { DidURL, DocumentLoader, HederaDid, IDocumentFormat } from '../hedera-modules';
-import { DataBaseHelper, IPFS, Workers } from '../helpers';
-import { DidDocument } from '../entity';
+import { IPFS, Workers } from '../helpers';
 import { WorkerTaskType } from '@guardian/interfaces';
 
 /**
- * Hedera loader
+ * Remote DID Document loader
  */
-export class HederaLoader extends DocumentLoader {
-    /**
-     * Has context
-     * @param iri
-     */
-    public async has(iri: string): Promise<boolean> {
-        if (!iri.startsWith('did:hedera:')) {
-            return false;
-        }
-        const document = await this.getDocument(iri);
-        return !document;
-
-    }
-
+export class RemoteDidLoader extends DocumentLoader {
     /**
      * Get formatted document
      * @param iri
@@ -59,18 +45,5 @@ export class HederaLoader extends DocumentLoader {
             documentUrl: iri,
             document: didDocument
         };
-    }
-
-    /**
-     * Get document
-     * @param iri
-     */
-    public async getDocument(iri: string): Promise<any> {
-        const did = DidURL.getController(iri);
-        const didDocuments = await new DataBaseHelper(DidDocument).findOne({ did });
-        if (didDocuments) {
-            return didDocuments.document;
-        }
-        return false;
     }
 }

@@ -11,11 +11,15 @@ import {
     VerificationMethod,
 } from '../hedera-modules';
 import {
-    SchemaDocumentLoader,
-    VCSchemaLoader,
-    SubjectSchemaLoader,
-    DIDDocumentLoader,
-    ContextDocumentLoader, DryRunLoader, HederaLoader,
+    DraftSchemaContextLoader,
+    LocalVcSchemaDocumentLoader,
+    LocalSchemaDocumentLoader,
+    LocalDidLoader,
+    LocalSchemaContextLoader,
+    DraftDidLoader,
+    RemoteDidLoader,
+    DraftVcSchemaDocumentLoader,
+    DraftSchemaDocumentLoader,
 } from '../document-loader';
 import {
     Schema,
@@ -49,26 +53,45 @@ import bs58 from 'bs58';
 export class VcHelper extends VCJS {
     constructor() {
         super();
+        //Documents
+        //Load default context
         const defaultDocumentLoader = new DefaultDocumentLoader();
-        const dryRunLoader = new DryRunLoader();
-        const didDocumentLoader = new DIDDocumentLoader();
-        const hederaLoader = new HederaLoader();
-        const schemaDocumentLoader = new SchemaDocumentLoader();
-        const contextDocumentLoader = new ContextDocumentLoader('');
+        //Load dry-run DID
+        const draftDidLoader = new DraftDidLoader();
+        //Load local DID
+        const localDidLoader = new LocalDidLoader(['did:']);
+        //Load remote DID (only Hedera)
+        const remoteDidLoader = new RemoteDidLoader(['did:hedera:']);
+        //Load dry-run context
+        const draftSchemaContextLoader = new DraftSchemaContextLoader(['schema#', 'schema:']);
+        //Load local context
+        const localSchemaContextLoader = new LocalSchemaContextLoader();
 
-        const vcSchemaObjectLoader = new VCSchemaLoader('');
-        const subjectSchemaObjectLoader = new SubjectSchemaLoader('');
+        //Schemas
+        //Load dry-run schema
+        const draftVcSchemaDocumentLoader = new DraftVcSchemaDocumentLoader(['schema#', 'schema:']);
+        //Load local schema (VC)
+        const localVcSchemaDocumentLoader = new LocalVcSchemaDocumentLoader();
+        //Load dry-run schema (subject)
+        const draftSubjectSchemaDocumentLoader = new DraftSchemaDocumentLoader(['schema#', 'schema:']);
+        //Load local schema (subject)
+        const localSubjectSchemaDocumentLoader = new LocalSchemaDocumentLoader();
 
+        //Documents
         this.addDocumentLoader(defaultDocumentLoader);
-        this.addDocumentLoader(dryRunLoader);
-        this.addDocumentLoader(hederaLoader);
-        this.addDocumentLoader(didDocumentLoader);
-        this.addDocumentLoader(schemaDocumentLoader);
-        this.addDocumentLoader(contextDocumentLoader);
+        this.addDocumentLoader(draftDidLoader);
+        this.addDocumentLoader(localDidLoader);
+        this.addDocumentLoader(remoteDidLoader);
+        this.addDocumentLoader(draftSchemaContextLoader);
+        this.addDocumentLoader(localSchemaContextLoader);
 
-        this.addSchemaLoader(vcSchemaObjectLoader);
-        this.addSchemaLoader(subjectSchemaObjectLoader);
+        //Schemas
+        this.addSchemaLoader(draftVcSchemaDocumentLoader);
+        this.addSchemaLoader(localVcSchemaDocumentLoader);
+        this.addSchemaLoader(draftSubjectSchemaDocumentLoader);
+        this.addSchemaLoader(localSubjectSchemaDocumentLoader);
 
+        //Build
         this.buildDocumentLoader();
         this.buildSchemaLoader();
     }

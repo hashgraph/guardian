@@ -318,7 +318,7 @@ export class UserCredentials {
                 await ref.databaseServer.setVirtualKey(walletToken, id, key);
             } else {
                 const wallet = new Wallet();
-                await wallet.setUserKey(walletToken, KeyType.KEY, id, key);
+                await wallet.setUserKey(walletToken, KeyType.DID_KEYS, id, key);
             }
         }
         await ref.databaseServer.saveDid(row);

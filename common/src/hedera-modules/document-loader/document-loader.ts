@@ -7,10 +7,43 @@ import { DocumentLoaderFunction } from './document-loader-function';
  */
 export abstract class DocumentLoader {
     /**
+     * Filters
+     */
+    protected filters: string[];
+
+    constructor(filters?: string | string[]) {
+        this.filters = [];
+        if (Array.isArray(filters)) {
+            for (const filter of filters) {
+                if (typeof filter === 'string') {
+                    this.filters.push(filter);
+                }
+            }
+        } else if (typeof filters === 'string') {
+            this.filters.push(filters);
+        }
+    }
+
+    /**
      * Has context
      * @param iri
      */
-    public abstract has(iri: string): Promise<boolean>;
+    public async has(iri: string): Promise<boolean> {
+        if (iri) {
+            if (this.filters.length) {
+                for (const filter of this.filters) {
+                    if (iri.startsWith(filter)) {
+                        return true;
+                    }
+                }
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Get document
