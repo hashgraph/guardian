@@ -6,9 +6,10 @@
 - Demo Video
 - Policy Workflow
 - Policy Guide
-  - Important Documents & Schemas
-  - Token (Carbon Credit)
-  - Step By Step
+- Available Roles
+- Important Documents & Schemas
+- Token (Carbon Credit)
+- Step By Step
 <!-- /TOC -->
 
 ## Introduction
@@ -31,20 +32,8 @@ In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. Th
 
 ## Policy Workflow
 
-The workflow for the AMS-III.AR policy involves four key roles to ensure transparency and accountability. 
-These roles are as follows:
+  ![image](https://github.com/hashgraph/guardian/assets/79293833/45ac9f42-7089-45c2-b35b-c35c1a104fb4)
 
-- Project Proponent - The project proponent is responsible for executing the emission reduction project. They develop and implement strategies to substitute fossil fuel-based lighting systems with LED/CFL lighting systems. The project proponent must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives certified emission reduction (CER) tokens as an incentive for their emission
-reductions.
-
-- Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
-  
-- Designated National Authority (DNA) - The DNA is a governmental body representing the country where the emission reduction project is being implemented. They review and approve the project's eligibility in accordance with national policies and regulations. The DNA's endorsement is essential for the project to proceed with the AMS-III.AR policy.
-  
-- Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
-
-
-<img width="1128" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/5adac491-8135-416c-b490-13d315ad3200">
 
 ## Policy Guide
 
@@ -56,36 +45,21 @@ Tool 33: 1690820529.197570717
 
 ### Available Roles 
  
-  - Project Proponent - Project developer who proposes and executes cookstove project and receives credits(VER)
-  - VVB(Validation & Verification Body) - Independent third party who audits project's critical documentation and monitoring reports
-  - Gold Standard(GS) - GS is the trusted registry overseeing the entire project cycle and issuing the credits(VER)
+  - Project Proponent - The project participant is responsible for executing the emission reduction project. They develop and implement strategies to substitute fossil fuel-based lighting systems with LED/CFL lighting systems. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
+    
+  - VVB(Validation & Verification Body) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.  
+    
+  - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.  )
   
 ### Important Documents & Schemas 
   
-**Project Description** - Project Proponent information, standard project information, methodology information, etc.
-
-**Baseline Emissions** – Baseline emission calculation that automatically occurs without the need for a form.
-
-**Default Values (Tool 33)** - Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like emission factors for diesel generator systems.
-
-**Minimum Requirements for the Design Specifications of Project Lamps** – This schema is included in the policy as a form within the project information form, fields are included to collect the following information about the project:
-
-- Lamp wattage (in Watts) and luminous flux output (in lumens)
-- Rated lamp life (in hours)
-- Where applicable, the type and rated capacity of the renewable energy equipment used for battery-charging (in Watts)
-- Type (e.g. NiMH, Lead-Acid, Li-ion, Lithium-iron-phosphate, etc.), nominal voltage, and rated capacity of the batteries (in Ampere hours)
-- Type of charge controller (e.g. active or passive)
-- Autonomous time and DBT
-- Solar Run Times(s) (SRT) for products with solar energy charging systems
-- Where applicable, the amount of time to fully charge the product using mechanical means or a centralized charging system (e.g. the national grid)
-- Physical protection against environmental factors (e.g. rain, heat, insect ingress)
-
-**Project Emissions** – Schema included within the project information form; this is filled out by the project proponent to calculate project emissions per project lamp.
-
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
-
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
-
+- Methodological Tool 07- Tool to calculate the emission factor for an electricity system
+- Methodological Tool 19- Demonstration of additionality of microscale project activities
+- Methodological Tool 21- Demonstration of additionality of small-scale project activities
+- Methodological Tool 33- Default values for common parameters
+- Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
+- Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
+- Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
   
 ### Token(Carbon credit) 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
