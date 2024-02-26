@@ -22,4 +22,4 @@ Schema Tree hierarchy can be downloaded by clicking on Download icon:
 
 ## 3. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=WU\_ntIM5SJA\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=1)
+[Youtube](https://youtu.be/8FxSSO0ttoQ?si=HjrV-8r\_zkHWQAWD\&t=100)
