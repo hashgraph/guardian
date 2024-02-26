@@ -135,4 +135,4 @@ Modules added or created in the policy are ‘instances’ of the module and can
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=YS0XgdnHWzc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=23\&t=387s)
+[Youtube](https://youtu.be/YS0XgdnHWzc?si=sOExP1gTuEzm0kZ\_\&t=131)

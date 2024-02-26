@@ -74,4 +74,4 @@ When a policy contains multiple groups, users have an option to switch between t
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=Gnwftf-WTOc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=35\&t=443s)
+[Youtube](https://youtu.be/yPQ\_iabLczs?si=vEbhhvl2DKKYEr6o\&t=115)

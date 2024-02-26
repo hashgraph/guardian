@@ -96,4 +96,4 @@ Next time, when the wizard is opened a dialog with the selector of wizard states
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=sJFfkQ49JnI\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=18\&t=1076s)
+[Youtube](https://youtu.be/sJFfkQ49JnI?si=yPEwfZBA2eWwIkwu\&t=130)

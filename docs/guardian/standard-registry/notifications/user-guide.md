@@ -37,4 +37,4 @@ Users can see old notifications by clicking on “”View all notifications”. 
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=e6U68FtEbG8\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=14\&t=306s)
+[Youtube](https://youtu.be/e6U68FtEbG8?si=V-6JkQHJtqhaOySF\&t=119)

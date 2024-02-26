@@ -1,5 +1,10 @@
 # 💻 Demo on Integrating external policies using UI
 
+1. [Step By Step Process](demo-on-integrating-external-policies-using-ui.md#id-1.-step-by-step-process)
+2. Demo Video
+
+## 1. Step By Step Process
+
 Here are the following steps to Integrate external policies as data sources:
 
 1. Need to enter topicId, for which needs to be integrated to the policy:
@@ -23,3 +28,7 @@ Here are the following steps to Integrate external policies as data sources:
 {% endhint %}
 
 <figure><img src="../../../.gitbook/assets/image (34) (1).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/sJFfkQ49JnI?si=EfEai3PrVenWg4ll\&t=567)
