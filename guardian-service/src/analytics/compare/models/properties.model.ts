@@ -81,6 +81,14 @@ export class PropertiesModel {
     }
 
     /**
+     * Convert class to object
+     * @public
+     */
+    public toObject(): any[] {
+        return this.list.map((p) => p.toObject());
+    }
+
+    /**
      * Create Properties object by JSON
      * @param properties - json
      * @public
