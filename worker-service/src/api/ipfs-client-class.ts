@@ -47,7 +47,8 @@ export class IpfsClientClass {
 
     constructor(
         w3sKey?: string,
-        w3sProof?: string
+        w3sProof?: string,
+        filebaseKey?: string
     ) {
         this.options.nodeAddress = process.env.IPFS_NODE_ADDRESS;
         if (w3sKey && w3sProof) {
@@ -55,6 +56,9 @@ export class IpfsClientClass {
                 key: w3sKey,
                 proof: w3sProof
             }
+        }
+        if (filebaseKey) {
+            this.options.filebase = filebaseKey
         }
     }
 
@@ -79,11 +83,11 @@ export class IpfsClientClass {
             }
 
             case IpfsProvider.FILEBASE: {
-                if (!this.options.token) {
+                if (!this.options.filebase) {
                     throw new Error('Filebase Bucket token is not set')
                 }
 
-                client = new FilebaseClient({token: this.options.token} as any)
+                client = new FilebaseClient({token: this.options.filebase} as any)
 
                 break;
             }
@@ -122,7 +126,7 @@ export class IpfsClientClass {
             }
 
             case IpfsProvider.FILEBASE: {
-                cid = await this.client.storeBlob(file)
+                cid = await this.client.storeBlob(new Blob([file]))
                 break;
             }
 

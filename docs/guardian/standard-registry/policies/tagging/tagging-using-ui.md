@@ -98,4 +98,4 @@ Any credentialed entity can create/remove a tag on any object at any point of ti
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=4-ZEpLBPCXc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=21\&t=556s)
+[Youtube](https://youtu.be/4-ZEpLBPCXc?si=uJtdu4EMFAP79rAL\&t=130)

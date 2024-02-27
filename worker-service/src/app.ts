@@ -49,18 +49,30 @@ Promise.all([
 
         let IPFS_STORAGE_KEY: string;
         let IPFS_STORAGE_PROOF: string;
+        let IPFS_STORAGE_API_KEY: string;
 
         const secretManager = SecretManager.New();
-        const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
-        if (!keyAndProof?.IPFS_STORAGE_API_KEY) {
-            IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
-            IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
-            await secretManager.setSecrets('apikey/ipfs', {IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}`});
-        } else {
-            console.log(keyAndProof);
-            const [key, proof] = keyAndProof.IPFS_STORAGE_API_KEY.split(';')
-            IPFS_STORAGE_KEY = key;
-            IPFS_STORAGE_PROOF = proof;
+        if (process.env.IPFS_PROVIDER === 'web3storage') {
+            const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
+            if (!keyAndProof?.IPFS_STORAGE_API_KEY) {
+                IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
+                IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
+                await secretManager.setSecrets('apikey/ipfs', {IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}`});
+            } else {
+                const [key, proof] = keyAndProof.IPFS_STORAGE_API_KEY.split(';')
+                IPFS_STORAGE_KEY = key;
+                IPFS_STORAGE_PROOF = proof;
+            }
+        }
+
+        if (process.env.IPFS_PROVIDER === 'filebase') {
+            const key = await secretManager.getSecrets('apikey/ipfs');
+            if (!key?.IPFS_STORAGE_API_KEY) {
+                IPFS_STORAGE_API_KEY = process.env.IPFS_STORAGE_API_KEY;
+                await secretManager.setSecrets('apikey/ipfs', {IPFS_STORAGE_API_KEY});
+            } else {
+                IPFS_STORAGE_API_KEY = key.IPFS_STORAGE_API_KEY;
+            }
         }
 
         HederaSDKHelper.setTransactionLogSender(async (data) => {
@@ -68,14 +80,9 @@ Promise.all([
         });
 
         await state.updateState(ApplicationStates.INITIALIZING);
-        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF);
+        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF, IPFS_STORAGE_API_KEY);
         await w.setConnection(cn).init();
 
-        if (process.env.IPFS_PROVIDER === 'filebase') {
-            if (!keyAndProof.IPFS_STORAGE_API_KEY) {
-                return false;
-            }
-        }
         if (process.env.IPFS_PROVIDER === 'local') {
             if (!process.env.IPFS_NODE_ADDRESS) {
                 return false

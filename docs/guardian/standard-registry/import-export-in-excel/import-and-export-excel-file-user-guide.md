@@ -7,7 +7,7 @@ In Guardian schemas usually exist within a Policy, a Tool or embedded into anoth
 When schemas are exported, they are packaged into a single Excel file formatted like the template mentioned above. It is recommended to experiment with exporting your existing policies and reviewing the resulting excel files so you can familiarize yourself with the format and the content.
 
 1. [Step By Step Process](import-and-export-excel-file-user-guide.md#id-1.-step-by-step-process)
-2. Demo Video
+2. [Demo Video](import-and-export-excel-file-user-guide.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 
@@ -217,4 +217,4 @@ If Guardian was unable to parse the expression for any reason the following erro
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=o-4NHLREyBo\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=14)
+[Youtube](https://www.youtube.com/watch?v=o-4NHLREyBo\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=14\&t=1s)

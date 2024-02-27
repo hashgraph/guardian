@@ -149,4 +149,4 @@ Explainer drop-down button is highlighted as shown below:
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=4-ZEpLBPCXc\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=21\&t=556s)
+[Youtube](https://youtu.be/4-ZEpLBPCXc?si=oiBPcftvZbCKus2V\&t=364)
