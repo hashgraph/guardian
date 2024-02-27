@@ -83,7 +83,7 @@ export class IpfsClientClass {
             }
 
             case IpfsProvider.FILEBASE: {
-                if (!this.options.token) {
+                if (!this.options.filebase) {
                     throw new Error('Filebase Bucket token is not set')
                 }
 
