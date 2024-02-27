@@ -98,12 +98,14 @@ export class Worker extends NatsService {
 
     constructor(
         private w3cKey: string,
-        private w3cProof: string
+        private w3cProof: string,
+        private filebaseKey: string
     ) {
         super();
         this.ipfsClient = new IpfsClientClass(
             this.w3cKey,
-            this.w3cProof
+            this.w3cProof,
+            this.filebaseKey
         );
         this.logger = new Logger();
 
