@@ -126,7 +126,7 @@ export class IpfsClientClass {
             }
 
             case IpfsProvider.FILEBASE: {
-                cid = await this.client.storeBlob([file])
+                cid = await this.client.storeBlob(new Blob([file]))
                 break;
             }
 
