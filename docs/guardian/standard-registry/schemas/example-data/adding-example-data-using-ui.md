@@ -6,7 +6,7 @@
 
 Once you click on the above button, you will be able to fill all schema fields with sample values:
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. **Preview** – shows a preview of how users will see the policy form during the execution of the policy
 

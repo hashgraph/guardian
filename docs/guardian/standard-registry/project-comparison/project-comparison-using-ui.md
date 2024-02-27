@@ -9,7 +9,7 @@
 
 Project Schemas are predefined templates used to create VC documents. These schemas are selected for a specific policy and serve as the structural basis for generating project data.
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 In the current schema setup, specific ‘property fields’ are explicitly designated for the comparison process. These fields play a crucial role in evaluating and contrasting different projects.
 
