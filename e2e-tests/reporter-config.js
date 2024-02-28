@@ -1,6 +1,6 @@
 module.exports = {
-    "reporterEnabled": "mochawesome, mocha-junit-reporter",
-    "mochawesomeReporterOptions": {
+    "reporterEnabled": "cypress-mochawesome-reporter, mocha-junit-reporter",
+    "cypressMochawesomeReporterReporterOptions": {
         "reportDir": `cypress/reports/html/.jsons`
     },
     "mochaJunitReporterReporterOptions": {

@@ -9,7 +9,7 @@ context("Demo", { tags: '@demo' }, () => {
             url: API.ApiServer + API.RandomKey,
             headers: {authorization },
         }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.ACCEPTED);
+            expect(resp.status).eql(STATUS_CODE.OK);
             expect(resp.body).to.have.property("taskId");
         });
     });

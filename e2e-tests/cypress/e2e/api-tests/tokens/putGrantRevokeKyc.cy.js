@@ -4,7 +4,6 @@ import API from "../../../support/ApiUrls";
 context("Tokens", { tags: "@tokens" }, () => {
     const authorization = Cypress.env("authorization");
     const user = "Installer";
-    let tokenId
 
     it("sets the KYC flag for the user", () => {
         //grant kyc
@@ -16,6 +15,7 @@ context("Tokens", { tags: "@tokens" }, () => {
             },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
+            let tokenId = resp.body.at(-1).tokenId
             cy.request({
                 method: METHOD.PUT,
                 url:
@@ -30,13 +30,10 @@ context("Tokens", { tags: "@tokens" }, () => {
                 },
             }).then((resp) => {
                 expect(resp.status).eql(STATUS_CODE.OK);
-
                 let token = resp.body.tokenId;
                 let kyc = resp.body.kyc;
-
                 expect(token).to.deep.equal(tokenId);
                 expect(kyc).to.be.true;
-
                 cy.request({
                     method: METHOD.PUT,
                     url:
@@ -51,10 +48,8 @@ context("Tokens", { tags: "@tokens" }, () => {
                     },
                 }).then((resp) => {
                     expect(resp.status).eql(STATUS_CODE.OK);
-
                     let token = resp.body.tokenId;
                     let kyc = resp.body.kyc;
-
                     expect(token).to.deep.equal(tokenId);
                     expect(kyc).to.be.false;
                 });

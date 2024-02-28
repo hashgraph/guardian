@@ -18,7 +18,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
                 expect(firstPolicyStatus).to.equal('DRAFT')
                 cy.request({
                     method: 'PUT',
-                    url: API.ApiServer + 'policies/push/' + firstPolicyId + '/publish',
+                    url: API.ApiServer + 'policies/' + firstPolicyId + '/publish',
                     body: {policyVersion: "1.2.5"},
                     headers: {authorization},
                     timeout: 600000
@@ -69,6 +69,13 @@ context("Tokens",{ tags: '@tokens' }, () => {
                     cy.request({
                         method: 'PUT',
                         url: API.ApiServer + 'tokens/' + tokenId + '/dissociate',
+                        headers: {
+                            authorization: accessToken
+                        }
+                    })
+                    cy.request({
+                        method: 'PUT',
+                        url: API.ApiServer + 'tokens/' + tokenId + '/associate',
                         headers: {
                             authorization: accessToken
                         }
