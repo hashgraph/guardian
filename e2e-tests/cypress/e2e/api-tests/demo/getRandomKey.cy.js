@@ -10,7 +10,8 @@ context("Demo", { tags: '@demo' }, () => {
             headers: {authorization },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).to.have.property("taskId");
+            expect(resp.body).to.have.property("id");
+            expect(resp.body).to.have.property("key");
         });
     });
 });
