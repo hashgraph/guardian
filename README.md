@@ -205,8 +205,8 @@ The private key (starting with `Mg...`) is the value to be used in the environme
 
 To summarise, the process of configuring delegated access to the w3up API consists of execution the following command sequence:
 1. `w3 login`
-2. `w3 create space`
-3. `w3 use space`
+2. `w3 space create`
+3. `w3 space use`
 4. `npx ucan-key ed`
 5. `w3 delegation`
 
