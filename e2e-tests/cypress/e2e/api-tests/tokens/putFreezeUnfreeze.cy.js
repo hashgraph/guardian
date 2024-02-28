@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 context("Tokens", { tags: "@tokens" }, () => {
     const authorization = Cypress.env("authorization");
-    const user = Cypress.env("root_user");
+    const user = "Installer";
     let tokenId
 
     it("Freezes/Unfreezes transfers of the specified token for the user", () => {

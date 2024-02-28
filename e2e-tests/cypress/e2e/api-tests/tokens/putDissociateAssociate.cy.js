@@ -56,6 +56,8 @@ context("Tokens",{ tags: '@tokens' }, () => {
                         authorization: accessToken
                     }
                 }).then((response) => {
+                    console.log(response)
+                    cy.log(response)
                     let tokenId = response.body.at(-1).tokenId
                     cy.request({
                         method: 'PUT',

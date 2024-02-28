@@ -49,14 +49,14 @@ const API = {
     //ipfs
     IPFSFile: "ipfs/file",
     //Demo
-    RandomKey: "demo/push/random-key",
+    RandomKey: "demo/random-key",
     //Policies
     Policies: "policies/",
     PolicisImportMsg: "policies/import/message/",
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     //Artifacts
-    Artifacts: "artifacts/",
+        Artifacts: "artifacts/",
     Tags: "tags/",
 };
 export default API;

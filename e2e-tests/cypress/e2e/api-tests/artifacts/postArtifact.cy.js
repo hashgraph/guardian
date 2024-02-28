@@ -54,7 +54,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
         });
     });
 
-    it("check returns of all policies", () => {
+    it("upload artifact", () => {
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",

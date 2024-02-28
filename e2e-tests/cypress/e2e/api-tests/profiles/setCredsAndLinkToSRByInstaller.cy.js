@@ -36,22 +36,33 @@ context('Profiles', { tags: '@profiles' },() => {
                         authorization: accessToken
                     }
                 }).then((response) => {
+                    cy.log(response.body[0].did)
+                    cy.log(accessToken)
                     let SRDid = response.body[0].did
                     cy.request({
-                        method: 'PUT',
-                        url: API.ApiServer + 'profiles/' + username,
-                        body: {
-                            hederaAccountId: "0.0.2667351",
-                            hederaAccountKey: "3030020100300706052b8104000a04220420ba60bfa2abafe3e54644ba77a83d21890f58ac264d6231262105af93a376b88c",
-                            parent: SRDid
-                        },
-                        headers: {
-                            authorization: accessToken
-                        },
-                        timeout: 180000
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.RandomKey,
+                        headers: {authorization},
+                    }).then((response) => {
+                        let hederaAccountId = response.body.id
+                        cy.log(response)
+                        let hederaAccountKey = response.body.key
+                        cy.log(response)
+                        cy.request({
+                            method: 'PUT',
+                            url: API.ApiServer + 'profiles/' + username,
+                            body: {
+                                hederaAccountId: hederaAccountId,
+                                hederaAccountKey: hederaAccountKey,
+                                parent: SRDid
+                            },
+                            headers: {
+                                authorization: accessToken
+                            },
+                            timeout: 180000
+                        })
                     })
                 })
-
             })
         })
     })

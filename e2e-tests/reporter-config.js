@@ -1,5 +1,3 @@
-const locale = process.env.SITE_LOCALE;
-
 module.exports = {
     "reporterEnabled": "mochawesome, mocha-junit-reporter",
     "mochawesomeReporterOptions": {

@@ -43,19 +43,4 @@ context("Accounts",  { tags: '@accounts' },() => {
             expect(resp.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
-
-    //Old test
-    //     // TODO:
-//     // Negative scenario to get accounts as non RootAuthority
-//     it("get all users as a StandardRegistry", () => {
-//         cy.request({
-//             method: METHOD.GET,
-//             url: API.ApiServer + API.RootAuthorities,
-//             headers: {
-//                 authorization,
-//             },
-//         }).then((resp) => {
-//             expect(resp.status).eql(STATUS_CODE.OK);
-//         });
-//     });
 });
