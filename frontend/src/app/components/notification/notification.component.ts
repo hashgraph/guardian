@@ -5,7 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { forkJoin, Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notify.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatMenu } from '@angular/material/menu';
+import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
     selector: 'app-notification',
@@ -22,6 +22,7 @@ export class NotificationComponent implements OnInit {
     @Input() menuCollapsed: boolean;
 
     @ViewChild('notificationMenu') notificationMenu: MatMenu;
+    @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;
 
     viewDetails($event: MouseEvent, notification: any) {
         if (!notification.action) {
@@ -231,12 +232,15 @@ export class NotificationComponent implements OnInit {
 
     onMenuOpened($event: MouseEvent) {
         $event.stopPropagation();
-        if (this.menuCollapsed) {
-            $event.stopImmediatePropagation();
-            this.router.navigate(['notifications']);
-            return;
-        }
+        $event.stopImmediatePropagation();
         this.menuOpened = true;
+        this.trigger.openMenu();
+
+        // if (this.menuCollapsed) {
+        //     $event.stopImmediatePropagation();
+        //     this.router.navigate(['notifications']);
+        //     return;
+        // }
         //this.readFirstNotification();
     }
 

@@ -116,4 +116,4 @@ Tools can be added to the Policy similarly to Module and/or Blocks.
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=L0L0Kd7vkkU\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=9\&t=265s)
+[Youtube](https://youtu.be/L0L0Kd7vkkU?si=4oB\_YnRq7cOV4BMR\&t=110)

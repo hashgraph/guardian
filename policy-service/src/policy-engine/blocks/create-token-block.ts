@@ -159,7 +159,7 @@ export class CreateTokenBlock {
 
         try {
             this.changeActive(user, false);
-            const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+            const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 
             if (
                 !this.state.hasOwnProperty(user.id) ||
@@ -197,15 +197,16 @@ export class CreateTokenBlock {
             const createdToken = await PolicyUtils.createTokenByTemplate(
                 ref,
                 Object.assign(data, tokenTemplate),
-                root
+                policyOwnerCred
             );
             // #endregion
 
             // #region Send new token to hedera
+            const hederaCred = await policyOwnerCred.loadHederaCredentials(ref);
             const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
             const messageServer = new MessageServer(
-                root.hederaAccountId,
-                root.hederaAccountKey,
+                hederaCred.hederaAccountId,
+                hederaCred.hederaAccountKey,
                 ref.dryRun
             ).setTopicObject(rootTopic);
             const tokenMessage = new TokenMessage(MessageAction.CreateToken);

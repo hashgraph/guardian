@@ -216,7 +216,7 @@ export class Schema implements ISchema {
             this.topicId = '';
             this.messageId = '';
             this.documentURL = '';
-            this.contextURL = '';
+            this.contextURL = `schema:${this.uuid}`;
             this.iri = '';
             this.errors = [];
         }

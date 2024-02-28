@@ -1062,6 +1062,6 @@ export class PoliciesComponent implements OnInit {
     }
 
     public getDiscontinuedTooltip(date: Date) {
-        return date ? `Discontinue date is ${date.toDateString()}` : '';
+        return date ? `Discontinue date is ${date.toLocaleString()}` : '';
     }
 }

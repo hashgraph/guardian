@@ -4,8 +4,8 @@ import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
@@ -72,18 +72,18 @@ export class TokenActionBlock {
             token = await ref.databaseServer.getToken(ref.options.tokenId);
         }
 
-        let account: IHederaAccount = null;
+        let account: IHederaCredentials = null;
         if (doc) {
             if (field) {
                 if (doc.accounts) {
                     account = {
-                        did: null,
                         hederaAccountId: doc.accounts[field],
                         hederaAccountKey: null
                     }
                 }
             } else {
-                account = await PolicyUtils.getHederaAccount(ref, doc.owner);
+                const user = await PolicyUtils.getUserCredentials(ref, doc.owner);
+                account = await user.loadHederaCredentials(ref);
             }
             if (ref.options.useTemplate) {
                 if (doc.tokens) {
@@ -98,8 +98,9 @@ export class TokenActionBlock {
 
         await PolicyUtils.checkAccountId(account);
 
-        const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        const associatedAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
+        const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const ownerCredentials = await policyOwner.loadHederaCredentials(ref);
+        const associatedAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, ownerCredentials);
 
         switch (ref.options.action) {
             case 'associate': {
@@ -120,7 +121,7 @@ export class TokenActionBlock {
             }
             case 'freeze': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].frozen === false) {
-                    await PolicyUtils.freeze(ref, token, account, policyOwner);
+                    await PolicyUtils.freeze(ref, token, account, ownerCredentials);
                 } else {
                     console.warn('Can not freeze token: token is not associated or it is frozen or it does not support freeze action', ref.policyId);
                 }
@@ -128,7 +129,7 @@ export class TokenActionBlock {
             }
             case 'unfreeze': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].frozen === true) {
-                    await PolicyUtils.unfreeze(ref, token, account, policyOwner);
+                    await PolicyUtils.unfreeze(ref, token, account, ownerCredentials);
                 } else {
                     console.warn('Can not unfreeze token: token is not associated or it is not frozen or it does not support unfreeze action', ref.policyId);
                 }
@@ -136,7 +137,7 @@ export class TokenActionBlock {
             }
             case 'grantKyc': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].kyc === false) {
-                    await PolicyUtils.grantKyc(ref, token, account, policyOwner);
+                    await PolicyUtils.grantKyc(ref, token, account, ownerCredentials);
                 } else if (associatedAccountInfo[token.tokenId]) {
                     console.warn('Can not grant kyc token: token is not associated or it is granted kyc or it does not support grant kyc action', ref.policyId);
                 }
@@ -144,7 +145,7 @@ export class TokenActionBlock {
             }
             case 'revokeKyc': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].kyc === true) {
-                    await PolicyUtils.revokeKyc(ref, token, account, policyOwner);
+                    await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials);
                 } else {
                     console.warn('Can not grant kyc token: token is not associated or it is revoked kyc or it does not support revoke kyc action', ref.policyId);
                 }

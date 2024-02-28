@@ -264,4 +264,20 @@ export class SchemaModel {
         this._compareMap.set(schema.iri, 0);
         return 0;
     }
+
+    /**
+     * Convert class to object
+     * @public
+     */
+    public toObject(): any {
+        return {
+            id: this.id,
+            name: this.name,
+            uuid: this.uuid,
+            description: this.description,
+            topicId: this.topicId,
+            version: this.version,
+            iri: this.iri
+        };
+    }
 }

@@ -44,7 +44,10 @@ export class AnalyticsApi {
     @Get('/report')
     async getCurrentReport(@Req() req: any, @Response() res: any): Promise<any> {
         try {
-            const report = await ReportService.getCurrentReport();
+            const report = await ReportService.getCurrentReport(
+                ReportService.getRootTopic(),
+                ReportService.getRestartDate()
+            );
             return res.json(report);
         } catch (error) {
             throw error;
@@ -75,7 +78,10 @@ export class AnalyticsApi {
     @Get('/report/update')
     async updateReport(@Req() req: any, @Response() res: any): Promise<any> {
         try {
-            const result = await ReportService.run(process.env.INITIALIZATION_TOPIC_ID);
+            const result = await ReportService.run(
+                ReportService.getRootTopic(),
+                ReportService.getRestartDate()
+            );
             return res.json(result);
         } catch (error) {
             throw error;

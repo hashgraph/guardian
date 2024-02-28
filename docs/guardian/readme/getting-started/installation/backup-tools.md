@@ -1,4 +1,4 @@
-# Backup tools
+# 🔙 Backup tools
 
 To implement a backup and recovery strategy for installation data and transaction data in Hedera Guardian application here are the detailed guidelines/ steps to be followed:
 

@@ -4,7 +4,7 @@
 
 | Block Property   | Definition                                                                                      | Example Input                              | Status |
 | ---------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
-| type             | A type of the block which creates a form from the schema, and sends the document to the server. | **Create Token** Block (Can't be changed). |        |
+| type             | A type of the block which creates a form from the schema, and sends the document to the server. | **Create Token Block** (Can't be changed). |        |
 | tag              | Unique name for the logic block.                                                                | add\_new\_installer\_request.              |        |
 | permissions      | Which entity has rights to interact at this part of the workflow.                               | Standard Registry.                         |        |
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.               | Checked or unchecked.                      |        |

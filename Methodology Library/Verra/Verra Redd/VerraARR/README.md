@@ -21,4 +21,4 @@ Roles in the below Workflow Diagram are represented as follows : Project Propone
 
 | Version | IPFS Timestamp | Policy File Link | Version Differences |
 |---|---|---|---:|
-| VerraARR | 1698755139.718108003 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/Verra%20Redd/VerraARR/VerraARR.policy) | Verra ARR |
+| VerraARR | 1707209648.628432394 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/Verra%20Redd/VerraARR/VerraARR.policy) | Verra ARR |

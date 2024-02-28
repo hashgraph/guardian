@@ -1,4 +1,3 @@
-import { DIDDocument } from './../vcjs/did-document';
 import { Message } from './message';
 import { IURL } from './url.interface';
 import { MessageAction } from './message-action';
@@ -6,6 +5,7 @@ import { MessageType } from './message-type';
 import { DidMessageBody } from './message-body.interface';
 import { Hashing } from '../hashing';
 import { IPFS } from '../../helpers';
+import { CommonDidDocument } from '../vcjs';
 
 /**
  * DID message
@@ -18,7 +18,7 @@ export class DIDMessage extends Message {
     /**
      * DID document
      */
-    public didDocument: DIDDocument;
+    public didDocument: CommonDidDocument;
     /**
      * DID
      */
@@ -36,7 +36,7 @@ export class DIDMessage extends Message {
      * Set document
      * @param document
      */
-    public setDocument(document: DIDDocument): void {
+    public setDocument(document: CommonDidDocument): void {
         this.didDocument = document;
         this.document = document.getDocument();
         this.did = document.getDid();

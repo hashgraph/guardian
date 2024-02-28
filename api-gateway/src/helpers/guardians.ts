@@ -415,22 +415,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Create standard registry
-     * @param profile
-     */
-    public async createStandardRegistryProfile(profile: IUser): Promise<string> {
-        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE, profile);
-    }
-
-    /**
-     * Create user
-     * @param profile
-     */
-    public async createUserProfile(profile: IUser): Promise<string> {
-        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE, profile);
-    }
-
-    /**
      * Create user
      * @param username
      * @param profile
@@ -481,9 +465,8 @@ export class Guardians extends NatsService {
      * Get balance
      * @param username
      */
-    public async getBalance(username: string): Promise<string> {
-        const b = await this.sendMessage(MessageAPI.GET_BALANCE, { username });
-        return b as string;
+    public async getBalance(username: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_BALANCE, { username });
     }
 
     /**
@@ -2471,7 +2454,28 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW, { user, xlsx });
     }
 
+    /**
+     * Get template file by name
+     * @param filename
+     */
     public async getFileTemplate(filename: string): Promise<string> {
-        return await this.sendMessage(MessageAPI.GET_TEMPLATE, {filename});
+        return await this.sendMessage(MessageAPI.GET_TEMPLATE, { filename });
+    }
+
+    /**
+     * Validate DID document
+     * @param document
+     */
+    public async validateDidDocument(document: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.VALIDATE_DID_DOCUMENT, { document });
+    }
+
+    /**
+     * Validate DID document
+     * @param document
+     * @param keys
+     */
+    public async validateDidKeys(document: any, keys: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.VALIDATE_DID_KEY, { document, keys });
     }
 }

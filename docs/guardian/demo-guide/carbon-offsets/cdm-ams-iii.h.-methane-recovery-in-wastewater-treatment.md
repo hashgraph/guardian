@@ -6,12 +6,12 @@
 * [Need and Use for the AMS-III.H Policy](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#need-and-use-for-the-ams-iiih-policy)
 * [Policy Workflow](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#policy-workflow)
 * [Policy Guide](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#policy-guide)
-  * [Available Roles](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#available-roles)
-  * [Important Documents \\& Schemas](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#important-documents--schemas)
-  * [Token(Carbon Emissions Reduction)](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#tokencarbon-emissions-reduction)
-  * [Step By Step](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#step-by-step)
+* [Available Roles](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#available-roles)
+* [Important Documents \\& Schemas](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#important-documents--schemas)
+* [Token(Carbon Emissions Reduction)](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#tokencarbon-emissions-reduction)
+* [Step By Step](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#step-by-step)
 
-### Introduction <a href="#introduction" id="introduction"></a>
+## Introduction <a href="#introduction" id="introduction"></a>
 
 AMS-III.H methodology offers a concrete roadmap for methane recovery in wastewater treatment, thereby contributing significantly to the efforts towards sustainable water management and climate change mitigation. Developed under the Clean Development Mechanism (CDM), this methodology encourages the substitution of aerobic wastewater or sludge treatment systems with anaerobic systems with biogas recovery and combustion. It also provides guidelines for the introduction of anaerobic sludge treatment systems with biogas recovery and combustion to wastewater treatment plants that previously lacked sludge treatment.
 
@@ -21,7 +21,7 @@ AMS-III.H methodology is grounded in an integrated use of various methodological
 
 AMS-III.H brings to the forefront the environmental impact of traditional wastewater treatment practices. By adhering to this methodology, significant reductions in methane emissions can be achieved, leading to sustainable development and environmental preservation.
 
-### Need and Use for the AMS-III.H Policy <a href="#need-and-use-for-the-ams-iiih-policy" id="need-and-use-for-the-ams-iiih-policy"></a>
+## Need and Use for the AMS-III.H Policy <a href="#need-and-use-for-the-ams-iiih-policy" id="need-and-use-for-the-ams-iiih-policy"></a>
 
 Methane emissions from anaerobic wastewater treatment are a significant source of greenhouse gas emissions, especially in developing countries. Conventional treatment systems like anaerobic lagoons release methane generated during biological decomposition. AMS-III.H serves as a vital alternative, promoting a transition towards sustainable wastewater treatment practices through methane recovery and biogas utilization.
 
@@ -29,35 +29,99 @@ Wastewater treatment is a significant contributor to global methane emissions. A
 
 In the modern landscape of emission reduction initiatives, transparency and credibility are key. Guardian Platform, built on Hedera Hashgraph DLT, provides immutable and transparent record-keeping, enhancing the accountability of these initiatives. AMS-III.H, with its focus on sustainable wastewater treatment practices, enhances its environmental impact and underscores the role of innovative technology in driving a greener and more sustainable future.
 
-### Policy Workflow <a href="#policy-workflow" id="policy-workflow"></a>
+## Policy Workflow <a href="#policy-workflow" id="policy-workflow"></a>
 
 <figure><img src="../../../.gitbook/assets/image (376).png" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide <a href="#policy-guide" id="policy-guide"></a>
+## Policy Guide <a href="#policy-guide" id="policy-guide"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-#### Available Roles <a href="#available-roles" id="available-roles"></a>
+Policy Timestamp:&#x20;
+
+## Available Roles <a href="#available-roles" id="available-roles"></a>
 
 * Project participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
 * Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 * Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
-#### Important Documents & Schemas <a href="#important-documents--schemas" id="important-documents--schemas"></a>
+## Important Documents & Schemas <a href="#important-documents--schemas" id="important-documents--schemas"></a>
 
 * Project Description: Information on project participant, location, technology, configuration, crediting period etc.
 * Emission Reductions Calculations: Calculate & specify baseline emissions, project emissions and leakage as per methodology equations.
 * Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
 * Monitoring Report: Periodic monitoring report with data for parameters like methane captured, combusted etc.
 
-Tools referenced in this methodology:  - Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion\
-\- Tool 04- Emissions from solid waste disposal sites\
-\- Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation\
-\- Tool 06- Project emissions from flaring\
-\- Tool 32- Positive lists of technologies
+## Tools referenced in this methodology: 
 
-#### Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>
+* Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+* Tool 04- Emissions from solid waste disposal sites
+* Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+* Tool 06- Project emissions from flaring
+* Tool 32- Positive lists of technologies
+
+## Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
-#### Step By Step <a href="#step-by-step" id="step-by-step"></a>
+## Step By Step <a href="#step-by-step" id="step-by-step"></a>
+
+1.Login as Standard Registry and import the policy either by file or through IPFS timestamp.
+
+2.Create a new user and assign role as Project Proponent.
+
+<figure><img src="../../../.gitbook/assets/image (440).png" alt=""><figcaption></figcaption></figure>
+
+3\. Name new Project Participant.
+
+<figure><img src="../../../.gitbook/assets/image (441).png" alt=""><figcaption></figcaption></figure>
+
+4\. Сreate a new user and assign role as VVB.
+
+<figure><img src="../../../.gitbook/assets/image (442).png" alt=""><figcaption></figcaption></figure>
+
+5\. Name new VVB.
+
+<figure><img src="../../../.gitbook/assets/image (443).png" alt=""><figcaption></figcaption></figure>
+
+6.Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+
+<figure><img src="../../../.gitbook/assets/image (444).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (445).png" alt=""><figcaption></figcaption></figure>
+
+7.Once approved, login back as Project Participant and create new project by clicking on" New project" and entering complete details of the project:
+
+<figure><img src="../../../.gitbook/assets/image (446).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (447).png" alt=""><figcaption></figcaption></figure>
+
+8\. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+
+<figure><img src="../../../.gitbook/assets/image (448).png" alt=""><figcaption></figcaption></figure>
+
+9\.  Project Participant creates monitoring report by clicking on “Add Report” and fills out the monitoring report form”
+
+<figure><img src="../../../.gitbook/assets/image (449).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (450).png" alt=""><figcaption></figcaption></figure>
+
+10.After creating monitoring report, project participant assigns VVB to verify it:
+
+<figure><img src="../../../.gitbook/assets/image (451).png" alt=""><figcaption></figcaption></figure>
+
+11.Login as VVB and after reviewing the monitoring report, the VVB verifies it.
+
+<figure><img src="../../../.gitbook/assets/image (452).png" alt=""><figcaption></figcaption></figure>
+
+12.Login as SR and once it is reviewed, SR approves the Monitoring report.
+
+<figure><img src="../../../.gitbook/assets/image (453).png" alt=""><figcaption></figcaption></figure>
+
+13.Once minting is completed, we can view tokens in VPs  tab.
+
+<figure><img src="../../../.gitbook/assets/image (454).png" alt=""><figcaption></figcaption></figure>
+
+14.Trustchain can also be viewed by clicking on “View TrustChain” button.
+
+<figure><img src="../../../.gitbook/assets/image (455).png" alt=""><figcaption></figcaption></figure>

@@ -106,11 +106,18 @@ body {
     }
 
     .g-dialog-header {
-        padding: 22px 5px 0 22px;
+        // padding: 22px 5px 0 22px;
+        // margin-bottom: 5px;
         box-sizing: border-box;
-        margin-bottom: 5px;
         display: flex;
         user-select: none;
+        padding: 0px 5px 0 22px;
+        margin-bottom: 12px;
+
+        .mat-dialog-actions {
+            padding: 0px 0;
+            height: 52px;
+        }
 
         .g-dialog-cancel {
             height: 46px;

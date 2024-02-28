@@ -1,74 +1,74 @@
-# 🏭 CDM AMS III.BB
+# 🏭 CDM AMS III.BB: Electrification of Communities Through Grid Extension
 
 ## Table of Contents
 
-[Introduction](cdm-ams-iii.bb.md#\_toc146642039)
+[Introduction](cdm-ams-iii.bb.md#toc146642039)
 
-[Typical Projects](cdm-ams-iii.bb.md#\_toc146642040)
+[Typical Projects](cdm-ams-iii.bb.md#toc146642040)
 
-[Mitigation Action](cdm-ams-iii.bb.md#\_toc146642042)
+[Mitigation Action](cdm-ams-iii.bb.md#toc146642042)
 
-[Target Consumers](cdm-ams-iii.bb.md#\_toc146642662)
+[Target Consumers](cdm-ams-iii.bb.md#toc146642662)
 
-[Minimum Household Participation](cdm-ams-iii.bb.md#\_toc146642044)
+[Minimum Household Participation](cdm-ams-iii.bb.md#toc146642044)
 
-[Grid Transition](cdm-ams-iii.bb.md#\_toc146642045)
+[Grid Transition](cdm-ams-iii.bb.md#toc146642045)
 
-[Excluded Cases](cdm-ams-iii.bb.md#\_toc146642046)
+[Excluded Cases](cdm-ams-iii.bb.md#toc146642046)
 
-[Minimum Household Participation](cdm-ams-iii.bb.md#\_toc146642048)
+[Minimum Household Participation](cdm-ams-iii.bb.md#toc146642044)
 
-[Metering and Measurement](cdm-ams-iii.bb.md#\_toc146642049)
+[Metering and Measurement](cdm-ams-iii.bb.md#toc146642049)
 
-[Need and Use for the AMS-III.BB Policy](cdm-ams-iii.bb.md#\_toc146642050)
+[Need and Use for the AMS-III.BB Policy](cdm-ams-iii.bb.md#toc146642050)
 
-[Demo Video](cdm-ams-iii.bb.md#\_toc146642051)
+[Demo Video](cdm-ams-iii.bb.md#toc146642051)
 
-[Policy Workflow](cdm-ams-iii.bb.md#\_toc146642052)
+[Policy Workflow](cdm-ams-iii.bb.md#toc146642052)
 
-[Policy Guide](cdm-ams-iii.bb.md#\_toc146642053)
+[Policy Guide](cdm-ams-iii.bb.md#toc146642053)
 
-[Available Roles](cdm-ams-iii.bb.md#\_toc146642054)
+[Available Roles](cdm-ams-iii.bb.md#toc146642054)
 
-[Important Documents & Schemas](cdm-ams-iii.bb.md#\_toc146642055)
+[Important Documents & Schemas](cdm-ams-iii.bb.md#toc146642055)
 
-[Token (Carbon Emission Reduction)](cdm-ams-iii.bb.md#\_toc146642056)
+[Token (Carbon Emission Reduction)](cdm-ams-iii.bb.md#toc146642056)
 
-[Step by Step](cdm-ams-iii.bb.md#\_toc146642057)
+[Step by Step](cdm-ams-iii.bb.md#toc146642057)
 
-### Introduction <a href="#_toc146642039" id="_toc146642039"></a>
+### Introduction <a href="#toc146642039" id="toc146642039"></a>
 
 The AMS-III.BB methodology is a pivotal framework under the Clean Development Mechanism (CDM). This methodology focuses on projects that supply electricity to communities previously disconnected from national or regional grids and reliant on high-carbon-intensive mini-grids or stand-alone power generators. Additionally, it addresses the displacement of fossil fuel-based lighting systems, contributing to the reduction of greenhouse gas (GHG) emissions. In this document, we will go over the components of AMS-III.BB, exploring how it enables low-carbon-intensive grid and mini-grid electricity to displace high-carbon-intensive sources.
 
-### Typical Projects <a href="#_toc146642040" id="_toc146642040"></a>
+### Typical Projects <a href="#toc146642040" id="toc146642040"></a>
 
 AMS-III.BB is tailored for electrification endeavors that bring power to communities previously excluded from national or regional grids. These projects typically serve areas where high-carbon-intensive mini-grids or stand-alone generators were the primary sources of electricity. In some cases, fuel-based lighting systems were also in use before project implementation.
 
-### Mitigation Action <a href="#_toc146642042" id="_toc146642042"></a>
+### Mitigation Action <a href="#toc146642042" id="toc146642042"></a>
 
 A fundamental goal of AMS-III.BB is the displacement of high-carbon-intensive electricity or lighting services with low-carbon-intensive grid or mini-grid electricity. By facilitating this shift, the methodology plays a significant role in mitigating GHG emissions and advancing sustainability.
 
-### Target Consumers <a href="#_toc146642662" id="_toc146642662"></a>
+### Target Consumers <a href="#toc146642662" id="toc146642662"></a>
 
 AMS-III.BB projects have a broad reach, providing electricity to diverse consumer groups. These consumers include households, commercial facilities such as shops, public services, buildings, and small and medium-sized enterprises (SMMEs). The electricity generated can power a range of applications, from lighting to electrical appliances and even agricultural water pumps, thereby fostering economic development and improving quality of life.
 
-### Minimum Household Participation <a href="#_toc146642044" id="_toc146642044"></a>
+### Minimum Household Participation <a href="#toc146642044" id="toc146642044"></a>
 
 A requirement of AMS-III.BB is that at least 75 percent of the project consumers must be households. This ensures that a substantial portion of the community benefits from the electrification efforts, aligning with the goal of inclusive development.
 
-### Grid Transition <a href="#_toc146642045" id="_toc146642045"></a>
+### Grid Transition <a href="#toc146642045" id="toc146642045"></a>
 
 AMS-III.BB methodology is particularly relevant in situations where consumers were previously unconnected to national or regional grids. It also applies when a fraction of consumers previously reliant on carbon-intensive mini-grids transitions to a less carbon-intensive regional/national or mini-grid. In both cases, the methodology facilitates the transition toward cleaner and more sustainable energy sources.
 
-### Excluded Cases <a href="#_toc146642046" id="_toc146642046"></a>
+### Excluded Cases <a href="#toc146642046" id="toc146642046"></a>
 
 While AMS-III.BB embraces various electrification approaches, it excludes portable electricity generating systems. This exclusion helps maintain the methodology's focus on more comprehensive and sustainable electrification solutions.
 
-### Minimum Household Participation <a href="#_toc146642048" id="_toc146642048"></a>
+### Minimum Household Participation <a href="#toc146642048" id="toc146642048"></a>
 
 A fundamental requirement of AMS-III.BB is that at least 75 percent of the project consumers must be households. This ensures that a substantial portion of the community benefits from the electrification efforts, aligning with the goal of inclusive development.
 
-### Metering and Measurement <a href="#_toc146642049" id="_toc146642049"></a>
+### Metering and Measurement <a href="#toc146642049" id="toc146642049"></a>
 
 Effective metering and measurement are integral to AMS-III.BB projects. The methodology mandates metering of electricity consumption, particularly for Type I consumers expected to consume more than 1000 kWh per year. Prepaid devices for purchasing electricity are considered equivalent to traditional metering, ensuring accurate monitoring of energy consumption.
 
@@ -99,26 +99,26 @@ Key parameters play a vital role in the implementation and monitoring of AMS-III
 * Monitoring involves metering the total electricity delivered to consumers, with the option of using prepaid devices for this purpose.
 * Metering is essential for tracking electricity consumption among non-household end users (e.g., commercial consumers, small and medium-sized enterprises, public institutions, street lighting, and irrigation pumps) and household end-users projected to consume more than 1000 kWh per year.
 
-### Need and Use for the AMS-III.BB Policy <a href="#_toc146642050" id="_toc146642050"></a>
+### Need and Use for the AMS-III.BB Policy <a href="#toc146642050" id="toc146642050"></a>
 
 \
 The AMS-III.BB methodology plays a vital role in addressing the growing need for sustainable electrification in communities that lack access to reliable electricity. It provides a structured approach for projects aimed at extending the grid or constructing new mini grids to connect consumers who were previously off the grid. These initiatives aim to displace high-carbon-intensive electricity sources and fuel-based lighting systems, thus reducing greenhouse gas emissions and fostering economic development in underserved regions. To understand the significance of AMS-III.BB, it's essential to compare the merits and considerations of mini grids versus grid electricity.
 
 Mini-grids are localized power generation and distribution systems, often deployed in remote or rural areaswhere connecting to the national or regional grid is cost-prohibitive. They bring electricity to communities that were once reliant on high-carbon-intensive mini-grids or stand-alone power generators. While mini grids offer reliable electricity access and the potential to integrate renewable energy sources, they can be economically challenging to establish and may rely on fossil fuel generators. In contrast, grid electricity operates within large, interconnected networks, benefiting from economies of scale and efficient power transmission. Grids can access a diverse energy mix, including renewables, and are subject to stringent environmental regulations, generally resulting in lower emissions compared to mini grids. The choice between mini-grids and grid electricity depends on the specific needs, geographic location, and economic viability of the targeted community or region.
 
-### Demo Video <a href="#_toc146642051" id="_toc146642051"></a>
+### Demo Video <a href="#toc146642051" id="toc146642051"></a>
 
 \[Link]
 
-### Policy Workflow <a href="#_toc146642052" id="_toc146642052"></a>
+### Policy Workflow <a href="#toc146642052" id="toc146642052"></a>
 
 <figure><img src="../../../.gitbook/assets/0 (3).jpeg" alt=""><figcaption></figcaption></figure>
 
-### Policy Guide <a href="#_toc146642053" id="_toc146642053"></a>
+### Policy Guide <a href="#toc146642053" id="toc146642053"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-### Available Roles <a href="#_toc146642054" id="_toc146642054"></a>
+### Available Roles <a href="#toc146642054" id="toc146642054"></a>
 
 Project Proponent - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
 
@@ -126,7 +126,7 @@ Verification and Validation Body (VVB) - The VVB plays a critical role in indepe
 
 Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.
 
-### Important Documents & Schemas <a href="#_toc146642055" id="_toc146642055"></a>
+### Important Documents & Schemas <a href="#toc146642055" id="toc146642055"></a>
 
 1. Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
 2. Methodological Tool 21 - Demonstration of additionality of smallscale project activities.
@@ -135,11 +135,11 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 5. Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
 6. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
-### Token (Carbon Emission Reduction) <a href="#_toc146642056" id="_toc146642056"></a>
+### Token (Carbon Emission Reduction) <a href="#toc146642056" id="toc146642056"></a>
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
-### Step by Step <a href="#_toc146642057" id="_toc146642057"></a>
+### Step by Step <a href="#toc146642057" id="toc146642057"></a>
 
 1. Login as Standard Registry and import the policy either by file or through IPFS timestamp, which is mentioned above.
 2. Once policy is imported, we need to open the policy and see all the steps involved in it:

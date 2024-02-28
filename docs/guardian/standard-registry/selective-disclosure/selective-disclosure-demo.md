@@ -23,4 +23,4 @@ Aes256Gcm.nIwedhii-6Wd5li2F6G7jVDTh1vBUrtOvWGBCMQ4NYHnZoY5\_FeAorxZKw7of4zFTw\_2
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=e-PwXbQkGbo\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=24\&t=199s)
+[Youtube](https://youtu.be/e-PwXbQkGbo?si=pMpZ7nLNXs2TInEn\&t=121)

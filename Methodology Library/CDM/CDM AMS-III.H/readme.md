@@ -4,13 +4,12 @@
 - [Table of contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Need and Use for the AMS-III.H Policy](#need-and-use-for-the-ams-iiih-policy)
-- [Demo Video](#demo-video)
 - [Policy Workflow](#policy-workflow)
 - [Policy Guide](#policy-guide)
-  - [Available Roles](#available-roles)
-  - [Important Documents \& Schemas](#important-documents--schemas)
-  - [Token(Carbon Emissions Reduction)](#tokencarbon-emissions-reduction)
-  - [Step By Step](#step-by-step)
+- [Available Roles](#available-roles)
+- [Important Documents \& Schemas](#important-documents--schemas)
+- [Token(Carbon Emissions Reduction)](#tokencarbon-emissions-reduction)
+- [Step By Step](#step-by-step)
 
 <!-- /TOC -->
 
@@ -31,11 +30,6 @@ Methane emissions from anaerobic wastewater treatment are a significant source o
 Wastewater treatment is a significant contributor to global methane emissions. AMS-III.H methodology provides a detailed framework for wastewater treatment plants to transition towards more sustainable practices, primarily through methane recovery and biogas utilization. This not only helps in reducing methane emissions but also promotes the use of renewable energy resources, thus contributing positively to global efforts against climate change.
 
 In the modern landscape of emission reduction initiatives, transparency and credibility are key. Guardian Platform, built on Hedera Hashgraph DLT, provides immutable and transparent record-keeping, enhancing the accountability of these initiatives. AMS-III.H, with its focus on sustainable wastewater treatment practices, enhances its environmental impact and underscores the role of innovative technology in driving a greener and more sustainable future.
-
-
-## Demo Video
-
-Coming Soon
 
 ## Policy Workflow
 
@@ -72,4 +66,79 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-Coming Soon
+1. Login as Standard Registry and import the policy either by file or through IPFS timestamp.
+   
+2. Create a new user and assign role as Project Proponent.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/afe9dc1f-a025-462a-8c85-8e23ad05f6b4)
+
+3. Name new Project Participant.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/bf59daf0-daa4-4ae1-8944-514b1a787d74)
+
+4. Сreate a new user and assign role as VVB.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/73a0df0f-df8e-4354-9495-90a39ead2aa1)
+
+5. Name new VVB.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/7e3b1fd7-9395-4b9c-a3a6-c0e1d9ac208f)
+
+6. Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/bff07902-f154-454d-98ee-7cdb8739d7de)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/c4170018-f018-45c6-8422-0a2f879aaddc)
+
+7. Once approved, login back as Project Participant and create new project by clicking on" New project" and entering complete details of the project
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/6d7f8f26-9659-4aac-bcb0-359cce01d67c)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/cdfc4e8b-64b6-46b9-865d-754f2bd3082e)
+
+8. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/871ddaa2-93dd-4f18-b252-abd9efe5bf94)
+
+9. Project Participant creates monitoring report by clicking on “Add Report” and fills out the monitoring report form
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/bd906e8d-37f0-42ee-be76-aa678a5c886a)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/cebd2e2c-f233-4be4-92ed-07b6fd20037d)
+
+10. After creating monitoring report, project participant assigns VVB to verify it
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/4b872318-6d9c-4963-8352-946a41afe278)
+
+11. Login as VVB and after reviewing the monitoring report, the VVB verifies it.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/9c955866-515b-442d-8106-f8ff16aae172)
+
+12. Login as SR and once it is reviewed, SR approves the Monitoring report.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/ad1b1627-482a-4213-8f61-5191c69b01b3)
+
+13. Once minting is completed, we can view tokens in VPs  tab.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/45e43aaf-f912-4b61-b88b-9580880d94d5)
+
+14. Trustchain can also be viewed by clicking on “View TrustChain” button.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/cc434f7b-e5c8-41e7-8d4c-d8bb2b378c5e)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

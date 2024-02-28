@@ -170,7 +170,7 @@ export class ExternalDataBlock {
             }
         }
 
-        const docOwner = await PolicyUtils.getHederaAccount(ref, data.owner);
+        const docOwner = await PolicyUtils.getUserCredentials(ref, data.owner);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);

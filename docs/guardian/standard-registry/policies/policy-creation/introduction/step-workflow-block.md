@@ -2,14 +2,13 @@
 
 ### Properties
 
-| Block Property | Definition                                                                                                      | Example Input                                   | Status                                     |
-| -------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
-| type           | Similar to the **InterfaceContainer**Block, with the difference that it can only render a single child element. | **InterfaceStep**Block (Can't be changed).      |                                            |
-| tag            | Unique name for the logic block.                                                                                | CSD01 Document.                                 |                                            |
-| permissions    | Which entity has rights to interact at this part of the workflow.                                               | Standard Registry.                              |                                            |
-| defaultActive  | Shows whether this block is active at this time and whether it needs to be shown.                               | Checked or unchecked.                           |                                            |
-| dependencies   | Establish workflow dependancies that need to be completed prior.                                                | Select the appropriate block from the dropdown. | <mark style="color:red;">Deprecated</mark> |
-| cyclic         | Go back one step to enable the creation of the previous object.                                                 | Checked or unchecked.                           |                                            |
+| Block Property | Definition                                                                                                      | Example Input                              | Status |
+| -------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
+| type           | Similar to the **InterfaceContainer**Block, with the difference that it can only render a single child element. | **InterfaceStepBlock** (Can't be changed). |        |
+| tag            | Unique name for the logic block.                                                                                | CSD01 Document.                            |        |
+| permissions    | Which entity has rights to interact at this part of the workflow.                                               | Standard Registry.                         |        |
+| defaultActive  | Shows whether this block is active at this time and whether it needs to be shown.                               | Checked or unchecked.                      |        |
+| cyclic         | Go back one step to enable the creation of the previous object.                                                 | Checked or unchecked.                      |        |
 
 {% hint style="info" %}
 RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
@@ -27,7 +26,7 @@ RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
 | Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |             |
 | Disabled      | "disabled"   | True/False                                                        | Allows to disable the event without deleting it.                                                                                |             |
 
-To know more information about events, please look at [events.md](events.md "mention").
+To know more information about events, please look at [Events](events.md).
 
 ### API Parameters
 

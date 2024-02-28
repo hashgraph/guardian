@@ -1,6 +1,6 @@
 # Running Policy without making any changes
 
-{% swagger method="put" path="" baseUrl="/policies/{policyId}/dry-run" summary="Dry Run policy" %}
+{% swagger expanded="false" method="put" path="" baseUrl="/policies/{policyId}/dry-run" summary="Dry Run policy" %}
 {% swagger-description %}
 Run policy without making any persistent changes or executing transaction. Only users with the Standard Registry role are allowed to make the request.
 {% endswagger-description %}
