@@ -370,7 +370,7 @@ export class BlockModel implements IWeightModel {
      * @public
      */
     public toObject(): any {
-        const properties = this._prop.getPropList();
+        const properties = this._prop.toObject();
         const events = this._events.map(e => e.toObject());
         return {
             index: this.index,

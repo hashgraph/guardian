@@ -14,6 +14,7 @@
             class="form-{{ type }}"
         >
             <h1 *ngIf="title" mat-dialog-title>{{ title }}</h1>
+
             <div *ngIf="restoreData" class="restore-data">
                 <mat-icon>info</mat-icon>
                 <b>There is some data to restore. You can restore latest values:</b>
@@ -58,7 +59,7 @@
 </div>
 
 <ng-template #dialogTemplate let-data>
-    <div>
+    <div class="dialog-template">
         <h1 class="title" mat-dialog-title>{{ dialogContent }}</h1>
         <div *ngIf="restoreData" class="restore-data">
             <mat-icon>info</mat-icon>
@@ -72,7 +73,7 @@
                 Restore Values<mat-icon>restore</mat-icon>
             </button>
         </div>
-	<div *ngIf="dryRun" class="restore-data">
+	    <div *ngIf="dryRun" class="restore-data">
             <mat-icon>info</mat-icon>
             <b>There is dry run mode. You can fill document with test data:</b>
             <button
@@ -94,7 +95,7 @@
                 <div class="preloader-image preloader-image-l-size"></div>
             </div>
             <form (ngSubmit)="onSubmit('dialog')" [formGroup]="dataForm">
-                <div class="form-{{ type }}">
+                <div class="form-{{ type }}" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
                     <app-schema-form
                         (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
                         (submitBtnEvent)="handleSubmitBtnEvent($event, this)"

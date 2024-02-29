@@ -680,7 +680,9 @@ export class PolicyEngine extends NatsService {
                 const schemaObject = new Schema(policySchema);
                 credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
             }
-            const vc = await vcHelper.createVcDocument(credentialSubject, { did: owner, key: root.hederaAccountKey });
+
+            const didDocument = await vcHelper.loadDidDocument(owner);
+            const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
             await DatabaseServer.saveVC({
                 hash: vc.toCredentialHash(),
                 owner,
@@ -791,7 +793,8 @@ export class PolicyEngine extends NatsService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
-        const vc = await vcHelper.createVcDocument(credentialSubject, { did: owner, key: root.hederaAccountKey });
+        const didDocument = await vcHelper.loadDidDocument(owner);
+        const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 
         await databaseServer.saveVC({
             hash: vc.toCredentialHash(),

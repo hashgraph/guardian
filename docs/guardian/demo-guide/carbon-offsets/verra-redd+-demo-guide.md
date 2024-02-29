@@ -22,14 +22,12 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
 ```
-REDD 1.1.0 = 1695249211.391769223
-REDD 2.2.2 = 1698754116.549916003
-Verra REDD Policy 3 groups = 1698754217.516521003
-Verra REDD 4 = 1698754789.539832483
-Verra REDD 5 = 1698754542.390084003
+REDD 1.1.0 = 1707207018.434778003
+REDD 2.2.2 = 1707207149.487956003
+Verra REDD Policy 3 groups = 1707207286.119377003
 ```
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 

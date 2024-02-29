@@ -2,27 +2,27 @@
 
 ## Table of Contents
 
-Introduction to AMS-I.A. &#x20;
+[Introduction to AMS-I.A.](cdm-ams-i.a.-electricity-generation-by-the-user.md#introduction-to-ams-i.a) &#x20;
 
-Need and Use for AMS-I.A.
+[Need and Use for AMS-I.A.](cdm-ams-i.a.-electricity-generation-by-the-user.md#need-and-use-for-ams-i.a)
 
-Objective and Scope of AMS-I.A.
+[Objective and Scope of AMS-I.A.](cdm-ams-i.a.-electricity-generation-by-the-user.md#objective-and-scope-of-ams-i.a)
 
-Methodology Overview
+[Methodology Overview](cdm-ams-i.a.-electricity-generation-by-the-user.md#methodology-overview)
 
-Typical Projects
+[Typical Projects](cdm-ams-i.a.-electricity-generation-by-the-user.md#typical-projects)
 
-Available Roles
+[Available Roles](cdm-ams-i.a.-electricity-generation-by-the-user.md#available-roles)
 
-Key Documents and Schemas
+[Key Documents and Schemas](cdm-ams-i.a.-electricity-generation-by-the-user.md#key-documents-and-schemas)
 
-Token (Carbon Emission Reduction)
+[Token (Carbon Emission Reduction)](cdm-ams-i.a.-electricity-generation-by-the-user.md#token-carbon-emission-reduction)
 
-Workflow
+[Workflow](cdm-ams-i.a.-electricity-generation-by-the-user.md#workflow)
 
-IPFS Timestamp
+[IPFS Timestamp](cdm-ams-i.a.-electricity-generation-by-the-user.md#ipfs-timestamp)
 
-Step-by-Step
+[Step-by-Step](cdm-ams-i.a.-electricity-generation-by-the-user.md#step-by-step)
 
 ### Introduction to AMS-I.A. &#x20;
 

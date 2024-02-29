@@ -5,9 +5,8 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IRootConfig } from '@guardian/interfaces';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { Inject } from '@helpers/decorators/inject';
 
@@ -63,16 +62,16 @@ export class ReassigningBlock {
         const vcDocument = document.document;
         const owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
 
-        let root: IRootConfig;
+        let root: UserCredentials;
         let groupContext: any;
         if (ref.options.issuer === 'owner') {
-            root = await PolicyUtils.getHederaAccount(ref, document.owner);
+            root = await PolicyUtils.getUserCredentials(ref, document.owner);
             groupContext = await PolicyUtils.getGroupContext(ref, owner);
         } else if (ref.options.issuer === 'policyOwner') {
-            root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+            root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
             groupContext = null;
         } else {
-            root = await PolicyUtils.getHederaAccount(ref, user.did);
+            root = await PolicyUtils.getUserCredentials(ref, user.did);
             groupContext = await PolicyUtils.getGroupContext(ref, user);
         }
 
@@ -85,11 +84,13 @@ export class ReassigningBlock {
             actor = user;
         }
 
+        const didDocument = await root.loadDidDocument(ref);
         const uuid = await ref.components.generateUUID();
         const credentialSubject = vcDocument.credentialSubject[0];
-        const vc: any = await this.vcHelper.createVcDocument(
+        const vc: any = await this.vcHelper.createVerifiableCredential(
             credentialSubject,
-            { did: root.did, key: root.hederaAccountKey },
+            didDocument,
+            null,
             { uuid, group: groupContext }
         );
 

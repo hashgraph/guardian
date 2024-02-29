@@ -92,15 +92,15 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.4.5 Use ‘**documentsSourceAddon**’ for data for **Dropdown**_**.**_
 
-![adding documentSourceAddon](<../../../../.gitbook/assets/14 (1) (1) (1) (1) (1).png>)
+![adding documentSourceAddon](<../../../../.gitbook/assets/14 (1) (1) (1) (1) (1) (1).png>)
 
 1.4.6 Save the changed document
 
-![Saving the documents](<../../../../.gitbook/assets/15 (1) (1) (1).png>)
+![Saving the documents](<../../../../.gitbook/assets/15 (1) (1) (1) (1).png>)
 
 1.4.7 As ‘**documentsSourceAddon**’ does not have default events, we need manually add them.
 
-![Adding events](<../../../../.gitbook/assets/16 (1) (1) (1).png>)
+![Adding events](<../../../../.gitbook/assets/16 (1) (1) (1) (1).png>)
 
 1.4.8 Return to grid settings and add **Dropdown** into the target column.
 
@@ -110,7 +110,7 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.5.1 To select only the projects assigned to the current Approver set the ‘**Assigned to User**’ flag
 
-![Setting up Assigned to User flag](<../../../../.gitbook/assets/18 (1) (1).png>)
+![Setting up Assigned to User flag](<../../../../.gitbook/assets/18 (1) (1) (1).png>)
 
 1.5.2 Add document approval block
 
@@ -120,7 +120,7 @@ _(Please see_ [_example 2_](data-input-via-forms-using-roles-to-partition-user-a
 
 1.5.3 Add Approve button into the grid
 
-![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1) (1).png>)
+![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1) (1) (1).png>)
 
 1.5.4 After the Approve, setup the KYC for the account connected to the project
 

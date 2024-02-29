@@ -51,4 +51,4 @@ The latest statistical refers can be exported in the format of the Excel file by
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=e6U68FtEbG8\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=14\&t=306s)
+[Youtube](https://youtu.be/e6U68FtEbG8?si=vmIw7XY8Box\_G3o4\&t=330)

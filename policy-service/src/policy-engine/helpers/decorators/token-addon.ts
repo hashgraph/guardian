@@ -1,7 +1,6 @@
 import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { IHederaAccount } from '../utils';
+import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 
 /**
  * Token addon
@@ -24,7 +23,7 @@ export function TokenAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Run block logic
              * @param scope
              */
-            public async run(scope: any, root: IHederaAccount, user: IPolicyUser): Promise<any> {
+            public async run(scope: any, root: UserCredentials, user: IPolicyUser): Promise<any> {
                 if (typeof super.run === 'function') {
                     return super.run(scope, root, user);
                 }

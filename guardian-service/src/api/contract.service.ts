@@ -1002,10 +1002,9 @@ async function saveRetireVC(
         );
     }
 
-    const vcObject = await vcHelper.createVcDocument(credentialSubject, {
-        did,
-        key: hederaAccountKey,
-    });
+    const didDocument = await vcHelper.loadDidDocument(did);
+    const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
+
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
     await messageServer.sendMessage(vcMessage);

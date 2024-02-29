@@ -17,7 +17,7 @@ Following are the steps to follow to generate Web3.Storage API values:
 
 2\. Install w3cli as described in the [corresponding section](https://web3.storage/docs/w3cli/#install) of the web3.storage documentation.
 
-**You'll need** [**Node**](https://nodejs.com/) **version 18 or higher, with NPM version 7 or higher to complete the installation**
+**You'll need** [**Node**](https://nodejs.org/en) **version 18 or higher, with NPM version 7 or higher to complete the installation**
 
 You can check your local versions like this:
 
@@ -64,11 +64,11 @@ The output of this command is the value to be used in the environment variable `
 **To summarize, the process of configuring delegated access to the w3up API consists of execution of the following command sequence:**
 
 1. `w3 login`
-2. `w3 create space`
-3. `w3 use space`
+2. `w3 space create`
+3. `w3 space use`
 4. `npx ucan-key ed`
 5. `w3 delegation`
 
 ### Demo Video
 
-[Youtube](https://youtu.be/wnGchPBpCFk)
+[Youtube](https://www.youtube.com/watch?v=q5OK9VWBn8Y\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=12)

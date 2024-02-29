@@ -1,4 +1,4 @@
-# 💻 Multi Policy Differentiation using UI
+# 💻 Policy Differentiation using UI
 
 1. [Step By Step Process](policy-differentiation-using-ui.md#step-by-step-process)
 2. [Demo Video](policy-differentiation-using-ui.md#demo-video)
@@ -9,21 +9,21 @@
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
-<figure><img src="../../../../.gitbook/assets/image (2) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Screenshot 2024-02-27 at 6.50.09 PM.png" alt=""><figcaption></figcaption></figure>
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 
-<figure><img src="../../../../.gitbook/assets/image (5) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (529).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Comparison Result
 
 We have several different sections in our comparison screen including filter parameters:
 
-<figure><img src="../../../../.gitbook/assets/image (4) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (530).png" alt=""><figcaption></figcaption></figure>
 
 Selected Policies are compared to the first Policy (displayed in the section on the left-hand side), the rest of the sections show the results of the ‘diffs’.
 
-<figure><img src="../../../../.gitbook/assets/image (200).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (531).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.1 Comparison Parameters
 
@@ -70,9 +70,9 @@ There are different sections in the comparison such as
 
 We have several Display settings in Policy Blocks section:
 
-<figure><img src="../../../../.gitbook/assets/image (12) (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (532).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (18) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (533).png" alt=""><figcaption></figcaption></figure>
 
 **Display Settings:** description and show/hide settings for each color/type of difference:
 
@@ -85,7 +85,7 @@ We have several Display settings in Policy Blocks section:
 
 Block comparison displays can be unfolded to display a detailed view of the block Properties.
 
-<figure><img src="../../../../.gitbook/assets/image (5) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (534).png" alt=""><figcaption></figcaption></figure>
 
 ## Demo Video
 

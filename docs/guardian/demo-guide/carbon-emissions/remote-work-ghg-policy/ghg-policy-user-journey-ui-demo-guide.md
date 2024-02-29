@@ -19,7 +19,7 @@ You will need to run the installation commands, open a tab on your browser and n
 
 Here in this demo for the Standard Registry, we will show the Standard Registry creating an account and importing the policy.
 
-**GHG Policy IPFS timestamp: 1690818219.261824567**
+**GHG Policy IPFS timestamp: 1707206388.459759003**
 
 **Step 1**
 

@@ -5,6 +5,7 @@ import {
     MessageType,
     RoleMessage,
     TopicMessage,
+    UrlType,
     VCMessage,
     VPMessage
 } from '@guardian/common';
@@ -95,7 +96,8 @@ export class AnalyticsDocumentService {
                             account: data.payer,
                             type: DocumentType.VC,
                             issuer: data.issuer,
-                            action: data.action
+                            action: data.action,
+                            ipfs: data.getUrlValue(0, UrlType.cid)
                         });
                         await new DataBaseHelper(Document).save(row);
                     }
@@ -110,7 +112,8 @@ export class AnalyticsDocumentService {
                             account: data.payer,
                             type: DocumentType.VP,
                             issuer: data.issuer,
-                            action: data.action
+                            action: data.action,
+                            ipfs: data.getUrlValue(0, UrlType.cid)
                         });
                         await new DataBaseHelper(Document).save(row);
                     }
@@ -127,7 +130,8 @@ export class AnalyticsDocumentService {
                             issuer: data.issuer,
                             role: data.role,
                             group: data.group,
-                            action: data.action
+                            action: data.action,
+                            ipfs: data.getUrlValue(0, UrlType.cid)
                         });
                         await new DataBaseHelper(Document).save(row);
                     }
@@ -142,7 +146,8 @@ export class AnalyticsDocumentService {
                             account: data.payer,
                             type: DocumentType.DID,
                             issuer: data.did,
-                            action: data.action
+                            action: data.action,
+                            ipfs: data.getUrlValue(0, UrlType.cid)
                         });
                         await new DataBaseHelper(Document).save(row);
                     }

@@ -737,6 +737,9 @@ export async function schemaAPI(): Promise<void> {
     ApiResponse(MessageAPI.CREATE_SYSTEM_SCHEMA, async (msg) => {
         try {
             const schemaObject = msg as ISchema;
+            if (schemaObject.uuid) {
+                schemaObject.contextURL = `schema:${schemaObject.uuid}`;
+            }
             SchemaHelper.setVersion(schemaObject, null, null);
             SchemaHelper.updateIRI(schemaObject);
             schemaObject.status = SchemaStatus.DRAFT;
@@ -925,6 +928,9 @@ export async function schemaAPI(): Promise<void> {
                 return new MessageError('Invalid schema');
             }
             const schemaObject = msg as ISchema;
+            if (schemaObject.uuid) {
+                schemaObject.contextURL = `schema:${schemaObject.uuid}`;
+            }
             SchemaHelper.setVersion(schemaObject, null, null);
             SchemaHelper.updateIRI(schemaObject);
             schemaObject.status = SchemaStatus.DRAFT;

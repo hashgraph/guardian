@@ -6,7 +6,7 @@ This block turn on history on interfaceDocumentsSourceBlock. This block should b
 
 | Property Name           | Description                                                                       | Example                                                   | Status |
 | ----------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------- | ------ |
-| Tag                     | Unique name for the logic block.                                                  | history\_addon                                            |        |
+| Tag                     | Unique name for the logic block.                                                  | **history\_addon**                                        |        |
 | Permissions             | Which entity has rights to interact at this part of the workflow.                 | Registrant                                                |        |
 | Default Active          | Shows whether this block is active at this time and whether it needs to be shown. | Checked or Unchecked                                      |        |
 | Stop Propagation        | End processing here, don't pass control to the next block.                        | Checked or Unchecked                                      |        |

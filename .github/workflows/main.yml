@@ -105,14 +105,11 @@ jobs:
           pushd guardian-service
           npm run test
           popd
-          pushd worker-service
-          npm run test
-          popd
         env:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
-          OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
-          OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
+          OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
+          OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()

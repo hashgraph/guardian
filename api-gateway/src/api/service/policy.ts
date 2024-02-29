@@ -1441,8 +1441,11 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromFilePreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: any
+        @Body() file: ArrayBuffer
     ) {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
             const engineService = new PolicyEngine();
             return await engineService.importFilePreview(user, file);
@@ -1496,8 +1499,11 @@ export class PolicyApi {
     async importPolicyFromXlsx(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId: string,
-        @Body() file: Buffer
+        @Body() file: ArrayBuffer
     ): Promise<any> {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
             const engineService = new PolicyEngine();
             return await engineService.importXlsx(user, file, policyId);
@@ -1550,9 +1556,12 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
-        @Query('policyId') policyId,
-        @Body() file: Buffer
+        @Query('policyId') policyId: string,
+        @Body() file: ArrayBuffer
     ): Promise<any> {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
@@ -1601,8 +1610,11 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: any
+        @Body() file: ArrayBuffer
     ) {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
             const engineService = new PolicyEngine();
             return await engineService.importXlsxPreview(user, file);

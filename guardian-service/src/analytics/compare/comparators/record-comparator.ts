@@ -388,7 +388,8 @@ export class RecordComparator {
         const schemaModels: SchemaModel[] = [];
         const schemasIds = document.getSchemas();
         for (const schemasId of schemasIds) {
-            const iri = schemasId?.replace('schema#', '#');
+            let iri = schemasId?.replace('schema#', '#');
+            iri = schemasId?.replace('schema:', '#');
             if (cacheSchemas.has(schemasId)) {
                 const schemaModel = cacheSchemas.get(schemasId);
                 if (schemaModel) {
@@ -400,7 +401,7 @@ export class RecordComparator {
                     schemaModels.push(schemaModel);
                 }
             } else {
-                const schema = schemasId.startsWith('schema#') ?
+                const schema = (schemasId.startsWith('schema#') || schemasId.startsWith('schema:')) ?
                     await DatabaseServer.getSchema({ iri }) :
                     await DatabaseServer.getSchema({ contextURL: schemasId });
                 if (schema) {

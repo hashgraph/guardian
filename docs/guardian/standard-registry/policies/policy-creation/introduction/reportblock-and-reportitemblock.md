@@ -4,13 +4,12 @@
 
 ### 1. Properties
 
-| Block Property | Definition                                                                        | Example Input                                   | Status                                     |
-| -------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
-| type           | Type of workflow logic                                                            | **report**Block(Can't be changed).              |                                            |
-| tag            | Unique name for the logic block.                                                  | report.                                         |                                            |
-| permissions    | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                              |                                            |
-| defaultActive  | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |                                            |
-| dependencies   | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. | <mark style="color:red;">Deprecated</mark> |
+| Block Property | Definition                                                                        | Example Input                      | Status |
+| -------------- | --------------------------------------------------------------------------------- | ---------------------------------- | ------ |
+| type           | Type of workflow logic                                                            | **reportBlock**(Can't be changed). |        |
+| tag            | Unique name for the logic block.                                                  | report.                            |        |
+| permissions    | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                 |        |
+| defaultActive  | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.              |        |
 
 ### 2. Impacts Section
 
@@ -20,7 +19,7 @@ We have added new Impacts Section to display Primary/Secondary Impacts token det
 
 In the case when multiple linked mint blocks are used then the system displays all linked VPs as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.1 Data Format:
 
@@ -49,7 +48,7 @@ Ingress Document has following sections:
 | Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | <p>""</p><p>"owner"</p><p>"issuer"</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |
 | Disabled      | "disabled"   | True/False                                                        | true/false                             | Allows to disable the event without deleting it.                                                                                |
 
-To know more information about events, please look at [events.md](events.md "mention").
+To know more information about events, please look at [Events](events.md).
 
 ### API Parameters
 
@@ -73,7 +72,7 @@ Block UUID
   "data": {
     "vpDocument": {
       "type": "VP",
-      "title": "Verified Presentation",
+      "title": "Verifiable Presentation",
       "tag": "mint_token",
       "hash": "BV4VxNEGvBjodqZ6KWCoV6r4xks4LYSGu8mjWyXLLX52",
       "issuer": "did:hedera:testnet:7Q9aPi8rEhceMGMqviCdya9APf515YVbtiyjHrHYPh5N_0.0.3075949",

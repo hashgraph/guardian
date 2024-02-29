@@ -26,7 +26,7 @@ Also some information about the user is also presented, such as the name of the 
 
 Some screens for the Standard Registry were also adapted, starting with the registration into Guardian after creating a username and password and also the mobile adaptation to associate Hedera credentials and initial form upon creating an account.
 
-<figure><img src="../../../.gitbook/assets/12 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/12 (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Standard Registry creating / editing a token
 
@@ -38,7 +38,7 @@ Below are the images show the creation of a "New Token" form for the Standard Re
 
 Here below are the images to show the creation of a "Edit Token" form for the Standard Registry. On the left for a non published and on the right for a published token.
 
-![](<../../../.gitbook/assets/16 (1) (1) (1) (1).png>) ![](<../../../.gitbook/assets/17 (6).png>)
+![](<../../../.gitbook/assets/16 (1) (1) (1) (1) (1).png>) ![](<../../../.gitbook/assets/17 (6).png>)
 
 ### Standard Registry importing policies flow (from IPFS)
 

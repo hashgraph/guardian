@@ -73,7 +73,7 @@ Block UUID
   "data": {
     "vpDocument": {
       "type": "VP",
-      "title": "Verified Presentation",
+      "title": "Verifiable Presentation",
       "tag": "mint_token",
       "hash": "BV4VxNEGvBjodqZ6KWCoV6r4xks4LYSGu8mjWyXLLX52",
       "issuer": "did:hedera:testnet:7Q9aPi8rEhceMGMqviCdya9APf515YVbtiyjHrHYPh5N_0.0.3075949",

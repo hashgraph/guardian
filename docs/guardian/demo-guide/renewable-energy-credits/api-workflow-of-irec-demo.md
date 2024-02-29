@@ -18346,7 +18346,7 @@ null
     "data": {
         "vpDocument": {
             "type": "VP",
-            "title": "Verified Presentation",
+            "title": "Verifiable Presentation",
             "tag": "mint_token",
             "hash": "GChWHiV7Ef1e6Gec9dLjcVHVkn2SCxceBQbSndwMmL91",
             "issuer": "did:hedera:testnet:5NfLUfbgJk4KdoiCsWTGz4U2JcFbu2vfn3aYryqCgqR2;hedera:testnet:tid=0.0.34920817",
