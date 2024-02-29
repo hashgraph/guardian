@@ -2,7 +2,7 @@
     "name": "ai-service",
     "version": "2.21.1",
     "main": "dist/app.js",
-    "license": "MIT",
+    "license": "Apache-2.0",
     "dependencies": {
         "@mikro-orm/core": "5.7.12",
         "@mikro-orm/mongodb": "5.7.12",
