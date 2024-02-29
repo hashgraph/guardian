@@ -29,7 +29,7 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 1.1 Go to ‘Schemas’ tab and create a new schema
 
-![Creating new Schema](<../../../../.gitbook/assets/1 (1) (1) (1).png>)
+![Creating new Schema](<../../../../.gitbook/assets/1 (1) (1) (1) (1).png>)
 
 1.2 To make sure there is some demo/test data content in this schema create 3 fields:
 
@@ -46,39 +46,39 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option enabled. This will allow to return to the initial state after the document was saved.
 
-![InterfaceStepBlock is added as cyclic\_container](<../../../../.gitbook/assets/3 (1) (1) (1) (1).png>)
+![InterfaceStepBlock is added as cyclic\_container](<../../../../.gitbook/assets/3 (1) (1) (1) (1) (1).png>)
 
 2.2 Add ‘**requestVcDocumentBlock**’ into the ‘_cyclic\_container_’
 
-![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (1) (1) (1) (1).png>)
+![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (1) (1) (1) (1) (1).png>)
 
 2.3 Then select the previously created Schema
 
-![Selecting already created Schema](<../../../../.gitbook/assets/5 (1) (1) (1) (1).png>)
+![Selecting already created Schema](<../../../../.gitbook/assets/5 (1) (1) (1) (1) (1).png>)
 
 2.4 Select ‘New UUID’ to configure automatic generation of unique IDs for each document
 
-![Selecting UUID](<../../../../.gitbook/assets/6 (1) (1) (1).png>)
+![Selecting UUID](<../../../../.gitbook/assets/6 (1) (1) (1) (1).png>)
 
 2.5 By default ‘**requestVcDocumentBlock**’ is displayed as a Form covering the entire page. To prevent this choose ‘**DIALOG**’ value for the field ‘Type’.
 
-![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (1) (1) (1).png>)
+![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (1) (1) (1) (1).png>)
 
 #### 3. Save documents in the Database.
 
 3.1 Add ‘**sendToGuardianBlock**’ into the container ‘_cyclic\_container’_ immediately after ‘_create\_new\_document’_
 
-![Adding sendToGuardianBlock in container cyclic\_container](<../../../../.gitbook/assets/8 (1) (1) (1) (1).png>)
+![Adding sendToGuardianBlock in container cyclic\_container](<../../../../.gitbook/assets/8 (1) (1) (1) (1) (1).png>)
 
 3.2 Select data type and where to store the document
 
-![Selecting Data Source and Type](<../../../../.gitbook/assets/9 (1) (1) (1).png>)
+![Selecting Data Source and Type](<../../../../.gitbook/assets/9 (1) (1) (1) (1).png>)
 
 3.3 Create appropriate attributes to capture/store document status
 
 Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
-![Adding Status Attribute with New Value](<../../../../.gitbook/assets/10 (1) (1) (1).png>)
+![Adding Status Attribute with New Value](<../../../../.gitbook/assets/10 (1) (1) (1) (1).png>)
 
 ### **Displaying the documents**
 
@@ -86,7 +86,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.1 Add ’**interfaceDocumentsSourceBlock**_’_ into the ‘**user\_roles**_’_ container
 
-![Adding interfaceDocumentsSourceBlock into user\_roles container](<../../../../.gitbook/assets/11 (1) (1).png>)
+![Adding interfaceDocumentsSourceBlock into user\_roles container](<../../../../.gitbook/assets/11 (1) (1) (1).png>)
 
 1.2 Specify the needed columns, their titles and where the values will be taken for display
 
@@ -96,11 +96,11 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.1 Add ‘**documentsSourceAddon**_’ to the_ ‘**user\_grid**_’_
 
-![Adding documentsSourceAddon to retrieve data](<../../../../.gitbook/assets/13 (1) (1).png>)
+![Adding documentsSourceAddon to retrieve data](<../../../../.gitbook/assets/13 (1) (1) (1).png>)
 
 1.3.2 Select where to retrieve the documents from
 
-![Selecting VC Document](<../../../../.gitbook/assets/14 (1) (1) (1).png>)
+![Selecting VC Document](<../../../../.gitbook/assets/14 (1) (1) (1) (1).png>)
 
 1.3.3 Select the schema upon which the selected documents should be based on
 
@@ -108,7 +108,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.4 Select _‘_**Owned by User**_’_ checkbox which would filter in only the documents that are created by this user (this will disable the ability to view other documents)
 
-![Selecting Owned by User checkbox](<../../../../.gitbook/assets/16 (1) (1) (1) (1) (1).png>)
+![Selecting Owned by User checkbox](<../../../../.gitbook/assets/16 (1) (1) (1) (1) (1) (1).png>)
 
 ### **Approving the documents**
 
@@ -128,7 +128,7 @@ Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in t
 
 1.4 Separate the documents by status by means of creating the corresponding filters
 
-![Creating Equal status filter](<../../../../.gitbook/assets/19 (1) (1).png>)
+![Creating Equal status filter](<../../../../.gitbook/assets/19 (1) (1) (1).png>)
 
 ![Creating not equal status filter](<../../../../.gitbook/assets/20 (3).png>)
 

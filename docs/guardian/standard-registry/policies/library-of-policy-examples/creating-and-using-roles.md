@@ -70,4 +70,4 @@ Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
 3. The owner of the Policy (the Standard Registry user) upon executing the policy would skip the role selection form and would immediately end-up in the corresponding container
 
-![For Standard Registry](<../../../../.gitbook/assets/13 (1) (1) (1) (1).png>)
+![For Standard Registry](<../../../../.gitbook/assets/13 (1) (1) (1) (1) (1).png>)
