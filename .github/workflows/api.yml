@@ -1,5 +1,7 @@
 name: Guardian CI API Tests
 on:
+  schedule:
+    - cron: '0 1 * * *'
   workflow_dispatch:
     description: 'Manual run'
 
@@ -18,6 +20,8 @@ jobs:
         mongodb-version: [ 7.0.5 ]
     steps:
       - uses: actions/checkout@v1
+        with:
+          ref: 'develop'
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
