@@ -10,6 +10,7 @@ import { Users } from './users';
 export enum KeyType {
     ID = 'ID',
     KEY = 'KEY',
+    DID_KEYS = 'DID_KEYS',
     TOKEN_TREASURY_KEY = 'TOKEN_TREASURY_KEY',
     TOKEN_ADMIN_KEY = 'TOKEN_ADMIN_KEY',
     TOKEN_SUPPLY_KEY = 'TOKEN_SUPPLY_KEY',

@@ -96,7 +96,6 @@ export class SchemaHelper {
         } else {
             field.unit = unit ? String(unit) : null;
             field.unitSystem = unitSystem ? String(unitSystem) : null;
-            field.property = property ? String(property) : null;
             field.textColor = textColor;
             field.textSize = textSize;
             field.textBold = textBold;
@@ -119,6 +118,7 @@ export class SchemaHelper {
                 field.font.bold = textBold;
             }
         }
+        field.property = property ? String(property) : null;
         field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
         field.required = required;

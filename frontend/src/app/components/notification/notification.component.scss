@@ -51,6 +51,17 @@
         font-weight: 500;
         line-height: 20px;
     }
+
+    &:hover {
+        filter: brightness(1.2);
+    }
+}
+
+.notification-position {
+    pointer-events: none;
+    position: fixed;
+    left: 20px;
+    transform: translate(0px, -38px);
 }
 
 .notification-counter {
@@ -60,6 +71,7 @@
     font-style: normal;
     font-weight: 500;
     line-height: 20px;
+    pointer-events: none;
 }
 
 .notification-menu {

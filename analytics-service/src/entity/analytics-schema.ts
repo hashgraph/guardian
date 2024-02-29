@@ -72,4 +72,10 @@ export class AnalyticsSchema extends BaseEntity {
      */
     @Property({ nullable: true })
     policyTopicId?: string;
+
+    /**
+     * IPFS
+     */
+    @Property({ nullable: true })
+    ipfs?: string;
 }

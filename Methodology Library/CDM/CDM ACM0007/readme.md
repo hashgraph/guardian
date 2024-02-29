@@ -72,64 +72,97 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-1. Login as Standard Registry and import the policy either by file or through IPFS timestamp.
-2. Create a new user and assign role as Project Proponent.
+1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/5469acb1-b261-4e93-bd40-e5b184cfa7a8)
+![image](https://github.com/hashgraph/guardian/assets/79293833/67a7bb92-8c92-4dc9-a6e3-c4906ca87e06)
 
-3. Name new Project Participant.
+![image](https://github.com/hashgraph/guardian/assets/79293833/9237ad6a-7ede-4d26-8dde-4942f6b73a6b)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/95bebf8d-9f21-4681-858c-a0aaca51b8d7)
+![image](https://github.com/hashgraph/guardian/assets/79293833/d7980013-6750-48dd-a3cb-315bbd1841f7)
 
-4. Сreate a new user and assign role as VVB.
+2. To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” button.
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/4fcd133c-d440-47fc-becc-f4ce7d4a3989)
+![image](https://github.com/hashgraph/guardian/assets/79293833/56ccfd3d-dbb8-400f-a57a-4c2e78f25238)
 
-5. Name new VVB.
+![image](https://github.com/hashgraph/guardian/assets/79293833/c71c132a-6117-4be3-b369-5245c8ad2901)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/83643596-d283-4a00-9ea7-c9372c3e6418)
+3. Create a new user by clicking the “Create User” button and assign their role as Project Participant.
 
-6. Login as SR and view the documents submitted by VVB and Project Participant and approve their requests by clicking on "Approve" button.
+![image](https://github.com/hashgraph/guardian/assets/79293833/67784697-d58d-477d-b8ad-bd23721dd50a)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/a78f4799-74d8-4d2f-af61-e39b9305f9ad)
+4. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/363ba6a0-1cc2-4e8d-b552-33c36ec2e4f7)
+![image](https://github.com/hashgraph/guardian/assets/79293833/43a74a52-9d61-4087-8080-271889fdb0b2)
 
-7. Login back as Project Participant and create a New project by clicking on "New Project" button and enter all the required details.
+5. Сreate a new user again and assign their role as VVB.
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/8357798b-31c4-4297-a771-50b7b19359e7)
+![image](https://github.com/hashgraph/guardian/assets/79293833/15f845b6-182b-4124-8658-e9a2cc82e727)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/47072fe9-52c9-4fb5-87e7-15fd738e8f79)
+6. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
 
-8. Login back as SR and after reviewing the document, it validated the project submitted by Project Participant.
+![image](https://github.com/hashgraph/guardian/assets/79293833/ecd86c0c-9c53-40d3-b165-8cd63c1cf64e)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/ae6913b5-ee20-4a0f-9ca1-d4ddb8cf440c)
+7. Log in as the SR and select the “Approve PP” or the “Approve VVB” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
 
-9. Project Participant creates monitoring report by clicking on Add Report and fills out the monitoring report form.
+![image](https://github.com/hashgraph/guardian/assets/79293833/cb35c440-afaf-4bd0-b758-e648aff8e69b)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/d6622431-157d-4d86-b742-5ca81d5d4b83)
+![image](https://github.com/hashgraph/guardian/assets/79293833/6748abe6-0894-4669-9e74-40459f1330e3)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/31296727-9f19-4d67-8d86-2f44c0834a7d)
+8. Log in as the Project Participant and create a new project by clicking on the "New Project" button. This form is used to collect information about the project, organization, and all the data needed to run the emission reduction calculations. Once all the required fields have been filled the “Create” button will turn dark blue. By selecting the “Create” button all the data will be sent to the SR for review/approval.
 
-10. After creating monitoring report, project participant assigns VVB to verify it.
+![image](https://github.com/hashgraph/guardian/assets/79293833/11d701a6-ce32-4307-8c68-68711f900d85)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/613e1ec7-60ea-4353-af11-6c93b4f0ef67)
+![image](https://github.com/hashgraph/guardian/assets/79293833/523dc9d0-3f3c-4a1c-8886-7a463c37db38)
 
-11. Log in as a VVB and, after reviewing the monitoring report, the VVB verifies it.
+9. Log back in as the SR and after reviewing the document by selecting the “View Document” button, the SR can validate the project submitted by the Project Participant by clicking the “Validate” button. If the data does not satisfy the rules set by the SR, then the “Reject” button can be used.
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/f7525812-c331-48c8-bdca-5da4fcae70d5)
+![image](https://github.com/hashgraph/guardian/assets/79293833/eb914a89-e6c0-4c7d-b551-3e1c3b616bbb)
 
-12. Login as SR and once it is reviewed, SR approves the Monitoring report.
+![image](https://github.com/hashgraph/guardian/assets/79293833/2b093e37-f9e0-4d79-acbb-c9512208572b)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/9da0dd7c-fc3f-4a8a-a770-22074b181aaa)
+10. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
 
-13. Once minting is completed, we can view tokens in VPs  tab.
+![image](https://github.com/hashgraph/guardian/assets/79293833/61052368-e1ba-4ab2-8ac4-f61386c3dd78)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/8a3afc63-d83f-461b-8414-7bcf7c4be6eb)
+![image](https://github.com/hashgraph/guardian/assets/79293833/79343ad0-ba49-49a6-959d-a387d0b3d14e)
 
-14. TrustChain can also be viewed by clicking on View “TrustChain” button.
+![image](https://github.com/hashgraph/guardian/assets/79293833/4f96f49d-f169-447e-87c3-ae776113ba71)
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/f93955eb-884e-4712-9331-66ba05dc2e3b)
+11. After creating the monitoring report, the project participant assigns the VVB to verify it by navigating to the “Monitoring Reports” tab and selecting the dropdown under “Assign”.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/bd7bea21-462b-4eb6-8c46-834d7f3f7630)
+
+12. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Participant. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/b5862f05-a98b-4ee3-b3eb-46cb21f993aa)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/b087b5d5-b99d-4ff8-af37-8076322e14a8)
+
+13. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”. This will also trigger the minting process. You can see the minting status under “Status” change from “Minting” to “Minted”.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/672d0769-fec6-42ed-8738-40a984274981)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/073fa716-6ab0-4acf-a2b5-df2cbbebdf7c)
+
+14. Once the minting process is completed, you can view the token amount by selecting the “Token History” tab.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/2bb1ca1b-ae24-42ca-9467-7e44bb1a455b)
+
+15. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1/47191” when the tokens are still minting like the example provided below.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/41c1237b-b131-4f51-a067-2ccdf86eaf34)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/7f33b5ca-ce6d-4c1d-b67a-6ea7203ae169)
+
+
+
+
+
+
+
+
+
+
 
 
 

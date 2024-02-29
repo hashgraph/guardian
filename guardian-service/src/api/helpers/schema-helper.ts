@@ -350,6 +350,11 @@ export async function copySchemaAsync(iri: string, topicId: string, name: string
     await copyDefsSchemas(item.document?.$defs, owner, topicId, root);
     item = await DatabaseServer.getSchema({ iri });
 
+    let contextURL = null;
+    if (item.contextURL && item.contextURL.startsWith('schema:')) {
+        contextURL = item.contextURL;
+    }
+
     // Clean document
     delete item._id;
     delete item.id;
@@ -365,6 +370,7 @@ export async function copySchemaAsync(iri: string, topicId: string, name: string
         item.name = name;
     }
     item.uuid = GenerateUUIDv4();
+    item.contextURL = contextURL;
     item.status = SchemaStatus.DRAFT;
     item.topicId = topicId;
 
@@ -422,6 +428,9 @@ export async function createSchemaAndArtifacts(
     newSchema.category = category || SchemaCategory.POLICY;
     newSchema.readonly = false;
     newSchema.system = false;
+    if (newSchema.uuid) {
+        newSchema.contextURL = `schema:${newSchema.uuid}`;
+    }
 
     SchemaHelper.setVersion(newSchema, null, previousVersion);
     const row = await createSchema(newSchema, newSchema.owner, notifier);

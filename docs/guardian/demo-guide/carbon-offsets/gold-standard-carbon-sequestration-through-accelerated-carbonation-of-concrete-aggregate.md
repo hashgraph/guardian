@@ -83,7 +83,7 @@ Carbon sequestration projects play a crucial role in addressing global climate c
 
 ### Policy Workflow  <a href="#toc157611386" id="toc157611386"></a>
 
-<figure><img src="../../../.gitbook/assets/0.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide  <a href="#toc157611387" id="toc157611387"></a>
 
@@ -126,69 +126,69 @@ Note:  If you would like to organize your data before adding it to the project f
 
 1. Create a new user and assign role as Project Proponent.&#x20;
 
-![](../../../.gitbook/assets/1.png)
+![](<../../../.gitbook/assets/1 (1) (1).png>)
 
-![](../../../.gitbook/assets/2.png)
+![](<../../../.gitbook/assets/2 (1) (1).png>)
 
 2. Create a New project by clicking on "New Project" button and enter all the required details.&#x20;
 
-![](../../../.gitbook/assets/3.png)
+![](<../../../.gitbook/assets/3 (1) (1).png>)
 
-![](../../../.gitbook/assets/4.png)
+![](<../../../.gitbook/assets/4 (1) (1).png>)
 
 3. Once project details are submitted, the Registry adds the project to the project pipeline.&#x20;
 
-![](../../../.gitbook/assets/5.png)
+![](<../../../.gitbook/assets/5 (1) (1).png>)
 
 4. Now, we create a new user and assign its role as VVB.
 
-![](../../../.gitbook/assets/6.png)
+![](<../../../.gitbook/assets/6 (1) (1).png>)
 
-![](../../../.gitbook/assets/7.png)
+![](<../../../.gitbook/assets/7 (1) (1).png>)
 
 5. We need to set the VVB’s name.
 
-![](../../../.gitbook/assets/8.png)
+![](<../../../.gitbook/assets/8 (1) (1).png>)
 
 6. Now we login as SR and approve VVB.&#x20;
 
-![](../../../.gitbook/assets/9.png)
+![](<../../../.gitbook/assets/9 (1) (1).png>)
 
 7. Now we login as the Project Proponent and assign project to VVB.&#x20;
 
-![](../../../.gitbook/assets/10.png)
+![](<../../../.gitbook/assets/10 (1).png>)
 
 8. Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.&#x20;
 
-![](../../../.gitbook/assets/11.png)
+![](<../../../.gitbook/assets/11 (1).png>)
 
 9. Login as the SR and add the project to the project registry.
 
-![](../../../.gitbook/assets/12.png)
+![](<../../../.gitbook/assets/12 (1).png>)
 
 10. At this point the Technical Advisory Committee and the NGO Supporters have a commenting feature available. An account can be created and assigned to each role. This can be used to review the project data and leave a comment. It is optional.
 
-![](../../../.gitbook/assets/13.png)
+![](<../../../.gitbook/assets/13 (1).png>)
 
-![](../../../.gitbook/assets/14.png)
+![](<../../../.gitbook/assets/14 (1).png>)
 
-![](../../../.gitbook/assets/15.png)
+![](<../../../.gitbook/assets/15 (1).png>)
 
-![](../../../.gitbook/assets/16.png)
+![](<../../../.gitbook/assets/16 (1).png>)
 
 11. Once validated, we login as Project Proponent and Add Monitoring Report.&#x20;
 
-![](../../../.gitbook/assets/17.png)
+![](<../../../.gitbook/assets/17 (1).png>)
 
-![](../../../.gitbook/assets/18.png)
+![](<../../../.gitbook/assets/18 (1).png>)
 
 12. Once the report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.&#x20;
 
-![](../../../.gitbook/assets/19.png)
+![](<../../../.gitbook/assets/19 (1).png>)
 
 13. Once the monitoring report is validated, we login as SR and click on Approve then the Mint button should appear which can then be used to mint the tokens.&#x20;
 
-![](../../../.gitbook/assets/20.png)
+![](<../../../.gitbook/assets/20 (1).png>)
 
 14. Once minting is completed, we can view tokens in Token History tab&#x20;
 

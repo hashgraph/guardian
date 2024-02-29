@@ -2051,9 +2051,12 @@ export class SchemaApi {
     async importPolicyFromXlsx(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Body() file: any,
+        @Body() file: ArrayBuffer,
         @Response() res: any
     ): Promise<any> {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
             const guardians = new Guardians();
             await guardians.importSchemasByXlsx(user, topicId, file);
@@ -2113,9 +2116,12 @@ export class SchemaApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Body() file: any,
+        @Body() file: ArrayBuffer,
         @Response() res: any
     ): Promise<any> {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_SCHEMA_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
@@ -2164,7 +2170,7 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: any
+        @Body() file: ArrayBuffer
     ) {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)

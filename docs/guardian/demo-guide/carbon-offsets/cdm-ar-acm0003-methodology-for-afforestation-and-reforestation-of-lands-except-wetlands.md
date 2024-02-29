@@ -1,5 +1,13 @@
 # 🏭 CDM AR-ACM0003: Methodology for Afforestation and Reforestation of Lands Except Wetlands
 
+## Table of Contents
+
+[Policy Description](cdm-ar-acm0003-methodology-for-afforestation-and-reforestation-of-lands-except-wetlands.md#policy-description)
+
+[Workflow Description](cdm-ar-acm0003-methodology-for-afforestation-and-reforestation-of-lands-except-wetlands.md#workflow-description)
+
+[Step By Step](cdm-ar-acm0003-methodology-for-afforestation-and-reforestation-of-lands-except-wetlands.md#step-by-step)
+
 ## Policy Description:
 
 The CDM AR-ACM0003 methodology is a comprehensive framework developed under the Clean Development Mechanism (CDM) to guide afforestation and reforestation projects aimed at combating climate change and promoting sustainable land use practices. This methodology facilitates the identification of suitable project sites, establishes baselines for measuring greenhouse gas emissions, ensures the additionality of emissions reductions, implements robust monitoring and reporting systems, addresses leakage and permanence concerns, and seeks validation and certification from accredited entities. By adhering to this methodology, projects can effectively sequester carbon dioxide, conserve biodiversity, provide ecosystem services, and generate socio-economic co-benefits, contributing to global climate change mitigation and sustainable development goals.
@@ -12,7 +20,7 @@ The workflow for the afforestation and reforestation of lands except wetlands (A
 
 ![](<../../../.gitbook/assets/0 (9).png>)
 
-Step By Step
+## Step By Step
 
 1. Import the policy by entering the IPFS timestamp mentioned above.
 2. Once, policy is imported, we create Project Proponent role:

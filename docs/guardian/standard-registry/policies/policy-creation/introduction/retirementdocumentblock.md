@@ -2,14 +2,13 @@
 
 ### Properties
 
-| Block Property   | Definition                                                                        | Example Input                                   | Status                                     |
-| ---------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
-| type             | Receives the VC from the previous block and retires based on the rule(s).         | **retirementDocument**Block(Can't be changed).  |                                            |
-| tag              | Unique name for the logic block.                                                  | retire\_token.                                  |                                            |
-| permissions      | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                              |                                            |
-| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |                                            |
-| dependencies     | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. | <mark style="color:red;">Deprecated</mark> |
-| stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                           |                                            |
+| Block Property   | Definition                                                                        | Example Input                                  | Status |
+| ---------------- | --------------------------------------------------------------------------------- | ---------------------------------------------- | ------ |
+| type             | Receives the VC from the previous block and retires based on the rule(s).         | **retirementDocumentBlock**(Can't be changed). |        |
+| tag              | Unique name for the logic block.                                                  | retire\_token.                                 |        |
+| permissions      | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                             |        |
+| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                          |        |
+| stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                          |        |
 
 ### UI Properties
 
@@ -30,4 +29,4 @@
 | Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | <p>""</p><p>"owner"</p><p>"issuer"</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |
 | Disabled      | "disabled"   | True/False                                                        | true/false                             | Allows to disable the event without deleting it.                                                                                |
 
-To know more information about events, please look at [events.md](events.md "mention").
+To know more information about events, please look at [Events](events.md).

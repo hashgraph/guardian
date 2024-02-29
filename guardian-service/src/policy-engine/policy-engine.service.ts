@@ -1,20 +1,16 @@
 import {
-    DocumentStatus,
     ExternalMessageEvents,
     GenerateUUIDv4,
     PolicyEngineEvents,
     PolicyEvents,
     PolicyType,
     Schema,
-    SchemaCategory,
     SchemaField,
-    SchemaHelper,
     TopicType
 } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
     DatabaseServer,
-    DIDDocument,
     findAllEntities,
     IAuthUser,
     Logger,
@@ -32,24 +28,16 @@ import {
     MessageType,
     MessageAction,
     TopicConfig,
-    VpDocument,
-    VcDocument,
-    DataBaseHelper,
-    VcHelper,
     Wallet,
-    KeyType,
-    VCMessage,
-    VPMessage,
-    VcDocumentDefinition,
-    VpDocumentDefinition,
     XlsxToJson,
     JsonToXlsx,
-    GenerateBlocks
+    GenerateBlocks,
+    VcHelper
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { IPolicyUser } from './policy-user';
-import { INotifier, emptyNotifier, initNotifier } from '@helpers/notifier';
+import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
@@ -58,6 +46,7 @@ import { Inject } from '@helpers/decorators/inject';
 import { BlockAboutString } from './block-about';
 import { HashComparator } from '@analytics';
 import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '@api/helpers';
+import { PolicyDataMigrator } from './helpers/policy-data-migrator';
 
 /**
  * PolicyEngineChannel
@@ -1278,12 +1267,15 @@ export class PolicyEngineService {
                 const topic = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
-                const didObject = await DIDDocument.create(newPrivateKey, topic.topicId);
+
+                const vcHelper = new VcHelper();
+                const didObject = await vcHelper.generateNewDid(topic.topicId, newPrivateKey);
                 const did = didObject.getDid();
                 const document = didObject.getDocument();
 
                 const count = await DatabaseServer.getVirtualUsers(policyId);
                 const username = `Virtual User ${count.length}`;
+
                 await DatabaseServer.createVirtualUser(
                     policyId,
                     username,
@@ -1292,8 +1284,16 @@ export class PolicyEngineService {
                     newPrivateKey.toString()
                 );
 
-                const db = new DatabaseServer(policyId);
-                await db.saveDid({ did, document });
+                const instanceDB = new DatabaseServer(policyId);
+                const keys = didObject.getPrivateKeys();
+                const verificationMethods = {};
+                for (const item of keys) {
+                    const { id, type, key } = item;
+                    verificationMethods[type] = id;
+                    await instanceDB.setVirtualKey(did, id, key);
+                }
+                await instanceDB.setVirtualKey(did, did, newPrivateKey.toString());
+                await instanceDB.saveDid({ did, document, verificationMethods });
 
                 await (new GuardiansService())
                     .sendPolicyMessage(PolicyEvents.CREATE_VIRTUAL_USER, policyId, {
@@ -1410,314 +1410,12 @@ export class PolicyEngineService {
             }
         });
 
-        async function migratePolicyData(msg: any, notifier?: INotifier) {
-            const {
-                owner,
-                migrationConfig
-            } = msg;
-
-            const {
-                policies,
-                vcs,
-                vps,
-                schemas, groups, roles
-            } = migrationConfig;
-
-            const { src, dst } = policies;
-
-            const databaseServer = new DatabaseServer();
-
-            const srcModel = await DatabaseServer.getPolicy({
-                id: src,
-                owner
-            });
-            if (!srcModel) {
-                throw new Error(`Can't find source policy`);
-            }
-
-            const dstModel = await DatabaseServer.getPolicy({
-                id: dst,
-                owner
-            });
-            if (!dstModel) {
-                throw new Error(`Can't find destination policy`);
-            }
-
-            const srcVCs = await new DataBaseHelper(VcDocument).find({
-                policyId: src,
-                id: { $in: vcs }
-            });
-            const srcVPs = await new DataBaseHelper(VpDocument).find({
-                policyId: src,
-                id: { $in: vps }
-            });
-
-            const srcSystemSchemas = await DatabaseServer.getSchemas({
-                category: SchemaCategory.SYSTEM,
-                topicId: srcModel.topicId
-            });
-            const dstSystemSchemas = await DatabaseServer.getSchemas({
-                category: SchemaCategory.SYSTEM,
-                topicId: dstModel.topicId
-            });
-            for (const schema of srcSystemSchemas) {
-                const dstSchema = dstSystemSchemas.find(item => item.entity === schema.entity);
-                if (dstSchema) {
-                    schemas[schema.iri] = dstSchema.iri;
-                }
-            }
-
-            const publishedDocuments = new Map<
-                string,
-                VcDocument | VpDocument
-            >();
-            const errors = [];
-
-            const republishDocument = async (
-                doc: VcDocument | VpDocument & { group?: string }
-            ) => {
-                if (!doc) {
-                    return doc;
-                }
-                doc.relationships = doc.relationships || [];
-                for (let i = 0; i < doc.relationships.length; i++) {
-                    const relationship = doc.relationships[i];
-                    let republishedDocument =
-                        publishedDocuments.get(relationship);
-                    if (!republishedDocument) {
-                        const rs = srcVCs.find(
-                            (item) => item.messageId === relationship
-                        );
-                        if (!rs) {
-                            if (doc instanceof VcDocument) {
-                                doc.relationships.splice(i, 1);
-                                i--;
-                            }
-                            continue;
-                        }
-                        republishedDocument = await republishDocument(
-                            rs
-                        );
-                    }
-                    if (republishedDocument) {
-                        doc.relationships[i] =
-                            republishedDocument.messageId;
-                    } else {
-                        if (doc instanceof VcDocument) {
-                            doc.relationships.splice(i, 1);
-                            i--;
-                        }
-                        continue;
-                    }
-                }
-
-                if (publishedDocuments.has(doc.messageId)) {
-                    return doc;
-                }
-
-                if (doc.messageId) {
-                    publishedDocuments.set(doc.messageId, doc);
-                }
-
-                const root = await new Users().getUserById(owner);
-                const rootKey = await new Wallet().getKey(
-                    root.walletToken,
-                    KeyType.KEY,
-                    owner
-                );
-                const topic = await TopicConfig.fromObject(
-                    await DatabaseServer.getTopicById(
-                        dstModel.instanceTopicId
-                    ),
-                    true
-                );
-
-                let userRole;
-                if (doc.group) {
-                    const srcGroup = await databaseServer.getGroupByID(src, doc.group);
-                    const dstUserGroup = await databaseServer.getGroupsByUser(dst, doc.owner);
-                    userRole = dstUserGroup.find(item =>
-                        item.groupName === groups[srcGroup.groupName]
-                        || item.role === roles[srcGroup.role]
-                    );
-                    doc.group = userRole ? userRole.uuid : null;
-                }
-
-                if (doc instanceof VcDocument) {
-                    let vc: VcDocumentDefinition;
-                    const schema: SchemaCollection = await DatabaseServer.getSchema({
-                        topicId: dstModel.topicId,
-                        iri: schemas[doc.schema],
-                    });
-                    if (doc.schema !== schema.iri) {
-                        notifier?.info(`Resigning VC ${doc.id}`);
-
-                        const _vcHelper = new VcHelper();
-                        const credentialSubject = SchemaHelper.updateObjectContext(
-                            new Schema(schema),
-                            doc.document.credentialSubject[0]
-                        );
-                        const res = await _vcHelper.verifySubject(
-                            credentialSubject
-                        );
-                        if (!res.ok) {
-                            errors.push({
-                                error: res.error.type,
-                                id: doc.id
-                            });
-                            return;
-                        }
-                        vc = await _vcHelper.createVcDocument(
-                            credentialSubject,
-                            { did: root.did, key: rootKey },
-                            { uuid: doc.document.id }
-                        );
-                        doc.hash = vc.toCredentialHash();
-                        doc.document = vc.toJsonTree();
-                        doc.schema = schema.iri;
-                    } else {
-                        vc = VcDocumentDefinition.fromJsonTree(doc.document);
-                    }
-                    doc.policyId = dst;
-
-                    if (doc.messageId) {
-                        notifier?.info(`Publishing VC ${doc.id}`);
-
-                        const messageServer = new MessageServer(
-                            root.hederaAccountId,
-                            rootKey
-                        );
-                        const vcMessage = new VCMessage(
-                            MessageAction.MigrateVC
-                        );
-                        vcMessage.setDocument(vc);
-                        vcMessage.setDocumentStatus(
-                            doc.option?.status || DocumentStatus.NEW
-                        );
-                        vcMessage.setRelationships([...doc.relationships, doc.messageId]);
-                        if (userRole && schema.category === SchemaCategory.POLICY) {
-                            vcMessage.setUser(userRole.messageId);
-                        }
-                        const message = vcMessage;
-                        const vcMessageResult = await messageServer
-                            .setTopicObject(topic)
-                            .sendMessage(message, true);
-                        doc.messageId = vcMessageResult.getId();
-                        doc.topicId = vcMessageResult.getTopicId();
-                        doc.messageHash = vcMessageResult.toHash();
-                    }
-                }
-
-                if (doc instanceof VpDocument) {
-                    // tslint:disable-next-line:no-shadowed-variable
-                    const vcs = doc.document.verifiableCredential.map(
-                        (item) =>
-                            VcDocumentDefinition.fromJsonTree(item)
-                    );
-                    let vpChanged = false;
-                    // tslint:disable-next-line:prefer-for-of
-                    for (let i = 0; i < doc.relationships.length; i++) {
-                        const relationship = doc.relationships[i];
-                        // tslint:disable-next-line:no-shadowed-variable
-                        const vc = publishedDocuments.get(relationship);
-                        if (vc && vc instanceof VcDocument) {
-                            for (let j = 0; j < vcs.length; j++) {
-                                const element = vcs[j];
-                                const vcDef = VcDocumentDefinition.fromJsonTree(vc.document);
-                                if (
-                                    (element.getId() === vcDef.getId()) &&
-                                    (element.toCredentialHash() !==
-                                        vcDef.toCredentialHash())
-                                ) {
-                                    vpChanged = true;
-                                    vcs[j] = vcDef
-                                }
-                            }
-                        }
-                    }
-
-                    let vp;
-                    if (vpChanged) {
-                        notifier?.info(`Resigning VP ${doc.id}`);
-                        const _vcHelper = new VcHelper();
-                        vp = await _vcHelper.createVpDocument(
-                            vcs,
-                            { did: root.did, key: rootKey },
-                            { uuid: doc.document.id }
-                        );
-                        doc.hash = vp.toCredentialHash();
-                        doc.document = vp.toJsonTree() as any;
-                    } else {
-                        vp = VpDocumentDefinition.fromJsonTree(doc.document);
-                    }
-
-                    doc.policyId = dst;
-                    if (doc.messageId) {
-                        notifier?.info(`Publishing VP ${doc.id}`);
-                        const messageServer = new MessageServer(
-                            root.hederaAccountId,
-                            rootKey
-                        );
-                        const vpMessage = new VPMessage(
-                            MessageAction.MigrateVP
-                        );
-                        vpMessage.setDocument(vp);
-                        vpMessage.setRelationships([...doc.relationships, doc.messageId]);
-                        const vpMessageResult = await messageServer
-                            .setTopicObject(topic)
-                            .sendMessage(vpMessage);
-                        const vpMessageId = vpMessageResult.getId();
-                        doc.messageId = vpMessageId;
-                        doc.topicId = vpMessageResult.getTopicId();
-                        doc.messageHash = vpMessageResult.toHash();
-                    }
-                }
-
-                if (doc.messageId) {
-                    publishedDocuments.set(doc.messageId, doc);
-                }
-
-                return doc;
-            };
-
-            notifier?.start(`Migrate ${srcVCs.length} VC documents`);
-            for (const vc of srcVCs as VcDocument[]) {
-                const doc = await republishDocument(vc);
-                // const documentStates = await databaseServer.getDocumentStates({
-                //     documentId: doc.id
-                // });
-                if (doc) {
-                    delete doc.id;
-                    delete doc._id;
-                }
-                // doc = await databaseServer.saveVC(doc as any);
-                // await Promise.all(documentStates.map(async docState => {
-                //     delete docState.id;
-                //     delete docState._id;
-                //     docState.documentId = doc.id;
-                //     return await databaseServer.saveDocumentState(docState)
-                // }));
-            }
-            notifier?.completedAndStart(`Save migrated VC documents`);
-            await new DataBaseHelper(VcDocument).save(srcVCs);
-
-            notifier?.completedAndStart(`Migrate ${srcVPs.length} VP documents`);
-            for (const vp of srcVPs as VpDocument[]) {
-                const doc = await republishDocument(vp);
-                delete doc.id;
-                delete doc._id;
-            }
-            notifier?.completedAndStart(`Save migrated VP documents`);
-            await new DataBaseHelper(VpDocument).save(srcVPs);
-
-            return errors;
-        }
-
         this.channel.getMessages<any, any>(
             PolicyEngineEvents.MIGRATE_DATA,
             async (msg) => {
                 try {
-                    const migrationErrors = await migratePolicyData(msg);
+                    const policyDataMigrator = new PolicyDataMigrator(new Users(), new Wallet());
+                    const migrationErrors = await policyDataMigrator.migratePolicyData(msg?.owner, msg?.migrationConfig);
                     if (migrationErrors.length > 0) {
                         new Logger().warn(migrationErrors.map((error) => `${error.id}: ${error.error}`).join('\r\n'), ['GUARDIAN_SERVICE']);
                     }
@@ -1733,7 +1431,8 @@ export class PolicyEngineService {
                 const { task } = msg;
                 const notifier = await initNotifier(task);
                 RunFunctionAsync(async () => {
-                    const migrationErrors = await migratePolicyData(msg, notifier);
+                    const policyDataMigrator = new PolicyDataMigrator(new Users(), new Wallet(), notifier);
+                    const migrationErrors = await policyDataMigrator.migratePolicyData(msg?.owner, msg?.migrationConfig);
                     if (migrationErrors.length > 0) {
                         new Logger().warn(migrationErrors.map((error) => `${error.id}: ${error.error}`).join('\r\n'), ['GUARDIAN_SERVICE']);
                     }

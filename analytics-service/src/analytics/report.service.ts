@@ -26,17 +26,43 @@ import { AnalyticsTokenService } from './token.service';
 import { AnalyticsDocumentService } from './document.service';
 import { AnalyticsUserService } from './user.service';
 import { AnalyticsPolicyService } from './policy.service';
+import moment from 'moment';
 
 /**
  * Report service
  */
 export class ReportService {
     /**
+     * Get root topic id
+     */
+    public static getRootTopic(): string {
+        return process.env.INITIALIZATION_TOPIC_ID;
+    }
+
+    /**
+     * Get root topic id
+     */
+    public static getRestartDate(): Date {
+        let restartDate: Date = new Date(0);
+        if (process.env.RESTART_DATE) {
+            const _moment = moment(process.env.RESTART_DATE, 'yyyy-MM-dd');
+            if (_moment.isValid()) {
+                restartDate = _moment.toDate();
+            }
+        }
+        return restartDate;
+    }
+
+    /**
      * Create report if need
      * @param root
+     * @param restartDate
      */
-    public static async init(root: string): Promise<void> {
-        const report = await new DataBaseHelper(Status).findOne({ root });
+    public static async init(root: string, restartDate: Date): Promise<void> {
+        const report = await new DataBaseHelper(Status).findOne({
+            root,
+            createDate: { $gt: restartDate }
+        });
         if (!report) {
             const row = new DataBaseHelper(Status).create({
                 uuid: GenerateUUIDv4(),
@@ -52,12 +78,16 @@ export class ReportService {
     /**
      * Reset report status
      * @param root
+     * @param restartDate
      */
-    public static async restart(root: string): Promise<Status> {
-        const report = await new DataBaseHelper(Status).findOne({ root });
+    public static async restart(root: string, restartDate: Date): Promise<Status> {
+        const report = await new DataBaseHelper(Status).findOne({
+            root,
+            createDate: { $gt: restartDate }
+        });
         if (report && report.status !== ReportStatus.FINISHED) {
             await AnalyticsUtils.updateStatus(report, null, ReportStatus.NONE);
-            return await ReportService.run(process.env.INITIALIZATION_TOPIC_ID);
+            return await ReportService.run(root, restartDate);
         }
         return null;
     }
@@ -65,10 +95,13 @@ export class ReportService {
     /**
      * Update report
      * @param root
-     * @param skip
+     * @param restartDate
      */
-    public static async run(root: string): Promise<Status> {
-        const report = await new DataBaseHelper(Status).findOne({ root });
+    public static async run(root: string, restartDate: Date): Promise<Status> {
+        const report = await new DataBaseHelper(Status).findOne({
+            root,
+            createDate: { $gt: restartDate }
+        });
 
         if (!report) {
             new Logger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
@@ -570,10 +603,16 @@ export class ReportService {
 
     /**
      * Get current report
+     * @param root
+     * @param restartDate
      */
-    public static async getCurrentReport(): Promise<Status> {
+    public static async getCurrentReport(
+        root: string,
+        restartDate: Date
+    ): Promise<Status> {
         return await new DataBaseHelper(Status).findOne({
-            root: process.env.INITIALIZATION_TOPIC_ID
+            root,
+            createDate: { $gt: restartDate }
         });
     }
 

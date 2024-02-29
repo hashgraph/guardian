@@ -183,7 +183,7 @@ docker-compose up -d --build
 About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 {% endhint %}
 
-7. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](https://github.com/hashgraph/guardian/blob/main/docs/guardian/readme/getting-started/installation/broken-reference/README.md)
+7. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
 
 ### Demo Video
 

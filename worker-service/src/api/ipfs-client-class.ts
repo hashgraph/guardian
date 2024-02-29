@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { create } from 'ipfs-client'
+import { FilebaseClient } from '@filebase/client';
 import { CarReader } from '@ipld/car';
 import * as Delegation from '@ucanto/core/delegation';
 import * as Signer from '@ucanto/principal/ed25519';
@@ -7,9 +8,14 @@ import * as Client from '@web3-storage/w3up-client';
 import { StoreMemory } from '@web3-storage/access'
 
 /**
- * Providers type
+ * Providers enum, add a new provider enum type here.
  */
-type IpfsProvider = 'web3storage' | 'local';
+enum IpfsProvider{
+    FILEBASE = 'filebase',
+    WEB3STORAGE = 'web3storage',
+    LOCAL = 'local',
+}
+
 /**
  * IPFS Client helper
  */
@@ -19,7 +25,7 @@ export class IpfsClientClass {
      * IPFS provider
      * @private
      */
-    private readonly IPFS_PROVIDER: IpfsProvider = process.env.IPFS_PROVIDER as IpfsProvider || 'web3storage'
+    private readonly IPFS_PROVIDER: IpfsProvider = process.env.IPFS_PROVIDER as IpfsProvider
 
     /**
      * IPFS public gateway
@@ -41,7 +47,8 @@ export class IpfsClientClass {
 
     constructor(
         w3sKey?: string,
-        w3sProof?: string
+        w3sProof?: string,
+        filebaseKey?: string
     ) {
         this.options.nodeAddress = process.env.IPFS_NODE_ADDRESS;
         if (w3sKey && w3sProof) {
@@ -49,6 +56,9 @@ export class IpfsClientClass {
                 key: w3sKey,
                 proof: w3sProof
             }
+        }
+        if (filebaseKey) {
+            this.options.filebase = filebaseKey
         }
     }
 
@@ -60,7 +70,7 @@ export class IpfsClientClass {
         let client;
 
         switch (this.IPFS_PROVIDER) {
-            case 'web3storage': {
+            case IpfsProvider.WEB3STORAGE: {
                 const principal = Signer.parse(this.options.w3s.key);
                 client = await Client.create({
                     principal,
@@ -72,7 +82,17 @@ export class IpfsClientClass {
                 break;
             }
 
-            case 'local': {
+            case IpfsProvider.FILEBASE: {
+                if (!this.options.filebase) {
+                    throw new Error('Filebase Bucket token is not set')
+                }
+
+                client = new FilebaseClient({token: this.options.filebase} as any)
+
+                break;
+            }
+
+            case IpfsProvider.LOCAL: {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
                 }
@@ -98,16 +118,19 @@ export class IpfsClientClass {
     public async addFile(file: Buffer): Promise<string> {
         let cid;
         switch (this.IPFS_PROVIDER) {
-            case 'web3storage': {
-                const result = await this.client.uploadFile(
-                    new Blob([file])
-                );
+            case IpfsProvider.WEB3STORAGE: {
+                const result = await this.client.uploadFile(new Blob([file]));
 
                 cid = result.toString()
                 break;
             }
 
-            case 'local': {
+            case IpfsProvider.FILEBASE: {
+                cid = await this.client.storeBlob(new Blob([file]))
+                break;
+            }
+
+            case IpfsProvider.LOCAL: {
                 const { path } = await this.client.add(file);
                 cid = path;
                 break;

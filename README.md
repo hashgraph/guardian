@@ -10,6 +10,7 @@ Guardian is a modular open-source solution that includes best-in-class identity 
 
 ## Discovering Digital Environmental Assets assets on Hedera
 
+
 As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. 
 
 In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an associated Registry HCS Topic for that Policy, and a Project HCS Topic.
@@ -28,6 +29,7 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 
 * [Hedera Testnet Account](https://portal.hedera.com)
 * [Web3.Storage Account](https://web3.storage/)
+* [Filebase Account](https://filebase.com/)
   Note: as of January, 10th 2024 old web3.storage upload API (the main upload API before November 20, 2023) has been sunset. New **w3up** service accounts/API must be used with Guardian going forward.
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
@@ -161,8 +163,8 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 > **_NOTE:_**  You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 
 > **_NOTE:_**  for any other GUARDIAN\_ENV name of your choice just copy and paste the file `./configs/.env.template.guardian.system` and rename as `./configs/.env.<choosen name>.guardian.system`
-   
-#### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
+
+#### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
 
 ##### 4.1 Setting up IPFS Local node:
 
@@ -176,10 +178,8 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
    IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
    IPFS_PROVIDER="local"
    ```
-   
 
-
-##### 4.2 Setting up IPFS Web3Storage node:**
+##### 4.2 Setting up IPFS Web3Storage node:
 
 To select this option ensure that `IPFS_PROVIDER="web3storage"` setting exists in your `./configs/.env.<environment>.guardian.system` file.
 
@@ -189,6 +189,8 @@ To configure access to the [w3up](https://github.com/web3-storage/w3up) IPFS upl
    IPFS_STORAGE_KEY="..."
    IPFS_STORAGE_PROOF="..."
    ```
+
+> **_NOTE:_**  When Windows OS is used for creating the IPFS values, please use bash shell to prevent issues with base64 encoding.
  
 To obtain the values for these variables please follow the steps below:
 - Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'starter') and enter your payment details.
@@ -211,6 +213,23 @@ To summarise, the process of configuring delegated access to the w3up API consis
 5. `w3 delegation`
 
 The complete guide to using the new w3up web3.storage API is available at https://web3.storage/docs/w3up-client.
+
+#### 4.3 Setting up IPFS Filebase Bucket:
+
+To configure the Filebase IPFS provider, set the following variables in the file *
+*./configs/.env.develop.guardian.system:**
+
+   ```
+   IPFS_STORAGE_API_KEY="Generated Firebase Bucket Token"
+   IPFS_PROVIDER="filebase"
+   ```
+
+Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service API Endpoint** service. The **token**
+generated for a bucket corresponds to the **IPFS_STORAGE_API_KEY** environment variable within the guardian's
+configuration.
+
+For detailed setup instructions, refer to the
+official <https://docs.filebase.com/api-documentation/ipfs-pinning-service-api>.
   
 #### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
 

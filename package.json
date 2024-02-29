@@ -2,10 +2,6 @@
   "name": "guardian",
   "private": true,
   "packageManager": "yarn@1.22.21",
-  "resolutions": {
-    "@azure/core-rest-pipeline": "1.12.1",
-    "image-size": "1.0.2"
-  },
   "workspaces": [
     "interfaces",
     "common",
@@ -23,11 +19,12 @@
     "ai-service",
     "notification-service"
   ],
-  "version": "2.21.1",
+  "version": "2.22.0",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },
   "scripts": {
-    "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*"
+    "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
+    "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
   }
 }

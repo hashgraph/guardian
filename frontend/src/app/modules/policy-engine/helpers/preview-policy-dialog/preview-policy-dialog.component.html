@@ -114,7 +114,10 @@
                 <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
                     <div>{{error.worksheet}}</div>
                     <div>{{error.__path}}</div>
-                    <div>{{error.text}}</div>
+                    <div>
+                        <div>{{error.text}}</div>
+                        <div *ngIf="error.message && error.message !== error.text">{{error.message}}</div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,4 +1,5 @@
 // TODO remove it by replacing ipfs client
-export declare global {
-    interface ReadableStream<T> {}
+export declare global{
+    interface ReadableStream<T>{
+    }
 }

@@ -6,7 +6,7 @@ Block _**tagsManager**_ is responsible for managing tags in policies. This block
 
 | Property Name    | Description                                                                       | Example                       | Status |
 | ---------------- | --------------------------------------------------------------------------------- | ----------------------------- | ------ |
-| Tag              | Unique name for the logic block.                                                  | tags\_manager                 |        |
+| Tag              | Unique name for the logic block.                                                  | **tags\_manager**             |        |
 | Permissions      | Which entity has rights to interact at this part of the workflow.                 | Registrant                    |        |
 | Default Active   | Shows whether this block is active at this time and whether it needs to be shown. | Checked or Unchecked          |        |
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or Unchecked          |        |
