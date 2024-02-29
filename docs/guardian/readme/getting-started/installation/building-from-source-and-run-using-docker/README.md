@@ -187,7 +187,7 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 
 ### Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=d5GxTn-OjSE\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=11)
+[Youtube](https://www.youtube.com/watch?v=3fXm7wAERPM\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=1)
 
 ### Troubleshoot
 
