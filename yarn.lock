@@ -10548,9 +10548,14 @@ one-time@^1.0.0:
   dependencies:
     fn.name "1.x.x"
 
-one-webcrypto@^1.0.3, "one-webcrypto@git+https://github.com/web3-storage/one-webcrypto.git":
+one-webcrypto@^1.0.3:
   version "1.0.3"
   resolved "git+https://github.com/web3-storage/one-webcrypto.git#5148cd14d5489a8ac4cd38223870e02db15a2382"
+
+"one-webcrypto@https://github.com/web3-storage/one-webcrypto":
+  version "1.0.3"
+  uid "5148cd14d5489a8ac4cd38223870e02db15a2382"
+  resolved "https://github.com/web3-storage/one-webcrypto#5148cd14d5489a8ac4cd38223870e02db15a2382"
 
 onetime@^5.1.0:
   version "5.1.2"
