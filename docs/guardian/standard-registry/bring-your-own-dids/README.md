@@ -13,7 +13,7 @@ Enter the Hedera network account with non-0 hbar balance to be used by the syste
   1. **DID Document**
      1. **Default DID**
 
-![Picture 10](../../../.gitbook/assets/1.png)
+![Picture 10](<../../../.gitbook/assets/1 (1).png>)
 
 When the ‘Generate new DID document’ option is selected, clicking on the Next button would result in Guardian generating a new dedicated DID to be used exclusively in Guardian based on the Hedera account ID entered at the previous step. Such DID would have the following format:
 
@@ -27,33 +27,33 @@ Example:
   *
     1. **Externally-controlled (custom) DID**
 
-![Picture 11](../../../.gitbook/assets/2.png)
+![Picture 11](<../../../.gitbook/assets/2 (1).png>)
 
 Selecting ‘Custom DID document’ option enables the dialogue text window where the externally-generated/controlled DID document can be pasted from the clip-board. The document must contain **Ed25519VerificationKey2018** and **Bls12381G2Key2020** verification methods to be useable by Guardian.
 
 *
   1. **Keys**
 
-![Picture 12](../../../.gitbook/assets/3.png)
+![Picture 12](<../../../.gitbook/assets/3 (1).png>)
 
 For BYO DID of Standard Registries, in the cases where there are multiple verification methods Standard Registry users are required to specify which one of them is to be used in Guardian, and pass the corresponding private key into Guardian to be used for signatures.
 
 *
   1. **VC Document**
 
-![Picture 13](../../../.gitbook/assets/4.png)
+![Picture 13](<../../../.gitbook/assets/4 (1).png>)
 
 Final step of the registration presents a form, based on the corresponding system schema, for the user to fill out.
 
 1. **New User registration**
    1. **Select the Standard Registry to be associated with**
 
-![Picture 19](../../../.gitbook/assets/5.png)
+![Picture 19](<../../../.gitbook/assets/5 (1).png>)
 
 *
   1. **User Hedera Account**
 
-![Picture 20](../../../.gitbook/assets/6.png)
+![Picture 20](<../../../.gitbook/assets/6 (1).png>)
 
 Specify the existing Hedera account with non-0 hbar balance to be used for submitting transactions associated with this user’s DID.
 
@@ -61,7 +61,7 @@ Specify the existing Hedera account with non-0 hbar balance to be used for submi
   1. **DID Document**
      1. **Default DID**
 
-![Picture 21](../../../.gitbook/assets/7.png)
+![Picture 21](<../../../.gitbook/assets/7 (1).png>)
 
 See section 1.2.1.
 
@@ -69,14 +69,14 @@ See section 1.2.1.
   *
     1. **Custom DID**
 
-![Picture 22](../../../.gitbook/assets/8.png)
+![Picture 22](<../../../.gitbook/assets/8 (1).png>)
 
 See section 1.2.2
 
 *
   1. **Keys**
 
-![Picture 23](../../../.gitbook/assets/9.png)
+![Picture 23](<../../../.gitbook/assets/9 (1).png>)
 
 See section 1.3.
 

@@ -13,6 +13,9 @@ The Guardian solution is built with the following major frameworks/libraries.
 * [Transmute](https://github.com/transmute-industries/verifiable-data/tree/main/packages/vc.js)
 * [MathJS](https://mathjs.org)
 * [Web3.Storage](https://github.com/web3-storage/web3.storage)
+* [NestJS](https://nestjs.com/)
+* [Nginx](https://www.nginx.com/)
+* [Hedera network](https://portal.hedera.com/login)
 
 **Frontend**
 

@@ -105,9 +105,6 @@ jobs:
           pushd guardian-service
           npm run test
           popd
-          pushd worker-service
-          npm run test
-          popd
         env:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider

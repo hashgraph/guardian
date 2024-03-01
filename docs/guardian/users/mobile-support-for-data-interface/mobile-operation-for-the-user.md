@@ -39,7 +39,7 @@ The images below are the registration forms which have been redesigned
 
 The "Create Retire Request" form was also adapted, as can be seen below.
 
-![](<../../../.gitbook/assets/10 (1) (1).png>)
+![](<../../../.gitbook/assets/10 (1) (1) (1).png>)
 
 ### User Create / Join Multi Policy
 

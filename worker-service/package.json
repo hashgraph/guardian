@@ -2,8 +2,8 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "^2.21.1",
-        "@guardian/interfaces": "^2.21.1",
+        "@guardian/common": "^2.22.0",
+        "@guardian/interfaces": "^2.22.0",
         "@hashgraph/sdk": "2.34.1",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
@@ -65,5 +65,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "2.21.1"
+    "version": "2.22.0"
 }

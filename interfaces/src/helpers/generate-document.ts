@@ -114,7 +114,11 @@ export class DocumentGenerator {
             case 'string': {
                 switch (field.customType) {
                     case 'enum':
-                        return field.enum[0];
+                        if (field.enum) {
+                            return field.enum[0];
+                        } else {
+                            return undefined;
+                        }
                     case 'hederaAccount':
                         return '0.0.1';
                     default:

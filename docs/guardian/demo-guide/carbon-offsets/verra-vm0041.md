@@ -64,7 +64,7 @@ VM0041 represents a pivotal methodology in addressing methane emissions within t
 
 [https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk](https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk)
 
-![Video titled: VM0041 - Reduction of Enteric Methane Emissions from Ruminants through the Use of Feed Ingredients](../../../.gitbook/assets/0.jpeg)
+![Video titled: VM0041 - Reduction of Enteric Methane Emissions from Ruminants through the Use of Feed Ingredients](<../../../.gitbook/assets/0 (1).jpeg>)
 
 ### Policy Workflow <a href="#toc154152885" id="toc154152885"></a>
 
@@ -98,60 +98,60 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 1. Create a new user and assign role as Project Proponent.
 
-![](<../../../.gitbook/assets/2 (1) (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1) (1).png>)
 
 2. Create a New project by clicking on "New Project" button and enter all the required details.
 
-![](<../../../.gitbook/assets/3 (1) (1).png>)
+![](<../../../.gitbook/assets/3 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/4 (1) (1).png>)
+![](<../../../.gitbook/assets/4 (1) (1) (1).png>)
 
 3. Once project details are submitted, Verra adds the project to the project pipeline.
 
-![](<../../../.gitbook/assets/5 (1) (1).png>)
+![](<../../../.gitbook/assets/5 (1) (1) (1).png>)
 
 4. Now, we create a new user and assign its role as VVB
 
-![](<../../../.gitbook/assets/6 (1) (1).png>)
+![](<../../../.gitbook/assets/6 (1) (1) (1).png>)
 
 5. We need to set VVB name
 
-![](<../../../.gitbook/assets/7 (1) (1).png>)
+![](<../../../.gitbook/assets/7 (1) (1) (1).png>)
 
 6. Once VVB name is set, it waits for SR to approve it.
 
-![](<../../../.gitbook/assets/8 (1) (1).png>)
+![](<../../../.gitbook/assets/8 (1) (1) (1).png>)
 
 7. Now we login as SR and approve VVB.
 
-![](<../../../.gitbook/assets/9 (1) (1).png>)
+![](<../../../.gitbook/assets/9 (1) (1) (1).png>)
 
 8. Now we login as the Project Proponent and assign project to VVB.
 
-![](<../../../.gitbook/assets/10 (1).png>)
+![](<../../../.gitbook/assets/10 (1) (1).png>)
 
 9. Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.
 
-![](<../../../.gitbook/assets/11 (1).png>)
+![](<../../../.gitbook/assets/11 (1) (1).png>)
 
 10. Once validated, we login as Project Proponent and Add Monitoring Report.
 
-![](<../../../.gitbook/assets/12 (1).png>)
+![](<../../../.gitbook/assets/12 (1) (1).png>)
 
 11. Once report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.
 
-![](<../../../.gitbook/assets/13 (1).png>)
+![](<../../../.gitbook/assets/13 (1) (1).png>)
 
 12. Once monitoring report is validated, we login as SR and click on Mint to mint the tokens.
 
-![](<../../../.gitbook/assets/14 (1).png>)
+![](<../../../.gitbook/assets/14 (1) (1).png>)
 
 13. Once minting is completed, we can view tokens in Token History tab
 
-![](<../../../.gitbook/assets/15 (1).png>)
+![](<../../../.gitbook/assets/15 (1) (1).png>)
 
 14. Trustchain can also be viewed by clicking on View TrustChain button:
 
-![](<../../../.gitbook/assets/16 (1).png>)
+![](<../../../.gitbook/assets/16 (1) (1).png>)
 
-![](<../../../.gitbook/assets/17 (1).png>)
+![](<../../../.gitbook/assets/17 (1) (1).png>)
