@@ -77,6 +77,10 @@ This Block performs mathematical calculations sequentially.
 
 When above code is executed, a new variable, "E1" will be created which would contain the value of the calculation "E0\*10".
 
+{% hint style="info" %}
+Note: All the expressions available in [Math.js](https://mathjs.org/docs/) are supported by calculateMathAddOnBlock.
+{% endhint %}
+
 ### Example
 
 In the input VC is { "field0" : 5 }
