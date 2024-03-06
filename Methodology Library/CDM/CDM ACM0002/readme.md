@@ -5,6 +5,7 @@
 - Need and Use for the ACM0002 policy
 - Objective and Scope
 - Methodology Overview
+- Tools Referenced
 - Typical Projects
 - Integration of Battery Energy Storage Systems (BESS)
 - Available Roles
@@ -40,6 +41,29 @@ The core objective of ACM0002 is to provide a standardized framework for quantif
 
 ACM0002 initiates by establishing a baseline against which emissions reductions are assessed. This baseline represents the emissions that would have occurred in the absence of the renewable energy project. The methodology also mandates a demonstration of "additionality," confirming that the project would not have transpired without CDM support. 
 
+## Tools Referenced
+
+**Methodological Tool 01** - Tool for the demonstration and assessment of additionality. 
+
+**Methodological Tool 02** - Combined tool to identify the baseline scenario and demonstrate additionality. 
+
+**Methodological Tool 03** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+
+**Methodological Tool 05** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
+
+**Methodological Tool 07** - Tool to calculate the emission factor for an electricity system. 
+
+**Methodological Tool 10** – Tool to determine the remaining lifetime of equipment. 
+
+**Methodological Tool 32** - Positive lists of technologies. 
+
+**Note:**
+1. To get complete information about Tools, please refer to [Tools](https://github.com/hashgraph/guardian/tree/develop/Methodology%20Library/CDM/Tools) Section
+2. Tools are already published on the Hedera Testnet network. Hence, it's shouldn't be published again during publishing of the policy, which is referencing it.
+
+<img width="1074" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/bb9a5348-a335-4c59-a92a-1767ec2968a4">
+
+
 ## Typical Projects
 
 ACM0002 is applicable to a variety of project types, including retrofit, rehabilitation (or refurbishment), replacement, or capacity addition to an existing power plant, as well as the construction and operation of new power plants or units that utilize renewable energy sources and supply electricity to the grid. Under certain conditions, ACM0002 permits the integration of Battery Energy Storage Systems (BESS). 
@@ -57,20 +81,6 @@ Verification and Validation Body (VVB) - The VVB plays a critical role in indepe
 Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
 ## Key Documents & Schemas
-
-Methodological Tool 01 - Tool for the demonstration and assessment of additionality. 
-
-Methodological Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality. 
-
-Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
-
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
-
-Methodological Tool 07 - Tool to calculate the emission factor for an electricity system. 
-
-Methodological Tool 10 – Tool to determine the remaining lifetime of equipment. 
-
-Methodological Tool 32 - Positive lists of technologies. 
 
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
 
