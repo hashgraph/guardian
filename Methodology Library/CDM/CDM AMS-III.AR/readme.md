@@ -32,7 +32,7 @@ In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. Th
 
 ## Policy Workflow
 
-  ![image](https://github.com/hashgraph/guardian/assets/79293833/45ac9f42-7089-45c2-b35b-c35c1a104fb4)
+![image](https://github.com/hashgraph/guardian/assets/79293833/45ac9f42-7089-45c2-b35b-c35c1a104fb4)
 
 
 ## Policy Guide
@@ -41,7 +41,6 @@ This policy is published to the Hedera network and can either be imported via Gi
 
 Timestamp: 
 Policy: 1698756576.572245003
-Tool 33: 1690820529.197570717
 
 ### Available Roles 
  
@@ -53,13 +52,19 @@ Tool 33: 1690820529.197570717
   
 ### Important Documents & Schemas 
   
-- Methodological Tool 07- Tool to calculate the emission factor for an electricity system
-- Methodological Tool 19- Demonstration of additionality of microscale project activities
-- Methodological Tool 21- Demonstration of additionality of small-scale project activities
-- Methodological Tool 33- Default values for common parameters
-- Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
-- Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
-- Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+Methodological Tool 07- Tool to calculate the emission factor for an electricity system
+
+Methodological Tool 19- Demonstration of additionality of microscale project activities
+
+Methodological Tool 21- Demonstration of additionality of small-scale project activities
+
+Methodological Tool 33- Default values for common parameters
+
+Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
+
+Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
+
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
   
 ### Token(Carbon credit) 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
