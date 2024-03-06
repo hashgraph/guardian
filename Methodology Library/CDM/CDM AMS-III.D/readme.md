@@ -6,10 +6,10 @@
 - Demo Video
 - Policy Workflow
 - Policy Guide
-  - Available Roles
+- Available Roles
 - Important Documents & Schemas
 - Token (Carbon Emission Reduction)
-  - Step By Step
+- Step By Step
 <!-- /TOC -->
 
 ## Introduction
