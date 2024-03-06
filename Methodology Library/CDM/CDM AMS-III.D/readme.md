@@ -56,19 +56,19 @@ Policy: 1698756329.359347003
 
 ### Important Documents & Schemas 
   
-**Methodological Tool 03** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
 
-**Methodological Tool 05** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
 
-**Methodological Tool 06** - Tool to determine project emissions from flaring gases containing methane.
+Methodological Tool 06 - Tool to determine project emissions from flaring gases containing methane.
 
-**Methodological Tool 14** – Project and leakage emissions from anaerobic digesters.
+Methodological Tool 14 – Project and leakage emissions from anaerobic digesters.
 
-**Project Description** - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
+Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
+Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
 
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  
 
   
 ### Token(Carbon Emissions Reduction) 
