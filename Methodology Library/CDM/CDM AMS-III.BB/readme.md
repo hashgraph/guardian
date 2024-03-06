@@ -111,17 +111,17 @@ Policy:
   
 ### Important Documents & Schemas 
   
-**Methodological Tool 07** - Tool to calculate the emission factor for an electricity system.
+Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
 
-**Methodological Tool 21** - Demonstration of additionality of smallscale project activities.
+Methodological Tool 21 - Demonstration of additionality of smallscale project activities.
 
-**Methodological Tool 33** - Default values for common parameters.
+Methodological Tool 33 - Default values for common parameters.
 
-**Project Description** - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
+Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
+Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
 
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
   
 ### Token(Carbon Emissions Reduction) 
 
