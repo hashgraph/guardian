@@ -5,6 +5,7 @@
 - Need and Use for the ACM0001 policy
 - Objective and Scope
 - Methodology Overview
+- Tools Referenced
 - Typical Projects
 - Available Roles
 - Key Documents & Schemas
@@ -37,6 +38,33 @@ The primary objective of ACM0001 is to provide a structured approach for mitigat
 
 ACM0001 encompasses various scenarios and conditions, including the installation of new LFG capture systems and enhancements to existing ones, and it allows for the captured LFG to be used in multiple ways, ensuring versatility and adaptability to different project needs. The methodology mandates the demonstration of "additionality," confirming that the project would not have occurred without CDM support, and establishes stringent criteria to ensure genuine emissions reductions. 
 
+## Tools Referenced
+
+**Methodological Tool 02** – Combined tool to identify the baseline scenario and demonstrate additionality. 
+
+**Methodological Tool 03** – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+
+**Methodological Tool 04** – Emissions from solid waste disposal sites.  
+
+**Methodological Tool 05** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
+
+**Methodological Tool 06** – Project emissions from flaring.  
+
+**Methodological Tool 08** – Tool to determine the mass flow of a greenhouse gas in a gaseous stream.  
+
+**Methodological Tool 09** – Determining the baseline efficiency of thermal or electric energy generation systems.  
+
+**Methodological Tool 12** – Project and leakage emissions from transportation of freight.  
+
+**Methodological Tool 32** – Positive lists of technologies. 
+
+**Note:**
+1. To get complete information about Tools, please refer to [Tools Section](https://github.com/hashgraph/guardian/tree/develop/Methodology%20Library/CDM/Tools)
+2. Tools are already published on the Hedera Testnet network. Hence, it's shouldn't be published again during publishing of the policy, which is referencing it.
+
+
+
+
 ## Typical Projects
 
 Typical projects under ACM0001 involve the capture of landfill gas and its utilization to produce energy or supply consumers, contributing to the reduction of greenhouse gas emissions and the displacement of more GHG-intensive services. These projects can range from the installation of new LFG capture systems to enhancements to existing ones, allowing for a broad spectrum of applications in different contexts and conditions. 
@@ -50,24 +78,6 @@ Verification and Validation Body (VVB) - The VVB plays a critical role in indepe
 Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
 ## Key Documents & Schemas
-
-Methodological Tool 02 – Combined tool to identify the baseline scenario and demonstrate additionality. 
-
-Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
-
-Methodological Tool 04 – Emissions from solid waste disposal sites.  
-
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
-
-Methodological Tool 06 – Project emissions from flaring.  
-
-Methodological Tool 08 – Tool to determine the mass flow of a greenhouse gas in a gaseous stream.  
-
-Methodological Tool 09 – Determining the baseline efficiency of thermal or electric energy generation systems.  
-
-Methodological Tool 12 – Project and leakage emissions from transportation of freight.  
-
-Methodological Tool 32 – Positive lists of technologies. 
 
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
 
