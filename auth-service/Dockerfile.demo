@@ -26,7 +26,7 @@ COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
 COPY ./auth-service/package.json ./
 COPY ./auth-service/tsconfig*.json ./
-COPY ./auth-service/Gulpfile.js ./
+COPY ./auth-service/Gulpfile.mjs ./
 COPY ./yarn.lock ./
 COPY ./package-lock.json ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
