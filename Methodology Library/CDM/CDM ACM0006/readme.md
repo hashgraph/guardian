@@ -1,15 +1,15 @@
 ## Table of contents
 <!-- TOC -->
 
-- [Table of contents](#table-of-contents)
-- [Introduction](#introduction)
-- [Need and Use for the ACM0006 Policy](#need-and-use-for-the-ACM0006-policy)
-- [Policy Workflow](#policy-workflow)
-- [Policy Guide](#policy-guide)
-  - [Available Roles](#available-roles)
-  - [Important Documents \& Schemas](#important-documents--schemas)
-  - [Token(Carbon Emissions Reduction)](#tokencarbon-emissions-reduction)
-  - [Step By Step](#step-by-step)
+- Table of contents
+- Introduction
+- Need and Use for the ACM0006 Policy
+- Policy Workflow
+- Policy Guide
+- Available Roles
+- Important Documents & Schemas
+- Token(Carbon Emissions Reduction)
+- Step By Step
 
 <!-- /TOC -->
 
@@ -48,23 +48,32 @@ This policy is published to Hedera network and can either be imported via Github
 - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
 ### Important Documents & Schemas 
-  
-- Project Description: General information on project, location, technology, equipment, biomass types etc.
-- Emission Reductions Calculation: Calculate and specify baseline emissions, project emissions and leakage as per methodology equations.
-- Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
-- Monitoring Report: Periodic monitoring reports with data on parameters like biomass use, electricity generation etc.
 
-Tools referenced:
-- Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality
-- Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-- Tool 04 - Emissions from solid waste disposal sites
-- Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-- Tool 07 - Tool to calculate the emission factor for an electricity system
-- Tool 09 - Determining the baseline efficiency of thermal or electric energy generation systems
-- Tool 10 - Tool to determine the remaining lifetime of equipment
-- Tool 12 - Project and leakage emissions from transportation of freight
-- Tool 16 - Project and leakage emissions from biomass
+Methodological Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality
 
+Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+
+Methodological Tool 04 - Emissions from solid waste disposal sites
+
+Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+
+Methodological Tool 07 - Tool to calculate the emission factor for an electricity system
+
+MethodologicalTool 09 - Determining the baseline efficiency of thermal or electric energy generation systems
+
+Methodological Tool 10 - Tool to determine the remaining lifetime of equipment
+
+Methodological Tool 12 - Project and leakage emissions from transportation of freight
+
+Methodological Tool 16 - Project and leakage emissions from biomass
+
+Project Description: General information on project, location, technology, equipment, biomass types etc.
+
+Emission Reductions Calculation: Calculate and specify baseline emissions, project emissions and leakage as per methodology equations.
+
+Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
+
+Monitoring Report: Periodic monitoring reports with data on parameters like biomass use, electricity generation etc.
   
 ### Token(Carbon Emissions Reduction) 
 
