@@ -87,12 +87,17 @@ Policy:
 
 ## Important Documents and Schemas
 
-- Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
-- Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
-- Methodological Tool 10 - Tool to determine the remaining lifetime of equipment.
-- Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
-- Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
-- Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+
+Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
+
+Methodological Tool 10 - Tool to determine the remaining lifetime of equipment.
+
+Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
+
+Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
+
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
 
 ## Token (Carbon Emission Reduction)
 
