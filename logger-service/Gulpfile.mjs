@@ -1,9 +1,9 @@
 'use strict'
 
-const gulp = require('gulp');
-const ts = require('gulp-typescript');
-const rename = require('gulp-rename');
-const sourcemaps = require('gulp-sourcemaps');
+import gulp from 'gulp';
+import ts from 'gulp-typescript';
+import rename from 'gulp-rename';
+import sourcemaps from 'gulp-sourcemaps';
 
 gulp.task('configure:demo', () => {
     console.log('configure demo');
