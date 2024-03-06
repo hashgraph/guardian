@@ -40,15 +40,14 @@ AMS-II.G provides a standardized and measurable framework for clean cooking proj
 
 ## Policy Workflow
 
-<img width="1128" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/5adac491-8135-416c-b490-13d315ad3200">
+![image](https://github.com/hashgraph/guardian/assets/79293833/ac113cf5-f4a4-40b5-bee1-2775d21c38e1)
+
 
 ## Policy Guide
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
 
 Policy: 1706881318.979259003
-Tool 30: 1690820465.670044734
-Tool 33: 1690820484.707441003 
 
 ### Available Roles 
  
@@ -58,14 +57,20 @@ Tool 33: 1690820484.707441003
 - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens  
 
 ### Important Documents & Schemas 
-  
-**Project Description** - Project Proponent information, standard project information, methodology information, etc.
 
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions. 
+Methodological Tool 19- Demonstration of additionality of microscale project activities 
 
-**Default Values (Tool 33)** - Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like fNRB (Fraction of non-renewable biomass). 
+Methodological Tool 21- Demonstration of additionality of small-scale project activities  
 
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+Methodological Tool 30- Calculation of the fraction of non-renewable biomass
+
+Methodological Tool 33- Default values for common parameters   
+
+Project Description - Project Proponent information, standard project information, methodology information, etc.
+
+Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions. 
+
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
 
   
 ### Token(Carbon credit) 
