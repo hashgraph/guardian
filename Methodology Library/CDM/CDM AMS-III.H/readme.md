@@ -1,15 +1,15 @@
 ## Table of contents
 <!-- TOC -->
 
-- [Table of contents](#table-of-contents)
-- [Introduction](#introduction)
-- [Need and Use for the AMS-III.H Policy](#need-and-use-for-the-ams-iiih-policy)
-- [Policy Workflow](#policy-workflow)
-- [Policy Guide](#policy-guide)
-- [Available Roles](#available-roles)
-- [Important Documents \& Schemas](#important-documents--schemas)
-- [Token(Carbon Emissions Reduction)](#tokencarbon-emissions-reduction)
-- [Step By Step](#step-by-step)
+- Table of contents
+- Introduction
+- Need and Use for the AMS-III.H Policy
+- Policy Workflow
+- Policy Guide
+- Available Roles
+- Important Documents & Schemas
+- Token(Carbon Emissions Reduction)
+- Step By Step
 
 <!-- /TOC -->
 
@@ -47,22 +47,27 @@ This policy is published to Hedera network and can either be imported via Github
 
 ### Important Documents & Schemas 
   
-- Project Description: Information on project participant, location, technology, configuration, crediting period etc.
-- Emission Reductions Calculations: Calculate & specify baseline emissions, project emissions and leakage as per methodology equations.
-- Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
-- Monitoring Report: Periodic monitoring report with data for parameters like methane captured, combusted etc.
+Methodological Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion  
 
-Tools referenced in this methodology:  
-- Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion  
-- Tool 04- Emissions from solid waste disposal sites  
-- Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation  
-- Tool 06- Project emissions from flaring  
-- Tool 32- Positive lists of technologies 
+Methodological Tool 04- Emissions from solid waste disposal sites  
+
+Methodological Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation  
+
+Methodological Tool 06- Project emissions from flaring  
+
+Methodological Tool 32- Positive lists of technologies 
+
+Project Description: Information on project participant, location, technology, configuration, crediting period etc.
+
+Emission Reductions Calculations: Calculate & specify baseline emissions, project emissions and leakage as per methodology equations.
+
+Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
+
+Monitoring Report: Periodic monitoring report with data for parameters like methane captured, combusted etc.
 
 ### Token(Carbon Emissions Reduction) 
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
-
 
 ### Step By Step 
 
@@ -143,23 +148,3 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 ![image](https://github.com/hashgraph/guardian/assets/79293833/cff56e23-7ee5-4e05-9ad4-7686b974d2f8)
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/f1a63229-681b-4a8e-970e-c3932f19e462)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
