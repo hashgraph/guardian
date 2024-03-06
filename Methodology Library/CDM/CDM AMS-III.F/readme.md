@@ -61,13 +61,19 @@ This policy is published to Hedera network and can either be imported via Github
 
 ### Important Documents & Schemas 
   
-- Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
-- Methodological Tool 04 - Emissions from solid waste disposal sites 
-- Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
-- Methodological Tool 13 - Project and leakage emissions from composting
-- Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
-- Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
-- Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+
+Methodological Tool 04 - Emissions from solid waste disposal sites 
+
+Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+
+Methodological Tool 13 - Project and leakage emissions from composting
+
+Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
+
+Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
+
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
 ### Token(Carbon Emissions Reduction) 
 
