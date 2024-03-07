@@ -4,6 +4,7 @@
 - Table of contents
 - Introduction
 - Need and Use for the AMS-III.H Policy
+- Tools Referenced
 - Policy Workflow
 - Policy Guide
 - Available Roles
@@ -31,6 +32,18 @@ Wastewater treatment is a significant contributor to global methane emissions. A
 
 In the modern landscape of emission reduction initiatives, transparency and credibility are key. Guardian Platform, built on Hedera Hashgraph DLT, provides immutable and transparent record-keeping, enhancing the accountability of these initiatives. AMS-III.H, with its focus on sustainable wastewater treatment practices, enhances its environmental impact and underscores the role of innovative technology in driving a greener and more sustainable future.
 
+## Tools Referenced
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion  
+
+**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%204/readme.md)** - Emissions from solid waste disposal sites  
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation  
+
+**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%206/readme.md)** - Project emissions from flaring  
+
+**[Methodological Tool 32](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2032/readme.md)** - Positive lists of technologies 
+
 ## Policy Workflow
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/19a09f5f-ce25-4c8e-972d-62a757fc757e)
@@ -47,16 +60,6 @@ This policy is published to Hedera network and can either be imported via Github
 
 ### Important Documents & Schemas 
   
-Methodological Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion  
-
-Methodological Tool 04- Emissions from solid waste disposal sites  
-
-Methodological Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation  
-
-Methodological Tool 06- Project emissions from flaring  
-
-Methodological Tool 32- Positive lists of technologies 
-
 Project Description: Information on project participant, location, technology, configuration, crediting period etc.
 
 Emission Reductions Calculations: Calculate & specify baseline emissions, project emissions and leakage as per methodology equations.
