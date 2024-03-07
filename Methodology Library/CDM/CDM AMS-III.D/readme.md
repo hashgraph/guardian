@@ -3,6 +3,7 @@
 
 - Introduction
 - Need and Use for the AMS-III.D Policy
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
@@ -31,6 +32,15 @@ Manure management practices, particularly within livestock farming, play a subst
 
 In the context of modern emission reduction projects, the necessity for transparency and credibility is undeniable. The Guardian, a platform built on the Hedera Network, emerges as a solution to challenges like double counting and fraud. Hedera's distributed ledger technology ensures immutable and transparent record-keeping, thereby enhancing the accountability and integrity of emission reduction initiatives. As the Guardian platform streamlines processes, enhances accuracy, and fosters trust within clean manure management projects, AMS-III.D not only bolsters its environmental impact but also highlights the role of cutting-edge technology in propelling a greener, more sustainable future.
 
+## Tools Referenced
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+
+**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%206/readme.md)** - Tool to determine project emissions from flaring gases containing methane.
+
+**[Methodological Tool 14](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2014/readme.md)** – Project and leakage emissions from anaerobic digesters.
 
 ## Demo Video
 
@@ -56,14 +66,6 @@ Policy: 1698756329.359347003
 
 ### Important Documents & Schemas 
   
-Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
-
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
-
-Methodological Tool 06 - Tool to determine project emissions from flaring gases containing methane.
-
-Methodological Tool 14 – Project and leakage emissions from anaerobic digesters.
-
 Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
 Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
