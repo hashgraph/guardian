@@ -2,10 +2,12 @@
 <!-- TOC -->
 
 - Introduction
-- Why the AMS-III.AV Methodology?
-- Demo Video
+- Key Objectives and Scope
+- Need and Use for the AMS-III.AV Policy
+- Tools Referenced
 - Policy Workflow
 - Policy Guide
+- Available Roles
 - Important Documents & Schemas
 - Token (Carbon Credit)
 - Step By Step
@@ -27,6 +29,20 @@ AMS-III.AV plays a role in addressing this global crisis by advocating for the a
 
 Safe drinking water is an indispensable component of public health and well-being. The availability of clean and potable water significantly reduces the risk of waterborne diseases and contributes to the overall improvement of health outcomes. However, various regions face substantial hurdles in securing safe water access due to inadequate infrastructure, environmental degradation, and limited resources. 
 
+## Tools Referenced
+
+**[Methodological Tool 01](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%201/readme.md)** - Tool for the demonstration and assessment of additionality 
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+
+**[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of small-scale project activities
+
+**[Methodological Tool 30](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2030/readme.md)** - Calculation of the fraction of non-renewable biomass
+
 ## Policy Workflow
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/d4e4067e-0e4d-4608-87fc-64e652c671d7)
@@ -46,18 +62,6 @@ Policy:
 - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.  
 
 ## Important Documents & Schemas 
-
-Methodological Tool 01- Tool for the demonstration and assessment of additionality 
-
-Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
-
-Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
-
-Methodological Tool 19- Demonstration of additionality of microscale project activities
-
-Methodological Tool 21- Demonstration of additionality of small-scale project activities
-
-Methodological Tool 30- Calculation of the fraction of non-renewable biomass
 
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
 

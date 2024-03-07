@@ -3,6 +3,7 @@
 
 - Introduction
 - Need and Use for the AMS-II.G Policy
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
@@ -34,21 +35,30 @@ To combat these challenges and transition towards cleaner cooking practices, ini
 
 AMS-II.G provides a standardized and measurable framework for clean cooking projects, allowing for reliable estimation and verification of emission reductions. The Guardian AMS-II.G Policy offers a unique technical opportunity for companies to streamline, enhance robustness, and establish trust and transparency within their clean cookstove projects. The guidelines and equations provided in the methodology are incorporated into schemas featuring built-in auto-calculation blocks, emission factors, and data from modules like tool 33. The results of the data provided undergo immutable and transparent verification by third parties. Ultimately, the emissions are tokenized, elevating tracking, transparency, accounting, and reporting, with the data structured to comply with AMS-II.G reporting requirements. 
 
+## Tools Referenced
+
+**[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities 
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of small-scale project activities  
+
+**[Methodological Tool 30](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2030/readme.md)** - Calculation of the fraction of non-renewable biomass
+
+**[Methodological Tool 33](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2033/readme.md)** - Default values for common parameters   
+
 ## Demo Video
 
 [Youtube](https://www.youtube.com/watch?v=jfl72_fL6iU)
 
 ## Policy Workflow
 
-<img width="1128" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/5adac491-8135-416c-b490-13d315ad3200">
+![image](https://github.com/hashgraph/guardian/assets/79293833/ac113cf5-f4a4-40b5-bee1-2775d21c38e1)
+
 
 ## Policy Guide
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
 
 Policy: 1706881318.979259003
-Tool 30: 1690820465.670044734
-Tool 33: 1690820484.707441003 
 
 ### Available Roles 
  
@@ -58,14 +68,12 @@ Tool 33: 1690820484.707441003
 - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens  
 
 ### Important Documents & Schemas 
-  
-**Project Description** - Project Proponent information, standard project information, methodology information, etc.
 
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions. 
+Project Description - Project Proponent information, standard project information, methodology information, etc.
 
-**Default Values (Tool 33)** - Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like fNRB (Fraction of non-renewable biomass). 
+Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions. 
 
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
 
   
 ### Token(Carbon credit) 

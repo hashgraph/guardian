@@ -5,6 +5,7 @@
 - Need and Use for the AMS-II.J policy
 - Objective and Scope
 - Methodology Overview
+- Tools Referenced
 - Typical Projects
 - Available Roles
 - Key Documents & Schemas
@@ -39,6 +40,14 @@ The objective of CDM Methodology AMS-II.J is to promote energy efficiency in res
 
 CDM Methodology AMS-II.J, titled "Demand-side activities for efficient lighting technologies," offers a systematic approach to address the imperative need for enhanced energy efficiency in residential lighting. This methodology focuses on the replacement of less energy-efficient baseline lamps with self-ballasted Compact Fluorescent Lamps (CFLs) that are equipped with integrated ballasts, serving as non-removable components. The central objective of this methodology is to curtail energy consumption, mitigate greenhouse gas emissions, and reduce residential electricity costs. In summary, CDM Methodology AMS-II.J is a targeted approach that enables the adoption of energy-efficient residential lighting technologies, ultimately contributing to sustainable development, reduced emissions, and economic savings, while adhering to stringent quality and standardization criteria.  
 
+## Tools Referenced
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/CDM/Tools/Tool%207#readme)** - Tool to calculate the emission factor for an electricity system. 
+
+**Note:**
+1. To get complete information about Tools, please refer to [Tools Section](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/CDM/Tools)
+2. Tools are already published on the Hedera Testnet network. Hence, it's shouldn't be published again during publishing of the policy, which is referencing it.
+
 ## Typical Projects
 
 Projects eligible under CDM Methodology AMS-II.J encompass a variety of initiatives aimed at improving energy efficiency in residential lighting. Typical projects within the scope of this methodology include residential lighting upgrades, energy-efficient lighting programs, government-led lighting projects, lighting retrofits, public housing initiatives, and technology standardization and certification efforts. 
@@ -52,8 +61,6 @@ Verification and Validation Body (VVB) - The VVB plays a critical role in indepe
 Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
 ## Key Documents & Schemas
-
-Methodological Tool 07 - Tool to calculate the emission factor for an electricity system. 
 
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
 

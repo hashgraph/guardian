@@ -7,6 +7,7 @@
 - Eligibility Conditions
 - Project Boundary
 - Baseline Scenarios
+- Tools Referenced
 - Important Parameters
 - Demo Video
 - Policy Workflow
@@ -55,6 +56,14 @@ For Greenfield power plants, the baseline scenario assumes the electricity deliv
 
 For retrofit, rehabilitation, or replacement, the baseline scenario is the continuing operation of the existing plant until the time it would likely be retrofitted, rehabilitated, or replaced.
 
+## Tools Referenced
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%207/readme.md)** - Tool to calculate the emission factor for an electricity system.
+
+**[Methodological Tool 10](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2010/readme.md)** - Tool to determine the remaining lifetime of equipment.
+
 ## Important Parameters
 
 At Validation:
@@ -76,9 +85,7 @@ Coming Soon
 ## Policy Guide
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
-
-Policy: 
-
+ 
 ## Available Roles
 
 - Project Participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.  
@@ -87,12 +94,11 @@ Policy:
 
 ## Important Documents and Schemas
 
-- Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
-- Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
-- Methodological Tool 10 - Tool to determine the remaining lifetime of equipment.
-- Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
-- Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
-- Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
+
+Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
+
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
 
 ## Token (Carbon Emission Reduction)
 
@@ -175,27 +181,3 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 ![image](https://github.com/hashgraph/guardian/assets/79293833/34b052be-fe7e-498c-9e93-524a24595e9c)
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/84e492eb-bebe-4ab7-bce7-190c4abc9176)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

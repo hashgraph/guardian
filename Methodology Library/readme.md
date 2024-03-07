@@ -12,6 +12,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - VM0044
    - VerraARR
    - PWRM0001
+   - PWRM0002
    - VM0041
 4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
@@ -37,18 +38,16 @@ This folder contains sub folders for each Methodology and their authors (with ma
 15. CDM AMS-I.D - Envision
 16. CDM AR-ACM0003 - Envision
 17. CDM AMS-II.J - Envision
-18. CDM AMS-I.C (Coming Soon)
-19. CDM ACM0001 (Coming Soon)
-20. CDM ACM0002 (Coming Soon)
-21. CDM AMS-III.F (Coming Soon)
-22. CDM ACM0006 (Coming Soon)
-23. CDM ACM0018 (Coming Soon)
-24. CDM AMS-III.AV (Coming Soon)
-25. CDM AMS-III.H (Coming Soon)
-26. CDM AMS-I.F (Coming Soon)
-27. CDM AMS-I.A (Coming Soon)
+18. CDM ACM0002 - Envision
+19. CDM AMS-III.F - Envision
+20. CDM AMS-III.AV - Envision
+21. CDM AMS-III.H - Envision
+22. CDM AMS-I.F - Envision
+23. CDM AMS-I.C (Coming Soon)
+24. CDM ACM0001 (Coming Soon)
+25. CDM ACM0018 (Coming Soon)
+26. CDM AMS-I.A (Coming Soon)
     
-
 ### Emission Policies
 
 1. GHG Methodology - Remote Workflow - Envision
