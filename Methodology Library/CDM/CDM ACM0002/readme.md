@@ -43,26 +43,23 @@ ACM0002 initiates by establishing a baseline against which emissions reductions 
 
 ## Tools Referenced
 
-**Methodological Tool 01** - Tool for the demonstration and assessment of additionality. 
+**[Methodological Tool 01](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%201/readme.md)** - Tool for the demonstration and assessment of additionality. 
 
-**Methodological Tool 02** - Combined tool to identify the baseline scenario and demonstrate additionality. 
+**[Methodological Tool 02](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%202/readme.md)** - Combined tool to identify the baseline scenario and demonstrate additionality. 
 
-**Methodological Tool 03** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
 
-**Methodological Tool 05** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
 
-**Methodological Tool 07** - Tool to calculate the emission factor for an electricity system. 
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%207/readme.md)** - Tool to calculate the emission factor for an electricity system. 
 
-**Methodological Tool 10** – Tool to determine the remaining lifetime of equipment. 
+**[Methodological Tool 10](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2010/readme.md)** – Tool to determine the remaining lifetime of equipment. 
 
-**Methodological Tool 32** - Positive lists of technologies. 
+**[Methodological Tool 32](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2032/readme.md)** - Positive lists of technologies. 
 
 **Note:**
 1. To get complete information about Tools, please refer to [Tools](https://github.com/hashgraph/guardian/tree/develop/Methodology%20Library/CDM/Tools) Section
 2. Tools are already published on the Hedera Testnet network. Hence, it's shouldn't be published again during publishing of the policy, which is referencing it.
-
-<img width="1074" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/bb9a5348-a335-4c59-a92a-1767ec2968a4">
-
 
 ## Typical Projects
 
