@@ -42,13 +42,11 @@ CDM Methodology AMS-II.J, titled "Demand-side activities for efficient lighting 
 
 ## Tools Referenced
 
-**Methodological Tool 07** - Tool to calculate the emission factor for an electricity system. 
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/CDM/Tools/Tool%207#readme)** - Tool to calculate the emission factor for an electricity system. 
 
 **Note:**
-1. To get complete information about Tools, please refer to [Tools Section](https://github.com/hashgraph/guardian/tree/develop/Methodology%20Library/CDM/Tools)
+1. To get complete information about Tools, please refer to [Tools Section](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/CDM/Tools)
 2. Tools are already published on the Hedera Testnet network. Hence, it's shouldn't be published again during publishing of the policy, which is referencing it.
-
-<img width="1342" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/b97581dc-f162-4bb8-bf99-606111d63931">
 
 ## Typical Projects
 
