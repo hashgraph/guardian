@@ -3,6 +3,7 @@
 
 - Introduction
 - Why the AMS-III.AR Methodology?
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
@@ -25,6 +26,16 @@ On the other hand, LED/CFL bulbs emerge as superior options, and here's why. Fir
 Moreover, LED bulbs are designed with sustainability in mind. Unlike conventional bulbs, they do not contain harmful substances like mercury, making them safer for both human health and the planet. Additionally, LED bulbs produce minimal heat, further enhancing their safety and sustainability. While CFL bulbs do contain small amounts of mercury, it's important to note that switching to compact fluorescent light bulbs still offers energy savings, reducing our reliance on fossil fuels burned for electricity generation. Furthermore, the increased efficiency and extended lifespan of LED/CFL bulbs contribute to resource conservation during the production process.
 
 In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. They not only provide superior lighting quality but also bring significant energy savings, reduced carbon emissions, prolonged lifespan, and a more sustainable lighting solution. By adopting LED/CFL technology, we can make a positive impact on our environment. 
+
+## Tools Referenced
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%207/readme.md)** - Tool to calculate the emission factor for an electricity system
+
+**[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of small-scale project activities
+
+**[Methodological Tool 33](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2033/readme.md)** - Default values for common parameters
 
 ## Demo Video
 
@@ -51,14 +62,6 @@ Policy: 1698756576.572245003
   - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.  )
   
 ### Important Documents & Schemas 
-  
-Methodological Tool 07- Tool to calculate the emission factor for an electricity system
-
-Methodological Tool 19- Demonstration of additionality of microscale project activities
-
-Methodological Tool 21- Demonstration of additionality of small-scale project activities
-
-Methodological Tool 33- Default values for common parameters
 
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
