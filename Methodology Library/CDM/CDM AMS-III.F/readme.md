@@ -4,6 +4,7 @@
 - Key Objectives and Scope
 - Aspects of Methodology
 - Significance and Environmental Impact
+- Tools Referenced
 - Policy Workflow
 - Policy Guide
 - Available Roles
@@ -45,6 +46,16 @@ Compost Management: Emphasizes proper soil application or controlled thermal/mec
 
 AMS-III.F's emphasis on controlled aerobic treatment of organic waste, notably through composting, signifies a pivotal step towards curbing methane emissions. By outlining stringent criteria for waste handling, regional considerations, and proper treatment methodologies, this policy contributes significantly to mitigating greenhouse gas emissions and advancing sustainable waste management practices on a global scale. 
 
+## Tools Referenced
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+
+**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%204/readme.md)** - Emissions from solid waste disposal sites 
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+
+**[Methodological Tool 13](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2013/readme.md)** - Project and leakage emissions from composting
+
 ## Policy Workflow
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/daf58c33-1c98-4ce8-a179-a77a0db717f5)
@@ -61,14 +72,6 @@ This policy is published to Hedera network and can either be imported via Github
 
 ### Important Documents & Schemas 
   
-Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
-
-Methodological Tool 04 - Emissions from solid waste disposal sites 
-
-Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
-
-Methodological Tool 13 - Project and leakage emissions from composting
-
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
 Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
