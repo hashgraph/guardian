@@ -3,6 +3,7 @@
 
 - Introduction
 - Need and Use for the AMS-II.G Policy
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
@@ -34,6 +35,16 @@ To combat these challenges and transition towards cleaner cooking practices, ini
 
 AMS-II.G provides a standardized and measurable framework for clean cooking projects, allowing for reliable estimation and verification of emission reductions. The Guardian AMS-II.G Policy offers a unique technical opportunity for companies to streamline, enhance robustness, and establish trust and transparency within their clean cookstove projects. The guidelines and equations provided in the methodology are incorporated into schemas featuring built-in auto-calculation blocks, emission factors, and data from modules like tool 33. The results of the data provided undergo immutable and transparent verification by third parties. Ultimately, the emissions are tokenized, elevating tracking, transparency, accounting, and reporting, with the data structured to comply with AMS-II.G reporting requirements. 
 
+## Tools Referenced
+
+**[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities 
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of small-scale project activities  
+
+**[Methodological Tool 30](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2030/readme.md)** - Calculation of the fraction of non-renewable biomass
+
+**[Methodological Tool 33](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2033/readme.md)** - Default values for common parameters   
+
 ## Demo Video
 
 [Youtube](https://www.youtube.com/watch?v=jfl72_fL6iU)
@@ -57,14 +68,6 @@ Policy: 1706881318.979259003
 - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens  
 
 ### Important Documents & Schemas 
-
-Methodological Tool 19- Demonstration of additionality of microscale project activities 
-
-Methodological Tool 21- Demonstration of additionality of small-scale project activities  
-
-Methodological Tool 30- Calculation of the fraction of non-renewable biomass
-
-Methodological Tool 33- Default values for common parameters   
 
 Project Description - Project Proponent information, standard project information, methodology information, etc.
 
