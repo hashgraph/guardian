@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports.did_document = [{
+export const did_document = [{
     '_id': {
         '$oid': '6169b4428c3fb50013b24aa5'
     },

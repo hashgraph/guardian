@@ -1,16 +1,14 @@
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
 
-const {
-    VCMessage
-} = require('../../../../dist/hedera-modules/message/vc-message');
-const {
-    VcDocument
-} = require('../../../../dist/hedera-modules/vcjs/vc-document');
-const { MessageStatus } = require('../../../../dist/hedera-modules/message/message');
-const { MessageType } = require('../../../../dist/hedera-modules/message/message-type');
-const { MessageAction } = require('../../../../dist/hedera-modules/message/message-action');
-const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
-const { vc_document } = require('../../dump/vc_document');
+import { VCMessage } from '../../../../dist/hedera-modules/message/vc-message.js';
+import { VcDocument } from '../../../../dist/hedera-modules/vcjs/vc-document.js';
+
+import { MessageStatus } from '../../../../dist/hedera-modules/message/message.js';
+import { MessageType } from '../../../../dist/hedera-modules/message/message-type.js';
+import { MessageAction } from '../../../../dist/hedera-modules/message/message-action.js';
+import { UrlType } from '../../../../dist/hedera-modules/message/url.interface.js';
+
+import { vc_document } from '../../dump/vc_document.mjs';
 
 describe('VCMessage', function () {
 

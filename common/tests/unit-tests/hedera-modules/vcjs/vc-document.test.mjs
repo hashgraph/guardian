@@ -1,15 +1,10 @@
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
 
-const {
-    VcDocument
-} = require('../../../../dist/hedera-modules/vcjs/vc-document');
-const {
-    VcSubject
-} = require('../../../../dist/hedera-modules/vcjs/vc-subject');
-const { vc_document } = require('../../dump/vc_document');
-const {
-    Issuer
-} = require('../../../../dist/hedera-modules/vcjs/issuer');
+import { VcDocument } from '../../../../dist/hedera-modules/vcjs/vc-document.js';
+import { VcSubject } from '../../../../dist/hedera-modules/vcjs/vc-subject.js';
+import { Issuer } from '../../../../dist/hedera-modules/vcjs/issuer.js';
+
+import { vc_document } from '../../dump/vc_document.mjs';
 
 describe('VcDocument', function () {
 

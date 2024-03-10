@@ -1,8 +1,6 @@
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
 
-const {
-    Issuer
-} = require('../../../../dist/hedera-modules/vcjs/issuer');
+import { Issuer } from '../../../../dist/hedera-modules/vcjs/issuer.js';
 
 describe('Issuer', function () {
     const rootObj = {

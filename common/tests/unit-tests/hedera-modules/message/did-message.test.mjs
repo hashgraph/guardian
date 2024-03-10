@@ -1,16 +1,11 @@
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
 
-const {
-    DIDMessage
-} = require('../../../../dist/hedera-modules/message/did-message');
+import { DIDMessage } from '../../../../dist/hedera-modules/message/did-message.js';
+import { DIDDocument } from '../../../../dist/hedera-modules/vcjs/did-document.js';
 
-const {
-    DIDDocument
-} = require('../../../../dist/hedera-modules/vcjs/did-document');
-
-const { MessageStatus } = require('../../../../dist/hedera-modules/message/message');
-const { MessageType } = require('../../../../dist/hedera-modules/message/message-type');
-const { MessageAction } = require('../../../../dist/hedera-modules/message/message-action');
+import { MessageStatus } from '../../../../dist/hedera-modules/message/message.js';
+import { MessageType } from '../../../../dist/hedera-modules/message/message-type.js';
+import { MessageAction } from '../../../../dist/hedera-modules/message/message-action.js';
 
 describe('DIDMessage', function () {
     const testDidMessage = {
