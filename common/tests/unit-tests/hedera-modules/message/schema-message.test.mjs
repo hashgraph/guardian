@@ -1,12 +1,11 @@
-const { expect, assert } = require('chai');
+import { expect, assert } from 'chai';
 
-const {
-    SchemaMessage
-} = require('../../../../dist/hedera-modules/message/schema-message');
-const { MessageStatus } = require('../../../../dist/hedera-modules/message/message');
-const { MessageType } = require('../../../../dist/hedera-modules/message/message-type');
-const { MessageAction } = require('../../../../dist/hedera-modules/message/message-action');
-const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
+import { SchemaMessage } from '../../../../dist/hedera-modules/message/schema-message.js';
+
+import { MessageStatus } from '../../../../dist/hedera-modules/message/message.js';
+import { MessageType } from '../../../../dist/hedera-modules/message/message-type.js';
+import { MessageAction } from '../../../../dist/hedera-modules/message/message-action.js';
+import { UrlType } from '../../../../dist/hedera-modules/message/url.interface.js';
 
 describe('SchemaMessage', function () {
 

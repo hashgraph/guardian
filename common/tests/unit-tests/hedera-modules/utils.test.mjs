@@ -1,7 +1,6 @@
-const {
-    timeout
-} = require('../../../dist/hedera-modules/utils');
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
+
+import { timeout } from '../../../dist/hedera-modules/utils.js';
 
 describe('HederaUtils', function () {
 

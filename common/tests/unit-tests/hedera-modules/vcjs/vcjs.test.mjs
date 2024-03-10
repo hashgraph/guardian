@@ -1,28 +1,15 @@
-const { expect, assert } = require('chai');
-const {
-    VCJS
-} = require('../../../../dist/hedera-modules/vcjs/vcjs');
-const {
-    DefaultDocumentLoader
-} = require('../../../../dist/hedera-modules/document-loader/document-loader-default');
-const {
-    DIDDocument
-} = require('../../../../dist/hedera-modules/vcjs/did-document');
-const {
-    LocalSchemaContextLoader
-} = require('../../../../dist/document-loader/local-schema-context-loader');
-const {
-    LocalSchemaDocumentLoader
-} = require('../../../../dist/document-loader/local-schema-document-loader');
-const {
-    LocalVcSchemaDocumentLoader
-} = require('../../../../dist/document-loader/local-vc-schema-document-loader');
-const {
-    LocalDidLoader
-} = require('../../../../dist/document-loader/local-did-loader');
-const { PrivateKey } = require("@hashgraph/sdk");
+import { assert } from 'chai';
+import { PrivateKey } from '@hashgraph/sdk';
 
-const { vc_document } = require('../../dump/vc_document');
+import { VCJS } from '../../../../dist/hedera-modules/vcjs/vcjs.js';
+import { DefaultDocumentLoader } from '../../../../dist/hedera-modules/document-loader/document-loader-default.js';
+import { DIDDocument } from '../../../../dist/hedera-modules/vcjs/did-document.js';
+import { LocalSchemaContextLoader } from '../../../../dist/document-loader/local-schema-context-loader.js';
+import { LocalSchemaDocumentLoader } from '../../../../dist/document-loader/local-schema-document-loader.js';
+import { LocalVcSchemaDocumentLoader } from '../../../../dist/document-loader/local-vc-schema-document-loader.js';
+import { LocalDidLoader } from '../../../../dist/document-loader/local-did-loader.js';
+
+import { vc_document } from '../../dump/vc_document.mjs';
 
 describe('VCJS', function () {
     const actualVcDocument = vc_document.find(document => document.hash === '9s7b1eW2gkZEd64SAidCci3UmXQgfZt2w6ajiKdPdHa9');

@@ -82,8 +82,8 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "prepack": "npm run build:prod",
-        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/common.xml --exit",
-        "test:local": "mocha tests/**/*.test.js --exit",
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/common.xml --exit",
+        "test:local": "mocha tests/**/*.test.mjs --exit",
         "test:stability": "mocha tests/stability.test.js"
     },
     "version": "2.22.0"

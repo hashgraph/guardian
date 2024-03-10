@@ -1,13 +1,9 @@
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
+import { PrivateKey } from '@hashgraph/sdk';
 
-const {
-    DidRootKey,
-    DIDDocument,
-    DidDocumentBase
-} = require('../../../../dist/hedera-modules/vcjs/did-document');
+import { DidRootKey, DIDDocument, DidDocumentBase } from '../../../../dist/hedera-modules/vcjs/did-document.js';
 
-const { PrivateKey } = require("@hashgraph/sdk");
-const { did_document } = require('../../dump/did_document');
+import { did_document } from '../../dump/did_document.mjs';
 
 describe('DidDocuments', function () {
     const topicId = "0.0.34195177";

@@ -1,9 +1,8 @@
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
 
-const {
-    VcSubject
-} = require('../../../../dist/hedera-modules/vcjs/vc-subject');
-const { vc_document } = require('../../dump/vc_document');
+import { VcSubject } from '../../../../dist/hedera-modules/vcjs/vc-subject.js';
+
+import { vc_document } from '../../dump/vc_document.mjs';
 
 describe('VcSubject', function () {
     const testCS = vc_document[0].document.credentialSubject[0];

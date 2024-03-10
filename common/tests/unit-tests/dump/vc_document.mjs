@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports.vc_document = [{
+export const vc_document = [{
     '_id': {
         '$oid': '6169b4428c3fb50013b24aa3'
     },

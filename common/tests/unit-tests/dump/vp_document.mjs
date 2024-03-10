@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports.vp_document = [{
+export const vp_document = [{
     '_id': {
         '$oid': '6169b4d38c3fb50013b24ab0'
     },

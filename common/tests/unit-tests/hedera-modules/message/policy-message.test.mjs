@@ -1,13 +1,11 @@
-const { expect, assert } = require('chai');
+import { assert } from 'chai';
 
-const {
-    PolicyMessage
-} = require('../../../../dist/hedera-modules/message/policy-message');
+import { PolicyMessage } from '../../../../dist/hedera-modules/message/policy-message.js';
 
-const { MessageStatus } = require('../../../../dist/hedera-modules/message/message');
-const { MessageType } = require('../../../../dist/hedera-modules/message/message-type');
-const { MessageAction } = require('../../../../dist/hedera-modules/message/message-action');
-const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
+import { MessageStatus } from '../../../../dist/hedera-modules/message/message.js';
+import { MessageType } from '../../../../dist/hedera-modules/message/message-type.js';
+import { MessageAction } from '../../../../dist/hedera-modules/message/message-action.js';
+import { UrlType } from '../../../../dist/hedera-modules/message/url.interface.js';
 
 describe('PolicyMessage', function () {
 
