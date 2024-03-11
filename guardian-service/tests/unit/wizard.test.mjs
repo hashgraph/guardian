@@ -1,13 +1,14 @@
-const fs = require('fs');
-const path = require('path');
-const { assert } = require('chai');
-const moduleAlias = require('module-alias');
+import fs from 'fs';
+import path from 'path';
+import { assert } from 'chai';
+import moduleAlias from 'module-alias';
+import rewire from 'rewire';
 
 moduleAlias.addAliases({
     '@api': process.cwd() + '/dist' + '/api',
 });
 
-const { PolicyWizardHelper } = require('@api/helpers/policy-wizard-helper');
+const { PolicyWizardHelper } = rewire(process.cwd() + '/dist' + '/api/helpers/policy-wizard-helper.js');
 
 function clearIds(config) {
     const props = Object.keys(config);
@@ -64,16 +65,12 @@ describe('Policy Wizard Tests', function () {
 
     configs.forEach((config) => {
         it(config, async function () {
-            const wizardConfig = require(path.join(
-                configsPath,
-                config,
-                'wizard.config.json'
-            ));
-            const policyWizardConfig = require(path.join(
-                configsPath,
-                config,
-                'policy-wizard.config.json'
-            ));
+            const wizardConfigPath = path.join(configsPath, config, 'wizard.config.json');
+            const policyWizardConfigPath = path.join(configsPath, config, 'policy-wizard.config.json');
+
+            const wizardConfig = JSON.parse(await fs.promises.readFile(wizardConfigPath, 'utf-8'));
+            const policyWizardConfig = JSON.parse(await fs.promises.readFile(policyWizardConfigPath, 'utf-8'));
+
             const wizardHelper = new PolicyWizardHelper();
             assert.equal(
                 JSON.stringify(

@@ -1,8 +1,8 @@
-const dotenv = require('dotenv');
-dotenv.config();
+import moduleAlias from 'module-alias';
+import rewire from 'rewire';
+import dotenv from 'dotenv';
 
-const moduleAlias = require('module-alias');
-const rewire = require("rewire");
+dotenv.config();
 
 moduleAlias.addAliases({
   "@api": process.cwd() + '/dist' + "/api",
@@ -16,7 +16,7 @@ moduleAlias.addAliases({
   "@database-modules": process.cwd() + '/dist' + "/database-modules"
 });
 
-const {Inject} = rewire('../../../dist/helpers/decorators/inject');
+const { Inject } = rewire(process.cwd() + '/dist' + '/helpers/decorators/inject.js');
 
 //const { BlockTreeGenerator } = require("../../../dist/policy-engine/block-tree-generator");
 

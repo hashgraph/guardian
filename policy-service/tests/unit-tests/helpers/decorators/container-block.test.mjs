@@ -1,6 +1,8 @@
-require('module-alias/register');
-const {assert} = require('chai')
-const {ContainerBlock} = require("../../../../dist/policy-engine/helpers/decorators");
+import 'module-alias/register.js';
+
+import { assert } from 'chai';
+
+import { ContainerBlock} from '../../../../dist/policy-engine/helpers/decorators/container-block.js';
 
 describe('Container Block', function() {
     it('Create', async function() {
