@@ -1,10 +1,10 @@
+import { assert } from 'chai';
 import dotenv from 'dotenv';
-import {HederaSDKHelper} from '../../dist/api/helpers/hedera-sdk-helper.js'
-import {HederaUtils} from '../../dist/api/helpers/utils.js';
-import {assert} from 'chai';
+
+import { HederaSDKHelper } from '../../dist/api/helpers/hedera-sdk-helper.js';
+import { HederaUtils } from '../../dist/api/helpers/utils.js';
 
 dotenv.config();
-
 
 async function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

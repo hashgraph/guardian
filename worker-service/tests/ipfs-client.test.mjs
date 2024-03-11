@@ -1,12 +1,13 @@
-const dotenv = require('dotenv');
-const path = require('path');
+import { Blob } from 'node:buffer';
+import { describe, before, it } from 'node:test';
+
+import { assert } from 'chai';
+import dotenv from 'dotenv';
+import path from 'path';
+
+import { IpfsClient } from '../dist/api/ipfs-client.js';
 
 dotenv.config({ path: path.resolve(__dirname, `../../configs/.env.${process.env.TEST_ENV}.guardian.system`) });
-
-const { IpfsClient } = require('../dist/api/ipfs-client');
-const { assert } = require('chai');
-const { Blob } = require("node:buffer");
-const { describe, before, it} = require("node:test");
 
 /**
  * This test suite enables the testing and implementation of new IPFS clients.
