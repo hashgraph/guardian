@@ -10,4 +10,4 @@ EXPOSE 3006
 EXPOSE 4200
 RUN npm install -g nodemon
 RUN npm install -g ts-node
-CMD ["node", "dev.js"]
+CMD ["node", "dev.mjs"]

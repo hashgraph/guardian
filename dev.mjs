@@ -1,6 +1,5 @@
-const execSync = require('child_process').execSync;
-const spaw = require('child_process').spawn;
-const fs = require('fs');
+import { execSync, spawn } from 'child_process';
+import fs from 'fs';
 
 (async () => {
     await execSync(`yarn`, { stdio: 'inherit', shell: true });
@@ -19,7 +18,7 @@ const fs = require('fs');
 
         await new Promise((resolve) => {
             log('Watching changes...');
-            const child = spaw('yarn', ['--cwd', folder, 'dev'], { shell: true });
+            const child = spawn('yarn', ['--cwd', folder, 'dev'], { shell: true });
 
             child.stdout.on('data', log);
             child.stderr.on('data', log);
