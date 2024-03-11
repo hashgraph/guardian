@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-
 import { GetURL, GetToken } from '../helpers';
 
 function Profiles() {
