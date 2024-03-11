@@ -92,8 +92,8 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/policy-service.xml",
-        "test:local": "mocha tests/**/*.test.js",
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/policy-service.xml",
+        "test:local": "mocha tests/**/*.test.mjs",
         "test:stability": "mocha tests/stability.test.js"
     },
     "version": "2.22.0"

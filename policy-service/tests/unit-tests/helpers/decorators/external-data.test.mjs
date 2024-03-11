@@ -1,6 +1,8 @@
-require('module-alias/register');
-const {assert} = require('chai')
-const {ExternalData} = require("../../../../dist/policy-engine/helpers/decorators");
+import 'module-alias/register.js';
+
+import { assert } from 'chai';
+
+import { ExternalData } from '../../../../dist/policy-engine/helpers/decorators/external-data.js';
 
 describe('ExternalData Block', function() {
     it('Create', async function() {

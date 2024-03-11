@@ -1,10 +1,12 @@
-require('module-alias/register');
-const {assert} = require('chai')
-const {EventBlock} = require("../../../../dist/policy-engine/helpers/decorators");
+import 'module-alias/register.js';
 
-describe('Event Block', function() {
+import { assert } from 'chai';
+
+import { DataSourceBlock} from '../../../../dist/policy-engine/helpers/decorators/data-source-block.js';
+
+describe('DataSource Block', function() {
     it('Create', async function() {
-        const fn  = EventBlock({blockType: 'testBlock', children: []});
+        const fn  = DataSourceBlock({blockType: 'testBlock', children: []});
         const result = new fn(function () {});
         assert(result.blockType, 'testBlock');
         assert.isUndefined(result.children);

@@ -1,7 +1,5 @@
-const dotenv = require('dotenv');
-dotenv.config();
-
-const {
+import { expect, assert } from 'chai';
+import {
     Client,
     AccountBalanceQuery,
     PrivateKey,
@@ -11,8 +9,10 @@ const {
     AccountInfoQuery,
     TopicCreateTransaction,
     FileCreateTransaction
-} = require('@hashgraph/sdk');
-const { expect, assert } = require('chai');
+} from '@hashgraph/sdk';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 async function wait(timeout) {
     return new Promise(function (resolve, reject) {

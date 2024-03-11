@@ -1,28 +1,30 @@
-const dotenv = require('dotenv');
+import { expect, assert } from 'chai';
+import moduleAlias from 'module-alias';
+import rewire from 'rewire';
+import dotenv from 'dotenv';
+
+import * as common from '@guardian/common';
+
 dotenv.config();
 
-const moduleAlias = require("module-alias");
-
 moduleAlias.addAliases({
-  "@api": process.cwd() + '/dist' + "/api",
-  "@entity": process.cwd() + '/dist' + "/entity",
-  "@subscribers": process.cwd() + '/dist' + "dist/subscribers",
-  "@helpers": process.cwd() + '/dist' + "/helpers",
-  "@auth": process.cwd() + '/dist' + "/auth",
-  "@policy-engine": process.cwd() + '/dist' + "/policy-engine",
-  "@hedera-modules": process.cwd() + '/dist' +  "/hedera-modules/index",
-  "@document-loader": process.cwd() + '/dist' +  "/document-loader",
-  "@analytics": process.cwd() + '/dist' +  "/analytics",
-  "@database-modules": process.cwd() + '/dist' + "/database-modules"
+    '@api': process.cwd() + '/dist' + '/api',
+    '@entity': process.cwd() + '/dist' + '/entity',
+    '@subscribers': process.cwd() + '/dist' + 'dist/subscribers',
+    '@helpers': process.cwd() + '/dist' + '/helpers',
+    '@auth': process.cwd() + '/dist' + '/auth',
+    '@policy-engine': process.cwd() + '/dist' + '/policy-engine',
+    '@hedera-modules': process.cwd() + '/dist' + '/hedera-modules/index',
+    '@document-loader': process.cwd() + '/dist' + '/document-loader',
+    '@analytics': process.cwd() + '/dist' + '/analytics',
+    '@database-modules': process.cwd() + '/dist' + '/database-modules',
 });
-const { expect, assert } = require('chai');
-const rewire = require("rewire");
 
-const { ApplicationState } = require("@guardian/common");
+const { ApplicationState } = common;
 const state = new ApplicationState();
 state.updateState('READY');
 
-const configAPIModule = rewire("../../dist/api/config.service");
+const configAPIModule = rewire(process.cwd() + '/dist' + '/api/config.service.js');
 
 class MockLogger {
     constructor() {

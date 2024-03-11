@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports.testObject1 = [
+export const testObject1 = [
     {
         'type': 'VP',
         'id': '5d46d1fd-75ad-4073-ade7-322d6f31374c',
