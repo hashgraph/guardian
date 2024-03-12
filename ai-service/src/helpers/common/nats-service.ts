@@ -1,6 +1,6 @@
 import { headers, NatsConnection, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '../interfaces/generate-uuid-v4';
-import { ZipCodec } from './zip-codec';
+import { ZipCodec } from './zip-codec.js';
 
 /**
  * Nats service

@@ -1,6 +1,6 @@
-import { Policy } from '../models/common/policy';
-import { PolicyCategory } from '../models/common/policy-category';
-import { Methodology } from '../models/models';
+import { Policy } from '../models/common/policy.js';
+import { PolicyCategory } from '../models/common/policy-category.js';
+import { Methodology } from '../models/models.js';
 
 export function GetMehodologiesByPolicies(responseText: string, policies: Array<Policy>) {
     const methodologies: Array<Methodology> = [];

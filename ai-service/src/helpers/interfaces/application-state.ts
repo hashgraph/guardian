@@ -1,8 +1,8 @@
-import { Singleton } from '../decorators/singleton';
-import { NatsService } from '../common/nats-service';
-import { ApplicationStates } from '../../models/interfaces/applications-state';
-import { GenerateUUIDv4 } from './generate-uuid-v4';
-import { MessageAPI } from '../../models/interfaces/message-api.type';
+import { Singleton } from '../decorators/singleton.js';
+import { NatsService } from '../common/nats-service.js';
+import { ApplicationStates } from '../../models/interfaces/applications-state.js';
+import { GenerateUUIDv4 } from './generate-uuid-v4.js';
+import { MessageAPI } from '../../models/interfaces/message-api.type.js';
 
 /**
  * Application state container
