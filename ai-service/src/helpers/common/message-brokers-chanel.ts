@@ -1,8 +1,8 @@
 import assert from 'assert';
 import { connect, headers, NatsConnection, StringCodec, Subscription } from 'nats';
-import { IMessageResponse, MessageError } from '../../models/common/message-response';
-import { GenerateUUIDv4 } from '../interfaces/generate-uuid-v4';
-import { ZipCodec } from './zip-codec';
+import { IMessageResponse, MessageError } from '../../models/common/message-response.js';
+import { GenerateUUIDv4 } from '../interfaces/generate-uuid-v4.js';
+import { ZipCodec } from './zip-codec.js';
 
 import * as dotenv from 'dotenv';
 

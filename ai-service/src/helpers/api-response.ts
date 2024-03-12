@@ -1,6 +1,6 @@
-import { ApplicationState } from './interfaces/application-state';
-import { MessageResponse } from '../models/common/message-response';
-import { AISuggestionService } from './suggestions';
+import { ApplicationState } from './interfaces/application-state.js';
+import { MessageResponse } from '../models/common/message-response.js';
+import { AISuggestionService } from './suggestions.js';
 
 /**
  * API response

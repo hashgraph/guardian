@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Req, Response } from '@nestjs/common';
-import { ReportService } from '../analytics/report.service';
+import { ReportService } from '../analytics/report.service.js';
 import {
     ApiExtraModels,
     ApiInternalServerErrorResponse,
@@ -9,10 +9,10 @@ import {
     ApiTags,
     getSchemaPath
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { ReportDTO } from '@middlewares/validation/schemas/report';
-import { DashboardDTO } from '@middlewares/validation/schemas/dashboard';
-import { DataContainerDTO } from '@middlewares/validation/schemas/report-data';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors.js';
+import { ReportDTO } from '@middlewares/validation/schemas/report.js';
+import { DashboardDTO } from '@middlewares/validation/schemas/dashboard.js';
+import { DataContainerDTO } from '@middlewares/validation/schemas/report-data.js';
 
 /**
  * Analytics Api
