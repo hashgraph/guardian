@@ -1,23 +1,17 @@
+# Stage 1: Build topic viewer service
 FROM node:20 as topicViewerbuilder
-WORKDIR /usr/local/topic-viewer
-COPY ./topic-viewer/package.json ./
-COPY ./topic-viewer/tsconfig*.json ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
-RUN yarn install
-ADD ./topic-viewer/src ./src
-RUN yarn run build:prod
+WORKDIR /usr/local/srv
+COPY ./topic-viewer/package.json ./topic-viewer/tsconfig*.json ./yarn.lock ./package-lock.json ./
+COPY ./topic-viewer/src ./src
+RUN yarn install && yarn run build:prod
 
+# Stage 2: Create the final image
 FROM node:20
-ENV PLATFORM="docker"
-ENV NODE_ENV="production"
+ENV PLATFORM="docker" NODE_ENV="production"
 WORKDIR /usr/local/topic-viewer
-COPY ./topic-viewer/package.json ./
-COPY --from=topicViewerbuilder  /usr/local/topic-viewer/yarn.lock ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
+COPY --from=topicViewerbuilder /usr/local/srv/yarn.lock /usr/local/srv/package*.json ./
 RUN yarn install
 COPY ./topic-viewer/public ./public
-COPY --from=topicViewerbuilder /usr/local/topic-viewer/dist ./dist
+COPY --from=topicViewerbuilder /usr/local/srv/dist ./dist
 
 CMD yarn start

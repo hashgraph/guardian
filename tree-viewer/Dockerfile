@@ -1,23 +1,17 @@
+# Stage 1: Build tree viewer service
 FROM node:20 as treeViewerbuilder
-WORKDIR /usr/local/tree-viewer
-COPY ./tree-viewer/package.json ./
-COPY ./tree-viewer/tsconfig*.json ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
-RUN yarn install
-ADD ./tree-viewer/src ./src
-RUN yarn run build:prod
+WORKDIR /usr/local/srv
+COPY ./tree-viewer/package.json ./tree-viewer/tsconfig*.json ./yarn.lock ./package-lock.json ./
+COPY ./tree-viewer/src ./src
+RUN yarn install && yarn run build:prod
 
+# Stage 2: Create the final image
 FROM node:20
-ENV PLATFORM="docker"
-ENV NODE_ENV="production"
+ENV PLATFORM="docker" NODE_ENV="production"
 WORKDIR /usr/local/tree-viewer
-COPY ./topic-viewer/package.json ./
-COPY --from=treeViewerbuilder  /usr/local/tree-viewer/yarn.lock ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
+COPY --from=treeViewerbuilder /usr/local/srv/yarn.lock /usr/local/srv/package*.json ./
 RUN yarn install
 COPY ./tree-viewer/public ./public
-COPY --from=treeViewerbuilder /usr/local/tree-viewer/dist ./dist
+COPY --from=treeViewerbuilder /usr/local/srv/dist ./dist
 
 CMD yarn start

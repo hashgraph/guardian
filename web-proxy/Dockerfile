@@ -1,19 +1,19 @@
+# Stage 1: Build interfaces module
 FROM node:20 AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
-COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig*.json ./
-ADD ./interfaces/src ./src/.
-RUN npm install
-RUN npm pack
+COPY ./interfaces/package.json ./interfaces/tsconfig*.json ./yarn.lock ./package-lock.json ./
+COPY ./interfaces/src ./src/.
+RUN yarn install && yarn pack
 
+# Stage 2: Build frontend
 FROM node:20 as frontendBuilder
 ENV NODE_OPTIONS="--openssl-legacy-provider"
 WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
-RUN npm install guardian-interfaces-*.tgz
-RUN npm run build
+RUN npm install guardian-interfaces-*.tgz && npm run build
 
+# Stage 3: Create the final image
 FROM nginx:1.25.3
 ENV PLATFORM="docker"
 COPY ./web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf
