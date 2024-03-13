@@ -31,11 +31,11 @@ Safe drinking water is an indispensable component of public health and well-bein
 
 ## Tools Referenced
 
-**[Methodological Tool 01](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%201/readme.md)** - Tool for the demonstration and assessment of additionality 
+**[Methodological Tool 01](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2001/readme.md)** - Tool for the demonstration and assessment of additionality 
 
-**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
 
-**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
 
 **[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities
 
