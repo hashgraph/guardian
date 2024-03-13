@@ -1,12 +1,12 @@
 # Stage 1: Build interfaces module
-FROM node:20 AS interfacesModuleBuilder
+FROM node:20.11.1-bookworm-slim AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package.json ./interfaces/tsconfig*.json ./yarn.lock ./package-lock.json ./
 COPY ./interfaces/src ./src/.
 RUN yarn install && yarn pack
 
 # Stage 2: Build common module
-FROM node:20 AS commonModuleBuilder
+FROM node:20.11.1-bookworm-slim AS commonModuleBuilder
 WORKDIR /usr/local/common
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY ./common/package.json ./common/tsconfig*.json ./yarn.lock ./package-lock.json ./
@@ -15,7 +15,7 @@ RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('pac
 RUN yarn install && yarn pack
 
 # Stage 3: Build API gateway service
-FROM node:20 AS apiGatewayBuilder
+FROM node:20.11.1-bookworm-slim AS apiGatewayBuilder
 WORKDIR /usr/local/srv
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
@@ -26,7 +26,7 @@ COPY ./api-gateway/src ./src/.
 RUN yarn install && yarn run build:prod
 
 # Stage 4: Create the final image
-FROM node:20
+FROM node:20.11.1-bookworm-slim
 ENV PLATFORM="docker" NODE_ENV="production"
 WORKDIR /usr/local/api-gateway
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz

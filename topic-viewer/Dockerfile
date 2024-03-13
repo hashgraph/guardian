@@ -1,12 +1,12 @@
 # Stage 1: Build topic viewer service
-FROM node:20 as topicViewerbuilder
+FROM node:20.11.1-bookworm-slim as topicViewerbuilder
 WORKDIR /usr/local/srv
 COPY ./topic-viewer/package.json ./topic-viewer/tsconfig*.json ./yarn.lock ./package-lock.json ./
 COPY ./topic-viewer/src ./src
 RUN yarn install && yarn run build:prod
 
 # Stage 2: Create the final image
-FROM node:20
+FROM node:20.11.1-bookworm-slim
 ENV PLATFORM="docker" NODE_ENV="production"
 WORKDIR /usr/local/topic-viewer
 COPY --from=topicViewerbuilder /usr/local/srv/yarn.lock /usr/local/srv/package*.json ./

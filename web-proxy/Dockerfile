@@ -1,12 +1,12 @@
 # Stage 1: Build interfaces module
-FROM node:20 AS interfacesModuleBuilder
+FROM node:20.11.1-bookworm-slim AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package.json ./interfaces/tsconfig*.json ./yarn.lock ./package-lock.json ./
 COPY ./interfaces/src ./src/.
 RUN yarn install && yarn pack
 
 # Stage 2: Build frontend
-FROM node:20 as frontendBuilder
+FROM node:20.11.1-bookworm-slim as frontendBuilder
 ENV NODE_OPTIONS="--openssl-legacy-provider"
 WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
