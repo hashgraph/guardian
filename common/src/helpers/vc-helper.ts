@@ -33,13 +33,13 @@ import {
     Bls12381G2KeyPair,
     deriveProof,
 } from '@mattrglobal/jsonld-signatures-bbs';
-import { Singleton } from '../decorators/singleton';
-import { DataBaseHelper } from './db-helper';
+import { Singleton } from '../decorators/singleton.js';
+import { DataBaseHelper } from './db-helper.js';
 import {
     Schema as SchemaCollection,
     DidDocument as DidDocumentCollection
 } from '../entity';
-import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
+import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs.js';
 import { KeyType, Users, Wallet } from '../helpers';
 import { IAuthUser } from '../interfaces';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';

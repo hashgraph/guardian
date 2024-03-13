@@ -1,8 +1,8 @@
-import { Message } from './message';
-import { IURL } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { ContractMessageBody } from './message-body.interface';
+import { Message } from './message.js';
+import { IURL } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { ContractMessageBody } from './message-body.interface.js';
 import { ContractType } from '@guardian/interfaces';
 import { Contract } from '../../entity';
 

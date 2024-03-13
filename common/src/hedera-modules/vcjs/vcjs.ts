@@ -5,20 +5,20 @@ import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed2
 import { PrivateKey } from '@hashgraph/sdk';
 import { CheckResult } from '@transmute/jsonld-schema';
 import { GenerateUUIDv4, ICredentialSubject, IVC, SignatureType } from '@guardian/interfaces';
-import { VcDocument } from './vc-document';
-import { VpDocument } from './vp-document';
-import { VcSubject } from './vc-subject';
-import { TimestampUtils } from '../timestamp-utils';
-import { DocumentLoaderFunction } from '../document-loader/document-loader-function';
-import { DocumentLoader } from '../document-loader/document-loader';
-import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader';
+import { VcDocument } from './vc-document.js';
+import { VpDocument } from './vp-document.js';
+import { VcSubject } from './vc-subject.js';
+import { TimestampUtils } from '../timestamp-utils.js';
+import { DocumentLoaderFunction } from '../document-loader/document-loader-function.js';
+import { DocumentLoader } from '../document-loader/document-loader.js';
+import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader.js';
 import { Issuer } from './issuer';
 import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers';
 import { verify, purposes } from 'jsonld-signatures';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did';
-import { BBSDidRootKey, DidRootKey } from './did-document';
+import { BBSDidRootKey, DidRootKey } from './did-document.js';
 
 /**
  * Suite interface

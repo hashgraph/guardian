@@ -2,7 +2,7 @@ import assert from 'assert';
 import { Subscription, NatsConnection, StringCodec, connect, headers } from 'nats';
 import { IMessageResponse, MessageError } from '../models';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { ZipCodec } from './zip-codec';
+import { ZipCodec } from './zip-codec.js';
 
 const MQ_TIMEOUT = 300000;
 /**

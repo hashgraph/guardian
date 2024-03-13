@@ -1,8 +1,8 @@
-import { Singleton } from '../decorators/singleton';
+import { Singleton } from '../decorators/singleton.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Wallet as WalletManager} from '../wallet'
 import { NatsService } from '../mq';
-import { Users } from './users';
+import { Users } from './users.js';
 
 /**
  * Key type

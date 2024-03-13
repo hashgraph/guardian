@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { SecretManager } from './secret-manager';
-import { SecretManagerBase } from './secret-manager-base';
+import { SecretManager } from './secret-manager.js';
+import { SecretManagerBase } from './secret-manager-base.js';
 
 const authEnvPath = path.join(process.cwd(), '../auth-service/.env')
 const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')

@@ -1,7 +1,7 @@
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity';
 import { DataBaseHelper } from '../helpers';
-import { LocalSchemaDocumentLoader } from './local-schema-document-loader';
+import { LocalSchemaDocumentLoader } from './local-schema-document-loader.js';
 
 /**
  * Local subject schema loader

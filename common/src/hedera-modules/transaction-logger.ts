@@ -2,7 +2,7 @@ import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '../database-modules';
 import { Logger, RunFunctionAsync, Workers } from '../helpers';
 import { MessageResponse } from '../models';
-import { Singleton } from '../decorators/singleton';
+import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq';
 import { SecretManager } from '../secret-manager';
 

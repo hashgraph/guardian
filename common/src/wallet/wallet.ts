@@ -1,8 +1,8 @@
 import { SecretManager, SecretManagerBase, SecretManagerType } from '../secret-manager';
 import crypto from 'crypto';
 import * as bs58 from 'bs58';
-import { AzureSecretManager } from '../secret-manager/azure/azure-secret-manager';
-import { GcpSecretManager } from '../secret-manager/gcp/gcp-secret-manager';
+import { AzureSecretManager } from '../secret-manager/azure/azure-secret-manager.js';
+import { GcpSecretManager } from '../secret-manager/gcp/gcp-secret-manager.js';
 
 /**
  * Class to manage wallet by Secret Manager Resources

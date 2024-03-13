@@ -1,9 +1,9 @@
 import { Policy } from '../../entity';
-import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { PolicyMessageBody } from './message-body.interface';
+import { Message } from './message.js';
+import { IURL, UrlType } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { PolicyMessageBody } from './message-body.interface.js';
 import { IPFS } from '../../helpers';
 
 /**

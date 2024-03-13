@@ -1,4 +1,4 @@
-import { Wallet } from './wallet';
+import { Wallet } from './wallet.js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
