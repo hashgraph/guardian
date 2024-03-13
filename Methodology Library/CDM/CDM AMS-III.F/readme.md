@@ -48,11 +48,11 @@ AMS-III.F's emphasis on controlled aerobic treatment of organic waste, notably t
 
 ## Tools Referenced
 
-**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
 
-**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%204/readme.md)** - Emissions from solid waste disposal sites 
+**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2004/readme.md)** - Emissions from solid waste disposal sites 
 
-**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
 
 **[Methodological Tool 13](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2013/readme.md)** - Project and leakage emissions from composting
 
