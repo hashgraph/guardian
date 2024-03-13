@@ -1,4 +1,4 @@
-import { IVault } from './vault.interface';
+import { IVault } from './vault.interface.js';
 import * as vaultProviders from './vault-providers'
 import assert from 'assert';
 
