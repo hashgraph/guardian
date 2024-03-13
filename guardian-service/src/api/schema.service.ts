@@ -1,10 +1,10 @@
-import { ApiResponse } from '@api/helpers/api-response';
-import { emptyNotifier, initNotifier } from '@helpers/notifier';
+import { ApiResponse } from '../api/helpers/api-response.js';
+import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs } from './helpers';
-import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs } from './helpers/index.js';
+import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';

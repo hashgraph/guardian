@@ -34,19 +34,19 @@ import {
     GenerateBlocks,
     VcHelper
 } from '@guardian/common';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { PolicyComponentsUtils } from './policy-components-utils';
-import { IPolicyUser } from './policy-user';
-import { emptyNotifier, initNotifier } from '@helpers/notifier';
-import { PolicyEngine } from './policy-engine';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { IPolicyUser } from './policy-user.js';
+import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
+import { PolicyEngine } from './policy-engine.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
-import { GuardiansService } from '@helpers/guardians';
-import { Inject } from '@helpers/decorators/inject';
-import { BlockAboutString } from './block-about';
-import { HashComparator } from '@analytics';
-import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '@api/helpers';
-import { PolicyDataMigrator } from './helpers/policy-data-migrator';
+import { GuardiansService } from '../helpers/guardians.js';
+import { Inject } from '../helpers/decorators/inject.js';
+import { BlockAboutString } from './block-about.js';
+import { HashComparator } from '../analytics/index.js';
+import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '../api/helpers/index.js';
+import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 
 /**
  * PolicyEngineChannel

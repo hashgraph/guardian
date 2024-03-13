@@ -1,14 +1,14 @@
 import { VcDocument, VpDocument } from '@guardian/common';
-import { CompareOptions, IChildrenLvl } from '../interfaces/compare-options.interface';
-import { IWeightModel } from '../interfaces/weight-model.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { WeightType } from '../types/weight.type';
-import { CompareUtils } from '../utils/utils';
-import { SchemaModel } from './schema.model';
-import { DocumentFieldsModel } from './document-fields.model';
-import { PropertyModel } from './property.model';
-import { HashUtils } from '../utils/hash-utils';
-import { PropertiesModel } from './properties.model';
+import { CompareOptions, IChildrenLvl } from '../interfaces/compare-options.interface.js';
+import { IWeightModel } from '../interfaces/weight-model.interface.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { WeightType } from '../types/weight.type.js';
+import { CompareUtils } from '../utils/utils.js';
+import { SchemaModel } from './schema.model.js';
+import { DocumentFieldsModel } from './document-fields.model.js';
+import { PropertyModel } from './property.model.js';
+import { HashUtils } from '../utils/hash-utils.js';
+import { PropertiesModel } from './properties.model.js';
 
 /**
  * Document Type

@@ -1,4 +1,4 @@
-import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { BlockValidator, IBlockProp } from '../../block-validators';
 
 /**
  * Common block

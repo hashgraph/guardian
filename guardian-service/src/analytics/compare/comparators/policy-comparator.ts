@@ -1,20 +1,20 @@
 import { DatabaseServer } from '@guardian/common';
-import { CSV } from '../../table/csv';
-import { ReportTable } from '../../table/report-table';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
-import { ICompareResult } from '../interfaces/compare-result.interface';
-import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
-import { IRate } from '../interfaces/rate.interface';
-import { IReportTable } from '../interfaces/report-table.interface';
-import { FileModel } from '../models/file.model';
-import { PolicyModel } from '../models/policy.model';
-import { SchemaModel } from '../models/schema.model';
-import { TokenModel } from '../models/token.model';
-import { BlocksRate } from '../rates/blocks-rate';
-import { PropertyType } from '../types/property.type';
-import { ComparePolicyUtils } from '../utils/compare-policy-utils';
-import { MultiCompareUtils } from '../utils/multi-compare-utils';
-import { CompareUtils } from '../utils/utils';
+import { CSV } from '../../table/csv.js';
+import { ReportTable } from '../../table/report-table.js';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface.js';
+import { ICompareResult } from '../interfaces/compare-result.interface.js';
+import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { IReportTable } from '../interfaces/report-table.interface.js';
+import { FileModel } from '../models/file.model.js';
+import { PolicyModel } from '../models/policy.model.js';
+import { SchemaModel } from '../models/schema.model.js';
+import { TokenModel } from '../models/token.model.js';
+import { BlocksRate } from '../rates/blocks-rate.js';
+import { PropertyType } from '../types/property.type.js';
+import { ComparePolicyUtils } from '../utils/compare-policy-utils.js';
+import { MultiCompareUtils } from '../utils/multi-compare-utils.js';
+import { CompareUtils } from '../utils/utils.js';
 
 /**
  * Component for comparing two policies

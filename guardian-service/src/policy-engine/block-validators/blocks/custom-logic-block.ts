@@ -1,5 +1,5 @@
-import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
-import { CommonBlock } from './common';
+import { BlockValidator, IBlockProp } from '../../block-validators';
+import { CommonBlock } from './common.js';
 
 /**
  * Custom logic block

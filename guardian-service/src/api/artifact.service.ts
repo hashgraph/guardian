@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, getArtifactExtention, getArtifactType, Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { MessageAPI, ModuleStatus, PolicyType } from '@guardian/interfaces';
 
