@@ -1,4 +1,4 @@
-import { FilesManager } from './helpers/files-manager-helper';
+import { FilesManager } from './helpers/files-manager-helper.js';
 import { FaissStore } from 'langchain/vectorstores/faiss';
 import { RetrievalQAChain } from 'langchain/chains';
 import { OpenAI } from 'langchain/llms/openai';

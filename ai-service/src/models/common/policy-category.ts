@@ -1,5 +1,5 @@
-import { PolicyCategoryType } from '../interfaces/policy-category-type';
-import { BaseEntity } from './base-entity';
+import { PolicyCategoryType } from '../interfaces/policy-category-type.js';
+import { BaseEntity } from './base-entity.js';
 
 /**
  * PolicyCategory collection

@@ -1,10 +1,10 @@
 import { DataBaseHelper, MessageType, RegistrationMessage } from '@guardian/common';
-import { AnalyticsStatus as Status } from '@entity/analytics-status.js';
-import { AnalyticsUser as User } from '@entity/analytics-user.js';
-import { ReportStatus } from '@interfaces/report-status.type.js';
-import { ReportSteep } from '@interfaces/report-steep.type.js';
-import { UserType } from '@interfaces/user.type.js';
-import { AnalyticsUtils } from '@helpers/utils.js';
+import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
+import { AnalyticsUser as User } from '../entity/analytics-user.js';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
+import { UserType } from '../interfaces/user.type.js';
+import { AnalyticsUtils } from '../helpers/utils.js';
 
 /**
  * Search users

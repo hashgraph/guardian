@@ -1,4 +1,4 @@
-import { WalletAccount } from '@entity/wallet-account.js';
+import { WalletAccount } from '../entity/wallet-account.js';
 import { DataBaseHelper, Logger } from '@guardian/common';
 import { IVault } from '../vaults';
 

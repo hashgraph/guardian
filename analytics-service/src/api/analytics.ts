@@ -9,10 +9,10 @@ import {
     ApiTags,
     getSchemaPath
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors.js';
-import { ReportDTO } from '@middlewares/validation/schemas/report.js';
-import { DashboardDTO } from '@middlewares/validation/schemas/dashboard.js';
-import { DataContainerDTO } from '@middlewares/validation/schemas/report-data.js';
+import { InternalServerErrorDTO } from '../middlewares/validation/schemas/errors.js';
+import { ReportDTO } from '../middlewares/validation/schemas/report.js';
+import { DashboardDTO } from '../middlewares/validation/schemas/dashboard.js';
+import { DataContainerDTO } from '../middlewares/validation/schemas/report-data.js';
 
 /**
  * Analytics Api

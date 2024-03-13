@@ -1,4 +1,4 @@
-import { User } from '@entity/user.js';
+import { User } from '../entity/user.js';
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton, } from '@guardian/common';
 import { GenerateUUIDv4, IGetGlobalApplicationKey, IGetKeyMessage, IGetKeyResponse, ISetGlobalApplicationKey, ISetKeyMessage, WalletEvents } from '@guardian/interfaces';
 import { IVault } from '../vaults';
