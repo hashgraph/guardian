@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { Webhook } from '../entities/Webhook';
+import { Webhook } from '../entities/Webhook.js';
 
 export default class MongodbConnection {
 

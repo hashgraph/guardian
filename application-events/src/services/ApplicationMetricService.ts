@@ -1,6 +1,6 @@
 import axios from 'axios';
-import PubSub from 'connections/pub-subs/interfaces/PubSub';
-import WebhookService from './WebhookService';
+import PubSub from 'connections/pub-subs/interfaces/PubSub.js';
+import WebhookService from './WebhookService.js';
 
 import {
   PolicyEvents,
