@@ -34,13 +34,13 @@ In the modern landscape of emission reduction initiatives, transparency and cred
 
 ## Tools Referenced
 
-**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion  
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion  
 
-**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%204/readme.md)** - Emissions from solid waste disposal sites  
+**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2004/readme.md)** - Emissions from solid waste disposal sites  
 
-**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation  
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation  
 
-**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%206/readme.md)** - Project emissions from flaring  
+**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2006/readme.md)** - Project emissions from flaring  
 
 **[Methodological Tool 32](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2032/readme.md)** - Positive lists of technologies 
 
