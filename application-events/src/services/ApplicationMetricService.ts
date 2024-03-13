@@ -7,7 +7,7 @@ import {
   PolicyEngineEvents,
   ExternalMessageEvents
 } from '@guardian/interfaces';
-import WebhookStore from '../singletons/WebhookStore';
+import WebhookStore from '../singletons/WebhookStore.js';
 
 const avoidEvents = [
   'WRITE_LOG',

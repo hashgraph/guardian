@@ -16,8 +16,8 @@ import process from 'process';
 import { ReportService } from './analytics/report.service.js';
 import { AppModule } from './app.module.js';
 import { SwaggerModule } from '@nestjs/swagger';
-import { SwaggerConfig } from '@helpers/swagger-config.js';
-import { AnalyticsUtils } from '@helpers/utils.js';
+import { SwaggerConfig } from './helpers/swagger-config.js';
+import { AnalyticsUtils } from './helpers/utils.js';
 
 const PORT = process.env.PORT || 3020;
 Promise.all([

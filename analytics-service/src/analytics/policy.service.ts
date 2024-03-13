@@ -10,19 +10,19 @@ import {
     TokenMessage,
     UrlType,
 } from '@guardian/common';
-import { AnalyticsModule as Module } from '@entity/analytics-module.js';
-import { AnalyticsPolicy as Policy } from '@entity/analytics-policy.js';
-import { AnalyticsPolicyInstance as PolicyInstance } from '@entity/analytics-policy-instance.js';
-import { AnalyticsSchema as Schema } from '@entity/analytics-schema.js';
-import { AnalyticsStatus as Status } from '@entity/analytics-status.js';
-import { AnalyticsTag as Tag } from '@entity/analytics-tag.js';
-import { AnalyticsToken as Token } from '@entity/analytics-token.js';
-import { AnalyticsUser as User } from '@entity/analytics-user.js';
-import { ReportStatus } from '@interfaces/report-status.type.js';
-import { ReportSteep } from '@interfaces/report-steep.type.js';
-import { UserType } from '@interfaces/user.type.js';
-import { Tasks } from '@helpers/tasks.js';
-import { AnalyticsUtils } from '@helpers/utils.js';
+import { AnalyticsModule as Module } from '../entity/analytics-module.js';
+import { AnalyticsPolicy as Policy } from '../entity/analytics-policy.js';
+import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
+import { AnalyticsSchema as Schema } from '../entity/analytics-schema.js';
+import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
+import { AnalyticsTag as Tag } from '../entity/analytics-tag.js';
+import { AnalyticsToken as Token } from '../entity/analytics-token.js';
+import { AnalyticsUser as User } from '../entity/analytics-user.js';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
+import { UserType } from '../interfaces/user.type.js';
+import { Tasks } from '../helpers/tasks.js';
+import { AnalyticsUtils } from '../helpers/utils.js';
 
 /**
  * Search policy\version\schemas\tokens in user topics

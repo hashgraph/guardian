@@ -6,7 +6,7 @@ import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions
 import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
 import { Vc, VerifiableCredential } from '@guardian/common';
-import { StatusList } from '@helpers/credentials-validation/status-list.js';
+import { StatusList } from '../helpers/credentials-validation/status-list.js';
 import nacl from 'tweetnacl';
 
 export class MeecoService {

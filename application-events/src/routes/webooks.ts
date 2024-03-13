@@ -1,4 +1,4 @@
-import validate from '../middlewares/validation';
+import validate from '../middlewares/validation/index.js';
 import { storeWebhookSchema, updateWebhookSchema } from '../middlewares/validation/schemas/webhook.js';
 import { Request, Response, Router, NextFunction } from 'express';
 import WebhookService from '../services/WebhookService.js';

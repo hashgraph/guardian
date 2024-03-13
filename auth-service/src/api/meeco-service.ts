@@ -2,7 +2,7 @@ import { DataBaseHelper, MessageResponse, NatsService, Singleton, Vc, Verifiable
 import { AuthEvents, ExternalProviders, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service.js';
 import { Logger } from '@nestjs/common';
-import { MeecoIssuerWhitelist } from '@entity/meeco-issuer-whitelist.js';
+import { MeecoIssuerWhitelist } from '../entity/meeco-issuer-whitelist.js';
 
 const MeecoConfig = {
   baseUrl: process.env.MEECO_BASE_URL,

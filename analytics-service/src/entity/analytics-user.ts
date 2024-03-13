@@ -1,6 +1,6 @@
 import { Entity, Property, Index } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
-import { UserType } from '@interfaces/user.type.js';
+import { UserType } from '../interfaces/user.type.js';
 
 /**
  * StandardRegistry collection
