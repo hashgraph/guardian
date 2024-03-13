@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
-import { Users } from '@helpers/users';
+import { Users } from '@helpers/users.js';
 import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { generateNumberFromString, Logger, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';

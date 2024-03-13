@@ -1,4 +1,4 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '@helpers/guardians.js';
 import { ContractType, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import {
@@ -12,7 +12,7 @@ import {
     Req,
     Response,
 } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '@auth/authorization-helper.js';
 import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
@@ -27,7 +27,7 @@ import {
     ApiQuery,
     ApiParam,
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors.js';
 import {
     ContractDTO,
     RetirePoolDTO,
@@ -35,7 +35,7 @@ import {
     RetireRequestDTO,
     RetireRequestTokenDTO,
     WiperRequestDTO,
-} from '@middlewares/validation/schemas/contracts';
+} from '@middlewares/validation/schemas/contracts.js';
 
 /**
  * Contracts api
