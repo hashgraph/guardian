@@ -1,3 +1,3 @@
 export * from './vault-providers';
-export { InitializeVault } from './initialize-vault';
-export { IVault } from './vault.interface';
+export { InitializeVault } from './initialize-vault.js';
+export { IVault } from './vault.interface.js';

@@ -1,6 +1,6 @@
-import { IAuthUser } from '@api/auth.interface';
+import { IAuthUser } from '@api/auth.interface.js';
 import { sign, verify } from 'jsonwebtoken';
-import { User } from '@entity/user';
+import { User } from '@entity/user.js';
 import * as util from 'util';
 import crypto from 'crypto';
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
