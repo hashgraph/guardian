@@ -36,17 +36,17 @@ This policy is a digitized version of the CDM’s methodology AMS IC:  Thermal e
 
 ## Tools Referenced
 
-**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.  
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.  
 
-**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%204/readme.md)** - Emissions from solid waste disposal sites.  
+**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2004/readme.md)** - Emissions from solid waste disposal sites.  
 
-**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.   
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.   
 
-**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%206/readme.md)** - Project emissions from flaring.   
+**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2006/readme.md)** - Project emissions from flaring.   
 
-**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%207/readme.md)** - Tool to calculate the emission factor for an electricity system.   
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system.   
 
-**[Methodological Tool 09](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%209/readme.md)** - Determining the baseline efficiency of thermal or electric energy generation systems.   
+**[Methodological Tool 09](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2009/readme.md)** - Determining the baseline efficiency of thermal or electric energy generation systems.   
 
 **[Methodological Tool 12](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2012/readme.md)** - Project and leakage emissions from transportation of freight.   
 
