@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     BinaryMessageResponse,
     DatabaseServer,
@@ -27,15 +27,15 @@ import {
     SchemaStatus,
     TopicType
 } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { findAndPublishSchema } from '@api/helpers/schema-publish-helper';
-import { incrementSchemaVersion } from '@api/helpers/schema-helper';
-import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
-import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
-import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
+import { incrementSchemaVersion } from '../api/helpers/schema-helper.js';
+import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
+import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
+import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js';
+import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers/index.js';
 import * as crypto from 'crypto';
-import { publishToolTags } from './tag.service';
+import { publishToolTags } from './tag.service.js';
 
 /**
  * Sha256

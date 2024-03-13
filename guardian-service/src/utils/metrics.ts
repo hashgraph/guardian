@@ -1,13 +1,14 @@
 import express from 'express';
 import client from 'prom-client';
-import guardianServicePrometheusMetrics from 'prometheus-api-metrics';
+// import guardianServicePrometheusMetrics from 'prometheus-api-metrics';
 
 const app = express();
 
 const PORT = process.env.METRICS_PORT || 5007;
 
 export const startMetricsServer = () => {
-  app.use(guardianServicePrometheusMetrics());
+  //TODO: fix crush app read from undefined
+  // app.use(guardianServicePrometheusMetrics());
   app.get('/metrics', async (req, res) => {
     res.set('Content-Type', client.register.contentType);
 

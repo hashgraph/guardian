@@ -31,20 +31,20 @@ import {
     Users,
     VcHelper,
 } from '@guardian/common';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { PolicyConverterUtils } from './policy-converter-utils';
-import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { ISerializedErrors } from './policy-validation-results-container';
-import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { PolicyValidator } from '@policy-engine/block-validators';
-import { publishPolicyTags } from '@api/tag.service';
-import { importTag } from '@api/helpers/tag-import-export-helper';
-import { createHederaToken } from '@api/token.service';
-import { GuardiansService } from '@helpers/guardians';
-import { Inject } from '@helpers/decorators/inject';
-import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
-import { AISuggestionsService } from '@helpers/ai-suggestions';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
+import { PolicyConverterUtils } from './policy-converter-utils.js';
+import { emptyNotifier, INotifier } from '../helpers/notifier.js';
+import { ISerializedErrors } from './policy-validation-results-container.js';
+import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js';
+import { publishPolicyTags } from '../api/tag.service.js';
+import { importTag } from '../api/helpers/tag-import-export-helper.js';
+import { createHederaToken } from '../api/token.service.js';
+import { GuardiansService } from '../helpers/guardians.js';
+import { Inject } from '../helpers/decorators/inject.js';
+import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
+import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
+import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 
 /**
  * Result of publishing

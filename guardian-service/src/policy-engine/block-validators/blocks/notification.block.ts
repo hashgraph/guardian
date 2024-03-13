@@ -1,6 +1,6 @@
 import { NotificationType, UserOption } from '@guardian/interfaces';
-import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
-import { CommonBlock } from './common';
+import { BlockValidator, IBlockProp } from '../../block-validators';
+import { CommonBlock } from './common.js';
 
 /**
  * Notification Block
