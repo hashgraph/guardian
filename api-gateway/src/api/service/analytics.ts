@@ -1,4 +1,4 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '@helpers/guardians.js';
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
 import {
     ApiInternalServerErrorResponse,
@@ -10,7 +10,7 @@ import {
     ApiSecurity,
     ApiTags
 } from '@nestjs/swagger';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '@auth/authorization-helper.js';
 import { UserRole } from '@guardian/interfaces';
 import {
     FilterDocumentsDTO,

@@ -4,7 +4,7 @@ import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardi
 import { ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
 import process from 'process';
-import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { AuthUser, checkPermission } from '@auth/authorization-helper.js';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
@@ -12,7 +12,7 @@ import { SchemaUtils } from '@helpers/schema-utils';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '@middlewares/validation/schemas';
-import { Auth } from '@auth/auth.decorator';
+import { Auth } from '@auth/auth.decorator.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 

@@ -6,7 +6,7 @@ import {
     IFileResponse,
     GenerateUUIDv4
 } from '@guardian/interfaces';
-import { Singleton } from './decorators/singleton';
+import { Singleton } from './decorators/singleton.js';
 
 /**
  * IPFS service

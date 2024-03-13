@@ -1,4 +1,4 @@
-import { WebSocketsService } from '@api/service/websockets';
+import { WebSocketsService } from '@api/service/websockets.js';
 import { MessageResponse, NatsService } from '@guardian/common';
 import {
     GenerateUUIDv4,
@@ -7,7 +7,7 @@ import {
     StatusType,
     TaskAction,
 } from '@guardian/interfaces';
-import { Singleton } from '@helpers/decorators/singleton';
+import { Singleton } from '@helpers/decorators/singleton.js';
 import { NatsConnection } from 'nats';
 
 /**

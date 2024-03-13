@@ -1,8 +1,8 @@
-import { Guardians } from '@helpers/guardians';
-import { Users } from '@helpers/users';
+import { Guardians } from '@helpers/guardians.js';
+import { Users } from '@helpers/users.js';
 import { IAuthUser, Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '@auth/authorization-helper.js';
 import { UserRole } from '@guardian/interfaces';
 import { ApiTags } from '@nestjs/swagger';
 
