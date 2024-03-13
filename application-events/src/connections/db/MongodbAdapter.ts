@@ -1,4 +1,4 @@
-import IConnection from './interfaces/IConnection';
+import IConnection from './interfaces/IConnection.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { EntityClass } from '@mikro-orm/core/typings';
 import MongodbConnection from '../../singletons/MongodbConnection';

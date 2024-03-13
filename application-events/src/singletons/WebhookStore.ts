@@ -1,4 +1,4 @@
-import { Webhook } from '../entities/Webhook';
+import { Webhook } from '../entities/Webhook.js';
 
 export default class WebhookStore {
   private static instance: WebhookStore;

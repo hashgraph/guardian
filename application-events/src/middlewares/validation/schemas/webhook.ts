@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import fieldsValidation from '../fields-validation'
+import fieldsValidation from '../fields-validation.js'
 
 export const storeWebhookSchema = () => {
   const { url, events } = fieldsValidation
