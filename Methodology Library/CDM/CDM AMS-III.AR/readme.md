@@ -29,7 +29,7 @@ In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. Th
 
 ## Tools Referenced
 
-**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%207/readme.md)** - Tool to calculate the emission factor for an electricity system
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system
 
 **[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities
 
