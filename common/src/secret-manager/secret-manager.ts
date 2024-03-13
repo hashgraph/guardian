@@ -1,14 +1,14 @@
-import { HcpVaultSecretManager } from './hashicorp/hcp-vault-secret-manager';
-import { SecretManagerConfigs, SecretManagerType } from './secret-manager-config';
-import { SecretManagerBase } from './secret-manager-base';
-import { AwsSecretManager } from './aws/aws-secret-manager';
-import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs';
-import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs';
-import { OldSecretManager } from './old-style/old-secret-manager';
-import { AzureSecretManager } from './azure/azure-secret-manager';
-import { IAzureSecretManagerConfigs } from './azure/azure-secret-manager-configs';
-import { IGcpSecretManagerConfigs } from './gcp/gcp-secret-manager-configs';
-import { GcpSecretManager } from './gcp/gcp-secret-manager';
+import { HcpVaultSecretManager } from './hashicorp/hcp-vault-secret-manager.js';
+import { SecretManagerConfigs, SecretManagerType } from './secret-manager-config.js';
+import { SecretManagerBase } from './secret-manager-base.js';
+import { AwsSecretManager } from './aws/aws-secret-manager.js';
+import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs.js';
+import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs.js';
+import { OldSecretManager } from './old-style/old-secret-manager.js';
+import { AzureSecretManager } from './azure/azure-secret-manager.js';
+import { IAzureSecretManagerConfigs } from './azure/azure-secret-manager-configs.js';
+import { IGcpSecretManagerConfigs } from './gcp/gcp-secret-manager-configs.js';
+import { GcpSecretManager } from './gcp/gcp-secret-manager.js';
 
 /**
  * Class to get secret manager

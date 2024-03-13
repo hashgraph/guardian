@@ -1,4 +1,4 @@
-import { Singleton } from '../decorators/singleton';
+import { Singleton } from '../decorators/singleton.js';
 import { GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, TimeoutError, WorkerEvents, } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules';
 import { NatsService } from '../mq';

@@ -1,8 +1,8 @@
-import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { TagMessageBody } from './message-body.interface';
+import { Message } from './message.js';
+import { IURL, UrlType } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { TagMessageBody } from './message-body.interface.js';
 import { Tag } from '../../entity';
 
 /**

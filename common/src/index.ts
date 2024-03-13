@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+
 import * as ent from './entity/index.js';
 export * from './models/index.js';
 export * from './decorators/singleton.js';
@@ -12,4 +13,5 @@ export * from './database-modules/index.js';
 export * from './secret-manager/index.js';
 export * from './import-export/index.js';
 export * from './xlsx/index.js';
+
 export const entities = Object.values(ent);

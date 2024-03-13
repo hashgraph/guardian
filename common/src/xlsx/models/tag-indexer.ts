@@ -1,6 +1,6 @@
 import { BlockType } from '@guardian/interfaces';
 import { PolicyTool } from '../../entity';
-import { XlsxSchema } from './xlsx-schema';
+import { XlsxSchema } from './xlsx-schema.js';
 
 export class TagIndexer {
     private index: number;

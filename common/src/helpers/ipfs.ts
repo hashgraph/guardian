@@ -1,5 +1,5 @@
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
-import { Workers } from './workers';
+import { Workers } from './workers.js';
 import { MessageBrokerChannel } from '../mq';
 
 /**

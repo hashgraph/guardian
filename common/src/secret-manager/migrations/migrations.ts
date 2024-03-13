@@ -1,12 +1,12 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { DataBaseHelper, DataBaseNamingStrategy } from '../../helpers';
-import { WalletAccount } from './vault-account';
+import { WalletAccount } from './vault-account.js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { SecretManager } from '../secret-manager';
+import { SecretManager } from '../secret-manager.js';
 import { Wallet } from '../../wallet';
-import { SecretManagerType } from '../secret-manager-config';
+import { SecretManagerType } from '../secret-manager-config.js';
 import { exit } from 'process';
 
 const globalEnvPath = path.join(process.cwd(), '../.env')

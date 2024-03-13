@@ -1,6 +1,6 @@
-import { AwsSecretManager } from './aws/aws-secret-manager';
-import { SecretManager } from './secret-manager';
-import { SecretManagerType } from './secret-manager-config';
+import { AwsSecretManager } from './aws/aws-secret-manager.js';
+import { SecretManager } from './secret-manager.js';
+import { SecretManagerType } from './secret-manager-config.js';
 
 process.env.AWS_REGION = 'eu-central-1';
 

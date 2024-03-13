@@ -45,10 +45,10 @@ import {
 } from '@guardian/interfaces';
 import { BaseEntity } from '../models';
 import { DataBaseHelper } from '../helpers';
-import { Theme } from '../entity/theme';
-import { GetConditionsPoliciesByCategories } from '../helpers/policy-category';
-import { PolicyTool } from '../entity/tool';
-import { PolicyProperty } from '../entity/policy-property';
+import { Theme } from '../entity/theme.js';
+import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
+import { PolicyTool } from '../entity/tool.js';
+import { PolicyProperty } from '../entity/policy-property.js';
 
 /**
  * Database server
