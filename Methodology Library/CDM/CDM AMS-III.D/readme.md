@@ -34,11 +34,11 @@ In the context of modern emission reduction projects, the necessity for transpar
 
 ## Tools Referenced
 
-**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
 
-**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
 
-**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%206/readme.md)** - Tool to determine project emissions from flaring gases containing methane.
+**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2006/readme.md)** - Tool to determine project emissions from flaring gases containing methane.
 
 **[Methodological Tool 14](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2014/readme.md)** – Project and leakage emissions from anaerobic digesters.
 
