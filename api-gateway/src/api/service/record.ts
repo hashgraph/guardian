@@ -1,14 +1,14 @@
 import { PolicyType, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '@helpers/policy-engine.js';
+import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { IAuthUser, Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors.js';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { Guardians } from '@helpers/guardians.js';
-import { Auth } from '@auth/auth.decorator.js';
-import { AuthUser } from '@auth/authorization-helper.js';
-import { RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO } from '@middlewares/validation/schemas/record.js';
+import { Guardians } from '../../helpers/guardians.js';
+import { Auth } from '../../auth/auth.decorator.js';
+import { AuthUser } from '../../auth/authorization-helper.js';
+import { RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO } from '../../middlewares/validation/schemas/record.js';
 
 /**
  * Check policy

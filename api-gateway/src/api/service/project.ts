@@ -2,10 +2,10 @@ import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Controller, Body, HttpCode, HttpException, HttpStatus, Post, Req, Response, Get, Inject } from '@nestjs/common';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { ProjectService } from '@helpers/projects.js';
-import { ProjectDTO, PropertiesDTO } from '@middlewares/validation/schemas/projects.js';
-import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '@middlewares/validation/schemas';
-import { Guardians } from '@helpers/guardians.js';
+import { ProjectService } from '../../helpers/projects.js';
+import { ProjectDTO, PropertiesDTO } from '../../middlewares/validation/schemas/projects.js';
+import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
+import { Guardians } from '../../helpers/guardians.js';
 
 /**
  * Projects route

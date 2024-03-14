@@ -1,4 +1,4 @@
-import { Singleton } from '@helpers/decorators/singleton.js';
+import { Singleton } from '../helpers/decorators/singleton.js';
 import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';

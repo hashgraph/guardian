@@ -1,9 +1,9 @@
 import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians.js';
+import { Guardians } from '../../helpers/guardians.js';
 import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
-import { SchemaUtils } from '@helpers/schema-utils.js';
+import { SchemaUtils } from '../../helpers/schema-utils.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper.js';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import { ApiTags } from '@nestjs/swagger';
 
 @Controller('tags')

@@ -1,11 +1,11 @@
-import { Guardians } from '@helpers/guardians.js';
-import { IPFS } from '@helpers/ipfs.js';
-import { PolicyEngine } from '@helpers/policy-engine.js';
-import { WebSocketsService } from '@api/service/websockets.js';
-import { Users } from '@helpers/users.js';
-import { Wallet } from '@helpers/wallet.js';
+import { Guardians } from './helpers/guardians.js';
+import { IPFS } from './helpers/ipfs.js';
+import { PolicyEngine } from './helpers/policy-engine.js';
+import { WebSocketsService } from './api/service/websockets.js';
+import { Users } from './helpers/users.js';
+import { Wallet } from './helpers/wallet.js';
 import { LargePayloadContainer, Logger, MessageBrokerChannel } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager.js';
+import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -13,12 +13,12 @@ import process from 'process';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { json } from 'express';
 import { SwaggerModule } from '@nestjs/swagger';
-import { SwaggerConfig } from '@helpers/swagger-config';
+import { SwaggerConfig } from './helpers/swagger-config.js';
 import { SwaggerModels, SwaggerPaths } from './old-descriptions.js';
-import { MeecoAuth } from '@helpers/meeco.js';
-import * as extraModels from './middlewares/validation/schemas'
-import { ProjectService } from '@helpers/projects.js';
-import { AISuggestions } from '@helpers/ai-suggestions.js';
+import { MeecoAuth } from './helpers/meeco.js';
+import * as extraModels from './middlewares/validation/schemas/index.js'
+import { ProjectService } from './helpers/projects.js';
+import { AISuggestions } from './helpers/ai-suggestions.js';
 
 const PORT = process.env.PORT || 3002;
 

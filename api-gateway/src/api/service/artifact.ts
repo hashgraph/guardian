@@ -1,8 +1,8 @@
 import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians.js';
+import { Guardians } from '../../helpers/guardians.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper.js';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiExtraModels,
     ApiInternalServerErrorResponse,
@@ -14,10 +14,10 @@ import {
     ApiForbiddenResponse,
     getSchemaPath
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors.js';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { ArtifactDTOItem } from '@middlewares/validation/schemas/artifacts.js';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 
 @Controller('artifacts')
 @ApiTags('artifacts')

@@ -1,14 +1,14 @@
-import { Guardians } from '@helpers/guardians.js';
-import { Users } from '@helpers/users.js';
+import { Guardians } from '../../helpers/guardians.js';
+import { Users } from '../../helpers/users.js';
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager.js';
-import { ServiceError } from '@helpers/service-requests-base.js';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
 import { Controller, Get, HttpCode, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { TaskAction, UserRole } from '@guardian/interfaces';
-import { RegisteredUsersDTO } from '@middlewares/validation/schemas';
-import { AuthUser } from '@auth/authorization-helper.js';
-import { Auth } from '@auth/auth.decorator.js';
+import { RegisteredUsersDTO } from '../../middlewares/validation/schemas/index.js';
+import { AuthUser } from '../../auth/authorization-helper.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('demo')
 @ApiTags('demo')

@@ -1,4 +1,4 @@
-import { Guardians } from '@helpers/guardians.js';
+import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
 import {
     ApiInternalServerErrorResponse,
@@ -10,7 +10,7 @@ import {
     ApiSecurity,
     ApiTags
 } from '@nestjs/swagger';
-import { checkPermission } from '@auth/authorization-helper.js';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import { UserRole } from '@guardian/interfaces';
 import {
     FilterDocumentsDTO,
@@ -26,7 +26,7 @@ import {
     SearchPoliciesDTO,
     FilterToolsDTO,
     CompareToolsDTO
-} from '@middlewares/validation/schemas';
+} from '../../middlewares/validation/schemas/index.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
