@@ -14,7 +14,7 @@
         "module": "ESNext",
         "moduleResolution": "node",
         "outDir": "dist/",
-        "target": "ESNext"
+        "target": "es2022"
     },
     "exclude": [
         "node_modules",

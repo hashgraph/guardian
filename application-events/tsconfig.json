@@ -2,7 +2,7 @@
     "compilerOptions": {
         "baseUrl": "src",
         "target": "ESNext",
-        "module": "ESNext",
+        "module": "es2022",
         "experimentalDecorators": true,
         "outDir": "./dist",
         "strict": true,
