@@ -1,5 +1,5 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
-import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
+import { IPolicyReportItemBlock } from '../../policy-engine.interface.js';
 import { DataSourceBlock } from '.';
 
 /**

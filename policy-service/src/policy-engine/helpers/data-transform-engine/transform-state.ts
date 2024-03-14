@@ -1,4 +1,4 @@
-import { BlockActionError } from '@policy-engine/errors';
+import { BlockActionError } from '../../errors/index.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 
 /**

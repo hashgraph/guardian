@@ -1,8 +1,8 @@
 import { PolicyBlockMap, PolicyTagMap } from './';
-import { IPolicyBlock, } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock, } from '../policy-engine.interface.js';
 
 import { UserRole } from '@guardian/interfaces';
-import { BlockAbout } from './block-about';
+import { BlockAbout } from './block-about.js';
 
 /**
  * Policy block decorator options

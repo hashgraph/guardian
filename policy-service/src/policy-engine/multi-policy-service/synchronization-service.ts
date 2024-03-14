@@ -4,7 +4,7 @@ import {
     WorkerTaskType
 } from '@guardian/interfaces';
 import { CronJob } from 'cron';
-import { MintService } from '../mint/mint-service';
+import { MintService } from './mint-service.js';
 import {
     Logger,
     Token,

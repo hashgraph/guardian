@@ -1,5 +1,5 @@
 import * as blocks from './';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock } from '../policy-engine.interface.js';
 
 /**
  * Get block about information

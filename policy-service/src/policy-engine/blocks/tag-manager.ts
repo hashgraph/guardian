@@ -1,9 +1,9 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
-import { BlockActionError } from '@policy-engine/errors';
+import { BasicBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
+import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { BlockActionError } from '../errors/index.js';
 import { SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import {
     Tag,
@@ -15,7 +15,7 @@ import {
     VcHelper,
     DatabaseServer,
 } from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyUtils } from '../helpers/utils.js';
 
 /**
  * Tag Manager

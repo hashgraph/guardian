@@ -1,8 +1,8 @@
 import { DatabaseServer, HederaDidDocument } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { BlockTreeGenerator } from '../block-tree-generator';
+import { AnyBlockType } from '../policy-engine.interface';
+import { IPolicyUser } from '../policy-user';
 import { RecordingStatus } from './status.type';
 import { RecordAction } from './action.type';
 import { RecordMethod } from './method.type';

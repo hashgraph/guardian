@@ -1,11 +1,11 @@
 import { GenerateUUIDv4, PolicyEvents, TopicType } from '@guardian/interfaces';
 import { RunningStatus } from './status.type';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { BlockTreeGenerator } from '../block-tree-generator';
 import { RecordAction } from './action.type';
 import { RecordMethod } from './method.type';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { IPolicyBlock } from '../policy-engine.interface';
+import { IPolicyUser, PolicyUser } from '../policy-user';
+import { PolicyComponentsUtils } from '../policy-components-utils';
 import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcHelper } from '@guardian/common';
 import { RecordItem } from './record-item';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
