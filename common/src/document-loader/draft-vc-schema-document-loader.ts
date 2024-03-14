@@ -1,6 +1,6 @@
 import { ISchema } from '@guardian/interfaces';
-import { Schema } from '../entity';
-import { DataBaseHelper } from '../helpers';
+import { Schema } from '../entity/index.js';
+import { DataBaseHelper } from '../helpers/index.js';
 import { LocalVcSchemaDocumentLoader } from './local-vc-schema-document-loader.js';
 
 /**

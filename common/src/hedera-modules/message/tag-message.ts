@@ -3,7 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { TagMessageBody } from './message-body.interface.js';
-import { Tag } from '../../entity';
+import { Tag } from '../../entity/index.js';
 
 /**
  * Tag message

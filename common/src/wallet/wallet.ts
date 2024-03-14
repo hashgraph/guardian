@@ -1,4 +1,4 @@
-import { SecretManager, SecretManagerBase, SecretManagerType } from '../secret-manager';
+import { SecretManager, SecretManagerBase, SecretManagerType } from '../secret-manager/index.js';
 import crypto from 'crypto';
 import * as bs58 from 'bs58';
 import { AzureSecretManager } from '../secret-manager/azure/azure-secret-manager.js';

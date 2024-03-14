@@ -4,11 +4,11 @@ import {
     TopicId,
 } from '@hashgraph/sdk';
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, Logger, Workers } from '../../helpers';
+import { IPFS, Logger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
-import { DatabaseServer } from '../../database-modules';
+import { DatabaseServer } from '../../database-modules/index.js';
 import { TopicConfig } from '../topic.js';
 import { Message } from './message.js';
 import { MessageType } from './message-type.js';

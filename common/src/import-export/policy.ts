@@ -1,8 +1,8 @@
 import JSZip from 'jszip';
-import { Artifact, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity';
-import { DataBaseHelper } from '../helpers';
-import { DatabaseServer } from '../database-modules';
-import { ImportExportUtils } from './utils';
+import { Artifact, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
+import { DataBaseHelper } from '../helpers/index.js';
+import { DatabaseServer } from '../database-modules/index.js';
+import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport } from '@guardian/interfaces';
 
 interface IArtifact {

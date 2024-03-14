@@ -32,7 +32,7 @@ import {
     VpDocument,
     MintRequest,
     MintTransaction
-} from '../entity';
+} from '../entity/index.js';
 import { Binary } from 'bson';
 import {
     DocumentType,
@@ -43,8 +43,8 @@ import {
     TokenType,
     TopicType,
 } from '@guardian/interfaces';
-import { BaseEntity } from '../models';
-import { DataBaseHelper } from '../helpers';
+import { BaseEntity } from '../models/index.js';
+import { DataBaseHelper } from '../helpers/index.js';
 import { Theme } from '../entity/theme.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { PolicyTool } from '../entity/tool.js';

@@ -1,7 +1,7 @@
 import { Hyperlink, Worksheet } from './workbook.js';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
 import { XlsxError } from '../interfaces/error.interface.js';
-import { Policy, PolicyTool } from '../../entity';
+import { Policy, PolicyTool } from '../../entity/index.js';
 import { ISchemaCache } from '../interfaces/cache.interface.js';
 import { ITool } from '../interfaces/tool.interface.js';
 import { ILink } from '../interfaces/link.interface.js';

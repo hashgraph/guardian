@@ -1,6 +1,6 @@
 import { NatsConnection, headers, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { ZipCodec } from './zip-codec';
+import { ZipCodec } from './zip-codec.js';
 
 /**
  * Nats service

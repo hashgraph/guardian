@@ -3,7 +3,7 @@ import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { ToolMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers';
+import { IPFS } from '../../helpers/index.js';
 import { PolicyTool } from '../../entity/tool.js';
 
 /**
