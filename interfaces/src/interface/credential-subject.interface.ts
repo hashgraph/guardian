@@ -1,4 +1,4 @@
-import {did} from './did.interface';
+import {did} from './did.interface.js';
 
 /**
  * Credential subject interface
