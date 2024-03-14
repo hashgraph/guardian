@@ -1,10 +1,10 @@
-import { Policy } from '../../entity';
+import { Policy } from '../../entity/index.js';
 import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { PolicyMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers';
+import { IPFS } from '../../helpers/index.js';
 
 /**
  * Policy message

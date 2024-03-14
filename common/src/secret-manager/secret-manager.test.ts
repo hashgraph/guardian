@@ -8,10 +8,10 @@ const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
 const policyEnvPath = path.join(process.cwd(), '../policy-service/.env')
 const workerEnvPath = path.join(process.cwd(), '../worker-service/.env')
 
-const authCertsPath = path.join('../auth-service/tls/vault/client')
-const guardianCertsPath = path.join('../guardian-service/tls/vault/client')
-const policyCertsPath = path.join('../policy-service/tls/vault/client')
-const workerCertsPath = path.join('../worker-service/tls/vault/client')
+const authCertsPath = path.join('../auth-service/tls/vault/client/index.js')
+const guardianCertsPath = path.join('../guardian-service/tls/vault/client/index.js')
+const policyCertsPath = path.join('../policy-service/tls/vault/client/index.js')
+const workerCertsPath = path.join('../worker-service/tls/vault/client/index.js')
 
 let secretManager: SecretManagerBase;
 

@@ -1,6 +1,6 @@
 import { MikroORM, UseRequestContext, wrap } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
 import { GridFSBucket } from 'mongodb';
 

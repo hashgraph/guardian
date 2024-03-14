@@ -5,7 +5,7 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { VpMessageBody } from './message-body.interface.js';
 import { Hashing } from '../hashing.js';
-import { IPFS } from '../../helpers';
+import { IPFS } from '../../helpers/index.js';
 
 /**
  * VP message

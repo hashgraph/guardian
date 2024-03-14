@@ -1,4 +1,4 @@
-import { Schema } from '../../entity';
+import { Schema } from '../../entity/index.js';
 import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';

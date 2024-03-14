@@ -15,11 +15,11 @@ export class RegistrationMessage extends Message {
     /**
      * Topic ID
      */
-    public topicId: string;
+    declare public topicId: string;
     /**
      * Language
      */
-    public lang: string;
+    declare public lang: string;
     /**
      * Attributes
      */

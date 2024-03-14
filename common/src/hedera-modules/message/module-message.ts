@@ -2,9 +2,9 @@ import { Message } from './message.js';
 import { IURL, UrlType } from './url.interface.js';
 import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
-import { PolicyModule } from '../../entity';
+import { PolicyModule } from '../../entity/index.js';
 import { ModuleMessageBody } from './message-body.interface.js';
-import { IPFS } from '../../helpers';
+import { IPFS } from '../../helpers/index.js';
 
 /**
  * Module message

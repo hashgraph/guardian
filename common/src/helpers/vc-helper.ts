@@ -9,7 +9,7 @@ import {
     HederaBBSMethod,
     Environment,
     VerificationMethod,
-} from '../hedera-modules';
+} from '../hedera-modules/index.js';
 import {
     DraftSchemaContextLoader,
     LocalVcSchemaDocumentLoader,
@@ -20,7 +20,7 @@ import {
     RemoteDidLoader,
     DraftVcSchemaDocumentLoader,
     DraftSchemaDocumentLoader,
-} from '../document-loader';
+} from '../document-loader/index.js';
 import {
     Schema,
     ICredentialSubject,
@@ -38,10 +38,10 @@ import { DataBaseHelper } from './db-helper.js';
 import {
     Schema as SchemaCollection,
     DidDocument as DidDocumentCollection
-} from '../entity';
+} from '../entity/index.js';
 import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs.js';
-import { KeyType, Users, Wallet } from '../helpers';
-import { IAuthUser } from '../interfaces';
+import { KeyType, Users, Wallet } from '../helpers/index.js';
+import { IAuthUser } from '../interfaces/index.js';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { bls12_381 } from '@noble/curves/bls12-381';
 import bs58 from 'bs58';

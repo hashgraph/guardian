@@ -14,7 +14,7 @@ import {
     utf8ToBytes,
 } from '@meeco/cryppo';
 import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
-import { IPFS } from '../../helpers';
+import { IPFS } from '../../helpers/index.js';
 
 /**
  * VC message

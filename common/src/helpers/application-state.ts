@@ -1,5 +1,5 @@
 import { Singleton } from '../decorators/singleton.js';
-import { NatsService } from '../mq';
+import { NatsService } from '../mq/index.js';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
 
 /**

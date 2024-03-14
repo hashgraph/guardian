@@ -1,5 +1,5 @@
-import { DidURL, DocumentLoader, HederaDid, IDocumentFormat } from '../hedera-modules';
-import { IPFS, Workers } from '../helpers';
+import { DidURL, DocumentLoader, HederaDid, IDocumentFormat } from '../hedera-modules/index.js';
+import { IPFS, Workers } from '../helpers/index.js';
 import { WorkerTaskType } from '@guardian/interfaces';
 
 /**

@@ -4,7 +4,7 @@ import * as path from 'path';
 
 const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
 
-const guardianCertsPath = path.join('../guardian-service/tls/vault/client')
+const guardianCertsPath = path.join('../guardian-service/tls/vault/client/index.js')
 
 /**
  * Set Vault TLS options

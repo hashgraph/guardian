@@ -1,6 +1,6 @@
 import { BlockType, GenerateUUIDv4, SchemaEntity } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result.js';
-import { PolicyTool } from '../entity';
+import { PolicyTool } from '../entity/index.js';
 import { IBlock } from './interfaces/block-interface.js';
 import { XlsxSchema } from './models/xlsx-schema.js';
 import { Expression } from './models/expression.js';

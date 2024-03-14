@@ -4,8 +4,8 @@ import { MessageAction } from './message-action.js';
 import { MessageType } from './message-type.js';
 import { DidMessageBody } from './message-body.interface.js';
 import { Hashing } from '../hashing.js';
-import { IPFS } from '../../helpers';
-import { CommonDidDocument } from '../vcjs';
+import { IPFS } from '../../helpers/index.js';
+import { CommonDidDocument } from '../vcjs/index.js';
 
 /**
  * DID message

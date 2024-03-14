@@ -1,7 +1,7 @@
 import { Singleton } from '../decorators/singleton.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Wallet as WalletManager} from '../wallet'
-import { NatsService } from '../mq';
+import { Wallet as WalletManager} from '../wallet/index.js'
+import { NatsService } from '../mq/index.js';
 import { Users } from './users.js';
 
 /**
