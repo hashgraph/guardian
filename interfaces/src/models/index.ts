@@ -1,2 +1,2 @@
-export * from './schema';
-export * from './token';
+export * from './schema.js';
+export * from './token.js';
