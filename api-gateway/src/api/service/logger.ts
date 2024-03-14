@@ -2,7 +2,7 @@ import { IPageParameters, MessageAPI, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { checkPermission } from '@auth/authorization-helper.js';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import { ApiTags } from '@nestjs/swagger';
 import axios from 'axios';
 

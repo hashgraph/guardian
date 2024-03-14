@@ -1,4 +1,4 @@
-import { Singleton } from '@helpers/decorators/singleton.js';
+import { Singleton } from '../helpers/decorators/singleton.js';
 import { WalletEvents, IWalletAccount, GenerateUUIDv4 } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 

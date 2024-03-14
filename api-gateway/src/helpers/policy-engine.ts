@@ -1,4 +1,4 @@
-import { Singleton } from '@helpers/decorators/singleton.js';
+import { Singleton } from '../helpers/decorators/singleton.js';
 import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';

@@ -1,12 +1,12 @@
-import { Guardians } from '@helpers/guardians.js';
+import { Guardians } from '../../helpers/guardians.js';
 import { ITokenInfo, TaskAction, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { PolicyEngine } from '@helpers/policy-engine.js';
-import { TaskManager } from '@helpers/task-manager.js';
-import { ServiceError } from '@helpers/service-requests-base.js';
-import { prepareValidationResponse } from '@middlewares/validation';
+import { PolicyEngine } from '../../helpers/policy-engine.js';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
+import { prepareValidationResponse } from '../../middlewares/validation/index.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper.js';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
@@ -18,7 +18,7 @@ import {
     ApiBearerAuth,
     ApiParam,
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
 
 /**
  * Token route

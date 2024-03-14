@@ -1,4 +1,4 @@
-import fieldsValidation from '@middlewares/validation/fields-validation';
+import fieldsValidation from '../../../middlewares/validation/fields-validation.js';
 import * as yup from 'yup';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';

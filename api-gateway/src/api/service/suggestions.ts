@@ -1,11 +1,11 @@
 import { UserRole } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards, } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper.js';
-import { Guardians } from '@helpers/guardians.js';
+import { checkPermission } from '../../auth/authorization-helper.js';
+import { Guardians } from '../../helpers/guardians.js';
 import { ApiBearerAuth, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors.js';
-import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, } from '@middlewares/validation/schemas/suggestions.js';
-import { AuthGuard } from '@auth/auth-guard.js';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, } from '../../middlewares/validation/schemas/suggestions.js';
+import { AuthGuard } from '../../auth/auth-guard.js';
 
 @Controller('suggestions')
 @ApiTags('suggestions')
