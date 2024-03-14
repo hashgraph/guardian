@@ -86,5 +86,6 @@
         "test:local": "mocha tests/**/*.test.mjs --exit",
         "test:stability": "mocha tests/stability.test.js"
     },
+    "type": "module",
     "version": "2.22.0"
 }

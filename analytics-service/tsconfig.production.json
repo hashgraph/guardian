@@ -33,7 +33,7 @@
                 "middlewares/*"
             ]
         },
-        "target": "ESNext"
+        "target": "es2022"
     },
     "exclude": [
         "node_modules",
