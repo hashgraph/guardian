@@ -16,9 +16,11 @@ import { Issuer } from './issuer.js';
 import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers/index.js';
-import { verify, purposes } from 'jsonld-signatures';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
 import { BBSDidRootKey, DidRootKey } from './did-document.js';
+
+import * as pkg from 'jsonld-signatures';
+const { verify, purposes } = pkg;
 
 /**
  * Suite interface

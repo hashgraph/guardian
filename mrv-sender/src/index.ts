@@ -1,11 +1,11 @@
 import express, { Request, Response } from 'express';
 import axios from 'axios';
-import { VCDocumentLoader } from './document-loader/vc-document-loader';
-import { DefaultDocumentLoader } from './document-loader/document-loader-default';
-import { VCHelper } from './vc-helper';
+import { VCDocumentLoader } from './document-loader/vc-document-loader.js';
+import { DefaultDocumentLoader } from './document-loader/document-loader-default.js';
+import { VCHelper } from './vc-helper.js';
 import path from 'path';
 import fs from 'fs';
-import { startMetricsServer } from './utils/metrics';
+import { startMetricsServer } from './utils/metrics.js';
 
 enum GenerateMode {
     TEMPLATES = "TEMPLATES",

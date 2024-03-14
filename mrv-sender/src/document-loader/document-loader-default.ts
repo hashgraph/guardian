@@ -1,8 +1,8 @@
 import didContexts from '@transmute/did-context';
 import credentialsContexts from '@transmute/credentials-context';
 import securityContexts from '@transmute/security-context';
-import { DocumentLoader } from './document-loader';
-import { IDocumentFormat } from './document-format';
+import { DocumentLoader } from './document-loader.js';
+import { IDocumentFormat } from './document-format.js';
 
 /**
  * Default Documents Loader
