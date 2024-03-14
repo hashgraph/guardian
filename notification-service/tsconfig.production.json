@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
-        "module": "commonjs",
-        "target": "es6",
+        "module": "ESNext",
+        "target": "es2022",
         "lib": [
             "es6"
         ],
@@ -11,6 +11,7 @@
         "sourceMap": false,
         "outDir": "dist/",
         "esModuleInterop": true,
+        "resolveJsonModule": true,
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
