@@ -1,13 +1,13 @@
 import { CronJob } from 'cron';
-import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { IVC, Schema, SchemaField, SchemaHelper, TopicType } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { BlockActionError } from '@policy-engine/errors';
-import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
+import { BlockActionError } from '../errors/index.js';
+import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import {
     VcDocument as VcDocumentCollection,
     MessageServer,
@@ -26,7 +26,7 @@ import {
     ExternalDocuments,
     ExternalEvent,
     ExternalEventType
-} from '@policy-engine/interfaces/external-event';
+} from '../interfaces/external-event.js';
 import { TopicId } from '@hashgraph/sdk';
 
 /**

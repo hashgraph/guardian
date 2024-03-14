@@ -1,13 +1,13 @@
-import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface';
-import { PolicyComponentsUtils } from './policy-components-utils';
+import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
 import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, NatsService, Policy, Singleton, Users, } from '@guardian/common';
-import { IPolicyUser, PolicyUser } from './policy-user';
-import { PolicyValidator } from '@policy-engine/block-validators';
+import { IPolicyUser, PolicyUser } from './policy-user.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js'
 import { headers } from 'nats';
-import { Inject } from '@helpers/decorators/inject';
-import { ComponentsService } from './helpers/components-service';
-import { RecordUtils } from './record-utils';
+import { Inject } from '../helpers/decorators/inject.js';
+import { ComponentsService } from './helpers/components-service.js';
+import { RecordUtils } from './record-utils.js';
 
 /**
  * Block tree generator

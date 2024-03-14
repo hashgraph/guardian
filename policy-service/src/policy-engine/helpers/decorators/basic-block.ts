@@ -1,15 +1,15 @@
-import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
-import { BlockCacheType, EventConfig } from '@policy-engine/interfaces';
-import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
+import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
+import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
+import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
 import { PolicyRole, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
-import { PolicyComponentsUtils } from '../../policy-components-utils';
-import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
+import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
 import { Logger, DatabaseServer, Policy } from '@guardian/common';
 import deepEqual from 'deep-equal';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { ComponentsService } from '../components-service';
+import { IPolicyUser, PolicyUser } from '../../policy-user.js';
+import { ComponentsService } from '../components-service.js';
 
 /**
  * Basic block decorator
