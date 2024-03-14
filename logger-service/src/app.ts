@@ -5,7 +5,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { NestFactory } from '@nestjs/core';
 import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
 
 export class LoggerSerializer implements Serializer {
     serialize(value: any, options?: Record<string, any>): any {
