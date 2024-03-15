@@ -39,12 +39,11 @@ export class BrandingApi{
                 termsAndConditions
             };
 
-          console.log("hello");
-            const guardians = new Guardians();
-            await guardians.setBranding(JSON.stringify(data));
+          const guardians = new Guardians();
+          await guardians.setBranding(JSON.stringify(data));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+          new Logger().error(error, ['API_GATEWAY']);
+          throw error;
         }
 
         return;
