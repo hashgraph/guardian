@@ -1,7 +1,7 @@
 # 💻 Bring your own (BYO) DIDs UI
 
-1. Step By Step Process
-2. Demo Video
+1. [Step By Step Process](bring-your-own-byo-dids-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](bring-your-own-byo-dids-ui.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 
