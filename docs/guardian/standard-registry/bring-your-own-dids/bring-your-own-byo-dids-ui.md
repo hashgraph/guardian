@@ -1,5 +1,10 @@
 # 💻 Bring your own (BYO) DIDs UI
 
+1. Step By Step Process
+2. Demo Video
+
+## 1. Step By Step Process
+
 ## 1. New Standard Registry Registration
 
 ### **1.1 Hedera Account**
@@ -78,3 +83,7 @@ For more details, please refer to Section [1.2.2](bring-your-own-byo-dids-ui.md#
 <figure><img src="../../../.gitbook/assets/image (14) (1).png" alt=""><figcaption></figcaption></figure>
 
 For more details, please refer to section [1.3](bring-your-own-byo-dids-ui.md#id-1.3-keys)
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/VVwHSu4LJ\_w?si=warN7AxOVopv85G4\&t=117)
