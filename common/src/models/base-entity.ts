@@ -1,4 +1,4 @@
-import { BeforeCreate, BeforeUpdate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { AfterCreate, BeforeCreate, BeforeUpdate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
@@ -48,6 +48,16 @@ export abstract class BaseEntity {
     __onBaseCreate() {
         this.createDate = new Date();
         this.updateDate = this.createDate;
+    }
+
+    /**
+     * Set id, if entity don't have
+     */
+    @AfterCreate()
+    protected afterCreate(): void {
+        if(!this.id) {
+            this.id = this._id.toHexString()
+        }
     }
 
     /**
