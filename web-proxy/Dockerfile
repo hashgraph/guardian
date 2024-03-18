@@ -1,16 +1,18 @@
+ARG NODE_VERSION=20.11.1-bookworm-slim
+
 # Stage 1: Build interfaces module
-FROM node:20.11.1-bookworm-slim AS interfacesModuleBuilder
+FROM node:${NODE_VERSION} AS interfacesBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package.json ./interfaces/tsconfig*.json ./yarn.lock ./package-lock.json ./
 COPY ./interfaces/src ./src/.
 RUN yarn install && yarn pack
 
 # Stage 2: Build frontend
-FROM node:20.11.1-bookworm-slim as frontendBuilder
+FROM node:${NODE_VERSION} as frontendBuilder
 ENV NODE_OPTIONS="--openssl-legacy-provider"
 WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+COPY --from=interfacesBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
 RUN npm install guardian-interfaces-*.tgz && npm run build
 
 # Stage 3: Create the final image

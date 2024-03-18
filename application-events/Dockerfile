@@ -1,35 +1,37 @@
+ARG NODE_VERSION=20.11.1-bookworm-slim
+
 # Stage 1: Build interfaces module
-FROM node:20.11.1-bookworm-slim AS interfacesModuleBuilder
+FROM node:${NODE_VERSION} AS interfacesBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package.json ./interfaces/tsconfig*.json ./yarn.lock ./package-lock.json ./
 COPY ./interfaces/src ./src/.
 RUN yarn install && yarn pack
 
 # Stage 2: Build common module
-FROM node:20.11.1-bookworm-slim AS commonModuleBuilder
+FROM node:${NODE_VERSION} AS commonBuilder
 WORKDIR /usr/local/common
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --from=interfacesBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY ./common/package.json ./common/tsconfig*.json ./yarn.lock ./package-lock.json ./
 COPY ./common/src ./src/.
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN yarn install && yarn pack
 
 # Stage 3: Build application metrics service
-FROM node:20.11.1-bookworm-slim AS applicationMetricsBuilder
+FROM node:${NODE_VERSION} AS applicationMetricsBuilder
 WORKDIR /usr/local/srv
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
-COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
+COPY --from=interfacesBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --from=commonBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
 COPY ./application-events/package.json ./application-events/tsconfig*.json ./yarn.lock ./package-lock.json ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 COPY ./application-events/src ./src/.
 RUN yarn install && yarn run build:prod
 
 # Stage 4: Create the final image
-FROM node:20.11.1-bookworm-slim
+FROM node:${NODE_VERSION}
 ENV PLATFORM="docker" NODE_ENV="production"
 WORKDIR /usr/local/application-events
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
-COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
+COPY --from=interfacesBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --from=commonBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
 COPY --from=applicationMetricsBuilder /usr/local/srv/yarn.lock /usr/local/srv/package*.json ./
 COPY ./application-events/.env.docker ./.env
 COPY ./application-events/docs ./docs
