@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Schemas",{ tags: '@schemas' },  () => {
     const authorization = Cypress.env("authorization");
 
-    it("should import new schema from IPFS into the local DB", () => {
+    it("Import new schema from IPFS", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

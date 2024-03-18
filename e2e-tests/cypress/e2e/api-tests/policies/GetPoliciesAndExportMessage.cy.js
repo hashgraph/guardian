@@ -20,7 +20,7 @@ context("Policies", { tags: '@policies' }, () => {
         });
     });
 
-    it("check returns of the blocks", () => {
+    it("export policy message", () => {
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",
@@ -33,7 +33,6 @@ context("Policies", { tags: '@policies' }, () => {
             expect(response.status).to.eq(200);
             const policyId = response.body.at(-1).id;
             const name = response.body.at(-1).name;
-            const messageId = response.body.at(-1).messageId;
             const owner = response.body.at(-1).owner;
             const description = response.body.at(-1).description;
             const url = {

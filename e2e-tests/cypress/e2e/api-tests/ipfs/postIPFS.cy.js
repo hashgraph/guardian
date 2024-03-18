@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("IPFS",  { tags: '@ipfs' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("import the schema file", () => {
+    before(() => {
         cy.request({
             method: METHOD.GET,
             url:  API.ApiServer + API.Schemas, 
@@ -36,7 +36,7 @@ context("IPFS",  { tags: '@ipfs' }, () => {
         });
     });
 
-    it("import the schema file", () => {
+    it("Add file to ipfs", () => {
         cy.fixture("exportedSchema.schema", "binary")
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {

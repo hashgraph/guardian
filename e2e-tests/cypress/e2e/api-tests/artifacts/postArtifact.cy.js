@@ -54,7 +54,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
         });
     });
 
-    it("upload artifact", () => {
+    it("Upload artifact", () => {
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",

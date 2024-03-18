@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Schemas", { tags: '@schemas' },() => {
     const authorization = Cypress.env("authorization");
 
-    it("returns all schemas", () => {
+    it("Get all schemas", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Artifacts", { tags: '@artifacts' },() => {
     const authorization = Cypress.env("authorization");
 
-    it("get all artifacts", () => {
+    it("Get list of artifacts", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Artifacts,

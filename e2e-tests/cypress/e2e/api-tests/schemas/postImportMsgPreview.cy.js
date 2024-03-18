@@ -5,7 +5,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     const authorization = Cypress.env("authorization");
 
 
-    it("previews the schema from IPFS without loading it into the local DB", () => {
+    it("Push preview the schema from IPFS", () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + "schemas/push/import/message/preview",

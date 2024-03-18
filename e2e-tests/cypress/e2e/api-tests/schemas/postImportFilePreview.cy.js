@@ -41,7 +41,7 @@ context("Schemas", { tags: '@schemas' }, () => {
         });
     });
 
-    it("previews the schema from a file", () => {
+    it("Preview the schema from a file", () => {
         cy.fixture("exportedSchema.schema", "binary")
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {

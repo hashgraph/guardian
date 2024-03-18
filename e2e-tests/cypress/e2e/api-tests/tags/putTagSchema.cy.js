@@ -92,8 +92,8 @@ context("Tags", {tags: '@tags'}, () => {
         });
     })
 
-    it("should delete a tag schema", () => {
-        //delete tag schema
+    it("Update the schema with the provided schema ID", () => {
+        //edit tag schema
         cy.request({
             method: "PUT",
             url: API.ApiServer + API.Tags + "schemas/" + schemaId,

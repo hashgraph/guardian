@@ -8,7 +8,7 @@ context("Policies", { tags: '@policies' }, () => {
 
 
 
-    it("check returns of the policy", () => {
+    it("Get a list of groups the user is a member of", () => {
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",
@@ -17,24 +17,24 @@ context("Policies", { tags: '@policies' }, () => {
             },
         };
 
-        cy.request(urlPolicies).should((response) => {
+        cy.request(urlPolicies).then((response) => {
             expect(response.status).to.eq(200);
-        //     const policyId = response.body.at(-1).id;
-
-        //     const urlPoliciesId = {
-        //         method: "GET",
-        //         url:
-        //             API.ApiServer +
-        //             "policies/" +
-        //             policyId +
-        //             "/groups",
-        //         headers: {
-        //             authorization,
-        //         },
-        //     };
-        //     cy.request(urlPoliciesId).should((response) => {
-        //         expect(response.status).to.eq(500);
-        //     });
+            const policyId = response.body.at(-1).id;
+            const urlPoliciesId = {
+                method: "GET",
+                url:
+                    API.ApiServer +
+                    "policies/" +
+                    policyId +
+                    "/groups",
+                headers: {
+                    authorization,
+                },
+                timeout: 180000
+            };
+            cy.request(urlPoliciesId).then((response) => {
+                expect(response.status).to.eq(200);
+            });
         });
     });
 });

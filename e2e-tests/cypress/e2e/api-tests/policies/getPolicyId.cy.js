@@ -5,7 +5,7 @@ import API from "../../../support/ApiUrls";
 context('Policies', { tags: '@policies' }, () => {
     const authorization = Cypress.env('authorization');
 
-    it('check returns of the policy', () => {
+    it('Get policy configuration for the specified policy ID', () => {
 
       const urlPolicies = {
         method: "GET",
@@ -29,7 +29,6 @@ context('Policies', { tags: '@policies' }, () => {
       cy.request(urlPoliciesId)
           .then((response) => {
           expect(response.status).to.eq(200)
-          expect(response.body).to.not.be.oneOf([null, ""])
           expect(response.body.id).to.equal(policyId)
 
           let children = response.body.config.children

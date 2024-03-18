@@ -27,7 +27,7 @@ context("Tags", {tags: '@tags'}, () => {
     });
 
 
-    it("should create a tag", () => {
+    it("Create new tag(contract)", () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + API.Tags,

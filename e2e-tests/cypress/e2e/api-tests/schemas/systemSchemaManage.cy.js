@@ -6,7 +6,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     const schemaUUID = "1111b23a-b1ea-408f-a573-6d8bd1a2060a";
     const username = "StandartRegistry";
 
-    it("manage new schema", () => {
+    it("Delete the system schema with the provided schema ID", () => {
         //Create new schema
         cy.request({
             method: "POST",

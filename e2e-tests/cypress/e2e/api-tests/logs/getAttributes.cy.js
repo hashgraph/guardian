@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Logs",  { tags: '@logs' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("get logs attributes as a StandardRegistry", () => {
+    it("Returns logs attributes", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.LogsAttributes,
