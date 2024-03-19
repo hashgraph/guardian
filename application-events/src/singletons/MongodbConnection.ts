@@ -14,7 +14,6 @@ export default class MongodbConnection {
       dbName: 'application_events',
       driver: MongoDriver,
       entities: [ Webhook ],
-      type: 'mongo',
     });
   };
 
