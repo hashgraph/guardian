@@ -77,6 +77,7 @@ export class PolicyEngineChannel extends NatsService {
 /**
  * Policy engine service
  */
+
 export class PolicyEngineService {
     /**
      * Users helper
@@ -101,6 +102,7 @@ export class PolicyEngineService {
         this.channel = new PolicyEngineChannel();
         this.channel.setConnection(cn)
         this.policyEngine = new PolicyEngine()
+        this.users = new Users()
     }
 
     /**

@@ -119,8 +119,8 @@ async function writeWallet(token, type, key, value) {
  * migrate
  */
 async function migrate() {
-  const db = await MikroORM.init<MongoDriver>({
-    type: 'mongo',
+  const db = await MikroORM.init({
+    driver: MongoDriver,
     namingStrategy: DataBaseNamingStrategy,
     dbName: 'auth_db',
     clientUrl:`mongodb://localhost:27017`,
@@ -130,7 +130,7 @@ async function migrate() {
     driverOptions: {
       useUnifiedTopology: true
     },
-    ensureIndexes: true
+    ensureIndexes: true,
   })
 
   DataBaseHelper.orm = db;

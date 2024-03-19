@@ -44,7 +44,7 @@ export abstract class NatsService {
             throw new Error('Connection must set first');
         }
         this.connection.subscribe(this.replySubject, {
-            callback: async (error, msg) => {;
+            callback: async (error, msg) => {
                 if (!error) {
                     const messageId = msg.headers.get('messageId');
                     const fn = this.responseCallbacksMap.get(messageId);

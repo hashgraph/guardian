@@ -51,7 +51,7 @@ export abstract class BaseEntity {
     }
 
     /**
-     * Set id, if entity don't have
+     * Set id, if entity id is not exist
      */
     @AfterCreate()
     protected afterCreate(): void {

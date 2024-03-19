@@ -206,6 +206,7 @@ export class VcHelper extends VCJS {
             verificationMethods[type] = id;
             await wallet.setKey(walletToken, KeyType.DID_KEYS, id, key);
         }
+
         const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
             did: document.getDid(),
             document: document.getDocument(),
