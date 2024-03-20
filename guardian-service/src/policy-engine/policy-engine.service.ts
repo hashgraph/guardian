@@ -35,7 +35,6 @@ import { PolicyEngine } from './policy-engine.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
 import { GuardiansService } from '../helpers/guardians.js';
-import { Inject } from '../helpers/decorators/inject.js';
 import { BlockAboutString } from './block-about.js';
 import { HashComparator } from '../analytics/index.js';
 import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '../api/helpers/index.js';
