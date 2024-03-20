@@ -18,8 +18,8 @@ export class BlockTreeGenerator extends NatsService {
      * Users helper
      * @private
      */
-    @Inject()
-    private readonly users: Users;
+    // @Inject()
+    private users: Users;
 
     /**
      * Message queue name
@@ -44,6 +44,10 @@ export class BlockTreeGenerator extends NatsService {
      * @param user
      */
     public async getUser(policy: IPolicyInstance | IPolicyInterfaceBlock, user: IUser): Promise<IPolicyUser> {
+        if(!this.users) {
+          this.users = new Users()
+        }
+
         const regUser = await this.users.getUser(user.username);
         if (!regUser || !regUser.did) {
             throw new Error(`Forbidden`);
