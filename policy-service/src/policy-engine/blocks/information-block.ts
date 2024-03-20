@@ -1,5 +1,5 @@
 import { DataSourceBlock } from '../helpers/decorators/data-source-block.js';
-import { PolicyInputEventType } from '../interfaces/index';
+import { PolicyInputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyUser } from '../policy-user.js';

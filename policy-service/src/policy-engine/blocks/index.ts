@@ -18,7 +18,7 @@ export { PolicyRolesBlock } from './policy-roles.js';
 export { ReassigningBlock } from './reassigning.block.js';
 export { ReportBlock } from './report-block.js';
 export { ReportItemBlock } from './report-item-block.js';
-export { RetirementBlock } from './retirement-block';
+export { RetirementBlock } from './retirement-block.js';
 export { RequestVcDocumentBlock } from './request-vc-document-block.js';
 export { SendToGuardianBlock } from './send-to-guardian-block.js';
 export { SwitchBlock } from './switch-block.js';

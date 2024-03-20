@@ -1,5 +1,5 @@
 import { ActionCallback, ContainerBlock, StateField } from '../helpers/decorators/index.js';
-import { BlockActionError } from '../errors/index';
+import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';

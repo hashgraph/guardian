@@ -76,7 +76,7 @@ export class PolicyEngineService {
      * Users helper
      * @private
      */
-    @Inject()
+    // @Inject()
     private readonly users: Users;
 
     /**
@@ -110,6 +110,7 @@ export class PolicyEngineService {
      * @param username
      */
     private async getUserDid(username: string): Promise<string> {
+      console.log('this.users', this.users);
         const userFull = await this.users.getUser(username);
         return userFull?.did;
     }

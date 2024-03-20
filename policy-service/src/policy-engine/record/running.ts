@@ -1,14 +1,14 @@
 import { GenerateUUIDv4, PolicyEvents, TopicType } from '@guardian/interfaces';
-import { RunningStatus } from './status.type';
-import { BlockTreeGenerator } from '../block-tree-generator';
-import { RecordAction } from './action.type';
-import { RecordMethod } from './method.type';
-import { IPolicyBlock } from '../policy-engine.interface';
-import { IPolicyUser, PolicyUser } from '../policy-user';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { RunningStatus } from './status.type.js';
+import { BlockTreeGenerator } from '../block-tree-generator.js';
+import { RecordAction } from './action.type.js';
+import { RecordMethod } from './method.type.js';
+import { IPolicyBlock } from '../policy-engine.interface.js';
+import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcHelper } from '@guardian/common';
-import { RecordItem } from './record-item';
-import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils';
+import { RecordItem } from './record-item.js';
+import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 /**
