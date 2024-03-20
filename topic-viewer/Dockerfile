@@ -1,19 +1,30 @@
+# syntax=docker/dockerfile:1
+# Stage 0: Use node image for base image for all stages
 ARG NODE_VERSION=20.11.1-bookworm-slim
+FROM node:${NODE_VERSION} as base
+WORKDIR /usr/local/app
 
-# Stage 1: Build topic viewer service
-FROM node:${NODE_VERSION} as topicViewerbuilder
-WORKDIR /usr/local/srv
-COPY ./topic-viewer/package.json ./topic-viewer/tsconfig*.json ./yarn.lock ./package-lock.json ./
-COPY ./topic-viewer/src ./src
-RUN yarn install && yarn run build:prod
+# Stage 1: Installing production dependecies
+FROM base as deps
+COPY ./topic-viewer/package.json ./topic-viewer/tsconfig*.json ./yarn.lock ./
+RUN --mount=type=cache,target=/root/.yarn \
+    yarn install --prod
 
-# Stage 2: Create the final image
-FROM node:${NODE_VERSION}
-ENV PLATFORM="docker" NODE_ENV="production"
-WORKDIR /usr/local/topic-viewer
-COPY --from=topicViewerbuilder /usr/local/srv/yarn.lock /usr/local/srv/package*.json ./
-RUN yarn install
+# Stage 2: Build service
+FROM base as build
+COPY --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
+COPY ./topic-viewer/src ./src/.
+RUN --mount=type=cache,target=/root/.yarn \
+    yarn install --frozen-lockfile && yarn run build:prod
+
+# Stage 3: Create the final image
+FROM base as image
+ENV NODE_ENV production
+
 COPY ./topic-viewer/public ./public
-COPY --from=topicViewerbuilder /usr/local/srv/dist ./dist
 
-CMD yarn start
+COPY --from=deps /usr/local/app/node_modules ./node_modules
+COPY --from=deps /usr/local/app/package.json ./
+COPY --from=build /usr/local/app/dist ./dist
+
+CMD [ "node", "dist/index.js" ]
