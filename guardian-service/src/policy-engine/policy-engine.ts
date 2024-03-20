@@ -95,8 +95,8 @@ export class PolicyEngine extends NatsService {
      * Users helper
      * @private
      */
-    @Inject()
-    private readonly users: Users;
+    // @Inject()
+    private users: Users;
 
     /**
      * Policy ready callbacks
@@ -115,6 +115,7 @@ export class PolicyEngine extends NatsService {
      */
     public async init(): Promise<void> {
         await super.init();
+        this.users = new Users()
 
         this.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
             PolicyEngine.runReadyEvent(msg.policyId, msg.data, msg.error);

@@ -1,12 +1,12 @@
 import { DatabaseServer, HederaDidDocument } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
-import { BlockTreeGenerator } from '../block-tree-generator';
-import { AnyBlockType } from '../policy-engine.interface';
-import { IPolicyUser } from '../policy-user';
-import { RecordingStatus } from './status.type';
-import { RecordAction } from './action.type';
-import { RecordMethod } from './method.type';
-import { RecordItem } from './record-item';
+import { BlockTreeGenerator } from '../block-tree-generator.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
+import { IPolicyUser } from '../policy-user.js';
+import { RecordingStatus } from './status.type.js';
+import { RecordAction } from './action.type.js';
+import { RecordMethod } from './method.type.js';
+import { RecordItem } from './record-item.js';
 
 /**
  * Recording controller

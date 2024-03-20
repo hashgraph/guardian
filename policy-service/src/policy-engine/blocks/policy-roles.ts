@@ -2,7 +2,7 @@ import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { IPolicyUser, PolicyUser } from '../policy-user';
+import { IPolicyUser, PolicyUser } from '../policy-user.js';
 import { GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';

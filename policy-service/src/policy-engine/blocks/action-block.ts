@@ -3,7 +3,7 @@ import { UserType, Schema } from '@guardian/interfaces';
 import { findOptions } from '../helpers/find-options.js';
 import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';

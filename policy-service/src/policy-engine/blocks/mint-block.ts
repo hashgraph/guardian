@@ -16,7 +16,7 @@ import {
 } from '@guardian/common';
 import { DataTypes, PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '../policy-engine.interface.js';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { IPolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';

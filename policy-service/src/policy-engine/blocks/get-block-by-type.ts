@@ -1,4 +1,4 @@
-import * as blocks from './';
+import * as blocks from './index.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 
 /**

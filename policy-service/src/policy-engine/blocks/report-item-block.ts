@@ -1,5 +1,5 @@
 import { findOptions, getVCIssuer } from '@guardian/common';
-import { ReportItem } from '../helpers/decorators/index';
+import { ReportItem } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyReportItemBlock } from '../policy-engine.interface.js';
 import { IReportItem } from '@guardian/interfaces';

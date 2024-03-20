@@ -1,6 +1,6 @@
 import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { IPolicyReportItemBlock } from '../../policy-engine.interface.js';
-import { DataSourceBlock } from '.';
+import { DataSourceBlock } from './index.js';
 
 /**
  * Report block decorator
