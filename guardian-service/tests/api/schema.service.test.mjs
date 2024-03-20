@@ -24,7 +24,7 @@ const { ApplicationState } = common;
 const state = new ApplicationState();
 state.updateState('READY');
 
-const schemaAPIModule = rewire(process.cwd() + '/dist' + '/api/schema.service.js');
+// const schemaAPIModule = rewire(process.cwd() + '/dist' + '/api/schema.service.js');
 
 class MockLogger {
 

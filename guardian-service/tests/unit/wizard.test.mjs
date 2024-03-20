@@ -8,7 +8,9 @@ moduleAlias.addAliases({
     '@api': process.cwd() + '/dist' + '/api',
 });
 
-const { PolicyWizardHelper } = rewire(process.cwd() + '/dist' + '/api/helpers/policy-wizard-helper.js');
+// const { PolicyWizardHelper } = rewire(process.cwd() + '/dist' + '/api/helpers/policy-wizard-helper.js');
+
+import { PolicyWizardHelper } from '../../dist/api/helpers/policy-wizard-helper.js';
 
 function clearIds(config) {
     const props = Object.keys(config);

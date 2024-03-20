@@ -24,7 +24,7 @@ const { ApplicationState } = common;
 const state = new ApplicationState();
 state.updateState('READY');
 
-const loaderAPIModule = rewire(process.cwd() + '/dist' + '/api/loader.service.js');
+// const loaderAPIModule = rewire(process.cwd() + '/dist' + '/api/loader.service.js');
 
 class MockLogger {
     constructor() {
@@ -46,18 +46,18 @@ class MockLogger {
     }
 }
 
-loaderAPIModule.__set__('common_1', {
-    Logger: MockLogger,
-    DidRootKey: {
-        create: function () {
-            return {
-                getController: function () {
-                    return 'did';
-                }
-            }
-        }
-    }
-});
+// loaderAPIModule.__set__('common_1', {
+//     Logger: MockLogger,
+//     DidRootKey: {
+//         create: function () {
+//             return {
+//                 getController: function () {
+//                     return 'did';
+//                 }
+//             }
+//         }
+//     }
+// });
 
 class MockUsers {
     async getHederaAccount() {

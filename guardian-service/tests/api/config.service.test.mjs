@@ -24,7 +24,7 @@ const { ApplicationState } = common;
 const state = new ApplicationState();
 state.updateState('READY');
 
-const configAPIModule = rewire(process.cwd() + '/dist' + '/api/config.service.js');
+// const configAPIModule = rewire(process.cwd() + '/dist' + '/api/config.service.js');
 
 class MockLogger {
     constructor() {
@@ -46,9 +46,9 @@ class MockLogger {
     }
 }
 
-configAPIModule.__set__('common_1', {
-    Logger: MockLogger
-});
+// configAPIModule.__set__('common_1', {
+//     Logger: MockLogger
+// });
 
 class MockUsers {
     async getHederaAccount() {
