@@ -16,7 +16,7 @@ moduleAlias.addAliases({
   "@database-modules": process.cwd() + '/dist' + "/database-modules"
 });
 
-const { Inject } = rewire(process.cwd() + '/dist' + '/helpers/decorators/inject.js');
+// const { Inject } = rewire(process.cwd() + '/dist' + '/helpers/decorators/inject.js');
 
 //const { BlockTreeGenerator } = require("../../../dist/policy-engine/block-tree-generator");
 

@@ -65,13 +65,12 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module.js';
 import { analyticsAPI } from './api/analytics.service.js';
-import { Db, GridFSBucket } from 'mongodb';
+import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from './api/suggestions.service.js';
 import { SynchronizationTask } from './helpers/synchronization-task.js';
 import { recordAPI } from './api/record.service.js';
 import { projectsAPI } from './api/projects.service.js';
 import { AISuggestionsService } from './helpers/ai-suggestions.js';
-import { MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
 
 export const obj = {};
 
