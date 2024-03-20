@@ -24,7 +24,7 @@ const { ApplicationState } = common;
 const state = new ApplicationState();
 state.updateState('READY');
 
-const profileAPIModule = rewire(process.cwd() + '/dist' + '/api/profile.service.js');
+// const profileAPIModule = rewire(process.cwd() + '/dist' + '/api/profile.service.js');
 
 
 class MockLogger {
@@ -158,21 +158,21 @@ const channel = {
     }
 }
 
-profileAPIModule.__set__('common_1', {
-    Users: MockUsers,
-    Wallet: MockWallet,
-    KeyType: {
-        KEY: 'key'
-    },
-    Logger: MockLogger,
-    HederaSDKHelper: MockHederaSDKHelper,
-    DIDDocument: MockDIDDocument,
-    DIDMessage: MockDIDMessage,
-    MessageServer: MockMessageServer,
-    MessageAction: {
-        CreateDID: 'CreateDID'
-    }
-});
+// profileAPIModule.__set__('common_1', {
+//     Users: MockUsers,
+//     Wallet: MockWallet,
+//     KeyType: {
+//         KEY: 'key'
+//     },
+//     Logger: MockLogger,
+//     HederaSDKHelper: MockHederaSDKHelper,
+//     DIDDocument: MockDIDDocument,
+//     DIDMessage: MockDIDMessage,
+//     MessageServer: MockMessageServer,
+//     MessageAction: {
+//         CreateDID: 'CreateDID'
+//     }
+// });
 
 describe('Profile Service API', function () {
     // it('Get User Balance', async function () {
