@@ -11,9 +11,9 @@ context("Accounts",  { tags: '@accounts' },() => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body[0]).to.have.property("username");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body.at(0)).to.have.property("username");
         });
     });
 
@@ -24,55 +24,52 @@ context("Accounts",  { tags: '@accounts' },() => {
             headers: {
             },
             failOnStatusCode:false,
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.UNAUTHORIZED);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
 
     it("Get list of users with incorrect auth - Negative", () => {
-        const authorizationError = "bearer 11111111111111111111@#$";
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Accounts,
             headers: {
-                authorizationError,
+                authorization: "bearer 11111111111111111111@#$",
             },
             failOnStatusCode:false,
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.UNAUTHORIZED);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
 
     it("Get list of users with empty auth - Negative", () => {
-        const authorizationError = "";
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Accounts,
             headers: {
-                authorizationError,
+                authorization: "",
             },
             failOnStatusCode:false,
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.UNAUTHORIZED);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
 
     it("Get list of users as User - Negative", () => {
-        const username = "Registrant"
         cy.request({
             method: "POST",
-            url: API.ApiServer + "accounts/login",
+            url: API.ApiServer + API.AccountsLogin,
             body: {
-                username: username,
+                username: "Registrant",
                 password: "test"
             }
         }).then((response) => {
             cy.request({
                 method: "POST",
-                url: API.ApiServer + "accounts/access-token",
+                url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken
                 }
@@ -85,8 +82,8 @@ context("Accounts",  { tags: '@accounts' },() => {
                         authorization: accessToken
                     },
                     failOnStatusCode: false,
-                }).then((resp) => {
-                    expect(resp.status).eql(STATUS_CODE.FORBIDDEN);
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.FORBIDDEN);
                 });
             });
         });

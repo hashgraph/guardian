@@ -6,12 +6,20 @@ const API = {
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
+    AccessToken: "accounts/access-token/",
     RootAuthorities: "accounts/root-authorities",
     Installer: "accounts/installer",
-    StandartRegistries:
-        "accounts/standard-registries",
+    StandartRegistries:"accounts/standard-registries",
+    StandardRegistriesAggregated:"accounts/standard-registries/aggregated",
     Balance: "accounts/balance",
     AccountRegister: "accounts/register",
+    AccountSession: "accounts/session",
+    //Analytics
+    PolicyCompare: "analytics/compare/policies/",
+    SchemaCompare: "analytics/compare/schemas/",
+    ModuleCompare: "analytics/compare/modules/",
+    ToolCompare: "analytics/compare/tools/",
+    ExportCSV: "export?type=csv",
     //Profiles
     Profiles: "profiles/",
     //Tokens
@@ -30,6 +38,7 @@ const API = {
     Logs: "logs",
     LogsAttributes: "logs/attributes/",
     //Schemas
+    PolicySchemas: "schemas?category=POLICY",
     Schemas: "schemas/",
     Schema: "schema/",
     SchemasSystem: "schemas/system/",
@@ -40,6 +49,9 @@ const API = {
         "schemas/import/file/preview",
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
+    //Tools
+    Tools: "tools",
+    ToolsImportMsg: "tools/import/message",
     //TrustChains
     Trustchains: "trust-chains/",
     //Settings

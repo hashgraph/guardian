@@ -13,33 +13,31 @@ context("Accounts",  { tags: '@accounts' }, () => {
             },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body[0]).to.have.property("username");
+            expect(resp.body.at(0)).to.have.property("username");
         });
     });
 
     it("Get list of Standard Registries as User", () => {
-        const username = "Registrant"
         cy.request({
-            method: "POST",
-            url: API.ApiServer + "accounts/login",
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountsLogin,
             body: {
-                username: username,
+                username: "Registrant",
                 password: "test"
             }
         }).then((response) => {
             cy.request({
-                method: "POST",
-                url: API.ApiServer + "accounts/access-token",
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken
                 }
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.StandartRegistries,
                     headers: {
-                        authorization: accessToken
+                        authorization: "Bearer " + response.body.accessToken
                     },
                     failOnStatusCode: false,
                 }).then((resp) => {
