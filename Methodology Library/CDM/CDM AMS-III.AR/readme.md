@@ -3,6 +3,7 @@
 
 - Introduction
 - Why the AMS-III.AR Methodology?
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
@@ -26,13 +27,23 @@ Moreover, LED bulbs are designed with sustainability in mind. Unlike conventiona
 
 In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. They not only provide superior lighting quality but also bring significant energy savings, reduced carbon emissions, prolonged lifespan, and a more sustainable lighting solution. By adopting LED/CFL technology, we can make a positive impact on our environment. 
 
+## Tools Referenced
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system
+
+**[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of small-scale project activities
+
+**[Methodological Tool 33](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2033/readme.md)** - Default values for common parameters
+
 ## Demo Video
 
 [Youtube](https://youtu.be/czbsLZU_Gl4)
 
 ## Policy Workflow
 
-  ![image](https://github.com/hashgraph/guardian/assets/79293833/45ac9f42-7089-45c2-b35b-c35c1a104fb4)
+![image](https://github.com/hashgraph/guardian/assets/79293833/45ac9f42-7089-45c2-b35b-c35c1a104fb4)
 
 
 ## Policy Guide
@@ -41,7 +52,6 @@ This policy is published to the Hedera network and can either be imported via Gi
 
 Timestamp: 
 Policy: 1698756576.572245003
-Tool 33: 1690820529.197570717
 
 ### Available Roles 
  
@@ -52,14 +62,12 @@ Tool 33: 1690820529.197570717
   - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.  )
   
 ### Important Documents & Schemas 
-  
-- Methodological Tool 07- Tool to calculate the emission factor for an electricity system
-- Methodological Tool 19- Demonstration of additionality of microscale project activities
-- Methodological Tool 21- Demonstration of additionality of small-scale project activities
-- Methodological Tool 33- Default values for common parameters
-- Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
-- Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
-- Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+
+Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
+
+Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
+
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
   
 ### Token(Carbon credit) 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.

@@ -96,12 +96,20 @@ export class Worker extends NatsService {
      */
     private readonly taskTimeout: number;
 
+    /**
+     * Worker ID
+     * @private
+     */
+    //private readonly workerID: string;
+
     constructor(
         private w3cKey: string,
         private w3cProof: string,
-        private readonly filebaseKey: string
+        private readonly filebaseKey: string,
+        private readonly workerID: string
     ) {
         super();
+        //this.workerID = this._workerID;
         this.ipfsClient = new IpfsClientClass(
             this.w3cKey,
             this.w3cProof,
@@ -124,7 +132,7 @@ export class Worker extends NatsService {
         try {
             await this.ipfsClient.createClient()
         } catch (e) {
-            this.logger.error(`Could not create ipfs client instance. ${e.message}`, [process.env.SERVICE_CHANNEL, 'WORKER'])
+            this.logger.error(`Could not create IPFS client instance. ${e.message}`, [this.workerID, 'WORKER'])
         }
 
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
@@ -141,19 +149,19 @@ export class Worker extends NatsService {
             this.isInUse = true;
             this.currentTaskId = task.id;
 
-            this.logger.info(`Task started: ${task.id}, ${task.type}`, [process.env.SERVICE_CHANNEL, 'WORKER']);
+            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER']);
 
             const result = await this.processTaskWithTimeout(task);
 
             try {
                 // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
                 if (result?.error) {
-                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [process.env.SERVICE_CHANNEL, 'WORKER']);
+                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER']);
                 } else {
-                    this.logger.info(`Task completed: ${this.currentTaskId}`, [process.env.SERVICE_CHANNEL, 'WORKER']);
+                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER']);
                 }
             } catch (error) {
-                this.logger.error(error.message, [process.env.SERVICE_CHANNEL, 'WORKER']);
+                this.logger.error(error.message, [this.workerID, 'WORKER']);
                 this.clearState();
 
             }

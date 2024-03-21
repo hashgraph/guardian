@@ -5,6 +5,7 @@
 - Need and Use for the ACM0018 policy
 - Objective and Scope
 - Methodology Overview
+- Tools Referenced
 - Typical Projects
 - Available Roles
 - Key Documents & Schemas
@@ -39,6 +40,28 @@ ACM0018 seeks to establish a standardized framework for measuring and verifying 
 
 ACM0018 is a Clean Development Mechanism (CDM) methodology designed to support carbon offset projects that generate electricity from biomass in power-only plants. These projects aim to reduce greenhouse gas emissions by utilizing sustainable biomass resources for power generation. 
 
+## Tools Referenced
+
+**[Methodological Tool 02](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2002/readme.md)** - Combined tool to identify the baseline scenario and demonstrate additionality. 
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+
+**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2004/readme.md)** - Emissions from solid waste disposal sites 
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system. 
+
+**[Methodological Tool 09](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2009/readme.md)** - Tool to determine the baseline efficiency of thermal or electric energy generation systems. 
+
+**[Methodological Tool 10](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2010/readme.md)** – Tool to determine the remaining lifetime of equipment. 
+
+**[Methodological Tool 11](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2011/readme.md)** - Assessment of the validity of the original/current baseline and update of the baseline at the renewal of the crediting period. 
+
+**[Methodological Tool 12](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2012/readme.md)** - Project and leakage emissions from transportation of freight. 
+
+**[Methodological Tool 16](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2016/readme.md)** - Project and leakage emissions from biomass
+
 ## Typical Projects
 
 Typical projects following ACM0018 involve the construction and operation of power plants that use biomass, such as wood, agricultural residues, and organic materials, to generate electricity. Various technologies, including combustion engines, steam turbines, and gas turbines, can be employed. The key goal is to reduce emissions compared to a baseline scenario where non-renewable energy sources would have been used for electricity generation.  
@@ -52,26 +75,6 @@ Verification and Validation Body (VVB) - The VVB plays a critical role in indepe
 Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
 ## Key Documents & Schemas
-
-Methodological Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality. 
-
-Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
-
-Methodological Tool 04 - Emissions from solid waste disposal sites 
-
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
-
-Methodological Tool 07 - Tool to calculate the emission factor for an electricity system. 
-
-Methodological Tool 09 - Tool to determine the baseline efficiency of thermal or electric energy generation systems. 
-
-Methodological Tool 10 – Tool to determine the remaining lifetime of equipment. 
-
-Methodological Tool 11 - Assessment of the validity of the original/current baseline and update of the baseline at the renewal of the crediting period. 
-
-Methodological Tool 12 - Project and leakage emissions from transportation of freight. 
-
-Methodological Tool 16 - Project and leakage emissions from biomass. 
 
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
 

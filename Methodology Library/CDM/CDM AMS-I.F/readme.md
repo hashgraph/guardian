@@ -5,6 +5,7 @@
 - Need and Use for the AMS-I.F policy
 - Objective and Scope
 - Methodology Overview
+- Tools Referenced
 - Typical Projects
 - Available Roles
 - Key Documents & Schemas
@@ -37,6 +38,18 @@ The scope of this methodology includes renewable energy generation units like ph
 
 AMS-I.F. is comprehensive and versatile, covering various renewable energy technologies and applicable to different types of project activities. It mandates stringent criteria to ensure genuine emissions reductions and the displacement of GHG-intensive electricity. The methodology provides clear guidelines and conditions for the applicability based on project types, ensuring clarity and precision in its implementation.  
 
+## Tools Referenced
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** – Tool to calculate the emission factor for an electricity system.  
+
+**[Methodological Tool 16](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2016/readme.md)** – Project emissions from cultivation of biomass.  
+
+**[Methodological Tool 33](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2033/readme.md)** – Default values for common parameters.  
+
 ## Typical Projects
 
 Typical projects under AMS-I.F. involve the production of electricity using renewable energy technologies that supply electricity to users. These projects are pivotal in displacing electricity from GHG-intensive sources, contributing significantly to the reduction of greenhouse gas emissions and the promotion of environmental sustainability. They can range from new installations of renewable energy power plants to capacity additions, retrofits, and replacements, allowing for a broad spectrum of applications in different contexts and conditions.  
@@ -50,16 +63,6 @@ Verification and Validation Body (VVB) - The VVB plays a critical role in indepe
 Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
 ## Key Documents & Schemas
-
-Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
-
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
-
-Methodological Tool 07 – Tool to calculate the emission factor for an electricity system.  
-
-Methodological Tool 16 – Project emissions from cultivation of biomass.  
-
-Methodological Tool 33 – Default values for common parameters.  
 
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
 

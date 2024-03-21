@@ -3,8 +3,8 @@
 
 - Introduction
 - Need and Use for the AMS-I.C policy
+- Tools Referenced
 - Available Roles
-- Key Documents & Schemas
 - Token (Carbon Emisison Reduction)
 - Workflow
 - IPFS Timestamp
@@ -34,6 +34,31 @@ Along with the need for sustainable energy comes the need to financially incenti
 
 This policy is a digitized version of the CDM’s methodology AMS IC:  Thermal energy production with or without electricity. The policy is supported by the Guardian platform, a technical solution built on Hedera’s Distributed Ledger Technology to streamline project onboarding, MRV data management, GHG calculations, as well as the CDM’s validation and verification processes. The solution digitizes GHG quantification methodologies, tokenizes carbon credits, and encapsulates all the critical project information, MRV data, GHG calculations, and third-party verification process steps in discoverable and immutable verified credentials. The result is carbon assets supported by unprecedented transparency and credibility and an dMRV system that can better identify and prevent double counting and overestimations.    
 
+## Tools Referenced
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.  
+
+**[Methodological Tool 04](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2004/readme.md)** - Emissions from solid waste disposal sites.  
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.   
+
+**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2006/readme.md)** - Project emissions from flaring.   
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system.   
+
+**[Methodological Tool 09](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2009/readme.md)** - Determining the baseline efficiency of thermal or electric energy generation systems.   
+
+**[Methodological Tool 12](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2012/readme.md)** - Project and leakage emissions from transportation of freight.   
+
+**[Methodological Tool 16](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2016/readme.md)** - Project and leakage emissions from biomass.    
+
+**[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities.   
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of small-scale project activities.   
+
+**[Methodological Tool 22](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2022/readme.md)** - Leakage in biomass small-scale project activities.   
+
+
 ## Available Roles
 
 Project Proponent - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives certified emission reduction (CER) tokens as an incentive for their emission reductions. 
@@ -41,30 +66,6 @@ Project Proponent - The project proponent is responsible for executing the emiss
 Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration. 
 
 Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.  
-
-## Key Documents & Schemas
-
-Methodological Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.  
-
-Methodological Tool 04- Emissions from solid waste disposal sites.  
-
-Methodological Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.   
-
-Methodological Tool 06- Project emissions from flaring.   
-
-Methodological Tool 07- Tool to calculate the emission factor for an electricity system.   
-
-Methodological Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems.   
-
-Methodological Tool 12- Project and leakage emissions from transportation of freight.   
-
-Methodological Tool 16- Project and leakage emissions from biomass.    
-
-Methodological Tool 19- Demonstration of additionality of microscale project activities.   
-
-Methodological Tool 21- Demonstration of additionality of small-scale project activities.   
-
-Methodological Tool 22- Leakage in biomass small-scale project activities.   
 
 ## Token (Carbon Emission Reduction)
 

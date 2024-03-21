@@ -1,15 +1,16 @@
 ## Table of contents
 <!-- TOC -->
 
-- [Table of contents](#table-of-contents)
-- [Introduction](#introduction)
-- [Need and Use for the ACM0007 Policy](#need-and-use-for-the-acm0007-policy)
-- [Policy Workflow](#policy-workflow)
-- [Policy Guide](#policy-guide)
-- [Available Roles](#available-roles)
-- [Important Documents \& Schemas](#important-documents--schemas)
-- [Token(Carbon Emissions Reduction)](#tokencarbon-emissions-reduction)
-- [Step By Step](#step-by-step)
+- Table of contents
+- Introduction
+- Need and Use for the ACM0007 Policy
+- Tools Referenced
+- Policy Workflow
+- Policy Guide
+- Available Roles
+- Important Documents & Schemas
+- Token(Carbon Emissions Reduction)
+- Step By Step
 
 <!-- /TOC -->
 
@@ -35,6 +36,15 @@ Entities operating single cycle power plants can use ACM0007 to develop carbon o
 
 ACM0007 thus enables a practical solution to reduce grid emissions intensity in many countries by incentivizing combined cycle conversion projects through carbon market opportunities.
 
+## Tools Referenced
+
+**[Methodological Tool 02](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2002/readme.md)** - Combined tool to identify the baseline scenario and demonstrate additionality
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system
+
+**[Methodological Tool 10](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2010/readme.md)** - Tool to determine the remaining lifetime of equipment
 
 ## Policy Workflow
 
@@ -54,17 +64,14 @@ Timestamp: 1706881469.628524368
 - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
 ### Important Documents & Schemas 
-  
-- Project Description: Information on project participant, location, technology, configuration, crediting period etc.
-- Emission Reductions Calculation: Calculate and specify baseline emissions, project emissions and leakage as per methodology equations.
-- Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
-- Monitoring Report: Periodic monitoring report with data for monitored parameters and calculated emission reductions.
 
-Tools referenced:
-- Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality
-- Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-- Tool 07 - Tool to calculate the emission factor for an electricity system
-- Tool 10 - Tool to determine the remaining lifetime of equipment
+Project Description: Information on project participant, location, technology, configuration, crediting period etc.
+
+Emission Reductions Calculation: Calculate and specify baseline emissions, project emissions and leakage as per methodology equations.
+
+Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
+
+Monitoring Report: Periodic monitoring report with data for monitored parameters and calculated emission reductions.
 
 ### Token(Carbon Emissions Reduction) 
 
