@@ -24,6 +24,12 @@ module.exports = defineConfig({
                     return matchingFiles.length > 0;
                 },
             });
+            on('task', {
+                log (message) {
+                  console.log(message)
+                  return null
+                }
+              })
             return config;
         },
         env: {

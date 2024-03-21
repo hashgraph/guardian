@@ -34,11 +34,12 @@ const authorization = Cypress.env("authorization");
 
 //If StandardRegistry doesn't have hedera credentials, creating them
 before(() => {
+    let username = "SR2";
     cy.request({
         method: "POST",
         url: API.ApiServer + "accounts/login",
         body: {
-            username: "StandardRegistry",
+            username: username,
             password: "test"
         }
     }).then((responseWithRT) => {
@@ -49,7 +50,6 @@ before(() => {
                 refreshToken: responseWithRT.body.refreshToken
             }
         }).then((responseWithAT) => {
-            let username = "StandardRegistry";
             cy.request({
                 method: "GET",
                 url: API.ApiServer + "profiles/" + username,
@@ -65,9 +65,8 @@ before(() => {
                             authorization: authorization,
                         },
                         body: {
-                            hederaAccountId: "0.0.2667322",
-                            hederaAccountKey:
-                                "3030020100300706052b8104000a04220420fba8a85fb4ed475ab068397da424eb9e2875603c8563d631635733768849a410",
+                            hederaAccountId: Cypress.env('operatorId'),
+                            hederaAccountKey: Cypress.env('operatorKey'),
                             vcDocument: {
                                 geography: "testGeography",
                                 law: "testLaw",

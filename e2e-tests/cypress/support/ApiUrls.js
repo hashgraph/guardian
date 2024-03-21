@@ -1,8 +1,5 @@
-const PORT = 3000;
-const PORTCI = 3002;
 const API = {
-    //ApiServer: "http://localhost:"+PORT+"/api/v1/",
-    ApiServer: "http://localhost:"+PORTCI+"/",
+    ApiServer: "http://localhost:" + Cypress.env("portApi") + "/",
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
