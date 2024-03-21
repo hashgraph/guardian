@@ -16,6 +16,8 @@ const API = {
     SchemaCompare: "analytics/compare/schemas/",
     ModuleCompare: "analytics/compare/modules/",
     ToolCompare: "analytics/compare/tools/",
+    PolicySearch: "analytics/search/policies/",
+    BlockSearch: "analytics/search/blocks/",
     ExportCSV: "export?type=csv",
     //Profiles
     Profiles: "profiles/",

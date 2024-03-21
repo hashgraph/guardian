@@ -34,9 +34,7 @@ const authorization = Cypress.env("authorization");
 
 //If StandardRegistry doesn't have hedera credentials, creating them
 before(() => {
-    let username = "SR2";
-    cy.task("log", Cypress.env('operatorId'))
-    cy.task("log", Cypress.env('portApi'))
+    let username = "StandardRegistry";
     cy.request({
         method: "POST",
         url: API.ApiServer + "accounts/login",

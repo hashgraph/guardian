@@ -3,35 +3,35 @@ import API from "../../../support/ApiUrls";
 
 context("Analytics",  { tags: '@analytics' },() => {
     const authorization = Cypress.env("authorization");
-    // before(() => {
-    //     cy.request({
-    //         method: METHOD.POST,
-    //         url: API.ApiServer + API.ToolsImportMsg,
-    //         body: {
-    //             "messageId": Cypress.env('tool_for_compare1')
-    //         },
-    //         headers: {
-    //             authorization,
-    //         },
-    //         timeout: 180000
-    //     })
-    //         .then((response) => {
-    //             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-    //             cy.request({
-    //                 method: METHOD.POST,
-    //                 url: API.ApiServer + API.ToolsImportMsg,
-    //                 body: {
-    //                     "messageId": Cypress.env('tool_for_compare2')
-    //                 },
-    //                 headers: {
-    //                     authorization,
-    //                 },
-    //                 timeout: 180000
-    //             }).then((response) => {
-    //                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-    //             })
-    //         })
-    // })
+    before(() => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.ToolsImportMsg,
+            body: {
+                "messageId": Cypress.env('tool_for_compare1')
+            },
+            headers: {
+                authorization,
+            },
+            timeout: 180000
+        })
+            .then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.ToolsImportMsg,
+                    body: {
+                        "messageId": Cypress.env('tool_for_compare2')
+                    },
+                    headers: {
+                        authorization,
+                    },
+                    timeout: 180000
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                })
+            })
+    })
 
     it("Compare tools", () => {
         let toolId1, toolId2
