@@ -6,7 +6,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     const username = "StandartRegistry";
     const schemaUUID = ("0000b23a-b1ea-408f-a573"+ Math.floor(Math.random() * 999999) + "a2060a")
 
-    it("Makes the created scheme active", () => {
+    it("Make the created scheme active", () => {
         //Create new schema
         cy.request({
             method: "POST",

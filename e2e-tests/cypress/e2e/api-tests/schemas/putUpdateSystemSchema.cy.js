@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Schemas", { tags: '@schemas' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("update schema by schemaId", () => {
+    it("Updates the system schema with the provided schema ID", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

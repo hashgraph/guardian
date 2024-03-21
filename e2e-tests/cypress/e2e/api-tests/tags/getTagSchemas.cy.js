@@ -89,7 +89,7 @@ context("Tags", {tags: '@tags'}, () => {
         });
     })
 
-    it("should return list of schemas", () => {
+    it("Get all schemas", () => {
         //get published tag schemas
         cy.request({
             method: "GET",

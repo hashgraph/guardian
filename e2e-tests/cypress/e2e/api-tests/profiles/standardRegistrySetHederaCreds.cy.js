@@ -5,7 +5,7 @@ import {checkForRemovedStyleOptions} from "cypress/mount-utils";
 
 context('Profiles', { tags: '@profiles' },() => {
 
-    it('Get Bearer token and set hedera credentials for StandardRegistry', () => {
+    it('Get Standard Registry account information', () => {
         //Getting accessToken for StandardRegistry
         let username = 'StandardRegistry'
         cy.request({

@@ -5,7 +5,7 @@ import API from "../../../support/ApiUrls";
 context("Policies", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("check returns of the policy", () => {
+    it("Update policy configuration for the specified policy ID", () => {
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",
@@ -16,7 +16,7 @@ context("Policies", { tags: '@policies' }, () => {
 
         cy.request(urlPolicies).then((response) => {
             expect(response.status).to.eq(200);
-            const policyId = response.body.at(-2).id;
+            const policyId = response.body.at(-1).id;
 
             const urlPoliciesId = {
                 method: "PUT",
@@ -49,8 +49,6 @@ context("Policies", { tags: '@policies' }, () => {
             };
             cy.request(urlPoliciesId).then((response) => {
                 expect(response.status).to.eq(200);
-
-
             });
         });
     });

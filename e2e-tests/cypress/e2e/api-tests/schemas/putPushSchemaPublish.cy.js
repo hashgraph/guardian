@@ -6,7 +6,7 @@ context("Schemas", {tags: '@schemas'}, () => {
     const schemaUUID = ("0000b23a-b1ea-408f-a573" + Math.floor(Math.random() * 999999) + "a2060a");
     let topicUid;
 
-    it("should push to create new schema", () => {
+    it("Push publish the schema with the provided (internal) schema ID", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

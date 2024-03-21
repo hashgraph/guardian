@@ -90,7 +90,7 @@ context("Tags", {tags: '@tags'}, () => {
         });
     })
 
-    it("should publish a tag schema", () => {
+    it("Publish the schema with the provided (internal) schema ID", () => {
         //publish tag schema
         cy.request({
             method: "PUT",

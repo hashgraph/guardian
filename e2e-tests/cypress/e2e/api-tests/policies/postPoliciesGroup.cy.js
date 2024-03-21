@@ -5,7 +5,7 @@ import API from "../../../support/ApiUrls";
 context('Policies', { tags: '@policies' },() => {
     const authorization = Cypress.env('authorization');
 
-    it('check returns of the policy', () => {
+    it('Make the group active', () => {
 
       const urlPolicies = {
         method: "GET",
@@ -18,19 +18,19 @@ context('Policies', { tags: '@policies' },() => {
     cy.request(urlPolicies).then((response) => {
         expect(response.status).to.eq(200);
         const policyId = response.body[0].id;
-      //   const urlPoliciesId = {
-      //   method: 'POST',
-      //   url: Cypress.env('api_server') + 'policies/' + policyId + "/groups",
-      //   body: {
-      //       "uuid": "string"
-      //   },
-      //   headers: {
-      //     authorization,
-      //   }};
-      // cy.request(urlPoliciesId)
-      //     .then((response) => {
-      //     expect(response.status).to.eq(200)
-      //   })
+        const urlPoliciesId = {
+            method: 'POST',
+            url: Cypress.env('api_server') + 'policies/' + policyId + "/groups",
+            body: {},
+            headers: {
+                authorization,
+            },
+            timeout: 180000
+        };
+      cy.request(urlPoliciesId)
+          .then((response) => {
+          expect(response.status).to.eq(200)
+        })
     })
 })
 })

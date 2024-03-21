@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Schemas",  { tags: '@schemas' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("get all schemas by schema entity", () => {
+    it("Find the schema using the schema type", () => {
         const items = [
             "STANDARD_REGISTRY",
             "USER",

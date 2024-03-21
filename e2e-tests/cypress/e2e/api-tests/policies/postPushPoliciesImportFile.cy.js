@@ -43,7 +43,7 @@ context("Policies", { tags: '@policies' }, () => {
         });
     });
 
-    it("check returns of all policies", () => {
+    it("Push import new policy and all associated artifacts", () => {
         cy.fixture("exportedPolicy.policy", "binary")
             .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {

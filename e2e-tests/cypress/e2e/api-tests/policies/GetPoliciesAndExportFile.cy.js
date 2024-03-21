@@ -10,7 +10,7 @@ context("Policies", { tags: '@policies' },() => {
         cy.request({
             method: "POST",
             url: `${API.ApiServer}policies/import/message`,
-            body: { messageId: "1707125414.999819805" }, //Verra REDD 3
+            body: { messageId: "1707125414.999819805" },
             headers: {
                 authorization,
             },
@@ -20,7 +20,7 @@ context("Policies", { tags: '@policies' },() => {
         });
     });
 
-    it("check returns of the blocks", () => {
+    it("Get the Hedera message ID for the specified policy", () => {
         cy.request({
             method: "GET",
             url: API.ApiServer + "policies",
@@ -28,6 +28,7 @@ context("Policies", { tags: '@policies' },() => {
                 authorization,
             },
         }).then((response) => {
+            expect(response.status).to.eq(200);
             let policyId = response.body.at(-1).id;
 
             const url = {

@@ -46,7 +46,7 @@ context("Tags", {tags: '@tags'}, () => {
     });
 
 
-    it("should delete a tag", () => {
+    it("Delete tag(module)", () => {
         cy.request({
             method: 'DELETE',
             url: API.ApiServer + API.Tags + tagId,

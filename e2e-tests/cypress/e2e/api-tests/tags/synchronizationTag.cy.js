@@ -27,7 +27,7 @@ context("Tags", {tags: '@tags'}, () => {
     });
 
 
-    it("should synchronization a tag", () => {
+    it("Synchronization a tag", () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + API.Tags + "synchronization",

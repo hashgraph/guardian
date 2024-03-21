@@ -15,6 +15,7 @@ context('Policies', {tags: '@policies'}, () => {
             },
             timeout: 180000
         }).then(response => {
+            expect(response.status).to.eq(201);
             let firstPolicyId = response.body.at(-1).id
             let firstPolicyStatus = response.body.at(-1).status
             expect(firstPolicyStatus).to.equal('DRAFT')
@@ -29,14 +30,13 @@ context('Policies', {tags: '@policies'}, () => {
                     let secondPolicyId = response.body.policies.at(-1).id
                     let policyStatus = response.body.policies.at(-1).status
                     expect(response.status).to.eq(200)
-                    expect(response.body).to.not.be.oneOf([null, ""])
                     expect(firstPolicyId).to.equal(secondPolicyId)
                     expect(policyStatus).to.equal('PUBLISH')
                 })
         })
     })
 
-    it('check returns of all policies', () => {
+    it('Get all policies', () => {
         const urlPolicies = {
             method: 'GET',
             url: API.ApiServer + 'policies',
@@ -47,7 +47,7 @@ context('Policies', {tags: '@policies'}, () => {
 
         cy.request(urlPolicies)
             .then((response) => {
-
+                expect(response.status).to.eq(200)
                 let createDate = response.body.at(-1).createDate
                 let policyId = response.body.at(-1).id
                 let policyUuid = response.body.at(-1).uuid
@@ -58,11 +58,6 @@ context('Policies', {tags: '@policies'}, () => {
                 let owner = response.body.at(-1).owner
                 let policyTag = response.body.at(-1).policyTag
                 let version = response.body.at(-1).version
-
-                expect(response.status).to.eq(200)
-                expect(response.body).to.not.be.oneOf([null, ""])
-                expect(response.body.at(-1).id).to.equal(policyId)
-                expect(response.body.at(-1).uuid).to.equal(policyUuid)
                 cy.writeFile('cypress/fixtures/policy.json',
                     {
                         policyId: policyId,

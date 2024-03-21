@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Logs",  { tags: '@logs' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("post request all logs as a StandardRegistry", () => {
+    it("Return logs", () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.Logs,

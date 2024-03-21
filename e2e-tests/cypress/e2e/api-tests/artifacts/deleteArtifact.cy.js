@@ -16,40 +16,9 @@ context("Artifacts", { tags: "@artifacts" }, () => {
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.SUCCESS);
         });
-
-        const urlPolicies = {
-            method: "GET",
-            url: API.ApiServer + "policies",
-            headers: {
-                authorization,
-            },
-        };
-
-        cy.request(urlPolicies).then((response) => {
-            expect(response.status).to.eq(200);
-            const policyId = response.body.at(-1).id;
-            const url = {
-                method: "GET",
-                url:
-                API.ApiServer + "policies/" + policyId + "/export/file",
-                headers: {
-                    authorization,
-                },
-            };
-            cy.request(url).then((response) => {
-                let policy = Cypress.Blob.arrayBufferToBinaryString(
-                    response.body
-                );
-                cy.writeFile(
-                    "cypress/fixtures/exportedPolicy.policy",
-                    policy,
-                    "binary"
-                );
-            });
-        });
     });
 
-    it("should delete artifact", () => {
+    it("Delete artifact", () => {
         const urlArtifact = {
             method: METHOD.GET,
             url: API.ApiServer + API.Artifacts,

@@ -5,7 +5,7 @@ context("Tokens", { tags: "@tokens" }, () => {
     const authorization = Cypress.env("authorization");
     const user = Cypress.env("root_user");
 
-    it("push sets the KYC flag for the user", () => {
+    it("Push set the KYC flag for the user", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfTokens,
@@ -36,7 +36,7 @@ context("Tokens", { tags: "@tokens" }, () => {
         });
     });
 
-    it("push unsets the KYC flag for the user", () => {
+    it("Push unset the KYC flag for the user", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfTokens,
