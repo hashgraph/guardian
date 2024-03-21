@@ -16,7 +16,7 @@ import {
     VPMessage,
 } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { Inject } from '../../helpers/decorators/inject.js';
+// import { Inject } from '../../helpers/decorators/inject.js';
 
 /**
  * Sign Status
@@ -64,8 +64,8 @@ export class MultiSignBlock {
      * VC helper
      * @private
      */
-    @Inject()
-    private readonly vcHelper: VcHelper;
+    // @Inject()
+    private vcHelper: VcHelper;
 
     /**
      * Before init callback
@@ -73,6 +73,9 @@ export class MultiSignBlock {
     public async beforeInit(): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         ref.addInternalListener('remove-user', this.onRemoveUser.bind(this));
+        if(!this.vcHelper) {
+          this.vcHelper = new VcHelper()
+        }
     }
 
     /**
