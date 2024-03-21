@@ -15,7 +15,7 @@ import {
 import { SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { Inject } from '../../helpers/decorators/inject.js';
+// import { Inject } from '../../helpers/decorators/inject.js';
 
 /**
  * Split block
@@ -58,8 +58,8 @@ export class SplitBlock {
      * VC helper
      * @private
      */
-    @Inject()
-    private readonly vcHelper: VcHelper;
+    // @Inject()
+    private vcHelper: VcHelper;
 
     /**
      * Schema
@@ -112,6 +112,10 @@ export class SplitBlock {
         sourceValue: number,
         threshold: number,
     ): Promise<IPolicyDocument> {
+        if(!this.vcHelper) {
+          this.vcHelper = new VcHelper()
+        }
+
         let clone = PolicyUtils.cloneVC(ref, document);
         PolicyUtils.setObjectValue(clone, ref.options.sourceField, newValue);
         let vc = VcDocument.fromJsonTree(clone.document);
