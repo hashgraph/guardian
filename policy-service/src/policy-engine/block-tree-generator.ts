@@ -5,7 +5,6 @@ import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, 
 import { IPolicyUser, PolicyUser } from './policy-user.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js'
 import { headers } from 'nats';
-import { Inject } from '../helpers/decorators/inject.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { RecordUtils } from './record-utils.js';
 
