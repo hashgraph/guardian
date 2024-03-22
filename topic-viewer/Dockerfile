@@ -6,14 +6,14 @@ WORKDIR /usr/local/app
 
 # Stage 1: Installing production dependecies
 FROM base as deps
-COPY ./topic-viewer/package.json ./topic-viewer/tsconfig*.json ./yarn.lock ./
+COPY --link topic-viewer/package.json topic-viewer/tsconfig*.json yarn.lock ./
 RUN --mount=type=cache,target=/root/.yarn \
     yarn install --prod
 
 # Stage 2: Build service
 FROM base as build
-COPY --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
-COPY ./topic-viewer/src ./src/.
+COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
+COPY --link topic-viewer/src src/
 RUN --mount=type=cache,target=/root/.yarn \
     yarn install --frozen-lockfile && yarn run build:prod
 
@@ -21,10 +21,10 @@ RUN --mount=type=cache,target=/root/.yarn \
 FROM base as image
 ENV NODE_ENV production
 
-COPY ./topic-viewer/public ./public
+COPY --link topic-viewer/public public/
 
-COPY --from=deps /usr/local/app/node_modules ./node_modules
-COPY --from=deps /usr/local/app/package.json ./
-COPY --from=build /usr/local/app/dist ./dist
+COPY --link --from=deps /usr/local/app/node_modules node_modules/
+COPY --link --from=deps /usr/local/app/package.json ./
+COPY --link --from=build /usr/local/app/dist dist/
 
 CMD [ "node", "dist/index.js" ]
