@@ -16,7 +16,6 @@ import {
     VPMessage,
 } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-// import { Inject } from '../../helpers/decorators/inject.js';
 
 /**
  * Sign Status
