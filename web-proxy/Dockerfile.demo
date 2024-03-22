@@ -6,21 +6,21 @@ WORKDIR /usr/local/app
 
 # Stage 1: Build interfaces module
 FROM base as interfaces
-COPY ./interfaces/package.json ./interfaces/tsconfig*.json ./yarn.lock ./
-COPY ./interfaces/src ./src/.
+COPY --link interfaces/package.json interfaces/tsconfig*.json yarn.lock ./
+COPY --link interfaces/src src/
 RUN --mount=type=cache,target=/root/.yarn \
     yarn install --frozen-lockfile && yarn pack
 
 # Stage 2: Build frontend
 FROM base as build
 ENV NODE_OPTIONS="--openssl-legacy-provider"
-COPY --from=interfaces /usr/local/app/guardian-interfaces-*.tgz ./
-COPY ./frontend/. ./
+COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz ./
+COPY --link ./frontend/. ./
 RUN npm install guardian-interfaces-*.tgz && npm run build:demo
 
 # Stage 3: Create the final image
-FROM nginx:1.25.3 as image
-COPY ./web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /usr/local/app/dist/guardian /usr/share/nginx/html
+FROM nginx:1.25.4 as image
+COPY --link ./web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf
+COPY --link --from=build /usr/local/app/dist/guardian /usr/share/nginx/html
 
 EXPOSE 80
