@@ -3,6 +3,19 @@ import API from "../../../support/ApiUrls";
 
 context("Analytics",  { tags: '@analytics' },() => {
     const authorization = Cypress.env("authorization");
+    before(() => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.PolicisImportMsg,
+            body: {
+                "messageId": Cypress.env('policy_for_compare1')//iRec 4
+            },
+            headers: {
+                authorization,
+            },
+            timeout: 180000
+        })
+    })
 
     it("Compare schemas", () => {
         let schemaId1, schemaId2
