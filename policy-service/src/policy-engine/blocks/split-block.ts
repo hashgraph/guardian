@@ -15,7 +15,6 @@ import {
 import { SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-// import { Inject } from '../../helpers/decorators/inject.js';
 
 /**
  * Split block
