@@ -14,14 +14,6 @@ import { ChannelService, Worker } from './api/channel.service.js';
 import { IPFSService } from './loaders/ipfs-service.js';
 import { HederaService } from './loaders/hedera-service.js';
 
-// import {
-//     MessageBrokerChannel,
-//     ValidateConfiguration,
-//     ApplicationState,
-//     Logger,
-// } from '@guardian/common';
-// import { ApplicationStates } from '@guardian/interfaces';
-
 @Module({
     providers: [
         ChannelService
@@ -98,15 +90,15 @@ Promise.all([
 
     const worker = new Worker();
     await worker.init({
-        CYCLE_TIME: 60 * 60 * 1000,
-        TOPIC_READ_DELAY: 1000,
-        TOPIC_READ_TIMEOUT: 60000,
-        TOPIC_JOB_REFRESH_TIME: 60000,
-        TOPIC_JOB_COUNT: 10,
-        MESSAGE_READ_DELAY: 1000,
-        MESSAGE_READ_TIMEOUT: 60000,
-        MESSAGE_JOB_REFRESH_TIME: 60000,
-        MESSAGE_JOB_COUNT: 10
+        CYCLE_TIME: Utils.getIntParm(process.env.CYCLE_TIME, 60 * 60 * 1000),
+        TOPIC_READ_DELAY: Utils.getIntParm(process.env.TOPIC_READ_DELAY, 1000),
+        TOPIC_READ_TIMEOUT: Utils.getIntParm(process.env.TOPIC_READ_TIMEOUT, 60000),
+        TOPIC_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOPIC_JOB_REFRESH_TIME, 60000),
+        TOPIC_JOB_COUNT: Utils.getIntParm(process.env.TOPIC_JOB_COUNT, 10),
+        MESSAGE_READ_DELAY: Utils.getIntParm(process.env.MESSAGE_READ_DELAY, 1000),
+        MESSAGE_READ_TIMEOUT: Utils.getIntParm(process.env.MESSAGE_READ_TIMEOUT, 60000),
+        MESSAGE_JOB_REFRESH_TIME: Utils.getIntParm(process.env.MESSAGE_JOB_REFRESH_TIME, 60000),
+        MESSAGE_JOB_COUNT: Utils.getIntParm(process.env.MESSAGE_JOB_COUNT, 10)
     }).start();
 
     // await state.updateState(ApplicationStates.READY);

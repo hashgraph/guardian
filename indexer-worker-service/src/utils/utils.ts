@@ -26,4 +26,17 @@ export class Utils {
             return uuid;
         }
     }
+
+    public static getIntParm(param: string, defaultValue: number): number {
+        try {
+            if (param) {
+                return parseInt(param, 10);
+            } else {
+                return defaultValue;
+            }
+        } catch (error) {
+            console.log(`Faled pars params: ${param}`);
+            return defaultValue;
+        }
+    }
 }
