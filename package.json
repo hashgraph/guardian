@@ -17,7 +17,8 @@
     "policy-service",
     "api-tests",
     "ai-service",
-    "notification-service"
+    "notification-service",
+    "indexer-worker-service"
   ],
   "version": "2.22.0",
   "devDependencies": {

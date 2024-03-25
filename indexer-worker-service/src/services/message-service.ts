@@ -54,8 +54,8 @@ export class MessageService {
                 ]
             },
             {
-                limit: 50,
-                fields: ['id', 'data', 'topicId', 'consensusTimestamp'],
+                limit: 50
+                // fields: ['id', 'data', 'topicId', 'consensusTimestamp'],
             }
         )
         const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);

@@ -80,8 +80,8 @@ export class TopicService {
                 ]
             },
             {
-                limit: 50,
-                fields: ['id', 'topicId', 'messages'],
+                limit: 50
+                // fields: ['id', 'topicId', 'messages'],
             }
         )
         const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);

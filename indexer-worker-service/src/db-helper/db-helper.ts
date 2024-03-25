@@ -49,7 +49,8 @@ export class DataBaseHelper {
      */
     public static connect(db: MikroORM<MongoDriver>) {
         DataBaseHelper.orm = db;
-        DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
+        const connect:any = db.em.getDriver().getConnection().getDb();
+        DataBaseHelper.gridFS = new GridFSBucket(connect);
     }
 
     public static getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(

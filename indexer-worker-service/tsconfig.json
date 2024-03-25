@@ -6,24 +6,20 @@
             "esnext"
         ],
         "moduleResolution": "node",
-        "sourceMap": false,
+        "sourceMap": true,
         "outDir": "dist/",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "baseUrl": "./src",
-        "paths": {
-        }
+        "paths": {}
     },
     "include": [
-        "src/**/*", "../interfaces/src/type/TopicType.ts"],
+        "src/**/*"
+    ],
     "exclude": [
         "node_modules"
     ],
-    "compileOnSave": true,
-    "tsc-alias": {
-        "resolveFullPaths": true,
-        "verbose": false
-    }
+    "compileOnSave": true
 }

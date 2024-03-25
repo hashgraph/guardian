@@ -21,7 +21,6 @@ import { HederaService } from './loaders/hedera-service.js';
 //     Logger,
 // } from '@guardian/common';
 // import { ApplicationStates } from '@guardian/interfaces';
-import { ValidateConfiguration } from '@guardian/common';
 
 @Module({
     providers: [
@@ -73,64 +72,45 @@ Promise.all([
     // await state.setServiceName('INDEXER_WORKER').setConnection(cn).init();
     // await state.updateState(ApplicationStates.STARTED);
 
-    let timer = null;
-    const validator = new ValidateConfiguration();
-    validator.setValidator(async () => {
-        if (timer) {
-            clearInterval(timer);
-        }
+    if (Utils.isTopic(process.env.INITIALIZATION_TOPIC_ID)) {
+        Environment.setRootTopicId(process.env.INITIALIZATION_TOPIC_ID);
+    } else {
+        // await new Logger().warn('INITIALIZATION_TOPIC_ID field in .env file: Incorrect topic id format', ['INDEXER_WORKER']);
+        // await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        throw new Error('Worker not configured')
+    }
 
-        if (Utils.isTopic(process.env.INITIALIZATION_TOPIC_ID)) {
-            Environment.setRootTopicId(process.env.INITIALIZATION_TOPIC_ID);
-        } else {
-            // await new Logger().warn('INITIALIZATION_TOPIC_ID field in .env file: Incorrect topic id format', ['INDEXER_WORKER']);
-            return false;
-        }
+    if (process.env.LOCALNODE_PROTOCOL && process.env.LOCALNODE_ADDRESS) {
+        Environment.setLocalNodeAddress(process.env.LOCALNODE_PROTOCOL, process.env.LOCALNODE_ADDRESS);
+    }
 
-        if (process.env.LOCALNODE_PROTOCOL && process.env.LOCALNODE_ADDRESS) {
-            Environment.setLocalNodeAddress(process.env.LOCALNODE_PROTOCOL, process.env.LOCALNODE_ADDRESS);
-        }
+    try {
+        Environment.setNetwork(process.env.HEDERA_NET);
+    } catch (error) {
+        // await new Logger().warn('Connection to the Header network is not configured', ['INDEXER_WORKER']);
+        // await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        throw new Error('Worker not configured')
+    }
 
-        try {
-            Environment.setNetwork(process.env.HEDERA_NET);
-        } catch (error) {
-            // await new Logger().warn('Connection to the Header network is not configured', ['INDEXER_WORKER']);
-            return false;
-        }
+    // await state.updateState(ApplicationStates.INITIALIZING);
+    await IPFSService.init();
+    await HederaService.init();
 
-        // await state.updateState(ApplicationStates.INITIALIZING);
-        await IPFSService.init();
-        await HederaService.init();
+    const worker = new Worker();
+    await worker.init({
+        CYCLE_TIME: 60 * 60 * 1000,
+        TOPIC_READ_DELAY: 1000,
+        TOPIC_READ_TIMEOUT: 60000,
+        TOPIC_JOB_REFRESH_TIME: 60000,
+        TOPIC_JOB_COUNT: 10,
+        MESSAGE_READ_DELAY: 1000,
+        MESSAGE_READ_TIMEOUT: 60000,
+        MESSAGE_JOB_REFRESH_TIME: 60000,
+        MESSAGE_JOB_COUNT: 10
+    }).start();
 
-        const worker = new Worker();
-        await worker.init({
-            CYCLE_TIME: 60 * 60 * 1000,
-            TOPIC_READ_DELAY: 1000,
-            TOPIC_READ_TIMEOUT: 60000,
-            TOPIC_JOB_REFRESH_TIME: 60000,
-            TOPIC_JOB_COUNT: 10,
-            MESSAGE_READ_DELAY: 1000,
-            MESSAGE_READ_TIMEOUT: 60000,
-            MESSAGE_JOB_REFRESH_TIME: 60000,
-            MESSAGE_JOB_COUNT: 10
-        }).start();
-
-        return true;
-    });
-
-    validator.setValidAction(async () => {
-        // await state.updateState(ApplicationStates.READY);
-        // await new Logger().info('Worker started', ['INDEXER_WORKER']);
-    });
-
-    validator.setInvalidAction(async () => {
-        // timer = setInterval(async () => {
-        //     await state.updateState(ApplicationStates.BAD_CONFIGURATION);
-        // }, 1000);
-        // await new Logger().error('Worker not configured', ['INDEXER_WORKER']);
-    })
-
-    await validator.validate();
+    // await state.updateState(ApplicationStates.READY);
+    // await new Logger().info('Worker started', ['INDEXER_WORKER']);
 }, (reason) => {
     console.log(reason);
     process.exit(0);
