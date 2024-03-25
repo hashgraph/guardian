@@ -18,7 +18,7 @@
   "dependencies": {
     "@guardian/common": "^2.22.0",
     "@guardian/interfaces": "^2.22.0",
-    "@hashgraph/sdk": "2.34.1",
+    "@hashgraph/sdk": "2.43.0",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
     "@mikro-orm/core": "5.7.12",
