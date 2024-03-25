@@ -16,7 +16,7 @@
   "license": "ISC",
   "devDependencies": {
     "cy-verify-downloads": "^0.1.14",
-    "cypress": "^12.16.0",
+    "cypress": "^13.7.1",
     "cypress-grep": "^3.0.3",
     "cypress-mochawesome-reporter": "^3.5.1",
     "cypress-select-tests": "^1.7.1"
