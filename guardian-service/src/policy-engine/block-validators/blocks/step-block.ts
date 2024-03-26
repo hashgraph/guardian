@@ -1,4 +1,4 @@
-import { BlockValidator, IBlockProp } from '../';
+import { BlockValidator, IBlockProp } from '../index.js';
 import { CommonBlock } from './common.js';
 
 /**

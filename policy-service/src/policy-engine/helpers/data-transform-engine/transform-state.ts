@@ -1,5 +1,5 @@
 import { BlockActionError } from '../../errors/index.js';
-import { PolicyComponentsUtils } from '../../policy-components-utils';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 
 /**
  * Transform block state

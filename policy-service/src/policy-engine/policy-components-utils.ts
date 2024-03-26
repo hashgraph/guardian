@@ -25,11 +25,11 @@ import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
 import { GetBlockAbout } from './blocks/index.js';
-import { IPolicyUser } from './policy-user';
-import { ExternalEvent } from './interfaces/external-event';
+import { IPolicyUser } from './policy-user.js';
+import { ExternalEvent } from './interfaces/external-event.js';
 import { BlockTreeGenerator } from './block-tree-generator.js';
-import { PolicyNavigationMap } from './interfaces/block-state';
-import { ComponentsService } from './helpers/components-service';
+import { PolicyNavigationMap } from './interfaces/block-state.js';
+import { ComponentsService } from './helpers/components-service.js';
 
 /**
  * Policy tag helper
