@@ -6,12 +6,14 @@ import { PolicyEngine } from '@helpers/policy-engine';
 import { PolicyListResponse } from '@entities/policy';
 import { StandardRegistryAccountResponse } from '@entities/account';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseInterceptors } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApplicationEnvironment } from '../../environment';
+import { CacheInterceptor } from '@helpers/interceptors/cache';
+import { CacheTTL } from '@helpers/decorators/cache.ttl';
 
 /**
  * User account route
@@ -46,6 +48,8 @@ export class AccountApi {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @Get('/session')
+    @CacheTTL('/accounts/session', 10)
+    @UseInterceptors(CacheInterceptor)
     async getSession(@Headers() headers: { [key: string]: string }): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
         try {
@@ -57,7 +61,6 @@ export class AccountApi {
             return null;
             // throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
-
     }
 
     /**
