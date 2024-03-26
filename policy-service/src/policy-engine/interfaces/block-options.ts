@@ -1,4 +1,4 @@
-import { PolicyBlockMap, PolicyTagMap } from './';
+import { PolicyBlockMap, PolicyTagMap } from './index.js';
 import { IPolicyBlock, } from '../policy-engine.interface.js';
 
 import { UserRole } from '@guardian/interfaces';
