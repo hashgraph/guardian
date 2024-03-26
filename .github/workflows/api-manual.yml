@@ -1,6 +1,7 @@
 name: Guardian CI API Tests(Manual)
 on:
-    push:
+    workflow_dispatch:
+        description: 'Manual run'
 
 jobs:
     buildAndTest:
