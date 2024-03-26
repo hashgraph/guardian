@@ -1,8 +1,8 @@
 import { DatabaseServer, PolicyTool } from '@guardian/common';
-import { BlockValidator } from './block-validator';
-import { IModulesErrors } from './interfaces/modules-errors.interface';
+import { BlockValidator } from './block-validator.js';
+import { IModulesErrors } from './interfaces/modules-errors.interface.js';
 import { ISchema, ModuleStatus } from '@guardian/interfaces';
-import { SchemaValidator } from './schema-validator';
+import { SchemaValidator } from './schema-validator.js';
 
 /**
  * Policy Validator

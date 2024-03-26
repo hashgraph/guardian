@@ -1,6 +1,6 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
-import { BasicBlock } from './basic-block';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
+import { BasicBlock } from './basic-block.js';
+import { IPolicyUser } from '../../policy-user.js';
 
 /**
  * Set relationships block decorator

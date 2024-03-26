@@ -1,4 +1,4 @@
-import { IDidComponents } from './types/did-components';
+import { IDidComponents } from './types/did-components.js';
 
 /**
  * DID base

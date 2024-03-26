@@ -1,5 +1,5 @@
 import NodeVault from 'node-vault';
-import { IVault } from '../vault.interface';
+import { IVault } from '../vault.interface.js';
 import assert from 'assert';
 import crypto from 'crypto';
 

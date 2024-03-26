@@ -1,12 +1,12 @@
-import Point from './point';
-import LineString from './line-string';
-import Polygon from './polygon';
-import MultiPoint from './multi-point';
-import MultiLineString from './multi-line-string';
-import MultiPolygon from './multi-polygon';
-import GeometryCollection from './geometry-collection';
-import Feature from './feature';
-import FeatureCollection from './feature-collection';
+import Point from './point.js';
+import LineString from './line-string.js';
+import Polygon from './polygon.js';
+import MultiPoint from './multi-point.js';
+import MultiLineString from './multi-line-string.js';
+import MultiPolygon from './multi-polygon.js';
+import GeometryCollection from './geometry-collection.js';
+import Feature from './feature.js';
+import FeatureCollection from './feature-collection.js';
 
 export default {
     $id: '#GeoJSON',

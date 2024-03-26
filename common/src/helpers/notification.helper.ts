@@ -3,8 +3,8 @@ import {
     NotificationType,
     TaskAction,
 } from '@guardian/interfaces';
-import { NotificationService } from './notification.service';
-import { CommonVariables } from './common-variables';
+import { NotificationService } from './notification.service.js';
+import { CommonVariables } from './common-variables.js';
 
 export class NotificationHelper {
     /**

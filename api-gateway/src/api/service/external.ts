@@ -1,8 +1,8 @@
-import { PolicyEngine } from '@helpers/policy-engine';
+import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { Logger } from '@guardian/common';
 import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 
 @Controller('external')
 @ApiTags('external')

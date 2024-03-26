@@ -1,9 +1,9 @@
 import { DataBaseHelper, Workers } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
-import { AnalyticsStatus as Status } from '@entity/analytics-status';
-import { AnalyticsTopicCache as TopicCache } from '@entity/analytics-topic-cache';
-import { ReportStatus } from '@interfaces/report-status.type';
-import { ReportSteep } from '@interfaces/report-steep.type';
+import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
+import { AnalyticsTopicCache as TopicCache } from '../entity/analytics-topic-cache.js';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
 
 class Counter {
     private count: number;

@@ -1,8 +1,8 @@
 import MurmurHash3 from 'imurmurhash';
-import { BlockModel } from './block.model';
-import { CompareOptions, IEventsLvl } from '../interfaces/compare-options.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { IWeightItem } from '../interfaces/weight-item.interface';
+import { BlockModel } from './block.model.js';
+import { CompareOptions, IEventsLvl } from '../interfaces/compare-options.interface.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { IWeightItem } from '../interfaces/weight-item.interface.js';
 
 /**
  * Event Model

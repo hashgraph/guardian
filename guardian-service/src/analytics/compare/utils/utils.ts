@@ -1,14 +1,14 @@
-import { CSV } from '../../table/csv';
-import { IReportTable } from '../interfaces/report-table.interface';
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { IRate } from '../interfaces/rate.interface';
+import { CSV } from '../../table/csv.js';
+import { IReportTable } from '../interfaces/report-table.interface.js';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
+import { IRate } from '../interfaces/rate.interface.js';
 import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'crypto';
 import { Hashing } from '@guardian/common';
-import { SchemaModel } from '../models/schema.model';
-import { BlockModel } from '../models/block.model';
+import { SchemaModel } from '../models/schema.model.js';
+import { BlockModel } from '../models/block.model.js';
 import { BlockType } from '@guardian/interfaces';
-import { BlockToolModel } from '../models/block-tool.model';
+import { BlockToolModel } from '../models/block-tool.model.js';
 
 /**
  * Compare Utils

@@ -1,5 +1,5 @@
-import { CompareOptions } from './compare-options.interface';
-import { IModel } from './model.interface';
+import { CompareOptions } from './compare-options.interface.js';
+import { IModel } from './model.interface.js';
 
 /**
  * Weight Model interface

@@ -1,4 +1,4 @@
-import { Singleton } from '../decorators/singleton';
+import { Singleton } from '../decorators/singleton.js';
 
 /**
  * Common variables

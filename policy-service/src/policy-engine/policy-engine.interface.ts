@@ -1,9 +1,8 @@
 import { PolicyRole } from '@guardian/interfaces';
-import { BlockCacheType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { EventConfig, IPolicyEvent } from './interfaces';
+import { BlockCacheType, PolicyOutputEventType, EventConfig, IPolicyEvent } from './interfaces/index.js';
 import { DatabaseServer, Policy } from '@guardian/common';
-import { IPolicyUser, UserCredentials } from './policy-user';
-import { ComponentsService } from './helpers/components-service';
+import { IPolicyUser, UserCredentials } from './policy-user.js';
+import { ComponentsService } from './helpers/components-service.js';
 
 /**
  * Policy roles interface

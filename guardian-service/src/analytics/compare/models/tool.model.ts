@@ -1,11 +1,11 @@
 import { PolicyTool } from '@guardian/common';
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { BlockModel } from './block.model';
-import { VariableModel } from './variable.model';
-import { CompareUtils } from '../utils/utils';
-import { SchemaModel } from './schema.model';
-import { FileModel } from './file.model';
-import { IKeyMap } from '../interfaces/key-map.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { BlockModel } from './block.model.js';
+import { VariableModel } from './variable.model.js';
+import { CompareUtils } from '../utils/utils.js';
+import { SchemaModel } from './schema.model.js';
+import { FileModel } from './file.model.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
 
 /**
  * Tool Model

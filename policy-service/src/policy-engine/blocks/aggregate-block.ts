@@ -1,13 +1,13 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { AggregateVC, VcDocumentDefinition as VcDocument } from '@guardian/common';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IPolicyEvent } from '../interfaces/policy-event.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
 import ObjGet from 'lodash.get';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Aggregate block

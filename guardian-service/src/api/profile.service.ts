@@ -1,5 +1,5 @@
 import { DidDocumentStatus, DocumentStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
     DataBaseHelper,
@@ -30,9 +30,9 @@ import {
     Wallet,
     Workers
 } from '@guardian/common';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
-import { publishSystemSchema } from './helpers/schema-publish-helper';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
+import { publishSystemSchema } from './helpers/schema-publish-helper.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';

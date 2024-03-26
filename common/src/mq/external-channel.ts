@@ -1,5 +1,5 @@
-import { MessageBrokerChannel } from './message-broker-channel';
-import { Singleton } from '../decorators/singleton';
+import { MessageBrokerChannel } from './message-broker-channel.js';
+import { Singleton } from '../decorators/singleton.js';
 
 /**
  * External event channel

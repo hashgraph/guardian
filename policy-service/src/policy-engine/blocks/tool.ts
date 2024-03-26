@@ -1,11 +1,11 @@
-import { ContainerBlock } from '@policy-engine/helpers/decorators/container-block';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ActionCallback } from '@policy-engine/helpers/decorators';
-import { IPolicyEvent } from '@policy-engine/interfaces';
-import { PolicyInputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { IPolicyEventState } from '@policy-engine/policy-engine.interface';
+import { ContainerBlock } from '../helpers/decorators/container-block.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyUser } from '../policy-user.js';
+import { ActionCallback } from '../helpers/decorators/index.js';
+import { IPolicyEvent } from '../interfaces/index.js';
+import { PolicyInputEventType } from '../interfaces/policy-event-type.js';
+import { IPolicyEventState } from '../policy-engine.interface.js';
 
 /**
  * Container block with UI

@@ -1,4 +1,4 @@
-import { PropertyType } from '../types/property.type';
+import { PropertyType } from '../types/property.type.js';
 
 /**
  * Properties model interface

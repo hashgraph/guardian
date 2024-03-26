@@ -1,7 +1,7 @@
-import { MessageError, MessageResponse } from '../../models/common/message-response';
-import { ApiResponse } from '../../helpers/api-response';
-import { MessageAPI } from '../../models/interfaces/message-api.type';
-import { AIManager } from '../../ai-manager';
+import { MessageError, MessageResponse } from '../../models/common/message-response.js';
+import { ApiResponse } from '../../helpers/api-response.js';
+import { MessageAPI } from '../../models/interfaces/message-api.type.js';
+import { AIManager } from '../../ai-manager.js';
 
 /**
  * Connect to the message broker methods of working with artifacts.

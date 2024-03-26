@@ -1,5 +1,5 @@
-import {uuid} from './uuid.interface';
-import {IVC} from './vc.interface';
+import {uuid} from './uuid.interface.js';
+import {IVC} from './vc.interface.js';
 
 /**
  * VP interface

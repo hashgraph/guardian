@@ -1,11 +1,11 @@
-import { Status } from '../types/status.type';
-import { IRate } from '../interfaces/rate.interface';
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { PropertyModel } from '../models/property.model';
-import { CompareUtils } from '../utils/utils';
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { IRateTable } from '../interfaces/rate-table.interface';
-import { IProperties } from '../interfaces/properties.interface';
+import { Status } from '../types/status.type.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { PropertyModel } from '../models/property.model.js';
+import { CompareUtils } from '../utils/utils.js';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
+import { IRateTable } from '../interfaces/rate-table.interface.js';
+import { IProperties } from '../interfaces/properties.interface.js';
 
 /**
  * Calculates the difference between two Properties

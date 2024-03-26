@@ -1,11 +1,11 @@
-import { VpDocument } from '../vcjs/vp-document';
-import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { VpMessageBody } from './message-body.interface';
-import { Hashing } from '../hashing';
-import { IPFS } from '../../helpers';
+import { VpDocument } from '../vcjs/vp-document.js';
+import { Message } from './message.js';
+import { IURL, UrlType } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { VpMessageBody } from './message-body.interface.js';
+import { Hashing } from '../hashing.js';
+import { IPFS } from '../../helpers/index.js';
 
 /**
  * VP message

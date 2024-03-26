@@ -1,9 +1,12 @@
 import { GenerateUUIDv4, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import path from 'path';
-import { readJSON } from 'fs-extra';
+import fs from 'fs-extra';
+
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
-import { INotifier } from '@helpers/notifier';
-import { importTag } from '@api/helpers/tag-import-export-helper';
+import { INotifier } from '../../helpers/notifier.js';
+import { importTag } from '../../api/helpers/tag-import-export-helper.js';
+
+const { readJSON } = fs;
 
 /**
  * Import Result

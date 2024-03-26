@@ -1,7 +1,7 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/index.js';
+import { BasicBlock } from '../../helpers/decorators/basic-block.js';
+import { IPolicyBlock } from '../../policy-engine.interface.js';
+import { IPolicyUser } from '../../policy-user.js';
 
 /**
  * Source addon

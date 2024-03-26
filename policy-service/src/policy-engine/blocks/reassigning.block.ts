@@ -1,14 +1,13 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { VcHelper } from '@guardian/common';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { Inject } from '@helpers/decorators/inject';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Reassigning block
@@ -40,8 +39,8 @@ export class ReassigningBlock {
      * VC helper
      * @private
      */
-    @Inject()
-    private readonly vcHelper: VcHelper;
+    // @Inject()
+    private vcHelper: VcHelper;
 
     /**
      * Document reassigning
@@ -64,6 +63,11 @@ export class ReassigningBlock {
 
         let root: UserCredentials;
         let groupContext: any;
+
+        if(!this.vcHelper) {
+          this.vcHelper = new VcHelper()
+        }
+
         if (ref.options.issuer === 'owner') {
             root = await PolicyUtils.getUserCredentials(ref, document.owner);
             groupContext = await PolicyUtils.getGroupContext(ref, owner);

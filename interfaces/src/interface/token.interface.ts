@@ -1,4 +1,4 @@
-import { TokenType } from '../type/token.type';
+import { TokenType } from '../type/token.type.js';
 
 /**
  * Token interface

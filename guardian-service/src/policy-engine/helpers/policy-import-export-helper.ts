@@ -10,9 +10,9 @@ import {
     TagType,
     TopicType
 } from '@guardian/interfaces';
-import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { INotifier } from '@helpers/notifier';
+import { publishSystemSchemas } from '../../api/helpers/schema-publish-helper.js';
+import { PolicyConverterUtils } from '../policy-converter-utils.js';
+import { INotifier } from '../../helpers/notifier.js';
 import {
     DataBaseHelper,
     DatabaseServer,
@@ -33,15 +33,15 @@ import {
     TopicHelper,
     Users
 } from '@guardian/common';
-import { importTag } from '@api/helpers/tag-import-export-helper';
-import { SchemaImportResult } from '@api/helpers/schema-helper';
-import { HashComparator } from '@analytics';
+import { importTag } from '../../api/helpers/tag-import-export-helper.js';
+import { SchemaImportResult } from '../../api/helpers/schema-helper.js';
+import { HashComparator } from '../../analytics/index.js';
 import {
     importSubTools,
     importSchemaByFiles,
     importTokensByFiles,
     importArtifactsByFiles
-} from '@api/helpers';
+} from '../../api/helpers/index.js';
 
 /**
  * Policy import export helper

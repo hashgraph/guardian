@@ -1,4 +1,4 @@
-import { IDocumentFormat } from './document-format';
+import { IDocumentFormat } from './document-format.js';
 
 /**
  * Document loader function interface

@@ -1,11 +1,11 @@
-import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { BlockActionError } from '@policy-engine/errors';
+import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { DataTypes, PolicyUtils } from '../helpers/utils.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyUser } from '../policy-user.js';
+import { BlockActionError } from '../errors/index.js';
 import {
     PolicyRoles,
     VcDocument as VcDocumentCollection,
@@ -15,8 +15,7 @@ import {
     VcDocumentDefinition as VcDocument,
     VPMessage,
 } from '@guardian/common';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { Inject } from '@helpers/decorators/inject';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Sign Status
@@ -64,8 +63,8 @@ export class MultiSignBlock {
      * VC helper
      * @private
      */
-    @Inject()
-    private readonly vcHelper: VcHelper;
+    // @Inject()
+    private vcHelper: VcHelper;
 
     /**
      * Before init callback
@@ -73,6 +72,9 @@ export class MultiSignBlock {
     public async beforeInit(): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         ref.addInternalListener('remove-user', this.onRemoveUser.bind(this));
+        if(!this.vcHelper) {
+          this.vcHelper = new VcHelper()
+        }
     }
 
     /**

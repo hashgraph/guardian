@@ -43,5 +43,6 @@
     "dev:docker": "nodemon .",
     "start": "node dist/index.js"
   },
+  "type": "module",
   "version": "2.22.0"
 }

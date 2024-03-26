@@ -1,5 +1,5 @@
 import express from 'express';
-import { startMetricsServer } from './utils/metrics';
+import { startMetricsServer } from './utils/metrics.js';
 
 const PORT = process.env.PORT || 3006;
 (async () => {

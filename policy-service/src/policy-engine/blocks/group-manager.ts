@@ -1,13 +1,13 @@
-import { EventBlock } from '@policy-engine/helpers/decorators';
+import { EventBlock } from '../helpers/decorators/index.js';
 import { GroupRelationshipType, GroupAccessType } from '@guardian/interfaces';
-import { IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
+import { IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyInputEventType } from '../interfaces/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyUser, PolicyUser } from '../policy-user.js';
 import { PolicyRoles, MessageServer, MessageStatus } from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Document action clock with UI

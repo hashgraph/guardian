@@ -1,5 +1,5 @@
-import { Notification } from '@entity/notification.entity';
-import { Progress } from '@entity/progress.entity';
+import { Notification } from '../entity/notification.entity.js';
+import { Progress } from '../entity/progress.entity.js';
 import {
     DataBaseHelper,
     MessageError,

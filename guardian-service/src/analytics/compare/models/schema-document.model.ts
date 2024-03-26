@@ -1,8 +1,8 @@
-import { FieldModel } from './field.model';
-import { ConditionModel } from './condition.model';
-import { CompareOptions } from '../interfaces/compare-options.interface';
+import { FieldModel } from './field.model.js';
+import { ConditionModel } from './condition.model.js';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
 import MurmurHash3 from 'imurmurhash';
-import { ComparePolicyUtils } from '../utils/compare-policy-utils';
+import { ComparePolicyUtils } from '../utils/compare-policy-utils.js';
 
 /**
  * Schema Model

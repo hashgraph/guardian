@@ -1,4 +1,4 @@
-import * as assert from './assertions';
+import * as assert from './assertions.js';
 import { ungzip } from 'pako';
 
 function base64urlDecode(input) {

@@ -1,4 +1,4 @@
-import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
+import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type.js';
 
 /**
  * Event config

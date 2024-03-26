@@ -1,13 +1,13 @@
 import moment from 'moment';
 import { CronJob } from 'cron';
-import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { IPolicyEvent } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ActionCallback, BasicBlock, StateField } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyEventState } from '../policy-engine.interface.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
+import { IPolicyEvent } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { PolicyType } from '@guardian/interfaces';
 
 /**

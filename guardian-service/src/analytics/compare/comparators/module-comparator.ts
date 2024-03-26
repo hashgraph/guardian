@@ -1,17 +1,17 @@
-import { BlockModel } from '../models/block.model';
-import { BlocksRate } from '../rates/blocks-rate';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
-import { ReportTable } from '../../table/report-table';
-import { Status } from '../types/status.type';
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { ICompareResult } from '../interfaces/compare-result.interface';
-import { MergeUtils } from '../utils/merge-utils';
-import { IWeightModel } from '../interfaces/weight-model.interface';
-import { IRate } from '../interfaces/rate.interface';
-import { ObjectRate } from '../rates/object-rate';
-import { CompareUtils } from '../utils/utils';
-import { CSV } from '../../table/csv';
-import { ModuleModel } from '../models/module.model';
+import { BlockModel } from '../models/block.model.js';
+import { BlocksRate } from '../rates/blocks-rate.js';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface.js';
+import { ReportTable } from '../../table/report-table.js';
+import { Status } from '../types/status.type.js';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
+import { ICompareResult } from '../interfaces/compare-result.interface.js';
+import { MergeUtils } from '../utils/merge-utils.js';
+import { IWeightModel } from '../interfaces/weight-model.interface.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { ObjectRate } from '../rates/object-rate.js';
+import { CompareUtils } from '../utils/utils.js';
+import { CSV } from '../../table/csv.js';
+import { ModuleModel } from '../models/module.model.js';
 
 /**
  * Component for comparing two modules

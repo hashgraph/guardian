@@ -1,8 +1,8 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { ApiTags } from '@nestjs/swagger';
-import { Auth } from '@auth/auth.decorator';
+import { Auth } from '../../auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
 
 /**
@@ -39,11 +39,11 @@ export class BrandingApi{
                 termsAndConditions
             };
 
-            const guardians = new Guardians();
-            await guardians.setBranding(JSON.stringify(data));
+          const guardians = new Guardians();
+          await guardians.setBranding(JSON.stringify(data));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+          new Logger().error(error, ['API_GATEWAY']);
+          throw error;
         }
 
         return;

@@ -1,13 +1,13 @@
-import { Report } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
-import { BlockActionError } from '@policy-engine/errors';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { IReport, MessagesReport } from '../helpers/messages-report';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { Report } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyReportBlock } from '../policy-engine.interface.js';
+import { BlockActionError } from '../errors/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyInputEventType } from '../interfaces/index.js';
+import { IPolicyUser } from '../policy-user.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { IReport, MessagesReport } from '../helpers/messages-report.js';
+import { PolicyUtils } from '../helpers/utils.js';
 
 /**
  * Report block

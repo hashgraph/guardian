@@ -1,5 +1,5 @@
-import { Status } from '../types/status.type';
-import { CompareOptions } from './compare-options.interface';
+import { Status } from '../types/status.type.js';
+import { CompareOptions } from './compare-options.interface.js';
 
 /**
  * Rate Model interface

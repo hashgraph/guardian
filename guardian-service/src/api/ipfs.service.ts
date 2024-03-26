@@ -1,7 +1,7 @@
-import { ApiResponse, ApiResponseSubscribe } from '@api/helpers/api-response';
+import { ApiResponse, ApiResponseSubscribe } from '../api/helpers/api-response.js';
 import { IPFS, Logger, MessageError, MessageResponse } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
-import { IPFSTaskManager } from '@helpers/ipfs-task-manager';
+import { IPFSTaskManager } from '../helpers/ipfs-task-manager.js';
 
 /**
  * TODO

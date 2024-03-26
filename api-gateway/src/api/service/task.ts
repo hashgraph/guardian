@@ -1,5 +1,5 @@
 import { Logger } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager';
+import { TaskManager } from '../../helpers/task-manager.js';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 

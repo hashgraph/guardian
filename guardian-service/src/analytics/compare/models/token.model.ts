@@ -1,7 +1,7 @@
 import { Token } from '@guardian/common';
-import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface';
+import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface.js';
 import MurmurHash3 from 'imurmurhash';
-import { IWeightItem } from '../interfaces/weight-item.interface';
+import { IWeightItem } from '../interfaces/weight-item.interface.js';
 
 /**
  * Token Model

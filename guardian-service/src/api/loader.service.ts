@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DataBaseHelper, DidDocument, DidURL, Logger, MessageError, MessageResponse, Schema, } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 

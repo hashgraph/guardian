@@ -1,7 +1,7 @@
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import { describe, it } from 'mocha';
-import app from '../src/index';
+import app from '../src/index.js';
 
 chai.use(chaiHttp);
 const webhookApiTest = () => {

@@ -1,5 +1,5 @@
 import { BlockType } from '@guardian/interfaces';
-import { SchemaFields, TokenFields } from '../helpers';
+import { SchemaFields, TokenFields } from '../helpers/index.js';
 
 interface IBlockConfig {
     blockType: string;

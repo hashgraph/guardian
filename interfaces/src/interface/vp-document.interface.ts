@@ -1,6 +1,6 @@
-import {DocumentSignature} from '../type/document-signature.type';
-import {DocumentStatus} from '../type/document-status.type';
-import {IVP} from './vp.interface';
+import {DocumentSignature} from '../type/document-signature.type.js';
+import {DocumentStatus} from '../type/document-status.type.js';
+import {IVP} from './vp.interface.js';
 
 /**
  * VP document interface

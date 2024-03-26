@@ -61,7 +61,7 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",

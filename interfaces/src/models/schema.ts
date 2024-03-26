@@ -1,13 +1,13 @@
-import { ModelHelper } from '../helpers/model-helper';
-import { SchemaHelper } from '../helpers/schema-helper';
-import { SchemaCondition } from '../interface/schema-condition.interface';
-import { ISchemaDocument } from '../interface/schema-document.interface';
-import { ISchema } from '../interface/schema.interface';
-import { SchemaEntity } from '../type/schema-entity.type';
-import { SchemaStatus } from '../type/schema-status.type';
-import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4';
-import { SchemaField } from '../interface/schema-field.interface';
-import { SchemaCategory } from '../type/schema-category.type';
+import { ModelHelper } from '../helpers/model-helper.js';
+import { SchemaHelper } from '../helpers/schema-helper.js';
+import { SchemaCondition } from '../interface/schema-condition.interface.js';
+import { ISchemaDocument } from '../interface/schema-document.interface.js';
+import { ISchema } from '../interface/schema.interface.js';
+import { SchemaEntity } from '../type/schema-entity.type.js';
+import { SchemaStatus } from '../type/schema-status.type.js';
+import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4.js';
+import { SchemaField } from '../interface/schema-field.interface.js';
+import { SchemaCategory } from '../type/schema-category.type.js';
 
 /**
  * Schema class

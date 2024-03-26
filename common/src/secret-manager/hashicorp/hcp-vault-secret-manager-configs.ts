@@ -1,4 +1,4 @@
-import { SecretManagerConfigsBase } from '../secret-manager-config-base';
+import { SecretManagerConfigsBase } from '../secret-manager-config-base.js';
 import * as fs from 'fs'
 import * as path from 'path';
 

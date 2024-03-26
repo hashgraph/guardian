@@ -1,6 +1,6 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/index.js';
+import { BasicBlock } from '../../helpers/decorators/basic-block.js';
+import { IPolicyReportItemBlock } from '../../policy-engine.interface.js';
 
 /**
  * Report Irem decorator

@@ -4,7 +4,7 @@ import {
     NotifyAPI,
 } from '@guardian/interfaces';
 import { Injectable } from '@nestjs/common';
-import { CommonVariables } from './common-variables';
+import { CommonVariables } from './common-variables.js';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 
 /**

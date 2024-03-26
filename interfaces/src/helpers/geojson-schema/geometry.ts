@@ -1,9 +1,9 @@
-import Point from './point';
-import LineString from './line-string';
-import Polygon from './polygon';
-import MultiPoint from './multi-point';
-import MultiLineString from './multi-line-string';
-import MultiPolygon from './multi-polygon';
+import Point from './point.js';
+import LineString from './line-string.js';
+import Polygon from './polygon.js';
+import MultiPoint from './multi-point.js';
+import MultiLineString from './multi-line-string.js';
+import MultiPolygon from './multi-polygon.js';
 
 export default {
     title: 'GeoJSON Geometry',

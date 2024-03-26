@@ -1,8 +1,8 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { publishTokenTags } from './tag.service';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+import { publishTokenTags } from './tag.service.js';
 
 /**
  * Create token in Hedera network

@@ -1,8 +1,8 @@
 import { NatsService } from '@guardian/common';
-import { MessageAPI } from '../models/interfaces/message-api.type';
-import { Singleton } from './decorators/singleton';
-import { GenerateUUIDv4 } from './interfaces/generate-uuid-v4';
-import { Policy } from '../models/common/policy';
+import { MessageAPI } from '../models/interfaces/message-api.type.js';
+import { Singleton } from './decorators/singleton.js';
+import { GenerateUUIDv4 } from './interfaces/generate-uuid-v4.js';
+import { Policy } from '../models/common/policy.js';
 
 /**
  * AI Suggestions service

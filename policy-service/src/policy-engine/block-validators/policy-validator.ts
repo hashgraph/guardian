@@ -1,10 +1,10 @@
 import { DatabaseServer, Policy } from '@guardian/common';
 import { ISchema, ModuleStatus } from '@guardian/interfaces';
-import { BlockValidator } from './block-validator';
-import { ModuleValidator } from './module-validator';
-import { ISerializedErrors } from './interfaces/serialized-errors.interface';
-import { ToolValidator } from './tool-validator';
-import { SchemaValidator } from './schema-validator';
+import { BlockValidator } from './block-validator.js';
+import { ModuleValidator } from './module-validator.js';
+import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
+import { ToolValidator } from './tool-validator.js';
+import { SchemaValidator } from './schema-validator.js';
 
 /**
  * Policy Validator

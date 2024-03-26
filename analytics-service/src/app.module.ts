@@ -4,8 +4,8 @@ import hpp from 'hpp';
 import process from 'process';
 import express from 'express';
 import fileUpload from 'express-fileupload';
-import { AnalyticsApi } from '@api/analytics';
-import { MetricsApi } from '@api/metrics';
+import { AnalyticsApi } from './api/analytics.js';
+import { MetricsApi } from './api/metrics.js';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';

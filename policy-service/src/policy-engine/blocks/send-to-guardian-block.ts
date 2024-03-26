@@ -1,9 +1,9 @@
-import { BlockActionError } from '@policy-engine/errors';
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { BlockActionError } from '../errors/index.js';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { DocumentStatus } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import {
     MessageAction,
     MessageServer,
@@ -16,12 +16,12 @@ import {
     Message,
     HederaDidDocument
 } from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { DocumentType } from '@policy-engine/interfaces/document.type';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { IPolicyUser } from '../policy-user.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { DocumentType } from '../interfaces/document.type.js';
 
 /**
  * Document Operations

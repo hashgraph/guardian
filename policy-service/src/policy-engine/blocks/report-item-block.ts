@@ -1,11 +1,11 @@
 import { findOptions, getVCIssuer } from '@guardian/common';
-import { ReportItem } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
+import { ReportItem } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyReportItemBlock } from '../policy-engine.interface.js';
 import { IReportItem } from '@guardian/interfaces';
-import { BlockActionError } from '@policy-engine/errors';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { BlockActionError } from '../errors/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Report item block

@@ -1,12 +1,12 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { Logger, RunFunctionAsync, } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
 import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import { TaskAction, UserRole } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 
 @Controller('wizard')
 @ApiTags('wizard')

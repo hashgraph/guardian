@@ -1,6 +1,6 @@
 import { BlockType } from '@guardian/interfaces';
-import { ChainSearchModel } from './chain.model';
-import { ArtifactModel, BlockPropertiesModel, EventModel, PropertyModel } from '../../compare';
+import { ChainSearchModel } from './chain.model.js';
+import { ArtifactModel, BlockPropertiesModel, EventModel, PropertyModel } from '../../compare/index.js';
 
 export interface BlockSearchJson {
     /**

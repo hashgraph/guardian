@@ -1,5 +1,5 @@
-export { IDocumentFormat } from './document-format';
-export { DefaultDocumentLoader } from './document-loader-default';
-export { DocumentLoaderFunction } from './document-loader-function';
-export { DocumentLoader } from './document-loader';
-export { SchemaLoader, SchemaLoaderFunction } from './schema-loader';
+export { IDocumentFormat } from './document-format.js';
+export { DefaultDocumentLoader } from './document-loader-default.js';
+export { DocumentLoaderFunction } from './document-loader-function.js';
+export { DocumentLoader } from './document-loader.js';
+export { SchemaLoader, SchemaLoaderFunction } from './schema-loader.js';

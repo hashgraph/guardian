@@ -1,6 +1,7 @@
-const axios = require("axios");
-const {GetURL, GetToken} = require("../helpers");
-const assert = require("assert");
+import axios from 'axios';
+import assert from 'assert';
+
+import { GetURL, GetToken } from '../helpers';
 
 function TrustChains() {
     it('/trust-chains', async function () {
@@ -62,6 +63,6 @@ function TrustChains() {
     });
 }
 
-module.exports = {
-    TrustChains: TrustChains
-}
+export {
+    TrustChains,
+};

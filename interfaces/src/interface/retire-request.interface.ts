@@ -1,5 +1,5 @@
-import { TokenType } from '../type';
-import { RetireTokenRequest } from './retire-token-request.interface';
+import { TokenType } from '../type/index.js';
+import { RetireTokenRequest } from './retire-token-request.interface.js';
 
 /**
  * Retire request

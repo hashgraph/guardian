@@ -1,6 +1,6 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
 import { PolicyRole } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyDocument } from './policy-engine.interface';
+import { AnyBlockType, IPolicyDocument } from './policy-engine.interface.js';
 
 /**
  * Hedera Account interface

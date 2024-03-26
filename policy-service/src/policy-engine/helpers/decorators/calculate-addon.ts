@@ -1,7 +1,7 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/index.js';
+import { BasicBlock } from '../../helpers/decorators/basic-block.js';
 import * as mathjs from 'mathjs';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser } from '../../policy-user.js';
 
 /**
  * Calculate addon

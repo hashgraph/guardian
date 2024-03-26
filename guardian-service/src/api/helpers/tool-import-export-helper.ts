@@ -25,9 +25,9 @@ import {
     TagType,
     TopicType
 } from '@guardian/interfaces';
-import { INotifier } from '@helpers/notifier';
-import { importTag } from './tag-import-export-helper';
-import { importSchemaByFiles } from './schema-import-export-helper';
+import { INotifier } from '../../helpers/notifier.js';
+import { importTag } from './tag-import-export-helper.js';
+import { importSchemaByFiles } from './schema-import-export-helper.js';
 
 /**
  * Import Result

@@ -1,5 +1,5 @@
-import PointCoordinates from './ref/point-coordinates';
-import BoundingBox from './ref/bounding-box';
+import PointCoordinates from './ref/point-coordinates.js';
+import BoundingBox from './ref/bounding-box.js';
 
 export default {
   title: 'GeoJSON Point',

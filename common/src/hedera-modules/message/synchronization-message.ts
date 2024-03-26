@@ -1,9 +1,9 @@
-import { Message } from './message';
-import { IURL } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { SynchronizationMessageBody } from './message-body.interface';
-import { MultiPolicy } from '../../entity';
+import { Message } from './message.js';
+import { IURL } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { SynchronizationMessageBody } from './message-body.interface.js';
+import { MultiPolicy } from '../../entity/index.js';
 
 /**
  * Synchronization message
@@ -12,7 +12,7 @@ export class SynchronizationMessage extends Message {
     /**
      * Language
      */
-    public lang: string;
+    declare public lang: string;
     /**
      * User DID
      */

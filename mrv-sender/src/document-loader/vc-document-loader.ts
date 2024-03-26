@@ -1,5 +1,5 @@
-import { IDocumentFormat } from "./document-format";
-import { DocumentLoader } from "./document-loader";
+import { IDocumentFormat } from "./document-format.js";
+import { DocumentLoader } from "./document-loader.js";
 
 export class VCDocumentLoader extends DocumentLoader {
     private url: string;

@@ -1,13 +1,13 @@
 import { Logger, Policy } from '@guardian/common';
-import { PolicyModel } from '../models/policy.model';
-import { SchemaModel } from '../models/schema.model';
-import { TokenModel } from '../models/token.model';
-import { FileModel } from '../models/file.model';
-import { IWeightBlock } from '../interfaces/weight-block.interface';
-import { IWeightItem } from '../interfaces/weight-item.interface';
-import { CompareUtils } from '../utils/utils';
-import { PolicyComparator } from './policy-comparator';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
+import { PolicyModel } from '../models/policy.model.js';
+import { SchemaModel } from '../models/schema.model.js';
+import { TokenModel } from '../models/token.model.js';
+import { FileModel } from '../models/file.model.js';
+import { IWeightBlock } from '../interfaces/weight-block.interface.js';
+import { IWeightItem } from '../interfaces/weight-item.interface.js';
+import { CompareUtils } from '../utils/utils.js';
+import { PolicyComparator } from './policy-comparator.js';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface.js';
 
 /**
  * Weight Types

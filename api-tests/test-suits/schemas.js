@@ -1,6 +1,7 @@
-const axios = require("axios");
-const {GetURL, GetToken, GenerateUUIDv4 } = require("../helpers");
-const assert = require("assert");
+import axios from 'axios';
+import assert from 'assert';
+
+import { GetURL, GetToken, GenerateUUIDv4 } from '../helpers';
 
 function Schemas() {
     let schemaId, schemaUUID, messageId, schemaBlob;
@@ -221,6 +222,6 @@ function Schemas() {
     })
 }
 
-module.exports = {
-    Schemas
-}
+export {
+    Schemas,
+};

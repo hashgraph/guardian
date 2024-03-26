@@ -1,26 +1,26 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import {
     IPolicyEventState,
     IPolicyRequestBlock,
-} from '@policy-engine/policy-engine.interface';
+} from '../policy-engine.interface.js';
 import {
     IPolicyEvent,
     PolicyInputEventType,
     PolicyOutputEventType,
-} from '@policy-engine/interfaces';
+} from '../interfaces/index.js';
 import {
     ChildrenType,
     ControlType,
     PropertyType,
     SelectItemType,
-} from '@policy-engine/interfaces/block-about';
+} from '../interfaces/block-about.js';
 import {
     ExternalDocuments,
     ExternalEvent,
     ExternalEventType,
-} from '@policy-engine/interfaces/external-event';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+} from '../interfaces/external-event.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { NotificationHelper, Users } from '@guardian/common';
 import {
     NotificationAction,

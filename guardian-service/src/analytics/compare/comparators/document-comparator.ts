@@ -1,17 +1,17 @@
 import { DatabaseServer } from '@guardian/common';
-import { CSV } from '../../table/csv';
-import { ReportTable } from '../../table/report-table';
-import { CompareOptions, IRefLvl } from '../interfaces/compare-options.interface';
-import { ICompareResult } from '../interfaces/compare-result.interface';
-import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
-import { IReportTable } from '../interfaces/report-table.interface';
-import { DocumentModel, VcDocumentModel, VpDocumentModel } from '../models/document.model';
-import { SchemaModel } from '../models/schema.model';
-import { DocumentsRate } from '../rates/documents-rate';
-import { ComparePolicyUtils } from '../utils/compare-policy-utils';
-import { MultiCompareUtils } from '../utils/multi-compare-utils';
-import { CompareUtils } from '../utils/utils';
-import { IRate } from '../interfaces/rate.interface';
+import { CSV } from '../../table/csv.js';
+import { ReportTable } from '../../table/report-table.js';
+import { CompareOptions, IRefLvl } from '../interfaces/compare-options.interface.js';
+import { ICompareResult } from '../interfaces/compare-result.interface.js';
+import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface.js';
+import { IReportTable } from '../interfaces/report-table.interface.js';
+import { DocumentModel, VcDocumentModel, VpDocumentModel } from '../models/document.model.js';
+import { SchemaModel } from '../models/schema.model.js';
+import { DocumentsRate } from '../rates/documents-rate.js';
+import { ComparePolicyUtils } from '../utils/compare-policy-utils.js';
+import { MultiCompareUtils } from '../utils/multi-compare-utils.js';
+import { CompareUtils } from '../utils/utils.js';
+import { IRate } from '../interfaces/rate.interface.js';
 
 /**
  * Component for comparing two documents

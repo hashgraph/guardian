@@ -1,6 +1,6 @@
-import { Topic } from '../entity';
+import { Topic } from '../entity/index.js';
 import { TopicType } from '@guardian/interfaces';
-import { KeyType, Wallet } from '../helpers';
+import { KeyType, Wallet } from '../helpers/index.js';
 
 /**
  * Topic Config

@@ -1,8 +1,8 @@
-import { Status } from '../types/status.type';
-import { IRate } from '../interfaces/rate.interface';
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { IModel } from '../interfaces/model.interface';
-import { IRateTable } from '../interfaces/rate-table.interface';
+import { Status } from '../types/status.type.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { IModel } from '../interfaces/model.interface.js';
+import { IRateTable } from '../interfaces/rate-table.interface.js';
 
 /**
  * Calculates the difference between two objects

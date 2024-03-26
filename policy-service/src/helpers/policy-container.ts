@@ -3,7 +3,7 @@ import { ChildProcess, execFile, fork } from 'node:child_process';
 import process from 'process';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { Subscription } from 'nats';
-import { POLICY_PROCESS_PATH } from '@api/policy-process-path';
+import { POLICY_PROCESS_PATH } from '../api/policy-process-path.js';
 
 /**
  * Policy start options

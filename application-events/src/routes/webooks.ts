@@ -1,9 +1,9 @@
-import validate from '../middlewares/validation';
-import { storeWebhookSchema, updateWebhookSchema } from '../middlewares/validation/schemas/webhook';
+import validate from '../middlewares/validation/index.js';
+import { storeWebhookSchema, updateWebhookSchema } from '../middlewares/validation/schemas/webhook.js';
 import { Request, Response, Router, NextFunction } from 'express';
-import WebhookService from '../services/WebhookService';
-import MongodbAdapter from '../connections/db/MongodbAdapter';
-import { Webhook } from '../entities/Webhook';
+import WebhookService from '../services/WebhookService.js';
+import MongodbAdapter from '../connections/db/MongodbAdapter.js';
+import { Webhook } from '../entities/Webhook.js';
 
 const webhookRoutes = Router();
 const dbConnection = new MongodbAdapter();

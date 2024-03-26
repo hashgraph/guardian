@@ -41,7 +41,7 @@ declare class FSWatcher extends EventEmitter implements fs.FSWatcher {
     prependOnceListener(event: 'close', listener: () => void): this;
 }
 
-export * from './type';
-export * from './interface';
-export * from './helpers';
-export * from './models';
+export * from './type/index.js';
+export * from './interface/index.js';
+export * from './helpers/index.js';
+export * from './models/index.js';

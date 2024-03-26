@@ -5,7 +5,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
 
 Promise.all([
     Migration({

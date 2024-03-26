@@ -1,4 +1,4 @@
-import { ArtifactType } from '../type/artifact.type';
+import { ArtifactType } from '../type/artifact.type.js';
 
 /**
  * Artifact interface

@@ -1,5 +1,5 @@
-import Feature from './feature';
-import BoundingBox from './ref/bounding-box';
+import Feature from './feature.js';
+import BoundingBox from './ref/bounding-box.js';
 
 export default {
     title: 'GeoJSON FeatureCollection',

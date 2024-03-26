@@ -1,4 +1,4 @@
-import { IColumn } from 'analytics/table/report-column';
+import { IColumn } from 'analytics/table/report-column.js';
 
 /**
  * Report Table

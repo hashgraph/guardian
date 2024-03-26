@@ -1,5 +1,5 @@
 import { GenerateUUIDv4, Schema, SchemaField } from '@guardian/interfaces';
-import { Range, Worksheet } from './workbook';
+import { Range, Worksheet } from './workbook.js';
 
 export class XlsxEnum {
     public readonly id: string;

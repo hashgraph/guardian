@@ -1,7 +1,7 @@
 import ExcelJS, { Border } from 'exceljs';
-import { Dictionary } from './dictionary';
-import { IPoint } from './workbook';
-import { TableHeader } from './table-header';
+import { Dictionary } from './dictionary.js';
+import { IPoint } from './workbook.js';
+import { TableHeader } from './table-header.js';
 
 const color = (rgb: string): any => {
     return {

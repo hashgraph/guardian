@@ -1,4 +1,4 @@
-import { BlockModel } from './block.model';
+import { BlockModel } from './block.model.js';
 
 /**
  * Block Tool Model

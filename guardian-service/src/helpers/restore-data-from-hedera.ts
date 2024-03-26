@@ -44,7 +44,7 @@ import {
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { PolicyEngine } from '@policy-engine/policy-engine';
+import { PolicyEngine } from '../policy-engine/policy-engine.js';
 
 /**
  * Restore data from hedera class

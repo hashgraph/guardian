@@ -1,5 +1,5 @@
-import { IDocumentFormat } from './document-format';
-import { DocumentLoaderFunction } from './document-loader-function';
+import { IDocumentFormat } from './document-format.js';
+import { DocumentLoaderFunction } from './document-loader-function.js';
 
 /**
  * Documents Loader

@@ -1,5 +1,5 @@
-import { DocumentStatus } from '../type/document-status.type';
-import { IVC } from './vc.interface';
+import { DocumentStatus } from '../type/document-status.type.js';
+import { IVC } from './vc.interface.js';
 
 /**
  * VC document interface

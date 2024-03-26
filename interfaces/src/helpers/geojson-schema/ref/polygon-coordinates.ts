@@ -1,4 +1,4 @@
-import LinearRingCoordinates from './linear-ring-coordinates';
+import LinearRingCoordinates from './linear-ring-coordinates.js';
 
 export default {
   type: 'array',

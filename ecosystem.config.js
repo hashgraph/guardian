@@ -1,6 +1,7 @@
+import fs from 'fs';
+import path from 'path';
+
 function readEnvFile(filePath) {
-    const fs = require('fs');
-    const path = require('path');
     const envFile = path.resolve(__dirname, filePath);
     return fs
         .readFileSync(envFile, { encoding: 'utf8' })
@@ -23,22 +24,21 @@ console.log(readEnvFile('./worker-service/.env'));
 
 const appEnv = readEnvFile('.env');
 
-module.exports = {
-    apps: [{
-        name: 'logger',
-        script: 'npm run start',
-        cwd: './logger-service/dist',
-        env: {
-            ...readEnvFile('./logger-service/.env')
-        }
+const apps = [{
+    name: 'logger',
+    script: 'npm run start',
+    cwd: './logger-service/dist',
+    env: {
+        ...readEnvFile('./logger-service/.env'),
     },
+},
     {
         name: 'gateway',
         script: 'npm run start',
         cwd: './api-gateway/dist',
         env: {
-            ...readEnvFile('./api-gateway/.env')
-        }
+            ...readEnvFile('./api-gateway/.env'),
+        },
     },
     {
         name: 'auth',
@@ -46,8 +46,8 @@ module.exports = {
         cwd: './auth-service/dist',
         env: {
             SECRET_MANAGER: appEnv.SECRET_MANAGER,
-            ...readEnvFile('./auth-service/.env')
-        }
+            ...readEnvFile('./auth-service/.env'),
+        },
     },
     {
         name: 'guardian',
@@ -55,8 +55,8 @@ module.exports = {
         cwd: './guardian-service/dist',
         env: {
             SECRET_MANAGER: appEnv.SECRET_MANAGER,
-            ...readEnvFile('./guardian-service/.env')
-        }
+            ...readEnvFile('./guardian-service/.env'),
+        },
     },
     {
         name: 'policy',
@@ -64,8 +64,8 @@ module.exports = {
         cwd: './policy-service/dist',
         env: {
             SECRET_MANAGER: appEnv.SECRET_MANAGER,
-            ...readEnvFile('./policy-service/.env')
-        }
+            ...readEnvFile('./policy-service/.env'),
+        },
     },
     {
         name: 'worker',
@@ -73,8 +73,8 @@ module.exports = {
         cwd: './worker-service/dist',
         env: {
             SECRET_MANAGER: appEnv.SECRET_MANAGER,
-            ...readEnvFile('./worker-service/.env')
-        }
+            ...readEnvFile('./worker-service/.env'),
+        },
     },
     {
         name: 'topic',
@@ -96,7 +96,10 @@ module.exports = {
         script: 'npm run start',
         cwd: './analytics-service/dist',
         env: {
-            ...readEnvFile('./analytics-service/.env')
-        }
-    }]
+            ...readEnvFile('./analytics-service/.env'),
+        },
+    }];
+
+export {
+    apps,
 };

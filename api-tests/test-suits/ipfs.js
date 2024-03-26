@@ -1,5 +1,7 @@
-const axios = require("axios");
-const {GetURL, GetToken} = require("../helpers");
+import axios from 'axios';
+import assert from 'assert';
+
+import { GetURL, GetToken } from '../helpers';
 
 function Ipfs() {
     it('/ipfs/file', async function() {
@@ -19,6 +21,6 @@ function Ipfs() {
     })
 }
 
-module.exports = {
-    Ipfs
-}
+export {
+    Ipfs,
+};

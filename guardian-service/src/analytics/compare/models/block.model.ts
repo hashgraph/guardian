@@ -1,18 +1,18 @@
 import MurmurHash3 from 'imurmurhash';
-import { CompareOptions, IChildrenLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
-import { EventModel } from './event.model';
-import { BlockPropertiesModel } from './block-properties.model';
-import { WeightType } from '../types/weight.type';
-import { ArtifactModel } from './artifact.model';
-import { IArtifacts } from '../interfaces/artifacts.interface';
-import { SchemaModel } from './schema.model';
-import { PropertyModel } from './property.model';
-import { PropertyType } from '../types/property.type';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { TokenModel } from './token.model';
-import { IWeightModel } from '../interfaces/weight-model.interface';
-import { CompareUtils } from '../utils/utils';
-import { IWeightBlock } from '../interfaces/weight-block.interface';
+import { CompareOptions, IChildrenLvl, IPropertiesLvl } from '../interfaces/compare-options.interface.js';
+import { EventModel } from './event.model.js';
+import { BlockPropertiesModel } from './block-properties.model.js';
+import { WeightType } from '../types/weight.type.js';
+import { ArtifactModel } from './artifact.model.js';
+import { IArtifacts } from '../interfaces/artifacts.interface.js';
+import { SchemaModel } from './schema.model.js';
+import { PropertyModel } from './property.model.js';
+import { PropertyType } from '../types/property.type.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { TokenModel } from './token.model.js';
+import { IWeightModel } from '../interfaces/weight-model.interface.js';
+import { CompareUtils } from '../utils/utils.js';
+import { IWeightBlock } from '../interfaces/weight-block.interface.js';
 
 /**
  * Block Model

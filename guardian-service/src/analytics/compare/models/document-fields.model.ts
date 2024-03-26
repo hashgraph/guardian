@@ -1,6 +1,6 @@
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { ArrayPropertyModel, DocumentPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model';
-import { SchemaModel } from './schema.model';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { ArrayPropertyModel, DocumentPropertyModel, ObjectPropertyModel, PropertyModel } from './property.model.js';
+import { SchemaModel } from './schema.model.js';
 
 /**
  * Document fields model

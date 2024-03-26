@@ -1,5 +1,5 @@
-import { IWeightModel } from '../interfaces/weight-model.interface';
-import { IRateMap } from '../interfaces/rate-map.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface.js';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
 import { IMultiRateMap } from '../interfaces/multi-rate-map.interface.ts';
 
 /**

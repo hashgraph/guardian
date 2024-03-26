@@ -1,4 +1,4 @@
-import { FieldModel } from './field.model';
+import { FieldModel } from './field.model.js';
 
 /**
  * Condition Model

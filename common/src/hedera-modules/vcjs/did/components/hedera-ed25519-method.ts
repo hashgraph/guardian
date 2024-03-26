@@ -1,6 +1,6 @@
 import { PrivateKey } from '@hashgraph/sdk';
-import { Hashing } from '../../../hashing';
-import { VerificationMethod } from './verification-method';
+import { Hashing } from '../../../hashing.js';
+import { VerificationMethod } from './verification-method.js';
 
 /**
  * DID document method (Ed25519VerificationKey2018)

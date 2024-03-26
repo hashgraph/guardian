@@ -6,7 +6,7 @@ import {
     StatusType,
     TaskAction,
 } from '@guardian/interfaces';
-import { GuardiansService } from '@helpers/guardians';
+import { GuardiansService } from '../helpers/guardians.js';
 
 /**
  * Interface of notifier

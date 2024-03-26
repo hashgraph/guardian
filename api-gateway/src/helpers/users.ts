@@ -1,4 +1,4 @@
-import { Singleton } from '@helpers/decorators/singleton';
+import { Singleton } from '../helpers/decorators/singleton.js';
 import { ApplicationStates, AuthEvents, GenerateUUIDv4, MessageAPI, UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '@guardian/common';
 import { Injectable } from '@nestjs/common';

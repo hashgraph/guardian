@@ -1,5 +1,5 @@
-import { DocumentLoader } from "./document-loader/document-loader";
-import { DocumentLoaderFunction } from "./document-loader/document-loader-function";
+import { DocumentLoader } from "./document-loader/document-loader.js";
+import { DocumentLoaderFunction } from "./document-loader/document-loader-function.js";
 import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { ld as vcjs } from '@transmute/vc.js';
 

@@ -1,5 +1,5 @@
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { CompareUtils } from './utils';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
+import { CompareUtils } from './utils.js';
 
 /**
  * Mapping items

@@ -1,7 +1,7 @@
-import MongodbAdapter from '../connections/db/MongodbAdapter';
-import NatsPubSubAdapter from '../connections/pub-subs/NatsPubSubAdapter';
-import WebhookService from './WebhookService';
-import ApplicationMetricService from './ApplicationMetricService';
+import MongodbAdapter from '../connections/db/MongodbAdapter.js';
+import NatsPubSubAdapter from '../connections/pub-subs/NatsPubSubAdapter.js';
+import WebhookService from './WebhookService.js';
+import ApplicationMetricService from './ApplicationMetricService.js';
 
 export default class EventListenerService {
   private readonly dbConnection;

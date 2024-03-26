@@ -1,6 +1,6 @@
 import { ApplicationStates, GenerateUUIDv4, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
-import { Singleton } from '../decorators/singleton';
-import { NatsService } from '../mq';
+import { Singleton } from '../decorators/singleton.js';
+import { NatsService } from '../mq/index.js';
 import { createLogger, Logger as WinstonLogger, format } from 'winston';
 import Transport from 'winston-transport';
 

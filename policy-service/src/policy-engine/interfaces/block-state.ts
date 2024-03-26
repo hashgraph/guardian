@@ -1,4 +1,4 @@
-import { IPolicyBlock, IPolicyInterfaceBlock, IPolicyNavigationStep } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock, IPolicyInterfaceBlock, IPolicyNavigationStep } from '../policy-engine.interface.js';
 
 /**
  * Block state data

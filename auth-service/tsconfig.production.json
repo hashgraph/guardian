@@ -1,11 +1,11 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "skipLibCheck": true,
     "baseUrl": "./src",
     "declaration": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "inlineSourceMap": false,
@@ -14,7 +14,7 @@
       "es5",
       "es6"
     ],
-    "module": "commonjs",
+    "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "dist/",
     "paths": {
@@ -28,7 +28,7 @@
         "helpers/*"
       ]
     },
-    "target": "es6"
+    "target": "es2022"
   },
   "exclude": [
     "node_modules",

@@ -1,9 +1,9 @@
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel, SchemaPropertyModel, TokenPropertyModel } from './property.model';
-import { PropertyType } from '../types/property.type';
-import { SchemaModel } from './schema.model';
-import { TokenModel } from './token.model';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { AnyPropertyModel, ArrayPropertyModel, ObjectPropertyModel, PropertyModel, SchemaPropertyModel, TokenPropertyModel } from './property.model.js';
+import { PropertyType } from '../types/property.type.js';
+import { SchemaModel } from './schema.model.js';
+import { TokenModel } from './token.model.js';
 
 /**
  * Properties Model

@@ -1,3 +1,3 @@
-export { PolicyOtherError } from '@policy-engine/errors/policy-other-error';
-export { BlockInitError } from '@policy-engine/errors/block-init-error';
-export { BlockActionError } from '@policy-engine/errors/block-action-error';
+export { PolicyOtherError } from '../errors/policy-other-error.js';
+export { BlockInitError } from '../errors/block-init-error.js';
+export { BlockActionError } from '../errors/block-action-error.js';

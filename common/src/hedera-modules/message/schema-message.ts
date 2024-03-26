@@ -1,9 +1,9 @@
-import { Schema } from '../../entity';
-import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { SchemaMessageBody } from './message-body.interface';
+import { Schema } from '../../entity/index.js';
+import { Message } from './message.js';
+import { IURL, UrlType } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { SchemaMessageBody } from './message-body.interface.js';
 
 /**
  * Schema message

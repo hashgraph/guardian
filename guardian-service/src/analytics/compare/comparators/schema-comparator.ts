@@ -1,15 +1,15 @@
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
-import { ReportTable } from '../../table/report-table';
-import { Status } from '../types/status.type';
-import { SchemaModel } from '../models/schema.model';
-import { FieldModel } from '../models/field.model';
-import { FieldsRate } from '../rates/fields-rate';
-import { IRate } from '../interfaces/rate.interface';
-import { ICompareResult } from '../interfaces/compare-result.interface';
-import { MergeUtils } from '../utils/merge-utils';
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { CSV } from '../../table/csv';
-import { CompareUtils } from '../utils/utils';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface.js';
+import { ReportTable } from '../../table/report-table.js';
+import { Status } from '../types/status.type.js';
+import { SchemaModel } from '../models/schema.model.js';
+import { FieldModel } from '../models/field.model.js';
+import { FieldsRate } from '../rates/fields-rate.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { ICompareResult } from '../interfaces/compare-result.interface.js';
+import { MergeUtils } from '../utils/merge-utils.js';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
+import { CSV } from '../../table/csv.js';
+import { CompareUtils } from '../utils/utils.js';
 
 /**
  * Component for comparing two schemas

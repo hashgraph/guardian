@@ -8,9 +8,9 @@ import {
 } from '@guardian/common';
 import { GenerateUUIDv4, PolicyType, SchemaEntity } from '@guardian/interfaces';
 import { PrivateKey } from '@hashgraph/sdk';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { Recording, Running } from '@policy-engine/record';
+import { IPolicyBlock } from '../policy-engine.interface.js';
+import { IPolicyUser } from '../policy-user.js';
+import { Recording, Running } from '../record/index.js';
 
 export class ComponentsService {
     /**

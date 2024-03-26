@@ -1,8 +1,8 @@
 import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
-import { ReportStatus } from '@interfaces/report-status.type';
-import { ReportSteep } from '@interfaces/report-steep.type';
-import { ReportType } from '@interfaces/report.type';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
+import { ReportType } from '../interfaces/report.type.js';
 
 /**
  * Report collection

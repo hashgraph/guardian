@@ -1,7 +1,7 @@
-import { Status } from '../types/status.type';
-import { IRate } from '../interfaces/rate.interface';
-import { Rate } from './rate';
-import { IModel } from '../interfaces/model.interface';
+import { Status } from '../types/status.type.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { Rate } from './rate.js';
+import { IModel } from '../interfaces/model.interface.js';
 
 /**
  * Root rate

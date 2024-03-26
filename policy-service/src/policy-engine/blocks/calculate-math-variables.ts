@@ -1,11 +1,11 @@
-import { CalculateAddon } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { CalculateAddon } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyCalculateAddon } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { BlockActionError } from '../errors/index.js';
+import { IPolicyUser } from '../policy-user.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Calculate math Variables

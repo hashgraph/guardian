@@ -1,5 +1,5 @@
 import { IDidObject, IVCDocument, MessageAPI, PolicyType, } from '@guardian/interfaces';
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DataBaseHelper, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
 
 /**

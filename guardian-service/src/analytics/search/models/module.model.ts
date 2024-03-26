@@ -1,6 +1,6 @@
 
 import { PolicyModule } from '@guardian/common';
-import { RootSearchModel } from './root.model';
+import { RootSearchModel } from './root.model.js';
 
 /**
  * Module model

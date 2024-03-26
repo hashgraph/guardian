@@ -1,19 +1,19 @@
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { IModel } from '../interfaces/model.interface';
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { IRate } from '../interfaces/rate.interface';
-import { IWeightModel, IWeightTreeModel } from '../interfaces/weight-model.interface';
-import { BlockModel } from '../models/block.model';
-import { DocumentModel } from '../models/document.model';
-import { FieldModel } from '../models/field.model';
-import { RecordModel } from '../models/record.model';
-import { BlocksRate } from '../rates/blocks-rate';
-import { DocumentsRate } from '../rates/documents-rate';
-import { RecordRate } from '../rates/record-rate';
-import { FieldsRate } from '../rates/fields-rate';
-import { ObjectRate } from '../rates/object-rate';
-import { Status } from '../types/status.type';
-import { MergeUtils } from './merge-utils';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { IModel } from '../interfaces/model.interface.js';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { IWeightModel, IWeightTreeModel } from '../interfaces/weight-model.interface.js';
+import { BlockModel } from '../models/block.model.js';
+import { DocumentModel } from '../models/document.model.js';
+import { FieldModel } from '../models/field.model.js';
+import { RecordModel } from '../models/record.model.js';
+import { BlocksRate } from '../rates/blocks-rate.js';
+import { DocumentsRate } from '../rates/documents-rate.js';
+import { RecordRate } from '../rates/record-rate.js';
+import { FieldsRate } from '../rates/fields-rate.js';
+import { ObjectRate } from '../rates/object-rate.js';
+import { Status } from '../types/status.type.js';
+import { MergeUtils } from './merge-utils.js';
 
 /**
  * Compare Utils

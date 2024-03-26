@@ -1,5 +1,5 @@
 import { MessageAPI } from '@guardian/interfaces';
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { Branding, DataBaseHelper, MessageResponse } from '@guardian/common';
 
 const termsAndConditions = `Lorem Ipsum Version Introduction

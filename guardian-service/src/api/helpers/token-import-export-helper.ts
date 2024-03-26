@@ -1,6 +1,6 @@
 import { DataBaseHelper, Token } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { INotifier } from '@helpers/notifier';
+import { INotifier } from '../../helpers/notifier.js';
 
 /**
  * Import Result

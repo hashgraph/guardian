@@ -1,28 +1,28 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import {
     AnyBlockType,
     IPolicyEventState,
     IPolicyInterfaceBlock,
-} from '@policy-engine/policy-engine.interface';
+} from '../policy-engine.interface.js';
 import { Message, MessageServer } from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyUtils } from '../helpers/utils.js';
 import {
     IPolicyEvent,
     PolicyInputEventType,
     PolicyOutputEventType,
-} from '@policy-engine/interfaces';
+} from '../interfaces/index.js';
 import {
     ChildrenType,
     ControlType,
     PropertyType,
-} from '@policy-engine/interfaces/block-about';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
+} from '../interfaces/block-about.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import {
     ExternalDocuments,
     ExternalEvent,
     ExternalEventType,
-} from '@policy-engine/interfaces/external-event';
+} from '../interfaces/external-event.js';
 
 export const RevokedStatus = 'Revoked';
 

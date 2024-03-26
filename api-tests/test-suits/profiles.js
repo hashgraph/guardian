@@ -1,6 +1,6 @@
-const axios = require("axios");
-const { GetURL, GetToken } = require("../helpers");
-const assert = require("assert");
+import axios from 'axios';
+
+import { GetURL, GetToken } from '../helpers';
 
 function Profiles() {
     it('/profiles/balance', async function () {
@@ -79,6 +79,6 @@ function Profiles() {
     })
 }
 
-module.exports = {
-    Profiles
-}
+export {
+    Profiles,
+};

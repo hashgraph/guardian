@@ -1,6 +1,6 @@
-import {Guardians} from '../guardians';
-import {Users} from '../users';
-import {Wallet} from '../wallet';
+import {Guardians} from '../guardians.js';
+import {Users} from '../users.js';
+import {Wallet} from '../wallet.js';
 
 /**
  * Service injector

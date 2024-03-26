@@ -1,7 +1,7 @@
 import { ErrorCode, JSONCodec, NatsError } from 'nats';
 // import util from 'util';
 // import { gzip, unzip } from 'zlib';
-import { LargePayloadContainer } from './large-payload-container';
+import { LargePayloadContainer } from './large-payload-container.js';
 import axios from 'axios';
 
 /**

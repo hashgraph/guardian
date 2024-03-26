@@ -1,9 +1,9 @@
 import axios from 'axios';
 import querystring from 'querystring';
-import { IMe } from '../meeco/models/me';
-import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from '../meeco/models/keys';
-import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
-import { IMeecoSchemaData } from './models/schema';
+import { IMe } from '../meeco/models/me.js';
+import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from '../meeco/models/keys.js';
+import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request.js';
+import { IMeecoSchemaData } from './models/schema.js';
 import * as jwt from 'jsonwebtoken';
 import { VerifiableCredentialStatusListResult } from '@guardian/common';
 

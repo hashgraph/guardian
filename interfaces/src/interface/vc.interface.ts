@@ -1,6 +1,6 @@
-import { ICredentialSubject } from './credential-subject.interface';
-import { did } from './did.interface';
-import { uuid } from './uuid.interface';
+import { ICredentialSubject } from './credential-subject.interface.js';
+import { did } from './did.interface.js';
+import { uuid } from './uuid.interface.js';
 
 /**
  * VC interface

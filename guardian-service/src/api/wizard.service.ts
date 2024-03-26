@@ -1,10 +1,10 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, } from '@guardian/common';
 import { IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier } from '@helpers/notifier';
-import { PolicyEngine } from '@policy-engine/policy-engine';
-import { exportSchemas, importSchemaByFiles, } from './helpers/schema-import-export-helper';
-import { PolicyWizardHelper } from './helpers/policy-wizard-helper';
+import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
+import { PolicyEngine } from '../policy-engine/policy-engine.js';
+import { exportSchemas, importSchemaByFiles, } from './helpers/schema-import-export-helper.js';
+import { PolicyWizardHelper } from './helpers/policy-wizard-helper.js';
 
 /**
  * Create existing policy schemas

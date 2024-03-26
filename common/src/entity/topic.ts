@@ -1,6 +1,6 @@
 import { TopicType } from '@guardian/interfaces';
 import { Entity, Property, Enum, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 
 /**
  * Topics collection
