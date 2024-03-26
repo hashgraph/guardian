@@ -3,7 +3,26 @@ import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, incrementSchemaVersion, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs } from './helpers';
+import {
+    checkForCircularDependency,
+    copySchemaAsync,
+    createSchemaAndArtifacts,
+    deleteSchema,
+    exportSchemas,
+    findAndPublishSchema,
+    getPageOptions,
+    getSchemaCategory,
+    getSchemaTarget,
+    importSchemaByFiles,
+    importSchemasByMessages,
+    importSubTools,
+    importTagsByFiles,
+    incrementSchemaVersion,
+    prepareSchemaPreview,
+    previewToolByMessage,
+    updateSchemaDefs,
+    updateToolConfig
+} from './helpers';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -1024,13 +1043,15 @@ export async function schemaAPI(): Promise<void> {
         try {
             const { user, xlsx, topicId } = msg;
             const notifier = emptyNotifier();
-            const policy = await DatabaseServer.getPolicy({ topicId });
+
             if (!xlsx) {
                 throw new Error('file in body is empty');
             }
-            if (!policy) {
-                throw new Error('Unknown policy');
+            const { category, target } = await getSchemaTarget(topicId);
+            if (!target) {
+                throw new Error('Unknown target');
             }
+
             const users = new Users();
             const owner = (await users.getUser(user.username))?.did;
             const root = await users.getHederaAccount(owner);
@@ -1042,22 +1063,28 @@ export async function schemaAPI(): Promise<void> {
                 xlsxResult.updateTool(tool, subSchemas);
             }
             xlsxResult.updateSchemas(false);
-            xlsxResult.updatePolicy(policy);
+            xlsxResult.updatePolicy(target);
             xlsxResult.addErrors(errors);
             GenerateBlocks.generate(xlsxResult);
-            const category = await getSchemaCategory(policy.topicId);
+
             const result = await importSchemaByFiles(
                 category,
                 owner,
                 xlsxResult.schemas,
-                policy.topicId,
+                topicId,
                 notifier,
                 true
             );
-            await PolicyImportExportHelper.updatePolicyComponents(policy);
+
+            if (category === SchemaCategory.TOOL) {
+                await updateToolConfig(target);
+                await DatabaseServer.updateTool(target);
+            } else if (category === SchemaCategory.POLICY) {
+                await PolicyImportExportHelper.updatePolicyComponents(target);
+            }
 
             return new MessageResponse({
-                policyId: policy.id,
+                schemas: xlsxResult.schemas,
                 errors: result.errors
             });
         } catch (error) {
@@ -1073,13 +1100,13 @@ export async function schemaAPI(): Promise<void> {
         const { user, xlsx, topicId, task } = msg;
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
-            const policy = await DatabaseServer.getPolicy({ topicId });
+            const { category, target } = await getSchemaTarget(topicId);
 
             if (!xlsx) {
                 throw new Error('file in body is empty');
             }
-            if (!policy) {
-                throw new Error('Unknown policy');
+            if (!target) {
+                throw new Error('Unknown target');
             }
 
             new Logger().info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
@@ -1095,19 +1122,24 @@ export async function schemaAPI(): Promise<void> {
                 xlsxResult.updateTool(tool, subSchemas);
             }
             xlsxResult.updateSchemas(false);
-            xlsxResult.updatePolicy(policy);
+            xlsxResult.updatePolicy(target);
             xlsxResult.addErrors(errors);
             GenerateBlocks.generate(xlsxResult);
-            const category = await getSchemaCategory(policy.topicId);
             const result = await importSchemaByFiles(
                 category,
                 owner,
                 xlsxResult.schemas,
-                policy.topicId,
+                topicId,
                 notifier,
                 true
             );
-            await PolicyImportExportHelper.updatePolicyComponents(policy);
+
+            if (category === SchemaCategory.TOOL) {
+                await updateToolConfig(target);
+                await DatabaseServer.updateTool(target);
+            } else if (category === SchemaCategory.POLICY) {
+                await PolicyImportExportHelper.updatePolicyComponents(target);
+            }
 
             notifier.result({
                 schemas: xlsxResult.schemas,
@@ -1157,7 +1189,7 @@ export async function schemaAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_TEMPLATE, async (msg) => {
         try {
-            const {filename} = msg;
+            const { filename } = msg;
             const filePath = path.join(process.cwd(), 'artifacts', filename);
             const file = await readFile(filePath);
             return new BinaryMessageResponse(file.buffer);

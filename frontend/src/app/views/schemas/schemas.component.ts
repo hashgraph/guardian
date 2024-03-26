@@ -172,7 +172,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public get canImport(): boolean {
-        return (this.isPolicy || this.isModule || this.isTool);
+        return (this.isPolicy || this.isTool);
     }
 
     public get readonly(): boolean {
