@@ -1812,7 +1812,7 @@ export class DatabaseServer {
                 $group: {
                     _id: 1,
                     serials: {
-                        $addToSet: '$serials',
+                        $push: '$serials',
                     },
                 },
             },
