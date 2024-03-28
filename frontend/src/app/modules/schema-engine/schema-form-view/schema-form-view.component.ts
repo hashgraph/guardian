@@ -129,8 +129,6 @@ export class SchemaFormViewComponent implements OnInit {
                             value.map((fieldItem: any) => {
                                 fieldItem.loading = true;
 
-                                console.log('dryRun', this.dryRun)
-
                                 if (this.dryRun) {
                                     return this.ipfs
                                         .getImageFromDryRunStorage(fieldItem.value)

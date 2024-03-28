@@ -76,6 +76,8 @@ export class SchemaFormComponent implements OnInit {
     @Input() showButtons: boolean = true;
     @Input() isChildSchema: boolean = false;
     @Input() comesFromDialog: boolean = false;
+    @Input() dryRun?: boolean = false;
+    @Input() policyId?: string = '';
 
     @Input() isFormForFinishSetup: boolean = false;
 
@@ -220,43 +222,34 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    private getValidators(item: any): ValidatorFn[] {
-        const validators = [];
+    public onFileSelected(event: any, control: AbstractControl, item: any) {
+        control.patchValue('');
+        const file = event?.target?.files[0];
 
-        if (item.required) {
-            validators.push(Validators.required);
+        if (!file) {
+            return;
+        }
+        item.fileUploading = true;
+
+        let addFileObs;
+
+        if (this.dryRun && this.policyId) {
+            addFileObs = this.ipfs.addFileDryRun(file, this.policyId)
+        } else {
+            addFileObs = this.ipfs.addFile(file)
         }
 
-        if (item.pattern) {
-            validators.push(Validators.pattern(new RegExp(item.pattern)));
-            return validators;
-        }
-
-        if (item.format === 'email') {
-            validators.push(Validators.pattern(fullFormats.email as RegExp));
-        }
-
-        if (item.type === 'number') {
-            validators.push(this.isNumberOrEmptyValidator());
-        }
-
-        if (item.format === 'duration') {
-            validators.push(Validators.pattern(fullFormats.duration as RegExp));
-        }
-
-        if (item.type === 'integer') {
-            validators.push(this.isNumberOrEmptyValidator());
-        }
-
-        if (item.format === 'url') {
-            validators.push(Validators.pattern(fullFormats.url as RegExp));
-        }
-
-        if (item.format === 'uri') {
-            validators.push(uriValidator());
-        }
-
-        return validators;
+        addFileObs
+            .subscribe(res => {
+                if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+') {
+                    control.patchValue(API_IPFS_GATEWAY_URL + res);
+                } else {
+                    control.patchValue(IPFS_SCHEMA + res);
+                }
+                item.fileUploading = false;
+            }, error => {
+                item.fileUploading = false;
+            });
     }
 
     private createFieldControl(field: SchemaField): any {
@@ -423,26 +416,44 @@ export class SchemaFormComponent implements OnInit {
         this.change.emit();
     }
 
+    private getValidators(item: any): ValidatorFn[] {
 
-    public onFileSelected(event: any, control: AbstractControl, item: any) {
-        control.patchValue("");
-        const file = event?.target?.files[0];
+        const validators = [];
 
-        if (!file) {
-            return;
+        if (item.required) {
+            validators.push(Validators.required);
         }
-        item.fileUploading = true;
-        this.ipfs.addFile(file)
-            .subscribe(res => {
-                if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+') {
-                    control.patchValue(API_IPFS_GATEWAY_URL + res);
-                } else {
-                    control.patchValue(IPFS_SCHEMA + res);
-                }
-                item.fileUploading = false;
-            }, error => {
-                item.fileUploading = false;
-            });
+
+        if (item.pattern) {
+            validators.push(Validators.pattern(new RegExp(item.pattern)));
+            return validators;
+        }
+
+        if (item.format === 'email') {
+            validators.push(Validators.pattern(fullFormats.email as RegExp));
+        }
+
+        if (item.type === 'number') {
+            validators.push(this.isNumberOrEmptyValidator());
+        }
+
+        if (item.format === 'duration') {
+            validators.push(Validators.pattern(fullFormats.duration as RegExp));
+        }
+
+        if (item.type === 'integer') {
+            validators.push(this.isNumberOrEmptyValidator());
+        }
+
+        if (item.format === 'url') {
+            validators.push(Validators.pattern(fullFormats.url as RegExp));
+        }
+
+        if (item.format === 'uri') {
+            validators.push(uriValidator());
+        }
+
+        return validators;
     }
 
     public getInvalidMessageByFieldType(item: SchemaField): string {
