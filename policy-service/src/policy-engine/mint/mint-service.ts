@@ -153,8 +153,8 @@ export class MintService {
                 },
             ],
         });
-        const retryMinutes = Number.isInteger(+process.env.RETRY_INTERVAL)
-            ? Number(+process.env.RETRY_INTERVAL)
+        const retryMinutes = Number.isInteger(+process.env.RETRY_MINT_INTERVAL)
+            ? Number(+process.env.RETRY_MINT_INTERVAL)
             : 10;
         if (
             request.processDate &&
