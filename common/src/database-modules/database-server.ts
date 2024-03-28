@@ -1823,7 +1823,7 @@ export class DatabaseServer {
                             input: '$serials',
                             initialValue: [],
                             in: {
-                                $setUnion: ['$$value', '$$this'],
+                                $concatArrays: ['$$value', '$$this'],
                             },
                         },
                     },
