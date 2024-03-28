@@ -490,7 +490,7 @@ export class MintService {
                 }
             );
         } catch (error) {
-            throw error;
+            MintService.error(PolicyUtils.getErrorMessage(error));
         } finally {
             MintService.activeMintProcesses.delete(vpMessageId);
         }

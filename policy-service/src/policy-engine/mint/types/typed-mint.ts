@@ -260,7 +260,6 @@ export abstract class TypedMint {
                     progressResult.action,
                     progressResult.result
                 );
-                MintService.error(message, this._ref);
                 this._mintRequest.error = errorMessage;
                 await this._db.saveMintRequest(this._mintRequest);
                 throw error;
@@ -319,7 +318,6 @@ export abstract class TypedMint {
                     progressResult.action,
                     progressResult.result
                 );
-                MintService.error(message, this._ref);
                 this._mintRequest.error = errorMessage;
                 await this._db.saveMintRequest(this._mintRequest);
                 throw error;
