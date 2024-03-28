@@ -54,7 +54,7 @@
                                 <ng-container [ngSwitch]="item.fileUploading">
                                     <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                                     <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
-                                        (click)="fileUpload.click()">
+                                            (click)="fileUpload.click(); fileUpload.blur();">
                                         <mat-icon>attach_file</mat-icon>
                                     </button>
                                 </ng-container>
