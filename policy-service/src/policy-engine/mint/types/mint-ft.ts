@@ -96,7 +96,6 @@ export class MintFT extends TypedMint {
                     1,
                     10
                 );
-                console.log('MINT_TRANS', mintTransactions);
 
                 mintTransaction.mintStatus =
                     mintTransactions.length > 0
