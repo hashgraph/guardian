@@ -35,3 +35,5 @@ export * from './wiper-request';
 export * from './record';
 export * from './policy-category';
 export * from './policy-property';
+export * from './mint-request';
+export * from './mint-transaction';

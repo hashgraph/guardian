@@ -4,7 +4,7 @@ import {
     WorkerTaskType
 } from '@guardian/interfaces';
 import { CronJob } from 'cron';
-import { MintService } from './mint-service';
+import { MintService } from '../mint/mint-service';
 import {
     Logger,
     Token,
@@ -237,11 +237,22 @@ export class SynchronizationService {
                 const policyOwner = await users.getUserById(policy.owner);
                 const notifier = NotificationHelper.init([userAccount?.id, policyOwner?.id]);
                 const token = await DatabaseServer.getToken(transaction.tokenId);
-                const status = await this.completeTransaction(
+                const messageIds = await this.completeTransaction(
                     messageServer, root, token, transaction, policies, vpMap, notifier
                 );
-                if (status) {
+                if (messageIds) {
                     min -= transaction.amount;
+                    MintService.multiMint(
+                        root,
+                        token,
+                        transaction.amount,
+                        transaction.target,
+                        messageIds,
+                        transaction.vpMessageId,
+                        notifier,
+                    ).catch(error => {
+                        new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+                    });
                 }
             }
         }
@@ -265,7 +276,7 @@ export class SynchronizationService {
         policies: SynchronizationMessage[],
         vpMap: { [x: string]: SynchronizationMessage[] },
         notifier?: NotificationHelper,
-    ): Promise<boolean> {
+    ): Promise<string[] | null> {
         try {
             if (!token) {
                 throw new Error('Bad token id');
@@ -295,24 +306,17 @@ export class SynchronizationService {
                 }
             }
             await this.updateMessages(messageServer, updateMessages);
-            await MintService.multiMint(
-                root,
-                token,
-                transaction.amount,
-                transaction.target,
-                messagesIDs,
-                notifier,
 
-            );
             transaction.status = 'Completed';
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
-            return true;
+
+            return messagesIDs;
         } catch (error) {
             transaction.status = 'Failed';
             console.error(error);
             new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
-            return false;
+            return null;
         }
     }
 

@@ -33,7 +33,7 @@
                 </tr>
                 <ng-container *ngFor="let notification of notifications">
                     <tr class="row-item">
-                        <td style="min-width: 200px;">{{ notification.updateDate | date: 'yyyy-MM-dd h:mm a' }}</td>
+                        <td style="min-width: 200px;">{{ notification.createDate | date: 'yyyy-MM-dd h:mm a' }}</td>
                         <td style="min-width: 200px;">
                             <div [class.p-tag-error]="notification.type === 'ERROR'"
                                  [class.p-tag-grey]="notification.type === 'INFO'"
@@ -78,9 +78,9 @@
                 </ng-container>
             </table>
 
-            <app-paginator 
-                [pageIndex]="pageIndex" 
-                [pageSize]="pageSize" 
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
                 [length]="notificationsCount"
                 (page)="onPage($event)"
             ></app-paginator>

@@ -29,14 +29,18 @@ import {
     Record,
     PolicyCategory,
     VcDocument,
-    VpDocument
+    VpDocument,
+    MintRequest,
+    MintTransaction
 } from '../entity';
 import { Binary } from 'bson';
 import {
     DocumentType,
     GenerateUUIDv4,
     IVC,
+    MintTransactionStatus,
     SchemaEntity,
+    TokenType,
     TopicType,
 } from '@guardian/interfaces';
 import { BaseEntity } from '../models';
@@ -67,6 +71,14 @@ export class DatabaseServer {
      */
     private static readonly MAX_DOCUMENT_SIZE = 16000000;
 
+    /**
+     * Documents handling chunk size
+     */
+    private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = process.env
+        .DOCUMENTS_HANDLING_CHUNK_SIZE
+        ? parseInt(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE, 10)
+        : 500;
+
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;
 
@@ -92,6 +104,8 @@ export class DatabaseServer {
         this.classMap.set(ExternalDocument, 'ExternalDocument');
         this.classMap.set(PolicyCategory, 'PolicyCategories');
         this.classMap.set(PolicyProperty, 'PolicyProperties');
+        this.classMap.set(MintRequest, 'MintRequest');
+        this.classMap.set(MintTransaction, 'MintTransaction');
     }
 
     /**
@@ -114,16 +128,26 @@ export class DatabaseServer {
      * Clear Dry Run table
      */
     public async clearDryRun(): Promise<void> {
-        const item = await new DataBaseHelper(DryRun).find({ dryRunId: this.dryRun });
-        await new DataBaseHelper(DryRun).remove(item);
+        await DatabaseServer.clearDryRun(this.dryRun);
     }
 
     /**
      * Clear Dry Run table
      */
     public static async clearDryRun(dryRunId: string): Promise<void> {
-        const item = await new DataBaseHelper(DryRun).find({ dryRunId });
-        await new DataBaseHelper(DryRun).remove(item);
+        const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
+        const naturalCount = Math.floor(
+            amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE
+        );
+        for (let i = 0; i < naturalCount; i++) {
+            const items = await new DataBaseHelper(DryRun).find(
+                { dryRunId },
+                { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE }
+            );
+            await new DataBaseHelper(DryRun).remove(items);
+        }
+        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
+        await new DataBaseHelper(DryRun).remove(restItems);
     }
 
     /**
@@ -203,7 +227,7 @@ export class DatabaseServer {
     private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
         if (this.dryRun) {
             if (Array.isArray(aggregation)) {
-                aggregation.push({
+                aggregation.unshift({
                     $match: {
                         dryRunId: this.dryRun,
                         dryRunClass: this.classMap.get(entityClass)
@@ -226,6 +250,31 @@ export class DatabaseServer {
             return (new DataBaseHelper(DryRun).create(item)) as any;
         } else {
             return new DataBaseHelper(entityClass).create(item);
+        }
+    }
+
+    /**
+     * Create much data
+     * @param entityClass Entity class
+     * @param item Item
+     * @param amount Amount
+     */
+    private async createMuchData<T extends BaseEntity>(entityClass: new () => T, item: any, amount: number): Promise<void> {
+        const naturalCount = Math.floor((amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE));
+        const restCount = (amount % DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+
+        if (this.dryRun) {
+            item.dryRunId = this.dryRun;
+            item.dryRunClass = this.classMap.get(entityClass);
+            for (let i = 0; i < naturalCount; i++) {
+                await new DataBaseHelper(DryRun).createMuchData(item, DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+            }
+            await new DataBaseHelper(DryRun).createMuchData(item, restCount);
+        } else {
+            for (let i = 0; i < naturalCount; i++) {
+                await new DataBaseHelper(entityClass).createMuchData(item, DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+            }
+            await new DataBaseHelper(entityClass).createMuchData(item, restCount);
         }
     }
 
@@ -1641,6 +1690,305 @@ export class DatabaseServer {
     public async updateTagCache(row: TagCache): Promise<TagCache> {
         return await this.update(TagCache, row.id, row);
     }
+
+    /**
+     * Save mint request
+     * @param data Mint request
+     * @returns Saved mint request
+     */
+    public async saveMintRequest(data: Partial<MintRequest>) {
+        return await this.save(MintRequest, data);
+    }
+
+    /**
+     * Get mint request
+     * @param filters Filters
+     * @returns Mint request
+     */
+    public async getMintRequests(filters: any): Promise<MintRequest[]> {
+        return await this.find(MintRequest, filters);
+    }
+
+    /**
+     * Create mint transactions
+     * @param transaction Transaction
+     * @param amount Amount
+     */
+    public async createMintTransactions(transaction: any, amount: number) {
+        await this.createMuchData(MintTransaction, transaction, amount);
+    }
+
+    /**
+     * Save mint transaction
+     * @param transaction Transaction
+     * @returns Saved transaction
+     */
+    public async saveMintTransaction(transaction: Partial<MintTransaction>) {
+        return this.save(MintTransaction, transaction);
+    }
+
+    /**
+     * Get mint transactions
+     * @param filters Filters
+     * @param options Options
+     * @returns Mint transactions
+     */
+    public async getMintTransactions(filters: any, options?: any): Promise<MintTransaction[]> {
+        return await this.find(MintTransaction, filters, options);
+    }
+
+    /**
+     * Get mint transactions
+     * @param filters Filters
+     * @returns Mint transaction
+     */
+    public async getMintTransaction(filters: any): Promise<MintTransaction> {
+        return await this.findOne(MintTransaction, filters);
+    }
+
+    /**
+     * Get transactions serials count
+     * @param mintRequestId Mint request identifier
+     * @returns Serials count
+     */
+    public async getTransactionsSerialsCount(
+        mintRequestId: string,
+        transferStatus?: MintTransactionStatus | any
+    ): Promise<number> {
+        const aggregation = this._getTransactionsSerialsAggregation(
+            mintRequestId,
+            transferStatus
+        );
+        aggregation.push({
+            $project: {
+                serials: { $size: '$serials' },
+            },
+        });
+        const result: any = await this.aggregate(MintTransaction, aggregation);
+        return result[0]?.serials || 0;
+    }
+
+    /**
+     * Get transactions count
+     * @param mintRequestId Mint request identifier
+     * @returns Transactions count
+     */
+    public async getTransactionsCount(filters): Promise<number> {
+        return await this.count(MintTransaction, filters);
+    }
+
+    /**
+     * Get mint request minted serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public async getMintRequestSerials(mintRequestId: string): Promise<number[]> {
+        return await this.getTransactionsSerials(mintRequestId);
+    }
+
+    /**
+     * Get mint request transfer serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public async getMintRequestTransferSerials(mintRequestId: string): Promise<number[]> {
+        return await this.getTransactionsSerials(mintRequestId, MintTransactionStatus.SUCCESS);
+    }
+
+    /**
+     * Get VP mint information
+     * @param vpDocument VP
+     * @returns Serials and amount
+     */
+    public async getVPMintInformation(
+        vpDocument: VpDocument
+    ): Promise<
+        [
+            serials: { serial: number; tokenId: string }[],
+            amount: number,
+            error: string,
+            wasTransferNeeded: boolean,
+            transferSerials: number[],
+            transferAmount: number,
+            tokenIds: string[]
+        ]
+    > {
+        const mintRequests = await this.getMintRequests({
+            $or: [
+                {
+                    vpMessageId: vpDocument.messageId,
+                },
+                {
+                    secondaryVpIds: vpDocument.messageId,
+                },
+            ],
+        });
+        let amount = Number.isFinite(Number(vpDocument.amount))
+            ? Number(vpDocument.amount)
+            : 0;
+        const serials = vpDocument.serials
+            ? vpDocument.serials.map((serial) => ({
+                  serial,
+                  tokenId: vpDocument.tokenId,
+              }))
+            : [];
+        const transferSerials = vpDocument.serials
+            ? vpDocument.serials.map((serial) => ({
+                  serial,
+                  tokenId: vpDocument.tokenId,
+              }))
+            : [];
+        let transferAmount = amount;
+        const errors = [];
+        let wasTransferNeeded = false;
+        const tokenIds = new Set<string>();
+        if (vpDocument.tokenId) {
+            tokenIds.add(vpDocument.tokenId);
+        }
+
+        for (const mintRequest of mintRequests) {
+            if (mintRequest.error) {
+                errors.push(mintRequest.error);
+            }
+            wasTransferNeeded ||= mintRequest.wasTransferNeeded;
+            let token = await this.getToken(mintRequest.tokenId);
+            if (!token) {
+                token = await this.getToken(mintRequest.tokenId, true);
+            }
+            if (!token) {
+                continue;
+            }
+            tokenIds.add(mintRequest.tokenId);
+            if (token.tokenType === TokenType.NON_FUNGIBLE) {
+                const requestSerials = await this.getMintRequestSerials(
+                    mintRequest.id
+                );
+                serials.push(
+                    ...requestSerials.map((serial) => ({
+                        serial,
+                        tokenId: mintRequest.tokenId,
+                    }))
+                );
+                amount += requestSerials.length;
+
+                if (wasTransferNeeded) {
+                    const requestTransferSerials =
+                        await this.getMintRequestTransferSerials(
+                            mintRequest.id
+                        );
+                    transferSerials.push(
+                        ...requestTransferSerials.map((serial) => ({
+                            serial,
+                            tokenId: mintRequest.tokenId,
+                        }))
+                    );
+                    transferAmount += requestTransferSerials.length;
+                }
+            } else if (token.tokenType === TokenType.FUNGIBLE) {
+                const mintRequestTransaction = await this.getMintTransaction({
+                    mintRequestId: mintRequest.id,
+                    mintStatus: MintTransactionStatus.SUCCESS,
+                });
+                if (mintRequestTransaction) {
+                    if (token.decimals > 0) {
+                        amount +=
+                            mintRequest.amount / Math.pow(10, token.decimals);
+                    } else {
+                        amount += mintRequest.amount;
+                    }
+                }
+                if (wasTransferNeeded) {
+                    const mintRequestTransferTransaction =
+                        await this.getMintTransaction({
+                            mintRequestId: mintRequest.id,
+                            transferStatus: MintTransactionStatus.SUCCESS,
+                        });
+                    if (mintRequestTransferTransaction) {
+                        if (token.decimals > 0) {
+                            transferAmount +=
+                                mintRequest.amount /
+                                Math.pow(10, token.decimals);
+                        } else {
+                            transferAmount += mintRequest.amount;
+                        }
+                    }
+                }
+            }
+        }
+
+        return [
+            serials,
+            amount,
+            errors.join(', '),
+            wasTransferNeeded,
+            transferSerials,
+            transferAmount,
+            [...tokenIds],
+        ];
+    }
+
+    /**
+     * Get aggregation filter for transactions serials
+     * @param mintRequestId Mint request identifier
+     * @returns Aggregation filter
+     */
+    private _getTransactionsSerialsAggregation(
+        mintRequestId: string,
+        transferStatus?: MintTransactionStatus | any
+    ): any[] {
+        const match: any = {
+            mintRequestId,
+        };
+        if (transferStatus) {
+            match.transferStatus = transferStatus;
+        }
+        const aggregation: any[] = [
+            {
+                $match: match,
+            },
+            {
+                $group: {
+                    _id: 1,
+                    serials: {
+                        $push: '$serials',
+                    },
+                },
+            },
+            {
+                $project: {
+                    serials: {
+                        $reduce: {
+                            input: '$serials',
+                            initialValue: [],
+                            in: {
+                                $concatArrays: ['$$value', '$$this'],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        return aggregation;
+    }
+
+    /**
+     * Get transactions serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public async getTransactionsSerials(
+        mintRequestId: string,
+        transferStatus?: MintTransactionStatus | any
+    ): Promise<number[]> {
+        const aggregation = this._getTransactionsSerialsAggregation(
+            mintRequestId,
+            transferStatus
+        );
+        const result: any = await this.aggregate(MintTransaction, aggregation);
+        return result[0]?.serials || [];
+    }
+
     //Static
 
     /**
