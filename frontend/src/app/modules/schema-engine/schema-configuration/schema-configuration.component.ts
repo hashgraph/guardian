@@ -282,7 +282,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     name: '',
                     description: '',
                     entity: SchemaEntity.VC,
-                    topicId: [this.topicId, NoBindingValidator],
+                    topicId: [this.topicId],
                     fields: {},
                     conditions: {}
                 });
@@ -337,7 +337,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
-                    topicId: [this.topicId, NoBindingValidator],
+                    topicId: [this.topicId],
                     entity: new FormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
