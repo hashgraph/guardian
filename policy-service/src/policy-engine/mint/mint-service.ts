@@ -174,9 +174,9 @@ export class MintService {
             for (const request of requests) {
                 processed = await MintService.retryRequest(
                     request,
-                    user.id,
+                    user?.id,
                     root,
-                    documentOwnerUser.id,
+                    documentOwnerUser?.id,
                     ref
                 );
             }
