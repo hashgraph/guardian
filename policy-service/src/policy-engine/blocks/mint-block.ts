@@ -283,7 +283,7 @@ export class MintBlock {
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
-        if (Number.isNaN(amount) || !Number.isFinite(amount)) {
+        if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
         }
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
