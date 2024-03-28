@@ -483,8 +483,6 @@ export class MintService {
                         null
                     )
                 ).mint();
-
-                //await MintService.updateDocuments(ids, { tokenId: token.tokenId, amount }, null);
             }
 
             new ExternalEventChannel().publishMessage(
@@ -574,28 +572,6 @@ export class MintService {
                 10
             );
         }
-    }
-
-    /**
-     * Update VP Documents
-     * @param ids
-     * @param value
-     * @param ref
-     */
-    private static async updateDocuments(
-        ids: string | string[],
-        value: any,
-        ref: AnyBlockType
-    ) {
-        const dryRunId = ref ? ref.dryRun : null;
-        const filter = Array.isArray(ids)
-            ? {
-                  where: { messageId: { $in: ids } },
-              }
-            : {
-                  where: { messageId: { $eq: ids } },
-              };
-        await DatabaseServer.updateVpDocuments(value, filter, dryRunId);
     }
 
     /**
