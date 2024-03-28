@@ -208,7 +208,7 @@ export class MintFT extends TypedMint {
             );
             transaction.mintStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {
-            if (!(error instanceof TimeoutError)) {
+            if (!error?.isTimeoutError) {
                 transaction.error = PolicyUtils.getErrorMessage(error);
                 transaction.mintStatus = MintTransactionStatus.ERROR;
             }
@@ -278,7 +278,7 @@ export class MintFT extends TypedMint {
             );
             transaction.transferStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {
-            if (!(error instanceof TimeoutError)) {
+            if (!error?.isTimeoutError) {
                 transaction.error = PolicyUtils.getErrorMessage(error);
                 transaction.transferStatus = MintTransactionStatus.ERROR;
             }

@@ -912,6 +912,7 @@ export class Worker extends NatsService {
             ///////
         } catch (e) {
             result.error = e.message;
+            result.isTimeoutError = e.isTimeoutError;
         } finally {
             this.safeDestroyClient(client);
         }

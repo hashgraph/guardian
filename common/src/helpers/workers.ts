@@ -99,9 +99,9 @@ export class Workers extends NatsService {
      */
     private readonly maxRepetitions = 25;
 
-    private _wrapError(error): any {
-        if (error?.isTimeoutError) {
-            return new TimeoutError(error?.message);
+    private _wrapError(error, isTimeoutError?: boolean): any {
+        if (isTimeoutError) {
+            return new TimeoutError(error);
         }
         return error;
     }
@@ -185,7 +185,7 @@ export class Workers extends NatsService {
                 this.tasksCallbacks.set(taskId, {
                     task,
                     number: 0,
-                    callback: (data, error) => {
+                    callback: (data, error, isTimeoutError) => {
                         if (error) {
                             if (isRetryableTask && !Workers.isNotRetryableError(error)) {
                                 if (this.tasksCallbacks.has(taskId)) {
@@ -194,7 +194,7 @@ export class Workers extends NatsService {
                                     if (callback.number > attempts) {
                                         this.tasksCallbacks.delete(taskId);
                                         this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
-                                        reject(this._wrapError(error));
+                                        reject(this._wrapError(error, isTimeoutError));
                                         return;
                                     }
                                 }
@@ -202,7 +202,7 @@ export class Workers extends NatsService {
                                 this.queue.add(task);
                             } else {
                                 this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId ,data, error });
-                                reject(this._wrapError(error));
+                                reject(this._wrapError(error, isTimeoutError));
                             }
                         } else {
                             this.tasksCallbacks.delete(task.id);
@@ -299,7 +299,7 @@ export class Workers extends NatsService {
             }
             if (this.tasksCallbacks.has(msg.id)) {
                 const activeTask = this.tasksCallbacks.get(msg.id);
-                activeTask.callback(msg.data, msg.error);
+                activeTask.callback(msg.data, msg.error, msg.isTimeoutError);
             }
         });
     }

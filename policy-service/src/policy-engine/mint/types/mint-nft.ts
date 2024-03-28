@@ -190,7 +190,7 @@ export class MintNFT extends TypedMint {
                     transaction.serials.push(...serials);
                     transaction.mintStatus = MintTransactionStatus.SUCCESS;
                 } catch (error) {
-                    if (!(error instanceof TimeoutError)) {
+                    if (!error?.isTimeoutError) {
                         transaction.error = PolicyUtils.getErrorMessage(error);
                         transaction.mintStatus = MintTransactionStatus.ERROR;
                     }
@@ -279,7 +279,7 @@ export class MintNFT extends TypedMint {
                     transaction.transferStatus = MintTransactionStatus.SUCCESS;
                     return result;
                 } catch (error) {
-                    if (!(error instanceof TimeoutError)) {
+                    if (!error?.isTimeoutError) {
                         transaction.error = PolicyUtils.getErrorMessage(error);
                         transaction.transferStatus =
                             MintTransactionStatus.ERROR;

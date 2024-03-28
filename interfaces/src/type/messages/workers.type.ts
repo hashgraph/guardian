@@ -106,6 +106,10 @@ export interface ITaskResult {
      * Task error
      */
     error?: any;
+    /**
+     * Is timeout error
+     */
+    isTimeoutError?: boolean;
 }
 
 /**
@@ -124,5 +128,5 @@ export interface IActiveTask {
      * Ready callback
      * @param data
      */
-    callback: (data: any, error: any) => void;
+    callback: (data: any, error: any, isTimeoutError?: boolean) => void;
 }
