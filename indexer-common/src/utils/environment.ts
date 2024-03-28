@@ -1,5 +1,3 @@
-import { AccountId, Client } from '@hashgraph/sdk';
-
 /**
  * Environment class
  */

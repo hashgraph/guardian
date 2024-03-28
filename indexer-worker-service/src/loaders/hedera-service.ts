@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { TopicInfo } from '../interfaces/index.js';
-import { Environment } from '../utils/environment.js';
+import { Environment, TopicInfo } from '@indexer/common';
 
 export class HederaService {
     private static mirrorNodeUrl: string;

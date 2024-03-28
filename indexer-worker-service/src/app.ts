@@ -2,28 +2,19 @@ import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-
-import * as ent from './entity/index.js';
-import { COMMON_CONNECTION_CONFIG } from './db-helper/db-config.js';
-import { Migration } from './db-helper/db-migration.js';
-import { DataBaseHelper } from './db-helper/db-helper.js';
-
-import { Utils } from './utils/utils.js';
-import { Environment } from './utils/environment.js';
 import { ChannelService, Worker } from './api/channel.service.js';
 import { IPFSService } from './loaders/ipfs-service.js';
 import { HederaService } from './loaders/hedera-service.js';
+import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, Environment, entities } from '@indexer/common';
 
 @Module({
-    providers: [
+    controllers: [
         ChannelService
     ]
 })
 class AppModule { }
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-worker.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
-
-const entities = Object.values(ent);
 
 Promise.all([
     Migration({

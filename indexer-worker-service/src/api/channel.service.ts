@@ -1,14 +1,9 @@
-import {
-    MessageError,
-    MessageResponse,
-} from '@guardian/common';
 import { Controller, Module } from '@nestjs/common';
-import { Client, ClientProxy, MessagePattern, Payload, Transport, } from '@nestjs/microservices';
+import { Client, ClientProxy, MessagePattern, Transport, } from '@nestjs/microservices';
 import process from 'process';
-import { Singleton } from '../decorators/singleton.js';
-import { Jobs } from '../utils/job.js';
 import { TopicService } from '../services/topic-service.js';
 import { MessageService } from '../services/message-service.js';
+import { IndexerMessageAPI, MessageResponse, MessageError, Singleton, Jobs } from '@indexer/common';
 
 interface IOptions {
     CYCLE_TIME: number;
@@ -37,16 +32,10 @@ export class ChannelService {
      * @param msg options
      * @returns Notifications and count
      */
-    @MessagePattern('GET_ALL')
-    async getAll(
-        @Payload()
-        msg: {
-            userId: string;
-            pageIndex: number;
-            pageSize: number;
-        }
-    ) {
+    @MessagePattern(IndexerMessageAPI.GET_INDEXER_WORKER_STATUS)
+    async getStatuses() {
         try {
+            console.log('getStatuses')
             const statuses = (new Worker()).getStatuses();
             return new MessageResponse(statuses);
         } catch (error) {

@@ -1,31 +1,34 @@
 {
-  "name": "guardian",
-  "private": true,
-  "packageManager": "yarn@1.22.21",
-  "workspaces": [
-    "interfaces",
-    "common",
-    "api-gateway",
-    "auth-service",
-    "guardian-service",
-    "logger-service",
-    "mrv-sender",
-    "topic-viewer",
-    "tree-viewer",
-    "analytics-service",
-    "worker-service",
-    "policy-service",
-    "api-tests",
-    "ai-service",
-    "notification-service",
-    "indexer-worker-service"
-  ],
-  "version": "2.22.0",
-  "devDependencies": {
-    "detect-secrets": "^1.0.6"
-  },
-  "scripts": {
-    "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
-    "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
-  }
+    "name": "guardian",
+    "private": true,
+    "packageManager": "yarn@1.22.21",
+    "workspaces": [
+        "interfaces",
+        "common",
+        "api-gateway",
+        "auth-service",
+        "guardian-service",
+        "logger-service",
+        "mrv-sender",
+        "topic-viewer",
+        "tree-viewer",
+        "analytics-service",
+        "worker-service",
+        "policy-service",
+        "api-tests",
+        "ai-service",
+        "notification-service",
+        "indexer-common",
+        "indexer-api-gateway",
+        "indexer-service",
+        "indexer-worker-service"
+    ],
+    "version": "2.22.0",
+    "devDependencies": {
+        "detect-secrets": "^1.0.6"
+    },
+    "scripts": {
+        "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
+        "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
+    }
 }

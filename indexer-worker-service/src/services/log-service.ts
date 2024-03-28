@@ -1,5 +1,4 @@
-import { DataBaseHelper } from '../db-helper/db-helper.js';
-import { Logs } from '../entity/index.js';
+import { DataBaseHelper, Logs } from '@indexer/common';
 
 export class LogService {
     private static readonly _debugMap: Map<string, number> = new Map<string, number>();

@@ -1,4 +1,4 @@
-import { MessageCache, Message } from '../entity/index.js';
+import { MessageCache, Message } from '@indexer/common';
 
 export class Parser {
     public static parseMassage(row: MessageCache): Message | null {

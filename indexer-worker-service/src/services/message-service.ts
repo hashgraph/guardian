@@ -1,11 +1,9 @@
 import { MongoDriver, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
 import { RequiredEntityData } from '@mikro-orm/core';
-import { DataBaseHelper } from '../db-helper/db-helper.js';
-import { Job } from '../utils/job.js';
 import { Parser } from '../utils/parser.js';
 import { IPFSService } from '../loaders/ipfs-service.js';
 import { LogService } from './log-service.js';
-import { MessageCache, Message } from '../entity/index.js';
+import { DataBaseHelper, Job, MessageCache, Message } from '@indexer/common';
 
 export interface IFile {
     id?: ObjectId;

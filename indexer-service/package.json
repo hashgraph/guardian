@@ -1,7 +1,6 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@indexer/common": "^2.22.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
@@ -13,7 +12,6 @@
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.1",
         "mongodb": "^6.5.0",
-        "ipfs-core": "^0.18.1",
         "@mikro-orm/core": "^6.1.11",
         "@mikro-orm/mongodb": "^6.1.11",
         "@mikro-orm/migrations-mongodb": "^6.1.11"
@@ -41,7 +39,7 @@
     ],
     "license": "Apache-2.0",
     "main": "dist/index.js",
-    "name": "indexer-worker-service",
+    "name": "indexer-service",
     "scripts": {
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",
@@ -50,7 +48,7 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/indexer-worker-service.xml --exit"
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/indexer-service.xml --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",
