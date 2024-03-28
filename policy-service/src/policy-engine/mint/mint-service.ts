@@ -215,7 +215,7 @@ export class MintService {
                 `Retry mint`,
                 `Mint process for ${
                     request.vpMessageId
-                } can't be retryied. Try after ${Math.ceil(
+                } can't be retried. Try after ${Math.ceil(
                     (request.processDate.getTime() +
                         MintService.RETRY_MINT_INTERVAL * (60 * 1000) -
                         Date.now()) /
