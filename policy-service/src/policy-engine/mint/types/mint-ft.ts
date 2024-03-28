@@ -170,6 +170,7 @@ export class MintFT extends TypedMint {
                         accountId: this._token.treasuryId,
                         limit: 1,
                         order: 'desc',
+                        type: 'TOKENMINT'
                     },
                 },
                 1,
@@ -177,7 +178,7 @@ export class MintFT extends TypedMint {
             );
 
             this._mintRequest.startTransaction =
-                startTransactions[0]?.consensus_timestamp;
+                startTransactions[0]?.transaction_id;
             await this._db.saveMintRequest(this._mintRequest);
         }
 
@@ -237,6 +238,7 @@ export class MintFT extends TypedMint {
                         accountId: this._token.treasuryId,
                         limit: 1,
                         order: 'desc',
+                        type: 'CRYPTOTRANSFER'
                     },
                 },
                 1,
@@ -244,7 +246,7 @@ export class MintFT extends TypedMint {
             );
 
             this._mintRequest.startTransaction =
-                startTransactions[0]?.consensus_timestamp;
+                startTransactions[0]?.transaction_id;
             await this._db.saveMintRequest(this._mintRequest);
         }
 
