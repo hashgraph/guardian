@@ -142,7 +142,34 @@ export class MintService {
             NotificationHelper.warn(
                 'Retry mint',
                 `Mint process for ${vpMessageId} is already in progress`,
-                user.id
+                user?.id
+            );
+            return;
+        }
+        const request = await new DatabaseServer(ref?.dryRun).getMintRequest({
+            $and: [
+                {
+                    vpMessageId,
+                },
+            ],
+        });
+        const retryMinutes = Number.isInteger(+process.env.RETRY_INTERVAL)
+            ? Number(+process.env.RETRY_INTERVAL)
+            : 10;
+        if (
+            request.processDate &&
+            Date.now() - request.processDate.getTime() <
+                retryMinutes * (60 * 1000)
+        ) {
+            NotificationHelper.warn(
+                `Retry mint`,
+                `Mint process for ${vpMessageId} can't be retryied. Try after ${Math.ceil(
+                    (request.processDate.getTime() +
+                        retryMinutes * (60 * 1000) -
+                        Date.now()) /
+                        (60 * 1000)
+                )} minutes`,
+                user?.id
             );
             return;
         }
@@ -150,16 +177,6 @@ export class MintService {
         try {
             const root = await users.getHederaAccount(rootDid);
             const rootUser = await users.getUserById(rootDid);
-            const request = await new DatabaseServer(
-                ref?.dryRun
-            ).getMintRequest({
-                $and: [
-                    {
-                        vpMessageId,
-                    }
-                ],
-            });
-
             const processed = await MintService.retryRequest(
                 request,
                 user?.id,
@@ -223,11 +240,7 @@ export class MintService {
                         root,
                         tokenConfig,
                         ref,
-                        NotificationHelper.init([
-                            rootId,
-                            userId,
-                            ownerId,
-                        ])
+                        NotificationHelper.init([rootId, userId, ownerId])
                     )
                 ).mint();
                 break;
@@ -238,11 +251,7 @@ export class MintService {
                         root,
                         tokenConfig,
                         ref,
-                        NotificationHelper.init([
-                            rootId,
-                            userId,
-                            ownerId,
-                        ])
+                        NotificationHelper.init([rootId, userId, ownerId])
                     )
                 ).mint();
                 break;

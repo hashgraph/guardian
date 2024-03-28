@@ -71,6 +71,11 @@ export class DatabaseServer {
      */
     private static readonly MAX_DOCUMENT_SIZE = 16000000;
 
+    /**
+     * Documents handling chunk size
+     */
+    private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = Number.isInteger(Number(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE)) ? Number(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE) : 500;
+
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;
 
@@ -128,9 +133,14 @@ export class DatabaseServer {
      */
     public static async clearDryRun(dryRunId: string): Promise<void> {
         const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
-        const naturalCount = Math.floor((amount / 500));
+        const naturalCount = Math.floor(
+            amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE
+        );
         for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find({ dryRunId }, { limit: 500 });
+            const items = await new DataBaseHelper(DryRun).find(
+                { dryRunId },
+                { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE }
+            );
             await new DataBaseHelper(DryRun).remove(items);
         }
         const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
@@ -247,19 +257,19 @@ export class DatabaseServer {
      * @param amount Amount
      */
     private async createMuchData<T extends BaseEntity>(entityClass: new () => T, item: any, amount: number): Promise<void> {
-        const naturalCount = Math.floor((amount / 500));
-        const restCount = (amount % 500);
+        const naturalCount = Math.floor((amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE));
+        const restCount = (amount % DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
 
         if (this.dryRun) {
             item.dryRunId = this.dryRun;
             item.dryRunClass = this.classMap.get(entityClass);
             for (let i = 0; i < naturalCount; i++) {
-                await new DataBaseHelper(DryRun).createMuchData(item, 500);
+                await new DataBaseHelper(DryRun).createMuchData(item, DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
             }
             await new DataBaseHelper(DryRun).createMuchData(item, restCount);
         } else {
             for (let i = 0; i < naturalCount; i++) {
-                await new DataBaseHelper(entityClass).createMuchData(item, 500);
+                await new DataBaseHelper(entityClass).createMuchData(item, DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
             }
             await new DataBaseHelper(entityClass).createMuchData(item, restCount);
         }

@@ -244,6 +244,8 @@ export abstract class TypedMint {
             }
 
             try {
+                this._mintRequest.processDate = new Date();
+                await this._db.saveMintRequest(this._mintRequest);
                 await this.mintTokens(notifier);
             } catch (error) {
                 const errorMessage = PolicyUtils.getErrorMessage(error);
@@ -261,6 +263,7 @@ export abstract class TypedMint {
                     progressResult.result
                 );
                 this._mintRequest.error = errorMessage;
+                this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
                 throw error;
             }
@@ -302,6 +305,8 @@ export abstract class TypedMint {
             }
 
             try {
+                this._mintRequest.processDate = new Date();
+                await this._db.saveMintRequest(this._mintRequest);
                 await this.transferTokens(notifier);
             } catch (error) {
                 const errorMessage = PolicyUtils.getErrorMessage(error);
@@ -319,6 +324,7 @@ export abstract class TypedMint {
                     progressResult.result
                 );
                 this._mintRequest.error = errorMessage;
+                this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
                 throw error;
             }

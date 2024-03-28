@@ -702,6 +702,12 @@ export class DryRun extends BaseEntity {
     error?: string;
 
     /**
+     * Mint date
+     */
+    @Property({ nullable: true })
+    processDate?: Date;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

@@ -83,4 +83,10 @@ export class MintRequest extends BaseEntity {
      */
     @Property({ nullable: true })
     error?: string;
+
+    /**
+     * Mint date
+     */
+    @Property({ nullable: true })
+    processDate?: Date;
 }
