@@ -95,6 +95,7 @@ export async function schemaAPI(): Promise<void> {
                     throw new Error(`There is circular dependency in schema: ${item.iri}`);
                 }
                 item.name = msg.name;
+                // item.topicId = msg.topicId;
                 item.description = msg.description;
                 item.entity = msg.entity;
                 item.document = msg.document;

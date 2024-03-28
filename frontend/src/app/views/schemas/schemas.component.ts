@@ -313,7 +313,7 @@ export class SchemaConfigComponent implements OnInit {
                 this.policyIdByTopic = {};
                 this.policies = [{
                     name: 'No binding',
-                    topicId: ''
+                    topicId: null
                 }];
                 for (const policy of policies) {
                     if (policy.topicId) {

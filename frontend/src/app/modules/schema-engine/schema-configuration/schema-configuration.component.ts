@@ -277,12 +277,21 @@ export class SchemaConfigurationComponent implements OnInit {
                     fields: {},
                     conditions: {}
                 });
+            } else if (this.isPolicy) {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: SchemaEntity.VC,
+                    topicId: [this.topicId, NoBindingValidator],
+                    fields: {},
+                    conditions: {}
+                });
             } else {
                 this.dataForm.setValue({
                     name: '',
                     description: '',
                     entity: SchemaEntity.VC,
-                    topicId: this.topicId,
+                    topicId: [this.topicId],
                     fields: {},
                     conditions: {}
                 });
@@ -316,6 +325,15 @@ export class SchemaConfigurationComponent implements OnInit {
                     conditions: this.conditionsForm
                 };
             } else if (this.isTool) {
+                props = {
+                    name: ['', Validators.required],
+                    description: [''],
+                    topicId: [this.topicId, NoBindingValidator],
+                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                };
+            } else if (this.isPolicy) {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
