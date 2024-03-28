@@ -1,8 +1,13 @@
 import { MintRequest, NotificationHelper, Workers } from '@guardian/common';
-import { WorkerTaskType, MintTransactionStatus } from '@guardian/interfaces';
+import {
+    WorkerTaskType,
+    MintTransactionStatus,
+    TimeoutError,
+} from '@guardian/interfaces';
 import { TypedMint } from './typed-mint';
 import { IHederaCredentials } from '@policy-engine/policy-user';
 import { TokenConfig } from '../configs/token-config';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Mint FT
@@ -77,12 +82,14 @@ export class MintFT extends TypedMint {
                     type: WorkerTaskType.GET_TRANSACTIONS,
                     data: {
                         accountId: this._token.treasuryId,
-                        limit: 1,
                         type: 'TOKENMINT',
-                        timestamp: `gt:${this._mintRequest.startTransaction}`,
+                        timestamp: this._mintRequest.startTransaction
+                            ? `gt:${this._mintRequest.startTransaction}`
+                            : null,
                         filter: {
                             memo: this._mintRequest.memo,
                         },
+                        findOne: true,
                     },
                 },
                 1,
@@ -106,12 +113,14 @@ export class MintFT extends TypedMint {
                     type: WorkerTaskType.GET_TRANSACTIONS,
                     data: {
                         accountId: this._token.treasuryId,
-                        limit: 1,
                         type: 'CRYPTOTRANSFER',
-                        timestamp: `gt:${this._mintRequest.startTransaction}`,
+                        timestamp: this._mintRequest.startTransaction
+                            ? `gt:${this._mintRequest.startTransaction}`
+                            : null,
                         filter: {
                             memo: this._mintRequest.memo,
                         },
+                        findOne: true,
                     },
                 },
                 1,
@@ -167,9 +176,13 @@ export class MintFT extends TypedMint {
                 10
             );
 
-            this._mintRequest.startTransaction = startTransactions[0];
+            this._mintRequest.startTransaction =
+                startTransactions[0]?.consensus_timestamp;
             await this._db.saveMintRequest(this._mintRequest);
         }
+
+        transaction.mintStatus = MintTransactionStatus.PENDING;
+        await this._db.saveMintTransaction(transaction);
 
         try {
             await workers.addNonRetryableTask(
@@ -189,7 +202,11 @@ export class MintFT extends TypedMint {
             );
             transaction.mintStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {
-            transaction.mintStatus = MintTransactionStatus.ERROR;
+            if (!(error instanceof TimeoutError)) {
+                transaction.error = PolicyUtils.getErrorMessage(error);
+                transaction.mintStatus = MintTransactionStatus.ERROR;
+            }
+            throw error;
         } finally {
             await this._db.saveMintTransaction(transaction);
         }
@@ -226,9 +243,13 @@ export class MintFT extends TypedMint {
                 10
             );
 
-            this._mintRequest.startTransaction = startTransactions[0];
+            this._mintRequest.startTransaction =
+                startTransactions[0]?.consensus_timestamp;
             await this._db.saveMintRequest(this._mintRequest);
         }
+
+        transaction.transferStatus = MintTransactionStatus.PENDING;
+        await this._db.saveMintTransaction(transaction);
 
         try {
             await workers.addRetryableTask(
@@ -250,7 +271,11 @@ export class MintFT extends TypedMint {
             );
             transaction.transferStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {
-            transaction.transferStatus = MintTransactionStatus.ERROR;
+            if (!(error instanceof TimeoutError)) {
+                transaction.error = PolicyUtils.getErrorMessage(error);
+                transaction.transferStatus = MintTransactionStatus.ERROR;
+            }
+            throw error;
         } finally {
             await this._db.saveMintTransaction(transaction);
         }

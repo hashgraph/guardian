@@ -218,7 +218,15 @@ export abstract class TypedMint {
                 const message = `Minting (${
                     this._token.tokenId
                 }) error: ${PolicyUtils.getErrorMessage(error)}`;
-                notifier?.stop(this.progressResult('Minting tokens', message));
+                notifier?.stop();
+                // tslint:disable-next-line:no-shadowed-variable
+                const progressResult = this.progressResult('Transfer tokens', message);
+                await this._notifier?.error(
+                    progressResult.title,
+                    progressResult.message,
+                    progressResult.action,
+                    progressResult.result
+                );
                 MintService.error(message, this._ref);
                 throw error;
             }
@@ -265,7 +273,15 @@ export abstract class TypedMint {
                 const message = `Transfer (${
                     this._token.tokenId
                 }) error: ${PolicyUtils.getErrorMessage(error)}`;
-                notifier?.stop(this.progressResult('Transfer tokens', message));
+                notifier?.stop();
+                // tslint:disable-next-line:no-shadowed-variable
+                const progressResult = this.progressResult('Transfer tokens', message);
+                await this._notifier?.error(
+                    progressResult.title,
+                    progressResult.message,
+                    progressResult.action,
+                    progressResult.result
+                );
                 MintService.error(message, this._ref);
                 throw error;
             }

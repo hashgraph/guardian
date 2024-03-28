@@ -24,15 +24,15 @@ export class MintNFT extends TypedMint {
     public static readonly BATCH_NFT_MINT_SIZE =
         Math.floor(Math.abs(+process.env.BATCH_NFT_MINT_SIZE)) || 10;
 
-        /**
-         * Init mint request
-         * @param mintRequest Mint request
-         * @param root Root
-         * @param token Token
-         * @param ref Block ref
-         * @param notifier Notifier
-         * @returns Instance
-         */
+    /**
+     * Init mint request
+     * @param mintRequest Mint request
+     * @param root Root
+     * @param token Token
+     * @param ref Block ref
+     * @param notifier Notifier
+     * @returns Instance
+     */
     public static async init(
         mintRequest: MintRequest,
         root: IHederaCredentials,
@@ -128,13 +128,12 @@ export class MintNFT extends TypedMint {
             }
         }
 
-        if (!this._ref.dryRun) {
+        if (!this._ref.dryRun && !Number.isInteger(this._mintRequest.startSerial)) {
             const startSerial = await new Workers().addRetryableTask(
                 {
                     type: WorkerTaskType.GET_TOKEN_NFTS,
                     data: {
                         tokenId: this._token.tokenId,
-                        metadata: this._mintRequest.metadata,
                         limit: 1,
                         order: 'desc',
                     },
@@ -142,7 +141,7 @@ export class MintNFT extends TypedMint {
                 1,
                 10
             );
-            this._mintRequest.startSerial = startSerial;
+            this._mintRequest.startSerial = startSerial[0] || 0;
             await this._db.saveMintRequest(this._mintRequest);
         }
 
@@ -164,6 +163,8 @@ export class MintNFT extends TypedMint {
             const mintNFT = async (
                 transaction: MintTransaction
             ): Promise<void> => {
+                transaction.mintStatus = MintTransactionStatus.PENDING;
+                await this._db.saveMintTransaction(transaction);
                 try {
                     const serials = await new Workers().addNonRetryableTask(
                         {
@@ -223,7 +224,9 @@ export class MintNFT extends TypedMint {
      * Transfer tokens
      * @param notifier Notifier
      */
-    protected override async transferTokens(notifier: NotificationHelper): Promise<void> {
+    protected override async transferTokens(
+        notifier: NotificationHelper
+    ): Promise<void> {
         const mintedSerials = await this._db.getMintRequestSerials(
             this._mintRequest.id
         );
@@ -249,6 +252,8 @@ export class MintNFT extends TypedMint {
                 transaction: MintTransaction
             ): Promise<number[] | null> => {
                 try {
+                    transaction.transferStatus = MintTransactionStatus.PENDING;
+                    await this._db.saveMintTransaction(transaction);
                     const result = await new Workers().addRetryableTask(
                         {
                             type: WorkerTaskType.TRANSFER_NFT,
@@ -314,12 +319,13 @@ export class MintNFT extends TypedMint {
                 {
                     type: WorkerTaskType.GET_TOKEN_NFTS,
                     data: {
-                        hederaAccountId: this._root.hederaAccountId,
-                        hederaAccountKey: this._root.hederaAccountKey,
-                        dryRun: this._ref && this._ref.dryRun,
                         tokenId: this._token.tokenId,
-                        metadata: this._mintRequest.metadata,
-                        serialnumber: `gt:${this._mintRequest.startSerial}`,
+                        filter: {
+                            metadata: btoa(this._mintRequest.metadata),
+                        },
+                        serialnumber: this._mintRequest.startSerial
+                            ? `gte:${this._mintRequest.startSerial}`
+                            : null,
                     },
                 },
                 1,
@@ -333,7 +339,7 @@ export class MintNFT extends TypedMint {
 
             const missedSerials = (
                 await this._db.getMintRequestSerials(this._mintRequest.id)
-            ).map((serial) => mintedSerials.includes(serial));
+            ).filter((serial) => !mintedSerials.includes(serial));
 
             for (const mintPendingTransaction of mintPendingTransactions) {
                 if (missedSerials.length !== 0) {
@@ -363,8 +369,12 @@ export class MintNFT extends TypedMint {
                     data: {
                         accountId: this._token.treasuryId,
                         tokenId: this._token.tokenId,
-                        metadata: this._mintRequest.metadata,
-                        serialnumber: `gt:${this._mintRequest.startSerial}`,
+                        filter: {
+                            metadata: btoa(this._mintRequest.metadata),
+                        },
+                        serialnumber: this._mintRequest.startSerial
+                            ? `gte:${this._mintRequest.startSerial}`
+                            : null,
                     },
                 },
                 1,

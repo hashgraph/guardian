@@ -39,6 +39,7 @@ import {
     GenerateUUIDv4,
     IVC,
     SchemaEntity,
+    TokenType,
     TopicType,
 } from '@guardian/interfaces';
 import { BaseEntity } from '../models';
@@ -1783,8 +1784,13 @@ export class DatabaseServer {
             if (!token) {
                 continue;
             }
-            amount += (token.decimals > 0) ? (mintRequest.amount / Math.pow(10, token.decimals)) : mintRequest.amount;
-            serials.push(...(await this.getMintRequestSerials(mintRequest.id)));
+            if (token.tokenType === TokenType.NON_FUNGIBLE) {
+                const requestSerials = await this.getMintRequestSerials(mintRequest.id);
+                amount += requestSerials.length;
+                serials.push(...requestSerials);
+            } else if (token.tokenType === TokenType.FUNGIBLE) {
+                amount += (token.decimals > 0) ? (mintRequest.amount / Math.pow(10, token.decimals)) : mintRequest.amount;
+            }
         }
         return [serials, amount];
     }

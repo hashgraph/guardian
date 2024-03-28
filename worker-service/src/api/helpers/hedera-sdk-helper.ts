@@ -1500,7 +1500,13 @@ export class HederaSDKHelper {
      * @param filters Filters
      * @returns Result
      */
-    private static async hederaRestApi(url: string, options: { params?: any }, type: 'nfts' | 'transactions' | 'logs', filters?: { [key: string]: any }) {
+    private static async hederaRestApi(
+        url: string,
+        options: { params?: any },
+        type: 'nfts' | 'transactions' | 'logs',
+        filters?: { [key: string]: any },
+        findOne = false,
+    ) {
         const params: any = {
             ...options,
             responseType: 'json',
@@ -1524,7 +1530,10 @@ export class HederaSDKHelper {
                 for (const item of typedData) {
                     for (const filter of Object.keys(filters)) {
                         if (item[filter] === filters[filter]) {
-                            result.push(...typedData);
+                            result.push(item);
+                            if (findOne) {
+                                return result;
+                            }
                         }
                     }
                 }
@@ -1634,7 +1643,15 @@ export class HederaSDKHelper {
      * @returns Transactions
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get transactions request timeout exceeded')
-    public static async getTransactions(accountId?: string, type?: string, timestamp?: string, order = 'asc', filter?: any, limit?: number): Promise<any[]> {
+    public static async getTransactions(
+        accountId?: string,
+        type?: string,
+        timestamp?: string,
+        order = 'asc',
+        filter?: any,
+        limit?: number,
+        findOne = false
+    ): Promise<any[]> {
         const params: any = {
             limit: Number.MAX_SAFE_INTEGER,
             order,
@@ -1656,7 +1673,7 @@ export class HederaSDKHelper {
             responseType: 'json',
         };
         const url = `${Environment.HEDERA_TRANSACTIONS_API}`;
-        return await HederaSDKHelper.hederaRestApi(url, p, 'transactions', filter);
+        return await HederaSDKHelper.hederaRestApi(url, p, 'transactions', filter, findOne);
     }
 
     /**

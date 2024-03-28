@@ -123,20 +123,13 @@ export class ReportBlock {
             username: vp.owner,
             document: vp
         }
-        let amount = -1;
-
-        if (Array.isArray(vp.serials)) {
-            amount = vp.serials.length;
-        } else if (vp.amount) {
-            amount = vp.amount;
-        }
 
         report.mintDocument = {
             type: 'VC',
             tokenId: getVCField(mint, 'tokenId'),
             date: getVCField(mint, 'date'),
             expected: getVCField(mint, 'amount'),
-            amount: String(amount),
+            amount: String(vp.amount),
             tag: vp.tag,
             issuer: vp.owner,
             username: vp.owner,

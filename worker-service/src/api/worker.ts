@@ -883,10 +883,11 @@ export class Worker extends NatsService {
                         accountId,
                         serialnumber,
                         order,
+                        filter,
                         limit,
                     } = task.data;
-                    const nfts = await HederaSDKHelper.getNFTTokenSerials(tokenId, accountId, serialnumber, order, limit);
-                    result.data = nfts || [];
+                    const nfts = await HederaSDKHelper.getNFTTokenSerials(tokenId, accountId, serialnumber, order, filter, limit);
+                    result.data = nfts?.map(nft => nft.serial_number) || [];
                     break;
                 }
 
@@ -898,8 +899,9 @@ export class Worker extends NatsService {
                         order,
                         filter,
                         limit,
+                        findOne,
                     } = task.data;
-                    const transactions = await HederaSDKHelper.getTransactions(accountId, type, timestamp, order, filter, limit);
+                    const transactions = await HederaSDKHelper.getTransactions(accountId, type, timestamp, order, filter, limit, findOne);
                     result.data = transactions || [];
                     break;
                 }
