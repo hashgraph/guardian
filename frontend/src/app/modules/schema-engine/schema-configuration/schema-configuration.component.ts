@@ -131,6 +131,7 @@ export class SchemaConfigurationComponent implements OnInit {
         private schemaService: SchemaService,
         private fb: FormBuilder
     ) {
+        console.log(this);
         const vcDefaultFields = [{
             name: 'policyId',
             title: 'Policy Id',
@@ -563,25 +564,53 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     private getFieldName(): string | undefined {
-        const map: any = {};
-        for (const f of this.fields) {
-            map[f.key] = true;
+        const fieldRe = /field(\d+)/;
+        let lastIndex: number = -1;
+
+        const testMaxIndex = (f: FieldControl) => {
+            let curIndex: number = -1;
+            if (fieldRe.test(f.key)) {
+                // @ts-ignore
+                const i = parseInt(fieldRe.exec(f.key)[1], 10);
+                if (i > curIndex) {
+                    curIndex = i;
+                }
+            }
+
+            if (fieldRe.test(f.title)) {
+                // @ts-ignore
+                const i = parseInt(fieldRe.exec(f.title)[1], 10);
+                if (i > curIndex) {
+                    curIndex = i;
+                }
+            }
+
+            return curIndex;
         }
+
+        for (const f of this.fields) {
+            const curIndex = testMaxIndex(f);
+            if (curIndex > lastIndex) {
+                lastIndex = curIndex;
+            }
+        }
+
         for (const c of this.conditions) {
             for (const f of c.thenControls) {
-                map[f.key] = true;
+                const curIndex = testMaxIndex(f);
+                if (curIndex > lastIndex) {
+                    lastIndex = curIndex;
+                }
             }
             for (const f of c.elseControls) {
-                map[f.key] = true;
+                const curIndex = testMaxIndex(f);
+                if (curIndex > lastIndex) {
+                    lastIndex = curIndex;
+                }
             }
         }
-        for (let index = 0; index < 1000; index++) {
-            const element = `field${index}`;
-            if (!map[element]) {
-                return element;
-            }
-        }
-        return undefined;
+
+        return `field${lastIndex + 1}`
     }
 
     public onConditionFieldRemove(
