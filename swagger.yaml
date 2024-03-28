@@ -2155,12 +2155,24 @@ paths:
       description: Add file from ipfs.
       parameters: []
       responses:
-        '201':
-          description: ''
-      tags:
+        '401':
+          description: Unauthorized
+      tags: &ref_3
         - ipfs
       security:
-        - bearerAuth: []
+        - bearer: []
+  /ipfs/file/dry-run/{policyId}:
+    post:
+      operationId: IpfsApi_postFileDryRun
+      summary: Add file from ipfs for dry run mode.
+      description: Add file from ipfs for dry run mode.
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized
+      tags: *ref_3
+      security:
+        - bearer: []
   /ipfs/file/{cid}:
     get:
       tags:
@@ -2192,6 +2204,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /ipfs/file/{cid}/dry-run:
+    get:
+      operationId: IpfsApi_getFileDryRun
+      summary: Get file from ipfs for dry run mode.
+      description: Get file from ipfs for dry run mode.
+      parameters:
+        - name: cid
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized
+      tags: *ref_3
+      security:
+        - bearer: []
   /logs:
     post:
       tags:
@@ -2398,7 +2427,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: &ref_3
+      tags: &ref_4
         - modules
     post:
       operationId: ModulesApi_postSchemas
@@ -2406,7 +2435,7 @@ paths:
       responses:
         '201':
           description: ''
-      tags: *ref_3
+      tags: *ref_4
   /modules/{uuid}:
     get:
       tags:
@@ -2857,7 +2886,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_4
+      tags: &ref_5
         - tools
       security:
         - bearerAuth: []
@@ -2895,7 +2924,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push:
@@ -2919,7 +2948,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}:
@@ -2945,7 +2974,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
     get:
@@ -2978,7 +3007,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
     put:
@@ -3011,7 +3040,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/publish:
@@ -3047,7 +3076,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/push/publish:
@@ -3083,7 +3112,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/validate:
@@ -3111,7 +3140,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/export/file:
@@ -3144,7 +3173,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/export/message:
@@ -3179,7 +3208,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/message/preview:
@@ -3208,7 +3237,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/message:
@@ -3237,7 +3266,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/file/preview:
@@ -3266,7 +3295,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/file:
@@ -3295,7 +3324,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push/import/file:
@@ -3324,7 +3353,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push/import/message:
@@ -3353,7 +3382,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/menu/all:
@@ -3381,7 +3410,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /profiles/{username}:
@@ -3415,7 +3444,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_5
+      tags: &ref_6
         - profiles
       security:
         - bearerAuth: []
@@ -3453,7 +3482,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearer: []
@@ -3495,7 +3524,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearer: []
@@ -3530,7 +3559,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearer: []
@@ -3570,7 +3599,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearer: []
@@ -3610,7 +3639,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearer: []
@@ -3644,7 +3673,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearer: []
@@ -3678,7 +3707,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_5
+      tags: *ref_6
       security:
         - bearerAuth: []
         - bearer: []
@@ -3808,7 +3837,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_6
+      tags: &ref_7
         - policies
       security:
         - bearerAuth: []
@@ -3840,7 +3869,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
   /policies/push:
@@ -3895,7 +3924,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3905,7 +3934,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
   /policies/{policyId}:
@@ -4157,7 +4186,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4248,7 +4277,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4396,7 +4425,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4533,7 +4562,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4557,7 +4586,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4582,7 +4611,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4593,7 +4622,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_6
+      tags: *ref_7
   /policies/{policyId}/export/file:
     get:
       tags:
@@ -4701,7 +4730,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -5044,7 +5073,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -5087,7 +5116,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -5124,7 +5153,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -5135,7 +5164,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_6
+      tags: *ref_7
   /policies/{policyId}/dry-run/users:
     get:
       tags:
@@ -5529,7 +5558,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
   /policies/methodologies/search:
     post:
       operationId: PolicyApi_getPoliciesByCategory
@@ -5563,7 +5592,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
   /schema/{schemaId}:
     get:
       tags:
@@ -5627,7 +5656,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_7
+      tags: &ref_8
         - schema
       security:
         - bearerAuth: []
@@ -5669,7 +5698,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_7
+      tags: *ref_8
       security:
         - bearerAuth: []
   /schemas:
@@ -5857,7 +5886,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_8
+      tags: &ref_9
         - schemas
       security:
         - bearerAuth: []
@@ -5888,7 +5917,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
   /schemas/list/sub:
@@ -5930,7 +5959,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
   /schemas/push/copy:
@@ -5965,7 +5994,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearer: []
         - bearerAuth: []
@@ -6859,7 +6888,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -6901,7 +6930,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -6943,7 +6972,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -6979,7 +7008,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -7009,7 +7038,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -7650,7 +7679,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: &ref_9
+      tags: &ref_10
         - tokens
   /tokens/{tokenId}/associate:
     put:
@@ -8201,7 +8230,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_9
+      tags: *ref_10
       security:
         - bearer: []
   /themes:
@@ -8694,7 +8723,7 @@ paths:
       responses:
         '401':
           description: Unauthorized
-      tags: &ref_10
+      tags: &ref_11
         - branding
       security:
         - bearer: []
@@ -8704,7 +8733,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
+      tags: *ref_11
   /suggestions:
     post:
       operationId: SuggestionsApi_policySuggestions
@@ -8738,7 +8767,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_11
+      tags: &ref_12
         - suggestions
       security:
         - bearer: []
@@ -8772,7 +8801,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8798,7 +8827,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8828,7 +8857,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_12
+      tags: &ref_13
         - notifications
       security:
         - bearer: []
@@ -8856,7 +8885,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8883,7 +8912,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8910,7 +8939,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8940,7 +8969,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8977,7 +9006,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_13
+      tags: &ref_14
         - projects
   /projects/compare/documents:
     post:
@@ -9015,7 +9044,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
   /projects/properties:
     get:
       operationId: ProjectsAPI_getPolicyProperties
@@ -9037,7 +9066,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
   /record/{policyId}/status:
     get:
       operationId: RecordApi_getRecordStatus
@@ -9069,7 +9098,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_14
+      tags: &ref_15
         - record
       security:
         - bearerAuth: []
@@ -9112,7 +9141,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9155,7 +9184,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9192,7 +9221,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9234,7 +9263,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9276,7 +9305,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9311,7 +9340,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9346,7 +9375,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9388,7 +9417,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9430,7 +9459,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9472,7 +9501,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9501,7 +9530,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_15
+      tags: &ref_16
         - ai-suggestions
   /ai-suggestions/rebuild-vector:
     put:
@@ -9512,7 +9541,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_15
+      tags: *ref_16
   /schemas/type/{type}:
     get:
       tags:
