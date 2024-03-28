@@ -155,6 +155,15 @@ export class MintService {
         const root = await users.getHederaAccount(rootDid);
         const rootUser = await users.getUserById(rootDid);
         for (const request of requests) {
+            if (MintService.activeMintProcesses.has(request.id)) {
+                processed = true;
+                NotificationHelper.warn(
+                    'Retry mint',
+                    `Mint process for ${vpMessageId} is already in progress`,
+                    user?.id
+                );
+                continue;
+            }
             if (
                 request.processDate &&
                 Date.now() - request.processDate.getTime() <
@@ -169,15 +178,6 @@ export class MintService {
                             Date.now()) /
                             (60 * 1000)
                     )} minutes`,
-                    user?.id
-                );
-                continue;
-            }
-            if (MintService.activeMintProcesses.has(request.id)) {
-                processed = true;
-                NotificationHelper.warn(
-                    'Retry mint',
-                    `Mint process for ${vpMessageId} is already in progress`,
                     user?.id
                 );
                 continue;
