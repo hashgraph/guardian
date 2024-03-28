@@ -352,6 +352,7 @@ export abstract class TypedMint {
         }
 
         this._mintRequest.error = undefined;
+        this._mintRequest.processDate = undefined;
         await this._db.saveMintRequest(this._mintRequest);
 
         return processed;
