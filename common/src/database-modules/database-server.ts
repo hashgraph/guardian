@@ -74,7 +74,10 @@ export class DatabaseServer {
     /**
      * Documents handling chunk size
      */
-    private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = Number.isInteger(Number(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE)) ? Number(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE) : 500;
+    private static readonly DOCUMENTS_HANDLING_CHUNK_SIZE = process.env
+        .DOCUMENTS_HANDLING_CHUNK_SIZE
+        ? parseInt(process.env.DOCUMENTS_HANDLING_CHUNK_SIZE, 10)
+        : 500;
 
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;

@@ -52,6 +52,13 @@ export class MintService {
     public static activeMintProcesses = new Set<string>();
 
     /**
+     * Retry mint interval
+     */
+    public static readonly RETRY_MINT_INTERVAL = process.env.RETRY_MINT_INTERVAL
+        ? parseInt(process.env.RETRY_MINT_INTERVAL, 10)
+        : 10;
+
+    /**
      * Get token keys
      * @param ref
      * @param token
@@ -140,7 +147,7 @@ export class MintService {
             ],
         });
         if (requests.length === 0) {
-            throw new Error('There are no requests to retry')
+            throw new Error('There are no requests to retry');
         }
         const vp = await db.getVpDocument({
             messageId: vpMessageId,
@@ -148,9 +155,6 @@ export class MintService {
         const users = new Users();
         const documentOwnerUser = await users.getUserById(vp.owner);
         const user = await users.getUserById(userDId);
-        const retryMinutes = Number.isInteger(+process.env.RETRY_MINT_INTERVAL)
-            ? Number(+process.env.RETRY_MINT_INTERVAL)
-            : 10;
         let processed = false;
         const root = await users.getHederaAccount(rootDid);
         const rootUser = await users.getUserById(rootDid);
@@ -167,14 +171,14 @@ export class MintService {
             if (
                 request.processDate &&
                 Date.now() - request.processDate.getTime() <
-                    retryMinutes * (60 * 1000)
+                    MintService.RETRY_MINT_INTERVAL * (60 * 1000)
             ) {
                 processed = true;
                 NotificationHelper.warn(
                     `Retry mint`,
                     `Mint process for ${vpMessageId} can't be retryied. Try after ${Math.ceil(
                         (request.processDate.getTime() +
-                            retryMinutes * (60 * 1000) -
+                            MintService.RETRY_MINT_INTERVAL * (60 * 1000) -
                             Date.now()) /
                             (60 * 1000)
                     )} minutes`,
@@ -192,7 +196,6 @@ export class MintService {
                     documentOwnerUser?.id,
                     ref
                 );
-
             } catch (error) {
                 throw error;
             } finally {
@@ -345,7 +348,9 @@ export class MintService {
                 }
                 notifier.success(
                     `Multi mint`,
-                    multipleConfig.type === 'Main' ? 'Mint transaction created' : `Request to mint is submitted`,
+                    multipleConfig.type === 'Main'
+                        ? 'Mint transaction created'
+                        : `Request to mint is submitted`,
                     NotificationAction.POLICY_VIEW,
                     ref.policyId
                 );
