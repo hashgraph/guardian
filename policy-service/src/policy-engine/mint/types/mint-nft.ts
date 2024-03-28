@@ -340,19 +340,19 @@ export class MintNFT extends TypedMint {
                 mintStatus: MintTransactionStatus.PENDING,
             });
 
-            const missedSerials = (
-                await this._db.getMintRequestSerials(this._mintRequest.id)
-            ).filter((serial) => !mintedSerials.includes(serial));
+            const mintedSerialsLocal = await this._db.getMintRequestSerials(
+                this._mintRequest.id
+            );
+            const missedSerials = mintedSerials.filter(
+                (serial) => !mintedSerialsLocal.includes(serial)
+            );
 
             for (const mintPendingTransaction of mintPendingTransactions) {
                 if (missedSerials.length !== 0) {
-                    mintPendingTransaction.serials =
-                        missedSerials.length / mintPendingTransaction.amount > 0
-                            ? missedSerials.splice(
-                                  0,
-                                  mintPendingTransaction.amount
-                              )
-                            : missedSerials.splice(0, missedSerials.length);
+                    mintPendingTransaction.serials = missedSerials.splice(
+                        0,
+                        mintPendingTransaction.amount
+                    );
                     mintPendingTransaction.mintStatus =
                         mintPendingTransaction.amount ===
                         mintPendingTransaction.serials.length
