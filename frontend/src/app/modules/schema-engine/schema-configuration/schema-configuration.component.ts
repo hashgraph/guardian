@@ -20,6 +20,10 @@ enum SchemaType {
     Tool = 'tool'
 }
 
+function NoBindingValidator(control: FormControl): ValidationErrors | null {
+    return (control.value && control.value.length) ? null : {wrongTopicId: true};
+}
+
 /**
  * Schemas constructor
  */
@@ -131,7 +135,6 @@ export class SchemaConfigurationComponent implements OnInit {
         private schemaService: SchemaService,
         private fb: FormBuilder
     ) {
-        console.log(this);
         const vcDefaultFields = [{
             name: 'policyId',
             title: 'Policy Id',
@@ -265,6 +268,15 @@ export class SchemaConfigurationComponent implements OnInit {
                     fields: {},
                     conditions: {}
                 });
+            } else if (this.isTool) {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: SchemaEntity.VC,
+                    topicId: [this.topicId, NoBindingValidator],
+                    fields: {},
+                    conditions: {}
+                });
             } else {
                 this.dataForm.setValue({
                     name: '',
@@ -299,6 +311,15 @@ export class SchemaConfigurationComponent implements OnInit {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
+                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                };
+            } else if (this.isTool) {
+                props = {
+                    name: ['', Validators.required],
+                    description: [''],
+                    topicId: [this.topicId, NoBindingValidator],
                     entity: new FormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
