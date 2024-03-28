@@ -1,0 +1,15 @@
+<div class="content">
+    <div class="p-dialog-header">
+        <span class="modal-header">{{ currentTokenId ? 'Edit' : 'New' }} Token</span>
+    </div>
+    <div class="p-dialog-content">
+        <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType" [contracts]="contracts"
+                                [readonly]="readonly"></app-token-configuration>
+    </div>
+    <div class="dialog-footer">
+        <button (click)="this.dialogRef.close()" class="button secondary" label="Close" pButton
+                type="button"></button>
+        <button (click)="this.dialogRef.close(dataForm.value)" [disabled]="dataForm.invalid" [label]="currentTokenId ? 'Save' : 'Create'" class="button" pButton
+                type="button"></button>
+    </div>
+</div>

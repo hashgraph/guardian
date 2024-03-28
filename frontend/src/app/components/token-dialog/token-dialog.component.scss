@@ -1,0 +1,27 @@
+::ng-deep {
+    .custom-token-dialog.p-dialog {
+        height: 90%;
+    }
+}
+
+.modal-header {
+    color: #000;
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px;
+}
+
+.dialog-footer {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.content {
+    display: flex;
+    max-height: 100%;
+    flex-direction: column;
+}

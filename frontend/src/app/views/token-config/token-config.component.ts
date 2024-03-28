@@ -13,6 +13,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
 import { ContractService } from 'src/app/services/contract.service';
+import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
 
 enum OperationMode {
     None, Kyc, Freeze
@@ -51,7 +52,6 @@ export class TokenConfigComponent implements OnInit {
     public tagEntity = TagType.Token;
     public owner: any;
     public tagSchemas: any[] = [];
-    public tokenDialogVisible: boolean = false;
     public deleteTokenVisible: boolean = false;
     public currentTokenId: any;
     public dataForm = new FormGroup({
@@ -70,7 +70,6 @@ export class TokenConfigComponent implements OnInit {
     });
     public dataFormPristine: any = this.dataForm.value;
     public readonlyForm: boolean = false;
-    public hideType: boolean = false;
     public policyDropdownItem: any;
     public tokensCount: any;
     public pageIndex: number;
@@ -200,8 +199,26 @@ export class TokenConfigComponent implements OnInit {
     public newToken() {
         this.readonlyForm = false;
         this.dataForm.patchValue(this.dataFormPristine);
-        this.tokenDialogVisible = true;
         this.currentTokenId = null;
+        this.dialog.open(TokenDialogComponent, {
+            closable: true,
+            modal: true,
+            width: '720px',
+            styleClass: 'custom-token-dialog',
+            header: 'New Token',
+            showHeader: false,
+            data: {
+                dataForm: this.dataForm,
+                contracts: this.contracts,
+                readonly: this.readonlyForm,
+                currentTokenId: this.currentTokenId,
+            }
+        }).onClose.subscribe((result: any) => {
+            if (!result) {
+                return;
+            }
+            this.saveToken()
+        });
     }
 
     onAsyncError(error: any) {
@@ -382,7 +399,25 @@ export class TokenConfigComponent implements OnInit {
         this.currentTokenId = token.tokenId;
         this.readonlyForm = !token.draftToken;
         this.dataForm.patchValue(token);
-        this.tokenDialogVisible = true;
+        this.dialog.open(TokenDialogComponent, {
+            closable: true,
+            modal: true,
+            width: '720px',
+            styleClass: 'custom-token-dialog',
+            header: 'Edit Token',
+            showHeader: false,
+            data: {
+                dataForm: this.dataForm,
+                contracts: this.contracts,
+                readonly: this.readonlyForm,
+                currentTokenId: this.currentTokenId
+            }
+        }).onClose.subscribe((result: any) => {
+            if (!result) {
+                return;
+            }
+            this.saveToken()
+        });
     }
 
     public goToUsingTokens(token: any) {
