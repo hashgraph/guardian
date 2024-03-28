@@ -35,6 +35,8 @@ export enum MessageAPI {
     IPFS_ADD_FILE_ASYNC = 'ipfs-add-file-async',
     IPFS_GET_FILE = 'ipfs-get-file',
     IPFS_GET_FILE_ASYNC = 'ipfs-get-file-async',
+    ADD_FILE_DRY_RUN_STORAGE = 'ADD_FILE_DRY_RUN_STORAGE',
+    GET_FILE_DRY_RUN_STORAGE = 'GET_FILE_DRY_RUN_STORAGE',
     GET_SCHEMA = 'get-schema',
     GET_SCHEMAS_BY_UUID = 'get-schema-by-uuid',
     GET_SCHEMA_PARENTS = 'get-schema-parents',

@@ -910,6 +910,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Add file to dry run storage
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileToDryRunStorage(buffer: any, policyId: string): Promise<{
+        /**
+         * CID
+         */
+        cid,
+        /**
+         * URL
+         */
+        url
+    }> {
+        return await this.sendMessage(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, {buffer, policyId});
+    }
+
+    /**
      * Get file from IPFS
      * @param cid CID
      * @param responseType Response type
@@ -917,6 +935,18 @@ export class Guardians extends NatsService {
      */
     public async getFileIpfs(cid: string, responseType: any): Promise<any> {
         return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
+            cid, responseType
+        });
+    }
+
+    /**
+     * Get file from dry run storage
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileFromDryRunStorage(cid: string, responseType: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_FILE_DRY_RUN_STORAGE, {
             cid, responseType
         });
     }

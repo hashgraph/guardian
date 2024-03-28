@@ -1,38 +1,31 @@
-import {
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    PolicyEngineEvents,
-    PolicyEvents,
-    PolicyType,
-    Schema,
-    SchemaField,
-    TopicType
-} from '@guardian/interfaces';
+import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
+    DataBaseHelper,
     DatabaseServer,
+    DryRunFiles,
     findAllEntities,
+    GenerateBlocks,
     IAuthUser,
+    JsonToXlsx,
     Logger,
+    MessageAction,
     MessageError,
     MessageResponse,
+    MessageServer,
+    MessageType,
     NatsService,
     Policy,
     PolicyImportExport,
-    RunFunctionAsync,
-    Singleton,
-    Users,
-    Schema as SchemaCollection,
-    MessageServer,
     PolicyMessage,
-    MessageType,
-    MessageAction,
+    RunFunctionAsync,
+    Schema as SchemaCollection,
+    Singleton,
     TopicConfig,
+    Users,
+    VcHelper,
     Wallet,
-    XlsxToJson,
-    JsonToXlsx,
-    GenerateBlocks,
-    VcHelper
+    XlsxToJson
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';
@@ -1355,6 +1348,7 @@ export class PolicyEngineService {
                 await this.policyEngine.destroyModel(model.id.toString());
                 const databaseServer = new DatabaseServer(model.id.toString());
                 await databaseServer.clearDryRun();
+                await new DataBaseHelper(DryRunFiles).delete({policyId});
 
                 const newPolicy = await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run');
                 await this.policyEngine.generateModel(newPolicy.id.toString());

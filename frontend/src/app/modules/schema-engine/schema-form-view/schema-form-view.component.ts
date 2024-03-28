@@ -25,6 +25,7 @@ export class SchemaFormViewComponent implements OnInit {
     @Input('fields') schemaFields!: SchemaField[];
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('values') values: any;
+    @Input() dryRun?: boolean = false;
 
     fields: any[] | undefined = [];
     pageSize: number = 20;
@@ -75,15 +76,28 @@ export class SchemaFormViewComponent implements OnInit {
                     : this.values[item.name];
                 if (this.isIPFS(field)) {
                     item.loading = true;
-                    this.ipfs
-                        .getImageByLink(item.value)
-                        .then((res) => {
-                            item.imgSrc = res;
-                        })
-                        .finally(() => {
-                            item.loading = false;
-                            this.changeDetector.detectChanges();
-                        });
+                    if (this.dryRun) {
+                        this.ipfs
+                            .getImageFromDryRunStorage(item.value)
+                            .then((res) => {
+                                item.imgSrc = res;
+                            })
+                            .finally(() => {
+                                item.loading = false;
+                                this.changeDetector.detectChanges();
+                            });
+                    } else {
+                        this.ipfs
+                            .getImageByLink(item.value)
+                            .then((res) => {
+                                item.imgSrc = res;
+                            })
+                            .finally(() => {
+                                item.loading = false;
+                                this.changeDetector.detectChanges();
+                            });
+                    }
+
                 }
             }
             if (!field.isArray && field.isRef) {
@@ -114,12 +128,24 @@ export class SchemaFormViewComponent implements OnInit {
                         Promise.all(
                             value.map((fieldItem: any) => {
                                 fieldItem.loading = true;
-                                return this.ipfs
-                                    .getImageByLink(fieldItem.value)
-                                    .then((res) => {
-                                        fieldItem.imgSrc = res;
-                                    })
-                                    .finally(() => (fieldItem.loading = false));
+
+                                console.log('dryRun', this.dryRun)
+
+                                if (this.dryRun) {
+                                    return this.ipfs
+                                        .getImageFromDryRunStorage(fieldItem.value)
+                                        .then((res) => {
+                                            fieldItem.imgSrc = res;
+                                        })
+                                        .finally(() => (fieldItem.loading = false));
+                                } else {
+                                    return this.ipfs
+                                        .getImageByLink(fieldItem.value)
+                                        .then((res) => {
+                                            fieldItem.imgSrc = res;
+                                        })
+                                        .finally(() => (fieldItem.loading = false));
+                                }
                             })
                         ).finally(() => this.changeDetector.detectChanges());
                     }
@@ -183,6 +209,9 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     isIPFS(item: SchemaField): boolean {
+        if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
+            || item.pattern === '^ipfs:\/\/.+') {
+        }
         return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
             || item.pattern === '^ipfs:\/\/.+';
     }

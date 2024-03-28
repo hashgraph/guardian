@@ -10,7 +10,7 @@
 </div>
 <div class="view-dialog-content">
     <ng-container *ngIf="viewDocument">
-        <app-document-view [document]="document" [schema]="schema" [type]="type"></app-document-view>
+        <app-document-view [document]="document" [dryRun]="dryRun" [schema]="schema" [type]="type"></app-document-view>
     </ng-container>
     <ng-container *ngIf="!viewDocument">
         <div *ngIf="type !== 'TEXT'" class="json">
