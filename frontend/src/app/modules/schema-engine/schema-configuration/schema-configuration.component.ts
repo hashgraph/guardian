@@ -106,35 +106,11 @@ export class SchemaConfigurationComponent implements OnInit {
         );
     }
 
-    public get isEdit(): boolean {
-        return this.type === 'version' || this.type === 'edit';
-    }
-
-    public get isNewVersion(): boolean {
-        return this.type === 'version';
-    }
-
-    public get category(): SchemaCategory {
-        switch (this.schemaType) {
-            case SchemaType.Tag:
-                return SchemaCategory.TAG;
-            case SchemaType.Policy:
-                return SchemaCategory.POLICY;
-            case SchemaType.Module:
-                return SchemaCategory.MODULE;
-            case SchemaType.Tool:
-                return SchemaCategory.TOOL;
-            case SchemaType.System:
-                return SchemaCategory.SYSTEM;
-            default:
-                return SchemaCategory.POLICY;
-        }
-    }
-
     constructor(
         private schemaService: SchemaService,
         private fb: FormBuilder
     ) {
+        console.log(this);
         const vcDefaultFields = [{
             name: 'policyId',
             title: 'Policy Id',
@@ -195,6 +171,35 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
+    }
+
+    public get isEdit(): boolean {
+        return this.type === 'version' || this.type === 'edit';
+    }
+
+    public get isNewVersion(): boolean {
+        return this.type === 'version';
+    }
+
+    public get category(): SchemaCategory {
+        switch (this.schemaType) {
+            case SchemaType.Tag:
+                return SchemaCategory.TAG;
+            case SchemaType.Policy:
+                return SchemaCategory.POLICY;
+            case SchemaType.Module:
+                return SchemaCategory.MODULE;
+            case SchemaType.Tool:
+                return SchemaCategory.TOOL;
+            case SchemaType.System:
+                return SchemaCategory.SYSTEM;
+            default:
+                return SchemaCategory.POLICY;
+        }
+    }
+
+    public get isNewSchema(): boolean {
+        return this.type === 'new';
     }
 
     get currentEntity(): any {
