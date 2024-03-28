@@ -148,30 +148,22 @@ export class MintService {
         }
         MintService.activeMintProcesses.add(vpMessageId);
         try {
-            const root = await new Users().getHederaAccount(rootDid);
+            const root = await users.getHederaAccount(rootDid);
+            const rootUser = await users.getUserById(rootDid);
             const request = await new DatabaseServer(
                 ref?.dryRun
             ).getMintRequest({
                 $and: [
                     {
                         vpMessageId,
-                    },
-                    {
-                        $or: [
-                            {
-                                isMintNeeded: true,
-                            },
-                            {
-                                isTransferNeeded: true,
-                            },
-                        ],
-                    },
+                    }
                 ],
             });
 
             const processed = await MintService.retryRequest(
                 request,
                 user?.id,
+                rootUser?.id,
                 root,
                 documentOwnerUser?.id,
                 ref
@@ -181,7 +173,7 @@ export class MintService {
                 NotificationHelper.success(
                     'All tokens already have been minted and transferred',
                     `Retry is not needed`,
-                    user.id
+                    ref?.dryRun ? rootUser?.id : user?.id
                 );
             }
         } catch (error) {
@@ -203,6 +195,7 @@ export class MintService {
     public static async retryRequest(
         request: MintRequest,
         userId: string,
+        rootId: string,
         root: IRootConfig,
         ownerId: string,
         ref?: any
@@ -231,7 +224,7 @@ export class MintService {
                         tokenConfig,
                         ref,
                         NotificationHelper.init([
-                            root.id,
+                            rootId,
                             userId,
                             ownerId,
                         ])
@@ -246,7 +239,7 @@ export class MintService {
                         tokenConfig,
                         ref,
                         NotificationHelper.init([
-                            root.id,
+                            rootId,
                             userId,
                             ownerId,
                         ])
