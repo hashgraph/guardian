@@ -77,30 +77,33 @@ export class MintFT extends TypedMint {
                 mintRequestId: this._mintRequest.id,
                 mintStatus: MintTransactionStatus.PENDING,
             });
-            const mintTransactions = await new Workers().addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TRANSACTIONS,
-                    data: {
-                        accountId: this._token.treasuryId,
-                        type: 'TOKENMINT',
-                        timestamp: this._mintRequest.startTransaction
-                            ? `gt:${this._mintRequest.startTransaction}`
-                            : null,
-                        filter: {
-                            memo: this._mintRequest.memo,
+            if (mintTransaction) {
+                const mintTransactions = await new Workers().addRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_TRANSACTIONS,
+                        data: {
+                            accountId: this._token.treasuryId,
+                            transactiontype: 'TOKENMINT',
+                            timestamp: this._mintRequest.startTransaction
+                                ? `gt:${this._mintRequest.startTransaction}`
+                                : null,
+                            filter: {
+                                memo_base64: btoa(this._mintRequest.memo),
+                            },
+                            findOne: true,
                         },
-                        findOne: true,
                     },
-                },
-                1,
-                10
-            );
+                    1,
+                    10
+                );
+                console.log('MINT_TRANS', mintTransactions);
 
-            mintTransaction.mintStatus =
-                mintTransactions.length > 0
-                    ? MintTransactionStatus.NEW
-                    : MintTransactionStatus.SUCCESS;
-            await this._db.saveMintTransaction(mintTransaction);
+                mintTransaction.mintStatus =
+                    mintTransactions.length > 0
+                        ? MintTransactionStatus.SUCCESS
+                        : MintTransactionStatus.NEW;
+                await this._db.saveMintTransaction(mintTransaction);
+            }
         }
 
         if (this._mintRequest.isTransferNeeded) {
@@ -108,30 +111,33 @@ export class MintFT extends TypedMint {
                 mintRequestId: this._mintRequest.id,
                 transferStatus: MintTransactionStatus.PENDING,
             });
-            const transferTransactions = await new Workers().addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TRANSACTIONS,
-                    data: {
-                        accountId: this._token.treasuryId,
-                        type: 'CRYPTOTRANSFER',
-                        timestamp: this._mintRequest.startTransaction
-                            ? `gt:${this._mintRequest.startTransaction}`
-                            : null,
-                        filter: {
-                            memo: this._mintRequest.memo,
+            if (transferTrasaction) {
+                const transferTransactions =
+                    await new Workers().addRetryableTask(
+                        {
+                            type: WorkerTaskType.GET_TRANSACTIONS,
+                            data: {
+                                accountId: this._token.treasuryId,
+                                transactiontype: 'CRYPTOTRANSFER',
+                                timestamp: this._mintRequest.startTransaction
+                                    ? `gt:${this._mintRequest.startTransaction}`
+                                    : null,
+                                filter: {
+                                    memo_base64: btoa(this._mintRequest.memo),
+                                },
+                                findOne: true,
+                            },
                         },
-                        findOne: true,
-                    },
-                },
-                1,
-                10
-            );
+                        1,
+                        10
+                    );
 
-            transferTrasaction.transferStatus =
-                transferTransactions.length > 0
-                    ? MintTransactionStatus.NEW
-                    : MintTransactionStatus.SUCCESS;
-            await this._db.saveMintTransaction(transferTrasaction);
+                transferTrasaction.transferStatus =
+                    transferTransactions.length > 0
+                        ? MintTransactionStatus.SUCCESS
+                        : MintTransactionStatus.NEW;
+                await this._db.saveMintTransaction(transferTrasaction);
+            }
         }
     }
 
@@ -170,7 +176,7 @@ export class MintFT extends TypedMint {
                         accountId: this._token.treasuryId,
                         limit: 1,
                         order: 'desc',
-                        type: 'TOKENMINT'
+                        transactiontype: 'TOKENMINT',
                     },
                 },
                 1,
@@ -178,7 +184,7 @@ export class MintFT extends TypedMint {
             );
 
             this._mintRequest.startTransaction =
-                startTransactions[0]?.transaction_id;
+                startTransactions[0]?.consensus_timestamp;
             await this._db.saveMintRequest(this._mintRequest);
         }
 
@@ -238,7 +244,7 @@ export class MintFT extends TypedMint {
                         accountId: this._token.treasuryId,
                         limit: 1,
                         order: 'desc',
-                        type: 'CRYPTOTRANSFER'
+                        transactiontype: 'CRYPTOTRANSFER',
                     },
                 },
                 1,
@@ -246,7 +252,7 @@ export class MintFT extends TypedMint {
             );
 
             this._mintRequest.startTransaction =
-                startTransactions[0]?.transaction_id;
+                startTransactions[0]?.consensus_timestamp;
             await this._db.saveMintRequest(this._mintRequest);
         }
 

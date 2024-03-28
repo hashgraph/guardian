@@ -7,7 +7,6 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { StateField } from '@policy-engine/helpers/decorators';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import ObjGet from 'lodash.get';
-import { VpDocument } from '@guardian/common';
 
 /**
  * Document source block with UI
@@ -280,8 +279,8 @@ export class InterfaceDocumentsSource {
                     }
                 });
                 const data =  await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
-                for (const item of data as VpDocument[]) {
-                    [item.serials, item.amount] = await ref.databaseServer.getVPMintInformation(item);
+                for (const item of data as any[]) {
+                    [item.serials, item.amount, item.error] = await ref.databaseServer.getVPMintInformation(item);
                 }
                 return data;
             case 'approve':

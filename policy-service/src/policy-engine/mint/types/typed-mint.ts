@@ -124,7 +124,7 @@ export abstract class TypedMint {
      * Resolve pending transactions check
      * @returns Is resolving needed
      */
-    protected async resolvePendingTransactionsCheck(): Promise<boolean> {
+    private async _resolvePendingTransactionsCheck(): Promise<boolean> {
         const pendingTransactions = await this._db.getMintTransactions({
             $and: [
                 {
@@ -164,6 +164,36 @@ export abstract class TypedMint {
     }
 
     /**
+     * Handle resolve result
+     */
+    private async _handleResolveResult() {
+        const notCompletedMintTransactions =
+            await this._db.getTransactionsCount({
+                mintRequestId: this._mintRequest.id,
+                mintStatus: {
+                    $nin: [
+                        MintTransactionStatus.SUCCESS,
+                        MintTransactionStatus.NONE,
+                    ],
+                },
+            });
+        this._mintRequest.isMintNeeded = notCompletedMintTransactions > 0;
+        const notCompletedTransferTransactions =
+            await this._db.getTransactionsCount({
+                mintRequestId: this._mintRequest.id,
+                transferStatus: {
+                    $nin: [
+                        MintTransactionStatus.SUCCESS,
+                        MintTransactionStatus.NONE,
+                    ],
+                },
+            });
+        this._mintRequest.isTransferNeeded =
+            notCompletedTransferTransactions > 0;
+        await this._db.saveMintRequest(this._mintRequest);
+    }
+
+    /**
      * Progress
      * @param title Title
      * @param message Message
@@ -196,8 +226,9 @@ export abstract class TypedMint {
             return false;
         }
 
-        if (await this.resolvePendingTransactionsCheck()) {
+        if (await this._resolvePendingTransactionsCheck()) {
             await this.resolvePendingTransactions();
+            await this._handleResolveResult();
         }
 
         let processed = false;
@@ -215,12 +246,14 @@ export abstract class TypedMint {
             try {
                 await this.mintTokens(notifier);
             } catch (error) {
-                const message = `Minting (${
-                    this._token.tokenId
-                }) error: ${PolicyUtils.getErrorMessage(error)}`;
+                const errorMessage = PolicyUtils.getErrorMessage(error);
+                const message = `Minting (${this._token.tokenId}) error: ${errorMessage}`;
                 notifier?.stop();
                 // tslint:disable-next-line:no-shadowed-variable
-                const progressResult = this.progressResult('Transfer tokens', message);
+                const progressResult = this.progressResult(
+                    'Transfer tokens',
+                    message
+                );
                 await this._notifier?.error(
                     progressResult.title,
                     progressResult.message,
@@ -228,6 +261,8 @@ export abstract class TypedMint {
                     progressResult.result
                 );
                 MintService.error(message, this._ref);
+                this._mintRequest.error = errorMessage;
+                await this._db.saveMintRequest(this._mintRequest);
                 throw error;
             }
 
@@ -270,12 +305,14 @@ export abstract class TypedMint {
             try {
                 await this.transferTokens(notifier);
             } catch (error) {
-                const message = `Transfer (${
-                    this._token.tokenId
-                }) error: ${PolicyUtils.getErrorMessage(error)}`;
+                const errorMessage = PolicyUtils.getErrorMessage(error);
+                const message = `Transfer (${this._token.tokenId}) error: ${errorMessage}`;
                 notifier?.stop();
                 // tslint:disable-next-line:no-shadowed-variable
-                const progressResult = this.progressResult('Transfer tokens', message);
+                const progressResult = this.progressResult(
+                    'Transfer tokens',
+                    message
+                );
                 await this._notifier?.error(
                     progressResult.title,
                     progressResult.message,
@@ -283,6 +320,8 @@ export abstract class TypedMint {
                     progressResult.result
                 );
                 MintService.error(message, this._ref);
+                this._mintRequest.error = errorMessage;
+                await this._db.saveMintRequest(this._mintRequest);
                 throw error;
             }
 
@@ -307,6 +346,9 @@ export abstract class TypedMint {
             );
             processed = true;
         }
+
+        this._mintRequest.error = undefined;
+        await this._db.saveMintRequest(this._mintRequest);
 
         return processed;
     }

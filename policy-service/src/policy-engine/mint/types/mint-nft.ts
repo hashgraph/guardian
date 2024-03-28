@@ -94,9 +94,9 @@ export class MintNFT extends TypedMint {
             this._mintRequest.amount - mintedTransactionsSerials
         );
 
-        const transactionsCount = await this._db.getTransactionsCount(
-            this._mintRequest.id
-        );
+        const transactionsCount = await this._db.getTransactionsCount({
+            mintRequestId: this._mintRequest.id,
+        });
         if (transactionsCount === 0) {
             const naturalCount = Math.floor(tokensToMint / 10);
             const restCount = tokensToMint % 10;
@@ -128,7 +128,10 @@ export class MintNFT extends TypedMint {
             }
         }
 
-        if (!this._ref.dryRun && !Number.isInteger(this._mintRequest.startSerial)) {
+        if (
+            !this._ref.dryRun &&
+            !Number.isInteger(this._mintRequest.startSerial)
+        ) {
             const startSerial = await new Workers().addRetryableTask(
                 {
                     type: WorkerTaskType.GET_TOKEN_NFTS,

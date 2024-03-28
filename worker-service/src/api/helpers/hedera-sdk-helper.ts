@@ -1645,7 +1645,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get transactions request timeout exceeded')
     public static async getTransactions(
         accountId?: string,
-        type?: string,
+        transactiontype?: string,
         timestamp?: string,
         order = 'asc',
         filter?: any,
@@ -1659,8 +1659,8 @@ export class HederaSDKHelper {
         if (accountId) {
             params['account.id'] = accountId;
         }
-        if (type) {
-            params.type = type;
+        if (transactiontype) {
+            params.transactiontype = transactiontype;
         }
         if (timestamp) {
             params.timestamp = timestamp;

@@ -71,4 +71,10 @@ export class MintRequest extends BaseEntity {
      */
     @Property({ nullable: true })
     metadata?: string;
+
+    /**
+     * Error
+     */
+    @Property({ nullable: true })
+    error?: string;
 }

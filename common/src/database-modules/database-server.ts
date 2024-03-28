@@ -38,6 +38,7 @@ import {
     DocumentType,
     GenerateUUIDv4,
     IVC,
+    MintTransactionStatus,
     SchemaEntity,
     TokenType,
     TopicType,
@@ -1754,8 +1755,8 @@ export class DatabaseServer {
      * @param mintRequestId Mint request identifier
      * @returns Transactions count
      */
-    public async getTransactionsCount(mintRequestId: string): Promise<number> {
-        return await this.count(MintTransaction, { mintRequestId });
+    public async getTransactionsCount(filters): Promise<number> {
+        return await this.count(MintTransaction, filters);
     }
 
     /**
@@ -1772,11 +1773,20 @@ export class DatabaseServer {
      * @param vpDocument VP
      * @returns Serials and amount
      */
-    public async getVPMintInformation(vpDocument: VpDocument): Promise<[serials: number[], amount: number]> {
-        const mintRequests = await this.getMintRequests({ vpMessageId: vpDocument.messageId }, { fields: ['id', 'amount', 'tokenId'] });
+    public async getVPMintInformation(
+        vpDocument: VpDocument
+    ): Promise<[serials: number[], amount: number, error: string]> {
+        const mintRequests = await this.getMintRequests(
+            { vpMessageId: vpDocument.messageId },
+            { fields: ['id', 'amount', 'tokenId', 'error'] }
+        );
         let amount = 0;
         const serials = [];
+        const errors = [];
         for (const mintRequest of mintRequests) {
+            if (mintRequest.error) {
+                errors.push(mintRequest.error);
+            }
             let token = await this.getToken(mintRequest.tokenId);
             if (!token) {
                 token = await this.getToken(mintRequest.tokenId, true);
@@ -1785,14 +1795,29 @@ export class DatabaseServer {
                 continue;
             }
             if (token.tokenType === TokenType.NON_FUNGIBLE) {
-                const requestSerials = await this.getMintRequestSerials(mintRequest.id);
+                const requestSerials = await this.getMintRequestSerials(
+                    mintRequest.id
+                );
                 amount += requestSerials.length;
                 serials.push(...requestSerials);
             } else if (token.tokenType === TokenType.FUNGIBLE) {
-                amount += (token.decimals > 0) ? (mintRequest.amount / Math.pow(10, token.decimals)) : mintRequest.amount;
+                const mintRequestTransaction = await this.getMintTransaction({
+                    mintRequestId: mintRequest.id,
+                    mintStatus: MintTransactionStatus.SUCCESS,
+                });
+                if (mintRequestTransaction) {
+                    if (token.decimals > 0) {
+                        amount +=
+                            mintRequest.amount / Math.pow(10, token.decimals);
+                    } else {
+                        amount += mintRequest.amount;
+                    }
+                } else {
+                    amount += 0;
+                }
             }
         }
-        return [serials, amount];
+        return [serials, amount, errors.join(', ')];
     }
 
     /**
@@ -1802,7 +1827,8 @@ export class DatabaseServer {
      */
     private _getTransactionsSerialsAggregation(mintRequestId: string): any[] {
         const match: any = {
-            mintRequestId
+            mintRequestId,
+            mintStatus: MintTransactionStatus.SUCCESS,
         };
         const aggregation: any[] = [
             {

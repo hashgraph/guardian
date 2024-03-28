@@ -7,7 +7,6 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
-import { VpDocument } from '@guardian/common';
 
 /**
  * Documents source addon
@@ -174,8 +173,8 @@ export class DocumentsSourceAddon {
                 filters.policyId = ref.policyId;
                 data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult);
                 if (!countResult) {
-                    for (const item of data as VpDocument[]) {
-                        [item.serials, item.amount] = await ref.databaseServer.getVPMintInformation(item);
+                    for (const item of data as any[]) {
+                        [item.serials, item.amount, item.error] = await ref.databaseServer.getVPMintInformation(item);
                     }
                 }
                 break;

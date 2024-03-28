@@ -894,14 +894,14 @@ export class Worker extends NatsService {
                 case WorkerTaskType.GET_TRANSACTIONS: {
                     const {
                         accountId,
-                        type,
+                        transactiontype,
                         timestamp,
                         order,
                         filter,
                         limit,
                         findOne,
                     } = task.data;
-                    const transactions = await HederaSDKHelper.getTransactions(accountId, type, timestamp, order, filter, limit, findOne);
+                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit, findOne);
                     result.data = transactions || [];
                     break;
                 }
