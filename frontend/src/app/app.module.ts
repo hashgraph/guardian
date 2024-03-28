@@ -115,6 +115,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 // Prototypes
 import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
+import { UseWithServiceDirective } from './directives/use-with-service.directive';
 
 @NgModule({
     declarations: [
@@ -154,7 +155,8 @@ import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
         TermsConditionsComponent,
         AccountTypeSelectorDialogComponent,
         ForgotPasswordDialogComponent,
-        OnlyForDemoDirective
+        OnlyForDemoDirective,
+        UseWithServiceDirective
     ],
     imports: [
         BrowserModule,
