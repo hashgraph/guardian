@@ -206,7 +206,6 @@ export class TokenConfigComponent implements OnInit {
             width: '720px',
             styleClass: 'custom-token-dialog',
             header: 'New Token',
-            showHeader: false,
             data: {
                 dataForm: this.dataForm,
                 contracts: this.contracts,
@@ -405,7 +404,6 @@ export class TokenConfigComponent implements OnInit {
             width: '720px',
             styleClass: 'custom-token-dialog',
             header: 'Edit Token',
-            showHeader: false,
             data: {
                 dataForm: this.dataForm,
                 contracts: this.contracts,

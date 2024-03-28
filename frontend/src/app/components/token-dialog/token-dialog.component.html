@@ -1,8 +1,5 @@
-<div class="content">
-    <div class="p-dialog-header">
-        <span class="modal-header">{{ currentTokenId ? 'Edit' : 'New' }} Token</span>
-    </div>
-    <div class="p-dialog-content">
+<div class="dialog-content">
+    <div class="token-configuration">
         <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType" [contracts]="contracts"
                                 [readonly]="readonly"></app-token-configuration>
     </div>
