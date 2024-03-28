@@ -4,10 +4,7 @@ import {
     MintTransaction,
     MintRequest,
 } from '@guardian/common';
-import {
-    MintTransactionStatus,
-    WorkerTaskType,
-} from '@guardian/interfaces';
+import { MintTransactionStatus, WorkerTaskType } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IHederaCredentials } from '@policy-engine/policy-user';
 import { TypedMint } from './typed-mint';
@@ -229,12 +226,11 @@ export class MintNFT extends TypedMint {
     protected override async transferTokens(
         notifier: NotificationHelper
     ): Promise<void> {
-        const mintedSerials = await this._db.getMintRequestSerials(
-            this._mintRequest.id
-        );
         let transferCount = 0;
-        const tokensToTransfer = mintedSerials.length;
-
+        const tokensToTransfer = await this._db.getTransactionsSerialsCount(
+            this._mintRequest.id,
+            MintTransactionStatus.NEW
+        );
         let transactions = await this._db.getMintTransactions(
             {
                 mintRequestId: this._mintRequest.id,

@@ -1751,8 +1751,8 @@ export class DatabaseServer {
      * @param mintRequestId Mint request identifier
      * @returns Serials count
      */
-    public async getTransactionsSerialsCount(mintRequestId: string): Promise<number> {
-        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId);
+    public async getTransactionsSerialsCount(mintRequestId: string, transferStatus?: MintTransactionStatus): Promise<number> {
+        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId, transferStatus);
         aggregation.push({
             $project: {
                 serials: { $size: '$serials' }
@@ -1772,12 +1772,12 @@ export class DatabaseServer {
     }
 
     /**
-     * Get mint request serials
+     * Get mint request minted serials
      * @param mintRequestId Mint request identifier
      * @returns Serials
      */
     public async getMintRequestSerials(mintRequestId: string): Promise<number[]> {
-        return await this.getTransactionsSerials(mintRequestId, MintTransactionStatus.SUCCESS);
+        return await this.getTransactionsSerials(mintRequestId);
     }
 
     /**
@@ -1786,7 +1786,7 @@ export class DatabaseServer {
      * @returns Serials
      */
     public async getMintRequestTransferSerials(mintRequestId: string): Promise<number[]> {
-        return await this.getTransactionsSerials(mintRequestId, null, MintTransactionStatus.SUCCESS);
+        return await this.getTransactionsSerials(mintRequestId, MintTransactionStatus.SUCCESS);
     }
 
     /**
@@ -1926,13 +1926,10 @@ export class DatabaseServer {
      * @param mintRequestId Mint request identifier
      * @returns Aggregation filter
      */
-    private _getTransactionsSerialsAggregation(mintRequestId: string, mintStatus?: MintTransactionStatus, transferStatus?: MintTransactionStatus): any[] {
+    private _getTransactionsSerialsAggregation(mintRequestId: string, transferStatus?: MintTransactionStatus): any[] {
         const match: any = {
             mintRequestId
         };
-        if (mintStatus) {
-            match.mintStatus = mintStatus;
-        }
         if (transferStatus) {
             match.transferStatus = transferStatus;
         }
@@ -1971,8 +1968,8 @@ export class DatabaseServer {
      * @param mintRequestId Mint request identifier
      * @returns Serials
      */
-    public async getTransactionsSerials(mintRequestId: string, mintStatus?: MintTransactionStatus, transferStatus?: MintTransactionStatus): Promise<number[]> {
-        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId, mintStatus, transferStatus);
+    public async getTransactionsSerials(mintRequestId: string, transferStatus?: MintTransactionStatus): Promise<number[]> {
+        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId, transferStatus);
         const result: any = await this.aggregate(MintTransaction, aggregation);
         return result[0]?.serials || [];
     }
