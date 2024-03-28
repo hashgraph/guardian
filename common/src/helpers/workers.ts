@@ -1,5 +1,5 @@
 import { Singleton } from '../decorators/singleton';
-import { GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, WorkerEvents, } from '@guardian/interfaces';
+import { GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, TimeoutError, WorkerEvents, } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules';
 import { NatsService } from '../mq';
 
@@ -99,6 +99,13 @@ export class Workers extends NatsService {
      */
     private readonly maxRepetitions = 25;
 
+    private _wrapError(error): any {
+        if (error?.isTimeoutError) {
+            return new TimeoutError(error?.message);
+        }
+        return error;
+    }
+
     /**
      * Check error message for retryable
      * @param error Error
@@ -187,7 +194,7 @@ export class Workers extends NatsService {
                                     if (callback.number > attempts) {
                                         this.tasksCallbacks.delete(taskId);
                                         this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
-                                        reject(error);
+                                        reject(this._wrapError(error));
                                         return;
                                     }
                                 }
@@ -195,7 +202,7 @@ export class Workers extends NatsService {
                                 this.queue.add(task);
                             } else {
                                 this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId ,data, error });
-                                reject(error);
+                                reject(this._wrapError(error));
                             }
                         } else {
                             this.tasksCallbacks.delete(task.id);

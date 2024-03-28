@@ -239,7 +239,8 @@ export class MessageServer {
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,
                 localNodeProtocol: Environment.localNodeProtocol,
-                memo: memo || MessageMemo.getMessageMemo(message)
+                memo: memo || MessageMemo.getMessageMemo(message),
+                dryRun: this.dryRun,
             }
         }, 10);
         await this.messageEndLog(time, 'Hedera');

@@ -124,12 +124,13 @@ export class ReportBlock {
             document: vp
         }
         let amount = -1;
-        if (vp.amount) {
-            amount = vp.amount;
-        } else if (Array.isArray(vp.serials)) {
+
+        if (Array.isArray(vp.serials)) {
             amount = vp.serials.length;
+        } else if (vp.amount) {
+            amount = vp.amount;
         }
-        console.log(vp);
+
         report.mintDocument = {
             type: 'VC',
             tokenId: getVCField(mint, 'tokenId'),
@@ -428,6 +429,7 @@ export class ReportBlock {
             }
 
             const vp = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
+            [vp.serials, vp.amount] = await ref.databaseServer.getVPMintInformation(vp);
             if (vp) {
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {

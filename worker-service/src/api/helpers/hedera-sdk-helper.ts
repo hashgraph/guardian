@@ -1492,6 +1492,60 @@ export class HederaSDKHelper {
         return await query.execute(client);
     }
 
+    /**
+     * Hedera REST api
+     * @param url Url
+     * @param options Options
+     * @param type Type
+     * @param filters Filters
+     * @returns Result
+     */
+    private static async hederaRestApi(url: string, options: { params?: any }, type: 'nfts' | 'transactions' | 'logs', filters?: { [key: string]: any }) {
+        const params: any = {
+            ...options,
+            responseType: 'json',
+        }
+        let hasNext = true;
+        const result = [];
+        while (hasNext) {
+            const res = await axios.get(url, params);
+            delete params.params;
+
+            if (!res || !res.data || !res.data[type]) {
+                throw new Error(`Invalid ${type} response`);
+            }
+
+            const typedData = res.data[type];
+            if (typedData.length === 0) {
+                return result;
+            }
+
+            if (filters) {
+                for (const item of typedData) {
+                    for (const filter of Object.keys(filters)) {
+                        if (item[filter] === filters[filter]) {
+                            result.push(...typedData);
+                        }
+                    }
+                }
+            } else {
+                result.push(...typedData);
+            }
+            url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+            hasNext = !!res.data.links?.next;
+        }
+
+        return result;
+    }
+
+    /**
+     * Get contract events
+     * @param contractId Contract identifier
+     * @param timestamp Timestamp
+     * @param order Order
+     * @param limit Limit
+     * @returns Logs
+     */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get contract events request timeout exceeded')
     public static async getContractEvents(
         contractId: string,
@@ -1499,10 +1553,6 @@ export class HederaSDKHelper {
         order?: string,
         limit: number = 100,
     ): Promise<any[]> {
-        let goNext = true;
-        let url = `${Environment.HEDERA_CONTRACT_API}${contractId}/results/logs`;
-        const result = [];
-
         const params: any = {
             limit,
             order: order || 'asc',
@@ -1510,32 +1560,12 @@ export class HederaSDKHelper {
         if (timestamp) {
             params.timestamp = timestamp;
         }
-        const p = {
+        const p: any = {
             params,
             responseType: 'json',
         };
-        while (goNext) {
-            const res = await axios.get(url, p as any);
-            delete p.params;
-
-            if (!res || !res.data || !res.data.logs) {
-                throw new Error(`Invalid contract logs response`);
-            }
-
-            const logs = res.data.logs;
-            if (logs.length === 0) {
-                return result;
-            }
-
-            result.push(...logs);
-            if (res.data.links?.next) {
-                url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
-            } else {
-                goNext = false;
-            }
-        }
-
-        return result;
+        const url = `${Environment.HEDERA_CONTRACT_API}${contractId}/results/logs`;
+        return await HederaSDKHelper.hederaRestApi(url, p, 'logs');
     }
 
     /**
@@ -1545,42 +1575,88 @@ export class HederaSDKHelper {
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get serials request timeout exceeded')
     public async getSerialsNFT(tokenId?: string): Promise<any[]> {
-        let goNext = true;
         const client = this.client;
-        let url = `${Environment.HEDERA_ACCOUNT_API}${client.operatorAccountId}/nfts`;
-        const result = [];
         const params = {
             limit: Number.MAX_SAFE_INTEGER,
         }
         if (tokenId) {
             params['token.id'] = tokenId;
         }
-        const p = {
+        const p: any = {
             params,
             responseType: 'json',
         };
-        while (goNext) {
-            const res = await axios.get(url, p as any);
-            delete p.params;
+        const url = `${Environment.HEDERA_ACCOUNT_API}${client.operatorAccountId}/nfts`;
+        return await HederaSDKHelper.hederaRestApi(url, p, 'nfts');
+    }
 
-            if (!res || !res.data || !res.data.nfts) {
-                throw new Error(`Invalid nfts serials response`);
-            }
-
-            const nfts = res.data.nfts;
-            if (nfts.length === 0) {
-                return result;
-            }
-
-            result.push(...nfts);
-            if (res.data.links?.next) {
-                url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
-            } else {
-                goNext = false;
-            }
+    /**
+     * Get NFT token serials
+     * @param tokenId Token identifier
+     * @param accountId Account identifier
+     * @param serialnumber Serial number
+     * @param order Order
+     * @param filter Filter
+     * @param limit Limit
+     * @returns Serials
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get token serials request timeout exceeded')
+    public static async getNFTTokenSerials(tokenId: string, accountId?: string, serialnumber?: string, order = 'asc', filter?: any, limit?: number): Promise<any[]> {
+        const params: any = {
+            limit: Number.MAX_SAFE_INTEGER,
+            order,
         }
+        if (accountId) {
+            params['account.id'] = accountId;
+        }
+        if (serialnumber) {
+            params.serialnumber = serialnumber;
+        }
+        if (Number.isInteger(limit)) {
+            params.limit = limit;
+        }
+        const p: any = {
+            params,
+            responseType: 'json',
+        };
+        const url = `${Environment.HEDERA_TOKENS_API}/${tokenId}/nfts`;
+        return await HederaSDKHelper.hederaRestApi(url, p, 'nfts', filter);
+    }
 
-        return result;
+    /**
+     * Get transactions
+     * @param accountId Account identifier
+     * @param type Type
+     * @param timestamp Timestamp
+     * @param order Order
+     * @param filter Filter
+     * @param limit Limit
+     * @returns Transactions
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get transactions request timeout exceeded')
+    public static async getTransactions(accountId?: string, type?: string, timestamp?: string, order = 'asc', filter?: any, limit?: number): Promise<any[]> {
+        const params: any = {
+            limit: Number.MAX_SAFE_INTEGER,
+            order,
+        }
+        if (accountId) {
+            params['account.id'] = accountId;
+        }
+        if (type) {
+            params.type = type;
+        }
+        if (timestamp) {
+            params.timestamp = timestamp;
+        }
+        if (Number.isInteger(limit)) {
+            params.limit = limit;
+        }
+        const p: any = {
+            params,
+            responseType: 'json',
+        };
+        const url = `${Environment.HEDERA_TRANSACTIONS_API}`;
+        return await HederaSDKHelper.hederaRestApi(url, p, 'transactions', filter);
     }
 
     /**

@@ -29,7 +29,9 @@ import {
     Record,
     PolicyCategory,
     VcDocument,
-    VpDocument
+    VpDocument,
+    MintRequest,
+    MintTransaction
 } from '../entity';
 import { Binary } from 'bson';
 import {
@@ -92,6 +94,8 @@ export class DatabaseServer {
         this.classMap.set(ExternalDocument, 'ExternalDocument');
         this.classMap.set(PolicyCategory, 'PolicyCategories');
         this.classMap.set(PolicyProperty, 'PolicyProperties');
+        this.classMap.set(MintRequest, 'MintRequest');
+        this.classMap.set(MintTransaction, 'MintTransaction');
     }
 
     /**
@@ -114,16 +118,21 @@ export class DatabaseServer {
      * Clear Dry Run table
      */
     public async clearDryRun(): Promise<void> {
-        const item = await new DataBaseHelper(DryRun).find({ dryRunId: this.dryRun });
-        await new DataBaseHelper(DryRun).remove(item);
+        await DatabaseServer.clearDryRun(this.dryRun);
     }
 
     /**
      * Clear Dry Run table
      */
     public static async clearDryRun(dryRunId: string): Promise<void> {
-        const item = await new DataBaseHelper(DryRun).find({ dryRunId });
-        await new DataBaseHelper(DryRun).remove(item);
+        const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
+        const naturalCount = Math.floor((amount / 500));
+        for (let i = 0; i < naturalCount; i++) {
+            const items = await new DataBaseHelper(DryRun).find({ dryRunId }, { limit: 500 });
+            await new DataBaseHelper(DryRun).remove(items);
+        }
+        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
+        await new DataBaseHelper(DryRun).remove(restItems);
     }
 
     /**
@@ -203,7 +212,7 @@ export class DatabaseServer {
     private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
         if (this.dryRun) {
             if (Array.isArray(aggregation)) {
-                aggregation.push({
+                aggregation.unshift({
                     $match: {
                         dryRunId: this.dryRun,
                         dryRunClass: this.classMap.get(entityClass)
@@ -226,6 +235,31 @@ export class DatabaseServer {
             return (new DataBaseHelper(DryRun).create(item)) as any;
         } else {
             return new DataBaseHelper(entityClass).create(item);
+        }
+    }
+
+    /**
+     * Create much data
+     * @param entityClass Entity class
+     * @param item Item
+     * @param amount Amount
+     */
+    private async createMuchData<T extends BaseEntity>(entityClass: new () => T, item: any, amount: number): Promise<void> {
+        const naturalCount = Math.floor((amount / 500));
+        const restCount = (amount % 500);
+
+        if (this.dryRun) {
+            item.dryRunId = this.dryRun;
+            item.dryRunClass = this.classMap.get(entityClass);
+            for (let i = 0; i < naturalCount; i++) {
+                await new DataBaseHelper(DryRun).createMuchData(item, 500);
+            }
+            await new DataBaseHelper(DryRun).createMuchData(item, restCount);
+        } else {
+            for (let i = 0; i < naturalCount; i++) {
+                await new DataBaseHelper(entityClass).createMuchData(item, 500);
+            }
+            await new DataBaseHelper(entityClass).createMuchData(item, restCount);
         }
     }
 
@@ -1641,6 +1675,170 @@ export class DatabaseServer {
     public async updateTagCache(row: TagCache): Promise<TagCache> {
         return await this.update(TagCache, row.id, row);
     }
+
+    /**
+     * Save mint request
+     * @param data Mint request
+     * @returns Saved mint request
+     */
+    public async saveMintRequest(data: Partial<MintRequest>) {
+        return await this.save(MintRequest, data);
+    }
+
+    /**
+     * Get mint requests
+     * @param filters Filters
+     * @param options Options
+     * @returns Mint requests
+     */
+    public async getMintRequests(filters: any, options?: any): Promise<MintRequest[]> {
+        return await this.find(MintRequest, filters, options);
+    }
+
+    /**
+     * Create mint transactions
+     * @param transaction Transaction
+     * @param amount Amount
+     */
+    public async createMintTransactions(transaction: any, amount: number) {
+        await this.createMuchData(MintTransaction, transaction, amount);
+    }
+
+    /**
+     * Save mint transaction
+     * @param transaction Transaction
+     * @returns Saved transaction
+     */
+    public async saveMintTransaction(transaction: Partial<MintTransaction>) {
+        return this.save(MintTransaction, transaction);
+    }
+
+    /**
+     * Get mint transactions
+     * @param filters Filters
+     * @param options Options
+     * @returns Mint transactions
+     */
+    public async getMintTransactions(filters: any, options?: any): Promise<MintTransaction[]> {
+        return await this.find(MintTransaction, filters, options);
+    }
+
+    /**
+     * Get mint transactions
+     * @param filters Filters
+     * @returns Mint transaction
+     */
+    public async getMintTransaction(filters: any): Promise<MintTransaction> {
+        return await this.findOne(MintTransaction, filters);
+    }
+
+    /**
+     * Get transactions serials count
+     * @param mintRequestId Mint request identifier
+     * @returns Serials count
+     */
+    public async getTransactionsSerialsCount(mintRequestId: string): Promise<number> {
+        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId);
+        aggregation.push({
+            $project: {
+                serials: { $size: '$serials' }
+            }
+        })
+        const result: any = await this.aggregate(MintTransaction, aggregation);
+        return result[0]?.serials || 0;
+    }
+
+    /**
+     * Get transactions count
+     * @param mintRequestId Mint request identifier
+     * @returns Transactions count
+     */
+    public async getTransactionsCount(mintRequestId: string): Promise<number> {
+        return await this.count(MintTransaction, { mintRequestId });
+    }
+
+    /**
+     * Get mint request serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public async getMintRequestSerials(mintRequestId: string): Promise<number[]> {
+        return await this.getTransactionsSerials(mintRequestId)
+    }
+
+    /**
+     * Get VP mint information
+     * @param vpDocument VP
+     * @returns Serials and amount
+     */
+    public async getVPMintInformation(vpDocument: VpDocument): Promise<[serials: number[], amount: number]> {
+        const mintRequests = await this.getMintRequests({ vpMessageId: vpDocument.messageId }, { fields: ['id', 'amount', 'tokenId'] });
+        let amount = 0;
+        const serials = [];
+        for (const mintRequest of mintRequests) {
+            let token = await this.getToken(mintRequest.tokenId);
+            if (!token) {
+                token = await this.getToken(mintRequest.tokenId, true);
+            }
+            if (!token) {
+                continue;
+            }
+            amount += (token.decimals > 0) ? (mintRequest.amount / Math.pow(10, token.decimals)) : mintRequest.amount;
+            serials.push(...(await this.getMintRequestSerials(mintRequest.id)));
+        }
+        return [serials, amount];
+    }
+
+    /**
+     * Get aggregation filter for transactions serials
+     * @param mintRequestId Mint request identifier
+     * @returns Aggregation filter
+     */
+    private _getTransactionsSerialsAggregation(mintRequestId: string): any[] {
+        const match: any = {
+            mintRequestId
+        };
+        const aggregation: any[] = [
+            {
+                $match: match,
+            },
+            {
+                $group: {
+                    _id: 1,
+                    serials: {
+                        $addToSet: '$serials',
+                    },
+                },
+            },
+            {
+                $project: {
+                    serials: {
+                        $reduce: {
+                            input: '$serials',
+                            initialValue: [],
+                            in: {
+                                $setUnion: ['$$value', '$$this'],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        return aggregation;
+    }
+
+    /**
+     * Get transactions serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public async getTransactionsSerials(mintRequestId: string): Promise<number[]> {
+        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId);
+        const result: any = await this.aggregate(MintTransaction, aggregation);
+        return result[0]?.serials || [];
+    }
+
     //Static
 
     /**

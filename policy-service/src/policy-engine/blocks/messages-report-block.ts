@@ -116,6 +116,7 @@ export class MessagesReportBlock {
 
             let messageId: string;
             const vp = await ref.databaseServer.getVpDocument({ hash: value, policyId: ref.policyId });
+            [vp.serials, vp.amount] = await ref.databaseServer.getVPMintInformation(vp);
             if (vp) {
                 messageId = vp.messageId;
             } else {

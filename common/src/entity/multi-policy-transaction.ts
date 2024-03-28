@@ -19,6 +19,12 @@ export class MultiPolicyTransaction extends BaseEntity {
     policyId?: string;
 
     /**
+     * Vp message identifier
+     */
+    @Property({ nullable: true })
+    vpMessageId?: string;
+
+    /**
      * User DID
      */
     @Property({ nullable: true })
