@@ -17,6 +17,11 @@ import {
  */
 export abstract class TypedMint {
     /**
+     * Mint request identifier
+     */
+    public readonly mintRequestId: string;
+
+    /**
      * Initialize
      * @param _mintRequest Mint request
      * @param _root Root
@@ -31,8 +36,10 @@ export abstract class TypedMint {
         protected _token: TokenConfig,
         protected _db: DatabaseServer,
         protected _ref?: any,
-        protected _notifier?: NotificationHelper
-    ) {}
+        protected _notifier?: NotificationHelper,
+    ) {
+        this.mintRequestId = this._mintRequest.id;
+    }
 
     /**
      * Init request

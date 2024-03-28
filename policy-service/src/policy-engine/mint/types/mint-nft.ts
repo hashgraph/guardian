@@ -6,7 +6,6 @@ import {
 } from '@guardian/common';
 import {
     MintTransactionStatus,
-    TimeoutError,
     WorkerTaskType,
 } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -68,7 +67,7 @@ export class MintNFT extends TypedMint {
             memo: string;
             tokenId: string;
             metadata?: string;
-            secondaryVPs?: string[];
+            secondaryVpIds?: string[];
         },
         root: IHederaCredentials,
         token: TokenConfig,
@@ -129,7 +128,7 @@ export class MintNFT extends TypedMint {
         }
 
         if (
-            !this._ref.dryRun &&
+            !this._ref?.dryRun &&
             !Number.isInteger(this._mintRequest.startSerial)
         ) {
             const startSerial = await new Workers().addRetryableTask(

@@ -343,7 +343,7 @@ export class MintBlock {
             .setTopicObject(topic)
             .sendMessage(vpMessage);
         const vpMessageId = vpMessageResult.getId();
-        const vpDocument = PolicyUtils.createVP(ref, user, vp, token.tokenId);
+        const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DataTypes.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
@@ -411,10 +411,10 @@ export class MintBlock {
         }
         if (Array.isArray(event.data.data)) {
             for (const document of event.data.data) {
-                await MintService.retry(document.messageId, event.user.id, ref.policyOwner, ref);
+                await MintService.retry(document.messageId, event.user.did, ref.policyOwner, ref);
             }
         } else {
-            await MintService.retry(event.data.data.messageId, event.user.id, ref.policyOwner, ref);
+            await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);

@@ -108,7 +108,7 @@ export class ReportBlock {
     private async addReportByVP(
         report: IReport,
         variables: any,
-        vp: VpDocument & { transferAmount?: number, wasTransferNeeded?: boolean },
+        vp: VpDocument & { transferAmount?: number, wasTransferNeeded?: boolean, tokenIds?: string[] },
         isMain: boolean = false
     ): Promise<IReport> {
         const vcs = vp.document.verifiableCredential || [];
@@ -126,7 +126,7 @@ export class ReportBlock {
 
         report.mintDocument = {
             type: 'VC',
-            tokenId: getVCField(mint, 'tokenId'),
+            tokenId: vp.tokenIds?.join(', '),
             date: getVCField(mint, 'date'),
             expected: getVCField(mint, 'amount'),
             amount: String(vp.amount),
@@ -358,19 +358,20 @@ export class ReportBlock {
         }
         const additionalReports = [];
         if (messageIds.length) {
-            const additionalVps = await ref.databaseServer.getVpDocuments<VpDocument[]>({
+            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument[]>({
                 where: {
                     messageId: { $in: messageIds },
                     policyId: { $eq: ref.policyId }
                 }
             });
             for (const additionalVp of additionalVps) {
+                [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
                 additionalReports.push(additionalReport);
             }
         }
         if (vp.messageId) {
-            const additionalVps = await ref.databaseServer.getVpDocuments<VpDocument[]>({
+            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument[]>({
                 where: {
                     'document.verifiableCredential.credentialSubject.type': { $eq: 'TokenDataSource' },
                     'document.verifiableCredential.credentialSubject.relationships': { $eq: vp.messageId },
@@ -378,6 +379,7 @@ export class ReportBlock {
                 }
             });
             for (const additionalVp of additionalVps) {
+                [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
                 additionalReports.push(additionalReport);
             }
@@ -424,8 +426,8 @@ export class ReportBlock {
             }
 
             const vp: any = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
-            [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount] = await ref.databaseServer.getVPMintInformation(vp);
             if (vp) {
+                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds] = await ref.databaseServer.getVPMintInformation(vp);
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })

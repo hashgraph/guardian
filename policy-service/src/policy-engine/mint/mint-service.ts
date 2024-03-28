@@ -132,71 +132,80 @@ export class MintService {
         ref?: any
     ) {
         const db = new DatabaseServer(ref?.dryRun);
-        const vp = await db.getVpDocument({
-            messageId: vpMessageId,
-        });
-        const users = new Users();
-        const documentOwnerUser = await users.getUserById(vp.owner);
-        const user = await users.getUserById(userDId);
-        if (MintService.activeMintProcesses.has(vpMessageId)) {
-            NotificationHelper.warn(
-                'Retry mint',
-                `Mint process for ${vpMessageId} is already in progress`,
-                user?.id
-            );
-            return;
-        }
-        const request = await new DatabaseServer(ref?.dryRun).getMintRequest({
+        const requests = await db.getMintRequests({
             $and: [
                 {
                     vpMessageId,
                 },
             ],
         });
+        if (requests.length === 0) {
+            throw new Error('There are no requests to retry')
+        }
+        const vp = await db.getVpDocument({
+            messageId: vpMessageId,
+        });
+        const users = new Users();
+        const documentOwnerUser = await users.getUserById(vp.owner);
+        const user = await users.getUserById(userDId);
         const retryMinutes = Number.isInteger(+process.env.RETRY_MINT_INTERVAL)
             ? Number(+process.env.RETRY_MINT_INTERVAL)
             : 10;
-        if (
-            request.processDate &&
-            Date.now() - request.processDate.getTime() <
-                retryMinutes * (60 * 1000)
-        ) {
-            NotificationHelper.warn(
-                `Retry mint`,
-                `Mint process for ${vpMessageId} can't be retryied. Try after ${Math.ceil(
-                    (request.processDate.getTime() +
-                        retryMinutes * (60 * 1000) -
-                        Date.now()) /
-                        (60 * 1000)
-                )} minutes`,
-                user?.id
-            );
-            return;
-        }
-        MintService.activeMintProcesses.add(vpMessageId);
-        try {
-            const root = await users.getHederaAccount(rootDid);
-            const rootUser = await users.getUserById(rootDid);
-            const processed = await MintService.retryRequest(
-                request,
-                user?.id,
-                rootUser?.id,
-                root,
-                documentOwnerUser?.id,
-                ref
-            );
-
-            if (!processed) {
-                NotificationHelper.success(
-                    'All tokens already have been minted and transferred',
-                    `Retry is not needed`,
-                    ref?.dryRun ? rootUser?.id : user?.id
+        let processed = false;
+        const root = await users.getHederaAccount(rootDid);
+        const rootUser = await users.getUserById(rootDid);
+        for (const request of requests) {
+            if (
+                request.processDate &&
+                Date.now() - request.processDate.getTime() <
+                    retryMinutes * (60 * 1000)
+            ) {
+                processed = true;
+                NotificationHelper.warn(
+                    `Retry mint`,
+                    `Mint process for ${vpMessageId} can't be retryied. Try after ${Math.ceil(
+                        (request.processDate.getTime() +
+                            retryMinutes * (60 * 1000) -
+                            Date.now()) /
+                            (60 * 1000)
+                    )} minutes`,
+                    user?.id
                 );
+                continue;
             }
-        } catch (error) {
-            throw error;
-        } finally {
-            MintService.activeMintProcesses.delete(vpMessageId);
+            if (MintService.activeMintProcesses.has(request.id)) {
+                processed = true;
+                NotificationHelper.warn(
+                    'Retry mint',
+                    `Mint process for ${vpMessageId} is already in progress`,
+                    user?.id
+                );
+                continue;
+            }
+            MintService.activeMintProcesses.add(request.id);
+            try {
+                processed ||= await MintService.retryRequest(
+                    request,
+                    user?.id,
+                    rootUser?.id,
+                    root,
+                    documentOwnerUser?.id,
+                    ref
+                );
+
+            } catch (error) {
+                throw error;
+            } finally {
+                MintService.activeMintProcesses.delete(request.id);
+            }
+        }
+
+        if (!processed) {
+            NotificationHelper.success(
+                `All tokens for ${vpMessageId} are minted and transferred`,
+                `Retry is not needed`,
+                ref?.dryRun ? rootUser?.id : user?.id
+            );
         }
     }
 
@@ -283,10 +292,7 @@ export class MintService {
         transactionMemo: string,
         documents: VcDocument[]
     ): Promise<void> {
-        if (MintService.activeMintProcesses.has(vpMessageId)) {
-            return;
-        }
-        MintService.activeMintProcesses.add(vpMessageId);
+        let requestId;
         try {
             const multipleConfig = await MintService.getMultipleConfig(
                 ref,
@@ -339,7 +345,7 @@ export class MintService {
                 }
                 notifier.success(
                     `Multi mint`,
-                    `Request to mint is submitted`,
+                    multipleConfig.type === 'Main' ? 'Mint transaction created' : `Request to mint is submitted`,
                     NotificationAction.POLICY_VIEW,
                     ref.policyId
                 );
@@ -349,38 +355,40 @@ export class MintService {
                     token
                 );
                 if (token.tokenType === 'non-fungible') {
-                    await (
-                        await MintNFT.create(
-                            {
-                                target: targetAccount,
-                                amount: tokenValue,
-                                vpMessageId,
-                                tokenId: token.tokenId,
-                                metadata: vpMessageId,
-                                memo: transactionMemo,
-                            },
-                            root,
-                            tokenConfig,
-                            ref,
-                            notifier
-                        )
-                    ).mint();
+                    const mintNFT = await MintNFT.create(
+                        {
+                            target: targetAccount,
+                            amount: tokenValue,
+                            vpMessageId,
+                            tokenId: token.tokenId,
+                            metadata: vpMessageId,
+                            memo: transactionMemo,
+                        },
+                        root,
+                        tokenConfig,
+                        ref,
+                        notifier
+                    );
+                    requestId = mintNFT.mintRequestId;
+                    MintService.activeMintProcesses.add(requestId);
+                    await mintNFT.mint();
                 } else {
-                    await (
-                        await MintFT.create(
-                            {
-                                target: targetAccount,
-                                amount: tokenValue,
-                                vpMessageId,
-                                tokenId: token.tokenId,
-                                memo: transactionMemo,
-                            },
-                            root,
-                            tokenConfig,
-                            ref,
-                            notifier
-                        )
-                    ).mint();
+                    const mintFT = await MintFT.create(
+                        {
+                            target: targetAccount,
+                            amount: tokenValue,
+                            vpMessageId,
+                            tokenId: token.tokenId,
+                            memo: transactionMemo,
+                        },
+                        root,
+                        tokenConfig,
+                        ref,
+                        notifier
+                    );
+                    requestId = mintFT.mintRequestId;
+                    MintService.activeMintProcesses.add(requestId);
+                    await mintFT.mint();
                 }
             }
 
@@ -395,7 +403,7 @@ export class MintService {
         } catch (error) {
             throw error;
         } finally {
-            MintService.activeMintProcesses.delete(vpMessageId);
+            MintService.activeMintProcesses.delete(requestId);
         }
     }
 
@@ -418,10 +426,7 @@ export class MintService {
         vpMessageId: string,
         notifier?: NotificationHelper
     ): Promise<void> {
-        if (MintService.activeMintProcesses.has(vpMessageId)) {
-            return;
-        }
-        MintService.activeMintProcesses.add(vpMessageId);
+        let requestId;
         try {
             const messageIds = ids.join(',');
             const memo = messageIds;
@@ -448,39 +453,41 @@ export class MintService {
             tokenConfig.treasuryKey = treasuryKey;
 
             if (token.tokenType === 'non-fungible') {
-                await (
-                    await MintNFT.create(
-                        {
-                            target: targetAccount,
-                            amount: tokenValue,
-                            vpMessageId,
-                            metadata: messageIds,
-                            secondaryVPs: ids,
-                            memo,
-                            tokenId: token.tokenId,
-                        },
-                        root,
-                        tokenConfig,
-                        null,
-                        notifier
-                    )
-                ).mint();
+                const mintNFT = await MintNFT.create(
+                    {
+                        target: targetAccount,
+                        amount: tokenValue,
+                        vpMessageId,
+                        metadata: messageIds,
+                        secondaryVpIds: ids,
+                        memo,
+                        tokenId: token.tokenId,
+                    },
+                    root,
+                    tokenConfig,
+                    null,
+                    notifier
+                );
+                requestId = mintNFT.mintRequestId;
+                MintService.activeMintProcesses.add(requestId);
+                await mintNFT.mint();
             } else {
-                await (
-                    await MintFT.create(
-                        {
-                            target: targetAccount,
-                            amount: tokenValue,
-                            vpMessageId,
-                            secondaryVPs: ids,
-                            memo,
-                            tokenId: token.tokenId,
-                        },
-                        root,
-                        tokenConfig,
-                        null
-                    )
-                ).mint();
+                const mintFT = await MintFT.create(
+                    {
+                        target: targetAccount,
+                        amount: tokenValue,
+                        vpMessageId,
+                        secondaryVpIds: ids,
+                        memo,
+                        tokenId: token.tokenId,
+                    },
+                    root,
+                    tokenConfig,
+                    null
+                );
+                requestId = mintFT.mintRequestId;
+                MintService.activeMintProcesses.add(requestId);
+                await mintFT.mint();
             }
 
             new ExternalEventChannel().publishMessage(
@@ -494,7 +501,7 @@ export class MintService {
         } catch (error) {
             MintService.error(PolicyUtils.getErrorMessage(error));
         } finally {
-            MintService.activeMintProcesses.delete(vpMessageId);
+            MintService.activeMintProcesses.delete(requestId);
         }
     }
 

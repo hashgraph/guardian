@@ -1702,8 +1702,8 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Mint request
      */
-    public async getMintRequest(filters: any): Promise<MintRequest> {
-        return await this.findOne(MintRequest, filters);
+    public async getMintRequests(filters: any): Promise<MintRequest[]> {
+        return await this.find(MintRequest, filters);
     }
 
     /**
@@ -1793,69 +1793,129 @@ export class DatabaseServer {
      */
     public async getVPMintInformation(
         vpDocument: VpDocument
-    ): Promise<[
-        serials: number[],
-        amount: number,
-        error: string,
-        wasTransferNeeded: boolean,
-        transferSerials: number[],
-        transferAmount: number,
-    ]> {
-        const mintRequest = await this.getMintRequest(
-            { vpMessageId: vpDocument.messageId }
-        );
-        let amount = 0;
-        let serials = [];
-        let transferSerials = [];
-        let transferAmount = 0;
-        let token = await this.getToken(mintRequest.tokenId);
-        if (!token) {
-            token = await this.getToken(mintRequest.tokenId, true);
+    ): Promise<
+        [
+            serials: { serial: number; tokenId: string }[],
+            amount: number,
+            error: string,
+            wasTransferNeeded: boolean,
+            transferSerials: number[],
+            transferAmount: number,
+            tokenIds: string[]
+        ]
+    > {
+        const mintRequests = await this.getMintRequests({
+            $or: [
+                {
+                    vpMessageId: vpDocument.messageId,
+                },
+                {
+                    secondaryVpIds: vpDocument.messageId,
+                },
+            ],
+        });
+        let amount = Number.isFinite(Number(vpDocument.amount))
+            ? Number(vpDocument.amount)
+            : 0;
+        const serials = vpDocument.serials
+            ? vpDocument.serials.map((serial) => ({
+                  serial,
+                  tokenId: vpDocument.tokenId,
+              }))
+            : [];
+        const transferSerials = vpDocument.serials
+            ? vpDocument.serials.map((serial) => ({
+                  serial,
+                  tokenId: vpDocument.tokenId,
+              }))
+            : [];
+        let transferAmount = amount;
+        const errors = [];
+        let wasTransferNeeded = false;
+        const tokenIds = new Set<string>();
+        if (vpDocument.tokenId) {
+            tokenIds.add(vpDocument.tokenId);
         }
-        if (!token) {
-            return [ serials, amount, mintRequest.error, mintRequest.wasTransferNeeded, transferSerials, transferAmount ];
-        }
-        if (token.tokenType === TokenType.NON_FUNGIBLE) {
-            serials = await this.getMintRequestSerials(
-                mintRequest.id
-            );
-            amount = serials.length;
 
-            if (mintRequest.wasTransferNeeded) {
-                transferSerials = await this.getMintRequestTransferSerials(
+        for (const mintRequest of mintRequests) {
+            if (mintRequest.error) {
+                errors.push(mintRequest.error);
+            }
+            wasTransferNeeded ||= mintRequest.wasTransferNeeded;
+            let token = await this.getToken(mintRequest.tokenId);
+            if (!token) {
+                token = await this.getToken(mintRequest.tokenId, true);
+            }
+            if (!token) {
+                continue;
+            }
+            tokenIds.add(mintRequest.tokenId);
+            if (token.tokenType === TokenType.NON_FUNGIBLE) {
+                const requestSerials = await this.getMintRequestSerials(
                     mintRequest.id
                 );
-                transferAmount = transferSerials.length;
-            }
-        } else if (token.tokenType === TokenType.FUNGIBLE) {
-            const mintRequestTransaction = await this.getMintTransaction({
-                mintRequestId: mintRequest.id,
-                mintStatus: MintTransactionStatus.SUCCESS,
-            });
-            if (mintRequestTransaction) {
-                if (token.decimals > 0) {
-                    amount +=
-                        mintRequest.amount / Math.pow(10, token.decimals);
-                } else {
-                    amount += mintRequest.amount;
+                serials.push(
+                    ...requestSerials.map((serial) => ({
+                        serial,
+                        tokenId: mintRequest.tokenId,
+                    }))
+                );
+                amount += requestSerials.length;
+
+                if (wasTransferNeeded) {
+                    const requestTransferSerials =
+                        await this.getMintRequestTransferSerials(
+                            mintRequest.id
+                        );
+                    transferSerials.push(
+                        ...requestTransferSerials.map((serial) => ({
+                            serial,
+                            tokenId: mintRequest.tokenId,
+                        }))
+                    );
+                    transferAmount += transferSerials.length;
                 }
-            }
-            if (mintRequest.wasTransferNeeded) {
-                const mintRequestTransferTransaction = await this.getMintTransaction({
+            } else if (token.tokenType === TokenType.FUNGIBLE) {
+                const mintRequestTransaction = await this.getMintTransaction({
                     mintRequestId: mintRequest.id,
-                    transferStatus: MintTransactionStatus.SUCCESS,
+                    mintStatus: MintTransactionStatus.SUCCESS,
                 });
-                if (mintRequestTransferTransaction) {
+                if (mintRequestTransaction) {
                     if (token.decimals > 0) {
-                        transferAmount +=
+                        amount +=
                             mintRequest.amount / Math.pow(10, token.decimals);
                     } else {
-                        transferAmount += mintRequest.amount;
+                        amount += mintRequest.amount;
+                    }
+                }
+                if (wasTransferNeeded) {
+                    const mintRequestTransferTransaction =
+                        await this.getMintTransaction({
+                            mintRequestId: mintRequest.id,
+                            transferStatus: MintTransactionStatus.SUCCESS,
+                        });
+                    if (mintRequestTransferTransaction) {
+                        if (token.decimals > 0) {
+                            transferAmount +=
+                                mintRequest.amount /
+                                Math.pow(10, token.decimals);
+                        } else {
+                            transferAmount += mintRequest.amount;
+                        }
                     }
                 }
             }
         }
-        return [ serials, amount, mintRequest.error, mintRequest.wasTransferNeeded, transferSerials, transferAmount ];
+
+        return [
+            serials,
+            amount,
+            errors.join(', '),
+            wasTransferNeeded,
+            transferSerials,
+            transferAmount,
+            [...tokenIds],
+        ];
     }
 
     /**

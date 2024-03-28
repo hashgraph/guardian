@@ -2,7 +2,6 @@ import { MintRequest, NotificationHelper, Workers } from '@guardian/common';
 import {
     WorkerTaskType,
     MintTransactionStatus,
-    TimeoutError,
 } from '@guardian/interfaces';
 import { TypedMint } from './typed-mint';
 import { IHederaCredentials } from '@policy-engine/policy-user';
@@ -56,7 +55,7 @@ export class MintFT extends TypedMint {
             vpMessageId: string;
             memo: string;
             tokenId: string;
-            secondaryVPs?: string[];
+            secondaryVpIds?: string[];
         },
         root: IHederaCredentials,
         token: TokenConfig,

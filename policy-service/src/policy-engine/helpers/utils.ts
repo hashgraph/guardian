@@ -1185,7 +1185,6 @@ export class PolicyUtils {
         ref: AnyBlockType,
         owner: IPolicyUser,
         document: VpDocument,
-        tokenId?: string,
     ): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1196,7 +1195,6 @@ export class PolicyUtils {
             group: owner.group,
             status: DocumentStatus.NEW,
             signature: DocumentSignature.NEW,
-            tokenId,
         };
     }
 
