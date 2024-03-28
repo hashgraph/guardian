@@ -205,7 +205,6 @@ services:
       - logger-service
       - worker-service
       - policy-service
-      - ai-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
