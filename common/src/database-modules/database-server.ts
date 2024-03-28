@@ -1882,7 +1882,7 @@ export class DatabaseServer {
                             tokenId: mintRequest.tokenId,
                         }))
                     );
-                    transferAmount += transferSerials.length;
+                    transferAmount += requestTransferSerials.length;
                 }
             } else if (token.tokenType === TokenType.FUNGIBLE) {
                 const mintRequestTransaction = await this.getMintTransaction({
