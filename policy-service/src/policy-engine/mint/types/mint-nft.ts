@@ -229,7 +229,7 @@ export class MintNFT extends TypedMint {
         let transferCount = 0;
         const tokensToTransfer = await this._db.getTransactionsSerialsCount(
             this._mintRequest.id,
-            MintTransactionStatus.NEW
+            { $in: [MintTransactionStatus.ERROR, MintTransactionStatus.NEW] }
         );
         let transactions = await this._db.getMintTransactions(
             {
