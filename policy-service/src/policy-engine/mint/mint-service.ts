@@ -149,9 +149,9 @@ export class MintService {
         MintService.activeMintProcesses.add(vpMessageId);
         try {
             const root = await new Users().getHederaAccount(rootDid);
-            const requests = await new DatabaseServer(
+            const request = await new DatabaseServer(
                 ref?.dryRun
-            ).getMintRequests({
+            ).getMintRequest({
                 $and: [
                     {
                         vpMessageId,
@@ -169,17 +169,13 @@ export class MintService {
                 ],
             });
 
-            let processed = false;
-
-            for (const request of requests) {
-                processed = await MintService.retryRequest(
-                    request,
-                    user?.id,
-                    root,
-                    documentOwnerUser?.id,
-                    ref
-                );
-            }
+            const processed = await MintService.retryRequest(
+                request,
+                user?.id,
+                root,
+                documentOwnerUser?.id,
+                ref
+            );
 
             if (!processed) {
                 NotificationHelper.success(

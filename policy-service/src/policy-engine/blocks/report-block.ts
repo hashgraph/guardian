@@ -108,7 +108,7 @@ export class ReportBlock {
     private async addReportByVP(
         report: IReport,
         variables: any,
-        vp: VpDocument,
+        vp: VpDocument & { transferAmount?: number, wasTransferNeeded?: boolean },
         isMain: boolean = false
     ): Promise<IReport> {
         const vcs = vp.document.verifiableCredential || [];
@@ -130,6 +130,8 @@ export class ReportBlock {
             date: getVCField(mint, 'date'),
             expected: getVCField(mint, 'amount'),
             amount: String(vp.amount),
+            transferAmount: String(vp.transferAmount),
+            wasTransferNeeded: vp.wasTransferNeeded,
             tag: vp.tag,
             issuer: vp.owner,
             username: vp.owner,
@@ -422,7 +424,7 @@ export class ReportBlock {
             }
 
             const vp: any = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
-            [vp.serials, vp.amount, vp.error] = await ref.databaseServer.getVPMintInformation(vp);
+            [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount] = await ref.databaseServer.getVPMintInformation(vp);
             if (vp) {
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {

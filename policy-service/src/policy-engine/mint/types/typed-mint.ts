@@ -98,7 +98,7 @@ export abstract class TypedMint {
         const db = new DatabaseServer(ref?.dryRun);
         const isTransferNeeded = request.target !== token.treasuryId;
         const mintRequest = await db.saveMintRequest(
-            Object.assign(request, { isTransferNeeded })
+            Object.assign(request, { isTransferNeeded, wasTransferNeeded: isTransferNeeded })
         );
         return [mintRequest, root, token, db, ref, notifier];
     }

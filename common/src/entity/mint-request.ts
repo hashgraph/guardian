@@ -61,6 +61,12 @@ export class MintRequest extends BaseEntity {
     isTransferNeeded: boolean = false;
 
     /**
+     * Was transfer needed
+     */
+    @Property({ default: false })
+    wasTransferNeeded: boolean = false;
+
+    /**
      * Memo
      */
     @Property()

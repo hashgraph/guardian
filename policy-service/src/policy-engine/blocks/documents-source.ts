@@ -280,7 +280,7 @@ export class InterfaceDocumentsSource {
                 });
                 const data =  await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
                 for (const item of data as any[]) {
-                    [item.serials, item.amount, item.error] = await ref.databaseServer.getVPMintInformation(item);
+                    [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount] = await ref.databaseServer.getVPMintInformation(item);
                 }
                 return data;
             case 'approve':

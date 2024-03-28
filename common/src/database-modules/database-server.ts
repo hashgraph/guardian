@@ -1688,13 +1688,12 @@ export class DatabaseServer {
     }
 
     /**
-     * Get mint requests
+     * Get mint request
      * @param filters Filters
-     * @param options Options
-     * @returns Mint requests
+     * @returns Mint request
      */
-    public async getMintRequests(filters: any, options?: any): Promise<MintRequest[]> {
-        return await this.find(MintRequest, filters, options);
+    public async getMintRequest(filters: any): Promise<MintRequest> {
+        return await this.findOne(MintRequest, filters);
     }
 
     /**
@@ -1765,7 +1764,16 @@ export class DatabaseServer {
      * @returns Serials
      */
     public async getMintRequestSerials(mintRequestId: string): Promise<number[]> {
-        return await this.getTransactionsSerials(mintRequestId)
+        return await this.getTransactionsSerials(mintRequestId, MintTransactionStatus.SUCCESS);
+    }
+
+    /**
+     * Get mint request transfer serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public async getMintRequestTransferSerials(mintRequestId: string): Promise<number[]> {
+        return await this.getTransactionsSerials(mintRequestId, null, MintTransactionStatus.SUCCESS);
     }
 
     /**
@@ -1775,49 +1783,69 @@ export class DatabaseServer {
      */
     public async getVPMintInformation(
         vpDocument: VpDocument
-    ): Promise<[serials: number[], amount: number, error: string]> {
-        const mintRequests = await this.getMintRequests(
-            { vpMessageId: vpDocument.messageId },
-            { fields: ['id', 'amount', 'tokenId', 'error'] }
+    ): Promise<[
+        serials: number[],
+        amount: number,
+        error: string,
+        wasTransferNeeded: boolean,
+        transferSerials: number[],
+        transferAmount: number,
+    ]> {
+        const mintRequest = await this.getMintRequest(
+            { vpMessageId: vpDocument.messageId }
         );
         let amount = 0;
-        const serials = [];
-        const errors = [];
-        for (const mintRequest of mintRequests) {
-            if (mintRequest.error) {
-                errors.push(mintRequest.error);
-            }
-            let token = await this.getToken(mintRequest.tokenId);
-            if (!token) {
-                token = await this.getToken(mintRequest.tokenId, true);
-            }
-            if (!token) {
-                continue;
-            }
-            if (token.tokenType === TokenType.NON_FUNGIBLE) {
-                const requestSerials = await this.getMintRequestSerials(
+        let serials = [];
+        let transferSerials = [];
+        let transferAmount = 0;
+        let token = await this.getToken(mintRequest.tokenId);
+        if (!token) {
+            token = await this.getToken(mintRequest.tokenId, true);
+        }
+        if (!token) {
+            return [ serials, amount, mintRequest.error, mintRequest.wasTransferNeeded, transferSerials, transferAmount ];
+        }
+        if (token.tokenType === TokenType.NON_FUNGIBLE) {
+            serials = await this.getMintRequestSerials(
+                mintRequest.id
+            );
+            amount = serials.length;
+
+            if (mintRequest.wasTransferNeeded) {
+                transferSerials = await this.getMintRequestTransferSerials(
                     mintRequest.id
                 );
-                amount += requestSerials.length;
-                serials.push(...requestSerials);
-            } else if (token.tokenType === TokenType.FUNGIBLE) {
-                const mintRequestTransaction = await this.getMintTransaction({
+                transferAmount = transferSerials.length;
+            }
+        } else if (token.tokenType === TokenType.FUNGIBLE) {
+            const mintRequestTransaction = await this.getMintTransaction({
+                mintRequestId: mintRequest.id,
+                mintStatus: MintTransactionStatus.SUCCESS,
+            });
+            if (mintRequestTransaction) {
+                if (token.decimals > 0) {
+                    amount +=
+                        mintRequest.amount / Math.pow(10, token.decimals);
+                } else {
+                    amount += mintRequest.amount;
+                }
+            }
+            if (mintRequest.wasTransferNeeded) {
+                const mintRequestTransferTransaction = await this.getMintTransaction({
                     mintRequestId: mintRequest.id,
-                    mintStatus: MintTransactionStatus.SUCCESS,
+                    transferStatus: MintTransactionStatus.SUCCESS,
                 });
-                if (mintRequestTransaction) {
+                if (mintRequestTransferTransaction) {
                     if (token.decimals > 0) {
-                        amount +=
+                        transferAmount +=
                             mintRequest.amount / Math.pow(10, token.decimals);
                     } else {
-                        amount += mintRequest.amount;
+                        transferAmount += mintRequest.amount;
                     }
-                } else {
-                    amount += 0;
                 }
             }
         }
-        return [serials, amount, errors.join(', ')];
+        return [ serials, amount, mintRequest.error, mintRequest.wasTransferNeeded, transferSerials, transferAmount ];
     }
 
     /**
@@ -1825,11 +1853,16 @@ export class DatabaseServer {
      * @param mintRequestId Mint request identifier
      * @returns Aggregation filter
      */
-    private _getTransactionsSerialsAggregation(mintRequestId: string): any[] {
+    private _getTransactionsSerialsAggregation(mintRequestId: string, mintStatus?: MintTransactionStatus, transferStatus?: MintTransactionStatus): any[] {
         const match: any = {
-            mintRequestId,
-            mintStatus: MintTransactionStatus.SUCCESS,
+            mintRequestId
         };
+        if (mintStatus) {
+            match.mintStatus = mintStatus;
+        }
+        if (transferStatus) {
+            match.transferStatus = transferStatus;
+        }
         const aggregation: any[] = [
             {
                 $match: match,
@@ -1865,8 +1898,8 @@ export class DatabaseServer {
      * @param mintRequestId Mint request identifier
      * @returns Serials
      */
-    public async getTransactionsSerials(mintRequestId: string): Promise<number[]> {
-        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId);
+    public async getTransactionsSerials(mintRequestId: string, mintStatus?: MintTransactionStatus, transferStatus?: MintTransactionStatus): Promise<number[]> {
+        const aggregation = this._getTransactionsSerialsAggregation(mintRequestId, mintStatus, transferStatus);
         const result: any = await this.aggregate(MintTransaction, aggregation);
         return result[0]?.serials || [];
     }
