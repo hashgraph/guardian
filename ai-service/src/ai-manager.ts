@@ -32,7 +32,12 @@ export class AIManager {
         this.categories = [];
         this.policies = [];
         this.policyDescriptions = [];
-        this.model = new OpenAI({modelName: this.versionGPT, temperature: 0, openAIApiKey: process.env.OPENAI_API_KEY});
+        const openAIApiKey = process.env.OPENAI_API_KEY
+        if (!openAIApiKey || openAIApiKey.length < 10) {
+            throw new Error('Bad openAIApiKey');
+        }
+
+        this.model = new OpenAI({modelName: this.versionGPT, temperature: 0, openAIApiKey});
         this.vector = null;
         this.chain = null;
     }
