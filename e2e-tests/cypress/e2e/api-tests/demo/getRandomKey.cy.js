@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 context("Demo", { tags: '@demo' }, () => {
     const authorization = Cypress.env("authorization");
-    it("should generates a random Hedera creds", () => {
+    it("Generates a new Hedera account with a random private key", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.RandomKey,

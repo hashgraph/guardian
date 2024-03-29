@@ -172,6 +172,11 @@ export class DocumentsSourceAddon {
             case 'vp-documents':
                 filters.policyId = ref.policyId;
                 data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult);
+                if (!countResult) {
+                    for (const item of data as any[]) {
+                        [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
+                    }
+                }
                 break;
             case 'standard-registries':
                 data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);

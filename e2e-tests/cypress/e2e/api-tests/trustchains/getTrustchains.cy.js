@@ -27,7 +27,6 @@ context("Trustchains", { tags: '@trustchains' },() => {
                         authorization: accessToken
                     }
                 }).then((response) => {
-                    response.body.accessToken = accessToken
                     cy.writeFile("cypress/fixtures/Auditor.json", JSON.stringify(response.body))
                 })
             })
@@ -35,7 +34,7 @@ context("Trustchains", { tags: '@trustchains' },() => {
     })
 
 
-    it('should return a list of all VP documents', () => {
+    it('Get all VP documents', () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + API.AccountsLogin,

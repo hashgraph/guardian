@@ -6,7 +6,7 @@ import API from "../../../support/ApiUrls";
 context("Policies", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("should push create a new policy", () => {
+    it("Create a new policy", () => {
         const nameTag = Math.floor(Math.random() * 999) + "test666";
         const urlPolicies = {
             method: "POST",
@@ -137,7 +137,6 @@ context("Policies", { tags: '@policies' }, () => {
         };
 
         cy.request(urlPolicies).should((response) => {
-            console.log(response);
             expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
         });
     });

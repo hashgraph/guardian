@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 
 context('Settings',{ tags: '@settings' },  () => {
     const authorization = Cypress.env("authorization");
-    it('gets settings for Standard Registry', () => {
+    it('Get current settings', () => {
         cy.request({
             method: 'GET',
             url: API.ApiServer + 'settings',

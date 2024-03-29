@@ -16,6 +16,7 @@ context("Policies", { tags: '@policies' },() => {
           },
           timeout: 180000
         }).then(response => {
+            expect(response.status).to.eq(201);
           let firstPolicyId = response.body.at(-1).id
           let firstPolicyStatus = response.body.at(-1).status
           expect(firstPolicyStatus).to.equal('DRAFT')
@@ -30,13 +31,13 @@ context("Policies", { tags: '@policies' },() => {
               let secondPolicyId = response.body.policies.at(-1).id
               let policyStatus = response.body.policies.at(-1).status
               expect(response.status).to.eq(200)
-              expect(response.body).to.not.be.oneOf([null, ""])
               expect(firstPolicyId).to.equal(secondPolicyId)
               expect(policyStatus).to.equal('PUBLISH')
             })
         })
       })
-    it("check returns of the blocks", () => {
+
+    it("Get data from the root policy block", () => {
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",

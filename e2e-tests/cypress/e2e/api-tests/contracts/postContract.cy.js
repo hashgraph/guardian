@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Contracts", { tags: '@contracts' },() => {
     const authorization = Cypress.env("authorization");
 
-    it("create contract", () => {
+    it("Create retire contract", () => {
         const contractName = Math.floor(Math.random() * 999) + "APIContract";
         cy.request({
             method: METHOD.POST,

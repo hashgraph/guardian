@@ -6,7 +6,7 @@ context('Profiles', {tags: '@profiles'}, () => {
     const authorization = Cypress.env("authorization");
     let did
 
-    it("get SR did", () => {
+    before(() => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.StandartRegistries,
@@ -34,7 +34,6 @@ context('Profiles', {tags: '@profiles'}, () => {
         cy.request(options)
             .then((response) => {
                 expect(response.status).to.eq(201)
-                expect(response.body).to.not.be.oneOf([null, ""])
                 expect(response.body.username).to.equal(name)
                 expect(response.body.role).to.equal('USER')
                 cy.request({
@@ -43,7 +42,6 @@ context('Profiles', {tags: '@profiles'}, () => {
                     body: {
                         username: name,
                         password: userPassword,
-                        password_confirmation: userPassword,
                     }
                 })
                     .then((response) => {
@@ -92,7 +90,6 @@ context('Profiles', {tags: '@profiles'}, () => {
                 let username = response.body.username
 
                 expect(response.status).to.eq(201)
-                expect(response.body).to.not.be.oneOf([null, ""])
                 expect(username).to.equal(name)
                 expect(role).to.equal('USER')
 
@@ -107,8 +104,6 @@ context('Profiles', {tags: '@profiles'}, () => {
                 })
                     .then((response) => {
                         expect(response.status).to.eq(200)
-
-
                         let accessToken = 'bearer ' + response.body.accessToken
                         cy.request({
                             method: 'PUT',

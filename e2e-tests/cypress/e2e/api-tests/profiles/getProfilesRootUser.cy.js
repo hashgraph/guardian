@@ -5,7 +5,7 @@ import API from "../../../support/ApiUrls";
 context('Profiles', { tags: '@profiles' },() => {
     const authorization = Cypress.env('authorization');
 
-    it('it returns root user account information', () => {
+    it('Get user account information', () => {
         const options = {
             method: 'GET',
             url: API.ApiServer  + 'profiles/' + Cypress.env('root_user'),

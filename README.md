@@ -30,7 +30,8 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 * [Hedera Testnet Account](https://portal.hedera.com)
 * [Web3.Storage Account](https://web3.storage/)
 * [Filebase Account](https://filebase.com/)
-  Note: as of January, 10th 2024 old web3.storage upload API (the main upload API before November 20, 2023) has been sunset. New **w3up** service accounts/API must be used with Guardian going forward.
+
+Note: as of January, 10th 2024 old web3.storage upload API (the main upload API before November 20, 2023) has been sunset. New **w3up** service accounts/API must be used with Guardian going forward.
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 

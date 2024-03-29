@@ -154,6 +154,20 @@ export async function getSchemaCategory(topicId: string): Promise<SchemaCategory
     return SchemaCategory.POLICY;
 }
 
+export async function getSchemaTarget(topicId: string): Promise<any> {
+    if (topicId) {
+        const tool = await DatabaseServer.getTool({ topicId });
+        if (tool) {
+            return { category: SchemaCategory.TOOL, target: tool };
+        }
+        const policy = await DatabaseServer.getPolicy({ topicId });
+        if (policy) {
+            return { category: SchemaCategory.POLICY, target: policy };
+        }
+    }
+    return null;
+}
+
 /**
  * Import schema by files
  * @param owner

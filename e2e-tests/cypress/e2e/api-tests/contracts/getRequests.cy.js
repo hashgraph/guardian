@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Contracts", { tags: '@contracts' },() => {
     const authorization = Cypress.env("authorization");
 
-    it("get all contracts requests", () => {
+    it("Get all retire contracts requests", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfRequests,

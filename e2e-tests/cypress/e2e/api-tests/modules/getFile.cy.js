@@ -5,7 +5,7 @@ context("Modules", { tags: '@modules' },() => {
     const authorization = Cypress.env("authorization");
     const moduleName = Math.floor(Math.random() * 999) + "APIModule";
     let moduleId;
-    it("create and get module id", () => {
+    before(() => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ListOfAllModules,
@@ -26,7 +26,7 @@ context("Modules", { tags: '@modules' },() => {
         });
     });
 
-    it("get module file", () => {
+    it("Create and export module as file", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfAllModules + moduleId + "/" + API.ExportMessage,

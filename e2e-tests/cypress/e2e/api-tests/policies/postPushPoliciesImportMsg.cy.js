@@ -5,7 +5,7 @@ import API from "../../../support/ApiUrls";
 context("Policy - Import", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("push should imports new policy and all associated artifacts from IPFS into the local DB", () => {
+    it("Push import new policy and all associated artifacts from IPFS", () => {
         cy.request({
             method: "POST",
             url: `${API.ApiServer}policies/push/import/message`,

@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject, Subscription, of } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { ApplicationStates, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
-import {
-    ServiceUnavailableDialog
-} from '../modules/schema-engine/service-unavailable-dialog/service-unavailable-dialog.component';
+import { ServiceUnavailableDialog } from '../modules/schema-engine/service-unavailable-dialog/service-unavailable-dialog.component';
 
 interface MeecoVerifyVPResponse {
     vc: any;
@@ -223,8 +221,10 @@ export class WebSocketService {
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(data);
-                    const allStatesReady = !this.serviesStates.find((item: any) => !item.states.includes(ApplicationStates.READY));
-                    // const allStatesReady = true;
+
+                    const notReadyServices = this.serviesStates.filter((item: any) => !item.states.includes(ApplicationStates.READY));
+                    const allStatesReady = notReadyServices.length === 0;
+
                     if (!allStatesReady && !this.requiredServicesWrongStatus) {
                         this.requiredServicesWrongStatus = true;
                         if (!['/status', '/admin/settings', '/admin/logs', '/login'].includes(location.pathname)) {

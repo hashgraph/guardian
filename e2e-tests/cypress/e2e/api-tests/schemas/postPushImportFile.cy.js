@@ -40,7 +40,7 @@ context("Schemas",{ tags: '@schemas' },  () => {
         });
     });
 
-    it("should push import the schema file", () => {
+    it("Push import new schema from a file", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

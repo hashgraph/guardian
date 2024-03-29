@@ -43,7 +43,7 @@ context("Tags", {tags: '@tags'}, () => {
     });
 
 
-    it("should search a tag", () => {
+    it("Search tags", () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + API.Tags + "search",

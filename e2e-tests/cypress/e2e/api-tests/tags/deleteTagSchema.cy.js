@@ -90,7 +90,7 @@ context("Tags", {tags: '@tags'}, () => {
         });
     })
 
-    it("should delete a tag schema", () => {
+    it("Delete tag(schema)", () => {
         //delete tag schema
         cy.request({
             method: "DELETE",

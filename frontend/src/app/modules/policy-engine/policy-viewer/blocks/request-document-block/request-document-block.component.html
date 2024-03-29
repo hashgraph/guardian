@@ -27,7 +27,7 @@
                     Restore Values<mat-icon>restore</mat-icon>
                 </button>
             </div>
-	    
+
             <div *ngIf="dryRun" class="restore-data">
                 <mat-icon>info</mat-icon>
                 <b>There is dry run mode. You can fill document with test data:</b>
@@ -40,7 +40,7 @@
                     Test<mat-icon>restore</mat-icon>
                 </button>
             </div>
-	    
+
             <div class="schema-form">
                 <app-schema-form
                     (cancelBtnEvent)="onCancelPage($event)"
@@ -50,6 +50,8 @@
                     [private-fields]="hideFields"
                     [readonly-fields]="presetReadonlyFields"
                     [schema]="schema"
+                    [dryRun]="dryRun"
+                    [policyId]="policyId"
                     submitText="Create"
                 >
                 </app-schema-form>
@@ -85,7 +87,7 @@
                 Test<mat-icon>restore</mat-icon>
             </button>
         </div>
-	
+
         <div *ngIf="schema" class="body-dialog-template" mat-dialog-content>
             <ng-template #preloader>
                 <div class="preloader-image"></div>
@@ -104,6 +106,8 @@
                         [preset]="presetDocument"
                         [private-fields]="hideFields"
                         [readonly-fields]="presetReadonlyFields"
+                        [dryRun]="dryRun"
+                        [policyId]="policyId"
                         [schema]="schema"
                     >
                     </app-schema-form>

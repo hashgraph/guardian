@@ -286,7 +286,6 @@ export class AnalyticsPolicyService {
                 }
             });
         } catch (error) {
-            console.log('--- policy.topicId 2', policy.topicId, error);
             report.error = String(error);
             return report;
         }

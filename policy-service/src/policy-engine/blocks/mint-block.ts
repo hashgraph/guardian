@@ -20,7 +20,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { MintService } from '@policy-engine/multi-policy-service/mint-service';
+import { MintService } from '@policy-engine/mint/mint-service';
 
 /**
  * Mint block
@@ -37,7 +37,8 @@ import { MintService } from '@policy-engine/multi-policy-service/mint-service';
         control: ControlType.Server,
         input: [
             PolicyInputEventType.RunEvent,
-            PolicyInputEventType.AdditionalMintEvent
+            PolicyInputEventType.AdditionalMintEvent,
+            PolicyInputEventType.RetryMintEvent,
         ],
         output: [
             PolicyOutputEventType.RunEvent,
@@ -282,7 +283,7 @@ export class MintBlock {
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
-        if (Number.isNaN(amount) || !Number.isFinite(amount)) {
+        if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
         }
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
@@ -355,7 +356,15 @@ export class MintBlock {
 
         const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
         await MintService.mint(
-            ref, token, tokenValue, user, policyOwnerHederaCred, accountId, vpMessageId, transactionMemo, documents
+            ref,
+            token,
+            tokenValue,
+            user,
+            policyOwnerHederaCred,
+            accountId,
+            vpMessageId,
+            transactionMemo,
+            documents
         );
         return [savedVp, tokenValue];
     }
@@ -384,6 +393,31 @@ export class MintBlock {
         const additionalDocs = PolicyUtils.getArray<IPolicyDocument>(event.data.result);
 
         await this.run(ref, event, docOwner, docs, additionalDocs);
+    }
+
+    /**
+     * Retry action
+     * @event PolicyEventType.RetryMintEvent
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        type: PolicyInputEventType.RetryMintEvent
+    })
+    @CatchErrors()
+    async retryMint(event: IPolicyEvent<IPolicyEventState>) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
+        if (!event.data?.data) {
+            throw new Error('Invalid data');
+        }
+        if (Array.isArray(event.data.data)) {
+            for (const document of event.data.data) {
+                await MintService.retry(document.messageId, event.user.did, ref.policyOwner, ref);
+            }
+        } else {
+            await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref);
+        }
+
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
     }
 
     /**
