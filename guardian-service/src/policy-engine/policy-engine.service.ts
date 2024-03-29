@@ -1,9 +1,7 @@
 import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
-    DataBaseHelper,
     DatabaseServer,
-    DryRunFiles,
     findAllEntities,
     GenerateBlocks,
     IAuthUser,
@@ -1348,7 +1346,6 @@ export class PolicyEngineService {
                 await this.policyEngine.destroyModel(model.id.toString());
                 const databaseServer = new DatabaseServer(model.id.toString());
                 await databaseServer.clearDryRun();
-                await new DataBaseHelper(DryRunFiles).delete({policyId});
 
                 const newPolicy = await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run');
                 await this.policyEngine.generateModel(newPolicy.id.toString());
