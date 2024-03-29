@@ -181,6 +181,14 @@ export interface ITokenReport {
      */
     amount?: string;
     /**
+     * Was transfer needed
+     */
+    wasTransferNeeded?: boolean;
+    /**
+     * Token amount
+     */
+    transferAmount?: string;
+    /**
      * Report tag
      */
     tag: string;

@@ -36,7 +36,7 @@ context("Policies", { tags: '@policies' }, () => {
         })
       })
 
-    it("should sends data to the specified block.", () => {
+    it("Get block data by tag", () => {
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",

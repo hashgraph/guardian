@@ -206,7 +206,8 @@ export class ExternalTopicBlock {
             if (typeof document === 'string') {
                 document = JSON.parse(document);
             }
-            return SchemaHelper.parseFields(document, null, null, false);
+            const schemaCache = new Map<string, any>();
+            return SchemaHelper.parseFields(document, null, schemaCache, null, false);
         } catch (error) {
             return null;
         }

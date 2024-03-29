@@ -1,38 +1,29 @@
-import {
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    PolicyEngineEvents,
-    PolicyEvents,
-    PolicyType,
-    Schema,
-    SchemaField,
-    TopicType
-} from '@guardian/interfaces';
+import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
     DatabaseServer,
     findAllEntities,
+    GenerateBlocks,
     IAuthUser,
+    JsonToXlsx,
     Logger,
+    MessageAction,
     MessageError,
     MessageResponse,
+    MessageServer,
+    MessageType,
     NatsService,
     Policy,
     PolicyImportExport,
-    RunFunctionAsync,
-    Singleton,
-    Users,
-    Schema as SchemaCollection,
-    MessageServer,
     PolicyMessage,
-    MessageType,
-    MessageAction,
+    RunFunctionAsync,
+    Schema as SchemaCollection,
+    Singleton,
     TopicConfig,
+    Users,
+    VcHelper,
     Wallet,
-    XlsxToJson,
-    JsonToXlsx,
-    GenerateBlocks,
-    VcHelper
+    XlsxToJson
 } from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyComponentsUtils } from './policy-components-utils';

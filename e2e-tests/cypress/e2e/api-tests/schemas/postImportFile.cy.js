@@ -41,7 +41,7 @@ context("Schemas", { tags: '@schemas' }, () => {
         });
     });
 
-    it("import the schema file", () => {
+    it("Import new schema from a file", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

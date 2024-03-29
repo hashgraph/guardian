@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Schemas", { tags: '@schemas' },  () => {
     const authorization = Cypress.env("authorization");
 
-    it("get all system schemas by username", () => {
+    it("Get all system schemas by username", () => {
         const usernames = ["Installer", "StandartRegistry"];
         let randomUserName =
             usernames[Math.floor(Math.random() * usernames.length)];

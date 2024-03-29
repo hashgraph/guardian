@@ -19,7 +19,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         });
     });
 
-    it("should run policy without making any persistent changes or executing transaction", () => {
+    it("Run policy without making any persistent changes or executing transaction", () => {
         cy.request({
             method: "GET",
             url:  API.ApiServer + API.Policies,
@@ -47,7 +47,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         });
     });
 
-    it("should returns all virtual users", () => {
+    it("Get all virtual users", () => {
         cy.request({
             method: "GET",
             url: API.ApiServer + API.Policies,
@@ -75,7 +75,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         });
     });
 
-    it("should returns lists of virtual transactions", () => {
+    it("Get lists of virtual transactions", () => {
         cy.request({
             method: "GET",
             url: API.ApiServer + API.Policies,
@@ -103,7 +103,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         });
     });
 
-    it("should returns lists of virtual artifacts", () => {
+    it("Get lists of virtual artifacts", () => {
         cy.request({
             method: "GET",
             url: API.ApiServer + API.Policies,
@@ -131,7 +131,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         });
     });
 
-    it("should returns lists of virtual ipfs", () => {
+    it("Get lists of virtual ipfs", () => {
         cy.request({
             method: "GET",
             url: API.ApiServer + API.Policies,
@@ -159,7 +159,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         });
     });
 
-    it("should create a new virtual account and login", () => {
+    it("Create a new virtual account and login", () => {
         cy.request({
             method: "GET",
             url: API.ApiServer + API.Policies,

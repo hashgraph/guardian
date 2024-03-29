@@ -1,10 +1,9 @@
-import { MessageBrokerChannel } from './helpers/common/message-brokers-chanel';
+import { ApplicationState, Logger, MessageBrokerChannel } from '@guardian/common';
 import { AISuggestionService } from './helpers/suggestions';
 import { aiSuggestionsAPI } from './api/service/ai-suggestions-service';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db';
 import { AIManager } from './ai-manager';
 import * as process from 'process';
-import { ApplicationState, Logger } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([
@@ -19,10 +18,8 @@ Promise.all([
     new Logger().setConnection(cn);
     await new AISuggestionService().setConnection(cn).init();
     await new AISuggestionsDB().setConnection(cn).init();
-
-    const aiManager = new AIManager();
-
     try {
+        const aiManager = new AIManager();
         await aiSuggestionsAPI(aiManager);
         state.updateState(ApplicationStates.READY);
         new Logger().info('Ai service started', ['AI_SERVICE']);

@@ -13,7 +13,7 @@ moduleAlias.addAliases({
 
 dotenv.config();
 
-const envPath = process.env.GUARDIAN_ENV ? `./configs/.env.gateway.${process.env.GUARDIAN_ENV}` : './configs/.env.gateway';
+const envPath = process.env.GUARDIAN_ENV ? `./configs/.env.ai-service.${process.env.GUARDIAN_ENV}` : './configs/.env.ai-service';
 
 if (!process.env.OVERRIDE || process.env.OVERRIDE === 'false') {
     console.log('reading from', envPath, 'not overriding');
@@ -32,3 +32,4 @@ if (!process.env.OVERRIDE || process.env.OVERRIDE === 'false') {
         }
     }
 }
+console.log('Charged Environment', process.env, '\r\n___ . ___');

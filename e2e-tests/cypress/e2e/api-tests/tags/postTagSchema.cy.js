@@ -7,7 +7,7 @@ context("Tags", {tags: '@tags'}, () => {
     const tagName = "tagSchemaAPI" + Math.floor(Math.random() * 999999);
     const tagId = "d0e99e70-3511-486668e-bf6f-10041e9a0cb7" + Math.floor(Math.random() * 999999);
 
-    it("should create a tag schema", () => {
+    it("Create new schema", () => {
         //create tag schema
         cy.request({
             method: "POST",

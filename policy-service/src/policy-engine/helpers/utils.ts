@@ -1184,7 +1184,7 @@ export class PolicyUtils {
     public static createVP(
         ref: AnyBlockType,
         owner: IPolicyUser,
-        document: VpDocument
+        document: VpDocument,
     ): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1194,7 +1194,7 @@ export class PolicyUtils {
             owner: owner.did,
             group: owner.group,
             status: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW
+            signature: DocumentSignature.NEW,
         };
     }
 

@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Settings", { tags: '@settings' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("Returns current environment name.", () => {
+    it("Get current environment name", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.SettingsEnv,

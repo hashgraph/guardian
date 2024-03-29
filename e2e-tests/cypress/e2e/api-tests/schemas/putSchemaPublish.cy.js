@@ -36,7 +36,7 @@ context("Schemas", { tags: '@schemas' }, () => {
         });
     });
 
-    it("create new schema", () => {
+    it("Publish the schema with the provided (internal) schema ID", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

@@ -19,6 +19,7 @@ export class DocumentViewComponent implements OnInit {
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
+    @Input() dryRun?: boolean = false;
 
     subjects: any[] = [];
     proofJson!: string;

@@ -853,6 +853,11 @@ export interface IPolicyDBDocument<T> {
      * Document instance
      */
     document?: T;
+
+    /**
+     * Token identifier
+     */
+    tokenId?: string;
 }
 
 /**

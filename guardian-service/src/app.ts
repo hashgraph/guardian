@@ -252,7 +252,7 @@ Promise.all([
             return false;
         }
         try {
-            if (process.env.INITIALIZATION_TOPIC_KEY) {
+            if (process.env.INITIALIZATION_TOPIC_ID) {
                 // if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
                 //     throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
                 // }

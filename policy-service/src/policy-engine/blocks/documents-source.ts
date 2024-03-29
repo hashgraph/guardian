@@ -278,7 +278,11 @@ export class InterfaceDocumentsSource {
                         policyId: { $eq: ref.policyId }
                     }
                 });
-                return await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
+                const data =  await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
+                for (const item of data as any[]) {
+                    [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
+                }
+                return data;
             case 'approve':
                 aggregation.unshift({
                     $match: {

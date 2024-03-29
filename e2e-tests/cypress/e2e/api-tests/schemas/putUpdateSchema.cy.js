@@ -37,7 +37,7 @@ context("Schemas", { tags: '@schemas' }, () => {
         });
     });
 
-    it("update schema by schemaId", () => {
+    it("Updates the schema with the provided schema ID", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas + topicUid,

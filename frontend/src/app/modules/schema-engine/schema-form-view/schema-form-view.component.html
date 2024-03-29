@@ -80,19 +80,19 @@
                         <div class="form-field-value">
                             <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
                             <div *ngIf="isInput(item)" class="example-full-width">
-                                <input [ngClass]="{'hidden-item': isIPFS(item) }" [readonly]="true" [value]="item.value" class="p-field-input"
+                                <input [ngClass]="{'hidden-item': isIPFS(item) }" [readonly]="true" [value]="listItem.value" class="p-field-input"
                                        pInputText>
                                 <div *ngIf="isIPFS(item)">
                                     <div class="image-action-buttons">
-                                        <button [cdkCopyToClipboard]="item.value" class="button" pButton type="button">
+                                        <button [cdkCopyToClipboard]="listItem.value" class="button" pButton type="button">
                                             Copy Link
                                         </button>
-                                        <button [cdkCopyToClipboard]="getCID(item.value)" class="button secondary"
+                                        <button [cdkCopyToClipboard]="getCID(listItem.value)" class="button secondary"
                                                 pButton>
                                             Copy CID
                                         </button>
                                     </div>
-                                    <img *ngIf="!item.loading; else loading" [alt]="item.value" [src]="item.imgSrc"
+                                    <img *ngIf="!listItem.loading; else loading" [alt]="listItem.value" [src]="listItem.imgSrc"
                                          class="ipfs-image">
                                     <ng-template #loading>
                                         <mat-spinner class="loading"></mat-spinner>
@@ -101,22 +101,22 @@
                             </div>
 
                             <div *ngIf="isTime(item)" class="example-full-width">
-                                <input [readonly]="true" [value]="item.value | date: 'mediumTime'" class="p-field-input" pInputText
+                                <input [readonly]="true" [value]="listItem.value | date: 'mediumTime'" class="p-field-input" pInputText
                                        type="date">
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="example-full-width">
-                                <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input" pInputText
+                                <input [readonly]="true" [value]="listItem.value | date: 'medium'" class="p-field-input" pInputText
                                        type="date">
                             </div>
 
                             <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
-                                <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText
+                                <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText
                                        type="date">
                             </div>
 
                             <div *ngIf="isBoolean(item)" class="boolean-form-field">
-                                <p-checkbox [(ngModel)]="item.value" name="groupname" value="val1"></p-checkbox>
+                                <p-checkbox [(ngModel)]="listItem.value" name="groupname" value="val1"></p-checkbox>
                             </div>
 
                             <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>

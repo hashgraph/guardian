@@ -1,2 +1,3 @@
-./faiss-vector/.
-./data/
+/faiss-vector
+/data
+

@@ -5,32 +5,27 @@ import API from "../../../support/ApiUrls";
 context('Policies', { tags: '@policies' },() => {
     const authorization = Cypress.env('authorization');
 
-    it('check returns of the policy', () => {
-
-      const urlPolicies = {
-        method: "GET",
-        url: API.ApiServer + "policies",
-        headers: {
-            authorization,
-        },
-    };
-
-    cy.request(urlPolicies).then((response) => {
-        expect(response.status).to.eq(200);
-        const policyId = response.body[0].id;
-      //   const urlPoliciesId = {
-      //   method: 'POST',
-      //   url: Cypress.env('api_server') + 'policies/' + policyId + "/groups",
-      //   body: {
-      //       "uuid": "string"
-      //   },
-      //   headers: {
-      //     authorization,
-      //   }};
-      // cy.request(urlPoliciesId)
-      //     .then((response) => {
-      //     expect(response.status).to.eq(200)
-      //   })
+    it('Make the group active', () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies,
+            headers: {
+                authorization,
+            }
+        }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            const policyId = response.body.at(0).id;
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.Policies + policyId + "/" + API.PolicyGroups,
+                body: {},
+                headers: {
+                    authorization,
+                },
+                timeout: 180000
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK)
+            })
+        })
     })
-})
 })

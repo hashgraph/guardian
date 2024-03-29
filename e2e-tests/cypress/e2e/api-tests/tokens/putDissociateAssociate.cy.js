@@ -31,7 +31,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
 
 
     const authorization = Cypress.env("authorization");
-    it("should be able to dissociate and associate token", () => {
+    it("Associate and disassociate the user with the provided Hedera token", () => {
         let username = "Installer";
         cy.request({
             method: 'POST',
@@ -56,8 +56,6 @@ context("Tokens",{ tags: '@tokens' }, () => {
                         authorization: accessToken
                     }
                 }).then((response) => {
-                    console.log(response)
-                    cy.log(response)
                     let tokenId = response.body.at(-1).tokenId
                     cy.request({
                         method: 'PUT',
