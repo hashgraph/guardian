@@ -75,6 +75,10 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
         return this.dataForm?.get('wipeContractId')?.value;
     }
 
+    set decimals(value: string) {
+        this.dataForm?.patchValue({ decimals: value });
+    }
+
     ngOnInit(): void {
         if (this.preset) {
             this.dataForm.patchValue(this.preset);
@@ -83,7 +87,6 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
                 this.dataForm.get(controlName)?.disable();
             }
         }
-        this.onChangeType();
     }
 
     ngOnChanges() {
@@ -94,11 +97,15 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
             ) < 0
                 ? this.contracts.concat([{ contractId: this.wipeContractId }])
                 : this.contracts;
+        this.onChangeType();
     }
 
     onChangeType() {
         const data = this.dataForm.getRawValue();
         this.ft = (data && data.tokenType == 'fungible');
+        if (!this.ft) {
+            this.decimals = '0';
+        }
     }
 
     tokenTypeChanged($event: any) {

@@ -424,6 +424,9 @@ export class FieldModel implements IWeightModel {
         if (this.required !== undefined) {
             properties.push(new AnyPropertyModel('required', this.required));
         }
+        if (this.isArray !== undefined) {
+            properties.push(new AnyPropertyModel('multiple', this.isArray));
+        }
         if (this.type) {
             properties.push(new UUIDPropertyModel('type', this.type));
         }

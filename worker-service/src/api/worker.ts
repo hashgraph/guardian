@@ -877,12 +877,42 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.GET_TOKEN_NFTS: {
+                    const {
+                        tokenId,
+                        accountId,
+                        serialnumber,
+                        order,
+                        filter,
+                        limit,
+                    } = task.data;
+                    const nfts = await HederaSDKHelper.getNFTTokenSerials(tokenId, accountId, serialnumber, order, filter, limit);
+                    result.data = nfts?.map(nft => nft.serial_number) || [];
+                    break;
+                }
+
+                case WorkerTaskType.GET_TRANSACTIONS: {
+                    const {
+                        accountId,
+                        transactiontype,
+                        timestamp,
+                        order,
+                        filter,
+                        limit,
+                        findOne,
+                    } = task.data;
+                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit, findOne);
+                    result.data = transactions || [];
+                    break;
+                }
+
                 default:
                     result.error = 'unknown task'
             }
             ///////
         } catch (e) {
             result.error = e.message;
+            result.isTimeoutError = e.isTimeoutError;
         } finally {
             this.safeDestroyClient(client);
         }

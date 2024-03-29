@@ -105,6 +105,12 @@
                                 {{ item.mintDocument.amount }} / {{ item.mintDocument.expected }} minted
                             </div>
                         </div>
+                        <div class="vp-field" *ngIf="item.mintDocument.wasTransferNeeded">
+                            <div class="vp-field-label">Token transfer</div>
+                            <div [pTooltip]="item.mintDocument.transferAmount || ''" class="vp-field-value">
+                                {{ item.mintDocument.transferAmount }} / {{ item.mintDocument.expected }} transferred
+                            </div>
+                        </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Mint date</div>
                             <div [pTooltip]="item.mintDocument.date" class="vp-field-value">

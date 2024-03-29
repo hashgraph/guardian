@@ -48,7 +48,7 @@
                     <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
                 </p-button>
                 <p-button
-                    *ngIf="canCreate"
+                    *ngIf="canImport"
                     (click)="downloadExcelExample()"
                     class="toolbar-btn-primary"
                     [pTooltip]="'Generate Excel Template'"

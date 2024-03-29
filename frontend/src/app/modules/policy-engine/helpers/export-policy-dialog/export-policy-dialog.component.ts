@@ -58,7 +58,7 @@ export class ExportPolicyDialog {
                 );
                 downloadLink.setAttribute(
                     'download',
-                    `policy_${Date.now()}.policy`
+                    `${this.policy.name}.policy`
                 );
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
@@ -84,7 +84,7 @@ export class ExportPolicyDialog {
                 );
                 downloadLink.setAttribute(
                     'download',
-                    `module_${Date.now()}.module`
+                    `${this.module.name}.module`
                 );
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
@@ -106,7 +106,7 @@ export class ExportPolicyDialog {
                 downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
                     type: 'application/guardian-tool'
                 }));
-                downloadLink.setAttribute('download', `tool_${Date.now()}.tool`);
+                downloadLink.setAttribute('download', `${this.tool.name}.tool`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 setTimeout(() => {

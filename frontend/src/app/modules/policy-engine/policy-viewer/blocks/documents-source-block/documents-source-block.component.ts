@@ -385,10 +385,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
             for (const serial of row.serials) {
                 links.push({
                     type: "tokens",
-                    params: row.tokenId,
+                    params: serial.tokenId,
                     subType: "serials",
-                    subParams: serial,
-                    value: `${row.tokenId} / ${serial}`
+                    subParams: serial.serial,
+                    value: `${serial.tokenId} / ${serial.serial}`
                 })
             }
         }

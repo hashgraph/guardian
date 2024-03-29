@@ -177,22 +177,6 @@
     </div>
 </ng-template>
 
-<p-dialog [(visible)]="tokenDialogVisible" [closable]="true" [draggable]="false" [modal]="true">
-    <ng-template pTemplate="header">
-        <span class="modal-header">{{ currentTokenId ? 'Edit' : 'New' }} Token</span>
-    </ng-template>
-    <div style="padding: 0 10px 0 10px;">
-        <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType" [contracts]="contracts"
-                                 [readonly]="readonlyForm"></app-token-configuration>
-    </div>
-    <ng-template pTemplate="footer">
-        <button (click)="tokenDialogVisible = false" class="button secondary" label="Close" pButton
-                type="button"></button>
-        <button (click)="saveToken()" [disabled]="dataForm.invalid" [label]="currentTokenId ? 'Save' : 'Create'" class="button" pButton
-                type="button"></button>
-    </ng-template>
-</p-dialog>
-
 <p-dialog [(visible)]="deleteTokenVisible" [closable]="true" [draggable]="false" [modal]="true">
     <ng-template pTemplate="header">
         <span class="modal-header">Detele Token</span>

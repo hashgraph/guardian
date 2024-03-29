@@ -1,7 +1,7 @@
 <div>
-    <div 
-        *ngIf="unreadNotifications > 0" 
-        (click)="onMenuOpened($event)" 
+    <div
+        *ngIf="unreadNotifications > 0"
+        (click)="onMenuOpened($event)"
         class="badge"
     >
         <span class="notification-counter">
@@ -11,7 +11,7 @@
     <div
         class="notification-position"
         (menuClosed)="menuOpened = false"
-        [matMenuTriggerFor]="notificationMenu" 
+        [matMenuTriggerFor]="notificationMenu"
     >
         <mat-menu #notificationMenu="matMenu" class="notification-menu-panel" xPosition="after" yPosition="below">
             <div class="notification-menu">
@@ -24,32 +24,17 @@
                 <div (scroll)="onScrollNotifications($event)" *ngIf="progressNotifications?.length"
                     class="notification-list">
                     <div *ngFor="let notification of progressNotifications" [attr.unread]="true" class="notification">
-                        <div [routerLink]="'/task/' + notification.taskId"
+                        <div *ngIf="notification.taskId" [routerLink]="'/task/' + notification.taskId"
                             style="display: flex; flex-direction: column; max-width: calc(100% - 32px);">
-                            <div class="notification__title">
-                                <div [ngSwitch]="notification.type" class="width-min-content">
-                                    <svg-icon 
-                                        src="/assets/images/icons/time.svg" 
-                                        svgClass="primary-color">
-                                    </svg-icon>
-                                </div>
-                                <span>{{ notification.action }}</span>
-                            </div>
-                            <div [pTooltip]="notification.message" [tooltipPosition]="'top'" class="notification__message">
-                                {{ notification.message }}
-                            </div>
-                            <div class="notification__progressbar">
-                                <div class="progress-container">
-                                    <p-progressBar [showValue]="false" [value]="notification.progress"></p-progressBar>
-                                </div>
-                                <div class="progress-value">
-                                    {{ notification.progress }}
-                                </div>
-                            </div>
+                            <ng-container *ngTemplateOutlet="notificationBody; context: { notification }"></ng-container>
+                        </div>
+                        <div *ngIf="!notification.taskId"
+                            style="display: flex; flex-direction: column; max-width: calc(100% - 32px);">
+                            <ng-container *ngTemplateOutlet="notificationBody; context: { notification }"></ng-container>
                         </div>
                         <div *ngIf="notification.action" class="notification__details">
-                            <svg-icon 
-                                src="/assets/images/icons/right-arrow.svg" 
+                            <svg-icon
+                                src="/assets/images/icons/right-arrow.svg"
                                 svgClass="details-color">
                             </svg-icon>
                         </div>
@@ -58,26 +43,26 @@
                 <div class="notification-menu__delimiter" *ngIf="progressNotifications.length && notifications.length">
                 </div>
                 <div class="notification-list" *ngIf="notifications.length" (scroll)="onScrollNotifications($event)">
-                    <div (click)="viewDetails($event, notification)" 
+                    <div (click)="viewDetails($event, notification)"
                         *ngFor="let notification of notifications"
-                        [attr.notificationId]="notification.id" 
+                        [attr.notificationId]="notification.id"
                         [attr.type]="notification.type"
-                        [attr.unread]="!notification.read" 
+                        [attr.unread]="!notification.read"
                         class="notification"
                     >
                         <div style="display: flex; flex-direction: column; max-width: calc(100% - 32px);">
                             <div class="notification__title">
                                 <div [ngSwitch]="notification.type" class="width-min-content">
                                     <svg-icon *ngSwitchCase="'INFO'"
-                                        src="/assets/images/icons/time.svg" 
+                                        src="/assets/images/icons/time.svg"
                                         svgClass="info-color">
                                     </svg-icon>
                                     <svg-icon *ngSwitchCase="'SUCCESS'"
-                                        src="/assets/images/icons/check.svg" 
+                                        src="/assets/images/icons/check.svg"
                                         svgClass="success-color">
                                     </svg-icon>
                                     <svg-icon *ngSwitchCase="'ERROR'"
-                                        src="/assets/images/icons/close.svg" 
+                                        src="/assets/images/icons/close.svg"
                                         svgClass="error-color">
                                     </svg-icon>
                                 </div>
@@ -89,15 +74,15 @@
                         </div>
                         <div *ngIf="notification.action" class="notification__details">
                             <svg-icon
-                                src="/assets/images/icons/right-arrow.svg" 
+                                src="/assets/images/icons/right-arrow.svg"
                                 svgClass="details-color">
                             </svg-icon>
                         </div>
                     </div>
                 </div>
                 <div *ngIf="!progressNotifications.length && !notifications.length" class="no-new-notifications">
-                    <svg-icon class="svg-icon-32" 
-                        src="/assets/images/icons/32/notification.svg" 
+                    <svg-icon class="svg-icon-32"
+                        src="/assets/images/icons/32/notification.svg"
                         svgClass="disabled-color">
                     </svg-icon>
                     <span>No new notifications</span>
@@ -111,3 +96,26 @@
         </mat-menu>
     </div>
 </div>
+
+<ng-template #notificationBody let-notification="notification">
+    <div class="notification__title">
+        <div [ngSwitch]="notification.type" class="width-min-content">
+            <svg-icon
+                src="/assets/images/icons/time.svg"
+                svgClass="primary-color">
+            </svg-icon>
+        </div>
+        <span>{{ notification.action }}</span>
+    </div>
+    <div [pTooltip]="notification.message" [tooltipPosition]="'top'" class="notification__message">
+        {{ notification.message }}
+    </div>
+    <div class="notification__progressbar">
+        <div class="progress-container">
+            <p-progressBar [showValue]="false" [value]="notification.progress"></p-progressBar>
+        </div>
+        <div class="progress-value">
+            {{ notification.progress }}
+        </div>
+    </div>
+</ng-template>

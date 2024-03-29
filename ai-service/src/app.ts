@@ -19,10 +19,8 @@ Promise.all([
     new Logger().setConnection(cn);
     await new AISuggestionService().setConnection(cn).init();
     await new AISuggestionsDB().setConnection(cn).init();
-
-    const aiManager = new AIManager();
-
     try {
+        const aiManager = new AIManager();
         await aiSuggestionsAPI(aiManager);
         state.updateState(ApplicationStates.READY);
         new Logger().info('Ai service started', ['AI_SERVICE']);

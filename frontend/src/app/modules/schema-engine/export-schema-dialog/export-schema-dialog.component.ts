@@ -47,7 +47,7 @@ export class ExportSchemaDialog {
                 );
                 downloadLink.setAttribute(
                     'download',
-                    `schemas_${Date.now()}.schema`
+                    `${this.schema.name}.schema`
                 );
                 document.body.appendChild(downloadLink);
                 downloadLink.click();

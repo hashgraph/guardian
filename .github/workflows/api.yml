@@ -1,115 +1,115 @@
 name: Guardian CI API Tests
 on:
-  schedule:
-    - cron: '0 1 * * *'
+    schedule:
+        - cron: '0 1 * * *'
 
 jobs:
-  buildAndTest:
-    runs-on: ubuntu-latest
-    services:
-      ipfs-node:
-        image: ipfs/kubo:latest
-        ports:
-          - 8080:8080
-          - 5001:5001
-    strategy:
-      matrix:
-        node-version: [ 20.x ]
-        mongodb-version: [ 7.0.5 ]
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          ref: 'develop'
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
-        run: yarn
-      - name: Build packages
-        run: |
-          pushd interfaces
-          yarn run build
-          popd
-          pushd common
-          yarn run build
-          popd
-          pushd notification-service
-          yarn run build
-          popd
-          pushd logger-service
-          yarn run build
-          popd
-          pushd auth-service
-          yarn run build
-          popd
-          pushd guardian-service
-          yarn run build
-          popd
-          pushd policy-service
-          yarn run build
-          popd
-          pushd worker-service
-          yarn run build
-          popd
-          pushd api-gateway
-          yarn run build
-          popd
-      - name: Start NatsMQ
-        uses: onichandame/nats-action@master
-        with:
-          port: "4222"
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
-      - name: Run Guardian
-        run: |
-          pushd notification-service
-          npm start &
-          sleep 20
-          popd
-          pushd logger-service
-          npm start &
-          sleep 20
-          popd
-          pushd auth-service
-          npm start &
-          sleep 20
-          popd
-          pushd guardian-service
-          npm start &
-          sleep 20
-          popd
-          pushd policy-service
-          npm start &
-          sleep 20
-          popd
-          pushd worker-service
-          npm start &
-          sleep 20
-          popd
-          pushd api-gateway
-          npm start &
-          sleep 20
-          popd
-          sleep 60
-        env:
-          CI: true
-          OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
-          OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
-          IPFS_NODE_ADDRESS: http://localhost:5001
-          IPFS_PROVIDER: local
-          IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
+    buildAndTest:
+        runs-on: ubuntu-latest
+        services:
+            ipfs-node:
+                image: ipfs/kubo:latest
+                ports:
+                    - 8080:8080
+                    - 5001:5001
+        strategy:
+            matrix:
+                node-version: [ 20.x ]
+                mongodb-version: [ 7.0.5 ]
+        steps:
+            - uses: actions/checkout@v1
+              with:
+                  ref: 'develop'
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - name: Install dependencies
+              run: yarn
+            - name: Build packages
+              run: |
+                  pushd interfaces
+                  yarn run build
+                  popd
+                  pushd common
+                  yarn run build
+                  popd
+                  pushd notification-service
+                  yarn run build
+                  popd
+                  pushd logger-service
+                  yarn run build
+                  popd
+                  pushd auth-service
+                  yarn run build
+                  popd
+                  pushd guardian-service
+                  yarn run build
+                  popd
+                  pushd policy-service
+                  yarn run build
+                  popd
+                  pushd worker-service
+                  yarn run build
+                  popd
+                  pushd api-gateway
+                  yarn run build
+                  popd
+            - name: Start NatsMQ
+              uses: onichandame/nats-action@master
+              with:
+                  port: "4222"
+            - name: Start MongoDB
+              uses: supercharge/mongodb-github-action@1.7.0
+              with:
+                  mongodb-version: ${{ matrix.mongodb-version }}
+            - name: Run Guardian
+              run: |
+                  pushd notification-service
+                  npm start &
+                  sleep 20
+                  popd
+                  pushd logger-service
+                  npm start &
+                  sleep 20
+                  popd
+                  pushd auth-service
+                  npm start &
+                  sleep 20
+                  popd
+                  pushd guardian-service
+                  npm start &
+                  sleep 20
+                  popd
+                  pushd policy-service
+                  npm start &
+                  sleep 20
+                  popd
+                  pushd worker-service
+                  npm start &
+                  sleep 20
+                  popd
+                  pushd api-gateway
+                  npm start &
+                  sleep 20
+                  popd
+                  sleep 60
+              env:
+                  CI: true
+                  OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
+                  OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
+                  IPFS_NODE_ADDRESS: http://localhost:5001
+                  IPFS_PROVIDER: local
+                  IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
 
-      - name: Run tests with Cypress
-        run: |
-          pushd e2e-tests
-          npm install --force
-          npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" --spec cypress/e2e/api-tests/**/*.cy.js            
-          popd
-      - name: Publish API Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        if: always()
-        with:
-          files: e2e-tests/cypress/test_results/**/*.xml
+            - name: Run tests with Cypress
+              run: |
+                  pushd e2e-tests
+                  npm install --force
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" --spec cypress/e2e/api-tests/**/*.cy.js            
+                  popd
+            - name: Publish API Test Results
+              uses: EnricoMi/publish-unit-test-result-action@v1
+              if: always()
+              with:
+                  files: e2e-tests/cypress/test_results/**/*.xml

@@ -20,6 +20,10 @@ enum SchemaType {
     Tool = 'tool'
 }
 
+function NoBindingValidator(control: FormControl): ValidationErrors | null {
+    return (control.value && control.value.length) ? null : {wrongTopicId: true};
+}
+
 /**
  * Schemas constructor
  */
@@ -102,35 +106,11 @@ export class SchemaConfigurationComponent implements OnInit {
         );
     }
 
-    public get isEdit(): boolean {
-        return this.type === 'version' || this.type === 'edit';
-    }
-
-    public get isNewVersion(): boolean {
-        return this.type === 'version';
-    }
-
-    public get category(): SchemaCategory {
-        switch (this.schemaType) {
-            case SchemaType.Tag:
-                return SchemaCategory.TAG;
-            case SchemaType.Policy:
-                return SchemaCategory.POLICY;
-            case SchemaType.Module:
-                return SchemaCategory.MODULE;
-            case SchemaType.Tool:
-                return SchemaCategory.TOOL;
-            case SchemaType.System:
-                return SchemaCategory.SYSTEM;
-            default:
-                return SchemaCategory.POLICY;
-        }
-    }
-
     constructor(
         private schemaService: SchemaService,
         private fb: FormBuilder
     ) {
+        console.log(this);
         const vcDefaultFields = [{
             name: 'policyId',
             title: 'Policy Id',
@@ -191,6 +171,35 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
+    }
+
+    public get isEdit(): boolean {
+        return this.type === 'version' || this.type === 'edit';
+    }
+
+    public get isNewVersion(): boolean {
+        return this.type === 'version';
+    }
+
+    public get category(): SchemaCategory {
+        switch (this.schemaType) {
+            case SchemaType.Tag:
+                return SchemaCategory.TAG;
+            case SchemaType.Policy:
+                return SchemaCategory.POLICY;
+            case SchemaType.Module:
+                return SchemaCategory.MODULE;
+            case SchemaType.Tool:
+                return SchemaCategory.TOOL;
+            case SchemaType.System:
+                return SchemaCategory.SYSTEM;
+            default:
+                return SchemaCategory.POLICY;
+        }
+    }
+
+    public get isNewSchema(): boolean {
+        return this.type === 'new';
     }
 
     get currentEntity(): any {
@@ -264,12 +273,30 @@ export class SchemaConfigurationComponent implements OnInit {
                     fields: {},
                     conditions: {}
                 });
+            } else if (this.isTool) {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: SchemaEntity.VC,
+                    topicId: [this.topicId, NoBindingValidator],
+                    fields: {},
+                    conditions: {}
+                });
+            } else if (this.isPolicy) {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
+                    entity: SchemaEntity.VC,
+                    topicId: [this.topicId],
+                    fields: {},
+                    conditions: {}
+                });
             } else {
                 this.dataForm.setValue({
                     name: '',
                     description: '',
                     entity: SchemaEntity.VC,
-                    topicId: this.topicId,
+                    topicId: [this.topicId],
                     fields: {},
                     conditions: {}
                 });
@@ -298,6 +325,24 @@ export class SchemaConfigurationComponent implements OnInit {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
+                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                };
+            } else if (this.isTool) {
+                props = {
+                    name: ['', Validators.required],
+                    description: [''],
+                    topicId: [this.topicId, NoBindingValidator],
+                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                };
+            } else if (this.isPolicy) {
+                props = {
+                    name: ['', Validators.required],
+                    description: [''],
+                    topicId: [this.topicId],
                     entity: new FormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
@@ -563,25 +608,53 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     private getFieldName(): string | undefined {
-        const map: any = {};
-        for (const f of this.fields) {
-            map[f.key] = true;
+        const fieldRe = /field(\d+)/;
+        let lastIndex: number = -1;
+
+        const testMaxIndex = (f: FieldControl) => {
+            let curIndex: number = -1;
+            if (fieldRe.test(f.key)) {
+                // @ts-ignore
+                const i = parseInt(fieldRe.exec(f.key)[1], 10);
+                if (i > curIndex) {
+                    curIndex = i;
+                }
+            }
+
+            if (fieldRe.test(f.title)) {
+                // @ts-ignore
+                const i = parseInt(fieldRe.exec(f.title)[1], 10);
+                if (i > curIndex) {
+                    curIndex = i;
+                }
+            }
+
+            return curIndex;
         }
+
+        for (const f of this.fields) {
+            const curIndex = testMaxIndex(f);
+            if (curIndex > lastIndex) {
+                lastIndex = curIndex;
+            }
+        }
+
         for (const c of this.conditions) {
             for (const f of c.thenControls) {
-                map[f.key] = true;
+                const curIndex = testMaxIndex(f);
+                if (curIndex > lastIndex) {
+                    lastIndex = curIndex;
+                }
             }
             for (const f of c.elseControls) {
-                map[f.key] = true;
+                const curIndex = testMaxIndex(f);
+                if (curIndex > lastIndex) {
+                    lastIndex = curIndex;
+                }
             }
         }
-        for (let index = 0; index < 1000; index++) {
-            const element = `field${index}`;
-            if (!map[element]) {
-                return element;
-            }
-        }
-        return undefined;
+
+        return `field${lastIndex + 1}`
     }
 
     public onConditionFieldRemove(
