@@ -8,6 +8,13 @@ services:
             - 27017
         ports:
             - 27017:27017
+    redis:
+        image: redis/redis-stack-server:latest
+        restart: always
+        expose:
+            - 6379
+        ports:
+            - "6379:6379"
     ipfs-node:
         image: ipfs/kubo:v0.26.0
         ports:
@@ -86,6 +93,7 @@ services:
             - 3002:3002
         depends_on:
             - dev-tools
+            - redis
             - mongo
             - message-broker
             - guardian-service

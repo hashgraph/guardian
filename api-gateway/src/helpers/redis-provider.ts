@@ -8,9 +8,8 @@ export type RedisClient = Redis;
 //constants
 export const REDIS_CLIENT = 'REDIS_CLIENT'
 
-//TODO move out to env
-const HOST = '127.0.0.1';
-const PORT = 6379;
+const HOST = process.env.HOST_REDIS;
+const PORT = Number(process.env.PORT_REDIS);
 
 export const redisProvider: Provider = {
   useFactory: (): RedisClient => {
