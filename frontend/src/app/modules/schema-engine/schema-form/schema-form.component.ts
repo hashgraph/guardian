@@ -228,6 +228,7 @@ export class SchemaFormComponent implements OnInit {
         const control = item.control;
 
         input.type = 'file';
+        input.accept = 'image/*';
         input.onchange = (event) => {
             const file = input.files ? input.files[0] : undefined;
             if (!file) {
