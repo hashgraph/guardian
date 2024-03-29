@@ -1,10 +1,9 @@
-import { MessageBrokerChannel } from './helpers/common/message-brokers-chanel';
+import { ApplicationState, Logger, MessageBrokerChannel } from '@guardian/common';
 import { AISuggestionService } from './helpers/suggestions';
 import { aiSuggestionsAPI } from './api/service/ai-suggestions-service';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db';
 import { AIManager } from './ai-manager';
 import * as process from 'process';
-import { ApplicationState, Logger } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([

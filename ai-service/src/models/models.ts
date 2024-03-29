@@ -8,7 +8,7 @@ export interface Methodology {
 export interface ResponseData {
     answerBefore: string;
     answerAfter: string;
-    items: Array<Methodology>
+    items: Methodology[]
 }
 
 export interface PolicyDescription {
