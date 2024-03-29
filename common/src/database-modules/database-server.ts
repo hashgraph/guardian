@@ -1820,15 +1820,15 @@ export class DatabaseServer {
                 },
             ],
         });
-        let amount = Number.isFinite(Number(vpDocument.amount))
-            ? Number(vpDocument.amount)
-            : 0;
         const serials = vpDocument.serials
             ? vpDocument.serials.map((serial) => ({
                   serial,
                   tokenId: vpDocument.tokenId,
               }))
             : [];
+        let amount = Number.isFinite(Number(vpDocument.amount))
+            ? Number(vpDocument.amount)
+            : serials.length;
         const transferSerials = vpDocument.serials
             ? vpDocument.serials.map((serial) => ({
                   serial,
