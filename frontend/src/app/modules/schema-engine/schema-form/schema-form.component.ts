@@ -7,10 +7,10 @@ import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
+import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -222,34 +222,41 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    public onFileSelected(event: any, control: AbstractControl, item: any) {
-        control.patchValue('');
-        const file = event?.target?.files[0];
+    uploadFile(item: any): void {
+        const input = document.createElement('input');
 
-        if (!file) {
-            return;
+        const control = item.control;
+
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (event) => {
+            const file = input.files ? input.files[0] : undefined;
+            if (!file) {
+                return;
+            }
+            item.fileUploading = true;
+
+            let addFileObs;
+            if (this.dryRun && this.policyId) {
+                addFileObs = this.ipfs.addFileDryRun(file, this.policyId)
+            } else {
+                addFileObs = this.ipfs.addFile(file)
+            }
+            addFileObs
+                .subscribe(res => {
+                    if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+') {
+                        control.patchValue(API_IPFS_GATEWAY_URL + res);
+                    } else {
+                        control.patchValue(IPFS_SCHEMA + res);
+                    }
+                    item.fileUploading = false;
+                }, error => {
+                    item.fileUploading = false;
+                });
+
+            input.remove();
         }
-        item.fileUploading = true;
-
-        let addFileObs;
-
-        if (this.dryRun && this.policyId) {
-            addFileObs = this.ipfs.addFileDryRun(file, this.policyId)
-        } else {
-            addFileObs = this.ipfs.addFile(file)
-        }
-
-        addFileObs
-            .subscribe(res => {
-                if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+') {
-                    control.patchValue(API_IPFS_GATEWAY_URL + res);
-                } else {
-                    control.patchValue(IPFS_SCHEMA + res);
-                }
-                item.fileUploading = false;
-            }, error => {
-                item.fileUploading = false;
-            });
+        input.click();
     }
 
     private createFieldControl(field: SchemaField): any {
