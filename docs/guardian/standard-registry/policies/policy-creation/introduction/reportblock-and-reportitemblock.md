@@ -36,6 +36,12 @@ Ingress Document has following sections:
 | documents             | collection of VC documents retrieved from the reportItemBlock |
 | additionalDocuments   | array of VPs linked with the selected document                |
 
+### 3. Token Transfer Section
+
+Token transfer, which shows how much tokens is already transferred (will display only when transfer is needed)
+
+<figure><img src="../../../../../.gitbook/assets/image (586).png" alt=""><figcaption></figcaption></figure>
+
 ### Events
 
 | Property Name | Name in JSON | Property Value                                                    | Value in JSON                          | Description                                                                                                                     |

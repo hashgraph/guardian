@@ -95,6 +95,9 @@ Input Events are received and processed by the egress interface of the ‘Target
 #### mintDocumentBlock:
 
 * AdditionalMintEvent - allows linking of the result of one mint block with another mint block.
+* RetryMintEvent - It allows to retry mint action if there were some errors, issues there. Environment variable RETRY\_MINT\_INTERVAL is setting up retry mint interval (in minutes), default is 10 minutes.
+
+<figure><img src="../../../../../.gitbook/assets/image (585).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:**
