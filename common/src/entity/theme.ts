@@ -1,5 +1,5 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**

@@ -1,6 +1,6 @@
 import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVP, IVPDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '@guardian/common';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
 import ObjGet from 'lodash.get';

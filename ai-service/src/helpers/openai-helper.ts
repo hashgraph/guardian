@@ -1,6 +1,6 @@
 import { OpenAI } from 'langchain/llms/openai';
 import { FaissStore } from 'langchain/vectorstores/faiss';
-import { loadQAStuffChain, RetrievalQAChain } from 'langchain/chains.js';
+import { loadQAStuffChain, RetrievalQAChain } from 'langchain/chains';
 import { Methodology, ResponseData } from '../models/models.js';
 import { GetMehodologiesByPolicies } from './general-helper.js';
 import { Policy } from '@guardian/common';

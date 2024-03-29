@@ -1,5 +1,5 @@
 import { BeforeCreate, BeforeUpdate, Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '@guardian/common';
 import {
     IRetireRequest,
     RetireTokenRequest,

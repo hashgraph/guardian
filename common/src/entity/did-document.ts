@@ -6,7 +6,7 @@ import {
     Enum,
     BeforeCreate
 } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * DID document

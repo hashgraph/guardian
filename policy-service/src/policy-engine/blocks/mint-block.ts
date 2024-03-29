@@ -21,7 +21,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../in
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { IPolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { MintService } from '../multi-policy-service/mint-service.js';
+import { MintService } from '../mint/mint-service';
 
 /**
  * Mint block

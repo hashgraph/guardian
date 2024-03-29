@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '@guardian/common';
 import { ObjectId } from '@mikro-orm/mongodb';
 import {
     Entity,

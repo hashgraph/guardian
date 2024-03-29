@@ -1,6 +1,6 @@
 import { IToken, TokenType } from '@guardian/interfaces';
 import { Entity, Property, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Tokens collection

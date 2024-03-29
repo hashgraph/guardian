@@ -1,5 +1,5 @@
 import { Entity, Property, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Settings collection
