@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-import { AnalyticsApi } from './api/service/analytics.js';
+import { StatusApi } from './api/service/status.js';
 import process from 'process';
 import express from 'express';
 
@@ -21,7 +21,7 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
         }])
     ],
     controllers: [
-        AnalyticsApi
+        StatusApi
     ],
     providers: [
         // LoggerService,

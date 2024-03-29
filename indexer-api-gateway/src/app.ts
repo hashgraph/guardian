@@ -19,7 +19,7 @@ Promise.all([
     })
 ]).then(async ([app]) => {
     try {
-        app.connectMicroservice<MicroserviceOptions>({
+        const services = app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,
             options: {
                 name: channelName,
@@ -47,6 +47,8 @@ Promise.all([
         //     })
         // });
         // SwaggerModule.setup('api-docs', app, document);
+
+        services.listen();
 
         app.listen(PORT, async () => {
             // new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);

@@ -1,11 +1,12 @@
-import { Controller, Module } from '@nestjs/common';
-import { Client, ClientProxy, MessagePattern, Transport, } from '@nestjs/microservices';
+import { Controller, Module, Inject } from '@nestjs/common';
+import { Client, ClientProxy, EventPattern, MessagePattern, Transport, } from '@nestjs/microservices';
 import process from 'process';
 import { TopicService } from '../services/topic-service.js';
 import { MessageService } from '../services/message-service.js';
-import { IndexerMessageAPI, MessageResponse, MessageError, Singleton, Jobs } from '@indexer/common';
+import { IndexerMessageAPI, MessageResponse, MessageError, Singleton, Jobs, Utils } from '@indexer/common';
 
 interface IOptions {
+    NAME: string;
     CYCLE_TIME: number;
     TOPIC_READ_DELAY: number;
     TOPIC_READ_TIMEOUT: number;
@@ -19,28 +20,28 @@ interface IOptions {
 
 @Controller()
 export class ChannelService {
-    @Client({
-        transport: Transport.NATS,
-        options: {
-            servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
-        },
-    })
-    client: ClientProxy;
+    private readonly STATUS_DELAY: number = 1000;
+    private readonly worker: Worker;
+
+    constructor(@Inject('INDEXER_WORKERS_API') private readonly client: ClientProxy) {
+        this.worker = new Worker();
+        setInterval(() => {
+            const status = this.worker.getStatuses();
+            status.delay = this.STATUS_DELAY;
+            this.client.emit(IndexerMessageAPI.INDEXER_WORKER_STATUS, status);
+        }, this.STATUS_DELAY);
+    }
 
     /**
      * Get all notifications
      * @param msg options
      * @returns Notifications and count
      */
-    @MessagePattern(IndexerMessageAPI.GET_INDEXER_WORKER_STATUS)
-    async getStatuses() {
-        try {
-            console.log('getStatuses')
-            const statuses = (new Worker()).getStatuses();
-            return new MessageResponse(statuses);
-        } catch (error) {
-            return new MessageError(error);
-        }
+    @EventPattern(IndexerMessageAPI.GET_INDEXER_WORKER_STATUS)
+    async updateStatuses() {
+        const status = this.worker.getStatuses();
+        status.delay = this.STATUS_DELAY;
+        this.client.emit(IndexerMessageAPI.INDEXER_WORKER_STATUS, status);
     }
 }
 
@@ -49,6 +50,8 @@ export class ChannelService {
  */
 @Singleton
 export class Worker {
+    public id: string;
+    public name: string;
     public status: 'INITIALIZING' | 'STARTED' | 'STOPPED';
     public topics: Jobs;
     public messages: Jobs;
@@ -57,6 +60,9 @@ export class Worker {
      * Initialize worker
      */
     public init(option: IOptions): Worker {
+        this.id = Utils.GenerateUUIDv4();
+        this.name = option.NAME;
+        this.status = 'INITIALIZING';
         TopicService.CYCLE_TIME = option.CYCLE_TIME;
         MessageService.CYCLE_TIME = option.CYCLE_TIME;
         this.topics = new Jobs({
@@ -83,6 +89,7 @@ export class Worker {
         await TopicService.addTopic("0.0.1960");
         await this.topics.start();
         await this.messages.start();
+        this.status = 'STARTED';
         return this;
     }
 
@@ -92,6 +99,7 @@ export class Worker {
     public async stop(): Promise<Worker> {
         await this.topics.stop();
         await this.messages.stop();
+        this.status = 'STOPPED';
         return this;
     }
 
@@ -100,9 +108,11 @@ export class Worker {
      */
     public getStatuses(): any {
         return {
+            id: this.id,
+            name: this.name,
             status: this.status,
-            topics: this.topics.getStatuses(),
-            messages: this.messages.getStatuses()
+            topics: this.topics?.getStatuses(),
+            messages: this.messages?.getStatuses()
         };
     }
 }

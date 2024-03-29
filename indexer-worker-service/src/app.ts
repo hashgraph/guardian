@@ -1,20 +1,32 @@
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ClientsModule, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ChannelService, Worker } from './api/channel.service.js';
 import { IPFSService } from './loaders/ipfs-service.js';
 import { HederaService } from './loaders/hedera-service.js';
 import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, Environment, entities } from '@indexer/common';
 
+const channelName = (process.env.SERVICE_CHANNEL || `indexer-worker.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
+
 @Module({
+    imports: [
+        ClientsModule.register([{
+            name: 'INDEXER_WORKERS_API',
+            transport: Transport.NATS,
+            options: {
+                name: channelName,
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ]
+            }
+        }])
+    ],
     controllers: [
         ChannelService
     ]
 })
 class AppModule { }
-
-const channelName = (process.env.SERVICE_CHANNEL || `indexer-worker.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 
 Promise.all([
     Migration({
@@ -81,6 +93,7 @@ Promise.all([
 
     const worker = new Worker();
     await worker.init({
+        NAME: channelName,
         CYCLE_TIME: Utils.getIntParm(process.env.CYCLE_TIME, 60 * 60 * 1000),
         TOPIC_READ_DELAY: Utils.getIntParm(process.env.TOPIC_READ_DELAY, 1000),
         TOPIC_READ_TIMEOUT: Utils.getIntParm(process.env.TOPIC_READ_TIMEOUT, 60000),
