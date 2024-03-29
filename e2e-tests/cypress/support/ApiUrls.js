@@ -18,7 +18,6 @@ const API = {
     ToolCompare: "analytics/compare/tools/",
     PolicySearch: "analytics/search/policies/",
     BlockSearch: "analytics/search/blocks/",
-    ExportCSV: "export?type=csv",
     //Profiles
     Profiles: "profiles/",
     //Tokens
@@ -64,10 +63,15 @@ const API = {
     //Policies
     Policies: "policies/",
     PolicisImportMsg: "policies/import/message/",
+    PolicisImportFile: "policies/import/file/",
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
+    PolicyGroups: "groups/",
     //Artifacts
         Artifacts: "artifacts/",
     Tags: "tags/",
+    //General
+    ExportCSV: "export?type=csv",
+    ExportFile: "export/file"
 };
 export default API;

@@ -1,4 +1,4 @@
-import { PolicyCategoryType } from '../interfaces/policy-category-type.js';
+import { PolicyCategoryType } from '@guardian/interfaces';
 import { BaseEntity } from './base-entity.js';
 
 /**

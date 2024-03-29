@@ -1,5 +1,5 @@
 import { headers, NatsConnection, Subscription } from 'nats';
-import { GenerateUUIDv4 } from '../interfaces/generate-uuid-v4.js';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
 
 /**

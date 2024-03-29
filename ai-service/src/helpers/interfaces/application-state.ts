@@ -1,8 +1,5 @@
-import { Singleton } from '../decorators/singleton.js';
-import { NatsService } from '../common/nats-service.js';
-import { ApplicationStates } from '../../models/interfaces/applications-state.js';
-import { GenerateUUIDv4 } from './generate-uuid-v4.js';
-import { MessageAPI } from '../../models/interfaces/message-api.type.js';
+import { NatsService, Policy, Singleton } from '@guardian/common';
+import { GenerateUUIDv4, MessageAPI, ApplicationStates } from '@guardian/interfaces';
 
 /**
  * Application state container

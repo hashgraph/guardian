@@ -1,37 +1,38 @@
 import {
-    BlockCache,
-    BlockState,
-    VcDocument as VcDocumentCollection,
-    VpDocument as VpDocumentCollection,
-    DidDocument as DidDocumentCollection,
-    Schema as SchemaCollection,
-    DocumentState,
-    Policy,
     AggregateVC,
     ApprovalDocument as ApprovalDocumentCollection,
-    Token as TokenCollection,
-    Topic as TopicCollection,
-    DryRun,
-    PolicyRoles as PolicyRolesCollection,
-    PolicyInvitations,
-    MultiDocuments,
     Artifact as ArtifactCollection,
     ArtifactChunk as ArtifactChunkCollection,
-    SplitDocuments,
+    BlockCache,
+    BlockState,
+    Contract as ContractCollection,
+    DidDocument as DidDocumentCollection,
+    DocumentState,
+    DryRun,
+    DryRunFiles,
+    ExternalDocument,
+    MintRequest,
+    MintTransaction,
+    MultiDocuments,
     MultiPolicy,
     MultiPolicyTransaction,
+    Policy,
+    PolicyCategory,
+    PolicyInvitations,
     PolicyModule,
+    PolicyRoles as PolicyRolesCollection,
+    Record,
+    Schema as SchemaCollection,
+    SplitDocuments,
+    SuggestionsConfig,
     Tag,
     TagCache,
-    Contract as ContractCollection,
-    ExternalDocument,
-    SuggestionsConfig,
-    Record,
-    PolicyCategory,
+    Token as TokenCollection,
+    Topic as TopicCollection,
+    VcDocument as VcDocumentCollection,
     VcDocument,
     VpDocument,
-    MintRequest,
-    MintTransaction
+    VpDocument as VpDocumentCollection,
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -128,7 +129,11 @@ export class DatabaseServer {
      * Clear Dry Run table
      */
     public async clearDryRun(): Promise<void> {
+        console.log(this);
         await DatabaseServer.clearDryRun(this.dryRun);
+        // Clear files
+        const files = await new DataBaseHelper(DryRunFiles).find({policyId: this.dryRun});
+        await Promise.all(files.map(file => new DataBaseHelper(DryRunFiles).remove(file)));
     }
 
     /**
@@ -1823,15 +1828,15 @@ export class DatabaseServer {
                 },
             ],
         });
-        let amount = Number.isFinite(Number(vpDocument.amount))
-            ? Number(vpDocument.amount)
-            : 0;
         const serials = vpDocument.serials
             ? vpDocument.serials.map((serial) => ({
                   serial,
                   tokenId: vpDocument.tokenId,
               }))
             : [];
+        let amount = Number.isFinite(Number(vpDocument.amount))
+            ? Number(vpDocument.amount)
+            : serials.length;
         const transferSerials = vpDocument.serials
             ? vpDocument.serials.map((serial) => ({
                   serial,

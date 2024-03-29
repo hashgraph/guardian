@@ -5,12 +5,9 @@ import { OpenAI } from 'langchain/llms/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';
 import { VectorStorage } from './helpers/vector-storage-helper.js';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
-import { PolicyCategory } from './models/common/policy-category.js';
-import { Policy } from './models/common/policy.js';
 import { PolicyDescription } from './models/models.js';
-
 import * as dotenv from 'dotenv';
-import { Logger } from '@guardian/common';
+import { Logger, Policy, PolicyCategory } from '@guardian/common';
 
 dotenv.config();
 
@@ -18,8 +15,8 @@ export class AIManager {
     versionGPT: string;
     docPath: string;
     vectorPath: string;
-    policies: Array<Policy>;
-    categories: Array<PolicyCategory>;
+    policies: Policy[];
+    categories: PolicyCategory[];
     chain: RetrievalQAChain | null;
     vector: FaissStore | null;
     model: OpenAI;

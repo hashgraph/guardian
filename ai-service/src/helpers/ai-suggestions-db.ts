@@ -1,8 +1,5 @@
-import { NatsService } from '@guardian/common';
-import { MessageAPI } from '../models/interfaces/message-api.type.js';
-import { Singleton } from './decorators/singleton.js';
-import { GenerateUUIDv4 } from './interfaces/generate-uuid-v4.js';
-import { Policy } from '../models/common/policy.js';
+import { NatsService, Policy, Singleton } from '@guardian/common';
+import { GenerateUUIDv4, MessageAPI, PolicyEngineEvents } from '@guardian/interfaces';
 
 /**
  * AI Suggestions service
@@ -38,7 +35,7 @@ export class AISuggestionsDB extends NatsService {
     }
 
     public async getAllPolicies(): Promise<any> {
-        const res = (await this.sendMessage(MessageAPI.GET_PUBLISH_POLICIES, {})) as any;
+        const res = (await this.sendMessage(PolicyEngineEvents.GET_PUBLISH_POLICIES, {})) as any;
 
         if (!res) {
             throw new Error('Invalid AI response');
@@ -56,7 +53,7 @@ export class AISuggestionsDB extends NatsService {
             topicId: policy.topicId
         }));
 
-        const res = (await this.sendMessage(MessageAPI.GET_FIELDS_DESCRIPTIONS, {policiesData: policiesData})) as any;
+        const res = (await this.sendMessage(PolicyEngineEvents.GET_FIELDS_DESCRIPTIONS, {policiesData})) as any;
 
         if (!res) {
             throw new Error('Invalid AI response');

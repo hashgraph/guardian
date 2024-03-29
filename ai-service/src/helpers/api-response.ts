@@ -1,6 +1,5 @@
-import { ApplicationState } from './interfaces/application-state.js';
-import { MessageResponse } from '../models/common/message-response.js';
 import { AISuggestionService } from './suggestions.js';
+import { ApplicationState, MessageResponse } from '@guardian/common';
 
 /**
  * API response

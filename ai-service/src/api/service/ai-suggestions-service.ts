@@ -1,7 +1,7 @@
-import { MessageError, MessageResponse } from '../../models/common/message-response.js';
 import { ApiResponse } from '../../helpers/api-response.js';
-import { MessageAPI } from '../../models/interfaces/message-api.type.js';
 import { AIManager } from '../../ai-manager.js';
+import { MessageAPI } from '@guardian/interfaces';
+import { MessageError, MessageResponse } from '@guardian/common';
 
 /**
  * Connect to the message broker methods of working with artifacts.
@@ -21,7 +21,7 @@ export async function aiSuggestionsAPI(aiManager: AIManager): Promise<void> {
             }
 
             let result = null;
-            if (aiManager.vector != null && aiManager.chain != null) {
+            if (aiManager.vector !== null && aiManager.chain !== null) {
                 result = await aiManager.ask(msg.question);
             } else {
                 aiManager = new AIManager();

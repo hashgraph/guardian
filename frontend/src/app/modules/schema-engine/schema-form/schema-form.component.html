@@ -48,13 +48,11 @@
                         appearance="outline" [ngClass]="{'ipfs-url' : isIPFS(item)}">
                         <input matInput [formControlName]="item.name" [placeholder]="getPlaceholderByFieldType(item)">
                         <div *ngIf="isIPFS(item)">
-                            <input type="file" class="file-input" style="display:none;" accept="image/*"
-                                (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
                             <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
                                     <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                                     <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
-                                            (click)="fileUpload.click(); fileUpload.blur(); fileUpload.value = ''">
+                                            (click)="uploadFile(item)">
                                         <mat-icon>attach_file</mat-icon>
                                     </button>
                                 </ng-container>
@@ -179,13 +177,11 @@
                                     [placeholder]="getPlaceholderByFieldType(item)">
 
                                 <div *ngIf="isIPFS(item)">
-                                    <input type="file" class="file-input" style="display:none;" accept="image/*"
-                                        (change)="onFileSelected($event, listItem.control, listItem)" #fileUpload>
                                     <div class="file-upload">
                                         <ng-container [ngSwitch]="listItem.fileUploading">
                                             <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                                             <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
-                                                (click)="fileUpload.click()">
+                                                    (click)="uploadFile(listItem)">
                                                 <mat-icon>attach_file</mat-icon>
                                             </button>
                                         </ng-container>
