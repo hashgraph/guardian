@@ -1,4 +1,4 @@
-import { ApiResponse, ApiResponseSubscribe } from '../api/helpers/api-response.js';
+import { ApiResponse, ApiResponseSubscribe } from '../api/helpers/api-response.js'';
 import { DataBaseHelper, DryRunFiles, IPFS, Logger, MessageError, MessageResponse } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
 import { IPFSTaskManager } from '../helpers/ipfs-task-manager.js';

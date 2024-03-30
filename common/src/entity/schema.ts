@@ -15,7 +15,7 @@ import {
     BeforeUpdate,
     AfterDelete,
 } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 

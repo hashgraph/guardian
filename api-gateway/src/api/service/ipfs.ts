@@ -2,7 +2,7 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response } from '@nestjs/common';
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
-import { Auth } from '../../auth/auth.decorator.js';
+import { Auth } from '@auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
 
 @Controller('ipfs')

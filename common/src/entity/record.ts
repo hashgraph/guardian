@@ -1,4 +1,4 @@
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';

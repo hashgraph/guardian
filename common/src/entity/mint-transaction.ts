@@ -1,5 +1,5 @@
 import { Entity, Enum, Index, Property } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models';
 import {
     MintTransactionStatus,
 } from '@guardian/interfaces';

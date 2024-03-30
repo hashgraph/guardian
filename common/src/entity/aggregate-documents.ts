@@ -15,7 +15,7 @@ import {
     AfterCreate,
     AfterUpdate,
 } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import ObjGet from 'lodash.get';

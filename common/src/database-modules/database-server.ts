@@ -44,7 +44,7 @@ import {
     TokenType,
     TopicType,
 } from '@guardian/interfaces';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper } from '../helpers/index.js';
 import { Theme } from '../entity/theme.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
