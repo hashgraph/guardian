@@ -53,12 +53,12 @@ export abstract class BaseEntity {
     /**
      * Set id, if entity id is not exist
      */
-    @AfterCreate()
-    protected afterCreate(): void {
-        if(!this.id) {
-            this.id = this._id.toHexString()
-        }
-    }
+    // @AfterCreate()
+    // protected afterCreate(): void {
+    //     if(!this.id) {
+    //         this.id = this._id.toHexString()
+    //     }
+    // }
 
     /**
      * Set base date

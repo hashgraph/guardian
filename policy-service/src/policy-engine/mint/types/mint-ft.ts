@@ -3,10 +3,10 @@ import {
     WorkerTaskType,
     MintTransactionStatus,
 } from '@guardian/interfaces';
-import { TypedMint } from './typed-mint';
-import { IHederaCredentials } from '@policy-engine/policy-user';
-import { TokenConfig } from '../configs/token-config';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { TypedMint } from './typed-mint.js';
+import { IHederaCredentials } from '../../policy-user.js';
+import { TokenConfig } from '../configs/token-config.js';
+import { PolicyUtils } from '../../helpers/utils.js';
 
 /**
  * Mint FT

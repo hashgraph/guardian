@@ -3,10 +3,10 @@ import {
     MintRequest,
     NotificationHelper,
 } from '@guardian/common';
-import { IHederaCredentials } from '@policy-engine/policy-user';
-import { TokenConfig } from '../configs/token-config';
-import { MintService } from '../mint-service';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaCredentials } from '../../policy-user.js';
+import { TokenConfig } from '../configs/token-config.js';
+import { MintService } from '../mint-service.js';
+import { PolicyUtils } from '../../helpers/utils.js';
 import {
     MintTransactionStatus,
     NotificationAction,
