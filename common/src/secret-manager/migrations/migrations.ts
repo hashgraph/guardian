@@ -15,8 +15,8 @@ const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
 const workerEnvPath = path.join(process.cwd(), '../worker-service/.env')
 
 // const authCertsPath = path.join('../auth-service/tls/vault/client')
-const guardianCertsPath = path.join('../guardian-service/tls/vault/client')
-const workerCertsPath = path.join('../worker-service/tls/vault/client')
+const guardianCertsPath = path.join('../guardian-service/tls/vault/client.js')
+const workerCertsPath = path.join('../worker-service/tls/vault/client.js')
 
 /**
  * Set common configs for Vault

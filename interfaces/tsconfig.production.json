@@ -13,7 +13,6 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
-        "resolveJsonModule": true,
         "declaration": true
     },
     "include": [

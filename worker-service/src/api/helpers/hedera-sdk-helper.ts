@@ -48,7 +48,7 @@ import axios, { AxiosResponse } from 'axios';
 import { Environment } from './environment.js';
 import { ContractParamType, GenerateUUIDv4, HederaResponseCode } from '@guardian/interfaces';
 import Long from 'long';
-import { TransactionLogger } from './transaction-logger';
+import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
