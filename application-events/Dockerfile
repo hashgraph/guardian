@@ -8,6 +8,7 @@ WORKDIR /usr/local/app
 FROM base as interfaces
 COPY --link interfaces/package.json interfaces/tsconfig*.json yarn.lock ./
 COPY --link interfaces/src src/
+# Here and after. Leverage a cache mount to /root/.yarn to speed up subsequent builds
 RUN --mount=type=cache,target=/root/.yarn \
     yarn install --frozen-lockfile && yarn pack
 
@@ -42,11 +43,15 @@ RUN --mount=type=cache,target=/root/.yarn \
 FROM base as image
 ENV NODE_ENV production
 
-COPY --link application-events/.env.docker ./.env
-COPY --link application-events/docs docs/
+# Run the application as a non-root user
+USER node
 
-COPY --link --from=deps /usr/local/app/node_modules node_modules/
-COPY --link --from=deps /usr/local/app/package.json ./
-COPY --link --from=build /usr/local/app/dist dist/
+COPY --link --chown=node:node application-events/.env.docker ./.env
+COPY --link --chown=node:node application-events/docs docs/
+
+# Copy the production dependencies from the deps stage and the built application from the build stage into the image
+COPY --link --from=deps --chown=node:node /usr/local/app/node_modules node_modules/
+COPY --link --from=deps --chown=node:node /usr/local/app/package.json ./
+COPY --link --from=build --chown=node:node /usr/local/app/dist dist/
 
 CMD [ "node", "dist/index.js" ]
