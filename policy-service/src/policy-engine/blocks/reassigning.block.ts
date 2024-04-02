@@ -8,6 +8,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { IPolicyUser, UserCredentials } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { Inject } from '../../helpers/decorators/inject.js';
 
 /**
  * Reassigning block
@@ -39,8 +40,8 @@ export class ReassigningBlock {
      * VC helper
      * @private
      */
-    // @Inject()
-    private vcHelper: VcHelper;
+    @Inject()
+    declare private vcHelper: VcHelper;
 
     /**
      * Document reassigning
@@ -63,10 +64,6 @@ export class ReassigningBlock {
 
         let root: UserCredentials;
         let groupContext: any;
-
-        if(!this.vcHelper) {
-          this.vcHelper = new VcHelper()
-        }
 
         if (ref.options.issuer === 'owner') {
             root = await PolicyUtils.getUserCredentials(ref, document.owner);

@@ -37,6 +37,7 @@ import { BlockAboutString } from './block-about.js';
 import { HashComparator } from '../analytics/index.js';
 import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '../api/helpers/index.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
+import { Inject } from '../helpers/decorators/inject.js';
 
 /**
  * PolicyEngineChannel
@@ -73,8 +74,8 @@ export class PolicyEngineService {
      * Users helper
      * @private
      */
-    // @Inject()
-    private readonly users: Users;
+    @Inject()
+    declare private readonly users: Users;
 
     /**
      * Message broker service
@@ -92,7 +93,6 @@ export class PolicyEngineService {
         this.channel = new PolicyEngineChannel();
         this.channel.setConnection(cn)
         this.policyEngine = new PolicyEngine()
-        this.users = new Users()
     }
 
     /**

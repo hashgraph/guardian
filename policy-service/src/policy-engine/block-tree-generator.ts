@@ -7,6 +7,7 @@ import { PolicyValidator } from '../policy-engine/block-validators/index.js'
 import { headers } from 'nats';
 import { ComponentsService } from './helpers/components-service.js';
 import { RecordUtils } from './record-utils.js';
+import { Inject } from '../helpers/decorators/inject.js'
 
 /**
  * Block tree generator
@@ -17,8 +18,8 @@ export class BlockTreeGenerator extends NatsService {
      * Users helper
      * @private
      */
-    // @Inject()
-    private users: Users;
+    @Inject()
+    declare private users: Users;
 
     /**
      * Message queue name
@@ -43,10 +44,6 @@ export class BlockTreeGenerator extends NatsService {
      * @param user
      */
     public async getUser(policy: IPolicyInstance | IPolicyInterfaceBlock, user: IUser): Promise<IPolicyUser> {
-        if(!this.users) {
-          this.users = new Users()
-        }
-
         const regUser = await this.users.getUser(user.username);
         if (!regUser || !regUser.did) {
             throw new Error(`Forbidden`);
