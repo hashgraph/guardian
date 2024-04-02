@@ -88,8 +88,8 @@ export class PreviewPolicyDialog {
         if (this.config.data.tool) {
             this.tool = this.config.data.tool?.tool;
             this.isFile = this.config.data.isFile;
+            this.toolConfigs = this.config.data.tool.tools || [];
             if (this.isFile) {
-                this.toolConfigs = this.config.data.tool.tools || [];
                 this.toolForm = new FormGroup({});
                 for (const toolConfigs of this.toolConfigs) {
                     this.toolForm.addControl(
