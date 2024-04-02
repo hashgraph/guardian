@@ -767,8 +767,11 @@ export class ToolsApi {
         const guardian = new Guardians();
         try {
             const file = files.find(item => item.fieldname === 'file');
+            if (!file) {
+                throw new Error('There is no tool file');
+            }
             const metadata = files.find(item => item.fieldname === 'metadata');
-            const tool = await guardian.importToolFile(file, req.user.did, JSON.parse(metadata.buffer.toString()));
+            const tool = await guardian.importToolFile(file.buffer, req.user.did, JSON.parse(metadata.buffer.toString()));
             return tool;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -897,7 +900,7 @@ export class ToolsApi {
             RunFunctionAsync<ServiceError>(
                 async () => {
                     await guardian.importToolFileAsync(
-                        file,
+                        file.buffer,
                         owner,
                         task,
                         metadata?.buffer && JSON.parse(metadata.buffer.toString())
