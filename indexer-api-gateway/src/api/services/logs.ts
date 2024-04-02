@@ -67,14 +67,21 @@ export class LogsApi {
     @HttpCode(HttpStatus.OK)
     async getMessages(
         @Query('type') type?: string,
+        @Query('status') status?: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        
     ): Promise<any> {
         return await this.send<IPage<any>>(IndexerMessageAPI.GET_MESSAGES,
             {
                 type,
+                status,
                 pageIndex,
-                pageSize
+                pageSize,
+                orderField,
+                orderDir
             }
         );
     }

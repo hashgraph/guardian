@@ -3,17 +3,19 @@ export class DataBaseUtils {
     public static pageParams(
         pageSize: string | number | undefined,
         pageIndex: string | number | undefined,
-        order: string = 'DESC',
-        limit: number = 100
+        limit: number = 100,
+        orderField: string,
+        orderDir: string
     ): {
         orderBy: { [x: string]: string },
         limit: number,
         offset?: number
     } {
-        const otherOptions: any = {
-            orderBy: { createDate: order },
-            limit
-        };
+        const otherOptions: any = { limit };
+        if(orderField && orderDir) {
+            otherOptions.orderBy = {};
+            otherOptions.orderBy[orderField] = orderDir;
+        }
         let _pageSize: number, _pageIndex: number;
         if (typeof pageSize === 'number') {
             _pageSize = pageSize;

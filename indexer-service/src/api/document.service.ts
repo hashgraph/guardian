@@ -21,20 +21,30 @@ export class DocumentsService {
     async getAll(
         @Payload()
         msg: {
-            type: string;
+            //page
             pageIndex: number;
             pageSize: number;
+            //sort
+            orderField?: string;
+            orderDir?: string;
+            //filters
+            type?: string;
+            status?: string;
         }
     ) {
         try {
-            const { type, pageIndex, pageSize } = msg;
+            const { type, status, pageIndex, pageSize, orderField, orderDir } = msg;
+
             const filters: any = {};
             if (type) {
                 filters.type = type;
             }
+            if (status) {
+                filters.status = status;
+            }
 
             const em = DataBaseHelper.getEntityManager();
-            const options = DataBaseUtils.pageParams(pageSize, pageIndex, 'DESC', 100);
+            const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
             const [rows, count] = await em.findAndCount(MessageCache, filters, options);
 
             const result: IPage<MessageCache> = {

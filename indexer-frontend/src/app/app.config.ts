@@ -5,12 +5,13 @@ import { routes } from './app.routes';
 import { StatusService } from './services/status.service';
 import { provideHttpClient } from '@angular/common/http';
 import { LogsService } from './services/logs.service';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         StatusService,
         LogsService,
         provideHttpClient(),
-        provideRouter(routes)
+        provideRouter(routes), provideAnimationsAsync()
     ]
 };
