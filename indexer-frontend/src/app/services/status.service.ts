@@ -13,7 +13,7 @@ export class StatusService {
     constructor(private http: HttpClient) {
     }
 
-    public getWorkerStatuses(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.url}/workers`);
+    public getStatuses(): Observable<any> {
+        return this.http.get<any>(`${this.url}`);
     }
 }

@@ -1,18 +1,34 @@
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { ApiService } from './api/channel.service.js';
+import { ClientsModule, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, entities } from '@indexer/common';
+import { ChannelService } from './api/channel.service.js';
+import { DocumentsService } from './api/document.service.js';
+
+const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 
 @Module({
-    providers: [
-        ApiService
+    imports: [
+        ClientsModule.register([{
+            name: 'INDEXER_API',
+            transport: Transport.NATS,
+            options: {
+                name: channelName,
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ]
+            }
+        }])
+    ],
+    controllers: [
+        ChannelService,
+        DocumentsService
     ]
 })
 class AppModule { }
 
-const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
+console.log(COMMON_CONNECTION_CONFIG)
 
 Promise.all([
     Migration({

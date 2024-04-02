@@ -11,7 +11,8 @@ import { CommonModule } from '@angular/common';
 })
 export class StatusComponent {
     public loading: boolean = true;
-    public statuses: any[] = [];
+    public workers: any[] = [];
+    public indexers: any[] = [];
 
     constructor(
         private statusService: StatusService,
@@ -23,7 +24,7 @@ export class StatusComponent {
         this.loadData();
         setInterval(() => {
             this.loadData();
-        }, 1000)
+        }, 10000)
     }
 
     ngOnDestroy(): void {
@@ -32,17 +33,20 @@ export class StatusComponent {
     private loadData() {
         this.loading = true;
 
-        this.statusService.getWorkerStatuses().subscribe(
-            (statuses) => {
-                this.statuses = statuses;
+        this.statusService.getStatuses().subscribe({
+            next: ({ workers, indexers }) => {
+                this.workers = workers;
+                this.indexers = indexers;
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
             },
-            ({ message }) => {
+            error: ({ message }) => {
                 this.loading = false;
+                this.workers = [];
+                this.indexers = [];
                 console.error(message);
             }
-        );
+        });
     }
 }

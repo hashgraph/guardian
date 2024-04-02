@@ -49,7 +49,7 @@ export class DataBaseHelper {
      */
     public static connect(db: MikroORM<MongoDriver>) {
         DataBaseHelper.orm = db;
-        const connect:any = db.em.getDriver().getConnection().getDb();
+        const connect: any = db.em.getDriver().getConnection().getDb();
         DataBaseHelper.gridFS = new GridFSBucket(connect);
     }
 
