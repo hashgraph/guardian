@@ -76,7 +76,7 @@ export class ToolsService {
     }
 
     public importByMessage(messageId: string, metadata?:  { tools: { [key: string]: string }}): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/import/message-metadata`, { messageId, metadata });
+        return this.http.post<any[]>(`${this.url}/import/message`, { messageId, metadata });
     }
 
     public importByFile(file: any, metadata?: { tools: { [key: string]: string }}): Observable<any[]> {
@@ -94,12 +94,15 @@ export class ToolsService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message`, { messageId });
     }
 
-    public pushImportByFile(file: any): Observable<{ taskId: string, expectation: number }> {
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file`, file, {
-            headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
-        });
+    public pushImportByFile(file: any, metadata?: { tools: { [key: string]: string }}): Observable<{ taskId: string, expectation: number }> {
+        const formData = new FormData();
+        formData.append('file', new Blob([file], { type: "application/octet-stream" }));
+        if (metadata) {
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], {
+                type: "application/json",
+            }));
+        }
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file-metadata`, formData);
     }
 
     public validate(policy: any): Observable<any> {
