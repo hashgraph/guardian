@@ -59,7 +59,7 @@ export class InterfaceStepBlock {
      * Block state
      */
     @StateField()
-    state: { [key: string]: any } = { index: 0 };
+    declare state: { [key: string]: any };
     /**
      * Final steps
      */
@@ -69,6 +69,8 @@ export class InterfaceStepBlock {
      * Before init callback
      */
     public async beforeInit(): Promise<void> {
+        this.state = {}
+
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         this.endIndexes[ref.children.length - 1] = true;
         if (ref.options?.finalBlocks && Array.isArray(ref.options.finalBlocks)) {

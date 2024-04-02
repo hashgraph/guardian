@@ -186,9 +186,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.sourceLinks = [];
                 this.targetLinks = [];
 
-                if (!Array.isArray(this.actions)) {
-                    this.actions = [];
+                if(Array.isArray(super.actions)) {
+                  this.actions = [...super.actions]
+                } else {
+                  this.actions = [];
                 }
+
                 this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
 
