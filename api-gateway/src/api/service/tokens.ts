@@ -5,7 +5,18 @@ import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { prepareValidationResponse } from '@middlewares/validation';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
+import {
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Post,
+    Put,
+    Req,
+    Response,
+} from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import {
     ApiInternalServerErrorResponse,
@@ -17,8 +28,11 @@ import {
     ApiTags,
     ApiBearerAuth,
     ApiParam,
+    ApiBody,
+    ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
+import { Auth } from '@auth/auth.decorator';
 
 /**
  * Token route
@@ -177,6 +191,65 @@ export class TokensApi {
         });
 
         return res.status(202).send(task);
+    }
+
+    @Put('/')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiOperation({
+        summary: 'Update token.',
+        description: 'Update token. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiBody({
+        description: 'Token',
+        required: true,
+        schema: {
+            type: 'object'
+        }
+    })
+    @ApiOkResponse({
+        description: 'Updated token.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.CREATED)
+    async updateToken(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const user = req.user;
+        const token = req.body;
+
+        if (!user.did) {
+            throw new HttpException('User is not registered', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        if (!token.tokenId) {
+            throw new HttpException('The field tokenId is required', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        const guardians = new Guardians();
+        const tokenObject = await guardians.getTokenById(token.tokenId);
+
+        if (!tokenObject) {
+            throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
+        }
+
+        if (tokenObject.owner !== user.did) {
+            throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
+        }
+
+        return await guardians.updateToken(token);
     }
 
     @Put('/push')
