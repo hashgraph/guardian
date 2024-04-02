@@ -161,7 +161,9 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             if (result) {
                 if (type === 'message') {
                     this.loading = true;
-                    this.toolsService.importByMessage(data, result.tools).subscribe(
+                    this.toolsService.importByMessage(data, {
+                        tools: result.tools
+                    }).subscribe(
                         (result) => {
                             this.loadAllTools();
                         }, (e) => {
@@ -169,7 +171,9 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                         });
                 } else if (type === 'file') {
                     this.loading = true;
-                    this.toolsService.importByFile(data, result.tools).subscribe(
+                    this.toolsService.importByFile(data, {
+                        tools: result.tools
+                    }).subscribe(
                         (result) => {
                             this.loadAllTools();
                         }, (e) => {

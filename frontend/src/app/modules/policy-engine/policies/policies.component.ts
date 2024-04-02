@@ -467,7 +467,9 @@ export class PoliciesComponent implements OnInit {
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, result.tools)
+                        .pushImportByMessage(data, versionOfTopicId, {
+                            tools: result.tools
+                        })
                         .subscribe(
                             (result) => {
                                 const { taskId, expectation } = result;
@@ -483,7 +485,9 @@ export class PoliciesComponent implements OnInit {
                         );
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, result.tools)
+                        .pushImportByFile(data, versionOfTopicId, {
+                            tools: result.tools
+                        })
                         .subscribe(
                             (result) => {
                                 const { taskId, expectation } = result;
