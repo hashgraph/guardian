@@ -25,5 +25,8 @@
         "gulp-rename": "^2.0.0",
         "gulp-sourcemaps": "^3.0.0",
         "gulp-typescript": "^6.0.0-alpha.1"
+    },
+    "resolutions": {
+        "@types/mime": "3.0.4"
     }
 }
