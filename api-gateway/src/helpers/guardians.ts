@@ -171,6 +171,15 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Update token
+     * @param token
+     * @param task
+     */
+    public async updateToken(token: IToken | any): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_TOKEN, { token });
+    }
+
+    /**
      * Async create new token
      * @param token
      * @param task
@@ -1943,8 +1952,8 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      */
-    public async importToolFile(zip: any, owner: string) {
-        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner });
+    public async importToolFile(zip: any, owner: string, metadata?: any) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner, metadata });
     }
 
     /**
@@ -1980,8 +1989,8 @@ export class Guardians extends NatsService {
      * @param owner
      * @param task
      */
-    public async importToolFileAsync(zip: any, owner: string, task: NewTask) {
-        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_ASYNC, { zip, owner, task });
+    public async importToolFileAsync(zip: any, owner: string, task: NewTask, metadata?: any) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_ASYNC, { zip, owner, task, metadata });
     }
 
     /**

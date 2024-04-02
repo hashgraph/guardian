@@ -973,7 +973,8 @@ export class PolicyEngine extends NatsService {
         owner: string,
         hederaAccount: IRootConfig,
         versionOfTopicId: string,
-        notifier: INotifier
+        notifier: INotifier,
+        metadata: any
     ): Promise<{
         /**
          * New Policy
@@ -1023,7 +1024,7 @@ export class PolicyEngine extends NatsService {
             } as any);
         }
         notifier.completed();
-        return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
+        return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier, undefined, metadata);
     }
 
     /**

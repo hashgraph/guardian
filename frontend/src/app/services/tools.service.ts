@@ -75,16 +75,19 @@ export class ToolsService {
         });
     }
 
-    public importByMessage(messageId: string): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
+    public importByMessage(messageId: string, metadata?:  { tools: { [key: string]: string }}): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/import/message-metadata`, { messageId, metadata });
     }
 
-    public importByFile(file: any): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/import/file`, file, {
-            headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
-        });
+    public importByFile(file: any, metadata?: { tools: { [key: string]: string }}): Observable<any[]> {
+        const formData = new FormData();
+        formData.append('file', new Blob([file], { type: "application/octet-stream" }));
+        if (metadata) {
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], {
+                type: "application/json",
+            }));
+        }
+        return this.http.post<any[]>(`${this.url}/import/file-metadata`, formData);
     }
 
     public pushImportByMessage(messageId: string): Observable<{ taskId: string, expectation: number }> {

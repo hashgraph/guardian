@@ -154,13 +154,14 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             styleClass: 'custom-dialog',
             data: {
                 tool: tool,
+                isFile: type === 'file'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
                     this.loading = true;
-                    this.toolsService.importByMessage(data).subscribe(
+                    this.toolsService.importByMessage(data, result.tools).subscribe(
                         (result) => {
                             this.loadAllTools();
                         }, (e) => {
@@ -168,7 +169,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                         });
                 } else if (type === 'file') {
                     this.loading = true;
-                    this.toolsService.importByFile(data).subscribe(
+                    this.toolsService.importByFile(data, result.tools).subscribe(
                         (result) => {
                             this.loadAllTools();
                         }, (e) => {

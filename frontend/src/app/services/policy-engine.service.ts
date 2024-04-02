@@ -116,32 +116,21 @@ export class PolicyEngineService {
         return this.http.get(`${this.url}/${policyId}/export/message`);
     }
 
-    public importByMessage(messageId: string, versionOfTopicId?: string): Observable<any[]> {
+    public pushImportByMessage(messageId: string, versionOfTopicId?: string, metadata?:  { tools: { [key: string]: string }}): Observable<{ taskId: string, expectation: number }> {
         var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<any[]>(`${this.url}/import/message${query}`, { messageId });
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message${query}`, { messageId, metadata });
     }
 
-    public pushImportByMessage(messageId: string, versionOfTopicId?: string): Observable<{ taskId: string, expectation: number }> {
+    public pushImportByFile(policyFile: any, versionOfTopicId?: string, metadata?:  { tools: { [key: string]: string }}): Observable<{ taskId: string, expectation: number }> {
         var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message${query}`, { messageId });
-    }
-
-    public importByFile(policyFile: any, versionOfTopicId?: string): Observable<any[]> {
-        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<any[]>(`${this.url}/import/file${query}`, policyFile, {
-            headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
-        });
-    }
-
-    public pushImportByFile(policyFile: any, versionOfTopicId?: string): Observable<{ taskId: string, expectation: number }> {
-        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file${query}`, policyFile, {
-            headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
-        });
+        const formData = new FormData();
+        formData.append('policyFile', new Blob([policyFile], { type: "application/octet-stream" }));
+        if (metadata) {
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], {
+                type: "application/json",
+            }));
+        }
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file-metadata${query}`, formData);
     }
 
     public previewByMessage(messageId: string): Observable<any> {

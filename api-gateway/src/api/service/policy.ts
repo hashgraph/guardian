@@ -8,9 +8,44 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { TaskManager } from '@helpers/task-manager';
 import { Users } from '@helpers/users';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { MigrationConfigDTO, PolicyCategoryDTO } from '@middlewares/validation/schemas/policies';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+    MigrationConfigDTO,
+    PolicyCategoryDTO,
+} from '@middlewares/validation/schemas/policies';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    Req,
+    Response,
+    UploadedFiles,
+    UseInterceptors,
+} from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import {
+    ApiAcceptedResponse,
+    ApiBody,
+    ApiConsumes,
+    ApiExtraModels,
+    ApiForbiddenResponse,
+    ApiInternalServerErrorResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiParam,
+    ApiQuery,
+    ApiSecurity,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    getSchemaPath,
+} from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
@@ -1178,7 +1213,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         try {
-            const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId);
+            const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId, req.body.metadata);
             return res.status(201).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1215,7 +1250,7 @@ export class PolicyApi {
         const task = taskManager.start(TaskAction.IMPORT_POLICY_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importMessageAsync(user, messageId, versionOfTopicId, task);
+            await engineService.importMessageAsync(user, messageId, versionOfTopicId, task, req.body.metadata);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -1348,6 +1383,84 @@ export class PolicyApi {
     }
 
     /**
+     * Policy import from a zip file with metadata.
+     */
+    @Post('/import/file-metadata')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file with metadata.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'Topic Id',
+        required: false
+    })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Form data with policy file and metadata',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                'policyFile': {
+                    type: 'string',
+                    format: 'binary',
+                },
+                'metadata': {
+                    type: 'string',
+                    format: 'binary',
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.CREATED)
+    @UseInterceptors(AnyFilesInterceptor())
+    async importPolicyFromFileWithMetadata(
+        @AuthUser() user: IAuthUser,
+        @UploadedFiles() files: any,
+        @Query('versionOfTopicId') versionOfTopicId,
+    ): Promise<any> {
+        try {
+            const policyFile = files.find(item => item.fieldname === 'policyFile');
+            if (!policyFile) {
+                throw new Error('There is no policy file');
+            }
+            const metadata = files.find(item => item.fieldname === 'metadata');
+            const engineService = new PolicyEngine();
+            return await engineService.importFile(
+                user,
+                policyFile.buffer,
+                versionOfTopicId,
+                metadata?.buffer && JSON.parse(metadata.buffer.toString())
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Policy import from a zip file (async).
      */
     @Post('/push/import/file')
@@ -1403,6 +1516,88 @@ export class PolicyApi {
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return res.status(202).send(task);
+    }
+
+    /**
+     * Policy import from a zip file with metadata (async).
+     */
+    @Post('/push/import/file-metadata')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file with metadata.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'Topic Id',
+        required: false
+    })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Form data with policy file and metadata',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                'policyFile': {
+                    type: 'string',
+                    format: 'binary',
+                },
+                'metadata': {
+                    type: 'string',
+                    format: 'binary',
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    @UseInterceptors(AnyFilesInterceptor())
+    async importPolicyFromFileWithMetadataAsync(
+        @AuthUser() user: IAuthUser,
+        @UploadedFiles() files: any,
+        @Query('versionOfTopicId') versionOfTopicId,
+    ): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const policyFile = files.find(item => item.fieldname === 'policyFile');
+            if (!policyFile) {
+                throw new Error('There is no policy file');
+            }
+            const metadata = files.find(item => item.fieldname === 'metadata');
+            const engineService = new PolicyEngine();
+            await engineService.importFileAsync(
+                user,
+                policyFile.buffer,
+                versionOfTopicId,
+                task,
+                metadata?.buffer && JSON.parse(metadata.buffer.toString())
+            );
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        });
+        return task;
     }
 
     /**
