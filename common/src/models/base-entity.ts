@@ -1,4 +1,4 @@
-import { AfterCreate, BeforeCreate, BeforeUpdate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { BeforeCreate, BeforeUpdate, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
 /**

@@ -2,7 +2,8 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "resolutions": {
     "@azure/core-rest-pipeline": "1.12.1",
-    "image-size": "1.0.2"
+    "image-size": "1.0.2",
+    "@types/mime": "3.0.4"
   },
   "dependencies": {
     "@mikro-orm/core": "^6.1.11",

@@ -74,7 +74,8 @@
     "name": "@guardian/common",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2"
+        "image-size": "1.0.2",
+        "@types/mime": "3.0.4"
     },
     "scripts": {
         "build": "tsc",
