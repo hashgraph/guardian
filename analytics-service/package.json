@@ -28,7 +28,7 @@
         "cron": "^2.0.0",
         "dotenv": "^16.0.0",
         "excel4node": "^1.8.2",
-        "express": "^4.17.1",
+        "express": "^4.19.2",
         "express-fileupload": "^1.4.0",
         "gulp": "^4.0.2",
         "gulp-copy": "^4.0.1",
