@@ -29,6 +29,7 @@ import {
     ApiBearerAuth,
     ApiParam,
     ApiBody,
+    ApiSecurity,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
@@ -197,6 +198,7 @@ export class TokensApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
+    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Update token.',
         description: 'Update token. Only users with the Standard Registry role are allowed to make the request.',
