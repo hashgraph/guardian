@@ -933,7 +933,14 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
                 const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
-                const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier(), undefined, metadata);
+                const result = await PolicyImportExportHelper.importPolicy(
+                    policyToImport,
+                    did,
+                    versionOfTopicId,
+                    emptyNotifier(),
+                    undefined,
+                    metadata
+                );
                 if (result?.errors?.length) {
                     const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
@@ -960,7 +967,14 @@ export class PolicyEngineService {
                 notifier.start('File parsing');
                 const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                 notifier.completed();
-                const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier, undefined, metadata);
+                const result = await PolicyImportExportHelper.importPolicy(
+                    policyToImport,
+                    did,
+                    versionOfTopicId,
+                    notifier,
+                    undefined,
+                    metadata
+                );
                 if (result?.errors?.length) {
                     const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     notifier.error(message);

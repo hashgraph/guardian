@@ -716,7 +716,7 @@ export class ToolsApi {
     }
 
     /**
-     * Import tool from IPFS
+     * Import tool from file with metadata
      */
     @Post('/import/file-metadata')
     @ApiSecurity('bearerAuth')
@@ -732,7 +732,7 @@ export class ToolsApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with policy file and metadata',
+        description: 'Form data with tool file and metadata.',
         required: true,
         schema: {
             type: 'object',
@@ -762,20 +762,32 @@ export class ToolsApi {
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
-    async toolImportFileWithMetadata(@Req() req, @UploadedFiles() files: any): Promise<any> {
+    async toolImportFileWithMetadata(
+        @Req() req,
+        @UploadedFiles() files: any
+    ): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
-            const file = files.find(item => item.fieldname === 'file');
+            const file = files.find((item) => item.fieldname === 'file');
             if (!file) {
                 throw new Error('There is no tool file');
             }
-            const metadata = files.find(item => item.fieldname === 'metadata');
-            const tool = await guardian.importToolFile(file.buffer, req.user.did, JSON.parse(metadata.buffer.toString()));
+            const metadata = files.find(
+                (item) => item.fieldname === 'metadata'
+            );
+            const tool = await guardian.importToolFile(
+                file.buffer,
+                req.user.did,
+                metadata?.buffer && JSON.parse(metadata.buffer.toString())
+            );
             return tool;
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -830,7 +842,7 @@ export class ToolsApi {
     }
 
     /**
-     * Import tool from IPFS (Async)
+     * Import tool from file with metadata (Async)
      */
     @Post('/push/import/file-metadata')
     @ApiSecurity('bearerAuth')
@@ -842,12 +854,12 @@ export class ToolsApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with policy file and metadata',
+        description: 'Form data with tool file and metadata.',
         required: true,
         schema: {
             type: 'object',
             properties: {
-                'policyFile': {
+                'file': {
                     type: 'string',
                     format: 'binary',
                 },

@@ -1213,11 +1213,19 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         try {
-            const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId, req.body.metadata);
+            const policies = await engineService.importMessage(
+                req.user,
+                req.body.messageId,
+                versionOfTopicId,
+                req.body.metadata
+            );
             return res.status(201).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -1247,14 +1255,29 @@ export class PolicyApi {
         const messageId = req.body.messageId;
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.IMPORT_POLICY_MESSAGE, user.id);
-        RunFunctionAsync<ServiceError>(async () => {
-            const engineService = new PolicyEngine();
-            await engineService.importMessageAsync(user, messageId, versionOfTopicId, task, req.body.metadata);
-        }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        });
+        const task = taskManager.start(
+            TaskAction.IMPORT_POLICY_MESSAGE,
+            user.id
+        );
+        RunFunctionAsync<ServiceError>(
+            async () => {
+                const engineService = new PolicyEngine();
+                await engineService.importMessageAsync(
+                    user,
+                    messageId,
+                    versionOfTopicId,
+                    task,
+                    req.body.metadata
+                );
+            },
+            async (error) => {
+                new Logger().error(error, ['API_GATEWAY']);
+                taskManager.addError(task.taskId, {
+                    code: 500,
+                    message: 'Unknown error: ' + error.message,
+                });
+            }
+        );
         return res.status(202).send(task);
     }
 
@@ -1402,7 +1425,7 @@ export class PolicyApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with policy file and metadata',
+        description: 'Form data with policy file and metadata.',
         required: true,
         schema: {
             type: 'object',
@@ -1442,11 +1465,15 @@ export class PolicyApi {
         @Query('versionOfTopicId') versionOfTopicId,
     ): Promise<any> {
         try {
-            const policyFile = files.find(item => item.fieldname === 'policyFile');
+            const policyFile = files.find(
+                (item) => item.fieldname === 'policyFile'
+            );
             if (!policyFile) {
                 throw new Error('There is no policy file');
             }
-            const metadata = files.find(item => item.fieldname === 'metadata');
+            const metadata = files.find(
+                (item) => item.fieldname === 'metadata'
+            );
             const engineService = new PolicyEngine();
             return await engineService.importFile(
                 user,
@@ -1456,7 +1483,10 @@ export class PolicyApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -1538,7 +1568,7 @@ export class PolicyApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with policy file and metadata',
+        description: 'Form data with policy file and metadata.',
         required: true,
         schema: {
             type: 'object',
@@ -1579,24 +1609,34 @@ export class PolicyApi {
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
-        RunFunctionAsync<ServiceError>(async () => {
-            const policyFile = files.find(item => item.fieldname === 'policyFile');
-            if (!policyFile) {
-                throw new Error('There is no policy file');
+        RunFunctionAsync<ServiceError>(
+            async () => {
+                const policyFile = files.find(
+                    (item) => item.fieldname === 'policyFile'
+                );
+                if (!policyFile) {
+                    throw new Error('There is no policy file');
+                }
+                const metadata = files.find(
+                    (item) => item.fieldname === 'metadata'
+                );
+                const engineService = new PolicyEngine();
+                await engineService.importFileAsync(
+                    user,
+                    policyFile.buffer,
+                    versionOfTopicId,
+                    task,
+                    metadata?.buffer && JSON.parse(metadata.buffer.toString())
+                );
+            },
+            async (error) => {
+                new Logger().error(error, ['API_GATEWAY']);
+                taskManager.addError(task.taskId, {
+                    code: 500,
+                    message: 'Unknown error: ' + error.message,
+                });
             }
-            const metadata = files.find(item => item.fieldname === 'metadata');
-            const engineService = new PolicyEngine();
-            await engineService.importFileAsync(
-                user,
-                policyFile.buffer,
-                versionOfTopicId,
-                task,
-                metadata?.buffer && JSON.parse(metadata.buffer.toString())
-            );
-        }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        });
+        );
         return task;
     }
 

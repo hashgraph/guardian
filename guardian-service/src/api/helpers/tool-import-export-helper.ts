@@ -20,6 +20,7 @@ import {
     GenerateUUIDv4,
     IRootConfig,
     ModuleStatus,
+    PolicyToolMetadata,
     SchemaCategory,
     SchemaStatus,
     TagType,
@@ -77,6 +78,9 @@ export async function replaceConfig(
     }
 
     for (const item of tools) {
+        if (!item.newHash || !item.messageId) {
+            continue;
+        }
         replaceAllEntities(tool.config, ['messageId'], item.oldMessageId, item.messageId);
         replaceAllEntities(tool.config, ['hash'], item.oldHash, item.newHash);
     }
@@ -336,7 +340,7 @@ export async function importToolByFile(
     owner: string,
     components: IToolComponents,
     notifier: INotifier,
-    metadata?: { tools: any[] }
+    metadata?: PolicyToolMetadata
 ): Promise<ImportResult> {
     notifier.start('Import tool');
 
@@ -351,16 +355,23 @@ export async function importToolByFile(
     const users = new Users();
     const root = await users.getHederaAccount(owner);
 
-    const toolsMapping: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[] = []
-
+    const toolsMapping: {
+        oldMessageId: string;
+        messageId: string;
+        oldHash: string;
+        newHash?: string;
+    }[] = [];
     if (metadata?.tools) {
         // tslint:disable-next-line:no-shadowed-variable
         for (const tool of tools) {
-            if (tool.messageId !== metadata.tools[tool.messageId]) {
+            if (
+                metadata.tools[tool.messageId] &&
+                tool.messageId !== metadata.tools[tool.messageId]
+            ) {
                 toolsMapping.push({
                     oldMessageId: tool.messageId,
                     messageId: metadata.tools[tool.messageId],
-                    oldHash: tool.hash
+                    oldHash: tool.hash,
                 });
                 tool.messageId = metadata.tools[tool.messageId];
             }
@@ -423,25 +434,23 @@ export async function importToolByFile(
     notifier.sub(true);
 
     for (const toolMapping of toolsMapping) {
-        // tslint:disable-next-line:no-shadowed-variable
-        const toolByMessageId = toolsResult.tools.find(tool => tool.messageId === toolMapping.messageId);
-        toolMapping.newHash = toolByMessageId.hash;
+        const toolByMessageId = toolsResult.tools.find(
+            // tslint:disable-next-line:no-shadowed-variable
+            (tool) => tool.messageId === toolMapping.messageId
+        );
+        toolMapping.newHash = toolByMessageId?.hash;
     }
 
-    const toolsSchemas = (
-        await Promise.all(
-            toolsResult.tools.map(async (toolResult) => {
-                const toolSchemas = await DatabaseServer.getSchemas({
-                    topicId: toolResult.topicId,
-                    category: SchemaCategory.TOOL,
-                });
-                return toolSchemas.map((schema) => ({
-                    name: schema.name,
-                    iri: schema.iri,
-                }));
-            })
-        )
-    ).flat();
+    const toolsSchemas = (await DatabaseServer.getSchemas(
+        {
+            category: SchemaCategory.TOOL,
+            // tslint:disable-next-line:no-shadowed-variable
+            topicId: { $in: toolsResult.tools.map((tool) => tool.topicId) },
+        },
+        {
+            fields: ['name', 'iri'],
+        }
+    )) as { name: string; iri: string }[];
 
     // Import Schemas
     const schemasResult = await importSchemaByFiles(

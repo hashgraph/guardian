@@ -4,6 +4,7 @@ import {
     ConfigType,
     GenerateUUIDv4,
     ModuleStatus,
+    PolicyToolMetadata,
     PolicyType,
     SchemaCategory,
     SchemaEntity,
@@ -89,7 +90,7 @@ export class PolicyImportExportHelper {
         versionOfTopicId: string,
         notifier: INotifier,
         additionalPolicyConfig?: Partial<Policy>,
-        metadata?: { tools: {[key: string]: string} }
+        metadata?: PolicyToolMetadata,
     ): Promise<{
         /**
          * New Policy
@@ -113,15 +114,22 @@ export class PolicyImportExportHelper {
         notifier.start('Resolve Hedera account');
         const root = await users.getHederaAccount(policyOwner);
 
-        const toolsMapping: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[] = []
-
+        const toolsMapping: {
+            oldMessageId: string;
+            messageId: string;
+            oldHash: string;
+            newHash?: string;
+        }[] = [];
         if (metadata?.tools) {
             for (const tool of tools) {
-                if (tool.messageId !== metadata.tools[tool.messageId]) {
+                if (
+                    metadata.tools[tool.messageId] &&
+                    tool.messageId !== metadata.tools[tool.messageId]
+                ) {
                     toolsMapping.push({
                         oldMessageId: tool.messageId,
                         messageId: metadata.tools[tool.messageId],
-                        oldHash: tool.hash
+                        oldHash: tool.hash,
                     });
                     tool.messageId = metadata.tools[tool.messageId];
                 }
@@ -204,28 +212,26 @@ export class PolicyImportExportHelper {
         notifier.sub(false);
 
         for (const toolMapping of toolsMapping) {
-            const toolByMessageId = toolsResult.tools.find(tool => tool.messageId === toolMapping.messageId);
-            toolMapping.newHash = toolByMessageId.hash;
+            const toolByMessageId = toolsResult.tools.find(
+                // tslint:disable-next-line:no-shadowed-variable
+                (tool) => tool.messageId === toolMapping.messageId
+            );
+            toolMapping.newHash = toolByMessageId?.hash;
         }
 
         // Import Tokens
         const tokensResult = await importTokensByFiles(policyOwner, tokens, notifier);
         const tokenMap = tokensResult.tokenMap;
 
-        const toolsSchemas = (
-            await Promise.all(
-                toolsResult.tools.map(async (toolResult) => {
-                    const toolSchemas = await DatabaseServer.getSchemas({
-                        topicId: toolResult.topicId,
-                        category: SchemaCategory.TOOL,
-                    });
-                    return toolSchemas.map((schema) => ({
-                        name: schema.name,
-                        iri: schema.iri,
-                    }));
-                })
-            )
-        ).flat();
+        const toolsSchemas = (await DatabaseServer.getSchemas(
+            {
+                category: SchemaCategory.TOOL,
+                topicId: { $in: toolsResult.tools.map((tool) => tool.topicId) },
+            },
+            {
+                fields: ['name', 'iri'],
+            }
+        )) as { name: string; iri: string }[];
 
         // Import Schemas
         const schemasResult = await importSchemaByFiles(
@@ -246,7 +252,13 @@ export class PolicyImportExportHelper {
         notifier.completedAndStart('Saving in DB');
 
         // Replace id
-        await PolicyImportExportHelper.replaceConfig(policy, schemasMap, artifactsMap, tokenMap, toolsMapping as any);
+        await PolicyImportExportHelper.replaceConfig(
+            policy,
+            schemasMap,
+            artifactsMap,
+            tokenMap,
+            toolsMapping
+        );
 
         // Save
         const model = new DataBaseHelper(Policy).create(policy as Policy);
@@ -328,7 +340,7 @@ export class PolicyImportExportHelper {
         schemasMap: SchemaImportResult[],
         artifactsMap: Map<string, string>,
         tokenMap: any[],
-        tools: { oldMessageId: string, messageId: string, oldHash: string, newHash: string }[]
+        tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
     ) {
         if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
@@ -349,6 +361,9 @@ export class PolicyImportExportHelper {
         }
 
         for (const item of tools) {
+            if (!item.newHash || !item.messageId) {
+                continue;
+            }
             replaceAllEntities(policy.config, ['messageId'], item.oldMessageId, item.messageId);
             replaceAllEntities(policy.config, ['hash'], item.oldHash, item.newHash);
         }

@@ -144,7 +144,7 @@ export class ArtifactApi {
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'Form data with artifacts',
+        description: 'Form data with artifacts.',
         required: true,
         schema: {
             type: 'array',

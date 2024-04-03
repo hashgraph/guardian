@@ -109,8 +109,8 @@
         </div>
 
         <div *ngIf="!isFile" class="field">
-            <div class="field-name">Description</div>
-            <div class="field-value">{{ tool.description }}</div>
+            <div class="field-name">Tools</div>
+            <div class="field-value">{{ tools }}</div>
         </div>
 
         <div *ngIf="isFile && toolConfigs && toolForm" class="fields-container">
@@ -159,7 +159,7 @@
         </div>
         <div [ngSwitch]="!!(xlsx && errors?.length)">
             <p-button *ngSwitchCase="true" (click)="onImport()" label="Skip & Import"></p-button>
-            <p-button *ngSwitchCase="false" [disabled]="!!toolForm && !toolForm.valid" (click)="onImport()" label="Import"></p-button>
+            <p-button *ngSwitchCase="false" [disabled]="!toolForm?.valid" (click)="onImport()" label="Import"></p-button>
         </div>
     </div>
 </div>

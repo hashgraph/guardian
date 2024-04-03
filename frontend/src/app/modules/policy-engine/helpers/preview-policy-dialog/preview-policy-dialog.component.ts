@@ -78,7 +78,6 @@ export class PreviewPolicyDialog {
                     ])
                 );
             }
-            this.tools = this.toolConfigs.map((tool) => tool.name).join(', ');
         }
 
         if (this.config.data.module) {

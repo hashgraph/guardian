@@ -2,7 +2,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
-import { ISchema } from '@guardian/interfaces';
+import { PolicyToolMetadata } from '@guardian/interfaces';
 
 /**
  * Services for working from tools.
@@ -94,15 +94,27 @@ export class ToolsService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message`, { messageId });
     }
 
-    public pushImportByFile(file: any, metadata?: { tools: { [key: string]: string }}): Observable<{ taskId: string, expectation: number }> {
+    public pushImportByFile(
+        file: any,
+        metadata?: PolicyToolMetadata
+    ): Observable<{ taskId: string; expectation: number }> {
         const formData = new FormData();
-        formData.append('file', new Blob([file], { type: "application/octet-stream" }));
+        formData.append(
+            'file',
+            new Blob([file], { type: 'application/octet-stream' })
+        );
         if (metadata) {
-            formData.append('metadata', new Blob([JSON.stringify(metadata)], {
-                type: "application/json",
-            }));
+            formData.append(
+                'metadata',
+                new Blob([JSON.stringify(metadata)], {
+                    type: 'application/json',
+                })
+            );
         }
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file-metadata`, formData);
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/import/file-metadata`,
+            formData
+        );
     }
 
     public validate(policy: any): Observable<any> {

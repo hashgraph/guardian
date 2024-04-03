@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
+import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, PolicyToolMetadata, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -173,7 +173,6 @@ export class Guardians extends NatsService {
     /**
      * Update token
      * @param token
-     * @param task
      */
     public async updateToken(token: IToken | any): Promise<any> {
         return await this.sendMessage(MessageAPI.UPDATE_TOKEN, { token });
@@ -1951,8 +1950,9 @@ export class Guardians extends NatsService {
      * Load tool file for import
      * @param zip
      * @param owner
+     * @param metadata
      */
-    public async importToolFile(zip: any, owner: string, metadata?: any) {
+    public async importToolFile(zip: any, owner: string, metadata?: PolicyToolMetadata) {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner, metadata });
     }
 
@@ -1988,8 +1988,9 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      * @param task
+     * @param metadata
      */
-    public async importToolFileAsync(zip: any, owner: string, task: NewTask, metadata?: any) {
+    public async importToolFileAsync(zip: any, owner: string, task: NewTask, metadata?: PolicyToolMetadata) {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_ASYNC, { zip, owner, task, metadata });
     }
 

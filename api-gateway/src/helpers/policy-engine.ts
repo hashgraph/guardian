@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents } from '@guardian/interfaces';
+import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager';
 
@@ -269,12 +269,13 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param zip
      * @param versionOfTopicId
+     * @param metadata
      */
     public async importFile(
         user: IAuthUser,
         zip: Buffer,
         versionOfTopicId?: string,
-        metadata?: { tools: { [key: string]: string } }
+        metadata?: PolicyToolMetadata
     ) {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE, {
             zip,
@@ -290,13 +291,14 @@ export class PolicyEngine extends NatsService {
      * @param zip
      * @param versionOfTopicId
      * @param task
+     * @param metadata
      */
     public async importFileAsync(
         user: IAuthUser,
         zip: Buffer,
         versionOfTopicId: string,
         task: NewTask,
-        metadata?: { tools: { [key: string]: string } }
+        metadata?: PolicyToolMetadata
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
@@ -308,12 +310,14 @@ export class PolicyEngine extends NatsService {
      * Import policy from message
      * @param user
      * @param messageId
+     * @param versionOfTopicId
+     * @param metadata
      */
     public async importMessage(
         user: IAuthUser,
         messageId: string,
         versionOfTopicId: string,
-        metadata?: { tools: { [key: string]: string } }
+        metadata?: PolicyToolMetadata
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
@@ -327,13 +331,14 @@ export class PolicyEngine extends NatsService {
      * @param messageId
      * @param versionOfTopicId
      * @param task
+     * @param metadata
      */
     public async importMessageAsync(
         user: IAuthUser,
         messageId: string,
         versionOfTopicId: string,
         task: NewTask,
-        metadata?: { tools: { [key: string]: string } }
+        metadata?: PolicyToolMetadata
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
