@@ -10,7 +10,6 @@ import { ProfileService } from '../../services/profile.service';
 import { WebSocketService } from '../../services/web-socket.service';
 import { HeaderPropsService } from '../../services/header-props.service';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
 import { NotificationService } from '../../services/notify.service';
 import { BrandingService } from '../../services/branding.service';
 
@@ -20,48 +19,45 @@ import { BrandingService } from '../../services/branding.service';
     styleUrls: ['./new-header.component.scss'],
 })
 export class NewHeaderComponent implements OnInit {
-    menuCollapsed: boolean = false;
-    smallMenuMode: boolean = false;
-    balance: string = '';
-    menuItems: NavbarMenuItem[];
+    public isLogin: boolean = false;
+    public role: any = null;
+    public username: string | null = null;
+    public balance: string = '';
+    public menuCollapsed: boolean = false;
+    public smallMenuMode: boolean = false;
+    public menuItems: NavbarMenuItem[];
+    public activeLink: string = '';
+    public activeLinkRoot: string = '';
 
-    activeLink: string = '';
-    activeLinkRoot: string = '';
-    role: any = null;
-    isLogin: boolean = false;
-    username: string | null = null;
-    commonLinksDisabled: boolean = false;
-    menuIcon: 'expand_more' | 'account_circle' = 'expand_more';
-    testUsers$: Observable<any[]>;
-    balanceType: string;
-    balanceInit: boolean = false;
-    ws!: any;
-    authSubscription!: any;
-    displayDemoAccounts: boolean = environment.displayDemoAccounts;
-    hederaAccountID: string | undefined;
-    profileData: IUser | null = null;
-    mobileMenuOpen: boolean = false;
-    subMenuOpen: any = {};
-    userInfoVisible: boolean = false;
+    private commonLinksDisabled: boolean = false;
+    private balanceType: string;
+    private balanceInit: boolean = false;
+    private ws!: any;
+    private authSubscription!: any;
 
     @Input() remoteContainerMethod: any;
 
     constructor(public authState: AuthStateService,
-                public auth: AuthService,
-                public otherService: DemoService,
-                public router: Router,
-                public dialog: MatDialog,
-                public profileService: ProfileService,
-                public webSocketService: WebSocketService,
-                public headerProps: HeaderPropsService,
-                private notificationService: NotificationService,
-                private brandingService: BrandingService) {
+        public auth: AuthService,
+        public otherService: DemoService,
+        public router: Router,
+        public dialog: MatDialog,
+        public profileService: ProfileService,
+        public webSocketService: WebSocketService,
+        public headerProps: HeaderPropsService,
+        private brandingService: BrandingService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
             }
         })
         headerProps.isLoading$.subscribe(value => this.commonLinksDisabled = value);
+        try {
+            this.smallMenuMode = localStorage.getItem('MAIN_HEADER') === 'true';
+            this.menuCollapsed = this.smallMenuMode;
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     ngOnInit(): void {
@@ -99,7 +95,7 @@ export class NewHeaderComponent implements OnInit {
         }
     }
 
-    getBalance() {
+    private getBalance() {
         if (!this.isLogin) {
             return;
         }
@@ -131,7 +127,7 @@ export class NewHeaderComponent implements OnInit {
         });
     }
 
-    async update() {
+    private async update() {
         if (this.activeLink === this.router.url) {
             return;
         }
@@ -167,7 +163,7 @@ export class NewHeaderComponent implements OnInit {
         });
     }
 
-    setStatus(isLogin: boolean, role: any, username: any) {
+    private setStatus(isLogin: boolean, role: any, username: any) {
         if (this.isLogin !== isLogin || this.role !== role) {
             this.isLogin = isLogin;
             this.role = role;
@@ -176,14 +172,14 @@ export class NewHeaderComponent implements OnInit {
         }
     }
 
-    logOut() {
+    public logOut() {
         this.auth.removeAccessToken();
         this.auth.removeUsername();
         this.authState.updateState(false);
         this.router.navigate(['/login']);
     }
 
-    toggleMenuMode() {
+    public toggleMenuMode() {
         this.smallMenuMode = !this.smallMenuMode;
         this.menuCollapsed = this.smallMenuMode;
         this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
@@ -192,9 +188,15 @@ export class NewHeaderComponent implements OnInit {
         if (fixedActionsContainer) {
             fixedActionsContainer.style.left = !this.smallMenuMode ? 'var(--header-width-expand)' : 'var(--header-width-collapse)'
         }
+
+        try {
+            localStorage.setItem('MAIN_HEADER', String(this.smallMenuMode));
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    goToHomePage() {
+    public goToHomePage() {
         if (this.role === UserRole.STANDARD_REGISTRY) {
             this.router.navigate(['/config']);
         } else if (this.role === UserRole.USER) {
@@ -202,7 +204,7 @@ export class NewHeaderComponent implements OnInit {
         }
     }
 
-    goToBrandingPage(event: MouseEvent) {
+    public goToBrandingPage(event: MouseEvent) {
         event.stopImmediatePropagation()
         this.router.navigate(['/branding']);
     }

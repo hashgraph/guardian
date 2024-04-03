@@ -1,23 +1,23 @@
-# ℹ System/Policy Schemas
+# ℹ️ Types of Schemas
 
 ## Schema Demo
 
-There are two types of Schemas:
+There are four types of Schemas:
 
 1. [System Schemas](system-policy-schemas.md#system-schemas)
 2. [Policy Schemas](system-policy-schemas.md#policy-schemas)
-3. [Tag Schemas](tag-schema/)
+3. [Tag Schemas](system-policy-schemas.md#tag-schemas)
 4. [Module Schemas](system-policy-schemas.md#module-schemas)
 
 To display System / Policy Schemas in the GUI, we have added a toggle in the Schemas tab.
 
 <figure><img src="../../../.gitbook/assets/image (37) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-#### System Schemas
+## System Schemas
 
 Whenever an account is created, System Schemas are generated automatically.
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: By default System Schemas cannot be edited/deleted.
@@ -34,6 +34,10 @@ The below screenshot shows the Policy Schemas of an imported Policy (i.e. iRec).
 We also have a filter, where by default, all the Schemas of Policies are shown. We can also select a particular Policy to show the Schemas of the selected Policy.
 
 <figure><img src="../../../.gitbook/assets/image (38) (1).png" alt=""><figcaption></figcaption></figure>
+
+## Tag Schemas
+
+Tags can have attached/linked documents. To add a document to the tag a schema is required. Such documents can be found under the [**Tag Schemas**](tag-schema/) section.
 
 ## Module Schemas
 

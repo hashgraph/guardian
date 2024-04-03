@@ -35,7 +35,7 @@ export class TaskQueue {
     /**
      * Tasks
      */
-    private tasks: ((value: number) => void)[];
+    private readonly tasks: ((value: number) => void)[];
 
     constructor() {
         this.tasks = [];
@@ -67,7 +67,6 @@ export class TaskQueue {
     }
 }
 
-
 /**
  * Analytics debug
  */
@@ -92,11 +91,11 @@ export class AnalyticsUtils {
     /**
      * Request counter
      */
-    private static counter = new Counter();
+    private static readonly counter = new Counter();
     /**
      * Request counter
      */
-    private static taskQueue = new TaskQueue();
+    private static readonly taskQueue = new TaskQueue();
 
     /**
      * Send debug message
@@ -105,6 +104,7 @@ export class AnalyticsUtils {
      */
     private static debugMessage(message: string, lvl: AnalyticsDebug): void {
         try {
+            // tslint:disable-next-line:no-bitwise
             if (lvl & AnalyticsUtils.DEBUG_LVL) {
                 if (lvl === AnalyticsDebug.MESSAGES) {
                     console.log(message);

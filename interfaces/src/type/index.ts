@@ -38,3 +38,4 @@ export * from './contract-param.type';
 export * from './w3s-events';
 export * from './policy-category-type';
 export * from './document.type';
+export * from './mint-transaction-status.type';

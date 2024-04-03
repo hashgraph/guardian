@@ -1,23 +1,21 @@
 # Returning all contracts
 
-{% swagger method="get" path="" baseUrl="/contracts" summary="Returns all contracts." %}
-{% swagger-description %}
+## Returns all contracts.
+
+<mark style="color:blue;">`GET`</mark> `/contracts`
+
 Returns all contracts.
-{% endswagger-description %}
 
-{% swagger-parameter in="query" name="type" type="String" %}
-Contract type
-{% endswagger-parameter %}
+#### Query Parameters
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
+| Name                                        | Type    | Description                                                           |
+| ------------------------------------------- | ------- | --------------------------------------------------------------------- |
+| pageIndex<mark style="color:red;">\*</mark> | Integer | The number of pages to skip before starting to collect the result set |
+| pageSize<mark style="color:red;">\*</mark>  | Integer | The numbers of items to return                                        |
+| type                                        | String  | Contract type                                                         |
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="true" %}
-The numbers of items to return
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     headers:
@@ -33,25 +31,25 @@ The numbers of items to return
                   $ref: '#/components/schemas/Contract'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
    content:
@@ -60,5 +58,5 @@ The numbers of items to return
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

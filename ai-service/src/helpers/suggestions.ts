@@ -1,6 +1,5 @@
-import { NatsService } from './common/nats-service';
-import { Singleton } from './decorators/singleton';
-import { GenerateUUIDv4 } from './interfaces/generate-uuid-v4';
+import { NatsService, Singleton } from '@guardian/common';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
  * AISuggestionService service

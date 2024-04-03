@@ -14,6 +14,7 @@
             class="form-{{ type }}"
         >
             <h1 *ngIf="title" mat-dialog-title>{{ title }}</h1>
+
             <div *ngIf="restoreData" class="restore-data">
                 <mat-icon>info</mat-icon>
                 <b>There is some data to restore. You can restore latest values:</b>
@@ -26,7 +27,7 @@
                     Restore Values<mat-icon>restore</mat-icon>
                 </button>
             </div>
-	    
+
             <div *ngIf="dryRun" class="restore-data">
                 <mat-icon>info</mat-icon>
                 <b>There is dry run mode. You can fill document with test data:</b>
@@ -39,7 +40,7 @@
                     Test<mat-icon>restore</mat-icon>
                 </button>
             </div>
-	    
+
             <div class="schema-form">
                 <app-schema-form
                     (cancelBtnEvent)="onCancelPage($event)"
@@ -49,6 +50,8 @@
                     [private-fields]="hideFields"
                     [readonly-fields]="presetReadonlyFields"
                     [schema]="schema"
+                    [dryRun]="dryRun"
+                    [policyId]="policyId"
                     submitText="Create"
                 >
                 </app-schema-form>
@@ -58,7 +61,7 @@
 </div>
 
 <ng-template #dialogTemplate let-data>
-    <div>
+    <div class="dialog-template">
         <h1 class="title" mat-dialog-title>{{ dialogContent }}</h1>
         <div *ngIf="restoreData" class="restore-data">
             <mat-icon>info</mat-icon>
@@ -72,7 +75,7 @@
                 Restore Values<mat-icon>restore</mat-icon>
             </button>
         </div>
-	<div *ngIf="dryRun" class="restore-data">
+	    <div *ngIf="dryRun" class="restore-data">
             <mat-icon>info</mat-icon>
             <b>There is dry run mode. You can fill document with test data:</b>
             <button
@@ -84,7 +87,7 @@
                 Test<mat-icon>restore</mat-icon>
             </button>
         </div>
-	
+
         <div *ngIf="schema" class="body-dialog-template" mat-dialog-content>
             <ng-template #preloader>
                 <div class="preloader-image"></div>
@@ -94,7 +97,7 @@
                 <div class="preloader-image preloader-image-l-size"></div>
             </div>
             <form (ngSubmit)="onSubmit('dialog')" [formGroup]="dataForm">
-                <div class="form-{{ type }}">
+                <div class="form-{{ type }}" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
                     <app-schema-form
                         (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
                         (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
@@ -103,6 +106,8 @@
                         [preset]="presetDocument"
                         [private-fields]="hideFields"
                         [readonly-fields]="presetReadonlyFields"
+                        [dryRun]="dryRun"
+                        [policyId]="policyId"
                         [schema]="schema"
                     >
                     </app-schema-form>

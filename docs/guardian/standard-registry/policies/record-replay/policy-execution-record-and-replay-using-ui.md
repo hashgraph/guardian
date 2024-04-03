@@ -77,4 +77,4 @@ The ‘details’ page shows detailed breakdown of differences between the corre
 
 ## 2. Demo Video
 
-[Youtube](https://www.youtube.com/watch?v=WU\_ntIM5SJA\&list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL\&index=1)
+[Youtube](https://youtu.be/WU\_ntIM5SJA?si=MtY9JUD5mmVd4Gpp\&t=108)

@@ -28,7 +28,7 @@ RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
 | Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | <p>""</p><p>"owner"</p><p>"issuer"</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |
 | Disabled      | "disabled"   | True/False                                                        | true/false                             | Allows to disable the event without deleting it.                                                                                |
 
-To know more information about events, please look at [events.md](events.md "mention").
+To know more information about events, please look at [Events](events.md).
 
 ### API Parameters
 

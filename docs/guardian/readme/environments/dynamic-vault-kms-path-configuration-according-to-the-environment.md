@@ -1,4 +1,4 @@
-# Dynamic Vault/KMS path configuration according to the environment
+# 🔑 Dynamic Vault/KMS path configuration according to the environment
 
 Guardian platform manage to segregate secret data basing on the variables defined in the ecosystem environment. As in the database case the two variables leveraged to discriminate secret storage are the GUARDIAN\_ENV and HEDERA\_NET variables.
 

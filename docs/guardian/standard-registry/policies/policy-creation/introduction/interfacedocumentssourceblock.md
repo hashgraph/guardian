@@ -2,7 +2,7 @@
 
 ### Properties
 
-<table><thead><tr><th width="179">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>type</td><td>A block type which outputs information from the DB as grid.</td><td><strong>InterfaceDocumentsSource</strong> Block (Can't be changed).</td><td></td></tr><tr><td>tag</td><td>Unique name for the logic block.</td><td>sensors_grid.</td><td></td></tr><tr><td>permissions</td><td>Which entity has rights to interact at this part of the workflow.</td><td>Installer.</td><td></td></tr><tr><td>defaultActive</td><td>Shows whether this block is active at this time and whether it needs to be shown.</td><td>Checked or unchecked.</td><td></td></tr><tr><td>dependencies</td><td>Automatic update. The block is automatically re-rendered if any of the linked components gets updated.</td><td>Select the appropriate block from the dropdown.</td><td><mark style="color:red;">Deprecated</mark></td></tr><tr><td>dataType</td><td>Specify the table to request the data from.</td><td>Current options are: Verifiable Credential, DID, Approve, or Hedera.</td><td></td></tr></tbody></table>
+<table><thead><tr><th width="179">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>type</td><td>A block type which outputs information from the DB as grid.</td><td><strong>InterfaceDocumentsSource Block</strong> (Can't be changed).</td><td></td></tr><tr><td>tag</td><td>Unique name for the logic block.</td><td>sensors_grid.</td><td></td></tr><tr><td>permissions</td><td>Which entity has rights to interact at this part of the workflow.</td><td>Installer.</td><td></td></tr><tr><td>defaultActive</td><td>Shows whether this block is active at this time and whether it needs to be shown.</td><td>Checked or unchecked.</td><td></td></tr><tr><td>dataType</td><td>Specify the table to request the data from.</td><td>Current options are: Verifiable Credential, DID, Approve, or Hedera.</td><td></td></tr></tbody></table>
 
 {% hint style="info" %}
 RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
@@ -24,7 +24,7 @@ RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
 | Event Actor   | "actor"      | <p>Event Initiator</p><p>Document Owner</p><p>Document Issuer</p> | <p>""</p><p>"owner"</p><p>"issuer"</p> | Allows to transfer control of the block (execution context) to another user. Empty field leaves control at the Event Initiator. |
 | Disabled      | "disabled"   | True/False                                                        | true/false                             | Allows to disable the event without deleting it.                                                                                |
 
-To know more information about events, please look at [events.md](events.md "mention").
+To know more information about events, please look at [Events](events.md).
 
 ### API Parameters
 

@@ -45,3 +45,4 @@ export * from './type';
 export * from './interface';
 export * from './helpers';
 export * from './models';
+export * from './errors';

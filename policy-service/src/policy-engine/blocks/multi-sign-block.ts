@@ -150,14 +150,17 @@ export class MultiSignBlock {
             throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
         }
 
-        const root = await PolicyUtils.getHederaAccount(ref, user.did);
+        const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
+        const didDocument = await userCred.loadDidDocument(ref);
+
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
         const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
         const uuid = await ref.components.generateUUID();
-        const newVC = await this.vcHelper.createVcDocument(
+        const newVC = await this.vcHelper.createVerifiableCredential(
             credentialSubject,
-            { did: root.did, key: root.hederaAccountKey },
+            didDocument,
+            null,
             { uuid, group: groupContext }
         );
 
@@ -211,25 +214,29 @@ export class MultiSignBlock {
 
         if (signed >= signedThreshold) {
             const docOwner = PolicyUtils.getDocumentOwner(ref, sourceDoc);
-            const policyOwnerAccount = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-            const documentOwnerAccount = await PolicyUtils.getHederaAccount(ref, docOwner.did);
+            const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+            const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, docOwner.did);
+
+            const policyOwnerDocument = await policyOwnerCred.loadDidDocument(ref);
 
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
             const uuid: string = await ref.components.generateUUID();
-            const vp = await this.vcHelper.createVpDocument(
+            const vp = await this.vcHelper.createVerifiablePresentation(
                 vcs,
-                { did: policyOwnerAccount.did, key: policyOwnerAccount.hederaAccountKey },
+                policyOwnerDocument,
+                null,
                 { uuid }
             );
 
+            const documentOwnerHederaCred = await documentOwnerCred.loadHederaCredentials(ref);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
             vpMessage.setUser(null);
             const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId);
             const messageServer = new MessageServer(
-                documentOwnerAccount.hederaAccountId,
-                documentOwnerAccount.hederaAccountKey,
+                documentOwnerHederaCred.hederaAccountId,
+                documentOwnerHederaCred.hederaAccountKey,
                 ref.dryRun
             );
 

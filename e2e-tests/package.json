@@ -1,0 +1,31 @@
+{
+  "name": "guardian-e2e-test",
+  "version": "1.0.1",
+  "description": "This a place for quardian e2e automation test suite",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx cypress run",
+    "e2e": "cypress run",
+    "ui-only": "cypress run --headed --env grepTags=@ui,grepFilterSpecs=true",
+    "test-tag": "./run-test-by-tag.sh"
+  },
+  "keywords": [
+    "qa",
+    "automation"
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "cy-verify-downloads": "^0.1.14",
+    "cypress": "^13.7.1",
+    "cypress-grep": "^3.0.3",
+    "cypress-mochawesome-reporter": "^3.5.1",
+    "cypress-select-tests": "^1.7.1"
+  },
+  "dependencies": {
+    "@bahmutov/cy-api": "^2.1.3",
+    "cypress-multi-reporters": "^1.6.4",
+    "mocha-junit-reporter": "^2.2.1",
+    "util": "^0.12.4",
+    "uuidv4": "^6.2.13"
+  }
+}

@@ -2,9 +2,9 @@ import { Hashing } from '../hashing';
 import { IVP } from '@guardian/interfaces';
 import { VcDocument } from './vc-document';
 import { Issuer } from './issuer';
-import { DIDDocument } from './did-document';
 import { TimestampUtils } from '../timestamp-utils';
 import { Timestamp } from '@hashgraph/sdk';
+import { CommonDidDocument } from './did';
 
 /**
  * VP document
@@ -125,12 +125,12 @@ export class VpDocument {
      * Set issuer
      * @param issuer
      */
-    public setIssuer(issuer: string | Issuer | DIDDocument): void {
+    public setIssuer(issuer: string | Issuer | CommonDidDocument): void {
         if (typeof issuer === 'string') {
             this.issuer = new Issuer(issuer);
         } else if (issuer instanceof Issuer) {
             this.issuer = issuer;
-        } else if (issuer instanceof DIDDocument) {
+        } else if (typeof issuer.getDid === 'function') {
             this.issuer = new Issuer(issuer.getDid());
         }
     }

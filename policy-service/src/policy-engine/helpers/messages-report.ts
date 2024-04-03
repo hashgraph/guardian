@@ -1,6 +1,6 @@
 import {
-    DIDDocument,
     DIDMessage,
+    HederaDid,
     Message,
     MessageAction,
     MessageServer,
@@ -207,7 +207,7 @@ export class MessagesReport {
         const topics: Set<string> = new Set<string>();
         for (const did of this.users.keys()) {
             try {
-                const { topicId } = DIDDocument.parse(did);
+                const { topicId } = HederaDid.parse(did);
                 topics.add(topicId);
             } catch (error) {
                 continue;

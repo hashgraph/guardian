@@ -73,7 +73,7 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
  * @param {string} topicId
  * @param {any} task
  */
-export async function createSchemaAsync(newSchema: ISchema, owner: string, topicId: string, task: any): Promise<any> {
+export async function createSchemaAsync(newSchema: ISchema, owner: string, topicId: string | undefined, task: any): Promise<any> {
     const taskManager = new TaskManager();
     const guardians = new Guardians();
     taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
@@ -746,7 +746,7 @@ export class SchemaApi {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const newSchema = req.body;
-        const topicId = req.params.topicId;
+        const topicId = (req.params.topicId === null || req.params.topicId === undefined) ? undefined : req.params.topicId;
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
         RunFunctionAsync<ServiceError>(async () => {
@@ -2051,9 +2051,12 @@ export class SchemaApi {
     async importPolicyFromXlsx(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Body() file: any,
+        @Body() file: ArrayBuffer,
         @Response() res: any
     ): Promise<any> {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         try {
             const guardians = new Guardians();
             await guardians.importSchemasByXlsx(user, topicId, file);
@@ -2113,9 +2116,12 @@ export class SchemaApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Body() file: any,
+        @Body() file: ArrayBuffer,
         @Response() res: any
     ): Promise<any> {
+        if (!file) {
+            throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_SCHEMA_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
@@ -2164,7 +2170,7 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: any
+        @Body() file: ArrayBuffer
     ) {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)

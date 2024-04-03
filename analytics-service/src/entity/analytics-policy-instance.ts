@@ -78,4 +78,10 @@ export class AnalyticsPolicyInstance extends BaseEntity {
      */
     @Property({ nullable: true })
     action?: string;
+
+    /**
+     * IPFS
+     */
+    @Property({ nullable: true })
+    ipfs?: string;
 }

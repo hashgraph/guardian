@@ -6,6 +6,7 @@ import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
 
 /**
  * Did Root Key Base
+ * @deprecated 2024-02-12
  */
 export abstract class DidRootKeyBase {
     /**
@@ -145,6 +146,7 @@ export abstract class DidRootKeyBase {
 
 /**
  * BBS DID root key
+ * @deprecated 2024-02-12
  */
 export class BBSDidRootKey extends DidRootKeyBase {
     /**
@@ -201,6 +203,7 @@ export class BBSDidRootKey extends DidRootKeyBase {
 
 /**
  * DID root key
+ * @deprecated 2024-02-12
  */
 export class DidRootKey extends DidRootKeyBase {
     /**
@@ -338,6 +341,7 @@ export class DidRootKey extends DidRootKeyBase {
 
 /**
  * Did document base
+ * @deprecated 2024-02-12
  */
 export class DidDocumentBase {
     /**
@@ -534,6 +538,7 @@ export class DidDocumentBase {
 
 /**
  * DID document
+ * @deprecated 2024-02-12
  */
 export class DIDDocument {
     /**

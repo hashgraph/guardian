@@ -2,31 +2,31 @@
 
 ## Table of Contents
 
-[Introduction](ghgp-corporate-standard-v2.md#\_toc146717947)
+[Introduction](ghgp-corporate-standard-v2.md#toc146717947)
 
-[Need and Use for the GHGP Corporate Standard Policy](ghgp-corporate-standard-v2.md#\_toc146717948)
+[Need and Use for the GHGP Corporate Standard Policy](ghgp-corporate-standard-v2.md#toc146717948)
 
-[Policy Workflow](ghgp-corporate-standard-v2.md#\_toc146717950)
+[Policy Workflow](ghgp-corporate-standard-v2.md#toc146717950)
 
-[Policy Guide](ghgp-corporate-standard-v2.md#\_toc146717951)
+[Policy Guide](ghgp-corporate-standard-v2.md#toc146717951)
 
-[Available Roles](ghgp-corporate-standard-v2.md#\_toc146717952)
+[Available Roles](ghgp-corporate-standard-v2.md#toc146717952)
 
-[Important Documents & Schemas](ghgp-corporate-standard-v2.md#\_toc146717953)
+[Important Documents & Schemas](ghgp-corporate-standard-v2.md#toc146717953)
 
-[Token (Carbon Emission)](ghgp-corporate-standard-v2.md#\_toc146717954)
+[Token (Carbon Emission)](ghgp-corporate-standard-v2.md#toc146717954)
 
-[Step by Step](ghgp-corporate-standard-v2.md#\_toc146717955)
+[Step by Step](ghgp-corporate-standard-v2.md#toc146717955)
 
-&#x20;       [Organization Flow](ghgp-corporate-standard-v2.md#\_toc146717956)
+&#x20;       [Organization Flow](ghgp-corporate-standard-v2.md#toc146717956)
 
-&#x20;       [VVB Flow](ghgp-corporate-standard-v2.md#\_toc146717957)
+&#x20;       [VVB Flow](ghgp-corporate-standard-v2.md#toc146717957)
 
-&#x20;       [Administrator (Registry) Flow](ghgp-corporate-standard-v2.md#\_toc146717958)
+&#x20;       [Administrator (Registry) Flow](ghgp-corporate-standard-v2.md#toc146717958)
 
-[Futureproofing (Automated GHG Inventories)](ghgp-corporate-standard-v2.md#\_toc146717959)
+[Futureproofing (Automated GHG Inventories)](ghgp-corporate-standard-v2.md#toc146717959)
 
-[TODO](ghgp-corporate-standard-v2.md#\_toc146717960)
+[TODO](ghgp-corporate-standard-v2.md#toc146717960)
 
 ### Introduction <a href="#toc146717947" id="toc146717947"></a>
 
@@ -48,13 +48,13 @@ The Guardian GHGP Corporate Policy offers a unique technical opportunity for com
 
 ### Policy Workflow <a href="#toc146717950" id="toc146717950"></a>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide <a href="#toc146717951" id="toc146717951"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 1698402201.827872003
+Latest Version - 1707206253.006698003
 
 ### Available Roles <a href="#toc146717952" id="toc146717952"></a>
 
@@ -145,33 +145,33 @@ The Organization is responsible for inputting key data and information and assig
 
 1. Assign role as VVB and add VVB name
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. All the GHG resources once viewed can be verified.
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. After verification of GHG resources, VVB reviews reporting metrics and approve/reject.
 
-<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Administrator (Registry) <a href="#toc146717958" id="toc146717958"></a>
 
 1. After the organizational emissions have been calculated, the Registry will approve or reject the CET issuance request, and consequently issue CETs if approved.
 
-<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. Once it is approved, tokens are minted as shown:
 
-<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Futureproofing (Automated GHG Inventories) <a href="#toc146717959" id="toc146717959"></a>
 

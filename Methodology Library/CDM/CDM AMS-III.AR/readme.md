@@ -3,12 +3,14 @@
 
 - Introduction
 - Why the AMS-III.AR Methodology?
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
-  - Important Documents & Schemas
-  - Token (Carbon Credit)
-  - Step By Step
+- Available Roles
+- Important Documents & Schemas
+- Token (Carbon Credit)
+- Step By Step
 <!-- /TOC -->
 
 ## Introduction
@@ -25,26 +27,24 @@ Moreover, LED bulbs are designed with sustainability in mind. Unlike conventiona
 
 In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. They not only provide superior lighting quality but also bring significant energy savings, reduced carbon emissions, prolonged lifespan, and a more sustainable lighting solution. By adopting LED/CFL technology, we can make a positive impact on our environment. 
 
+## Tools Referenced
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system
+
+**[Methodological Tool 19](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2019/readme.md)** - Demonstration of additionality of microscale project activities
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of small-scale project activities
+
+**[Methodological Tool 33](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2033/readme.md)** - Default values for common parameters
+
 ## Demo Video
 
 [Youtube](https://youtu.be/czbsLZU_Gl4)
 
 ## Policy Workflow
 
-The workflow for the AMS-III.AR policy involves four key roles to ensure transparency and accountability. 
-These roles are as follows:
+![image](https://github.com/hashgraph/guardian/assets/79293833/45ac9f42-7089-45c2-b35b-c35c1a104fb4)
 
-- Project Proponent - The project proponent is responsible for executing the emission reduction project. They develop and implement strategies to substitute fossil fuel-based lighting systems with LED/CFL lighting systems. The project proponent must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives certified emission reduction (CER) tokens as an incentive for their emission
-reductions.
-
-- Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
-  
-- Designated National Authority (DNA) - The DNA is a governmental body representing the country where the emission reduction project is being implemented. They review and approve the project's eligibility in accordance with national policies and regulations. The DNA's endorsement is essential for the project to proceed with the AMS-III.AR policy.
-  
-- Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
-
-
-<img width="1128" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/5adac491-8135-416c-b490-13d315ad3200">
 
 ## Policy Guide
 
@@ -52,40 +52,22 @@ This policy is published to the Hedera network and can either be imported via Gi
 
 Timestamp: 
 Policy: 1698756576.572245003
-Tool 33: 1690820529.197570717
 
 ### Available Roles 
  
-  - Project Proponent - Project developer who proposes and executes cookstove project and receives credits(VER)
-  - VVB(Validation & Verification Body) - Independent third party who audits project's critical documentation and monitoring reports
-  - Gold Standard(GS) - GS is the trusted registry overseeing the entire project cycle and issuing the credits(VER)
+  - Project Proponent - The project participant is responsible for executing the emission reduction project. They develop and implement strategies to substitute fossil fuel-based lighting systems with LED/CFL lighting systems. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
+    
+  - VVB(Validation & Verification Body) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.  
+    
+  - Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.  )
   
 ### Important Documents & Schemas 
-  
-**Project Description** - Project Proponent information, standard project information, methodology information, etc.
 
-**Baseline Emissions** – Baseline emission calculation that automatically occurs without the need for a form.
+Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
-**Default Values (Tool 33)** - Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like emission factors for diesel generator systems.
+Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
 
-**Minimum Requirements for the Design Specifications of Project Lamps** – This schema is included in the policy as a form within the project information form, fields are included to collect the following information about the project:
-
-- Lamp wattage (in Watts) and luminous flux output (in lumens)
-- Rated lamp life (in hours)
-- Where applicable, the type and rated capacity of the renewable energy equipment used for battery-charging (in Watts)
-- Type (e.g. NiMH, Lead-Acid, Li-ion, Lithium-iron-phosphate, etc.), nominal voltage, and rated capacity of the batteries (in Ampere hours)
-- Type of charge controller (e.g. active or passive)
-- Autonomous time and DBT
-- Solar Run Times(s) (SRT) for products with solar energy charging systems
-- Where applicable, the amount of time to fully charge the product using mechanical means or a centralized charging system (e.g. the national grid)
-- Physical protection against environmental factors (e.g. rain, heat, insect ingress)
-
-**Project Emissions** – Schema included within the project information form; this is filled out by the project proponent to calculate project emissions per project lamp.
-
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
-
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
-
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
   
 ### Token(Carbon credit) 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
@@ -93,106 +75,109 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-1. The policy can be imported using IPFS timestamp 1698756576.572245003
+1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 
-    <img width="1496" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/08e6005e-2cac-4c3c-8754-bb749981aad2">
-    
-2. Enter the IPFS timestamp and select OK.
+![image](https://github.com/hashgraph/guardian/assets/79293833/0c9e3498-3547-47ab-9389-4b0b0b20a5e4)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/a6168f3b-3583-4c45-b300-e2a8a490f1b2">
-   
-3. Select “Import”.
+![image](https://github.com/hashgraph/guardian/assets/79293833/65d75df6-4ee3-4920-9d6f-0bcfecf149a3)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/c75959fa-95f5-4af3-8984-4769dee29a6e">
+![image](https://github.com/hashgraph/guardian/assets/79293833/908e4e54-6f48-4ac6-b945-691901fbae2a)
 
-4. Place status in “Dry Run” and select “Go”.
-   
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/f0cb8f59-499b-49dd-9cbd-199b6a47aad4">
+2. To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” button.
 
-5. By selecting the edit button in the operations tab, you can access the policy configurator and view the workflow blocks.
+![image](https://github.com/hashgraph/guardian/assets/79293833/9394b196-edd9-4c12-afd9-88eb47b0b193)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/a3757ab5-cccc-4c1e-b68a-fb6d90b339d2">
-   
-6.	You can access and view the module by selecting the module tab in the policy configurator.
+![image](https://github.com/hashgraph/guardian/assets/79293833/b432fb96-9ea0-42ac-8f19-e62dafccfa87)
 
-  	 <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/819da513-1465-44e0-ad52-30840823dd9e">
-   
-7. Going back to the policy workflow, add users by selecting the “create user” button. Then select the dropdown user menu and select “Virtual User 1”.
+3. Create a new user by clicking the “Create User” button and assign their role as Project Participant.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/8c05a18d-c5dc-46f1-b13b-698b08785beb">
-   
-8.	Now you can assign roles to each user
-   
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/88fcafff-abcb-49b5-83d5-57790f480f24">
-   
-9. Virtual User 1 will be assigned to the Project_Proponent
+![image](https://github.com/hashgraph/guardian/assets/79293833/ad3075ed-b938-409d-9da5-07b28fafd7d5)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/eaa0681e-90e2-446d-b48a-36e8b52a779e">
-  
-10. Virtual User 2 will be assigned to the VVB
+4. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/2a05bd6c-81cf-463d-bae9-5d8f924dd552">
+![image](https://github.com/hashgraph/guardian/assets/79293833/d253ec3e-9baf-4e45-8850-6c8227b35f43)
 
-11. Add the VVBs name
+5. Сreate a new user again and assign their role as VVB.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/27840ea4-3e64-4b76-b0d3-b78016b51c46">
+![image](https://github.com/hashgraph/guardian/assets/79293833/1ce12028-b9aa-4b40-bb3f-55fa2018f76c)
 
-12. Once the VVB’s name has been added a new screen will show up that says, “Waiting for approval”. Continue to assign the final role to Virtual User 3.
+6. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/bd30cbcf-d253-431f-a9fa-dc7987cd4bbd">
+![image](https://github.com/hashgraph/guardian/assets/79293833/cc4b7f10-0775-4970-ab20-0ed73a5cee00)
 
-13. The final role that will be assigned to Virtual User 3 is the Designated National Authority
+7. Log in as the SR and select the “Project Participants” or the “VVBs” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/4291cf65-bed9-4b16-92dd-a6c4596a2a9c">
+![image](https://github.com/hashgraph/guardian/assets/79293833/9146e6b4-68e0-468b-b457-1ede58955627)
 
-14. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
+![image](https://github.com/hashgraph/guardian/assets/79293833/1ca8b5f7-45fd-4556-9714-1b770e013d71)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/d3bc7389-4a11-43c1-97a2-570d4f513a9b">
+8. Log in as the Project Participant and create a new project by clicking on the "New Project" button. This form is used to collect information about the project, organization, and all the data needed to run the emission reduction calculations. Once all the required fields have been filled the “Create” button will turn dark blue. By selecting the “Create” button all the data will be sent to the SR for review/approval.
 
-15. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile
+![image](https://github.com/hashgraph/guardian/assets/79293833/8f9076ca-7b7c-4e18-ae2a-ec2ed9994837)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/0775457a-c87f-41fe-93d9-80361ba01012">
+![image](https://github.com/hashgraph/guardian/assets/79293833/83ef7da4-90c1-42f6-bffa-367047901165)
 
-16. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject. 
+![image](https://github.com/hashgraph/guardian/assets/79293833/608203e1-c0b3-4071-845e-5de7c2a868f4)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/1923ad12-f9f3-43c4-8d9b-89411197b500">
+9. Log back in as the SR and after reviewing the document by selecting the “View Document” button, the SR can validate the project submitted by the Project Participant by clicking the “Validate” button. If the data does not satisfy the rules set by the SR, then the “Reject” button can be used.
 
-17. Go to the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
+![image](https://github.com/hashgraph/guardian/assets/79293833/883daede-90c9-494c-a86a-775238c147ae)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/ae08ed98-a05b-4264-b847-e5b70092fac8">
+![image](https://github.com/hashgraph/guardian/assets/79293833/4f00bbda-7dc7-4302-90c6-68cc34a0b77f)
 
-18. Navigate back to Virtual User 1’s (Project Proponent) profile and select “Add Report”.
+10. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/7eff19fa-d08a-4c47-a4ba-19db9df726a7">
+![image](https://github.com/hashgraph/guardian/assets/79293833/59db30c0-ba7b-49b0-b37c-f8fc6b6357a4)
 
-19. Based on the methodologies monitoring plan fill out the monitoring form appropriately and select “Ok”.
+![image](https://github.com/hashgraph/guardian/assets/79293833/057aa636-4db7-4ffb-930b-9705f3be6735)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/cab61742-912f-4857-b52d-ccffcd3eea95">
+11. After creating the monitoring report, the project participant assigns the VVB to verify it by navigating to the “Monitoring Reports” tab and selecting the dropdown under “Assign”.
 
-20. Go to the Virtual User 2’s (VVB) profile. The VVB has access to the monitoring report form by selecting “View Document”. Then the VVB can select Verify or Reject. 
+![image](https://github.com/hashgraph/guardian/assets/79293833/3e8f15ea-2fd7-44e0-b522-acc4d9b2e584)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/6299adad-b42d-44c7-82b1-3cb1e9ab72c0">
+12. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Participant. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
 
-21. Navigate back to the Administrator’s profile and select the “Mint” button.
+![image](https://github.com/hashgraph/guardian/assets/79293833/f1aaedcb-4503-4203-b98d-2044c643dbfe)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/3b1a9b73-f923-43a0-af4f-4f2ed1778897">
+![image](https://github.com/hashgraph/guardian/assets/79293833/823694f3-5b5b-4378-8f2b-a65f0383c83a)
 
-22. The status should now say “Minted”.
+13. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”. This will also trigger the minting process. You can see the minting status under “Status” change from “Minting” to “Minted”.
 
-     <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/3b310c10-0aac-4864-887f-6bdf569b6914">
+![image](https://github.com/hashgraph/guardian/assets/79293833/fcc3a22a-cc08-4f3c-bd7a-c6d1a31dfac7)
 
-23. By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”
+![image](https://github.com/hashgraph/guardian/assets/79293833/de6017e7-5ae7-4ccc-9e34-2fbd594a91fe)
 
-     <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/c0578360-9d35-4e3f-a450-c633e3a67278">
+14. Once the minting process is completed, you can view the token amount by selecting the “Token History” tab.
 
-24. The Verified Presentation should now be open. You can view information like the reciepients name, token amount, mint date, verified signature, etc. 
+![image](https://github.com/hashgraph/guardian/assets/79293833/1de73e95-8e26-4b78-9229-bfc2625cf6e1)
 
-     <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/a7b62ec5-4f7e-40f3-a757-cda9e0424979">
+15. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1” when the tokens are still minting. Once the process is complete a notification will appear stating that the tokens have been minted and transferred.
 
-25. By scrolling to the bottom of the page you can view the TrustChain.
+![image](https://github.com/hashgraph/guardian/assets/79293833/84c43fb9-a993-4eab-82b9-84951f56b6fd)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/6192623f-084d-4094-abf0-094320d87519">
+![image](https://github.com/hashgraph/guardian/assets/79293833/fa815f0d-5a5d-4d8e-9baa-831a96786f01)
 
-26. The “VC File” button can be used to open each form for every step that was executed during the workflow of the policy.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/6919b6e9-9f6a-4c12-a4f3-c4580f03eaef">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

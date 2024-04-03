@@ -6,7 +6,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 | Block Property   | Definition                                                                                                                                                     | Example Input                                                                  | Status |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------ |
-| tag              | Unique name for the logic block.                                                                                                                               | multiSignBlock                                                                 |        |
+| tag              | Unique name for the logic block.                                                                                                                               | **multiSignBlock**                                                             |        |
 | permissions      | Which entity has rights to interact at this part of the workflow.                                                                                              | NoRole                                                                         |        |
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.                                                                              | Checked or unchecked.                                                          |        |
 | On errors        | Called if the system error has occurs in the Block                                                                                                             | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
@@ -78,7 +78,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 4.1.1 multiSignBlock must be used with Groups.
 
-<figure><img src="../../../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 4.1.2 multiSignBlock must be child block of grid block to receive all data it requires to operate.
 
@@ -96,36 +96,33 @@ We have an option of Signing/ Declining the document by clicking on "Sign" or "D
 
 Number of users, who have signed or declined the document can be displayed with threshold as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (29).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (29) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.3 Detailed Signature Information
 
 To get detailed information on Signature status, we have an info icon near the threshold as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (19) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (19) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.4 Final Signature Result
 
 To get the final Signature Result with detailed information such as which users have Signed / Declined, we need to hover on the Status as shown below:
 
-<figure><img src="../../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
   "id": "1c922d1a-7f9d-492f-b0f9-f319eb2b66be",
@@ -133,27 +130,21 @@ Block UUID
 }
 
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="status" type="String" required="true" %}
-Signed/Declined
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="document" type="Object" required="true" %}
-VC Document
-{% endswagger-parameter %}
-{% endswagger %}
+| Name                                       | Type   | Description     |
+| ------------------------------------------ | ------ | --------------- |
+| status<mark style="color:red;">\*</mark>   | String | Signed/Declined |
+| document<mark style="color:red;">\*</mark> | Object | VC Document     |

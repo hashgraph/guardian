@@ -1,5 +1,5 @@
 import { MikroORM, UseRequestContext, wrap } from '@mikro-orm/core';
-import { MongoDriver, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
+import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models';
 import { DataBaseNamingStrategy } from './db-naming-strategy';
 import { GridFSBucket } from 'mongodb';
@@ -10,10 +10,10 @@ import { GridFSBucket } from 'mongodb';
 export const COMMON_CONNECTION_CONFIG: any = {
     type: 'mongo',
     namingStrategy: DataBaseNamingStrategy,
-    dbName: (process.env.GUARDIAN_ENV||(process.env.HEDERA_NET!==process.env.PREUSED_HEDERA_NET))?
-            `${process.env.GUARDIAN_ENV}_${process.env.HEDERA_NET}_${process.env.DB_DATABASE}`:
-            process.env.DB_DATABASE,
-    clientUrl:`mongodb://${process.env.DB_HOST}`,
+    dbName: (process.env.GUARDIAN_ENV || (process.env.HEDERA_NET !== process.env.PREUSED_HEDERA_NET)) ?
+        `${process.env.GUARDIAN_ENV}_${process.env.HEDERA_NET}_${process.env.DB_DATABASE}` :
+        process.env.DB_DATABASE,
+    clientUrl: `mongodb://${process.env.DB_HOST}`,
     entities: [
         'dist/entity/*.js'
     ]
@@ -48,7 +48,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     private readonly _em: MongoEntityManager;
 
-    public constructor(private readonly entityClass: new() => T) {
+    public constructor(private readonly entityClass: new () => T) {
         if (!DataBaseHelper.orm) {
             throw new Error('ORM is not initialized');
         }
@@ -99,7 +99,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     @UseRequestContext(() => DataBaseHelper.orm)
     public async remove(entity: T | T[]): Promise<void> {
-        if(Array.isArray(entity)) {
+        if (Array.isArray(entity)) {
             for (const element of entity) {
                 await this._em.removeAndFlush(element)
             }
@@ -170,7 +170,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities and count
      */
     @UseRequestContext(() => DataBaseHelper.orm)
-    public async findAndCount(filters: any | string | ObjectId, options?: any): Promise<[T[],number]> {
+    public async findAndCount(filters: any | string | ObjectId, options?: any): Promise<[T[], number]> {
         return await this._em.findAndCount(this.entityClass, filters?.where || filters, options);
     }
 
@@ -213,7 +213,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entity
      */
     @UseRequestContext(() => DataBaseHelper.orm)
-    public async findOne(filter: any | string | ObjectId, options: any = {}): Promise<T> {
+    public async findOne(filter: any | string | ObjectId, options: any = {}): Promise<T | null> {
         return await this._em.getRepository<T>(this.entityClass).findOne(filter?.where || filter, options);
     }
 
@@ -309,5 +309,24 @@ export class DataBaseHelper<T extends BaseEntity> {
         return entitiesToUpdate.length === 1
             ? entitiesToUpdate[0]
             : entitiesToUpdate;
+    }
+
+    /**
+     * Create a lot of data
+     * @param data Data
+     * @param amount Amount
+     */
+    @UseRequestContext(() => DataBaseHelper.orm)
+    public async createMuchData(data: any, amount: number): Promise<void> {
+        const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
+        delete data.id;
+        delete data._id;
+        while(amount > 0) {
+            delete data.id;
+            delete data._id;
+            await this._em.persist(repository.create(data));
+            amount --;
+        }
+        await this._em.flush();
     }
 }

@@ -1,5 +1,4 @@
 const { expect, assert } = require('chai');
-
 const {
     VCJS
 } = require('../../../../dist/hedera-modules/vcjs/vcjs');
@@ -7,24 +6,23 @@ const {
     DefaultDocumentLoader
 } = require('../../../../dist/hedera-modules/document-loader/document-loader-default');
 const {
-    ContextDocumentLoader
-} = require('../../../../dist/document-loader/context-loader');
-const {
-    DIDDocumentLoader
-} = require('../../../../dist/document-loader/did-document-loader');
-const {
-    VCSchemaLoader
-} = require('../../../../dist/document-loader/vc-schema-loader');
-const {
-    SubjectSchemaLoader
-} = require('../../../../dist/document-loader/subject-schema-loader');
-const {
     DIDDocument
 } = require('../../../../dist/hedera-modules/vcjs/did-document');
+const {
+    LocalSchemaContextLoader
+} = require('../../../../dist/document-loader/local-schema-context-loader');
+const {
+    LocalSchemaDocumentLoader
+} = require('../../../../dist/document-loader/local-schema-document-loader');
+const {
+    LocalVcSchemaDocumentLoader
+} = require('../../../../dist/document-loader/local-vc-schema-document-loader');
+const {
+    LocalDidLoader
+} = require('../../../../dist/document-loader/local-did-loader');
 const { PrivateKey } = require("@hashgraph/sdk");
 
 const { vc_document } = require('../../dump/vc_document');
-
 
 describe('VCJS', function () {
     const actualVcDocument = vc_document.find(document => document.hash === '9s7b1eW2gkZEd64SAidCci3UmXQgfZt2w6ajiKdPdHa9');
@@ -133,25 +131,25 @@ describe('VCJS', function () {
         }
     }
 
-    class TestVCSchemaLoader extends VCSchemaLoader {
+    class TestVCSchemaLoader extends LocalVcSchemaDocumentLoader {
         loadSchemaContexts(context) {
             return typeof context == 'string' ? schema : [schema];
         }
     }
 
-    class TestContextDocumentLoader extends ContextDocumentLoader {
+    class TestContextDocumentLoader extends LocalSchemaContextLoader {
         loadSchemaContext(context) {
             return schema;
         }
     }
 
-    class TestSubjectSchemaLoader extends SubjectSchemaLoader {
+    class TestSubjectSchemaLoader extends LocalSchemaDocumentLoader {
         loadSchemaContexts(context) {
             return typeof context == 'string' ? schema : [schema];
         }
     }
 
-    class TestDIDDocumentLoader extends DIDDocumentLoader {
+    class TestDIDDocumentLoader extends LocalDidLoader {
         getDocument(iri) {
             return {
                     "@context": ["https://www.w3.org/ns/did/v1", "https://ns.did.ai/transmute/v1"],

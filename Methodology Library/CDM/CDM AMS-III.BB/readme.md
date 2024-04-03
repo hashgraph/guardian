@@ -10,6 +10,7 @@
 - Minimum Household Participation
 - Metering and Measurement
 - Need and Use for the AMS-III.BB Policy
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
@@ -86,6 +87,14 @@ The AMS-III.BB methodology plays a vital role in addressing the growing need for
 
 Mini-grids are localized power generation and distribution systems, often deployed in remote or rural areaswhere connecting to the national or regional grid is cost-prohibitive. They bring electricity to communities that were once reliant on high-carbon-intensive mini-grids or stand-alone power generators. While mini grids offer reliable electricity access and the potential to integrate renewable energy sources, they can be economically challenging to establish and may rely on fossil fuel generators. In contrast, grid electricity operates within large, interconnected networks, benefiting from economies of scale and efficient power transmission. Grids can access a diverse energy mix, including renewables, and are subject to stringent environmental regulations, generally resulting in lower emissions compared to mini grids. The choice between mini-grids and grid electricity depends on the specific needs, geographic location, and economic viability of the targeted community or region.
 
+## Tools Referenced
+
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** - Tool to calculate the emission factor for an electricity system.
+
+**[Methodological Tool 21](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2021/readme.md)** - Demonstration of additionality of smallscale project activities.
+
+**[Methodological Tool 33](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2033/readme.md)** - Default values for common parameters.
+
 ## Demo Video
 
 Coming Soon
@@ -111,17 +120,11 @@ Policy:
   
 ### Important Documents & Schemas 
   
-**Methodological Tool 07** - Tool to calculate the emission factor for an electricity system.
+Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
-**Methodological Tool 21** - Demonstration of additionality of smallscale project activities.
+Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
 
-**Methodological Tool 33** - Default values for common parameters.
-
-**Project Description** - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
-
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
-
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
   
 ### Token(Carbon Emissions Reduction) 
 

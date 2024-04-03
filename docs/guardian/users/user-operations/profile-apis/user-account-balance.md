@@ -2,16 +2,20 @@
 
 ### RETURNS USER'S ACCOUNT BALANCE
 
-{% swagger method="get" path="" baseUrl="/profiles/{username}/balance" summary="Returns user's Hedera account balance" %}
-{% swagger-description %}
+## Returns user's Hedera account balance
+
+<mark style="color:blue;">`GET`</mark> `/profiles/{username}/balance`
+
 Requests Hedera account balance. Only users with the Installer role are allowed to make the request
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-The name of the user for whom to fetch the balance
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                                       | Type   | Description                                        |
+| ------------------------------------------ | ------ | -------------------------------------------------- |
+| username<mark style="color:red;">\*</mark> | String | The name of the user for whom to fetch the balance |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     content:
@@ -20,25 +24,25 @@ The name of the user for whom to fetch the balance
                 type: string
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
+{% tab title="401: Unauthorized " %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="" %}
+{% tab title="500: Internal Server Error " %}
 ```javascript
 {
     content:
@@ -47,5 +51,5 @@ The name of the user for whom to fetch the balance
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

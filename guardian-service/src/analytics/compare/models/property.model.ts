@@ -419,6 +419,7 @@ export class SchemaPropertyModel extends PropertyModel<string> {
         const item = super.toObject();
         if (this.schema) {
             item.schemaId = this.schema.id;
+            item.schema = this.schema.toObject();
         }
         return item;
     }

@@ -2,7 +2,7 @@
 description: Policy developed by Gautam Prajapati during the SBS Hackathon
 ---
 
-# ♨ GoldStandard - Metered Energy Cooking
+# ♨️ GoldStandard - Metered Energy Cooking
 
 ### Table of content
 
@@ -55,7 +55,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 ### Policy Workflow
 
-<figure><img src="../../../.gitbook/assets/image (12) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide
 
@@ -129,7 +129,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 <figure><img src="../../../.gitbook/assets/image (38) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Once project is approved by registry, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions.
 

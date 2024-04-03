@@ -6,8 +6,8 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 import {
     VcDocument as VcDocumentCollection,
     MessageServer,
@@ -206,7 +206,8 @@ export class ExternalTopicBlock {
             if (typeof document === 'string') {
                 document = JSON.parse(document);
             }
-            return SchemaHelper.parseFields(document, null, null, false);
+            const schemaCache = new Map<string, any>();
+            return SchemaHelper.parseFields(document, null, schemaCache, null, false);
         } catch (error) {
             return null;
         }
@@ -593,7 +594,7 @@ export class ExternalTopicBlock {
     private async checkMessage(
         ref: AnyBlockType,
         item: ExternalDocument,
-        hederaAccount: IHederaAccount,
+        hederaAccount: IHederaCredentials,
         user: IPolicyUser,
         message: VCMessage
     ): Promise<void> {
@@ -643,7 +644,8 @@ export class ExternalTopicBlock {
      */
     private async receiveData(item: ExternalDocument, user: IPolicyUser): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const hederaAccount = await PolicyUtils.getHederaAccount(ref, item.owner);
+        const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner);
+        const hederaCred = await documentOwnerCred.loadHederaCredentials(ref);
         const messages: VCMessage[] = await MessageServer.getMessages(
             item.documentTopicId,
             null,
@@ -651,7 +653,7 @@ export class ExternalTopicBlock {
             item.lastMessage
         );
         for (const message of messages) {
-            await this.checkMessage(ref, item, hederaAccount, user, message);
+            await this.checkMessage(ref, item, hederaCred, user, message);
             item.lastMessage = message.id;
             await ref.databaseServer.updateExternalTopic(item);
         }

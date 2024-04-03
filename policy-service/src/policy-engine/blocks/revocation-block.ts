@@ -176,13 +176,11 @@ export class RevocationBlock {
         const data = event.data.data;
         const doc = Array.isArray(data) ? data[0] : data;
 
-        const hederaAccount = await PolicyUtils.getHederaAccount(
-            ref,
-            event.user.did
-        );
+        const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
+        const userHederaCred = await userCred.loadHederaCredentials(ref);
         const messageServer = new MessageServer(
-            hederaAccount.hederaAccountId,
-            hederaAccount.hederaAccountKey,
+            userHederaCred.hederaAccountId,
+            userHederaCred.hederaAccountKey,
             ref.dryRun
         );
         const policyTopics = await ref.databaseServer.getTopics({

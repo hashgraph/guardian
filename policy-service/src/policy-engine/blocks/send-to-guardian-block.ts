@@ -9,12 +9,12 @@ import {
     MessageServer,
     VcDocumentDefinition as VcDocument,
     VpDocumentDefinition as VpDocument,
-    DIDDocument,
     VCMessage,
     MessageMemo,
     VPMessage,
     DIDMessage,
-    Message
+    Message,
+    HederaDidDocument
 } from '@guardian/common';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -416,14 +416,14 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         try {
-            const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-            const user = await PolicyUtils.getHederaAccount(ref, document.owner);
+            const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+            const user = await PolicyUtils.getUserCredentials(ref, document.owner);
 
             let topicOwner = user;
             if (ref.options.topicOwner === 'user') {
-                topicOwner = await PolicyUtils.getHederaAccount(ref, user.did);
+                topicOwner = await PolicyUtils.getUserCredentials(ref, user.did);
             } else if (ref.options.topicOwner === 'issuer') {
-                topicOwner = await PolicyUtils.getHederaAccount(ref, PolicyUtils.getDocumentIssuer(document.document));
+                topicOwner = await PolicyUtils.getUserCredentials(ref, PolicyUtils.getDocumentIssuer(document.document));
             } else {
                 topicOwner = user;
             }
@@ -433,7 +433,10 @@ export class SendToGuardianBlock {
 
             const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
 
-            const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
+            const userHederaCred = await user.loadHederaCredentials(ref);
+            const messageServer = new MessageServer(
+                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, ref.dryRun
+            );
             const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)
@@ -462,9 +465,9 @@ export class SendToGuardianBlock {
         // Create Message
         //
         let message: Message;
-        let docObject: DIDDocument | VcDocument | VpDocument;
+        let docObject: VcDocument | VpDocument | HederaDidDocument;
         if (type === DocumentType.DID) {
-            const did = DIDDocument.fromJsonTree(document.document);
+            const did = HederaDidDocument.fromJsonTree(document.document);
             const didMessage = new DIDMessage(MessageAction.CreateDID);
             didMessage.setDocument(did);
             didMessage.setRelationships(document.relationships);

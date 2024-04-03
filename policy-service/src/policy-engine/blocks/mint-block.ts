@@ -12,14 +12,15 @@ import {
     VPMessage,
     MessageMemo,
     VcHelper,
+    HederaDidDocument,
 } from '@guardian/common';
-import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
+import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { MintService } from '@policy-engine/multi-policy-service/mint-service';
+import { MintService } from '@policy-engine/mint/mint-service';
 
 /**
  * Mint block
@@ -36,7 +37,8 @@ import { MintService } from '@policy-engine/multi-policy-service/mint-service';
         control: ControlType.Server,
         input: [
             PolicyInputEventType.RunEvent,
-            PolicyInputEventType.AdditionalMintEvent
+            PolicyInputEventType.AdditionalMintEvent,
+            PolicyInputEventType.RetryMintEvent,
         ],
         output: [
             PolicyOutputEventType.RunEvent,
@@ -159,7 +161,10 @@ export class MintBlock {
      * @private
      */
     private async createMintVC(
-        root: IHederaAccount, token: any, data: string, ref: AnyBlockType
+        didDocument: HederaDidDocument,
+        token: any,
+        data: string,
+        ref: AnyBlockType
     ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.MINT_TOKEN);
@@ -171,9 +176,10 @@ export class MintBlock {
             amount: amount.toString()
         }
         const uuid = await ref.components.generateUUID();
-        const mintVC = await vcHelper.createVcDocument(
+        const mintVC = await vcHelper.createVerifiableCredential(
             vcSubject,
-            { did: root.did, key: root.hederaAccountKey },
+            didDocument,
+            null,
             { uuid }
         );
         return mintVC;
@@ -191,7 +197,7 @@ export class MintBlock {
      */
     private async createReportVC(
         ref: IPolicyTokenBlock,
-        root: IHederaAccount,
+        policyOwnerCred: UserCredentials,
         user: IPolicyUser,
         documents: VcDocument[],
         messages: string[],
@@ -203,6 +209,7 @@ export class MintBlock {
             (addons && addons.length) ||
             (additionalMessages && additionalMessages.length)
         ) {
+            const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref);
             const vcHelper = new VcHelper();
             const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.TOKEN_DATA_SOURCE);
             const vcSubject: any = { ...SchemaHelper.getContext(policySchema) };
@@ -213,16 +220,17 @@ export class MintBlock {
                 vcSubject.relationships = additionalMessages.slice();
             }
             const uuid = await ref.components.generateUUID();
-            const vc = await vcHelper.createVcDocument(
+            const vc = await vcHelper.createVerifiableCredential(
                 vcSubject,
-                { did: root.did, key: root.hederaAccountKey },
+                policyOwnerDid,
+                null,
                 { uuid }
             );
             result.push(vc);
         }
         if (addons && addons.length) {
             for (const addon of addons) {
-                const impact = await addon.run(documents, root, user);
+                const impact = await addon.run(documents, policyOwnerCred, user);
                 result.push(impact);
             }
         }
@@ -236,11 +244,16 @@ export class MintBlock {
      * @param vcs
      * @private
      */
-    private async createVP(root: IHederaAccount, uuid: string, vcs: VcDocument[]) {
+    private async createVP(
+        didDocument: HederaDidDocument,
+        uuid: string,
+        vcs: VcDocument[]
+    ) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVpDocument(
+        const vp = await vcHelper.createVerifiablePresentation(
             vcs,
-            { did: root.did, key: root.hederaAccountKey },
+            didDocument,
+            null,
             { uuid }
         );
         return vp;
@@ -270,26 +283,33 @@ export class MintBlock {
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
-        if (Number.isNaN(amount) || !Number.isFinite(amount)) {
+        if (Number.isNaN(amount) || !Number.isFinite(amount) || amount < 0) {
             throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
         }
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
 
-        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
-        const reportVC = await this.createReportVC(ref, root, user, documents, messages, additionalMessages);
+        const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const policyOwnerDid = await policyOwnerCred.loadDidDocument(ref);
+
+        const mintVC = await this.createMintVC(policyOwnerDid, token, tokenAmount, ref);
+        const reportVC = await this.createReportVC(ref, policyOwnerCred, user, documents, messages, additionalMessages);
         let vp: any;
         if (reportVC && reportVC.length) {
             const vcs = [...reportVC, mintVC];
-            vp = await this.createVP(root, uuid, vcs);
+            vp = await this.createVP(policyOwnerDid, uuid, vcs);
         } else {
             const vcs = [...documents, mintVC];
-            vp = await this.createVP(root, uuid, vcs);
+            vp = await this.createVP(policyOwnerDid, uuid, vcs);
         }
 
         ref.log(`Topic Id: ${topicId}`);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+        const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(ref);
+        const messageServer = new MessageServer(
+            policyOwnerHederaCred.hederaAccountId,
+            policyOwnerHederaCred.hederaAccountKey,
+            ref.dryRun
+        );
 
         // #region Save Mint VC
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
@@ -336,7 +356,15 @@ export class MintBlock {
 
         const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
         await MintService.mint(
-            ref, token, tokenValue, user, root, accountId, vpMessageId, transactionMemo, documents
+            ref,
+            token,
+            tokenValue,
+            user,
+            policyOwnerHederaCred,
+            accountId,
+            vpMessageId,
+            transactionMemo,
+            documents
         );
         return [savedVp, tokenValue];
     }
@@ -365,6 +393,31 @@ export class MintBlock {
         const additionalDocs = PolicyUtils.getArray<IPolicyDocument>(event.data.result);
 
         await this.run(ref, event, docOwner, docs, additionalDocs);
+    }
+
+    /**
+     * Retry action
+     * @event PolicyEventType.RetryMintEvent
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        type: PolicyInputEventType.RetryMintEvent
+    })
+    @CatchErrors()
+    async retryMint(event: IPolicyEvent<IPolicyEventState>) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
+        if (!event.data?.data) {
+            throw new Error('Invalid data');
+        }
+        if (Array.isArray(event.data.data)) {
+            for (const document of event.data.data) {
+                await MintService.retry(document.messageId, event.user.did, ref.policyOwner, ref);
+            }
+        } else {
+            await MintService.retry(event.data.data.messageId, event.user.did, ref.policyOwner, ref);
+        }
+
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
     }
 
     /**

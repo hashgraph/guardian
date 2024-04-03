@@ -1,37 +1,41 @@
 # Get Contract Permissions
 
-{% swagger method="get" path="" baseUrl="/contracts/{contractId}/permissions" summary=" Get contract permissions." %}
-{% swagger-description %}
+## &#x20;Get contract permissions.
+
+<mark style="color:blue;">`GET`</mark> `/contracts/{contractId}/permissions`
+
 Get smart-contract permissions. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="contractID" type="String" required="true" %}
-Contract Identifier
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="Contract Permissions" %}
+| Name                                         | Type   | Description         |
+| -------------------------------------------- | ------ | ------------------- |
+| contractID<mark style="color:red;">\*</mark> | String | Contract Identifier |
+
+{% tabs %}
+{% tab title="200: OK Contract Permissions" %}
 ```
 content:
             application/json:
               schema:
                 type: number
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+{% tab title="403: Forbidden Forbidden" %}
 
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```
  content:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

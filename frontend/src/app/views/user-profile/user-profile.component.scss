@@ -62,7 +62,7 @@ form {
 }
 
 .profile {
-  padding: 56px 48px;
+    padding: 56px 48px;
 }
 
 .account {
@@ -73,12 +73,12 @@ form {
 .account-item {
     padding: 15px 0px;
     display: flex;
-  border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
     font-size: 16px;
 }
 
 .account-item-name {
-  color: #bababa;
+    color: #bababa;
     font-family: Roboto, "Helvetica Neue", sans-serif;
     font-size: 16px;
     font-weight: 400;
@@ -108,59 +108,59 @@ form {
 }
 
 .user-info-container {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  row-gap: 24px;
-
-  .item {
+    margin-top: 24px;
     display: flex;
-    column-gap: 15px;
-    align-items: center;
+    flex-direction: column;
+    row-gap: 24px;
 
-    span,
-    .value-text {
-      width: 200px;
-      color: var(--color-grey-black-1, #181818);
-      font-family: Inter, sans-serif;
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: normal;
-      white-space: nowrap;
+    .item {
+        display: flex;
+        column-gap: 15px;
+        align-items: center;
+
+        span,
+        .value-text {
+            width: 200px;
+            color: var(--color-grey-black-1, #181818);
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: normal;
+            white-space: nowrap;
+        }
+
+        .view-document-button {
+            cursor: pointer;
+            display: flex;
+            column-gap: 8px;
+            height: 28px;
+            padding: 6px 16px;
+            align-items: center;
+            border-radius: 6px;
+            border: 1px solid var(--color-secondary);
+
+            span {
+                width: min-content;
+                color: var(--color-primary);
+            }
+        }
     }
-
-    .view-document-button {
-      cursor: pointer;
-      display: flex;
-      column-gap: 8px;
-      height: 28px;
-      padding: 6px 16px;
-      align-items: center;
-      border-radius: 6px;
-      border: 1px solid var(--color-secondary);
-
-      span {
-        width: min-content;
-        color: var(--color-primary);
-      }
-    }
-  }
 }
 
 .profile .header h1 {
-  margin-bottom: 48px;
-  width: 100%;
-  color: #000;
-  font-family: Poppins, serif;
-  font-size: 32px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 40px;
+    margin-bottom: 48px;
+    width: 100%;
+    color: #000;
+    font-family: Poppins, serif;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 40px;
 }
 
 :host ::ng-deep a {
-  color: #2c78f6;
+    color: #2c78f6;
     cursor: pointer;
     text-decoration: underline;
 }
@@ -357,11 +357,11 @@ a[disabled="true"] {
 }
 
 .cancel-action-btn {
-  background: darkred;
+    background: darkred;
 }
 
 .approved-request {
-  background-color: #d1f1c8;
+    background-color: #d1f1c8;
 }
 
 .token-table .mat-column-tags {
@@ -387,12 +387,12 @@ a[disabled="true"] {
         opacity: unset;
 
         &-active {
-          color: #2c78f6;
+            color: #2c78f6;
         }
     }
 
     .mat-ink-bar {
-      background-color: #2c78f6 !important;
+        background-color: #2c78f6 !important;
     }
 
     .mat-stepper-horizontal {
@@ -532,7 +532,7 @@ a[disabled="true"] {
 
 .no-results {
     font-size: 24px;
-  color: #8a8a8a;
+    color: #8a8a8a;
     width: 100%;
     text-align: center;
     margin-top: 50px;
@@ -544,7 +544,7 @@ a[disabled="true"] {
     }
 
     .account {
-      border: 1px solid #e0e0e0;
+        border: 1px solid #e0e0e0;
         border-radius: 10px;
         padding: 2px 20px 20px;
         margin-top: 20px;
@@ -636,251 +636,280 @@ a[disabled="true"] {
     }
 }
 
-.finish-setup-main-container {
-}
-
 .user-profile-setup-title {
-  color: #000;
-  font-family: Poppins, sans-serif;
-  font-size: 32px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 40px;
-  margin-bottom: 24px;
-  padding-top: 56px;
-  padding-left: 48px;
+    color: #000;
+    font-family: Poppins, sans-serif;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 40px;
+    margin-bottom: 24px;
+    padding-top: 56px;
+    padding-left: 48px;
 }
 
 .content-main-block-container {
-  display: flex;
-  padding-left: 48px;
+    display: flex;
+    padding-left: 48px;
+    padding-right: 24px;
+    position: absolute;
+    left: 0;
+    top: 120px;
+    right: 0;
+    bottom: 64px;
 }
 
 .progress-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  height: 150px;
-  width: 264px;
-  padding: 8px 0;
-  border-radius: 8px;
-  border: 1px solid var(--color-grey-3, #e1e7ef);
-  background: var(--color-grey-white, #fff);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 264px;
+    min-width: 264px;
+    padding: 8px 0;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3, #e1e7ef);
+    background: var(--color-grey-white, #fff);
+    height: fit-content;
 }
 
 .step-item {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    height: 56px;
+    padding: 8px 24px;
 
-  i {
-    padding: 4px;
-    margin-right: 8px;
-    width: 24px;
-    height: 24px;
-    border-radius: 24px;
-    background: var(--color-grey-3, #e1e7ef);
-    color: white;
-  }
+    i {
+        padding: 4px;
+        margin-right: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 24px;
+        background: var(--color-grey-3, #e1e7ef);
+        color: white;
+    }
 
-  p {
-    margin: 0;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: Inter;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: normal;
-    color: var(--color-grey-5, #c4d0e1);
-  }
+    p {
+        margin: 0;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: Inter;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        color: var(--color-grey-5, #c4d0e1);
+    }
 }
 
 .step-item.active {
-  background: rgba(6, 129, 238, 0.08);
+    background: rgba(6, 129, 238, 0.08);
 
-  i {
-    padding: 4px;
-    margin-right: 8px;
-    width: 24px;
-    height: 24px;
-    border-radius: 24px;
-    background: var(--color-primary, #0681ee);
-    color: white;
-  }
+    i {
+        padding: 4px;
+        margin-right: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 24px;
+        background: var(--color-primary, #0681ee);
+        color: white;
+    }
 
-  p {
-    margin: 0;
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: Inter;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: normal;
-    color: var(--color-primary, #0681ee);
-  }
+    p {
+        margin: 0;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: Inter;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        color: var(--color-primary, #0681ee);
+    }
 }
 
 .forms-container {
-  margin-left: 24px;
-  margin-bottom: 65px;
+    margin-left: 24px;
+    margin-bottom: 65px;
+    overflow: auto;
+    width: 100%;
 }
 
 .hedera-credentials-title {
-  font-family: Poppins, sans-serif;
-  font-size: 24px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 32px;
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px;
 }
 
 .user-profile-setup-buttons-container {
-  position: fixed;
-  bottom: 0;
-  width: 85%;
-  display: flex;
-  align-items: center;
-  height: 64px;
-  border-top: 1px solid var(--color-grey-3, #e1e7ef);
-  background: #fff;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    height: 64px;
+    border-top: 1px solid var(--color-grey-3, #e1e7ef);
+    background: #fff;
 }
 
 .apply-filters-button {
-  ::ng-deep .p-button {
-    background: var(--button-primary-color);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    height: 40px;
-    border-radius: 8px;
-  }
+    ::ng-deep .p-button {
+        background: var(--button-primary-color);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        height: 40px;
+        border-radius: 8px;
+    }
 
-  margin-left: 10px;
+    margin-left: 10px;
 }
 
 .clear-filters-button {
-  ::ng-deep .p-button-outlined {
-    color: var(--button-primary-color);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    margin-left: 10px;
-    background-color: #ffffff;
-    height: 40px;
-    border: 1px solid var(--color-secondary);
-    border-radius: 8px;
-  }
+    ::ng-deep .p-button-outlined {
+        color: var(--button-primary-color);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        margin-left: 10px;
+        background-color: #ffffff;
+        height: 40px;
+        border: 1px solid var(--color-secondary);
+        border-radius: 8px;
+    }
 }
 
 .form-label {
-  color: var(--color-grey-black-1);
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 16px;
-  margin-right: 8px;
+    color: var(--color-grey-black-1);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    margin-right: 8px;
 }
 
 .search-inputs {
-  ::ng-deep {
-    .p-inputtext {
-      width: 200px;
-      border-radius: 8px;
-      border: 1px solid var(--color-grey-3, #e1e7ef);
-      background: var(--color-grey-white, #fff);
-      margin-right: 8px;
-    }
+    ::ng-deep {
+        .p-inputtext {
+            width: 200px;
+            border-radius: 8px;
+            border: 1px solid var(--color-grey-3, #e1e7ef);
+            background: var(--color-grey-white, #fff);
+            margin-right: 8px;
+        }
 
-    .p-input-icon-right > i:last-of-type {
-      right: 1.5rem;
+        .p-input-icon-right>i:last-of-type {
+            right: 1.5rem;
+        }
     }
-  }
 }
 
 .user-profile-next-button {
-  margin-left: auto;
-  margin-right: 265px;
+    margin-left: auto;
+    margin-right: 42px;
 
-  ::ng-deep {
-    .p-button {
-      width: 120px;
-      border-radius: 8px;
-      background: var(--button-primary-color);
+    ::ng-deep {
+        .p-button {
+            width: 120px;
+            border-radius: 8px;
+            background: var(--button-primary-color);
+        }
     }
-  }
 }
 
 .user-profile-finish-buttons {
-  display: flex;
-  width: 100%;
+    display: flex;
+    width: 100%;
 }
 
 .previous-button {
-  margin-left: 48px;
+    margin-left: 48px;
 
-  ::ng-deep {
-    .p-button {
-      width: 120px;
-      border-radius: 8px;
-      border: 1px solid var(--button-primary-color);
-      color: var(--button-primary-color);
+    ::ng-deep {
+        .p-button {
+            width: 120px;
+            border-radius: 8px;
+            border: 1px solid var(--button-primary-color);
+            color: var(--button-primary-color);
+        }
     }
-  }
 }
 
 .confirm-button {
-  margin-left: auto;
-  margin-right: 265px;
+    margin-left: auto;
+    margin-right: 42px;
 
-  ::ng-deep {
-    .p-button {
-      width: 120px;
-      border-radius: 8px;
-      background: var(--button-primary-color);
+    ::ng-deep {
+        .p-button {
+            width: 120px;
+            border-radius: 8px;
+            background: var(--button-primary-color);
+        }
     }
-  }
 }
 
 .generate-btn {
-  ::ng-deep {
-    .p-button {
-      width: 100%;
-      height: 40px;
-      margin-bottom: 24px;
-      border-radius: 8px;
-      border: 1px solid var(--primary-color);
-      color: var(--primary-color);
-      font-family: Inter, sans-serif;
-      font-size: 14px;
-      font-style: normal;
-      font-weight: 500;
-      line-height: 30px;
+    ::ng-deep {
+        .p-button {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: 30px;
+        }
     }
-  }
 }
 
 .hedera-credentials-form-container {
-  width: 624px;
-  margin-top: 24px;
-  padding: 24px;
-  border-radius: 8px;
-  border: 1px solid var(--color-grey-3);
-  background: var(--color-grey-white);
+    width: 100%;
+    max-width: 710px;
+    margin-top: 24px;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3);
+    background: var(--color-grey-white);
 }
 
 .hedera-form {
-  width: 100%;
+    width: 100%;
 }
 
 .input-field-container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+}
+
+
+mat-radio-button {
+    display: block;
+    height: 30px;
+}
+
+*[active-field="false"] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.group-container {
+    padding: 4px 0 20px 0;
+
+    &>* {
+        width: 100%;
+        display: block;
+        margin-bottom: 8px;
+    }
 }

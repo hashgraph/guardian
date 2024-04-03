@@ -111,8 +111,11 @@ export class GroupManagerBlock {
         }
 
         if (member.messageId) {
-            const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
-            const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, ref.dryRun);
+            const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
+            const userHederaCred = await userCred.loadHederaCredentials(ref);
+            const messageServer = new MessageServer(
+                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, ref.dryRun
+            );
             const message = await messageServer.getMessage(member.messageId);
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
             message.setMessageStatus(MessageStatus.WITHDRAW, text);

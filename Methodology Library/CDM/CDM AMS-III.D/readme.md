@@ -3,13 +3,14 @@
 
 - Introduction
 - Need and Use for the AMS-III.D Policy
+- Tools Referenced
 - Demo Video
 - Policy Workflow
 - Policy Guide
-  - Available Roles
+- Available Roles
 - Important Documents & Schemas
 - Token (Carbon Emission Reduction)
-  - Step By Step
+- Step By Step
 <!-- /TOC -->
 
 ## Introduction
@@ -31,6 +32,15 @@ Manure management practices, particularly within livestock farming, play a subst
 
 In the context of modern emission reduction projects, the necessity for transparency and credibility is undeniable. The Guardian, a platform built on the Hedera Network, emerges as a solution to challenges like double counting and fraud. Hedera's distributed ledger technology ensures immutable and transparent record-keeping, thereby enhancing the accountability and integrity of emission reduction initiatives. As the Guardian platform streamlines processes, enhances accuracy, and fosters trust within clean manure management projects, AMS-III.D not only bolsters its environmental impact but also highlights the role of cutting-edge technology in propelling a greener, more sustainable future.
 
+## Tools Referenced
+
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+
+**[Methodological Tool 06](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2006/readme.md)** - Tool to determine project emissions from flaring gases containing methane.
+
+**[Methodological Tool 14](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2014/readme.md)** – Project and leakage emissions from anaerobic digesters.
 
 ## Demo Video
 
@@ -56,19 +66,11 @@ Policy: 1698756329.359347003
 
 ### Important Documents & Schemas 
   
-**Methodological Tool 03** - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
 
-**Methodological Tool 05** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
 
-**Methodological Tool 06** - Tool to determine project emissions from flaring gases containing methane.
-
-**Methodological Tool 14** – Project and leakage emissions from anaerobic digesters.
-
-**Project Description** - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
-
-**Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
-
-**Monitoring Report** – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  
 
   
 ### Token(Carbon Emissions Reduction) 
@@ -78,94 +80,117 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ### Step By Step 
 
-1. The policy can be imported using IPFS timestamp 1698756329.359347003
+1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right. As the policy is importing you can see the schemas, tools, and tokens importing.
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/ec89168d-8020-47da-8322-df0ce7b0cf08">
+![image](https://github.com/hashgraph/guardian/assets/79293833/58557a8d-8a56-4375-a66e-eb4f2784988a)
 
-2. Select “Import”.
+![image](https://github.com/hashgraph/guardian/assets/79293833/0c0933de-7683-4f50-893b-a3d80311fe41)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/f3067523-ac2c-4b5a-913f-4169e3616bd9">
+![image](https://github.com/hashgraph/guardian/assets/79293833/17a364a9-53dc-4c0a-ae5c-dc081ff5b629)
 
-3. Place status in “Dry Run” and select “Go”.
+2. By clicking on the pen icon, we can open the policy configurator to see the workflow blocks. To expand the containers, click on the dropdown arrow, we’ll then see where the tools are located, like tool 14 in the AMS-III.D policy. Then we can click on the block for tool 14 and scroll down in the properties section at the bottom right of the page this is where we can find the message ID for this tool.
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/dda9204b-cd94-4366-9ce5-d2369dc63c3a">
+![image](https://github.com/hashgraph/guardian/assets/79293833/354b8a81-96e6-4e94-b1c4-2a12b1ebd0dd)
 
-4. By selecting the edit button in the operations tab, you can access the policy configurator and view the workflow blocks.   
+![image](https://github.com/hashgraph/guardian/assets/79293833/893d857c-97d8-4058-abc7-d48478187934)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/2c75d4b8-6e82-4d13-880e-d7ab339c8882">
+![image](https://github.com/hashgraph/guardian/assets/79293833/3938b474-4fd8-4eea-a56b-15d71f2aae25)
 
-5. Going back to the policy workflow, add users by selecting the “create user” button. Then select the dropdown user menu and select “Virtual User 1”.
+![image](https://github.com/hashgraph/guardian/assets/79293833/02a4c7cb-9006-406d-bd09-ec9771406a9c)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/e710bb25-44c9-4b60-bacc-7d2f8a92c73e">
+3. To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” button.
 
-6. Virtual User 1 will be assigned to the Project_Proponent
+![image](https://github.com/hashgraph/guardian/assets/79293833/2346308f-c92c-49ae-8b76-954883a55b71)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/1e8cd70d-68ba-436e-a5e5-4d7bd58dac02">
-   
-7. Virtual User 2 will be assigned to the VVB  
+![image](https://github.com/hashgraph/guardian/assets/79293833/c0d60a85-f942-4243-a58b-ccde0e759cb9)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/575c4df1-b298-4d51-bf18-97b6cf341ea0">
+4. Create a new user by clicking the “Create User” button and assign their role as Project Participant.
 
-8.	Add the VVBs name 
-   
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/e0a94a7e-a771-4ed8-a7dd-57ac85449144">
-   
-9.  The final role that will be assigned to Virtual User 3 is the Designated National Authority
+![image](https://github.com/hashgraph/guardian/assets/79293833/4d19ca9f-b83f-45e8-9c20-3a7d159c7952)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/037d8386-a61a-4731-b572-dd31e3e4201e"> 
-  
-10. Go to the Administrator’s (Standard Registry) profile. The Standard Registry can now approve the VVB.
+5. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/552fe67c-3772-4de5-a5c4-8bb8a81ebaab">
+![image](https://github.com/hashgraph/guardian/assets/79293833/74fd003c-ed9d-447d-9202-9afe928a2a63)
 
-11. Click on the Users dropdown menu and select Virtual User 1 (Project Proponent) and select the “New Project” button.
+6. Сreate a new user again and assign their role as VVB.
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/da3e4c74-c983-48f3-b1c6-2a0d37d14e6a">
+![image](https://github.com/hashgraph/guardian/assets/79293833/d719b890-05d4-46a0-a290-d981428dcf29)
 
-12. Once the form is completed, go to Virtual User 3’s (Designated National Authority) profile. The Designated National Authority can now view the project information document by selecting “view document” and then they can select validate or reject.
+7. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/05412bf4-0caa-4b93-b083-137886ac4d45">
+![image](https://github.com/hashgraph/guardian/assets/79293833/dc0fb6f4-6ffa-402a-b95d-819e33d543b1)
 
-13. Return to the Administrator’s (Standard Registry) profile. The Standard Registry now has access to the project information document by clicking “view document” once they have reviewed it they can select “Add” to add the project to the project pipeline.
+8. Log in as the SR and select the “Project Participants” or the “VVBs” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/1907b148-6397-4295-a9f9-ae567f92d1e6">
+![image](https://github.com/hashgraph/guardian/assets/79293833/dd5b22f1-b993-46a1-9fd3-f5f6a6b51381)
 
-14. Navigate back to Virtual User 1’s (Project Proponent) profile and assign the VVB.
+![image](https://github.com/hashgraph/guardian/assets/79293833/8916d689-fb15-45c5-99d1-97ae0ae6efb0)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/56574c63-7e4b-4425-94bc-ce6223409d15">
+9. Log in as the Project Participant and create a new project by clicking on the "New Project" button. This form is used to collect information about the project, organization, and all the data needed to run the emission reduction calculations. Once all the required fields have been filled the “Create” button will turn dark blue. By selecting the “Create” button all the data will be sent to the SR for review/approval.
 
-15. Go to the VVB profile and select the “Project” tab. The VVB can now see all the information submitted by the Project Proponent. Once the document has been reviewed the VVB will select Approve or Reject.
+![image](https://github.com/hashgraph/guardian/assets/79293833/ed2bbad8-5e41-433d-bd0a-9ded04f970af)
 
-  <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/7e290a3e-a9f8-4555-b396-358387a971f3">
-   
-16. Navigate back to the Administrator. For this workflow step the Standard Registry reviews the document and adds the project to the project pipeline. Select Add.
+![image](https://github.com/hashgraph/guardian/assets/79293833/31f97be2-a85c-4e98-b133-41de38d5008f)
 
-  <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/b00f88da-0bba-42e0-a6cc-a1bb3f51b8e0">
+10. Log back in as the SR and after reviewing the document by selecting the “View Document” button, the SR can validate the project submitted by the Project Participant by clicking the “Validate” button. If the data does not satisfy the rules set by the SR, then the “Reject” button can be used.
 
-17. Navigate back to Virtual User 1’s (Project Proponent) profile and select “Add Report”.
+![image](https://github.com/hashgraph/guardian/assets/79293833/6489d38d-b60b-44d4-bad3-e6811fc2fac7)
 
-   <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/3efecee6-8654-4c03-9f3b-1ce929410a6d">
+![image](https://github.com/hashgraph/guardian/assets/79293833/bf455ef2-0bc5-4b87-9094-5e88087b791e)
 
-18. Go to the Virtual User 2’s (VVB) profile. The VVB has access to the monitoring report form by selecting “View Document”. Then the VVB can select Verify or Reject.
+11. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/15d3b8bb-ef52-4c0f-ad0c-5f41c0b5675f">
+![image](https://github.com/hashgraph/guardian/assets/79293833/40b2dc5c-57bc-423e-b33d-52a4b8bf6dbd)
 
-19. Navigate back to the Administrator’s profile and select the “Mint” button.
+![image](https://github.com/hashgraph/guardian/assets/79293833/fb10431f-213a-4212-baa5-4cb856c43462)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/14d8c331-ebdd-455f-9511-50cb584f22fe">
+12. After creating the monitoring report, the project participant assigns the VVB to verify it by navigating to the “Monitoring Reports” tab and selecting the dropdown under “Assign”.
 
-20. The status should now say “Minted”.
+![image](https://github.com/hashgraph/guardian/assets/79293833/f03ed650-9892-43d8-ad9f-0b6437cb573a)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/60b0e9b2-45ab-413e-9e5a-cf7cde0dad88">
+13. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Participant. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
 
-21. By selecting the “Token History” tab you can see the number of tokens minted and then you can select “View TrustChain”
+![image](https://github.com/hashgraph/guardian/assets/79293833/79768f2a-ca48-4c53-98f7-1f942cdeecdf)
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/053294c6-ff74-4916-9fda-c2d0e9853044">
+![image](https://github.com/hashgraph/guardian/assets/79293833/4e018b1f-5eb4-49bc-9c45-7763c27bcaed)
 
-22. The Verified Presentation should now be open. You can view information like the recipient's name, token amount, mint date, verified signature, etc. This example resulted in 0 tokens minted due to the demo values used.
+14. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”. This will also trigger the minting process. You can see the minting status under “Status” change from “Minting” to “Minted”.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/43aae129-0541-4108-afc0-c01fb055d5d5">
+![image](https://github.com/hashgraph/guardian/assets/79293833/1614299f-e797-489b-8095-82a37cae35b0)
 
-23. By scrolling to the bottom of the page you can view the TrustChain.
+15. Once the minting process is completed, you can view the token amount by selecting the “VP” tab.
 
-    <img width="800" alt="image" src="https://github.com/hashgraph/guardian/assets/79293833/9c91102b-caa0-4391-b8b9-1e08201682c1">
+![image](https://github.com/hashgraph/guardian/assets/79293833/a9e0ef55-ffe1-42c6-a0f0-3e9b2485f35f)
+
+16. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1” when the tokens are still minting. Once the process is complete a notification will appear stating that the tokens have been minted and transferred.
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/4de00af5-fbe4-451b-b1d9-e72cd903c86b)
+
+![image](https://github.com/hashgraph/guardian/assets/79293833/504ee3f0-a26e-44ec-9b68-df912a2fb7f2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,35 +1,39 @@
+# https://docs.docker.com/compose/environment-variables/envvars-precedence/
+# Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
+# ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
+# specific service variables defined by "environment" can override what is defined in the ecosystem file
 version: "3.8"
 services:
   mongo:
-    image: mongo:6.0.3
+    image: mongo:6.0.13
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
       - 27017
 
   mongo-express:
-    image: mongo-express:1.0.0-alpha.4
+    image: mongo-express:1.0.2-20
     expose:
       - 8081
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
       ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_SITE_BASEURL: /mongo-admin
+      ME_CONFIG_SITE_BASEURL: /mongo-admin # default credentials: admin/pass
     depends_on:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.22.0
+    image: ipfs/kubo:v0.26.0
     ports:
       - "5001:5001"
       - "4001:4001"
       - "8080:8080"
     volumes:
-      - ./runtime-data/ipfs/staging:/export:rw
-      - ./runtime-data/ipfs/data:/data/ipfs:rw
+      - ipfs_data:/data/ipfs:rw
+      - ipfs_export:/export:rw
 
   message-broker:
-    image: nats:2.9.8
+    image: nats:2.9.24
     expose:
       - 4222
     ports:
@@ -37,7 +41,7 @@ services:
     command: '--http_port 8222'
 
   vault:
-    image: vault:1.12.2
+    image: hashicorp/vault:1.12.11
     expose:
       - 8200
     ports:
@@ -50,11 +54,6 @@ services:
     volumes:
       - ./file:/vault/file:rw
       - ./config:/vault/config:rw
-
-  # https://docs.docker.com/compose/environment-variables/envvars-precedence/
-  # Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
-  # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
-  # specific service variables defined by "environment" can override what is defined in the ecosystem file
 
   notification-service:
     env_file:
@@ -84,7 +83,7 @@ services:
     volumes:
       - ./logger-service/configs:/usr/local/logger-service/configs:ro
 
-  worker-service-1:
+  worker-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
@@ -97,32 +96,13 @@ services:
         condition: service_started
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL:"worker.1"
     expose:
       - 6555
     volumes:
       - ./worker-service/tls:/usr/local/worker-service/tls:ro
       - ./worker-service/configs:/usr/local/worker-service/configs:ro
-
-  worker-service-2:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
-    build:
-      context: .
-      dockerfile: ./worker-service/Dockerfile
-    depends_on:
-      ipfs-node:
-        condition: service_healthy
-      auth-service:
-        condition: service_started
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL="worker.2"
-    expose:
-      - 6555
-    volumes:
-      - ./worker-service/tls:/usr/local/worker-service/tls:ro
-      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+    deploy:
+      replicas: 2
 
   auth-service:
     env_file:
@@ -207,7 +187,6 @@ services:
       - ./policy-service/tls:/usr/local/policy-service/tls:ro
       - ./policy-service/configs:/usr/local/policy-service/configs:ro
 
-
   guardian-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
@@ -224,10 +203,8 @@ services:
       - message-broker
       - auth-service
       - logger-service
-      - worker-service-1
-      - worker-service-2
+      - worker-service
       - policy-service
-      - ai-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
@@ -248,7 +225,6 @@ services:
       - guardian-service
       - auth-service
       - logger-service
-
 
   mrv-sender:
     build:
@@ -285,7 +261,6 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.44.0
-    container_name: prometheus
     restart: unless-stopped
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
@@ -302,8 +277,7 @@ services:
       - monitoring
 
   grafana:
-    image: grafana/grafana:10.0.0
-    container_name: grafana
+    image: grafana/grafana:10.0.10
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
@@ -320,14 +294,10 @@ services:
       - monitoring
 
 volumes:
-  mongo:
-  prometheus_data: {}
-  grafana_data: {}
-  branding_data:
-  # volume-guardian-service:
-  # volume-ui-service:
-  # volume-mrv-sender:
-  #  volume-message-broker:
+  prometheus_data:
+  grafana_data:
+  ipfs_data:
+  ipfs_export:
 
 networks:
   monitoring:

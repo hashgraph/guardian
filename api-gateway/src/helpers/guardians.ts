@@ -415,22 +415,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Create standard registry
-     * @param profile
-     */
-    public async createStandardRegistryProfile(profile: IUser): Promise<string> {
-        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE, profile);
-    }
-
-    /**
-     * Create user
-     * @param profile
-     */
-    public async createUserProfile(profile: IUser): Promise<string> {
-        return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE, profile);
-    }
-
-    /**
      * Create user
      * @param username
      * @param profile
@@ -481,9 +465,8 @@ export class Guardians extends NatsService {
      * Get balance
      * @param username
      */
-    public async getBalance(username: string): Promise<string> {
-        const b = await this.sendMessage(MessageAPI.GET_BALANCE, { username });
-        return b as string;
+    public async getBalance(username: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_BALANCE, { username });
     }
 
     /**
@@ -927,6 +910,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Add file to dry run storage
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileToDryRunStorage(buffer: any, policyId: string): Promise<{
+        /**
+         * CID
+         */
+        cid,
+        /**
+         * URL
+         */
+        url
+    }> {
+        return await this.sendMessage(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, {buffer, policyId});
+    }
+
+    /**
      * Get file from IPFS
      * @param cid CID
      * @param responseType Response type
@@ -934,6 +935,18 @@ export class Guardians extends NatsService {
      */
     public async getFileIpfs(cid: string, responseType: any): Promise<any> {
         return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
+            cid, responseType
+        });
+    }
+
+    /**
+     * Get file from dry run storage
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileFromDryRunStorage(cid: string, responseType: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_FILE_DRY_RUN_STORAGE, {
             cid, responseType
         });
     }
@@ -2447,7 +2460,7 @@ export class Guardians extends NatsService {
      * @param topicId
      * @param xlsx
      */
-    public async importSchemasByXlsx(user: IAuthUser, topicId: string, xlsx: Buffer) {
+    public async importSchemasByXlsx(user: IAuthUser, topicId: string, xlsx: ArrayBuffer) {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX, { user, xlsx, topicId });
     }
 
@@ -2458,7 +2471,7 @@ export class Guardians extends NatsService {
      * @param versionOfTopicId
      * @param task
      */
-    public async importSchemasByXlsxAsync(user: IAuthUser, topicId: string, xlsx: Buffer, task: NewTask) {
+    public async importSchemasByXlsxAsync(user: IAuthUser, topicId: string, xlsx: ArrayBuffer, task: NewTask) {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_ASYNC, { user, xlsx, topicId, task });
     }
 
@@ -2467,11 +2480,32 @@ export class Guardians extends NatsService {
      * @param user
      * @param zip
      */
-    public async previewSchemasByFileXlsx(user: IAuthUser, xlsx: Buffer) {
+    public async previewSchemasByFileXlsx(user: IAuthUser, xlsx: ArrayBuffer) {
         return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_XLSX_PREVIEW, { user, xlsx });
     }
 
+    /**
+     * Get template file by name
+     * @param filename
+     */
     public async getFileTemplate(filename: string): Promise<string> {
-        return await this.sendMessage(MessageAPI.GET_TEMPLATE, {filename});
+        return await this.sendMessage(MessageAPI.GET_TEMPLATE, { filename });
+    }
+
+    /**
+     * Validate DID document
+     * @param document
+     */
+    public async validateDidDocument(document: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.VALIDATE_DID_DOCUMENT, { document });
+    }
+
+    /**
+     * Validate DID document
+     * @param document
+     * @param keys
+     */
+    public async validateDidKeys(document: any, keys: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.VALIDATE_DID_KEY, { document, keys });
     }
 }

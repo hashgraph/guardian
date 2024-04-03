@@ -2155,12 +2155,24 @@ paths:
       description: Add file from ipfs.
       parameters: []
       responses:
-        '201':
-          description: ''
-      tags:
+        '401':
+          description: Unauthorized
+      tags: &ref_3
         - ipfs
       security:
-        - bearerAuth: []
+        - bearer: []
+  /ipfs/file/dry-run/{policyId}:
+    post:
+      operationId: IpfsApi_postFileDryRun
+      summary: Add file from ipfs for dry run mode.
+      description: Add file from ipfs for dry run mode.
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized
+      tags: *ref_3
+      security:
+        - bearer: []
   /ipfs/file/{cid}:
     get:
       tags:
@@ -2192,6 +2204,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /ipfs/file/{cid}/dry-run:
+    get:
+      operationId: IpfsApi_getFileDryRun
+      summary: Get file from ipfs for dry run mode.
+      description: Get file from ipfs for dry run mode.
+      parameters:
+        - name: cid
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized
+      tags: *ref_3
+      security:
+        - bearer: []
   /logs:
     post:
       tags:
@@ -2398,7 +2427,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: &ref_3
+      tags: &ref_4
         - modules
     post:
       operationId: ModulesApi_postSchemas
@@ -2406,7 +2435,7 @@ paths:
       responses:
         '201':
           description: ''
-      tags: *ref_3
+      tags: *ref_4
   /modules/{uuid}:
     get:
       tags:
@@ -2857,7 +2886,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_4
+      tags: &ref_5
         - tools
       security:
         - bearerAuth: []
@@ -2895,7 +2924,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push:
@@ -2919,7 +2948,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}:
@@ -2945,7 +2974,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
     get:
@@ -2978,7 +3007,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
     put:
@@ -3011,7 +3040,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/publish:
@@ -3047,7 +3076,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/push/publish:
@@ -3083,7 +3112,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/validate:
@@ -3111,7 +3140,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/export/file:
@@ -3144,7 +3173,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/{id}/export/message:
@@ -3179,7 +3208,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/message/preview:
@@ -3208,7 +3237,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/message:
@@ -3237,7 +3266,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/file/preview:
@@ -3266,7 +3295,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/import/file:
@@ -3295,7 +3324,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push/import/file:
@@ -3324,7 +3353,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push/import/message:
@@ -3353,7 +3382,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/menu/all:
@@ -3381,35 +3410,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /profiles/{username}:
     get:
-      tags:
-        - profiles
+      operationId: ProfileApi_getProfile
+      summary: Returns user account info.
       description: >-
         Returns user account information. For users with the Standard Registry
         role it also returns address book and VC document information.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to fetch the information
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to fetch the information.
-      security:
-        - bearerAuth: []
-      summary: Returns user account info.
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ProfileDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3417,35 +3443,37 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-    put:
-      tags:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_6
         - profiles
+      security:
+        - bearerAuth: []
+        - bearer: []
+    put:
+      operationId: ProfileApi_setUserProfile
+      summary: Sets Hedera credentials for the user.
       description: >-
         Sets Hedera credentials for the user. For users with the Standard
         Registry role it also creates an address book.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to update the information.
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to update the information.
-      security:
-        - bearerAuth: []
-      summary: Sets Hedera credentials for the user.
       requestBody:
-        description: Object that contains the Hedera account data.
         required: true
+        description: Object that contains the Hedera account data.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/CredentialsDTO'
       responses:
-        '201':
+        '200':
           description: Created.
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3453,38 +3481,41 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /profiles/push/{username}:
-    put:
-      tags:
-        - profiles
-      description: Sets Hedera credentials for the user
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
       security:
         - bearerAuth: []
-      summary: Sets Hedera credentials for the user
+        - bearer: []
+  /profiles/push/{username}:
+    put:
+      operationId: ProfileApi_setUserProfileAsync
+      summary: Sets Hedera credentials for the user.
+      description: >-
+        Sets Hedera credentials for the user. For users with the Standard
+        Registry role it also creates an address book.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to update the information.
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to update the information.
       requestBody:
-        description: Object that contains the Hedera account data.
         required: true
+        description: Object that contains the Hedera account data.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/CredentialsDTO'
       responses:
-        '202':
+        '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
+                $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3492,41 +3523,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /profiles/restore/{username}:
-    put:
-      operationId: ProfileApi_resoreUserProfile
-      parameters: []
-      responses:
-        '202':
-          description: ''
-      tags: &ref_5
-        - profiles
-  /profiles/restore/topics/{username}:
-    put:
-      operationId: ProfileApi_restoreTopic
-      parameters: []
-      responses:
-        '202':
-          description: ''
-      tags: *ref_5
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
   /profiles/{username}/balance:
     get:
-      tags:
-        - profiles
+      operationId: ProfileApi_getUserBalance
+      summary: Returns user's Hedera account balance.
       description: >-
         Requests Hedera account balance. Only users with the Installer role are
         allowed to make the request.
       parameters:
-        - in: path
-          name: username
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to fetch the balance.
           schema:
             type: string
-          required: true
-          description: The name of the user for whom to fetch the balance.
-      security:
-        - bearerAuth: []
-      summary: Returns user's Hedera account balance.
       responses:
         '200':
           description: Successful operation.
@@ -3535,7 +3550,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized.
+          description: Unauthorized
         '403':
           description: Forbidden.
         '500':
@@ -3543,7 +3558,159 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /profiles/restore/{username}:
+    put:
+      operationId: ProfileApi_restoreUserProfile
+      summary: Restore user data (policy, DID documents, VC documents).
+      description: Restore user data (policy, DID documents, VC documents).
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to restore the information.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains the Hedera account data.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /profiles/restore/topics/{username}:
+    put:
+      operationId: ProfileApi_restoreTopic
+      summary: List of available recovery topics.
+      description: List of available recovery topics.
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: The name of the user for whom to restore the information.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains the Hedera account data.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /profiles/did-document/validate:
+    post:
+      operationId: ProfileApi_validateDidDocument
+      summary: Validate DID document format.
+      description: Validate DID document format.
+      parameters: []
+      requestBody:
+        required: true
+        description: DID Document.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DidDocumentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DidDocumentStatusDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
+  /profiles/did-keys/validate:
+    post:
+      operationId: ProfileApi_validateDidKeys
+      summary: Validate DID document keys.
+      description: Validate DID document keys.
+      parameters: []
+      requestBody:
+        required: true
+        description: DID Document and keys.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DidDocumentWithKeyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DidKeyStatusDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearerAuth: []
+        - bearer: []
   /policies:
     get:
       tags:
@@ -3670,7 +3837,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_6
+      tags: &ref_7
         - policies
       security:
         - bearerAuth: []
@@ -3702,7 +3869,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
   /policies/push:
@@ -3757,7 +3924,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -3767,7 +3934,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
   /policies/{policyId}:
@@ -4019,7 +4186,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4110,7 +4277,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4258,7 +4425,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4395,7 +4562,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4419,7 +4586,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4444,7 +4611,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearerAuth: []
@@ -4455,7 +4622,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_6
+      tags: *ref_7
   /policies/{policyId}/export/file:
     get:
       tags:
@@ -4563,7 +4730,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -4906,7 +5073,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -4949,7 +5116,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -4986,7 +5153,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -4997,7 +5164,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_6
+      tags: *ref_7
   /policies/{policyId}/dry-run/users:
     get:
       tags:
@@ -5391,7 +5558,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
   /policies/methodologies/search:
     post:
       operationId: PolicyApi_getPoliciesByCategory
@@ -5425,7 +5592,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
   /schema/{schemaId}:
     get:
       tags:
@@ -5489,7 +5656,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_7
+      tags: &ref_8
         - schema
       security:
         - bearerAuth: []
@@ -5531,7 +5698,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_7
+      tags: *ref_8
       security:
         - bearerAuth: []
   /schemas:
@@ -5719,7 +5886,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_8
+      tags: &ref_9
         - schemas
       security:
         - bearerAuth: []
@@ -5750,7 +5917,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
   /schemas/list/sub:
@@ -5792,7 +5959,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
   /schemas/push/copy:
@@ -5827,7 +5994,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearer: []
         - bearerAuth: []
@@ -6721,7 +6888,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -6763,7 +6930,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -6805,7 +6972,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -6841,7 +7008,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -6871,7 +7038,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_8
+      tags: *ref_9
       security:
         - bearerAuth: []
         - bearer: []
@@ -7512,7 +7679,7 @@ paths:
       responses:
         '202':
           description: ''
-      tags: &ref_9
+      tags: &ref_10
         - tokens
   /tokens/{tokenId}/associate:
     put:
@@ -8063,7 +8230,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_9
+      tags: *ref_10
       security:
         - bearer: []
   /themes:
@@ -8556,7 +8723,7 @@ paths:
       responses:
         '401':
           description: Unauthorized
-      tags: &ref_10
+      tags: &ref_11
         - branding
       security:
         - bearer: []
@@ -8566,7 +8733,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
+      tags: *ref_11
   /suggestions:
     post:
       operationId: SuggestionsApi_policySuggestions
@@ -8600,7 +8767,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_11
+      tags: &ref_12
         - suggestions
       security:
         - bearer: []
@@ -8634,7 +8801,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8660,7 +8827,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_11
+      tags: *ref_12
       security:
         - bearer: []
         - bearerAuth: []
@@ -8690,7 +8857,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_12
+      tags: &ref_13
         - notifications
       security:
         - bearer: []
@@ -8718,7 +8885,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8745,7 +8912,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8772,7 +8939,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8802,7 +8969,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_12
+      tags: *ref_13
       security:
         - bearer: []
         - bearerAuth: []
@@ -8839,7 +9006,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_13
+      tags: &ref_14
         - projects
   /projects/compare/documents:
     post:
@@ -8877,7 +9044,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
   /projects/properties:
     get:
       operationId: ProjectsAPI_getPolicyProperties
@@ -8899,7 +9066,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_13
+      tags: *ref_14
   /record/{policyId}/status:
     get:
       operationId: RecordApi_getRecordStatus
@@ -8914,13 +9081,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -8938,7 +9098,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_14
+      tags: &ref_15
         - record
       security:
         - bearerAuth: []
@@ -8981,7 +9141,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9024,7 +9184,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9042,13 +9202,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -9068,7 +9221,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9110,7 +9263,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9152,7 +9305,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9170,13 +9323,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -9194,7 +9340,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9212,13 +9358,6 @@ paths:
           description: Policy Id
           schema:
             type: string
-      requestBody:
-        required: true
-        description: Object that contains options
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Object'
       responses:
         '200':
           description: Successful operation.
@@ -9236,7 +9375,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9278,7 +9417,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9320,7 +9459,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9362,7 +9501,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_14
+      tags: *ref_15
       security:
         - bearerAuth: []
         - bearer: []
@@ -9391,7 +9530,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_15
+      tags: &ref_16
         - ai-suggestions
   /ai-suggestions/rebuild-vector:
     put:
@@ -9402,7 +9541,7 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_15
+      tags: *ref_16
   /schemas/type/{type}:
     get:
       tags:
@@ -9823,7 +9962,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.21.1
+  version: 2.23.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -10471,6 +10610,230 @@ components:
         - token
         - count
         - serials
+    ProfileDTO:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: false
+        role:
+          type: string
+          nullable: false
+        did:
+          type: string
+          nullable: true
+        parent:
+          type: string
+          nullable: true
+        hederaAccountId:
+          type: string
+          nullable: true
+        confirmed:
+          type: boolean
+          nullable: true
+        failed:
+          type: boolean
+          nullable: true
+        topicId:
+          type: string
+          nullable: true
+        parentTopicId:
+          type: string
+          nullable: true
+        didDocument:
+          type: object
+          nullable: true
+        vcDocument:
+          type: object
+          nullable: true
+      required:
+        - username
+        - role
+    SubjectDTO:
+      type: object
+      properties:
+        '@context':
+          nullable: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+      required:
+        - '@context'
+    DidDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        context:
+          nullable: true
+          type: array
+          items:
+            type: string
+        alsoKnownAs:
+          nullable: true
+          type: array
+          items:
+            type: string
+        controller:
+          nullable: true
+          type: array
+          items:
+            type: string
+        verificationMethod:
+          nullable: true
+          type: array
+          items:
+            type: object
+        authentication:
+          nullable: true
+          type: array
+          items:
+            type: object
+        assertionMethod:
+          nullable: true
+          type: array
+          items:
+            type: object
+        keyAgreement:
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityInvocation:
+          nullable: true
+          type: array
+          items:
+            type: object
+        capabilityDelegation:
+          nullable: true
+          type: array
+          items:
+            type: object
+        service:
+          nullable: true
+          type: array
+          items:
+            type: object
+      required:
+        - id
+        - context
+        - alsoKnownAs
+        - controller
+        - verificationMethod
+        - authentication
+        - assertionMethod
+        - keyAgreement
+        - capabilityInvocation
+        - capabilityDelegation
+        - service
+    DidKeyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        key:
+          type: string
+          nullable: false
+      required:
+        - id
+        - key
+    CredentialsDTO:
+      type: object
+      properties:
+        entity:
+          type: string
+          nullable: false
+        hederaAccountId:
+          type: string
+          nullable: false
+        hederaAccountKey:
+          type: string
+          nullable: false
+        parent:
+          type: string
+          nullable: true
+        vcDocument:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/SubjectDTO'
+        didDocument:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        didKeys:
+          nullable: true
+          type: array
+          items:
+            $ref: '#/components/schemas/DidKeyDTO'
+      required:
+        - entity
+        - hederaAccountId
+        - hederaAccountKey
+    TaskDTO:
+      type: object
+      properties:
+        taskId:
+          type: string
+        expectation:
+          type: number
+      required:
+        - taskId
+        - expectation
+    DidDocumentStatusDTO:
+      type: object
+      properties:
+        valid:
+          type: boolean
+          nullable: false
+        error:
+          type: string
+          nullable: true
+        didDocument:
+          type: object
+          nullable: false
+      required:
+        - valid
+        - error
+        - didDocument
+    DidDocumentWithKeyDTO:
+      type: object
+      properties:
+        document:
+          nullable: false
+          allOf:
+            - $ref: '#/components/schemas/DidDocumentDTO'
+        keys:
+          nullable: false
+          type: array
+          items:
+            $ref: '#/components/schemas/DidKeyDTO'
+      required:
+        - document
+        - keys
+    DidKeyStatusDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: false
+        key:
+          type: string
+          nullable: false
+        valid:
+          type: boolean
+          nullable: false
+      required:
+        - id
+        - key
+        - valid
     MigrationConfigPoliciesDTO:
       type: object
       properties:
@@ -10563,16 +10926,6 @@ components:
         - version
         - owner
         - messageId
-    TaskDTO:
-      type: object
-      properties:
-        taskId:
-          type: string
-        expectation:
-          type: number
-      required:
-        - taskId
-        - expectation
     VersionSchemaDTO:
       type: object
       properties:
@@ -10777,9 +11130,6 @@ components:
         - id
         - title
         - value
-    Object:
-      type: object
-      properties: {}
     RecordStatusDTO:
       type: object
       properties:
@@ -10796,6 +11146,9 @@ components:
         - policyId
         - uuid
         - status
+    Object:
+      type: object
+      properties: {}
     RecordActionDTO:
       type: object
       properties:
