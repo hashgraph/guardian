@@ -6,7 +6,7 @@
 
 Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a digital (or digitized) Measurement, Reporting, and Verification requirements-based tokenization implementation.
 
-[HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](CONTRIBUTING#bug-reports) · [Request a Policy or a Feature](CONTRIBUTING#new-policy-or-feature-requests)
+[HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](CONTRIBUTING.md#bug-reports) · [Request a Policy or a Feature](CONTRIBUTING.md#new-policy-or-feature-requests)
 
 ## Discovering Digital Environmental Assets assets on Hedera
 
