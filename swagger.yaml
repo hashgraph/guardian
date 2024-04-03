@@ -3380,7 +3380,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push/import/file:
@@ -3452,7 +3452,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_4
+      tags: *ref_5
       security:
         - bearerAuth: []
   /tools/push/import/message:
@@ -5101,7 +5101,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
@@ -5191,7 +5191,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_6
+      tags: *ref_7
       security:
         - bearerAuth: []
         - bearer: []
