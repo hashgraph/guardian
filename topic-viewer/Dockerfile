@@ -3,6 +3,8 @@
 ARG NODE_VERSION=20.11.1-bookworm-slim
 FROM node:${NODE_VERSION} as base
 WORKDIR /usr/local/app
+# Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
+ARG YARN_CACHE_FOLDER=/root/.yarn
 
 # Stage 1: Installing production dependecies
 FROM base as deps
