@@ -24,7 +24,6 @@ import { TrustChainsApi } from '@api/service/trust-chains';
 import { WizardApi } from '@api/service/wizard';
 import process from 'process';
 import express from 'express';
-import fileUpload from 'express-fileupload';
 import hpp from 'hpp';
 import { ThemesApi } from '@api/service/themes';
 import { BrandingApi } from '@api/service/branding';
@@ -146,7 +145,6 @@ export class AppModule {
             limit: RAW_REQUEST_LIMIT,
             type: 'binary/octet-stream'
         })).forRoutes('*');
-        consumer.apply(fileUpload()).forRoutes('*');
         consumer.apply(hpp()).forRoutes('*');
     }
 }
