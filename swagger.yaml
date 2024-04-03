@@ -799,7 +799,7 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Form data with artifacts
+        description: Form data with artifacts.
         content:
           multipart/form-data:
             schema:
@@ -3351,7 +3351,7 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: Form data with policy file and metadata
+        description: Form data with tool file and metadata.
         content:
           multipart/form-data:
             schema:
@@ -3423,13 +3423,13 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: Form data with policy file and metadata
+        description: Form data with tool file and metadata.
         content:
           multipart/form-data:
             schema:
               type: object
               properties:
-                policyFile:
+                file:
                   type: string
                   format: binary
                 metadata:
@@ -5072,7 +5072,7 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Form data with policy file and metadata
+        description: Form data with policy file and metadata.
         content:
           multipart/form-data:
             schema:
@@ -5162,7 +5162,7 @@ paths:
             type: string
       requestBody:
         required: true
-        description: Form data with policy file and metadata
+        description: Form data with policy file and metadata.
         content:
           multipart/form-data:
             schema:
