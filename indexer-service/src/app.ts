@@ -4,7 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { ClientsModule, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, entities } from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
-import { DocumentsService } from './api/document.service.js';
+import { LogService } from './api/log.service.js';
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 
@@ -23,7 +23,7 @@ const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.Gen
     ],
     controllers: [
         ChannelService,
-        DocumentsService
+        LogService
     ]
 })
 class AppModule { }

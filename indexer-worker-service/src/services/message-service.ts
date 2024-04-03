@@ -46,6 +46,7 @@ export class MessageService {
         const delay = Date.now() - MessageService.CYCLE_TIME;
         const rows = await em.find(MessageCache,
             {
+                type: "Message",
                 $or: [
                     { status: 'LOADING', lastUpdate: { $lt: delay } },
                     { status: 'COMPRESSED' }

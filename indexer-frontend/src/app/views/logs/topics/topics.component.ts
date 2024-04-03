@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { LogsService } from '../../services/logs.service';
+import { LogsService } from '../../../services/logs.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
@@ -12,9 +12,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
-    selector: 'app-messages',
-    templateUrl: './messages.component.html',
-    styleUrl: './messages.component.scss',
+    selector: 'app-topics',
+    templateUrl: './topics.component.html',
+    styleUrl: './topics.component.scss',
     standalone: true,
     imports: [
         CommonModule,
@@ -27,7 +27,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
         FormsModule
     ]
 })
-export class MessagesComponent {
+export class TopicsComponent {
     public loading: boolean = true;
 
     public pageIndex: number = 0;
@@ -39,10 +39,7 @@ export class MessagesComponent {
 
     public displayedColumns: string[] = [
         'topicId',
-        'consensusTimestamp',
-        'type',
-        'status',
-        'message'
+        'messages'
     ];
 
     @ViewChild(MatSort) sort!: MatSort;
@@ -84,18 +81,15 @@ export class MessagesComponent {
         if (this.type) {
             option.type = this.type;
         }
-        this.documentsService.getMessages(option).subscribe({
-            next: (messages) => {
-                if (messages) {
-                    const { items, total } = messages;
+        this.documentsService.getTopics(option).subscribe({
+            next: (rows) => {
+                if (rows) {
+                    const { items, total } = rows;
                     this.items = items;
                     this.total = total;
                 } else {
                     this.items = [];
                     this.total = 0;
-                }
-                for (const row of this.items) {
-                    row.__message = this.parsMessage(row.message);
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -106,14 +100,6 @@ export class MessagesComponent {
                 console.error(message);
             }
         });
-    }
-
-    private parsMessage(buffer:string):string {
-        try {
-            return atob(buffer);
-        } catch (error) {
-            return buffer
-        }
     }
 
     public onPage(pageEvent: PageEvent) {

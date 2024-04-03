@@ -40,4 +40,30 @@ export class LogsService {
         const options = this.getOptions(filters);
         return this.http.get<any>(`${this.url}/messages`, options);
     }
+
+    public getTopics(
+        filters?: {
+            type?: string,
+            pageIndex?: number,
+            pageSize?: number
+        }
+    ): Observable<any> {
+        const options = this.getOptions(filters);
+        return this.http.get<any>(`${this.url}/topics`, options);
+    }
+
+    public getDocuments(
+        filters?: {
+            type?: string,
+            pageIndex?: number,
+            pageSize?: number
+        }
+    ): Observable<any> {
+        const options = this.getOptions(filters);
+        return this.http.get<any>(`${this.url}/documents`, options);
+    }
+
+    public getDocumentFilters(): Observable<any> {
+        return this.http.get<any>(`${this.url}/documents/filters`);
+    }
 }

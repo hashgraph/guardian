@@ -26,11 +26,14 @@ export class TopicService {
                     const compressed = await TopicService.compressMessages(rowMessages);
                     await MessageService.saveImmediately(compressed);
                     await TopicService.findTopics(compressed);
-                    row.messages = data.messages[data.messages.length - 1].sequence_number;
-                    row.hasNext = !!data.links.next;
-                    await em.flush();
+                    await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
+                        messages: data.messages[data.messages.length - 1].sequence_number,
+                        lastUpdate: Date.now(),
+                        hasNext: !!data.links.next
+                    });
                 }
             }
+
         } catch (error) {
             await LogService.error(error, 'update topic');
         }
@@ -77,7 +80,6 @@ export class TopicService {
             },
             {
                 limit: 50
-                // fields: ['id', 'topicId', 'messages'],
             }
         )
         const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
@@ -87,15 +89,16 @@ export class TopicService {
             return null;
         }
 
+        const now = Date.now();
         const count = await em.nativeUpdate(TopicCache, {
-            _id: row._id,
+            topicId: row.topicId,
             $or: [
                 { lastUpdate: { $lt: delay } },
                 { hasNext: true }
             ]
         }, {
             messages: row.messages,
-            lastUpdate: Date.now(),
+            lastUpdate: now,
             hasNext: false
         });
 
@@ -125,7 +128,6 @@ export class TopicService {
             }
             return rows;
         } catch (error) {
-            console.log(error);
             await LogService.error(error, 'save message');
             return null;
         }
@@ -232,7 +234,7 @@ export class TopicService {
             const buffers: string[] = new Array(chunks.length);
             for (const row of chunks) {
                 row.status = 'COMPRESSED';
-                buffers[row.chunkNumber] = row.message;
+                buffers[row.chunkNumber - 1] = row.message;
             }
 
             first.data = TopicService.compressData(buffers);

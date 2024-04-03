@@ -1,4 +1,10 @@
 <main class="main">
-    <h1>{{ title }}</h1>
+    <mat-toolbar>
+        <span>Indexer</span>
+        <a mat-button routerLink="/status" routerLinkActive="active">Status</a>
+        <a mat-button routerLink="/topics" routerLinkActive="active">Topics</a>
+        <a mat-button routerLink="/messages" routerLinkActive="active">Messages</a>
+        <a mat-button routerLink="/documents" routerLinkActive="active">Documents</a>
+    </mat-toolbar>
 </main>
 <router-outlet />
