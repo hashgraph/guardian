@@ -5,6 +5,7 @@ import { LogService } from './log-service.js';
 import { Parser } from '../utils/parser.js';
 import { HederaService } from '../loaders/hedera-service.js';
 import { DataBaseHelper, Job, MessageCache, TopicCache, TopicMessage, Utils } from '@indexer/common';
+import { TokenService } from './token-service.js';
 
 export class TopicService {
     public static CYCLE_TIME: number = 0;
@@ -25,7 +26,7 @@ export class TopicService {
                 if (rowMessages) {
                     const compressed = await TopicService.compressMessages(rowMessages);
                     await MessageService.saveImmediately(compressed);
-                    await TopicService.findTopics(compressed);
+                    await TopicService.saveRelationships(compressed);
                     await em.nativeUpdate(TopicCache, { topicId: row.topicId }, {
                         messages: data.messages[data.messages.length - 1].sequence_number,
                         lastUpdate: Date.now(),
@@ -61,7 +62,7 @@ export class TopicService {
         }
     }
 
-    public static async addTopics(topicIds: string[]): Promise<void> {
+    public static async addTopics(topicIds: Iterable<string>): Promise<void> {
         for (const topicId of topicIds) {
             if (topicId && typeof topicId === 'string' && Utils.isTopic(topicId)) {
                 await TopicService.addTopic(topicId);
@@ -147,25 +148,35 @@ export class TopicService {
         }
     }
 
-    public static async findTopics(messages: MessageCache[]): Promise<void> {
+    public static async saveRelationships(messages: MessageCache[]) {
         try {
-            const topics = new Set<string>();
-            for (const message of messages) {
-                const json = Parser.parseMassage(message);
-                if (json && Array.isArray(json.topics) && json.topics.length) {
+            const { topics, tokens } = TopicService.findRelationships(messages);
+            await TopicService.addTopics(topics);
+            await TokenService.addTokens(tokens);
+        } catch (error) {
+            await LogService.error(error, 'Save relationships');
+        }
+    }
+
+    public static findRelationships(messages: MessageCache[]) {
+        const topics = new Set<string>();
+        const tokens = new Set<string>();
+        for (const message of messages) {
+            const json = Parser.parseMassage(message);
+            if (json) {
+                if (Array.isArray(json.topics)) {
                     for (const topicId of json.topics) {
                         topics.add(topicId);
                     }
                 }
-            }
-            for (const topicId of topics) {
-                if (topicId && typeof topicId === 'string' && Utils.isTopic(topicId)) {
-                    await TopicService.addTopic(topicId);
+                if (Array.isArray(json.tokens)) {
+                    for (const tokenId of json.tokens) {
+                        tokens.add(tokenId);
+                    }
                 }
             }
-        } catch (error) {
-            await LogService.error(error, 'find topics');
         }
+        return { topics, tokens };
     }
 
     private static createMessageCache(message: TopicMessage): RequiredEntityData<MessageCache> {

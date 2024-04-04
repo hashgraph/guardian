@@ -12,6 +12,13 @@ export class Utils {
         return /^(\d+)(?:\.(\d+)\.([a-fA-F0-9]+))?(?:-([a-z]{5}))?$/.exec(topicId) !== null;
     }
 
+    public static isToken(tokenId: string): boolean {
+        if (!tokenId || tokenId.length > 14) {
+            return false;
+        }
+        return /^(\d+)(?:\.(\d+)\.([a-fA-F0-9]+))?(?:-([a-z]{5}))?$/.exec(tokenId) !== null;
+    }
+
     public static GenerateUUIDv4(limit?: number): string {
         const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
             // tslint:disable-next-line:no-bitwise

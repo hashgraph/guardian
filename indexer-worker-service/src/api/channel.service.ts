@@ -1,9 +1,9 @@
 import { Controller, Module, Inject } from '@nestjs/common';
-import { Client, ClientProxy, EventPattern, MessagePattern, Transport, } from '@nestjs/microservices';
-import process from 'process';
+import { ClientProxy, EventPattern } from '@nestjs/microservices';
+import { IndexerMessageAPI, Singleton, Jobs, Utils } from '@indexer/common';
 import { TopicService } from '../services/topic-service.js';
 import { MessageService } from '../services/message-service.js';
-import { IndexerMessageAPI, MessageResponse, MessageError, Singleton, Jobs, Utils } from '@indexer/common';
+import { TokenService } from '../services/token-service.js';
 
 interface IOptions {
     NAME: string;
@@ -16,6 +16,10 @@ interface IOptions {
     MESSAGE_READ_TIMEOUT: number;
     MESSAGE_JOB_REFRESH_TIME: number;
     MESSAGE_JOB_COUNT: number;
+    TOKEN_READ_DELAY: number;
+    TOKEN_READ_TIMEOUT: number;
+    TOKEN_JOB_REFRESH_TIME: number;
+    TOKEN_JOB_COUNT: number;
 }
 
 @Controller()
@@ -55,6 +59,7 @@ export class Worker {
     public status: 'INITIALIZING' | 'STARTED' | 'STOPPED';
     public topics: Jobs;
     public messages: Jobs;
+    public tokens: Jobs;
 
     /**
      * Initialize worker
@@ -79,6 +84,13 @@ export class Worker {
             count: option.MESSAGE_JOB_COUNT,
             callback: MessageService.updateMessage
         });
+        this.tokens = new Jobs({
+            delay: option.TOKEN_READ_DELAY,
+            timeout: option.TOKEN_READ_TIMEOUT,
+            refresh: option.TOKEN_JOB_REFRESH_TIME,
+            count: option.TOKEN_JOB_COUNT,
+            callback: TokenService.updateToken
+        });
         return this;
     }
 
@@ -89,6 +101,7 @@ export class Worker {
         await TopicService.addTopic("0.0.1960");
         await this.topics.start();
         await this.messages.start();
+        await this.tokens.start();
         this.status = 'STARTED';
         return this;
     }
@@ -99,6 +112,7 @@ export class Worker {
     public async stop(): Promise<Worker> {
         await this.topics.stop();
         await this.messages.stop();
+        await this.tokens.stop();
         this.status = 'STOPPED';
         return this;
     }
@@ -112,7 +126,8 @@ export class Worker {
             name: this.name,
             status: this.status,
             topics: this.topics?.getStatuses(),
-            messages: this.messages?.getStatuses()
+            messages: this.messages?.getStatuses(),
+            tokens: this.tokens?.getStatuses()
         };
     }
 }

@@ -9,7 +9,9 @@ import {
     MessageCache,
     DataBaseUtils,
     TopicCache,
-    Message
+    Message,
+    TokenCache,
+    NFTCache
 } from '@indexer/common';
 
 @Controller()
@@ -52,10 +54,11 @@ export class LogService {
             //filters
             type?: string;
             status?: string;
+            timestamp?: string;
         }
     ) {
         try {
-            const { type, status, pageIndex, pageSize, orderField, orderDir } = msg;
+            const { type, status, timestamp, pageIndex, pageSize, orderField, orderDir } = msg;
 
             const filters: any = {};
             if (type) {
@@ -63,6 +66,9 @@ export class LogService {
             }
             if (status) {
                 filters.status = status;
+            }
+            if (timestamp) {
+                filters.consensusTimestamp = timestamp;
             }
 
             const em = DataBaseHelper.getEntityManager();
@@ -141,10 +147,20 @@ export class LogService {
             type?: string;
             status?: string;
             action?: string;
+            timestamp?: string;
         }
     ) {
         try {
-            const { type, status, action, pageIndex, pageSize, orderField, orderDir } = msg;
+            const {
+                type,
+                status,
+                action,
+                timestamp,
+                pageIndex,
+                pageSize,
+                orderField,
+                orderDir
+            } = msg;
 
             const filters: any = {};
             if (type) {
@@ -155,6 +171,9 @@ export class LogService {
             }
             if (action) {
                 filters.action = action;
+            }
+            if (timestamp) {
+                filters.consensusTimestamp = timestamp;
             }
 
             const em = DataBaseHelper.getEntityManager();
@@ -198,6 +217,105 @@ export class LogService {
                 actions: action.map((row) => row._id),
                 types: type.map((row) => row._id),
                 statuses: status.map((row) => row._id)
+            }
+            return new MessageResponse(result);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    /**
+     * Get all tokens
+     * @param msg options
+     * @returns tokens
+     */
+    @MessagePattern(IndexerMessageAPI.GET_LOG_TOKENS)
+    async getAllTokens(
+        @Payload()
+        msg: {
+            //page
+            pageIndex: number;
+            pageSize: number;
+            //sort
+            orderField?: string;
+            orderDir?: string;
+            //filters
+        }
+    ) {
+        try {
+            const { pageIndex, pageSize, orderField, orderDir } = msg;
+
+            const filters: any = {};
+            const em = DataBaseHelper.getEntityManager();
+            const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
+            const [rows, count] = await em.findAndCount(TokenCache, filters, options);
+
+            const result: IPage<TokenCache> = {
+                items: rows,
+                pageIndex: pageIndex,
+                pageSize: pageSize,
+                total: count,
+                order: options.orderBy
+            }
+            return new MessageResponse(result);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    /**
+     * Get all tokens
+     * @param msg options
+     * @returns tokens
+     */
+    @MessagePattern(IndexerMessageAPI.GET_LOG_NFTS)
+    async getAllNfts(
+        @Payload()
+        msg: {
+            //page
+            pageIndex: number;
+            pageSize: number;
+            //sort
+            orderField?: string;
+            orderDir?: string;
+            //filters
+            tokenId?: string;
+            serialNumber?: number;
+            metadata?: string;
+        }
+    ) {
+        try {
+            const {
+                pageIndex,
+                pageSize,
+                orderField,
+                orderDir,
+                tokenId,
+                serialNumber,
+                metadata
+            } = msg;
+
+            const filters: any = {};
+            if (tokenId) {
+                filters.tokenId = tokenId;
+            }
+            if (tokenId) {
+                filters.serialNumber = serialNumber;
+            }
+            if (metadata) {
+                filters.metadata = metadata;
+            }
+
+            const em = DataBaseHelper.getEntityManager();
+            const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
+            const [rows, count] = await em.findAndCount(NFTCache, filters, options);
+
+            const result: IPage<NFTCache> = {
+                items: rows,
+                pageIndex: pageIndex,
+                pageSize: pageSize,
+                total: count,
+                order: options.orderBy
             }
             return new MessageResponse(result);
         } catch (error) {

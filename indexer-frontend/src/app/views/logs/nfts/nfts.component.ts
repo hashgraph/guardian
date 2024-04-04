@@ -10,13 +10,11 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { Dialog } from '@angular/cdk/dialog';
-import { DataDialog } from '../data-dialog/data-dialog';
 
 @Component({
-    selector: 'app-messages',
-    templateUrl: './messages.component.html',
-    styleUrl: './messages.component.scss',
+    selector: 'app-nfts',
+    templateUrl: './nfts.component.html',
+    styleUrl: './nfts.component.scss',
     standalone: true,
     imports: [
         CommonModule,
@@ -29,7 +27,7 @@ import { DataDialog } from '../data-dialog/data-dialog';
         FormsModule
     ]
 })
-export class MessagesComponent {
+export class NftsComponent {
     public loading: boolean = true;
 
     public pageIndex: number = 0;
@@ -40,22 +38,19 @@ export class MessagesComponent {
     public orderDir: string = '';
 
     public displayedColumns: string[] = [
-        'topicId',
-        'consensusTimestamp',
-        'type',
-        'status',
-        'message'
+        'tokenId',
+        'serialNumber',
+        'metadata'
     ];
 
     @ViewChild(MatSort) sort!: MatSort;
 
-    public status: string = '';
-    public type: string = '';
-    public timestamp: string = '';
-    
+    public tokenId: string = '';
+    public serialNumber: string = '';
+    public metadata: string = '';
+
     constructor(
         private logsService: LogsService,
-        private dialog: Dialog
     ) {
     }
 
@@ -82,19 +77,20 @@ export class MessagesComponent {
             option.orderDir = this.orderDir.toUpperCase();
             option.orderField = this.orderField;
         }
-        if (this.status) {
-            option.status = this.status;
+        if (this.tokenId) {
+            option.tokenId = this.tokenId;
         }
-        if (this.type) {
-            option.type = this.type;
+        if (this.serialNumber) {
+            option.serialNumber = parseInt(this.serialNumber, 10);
         }
-        if (this.timestamp) {
-            option.timestamp = this.timestamp;
+
+        if (this.metadata) {
+            option.metadata = btoa(this.metadata);
         }
-        this.logsService.getMessages(option).subscribe({
-            next: (messages) => {
-                if (messages) {
-                    const { items, total } = messages;
+        this.logsService.getNfts(option).subscribe({
+            next: (rows) => {
+                if (rows) {
+                    const { items, total } = rows;
                     this.items = items;
                     this.total = total;
                 } else {
@@ -102,7 +98,7 @@ export class MessagesComponent {
                     this.total = 0;
                 }
                 for (const row of this.items) {
-                    row.__message = this.parsMessage(row.message);
+                    row.__metadata = atob(row.metadata);
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -113,14 +109,6 @@ export class MessagesComponent {
                 console.error(message);
             }
         });
-    }
-
-    private parsMessage(buffer: string): string {
-        try {
-            return atob(buffer);
-        } catch (error) {
-            return buffer
-        }
     }
 
     public onPage(pageEvent: PageEvent) {
@@ -139,30 +127,30 @@ export class MessagesComponent {
         this.loadData();
     }
 
-    public onInput(event: any) {
+    public onTokenId(event: any) {
         const value = (event.target.value || '').trim();
-        let timestamp: string = '';
-        if (/[0-9]{10}\.[0-9]{9}/.test(value)) {
-            timestamp = value;
-        }
-        if (this.timestamp !== value) {
-            this.timestamp = value;
+        if (this.tokenId !== value) {
+            this.tokenId = value;
+            this.pageIndex = 0;
             this.loadData();
         }
     }
 
-    public onDetails(buffer: any) {
-        let data: string;
-        try {
-            data = JSON.stringify(JSON.parse(atob(buffer)), null, 4);
-        } catch (error) {
-            data = buffer;
+    public onSerialNumber(event: any) {
+        const value = (event.target.value || '').trim();
+        if (this.serialNumber !== value) {
+            this.serialNumber = value;
+            this.pageIndex = 0;
+            this.loadData();
         }
-        const dialogRef = this.dialog.open<any>(DataDialog, {
-            width: '1000px',
-            data: { data },
-        });
+    }
 
-        dialogRef.closed.subscribe((result) => { });
+    public onMetadata(event: any) {
+        const value = (event.target.value || '').trim();
+        if (this.metadata !== value) {
+            this.metadata = value;
+            this.pageIndex = 0;
+            this.loadData();
+        }
     }
 }

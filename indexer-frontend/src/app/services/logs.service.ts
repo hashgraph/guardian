@@ -3,6 +3,17 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 
+interface IFilters {
+    pageIndex?: number;
+    pageSize?: number;
+    orderDir?: number;
+    orderField?: number;
+    status?: number;
+    type?: number;
+    action?: number;
+    timestamp?: number;
+}
+
 /**
  * Services for working from status.
  */
@@ -30,40 +41,32 @@ export class LogsService {
         return params ? { params } : {};
     }
 
-    public getMessages(
-        filters?: {
-            type?: string,
-            pageIndex?: number,
-            pageSize?: number
-        }
-    ): Observable<any> {
+    public getMessages(filters?: IFilters): Observable<any> {
         const options = this.getOptions(filters);
         return this.http.get<any>(`${this.url}/messages`, options);
     }
 
-    public getTopics(
-        filters?: {
-            type?: string,
-            pageIndex?: number,
-            pageSize?: number
-        }
-    ): Observable<any> {
+    public getTopics(filters?: IFilters): Observable<any> {
         const options = this.getOptions(filters);
         return this.http.get<any>(`${this.url}/topics`, options);
     }
 
-    public getDocuments(
-        filters?: {
-            type?: string,
-            pageIndex?: number,
-            pageSize?: number
-        }
-    ): Observable<any> {
+    public getDocuments(filters?: IFilters): Observable<any> {
         const options = this.getOptions(filters);
         return this.http.get<any>(`${this.url}/documents`, options);
     }
 
     public getDocumentFilters(): Observable<any> {
         return this.http.get<any>(`${this.url}/documents/filters`);
+    }
+
+    public getTokens(filters?: IFilters): Observable<any> {
+        const options = this.getOptions(filters);
+        return this.http.get<any>(`${this.url}/tokens`, options);
+    }
+
+    public getNfts(filters?: IFilters): Observable<any> {
+        const options = this.getOptions(filters);
+        return this.http.get<any>(`${this.url}/nfts`, options);
     }
 }

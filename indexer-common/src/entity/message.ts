@@ -16,7 +16,7 @@ export class Message {
     @Property()
     topicId: string;
 
-    @PrimaryKey()
+    @Property()
     consensusTimestamp: string;
 
     @Property({ nullable: true })
@@ -54,4 +54,7 @@ export class Message {
 
     @Property({ nullable: true })
     topics: string[];
+
+    @Property({ nullable: true })
+    tokens: string[];
 }

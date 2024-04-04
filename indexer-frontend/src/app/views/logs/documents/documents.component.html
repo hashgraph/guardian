@@ -3,6 +3,12 @@
         <div class="table-filters">
             <div class="filter">
                 <mat-form-field>
+                    <mat-label>Timestamp</mat-label>
+                    <input matInput placeholder="1706817538.066128662" (input)="onInput($event)">
+                </mat-form-field>
+            </div>
+            <div class="filter">
+                <mat-form-field>
                     <mat-label>Type</mat-label>
                     <mat-select [(value)]="filters.currentType" (valueChange)="onFilter()">
                         <mat-option>None</mat-option>
@@ -43,6 +49,11 @@
                     <td mat-cell *matCellDef="let element"> {{element.topicId}} </td>
                 </ng-container>
 
+                <ng-container matColumnDef="consensusTimestamp">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Timestamp </th>
+                    <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+                </ng-container>
+
                 <ng-container matColumnDef="type">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
                     <td mat-cell *matCellDef="let element"> {{element.type}} </td>
@@ -60,12 +71,20 @@
 
                 <ng-container matColumnDef="options">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Options </th>
-                    <td mat-cell *matCellDef="let element"> {{element.__options}} </td>
+                    <td mat-cell *matCellDef="let element" (click)="onDetails(element.options, false)">
+                        {{element.__options}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="links">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Links </th>
+                    <td mat-cell *matCellDef="let element" (click)="onDetails(element.files, false)">
+                        {{element.__files}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="files">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Files </th>
-                    <td mat-cell *matCellDef="let element"> {{element.__documents}} </td>
+                    <td mat-cell *matCellDef="let element" (click)="onDetails(element.documents, true)">
+                        {{element.__documents}} </td>
                 </ng-container>
 
                 <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>

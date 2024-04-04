@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Environment, TopicInfo } from '@indexer/common';
+import { Environment, TokenInfo, TopicInfo } from '@indexer/common';
 
 export class HederaService {
     private static mirrorNodeUrl: string;
@@ -27,6 +27,31 @@ export class HederaService {
                 topicInfo.links = { next: null };
             }
             return topicInfo;
+        } else {
+            return null;
+        }
+    }
+
+    public static async getSerials(tokenId: string, lastNumber: number): Promise<TokenInfo | null> {
+        const url = this.mirrorNodeUrl + 'tokens/' + tokenId + '/nfts';
+        const option: any = {
+            params: {
+                order: 'asc',
+                limit: 100
+            },
+            responseType: 'json',
+            timeout: 2 * 60 * 1000,
+        };
+        if (lastNumber > 0) {
+            option.params.serialnumber = `gt:${lastNumber}`;
+        }
+        const response = await axios.get(url, option);
+        const tokenInfo = response?.data as TokenInfo;
+        if (tokenInfo && Array.isArray(tokenInfo.nfts)) {
+            if (!tokenInfo.links) {
+                tokenInfo.links = { next: null };
+            }
+            return tokenInfo;
         } else {
             return null;
         }

@@ -10,6 +10,8 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { Dialog, DialogModule } from '@angular/cdk/dialog';
+import { DataDialog } from '../data-dialog/data-dialog';
 
 @Component({
     selector: 'app-documents',
@@ -24,7 +26,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
         MatFormFieldModule,
         MatSelectModule,
         MatInputModule,
-        FormsModule
+        FormsModule,
+        DialogModule
     ]
 })
 export class DocumentsComponent {
@@ -39,10 +42,12 @@ export class DocumentsComponent {
 
     public displayedColumns: string[] = [
         'topicId',
+        'consensusTimestamp',
         'type',
         'action',
         'status',
         'options',
+        'links',
         'files'
     ];
 
@@ -55,10 +60,12 @@ export class DocumentsComponent {
         currentStatus: '',
         currentAction: '',
         currentType: '',
+        currentTimestamp: '',
     }
 
     constructor(
-        private documentsService: LogsService,
+        private logsService: LogsService,
+        private dialog: Dialog
     ) {
     }
 
@@ -76,7 +83,7 @@ export class DocumentsComponent {
 
     private loadFilters() {
         this.loading = true;
-        this.documentsService.getDocumentFilters().subscribe({
+        this.logsService.getDocumentFilters().subscribe({
             next: (filters) => {
                 this.filters.actions = [];
                 this.filters.statuses = [];
@@ -136,7 +143,10 @@ export class DocumentsComponent {
         if (this.filters.currentAction) {
             option.action = this.filters.currentAction;
         }
-        this.documentsService.getDocuments(option).subscribe({
+        if (this.filters.currentTimestamp) {
+            option.timestamp = this.filters.currentTimestamp;
+        }
+        this.logsService.getDocuments(option).subscribe({
             next: (messages) => {
                 if (messages) {
                     const { items, total } = messages;
@@ -149,6 +159,7 @@ export class DocumentsComponent {
                 for (const row of this.items) {
                     row.__options = JSON.stringify(row.options);
                     row.__documents = JSON.stringify(row.documents);
+                    row.__files = JSON.stringify(row.files);
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -175,5 +186,38 @@ export class DocumentsComponent {
 
     public onFilter() {
         this.loadData();
+    }
+
+    public onInput(event: any) {
+        const value = (event.target.value || '').trim();
+        let timestamp: string = '';
+        if (/[0-9]{10}\.[0-9]{9}/.test(value)) {
+            timestamp = value;
+        }
+        if (this.filters.currentTimestamp !== timestamp) {
+            this.filters.currentTimestamp = timestamp;
+            this.pageIndex = 0;
+            this.loadData();
+        }
+    }
+
+    public onDetails(text: any, isArray: boolean) {
+        let data: string;
+        try {
+            if (isArray) {
+                const a = text.map((e: any) => JSON.parse(e));
+                data = JSON.stringify(a, null, 4);
+            } else {
+                data = JSON.stringify(text, null, 4);
+            }
+        } catch (error) {
+            data = text;
+        }
+        const dialogRef = this.dialog.open<any>(DataDialog, {
+            width: '1000px',
+            data: { data },
+        });
+
+        dialogRef.closed.subscribe((result) => { });
     }
 }

@@ -30,36 +30,50 @@
         overflow: auto;
 
         .mat-column-topicId {
+            width: 170px;
+            min-width: 170px;
+            max-width: 170px;
+        }
+        .mat-column-consensusTimestamp {
             width: 200px;
             min-width: 200px;
             max-width: 200px;
         }
         .mat-column-type {
-            width: 250px;
-            min-width: 250px;
-            max-width: 250px;
+            width: 190px;
+            min-width: 190px;
+            max-width: 190px;
         }
         .mat-column-action {
-            width: 250px;
-            min-width: 250px;
-            max-width: 250px;
+            width: 230px;
+            min-width: 230px;
+            max-width: 230px;
         }
         .mat-column-status {
-            width: 250px;
-            min-width: 250px;
-            max-width: 250px;
+            width: 140px;
+            min-width: 140px;
+            max-width: 140px;
+        }
+        .mat-column-links {
+            width: 220px;
+            min-width: 220px;
+            max-width: 220px;
         }
         .mat-column-options {
-            width: calc((100vw - 1000px) / 2);
-            min-width: calc((100vw - 1000px) / 2);
-            max-width: calc((100vw - 1000px) / 2);
-            word-wrap: break-word;
+            width: calc((100vw - 1200px) / 2);
+            min-width: calc((100vw - 1200px) / 2);
+            max-width: calc((100vw - 1200px) / 2);
+            // word-wrap: break-word;
+            overflow: hidden;
+            white-space: nowrap;
         }
         .mat-column-files {
-            width: calc((100vw - 1000px) / 2);
-            min-width: calc((100vw - 1000px) / 2);
-            max-width: calc((100vw - 1000px) / 2);
-            word-wrap: break-word;
+            width: calc((100vw - 1200px) / 2);
+            min-width: calc((100vw - 1200px) / 2);
+            max-width: calc((100vw - 1200px) / 2);
+            // word-wrap: break-word;
+            overflow: hidden;
+            white-space: nowrap;
         }
     }
     .table-paginator {

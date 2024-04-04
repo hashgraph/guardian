@@ -36,6 +36,7 @@ export class Parser {
             message.files = [];
             message.documents = [];
             message.topics = [];
+            message.tokens = [];
 
             switch (json.type) {
                 case 'EVC-Document':
@@ -124,6 +125,7 @@ export class Parser {
                     message.options.tokenType = json.tokenType;
                     message.options.decimals = json.decimals;
                     message.options.owner = json.owner;
+                    message.tokens = [json.tokenId];
                     break;
                 case 'Module':
                     message.options.uuid = json.uuid;

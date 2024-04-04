@@ -3,6 +3,12 @@
         <div class="table-filters">
             <div class="filter">
                 <mat-form-field>
+                    <mat-label>Timestamp</mat-label>
+                    <input matInput placeholder="1706817538.066128662" (input)="onInput($event)">
+                </mat-form-field>
+            </div>
+            <div class="filter">
+                <mat-form-field>
                     <mat-label>Type</mat-label>
                     <mat-select [(value)]="type" (valueChange)="onFilter()">
                         <mat-option>None</mat-option>
@@ -50,7 +56,7 @@
                 </ng-container>
                 <ng-container matColumnDef="message">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Message </th>
-                    <td mat-cell *matCellDef="let element"> {{element.__message}} </td>
+                    <td mat-cell *matCellDef="let element" (click)="onDetails(element.message)"> {{element.__message}} </td>
                 </ng-container>
                 
                 <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
