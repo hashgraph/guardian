@@ -45,14 +45,14 @@ RUN --mount=type=cache,target=/root/.yarn \
 FROM base as image
 ENV NODE_ENV production
 
-# Run the application as a non-root user
-USER node
-
-COPY --link --chown=node:node mrv-sender/public public/
+COPY --link mrv-sender/public public/
 
 # Copy the production dependencies from the deps stage and the built application from the build stage into the image
-COPY --link --from=deps --chown=node:node /usr/local/app/node_modules node_modules/
-COPY --link --from=deps --chown=node:node /usr/local/app/package.json ./
-COPY --link --from=build --chown=node:node /usr/local/app/dist dist/
+COPY --link --from=deps /usr/local/app/node_modules node_modules/
+COPY --link --from=deps /usr/local/app/package.json ./
+COPY --link --from=build /usr/local/app/dist dist/
+
+# Change the user to node
+USER node
 
 CMD [ "node", "dist/index.js" ]

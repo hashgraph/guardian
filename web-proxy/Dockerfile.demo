@@ -22,9 +22,13 @@ COPY --link ./frontend/. ./
 RUN npm install interfaces.tgz && npm run build:demo
 
 # Stage 3: Create the final image
-FROM nginx:1.25.4 as image
+FROM nginxinc/nginx-unprivileged:1.25.4-alpine as image
+
+# Copy config and built application from the build stage into the image
 COPY --link ./web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf
-# Copy built application from the build stage into the image
 COPY --link --from=build /usr/local/app/dist/guardian /usr/share/nginx/html
+
+# Change the user to nginx
+USER nginx
 
 EXPOSE 80
