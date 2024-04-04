@@ -29,7 +29,7 @@ COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/inte
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link auth-service/package.json auth-service/tsconfig*.json auth-service/Gulpfile.js yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=/root/.yarn \
+RUN --mount=type=cache,target=/root/.yarn,sharing=private \
     yarn install --prod
 
 # Stage 4: Build service
@@ -40,7 +40,7 @@ COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.jso
 COPY --link auth-service/environments environments/
 COPY --link auth-service/src src/
 RUN --mount=type=cache,target=/root/.yarn \
-    yarn install --frozen-lockfile && yarn run build:prod && rm /tmp/interfaces.tgz /tmp/common.tgz
+    yarn install --frozen-lockfile && yarn run build:prod
 
 # Stage 5: Create the final image
 FROM base as image

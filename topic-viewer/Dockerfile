@@ -10,7 +10,7 @@ ARG YARN_CACHE_FOLDER=/root/.yarn
 FROM base as deps
 COPY --link topic-viewer/package.json topic-viewer/tsconfig*.json yarn.lock ./
 # Here and after. Leverage a cache mount to /root/.yarn to speed up subsequent builds
-RUN --mount=type=cache,target=/root/.yarn \
+RUN --mount=type=cache,target=/root/.yarn,sharing=private \
     yarn install --prod
 
 # Stage 2: Build service

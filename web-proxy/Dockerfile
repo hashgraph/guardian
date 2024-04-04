@@ -17,9 +17,9 @@ RUN --mount=type=cache,target=/root/.yarn \
 # Stage 2: Build frontend
 FROM base as build
 ENV NODE_OPTIONS="--openssl-legacy-provider"
-COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz ./
+COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz ./interfaces.tgz
 COPY --link ./frontend/. ./
-RUN npm install guardian-interfaces-*.tgz && npm run build
+RUN npm install interfaces.tgz && npm run build
 
 # Stage 3: Create the final image
 FROM nginx:1.25.4 as image
