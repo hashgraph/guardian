@@ -1,6 +1,6 @@
-## Sustainable End-of-Life Vehicle Scrapping Program: Government Backed Voluntary Program
+# Sustainable End-of-Life Vehicle Scrapping Program: Government Backed Voluntary Program
 
-### Executive Summary
+## Executive Summary
 
 India, with its position as the world's second most populous country, is facing a significant challenge with the disposal of end-of-life vehicles (ELVs). With the automotive sector booming, the number of vehicles reaching the end of their service life is escalating. However, the recycling of these vehicles is still not fully developed, and the sector is predominantly run by the informal sector, which often disregards environmental and safety regulations.
 
@@ -49,9 +49,32 @@ The claim or MRV describes the scrapping of an end-of-life vehicle (ELV) that ca
 
 It is crucial that we record all RVSFs along with their associated ELV submissions to maintain a track record of provenance
 
+### Usage
+
+While this policy can be used throught the standard UI the usage of the policy is primarily API based with the aim to automate ingestion, utilising the generic dMRV project structure and tools from DOVU:
+
+- [DOVU Middleware API](https://github.com/dovuofficial/guardian-middleware-api/)
+- [DOVU PHP SDK](https://github.com/dovuofficial/guardian-php-sdk)
+- [Middleware API Documentation](https://middleware.guardian.dovu.market/docs)
+
+These following tools sit on top of the guardian, and come complete, with examples of tests on how to best consume the policy 
+
+### Roles
+
+There are three primary roles:
+
+- The standard registry (like DOVU)
+  - This role would consist of policy management through the guardian, It has the ability to approve projects or sites, the policy can also be modified to enable the verifier or VVB entity to approve.
+- The Supplier or project implementor (MMCM)
+  - This would comprise the agent as a whole, For the issuance of the original project definition, the site, registrations, and the ingestion of all claim data.
+- The Verifier (Certificate of deposits)
+  - This is evidence that is provided from third parties. In this case, government documentation that proves the benefit, the recycling of the vehicle.
+
+Naturally, over time, these features and elements will be automated, and there will be further signatures where appropriate. But as at April 2024, We have signed Governmental documents for proof of recycling, as well as proof of site registration in addition to methodology and formula sign off from ITT Bombay.
+
 ### Data Schemas
 
-These schemas, or data points, have been collaborated upon between DOVU and the MMCM team using the DOVU generic dMRV structure as an initial template, which comprises document or entity submissions:
+These schemas, or data points, have been collaborated upon between DOVU and the MMCM team using the [DOVU generic dMRV structure](https://docs.google.com/document/d/1micqwUz2-dVQ8VbWf55WBOxMzB_xTqMfxlqFUoHFW-8/edit) as an initial template, which comprises document or entity submissions:
 
 3 Document Submissions
 - The creation or the definition of a project.
@@ -63,7 +86,7 @@ These schemas, or data points, have been collaborated upon between DOVU and the 
 - Steps 1 & 2 are an approval from DOVU or a registry/verifier
 - The final step is the approval from a reputable verifier who is used to the current MRV, or verified data source.
 
-In the case of MMCM ELV asset generation "Certificate of deposits" That prove the sign off of a vehicle that has been recycled, and then ingested to extract out of data points is used as the verified data source.
+In the case of MMCM ELV asset generation "Certificate of deposits" That prove the sign off of a vehicle that has been recycled, and then ingested to extract out of data points is used as the verified and indexable data source.
 
 ## Project (ELV Scrapping CO2 Emission Avoidance)
 
@@ -104,6 +127,40 @@ A recycling center is associated with the project but ingests ELV assets for scr
 
 This stage for Measurement Reporting and Verification (MRV) will be where a given ELV is submitted to a RSVF to be scrapped to generate a certificate of deposit. The goal here is to record as much information as possible relating to the certificate in addition to the generated carbon values with a subset of raw material data.
 
-In addition, we can add a verification payload to ensure that the data that MMCM sends to the DOVU platform has proof of original signed proofs in place.
+In addition, we can add a verification payload to ensure that the data that MMCM sends to the DOVU platform has proof of original signed proofs in place, this will later be reinforced from solutions like are offered from demia.
 
+- Unique Identifier (UUID)
+- Proof
+  - Certificate of Deposit OR
+  - Certificate of Vehicle Scrapping
+- Proof UID
+  - Certificate of Deposit - COD2022109DL5SR8634
+  - Certificate of Vehicle Scrapping - CVS20230430GJ07R7461
+- Proof Hash (CID - IPFS)
+  - (we will use a link for the demo but this can be a hash for privacy reasons)
+  - https://cloudflare-ipfs.com/ipfs/bafybeiafql4r5xn6nyuamktltmjnklapiyck5w6mtpx7pragvhtr56iase/COD1161.pdf
+- Carbon Emission Reduction (ER) - tCO2e
+  - 0.6 tCO2e per 1000kgs of End Of Life Vehicle scrapped
+- Vintage
+  - Year
+- Properties
+  - Materials (All in Metric Tons)
+    - Ferrous (Tons)
+    - Aluminum (Tons)
+    - Copper (Tons)
+    - Plastics (Tons)
+    - Glass (Tons)
+    - Tyres (Tons)
+    - Precious Metals (Tons)
+    - Others (Tons)
+    - Fluids (Tons)
+  - ELV
+    - Vehicle ID Type (Categories: Registration Number, Chassis Number, or Engine Number)
+    - Vehicle RC Number (Masked; Actual Regn. No, Chassis No., or Engine No.)
+    - Vehicle Type (LMV/Motor Car)
+    - Vehicle Unladen Weight (Tons)
+    - Maker
+    - Fuel Type
+
+The purpose here is to view all the details that I have been created from the original certificate of deposit, and while at the same time, introduce all of the unique fields within the claim object itself to make up the MRV component.
 
