@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.11.1-bookworm-slim
+ARG NODE_VERSION=20.11.1-alpine
 FROM node:${NODE_VERSION} as base
 WORKDIR /usr/local/app
 # Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory

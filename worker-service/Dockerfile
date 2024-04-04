@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.11.1-bookworm-slim
+ARG NODE_VERSION=20.11.1-alpine
 FROM node:${NODE_VERSION} as base
 WORKDIR /usr/local/app
 # Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
@@ -29,8 +29,9 @@ COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/inte
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link worker-service/package.json worker-service/tsconfig*.json yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN apk add --no-cache git
 RUN --mount=type=cache,target=/root/.yarn,sharing=private \
-    apt-get update && apt-get upgrade -y && apt-get install -y git && yarn install --prod
+    yarn install --prod
 
 # Stage 4: Build service
 FROM base as build
@@ -38,8 +39,9 @@ COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/inte
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
 COPY --link worker-service/src src/
+RUN apk add --no-cache git
 RUN --mount=type=cache,target=/root/.yarn \
-    apt-get update && apt-get upgrade -y && apt-get install -y git && yarn install --frozen-lockfile && yarn run build:prod
+    yarn install --frozen-lockfile && yarn run build:prod
 
 # Stage 5: Create the final image
 FROM base as image
