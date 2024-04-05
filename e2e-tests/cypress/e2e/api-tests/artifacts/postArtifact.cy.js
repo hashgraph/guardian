@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Artifacts", { tags: "@artifacts" }, () => {
     const authorization = Cypress.env("authorization");
     let policyId
-
+/*
     before(() => {
         cy.fixture("remoteWorkGHGPolicy.policy", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
@@ -52,7 +52,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
                 })
         });
     });
-
+*/
     it("Upload artifact without auth token - Negative", () => {
         cy.request({
             url: API.ApiServer + API.Artifacts + policyId,

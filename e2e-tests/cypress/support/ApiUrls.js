@@ -1,5 +1,6 @@
 const API = {
     ApiServer: "http://localhost:" + Cypress.env("portApi") + "/",
+
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
@@ -11,6 +12,7 @@ const API = {
     Balance: "accounts/balance",
     AccountRegister: "accounts/register",
     AccountSession: "accounts/session",
+
     //Analytics
     PolicyCompare: "analytics/compare/policies/",
     SchemaCompare: "analytics/compare/schemas/",
@@ -18,10 +20,13 @@ const API = {
     ToolCompare: "analytics/compare/tools/",
     PolicySearch: "analytics/search/policies/",
     BlockSearch: "analytics/search/blocks/",
+
     //Profiles
     Profiles: "profiles/",
+
     //Tokens
     ListOfTokens: "tokens/",
+
     //Contracts
     ListOfContracts: "contracts/",
     ListOfPairs: "contracts/pairs/",
@@ -29,40 +34,50 @@ const API = {
     WipeRequests: "contracts/wipe/requests/",
     RetireContract: "contracts/retire/",
     PoolContract: "pools/",
+    Retire: "retire/",
+    RetirePools: "contracts/retire/pools/",
+
     //Modules
     ListOfAllModules: "modules/",
     ListOfModules: "modules/menu/",
     ExportMessage: "export/message/",
     ImportMessage: "import/message/",
     ImportFile: "import/file/",
+
     //Logs
     Logs: "logs",
     LogsAttributes: "logs/attributes/",
+
     //Schemas
     PolicySchemas: "schemas?category=POLICY",
     Schemas: "schemas/",
     Schema: "schema/",
     SchemasSystem: "schemas/system/",
     SchemasSystemEntity: "schemas/system/entity/",
-    SchemaImportMsgPreview:
-        "schemas/import/message/preview",
-    SchemaImportFilePreview:
-        "schemas/import/file/preview",
+    SchemaImportMsgPreview: "schemas/import/message/preview",
+    SchemaImportFilePreview: "schemas/import/file/preview",
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
+
     //Tools
     Tools: "tools",
     ToolsImportMsg: "tools/import/message",
+
     //TrustChains
     Trustchains: "trust-chains/",
+
     //Settings
     SettingsEnv: "settings/environment",
+
     //External
     External: "external",
+
     //ipfs
     IPFSFile: "ipfs/file",
+
     //Demo
     RandomKey: "demo/random-key",
+
     //Policies
     Policies: "policies/",
     PolicisImportMsg: "policies/import/message/",
@@ -86,16 +101,18 @@ const API = {
     ApproveIssueRequestsBtn: "tag/approve_issue_requests_btn/blocks",
     CreateIssue: "tag/create_issue_request_form/blocks",
 
-
-
     //Artifacts
-        Artifacts: "artifacts/",
+    Artifacts: "artifacts/",
+
+    //Tags
     Tags: "tags/",
+
     //General
     ExportCSV: "export?type=csv",
     ExportFile: "export/file",
     Async: "push/",
     Publish: "publish/",
-    Blocks: "blocks/"
+    Blocks: "blocks/",
+    Approve: "approve/"
 };
 export default API;

@@ -4,8 +4,8 @@ import API from "../../../support/ApiUrls";
 context("Contracts", { tags: '@contracts' },() => {
     const authorization = Cypress.env("authorization");
     before(() => {
-        const contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
-        const contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
+        const contractNameR = Math.floor(Math.random() * 999) + "RCon4GetTests";
+        const contractNameW = Math.floor(Math.random() * 999) + "WCon4GetTests";
         let policyid
         cy.request({
             method: METHOD.POST,
@@ -66,7 +66,6 @@ context("Contracts", { tags: '@contracts' },() => {
             expect(resp.body.at(-1)).to.have.property("owner");
         });
     });
-
 
     it("Get list of contracts without auth token - Negative", () => {
         cy.request({

@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 
 context("Accounts", { tags: "@accounts" }, () => {
     it("Register and login as new user", () => {
-        const name = Math.floor(Math.random() * 999) + "test001";
+        const name = Math.floor(Math.random() * 999) + "PostRegTest";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,

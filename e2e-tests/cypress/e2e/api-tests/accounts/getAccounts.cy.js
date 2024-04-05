@@ -29,7 +29,6 @@ context("Accounts",  { tags: '@accounts' },() => {
         });
     });
 
-
     it("Get list of users with incorrect auth - Negative", () => {
         cy.request({
             method: METHOD.GET,
@@ -43,7 +42,6 @@ context("Accounts",  { tags: '@accounts' },() => {
         });
     });
 
-
     it("Get list of users with empty auth - Negative", () => {
         cy.request({
             method: METHOD.GET,
@@ -56,7 +54,6 @@ context("Accounts",  { tags: '@accounts' },() => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
-
 
     it("Get list of users as User - Negative", () => {
         cy.request({
