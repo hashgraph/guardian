@@ -3,14 +3,14 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable, tap } from 'rxjs';
 
 //services
-import { RedisService } from '../redis-service.js';
+import { CacheService } from '../cache-service.js';
 
 //constants
 const DEFAULT_TTL = 5;
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  constructor(private readonly redisService: RedisService) {
+  constructor(private readonly cacheService: CacheService) {
   }
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
@@ -20,7 +20,7 @@ export class CacheInterceptor implements NestInterceptor {
 
     const ttl = Reflect.getMetadata(route, context.getHandler()) ?? DEFAULT_TTL;
 
-    const cachedResponse = await this.redisService.get(cacheKey);
+    const cachedResponse = await this.cacheService.get(cacheKey);
 
     if (cachedResponse) {
       return JSON.parse(cachedResponse);
@@ -28,7 +28,7 @@ export class CacheInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(response => {
-        this.redisService.set(cacheKey, JSON.stringify(response), ttl);
+        this.cacheService.set(cacheKey, JSON.stringify(response), ttl);
       }),
     );
   }

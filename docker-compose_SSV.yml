@@ -7,8 +7,8 @@ services:
     expose:
       - 27017
 
-  redis:
-    image: redis/redis-stack-server:latest
+  cache:
+    image: registry.redict.io/redict
     restart: always
     expose:
       - 6379
@@ -147,7 +147,7 @@ services:
       - 3002
     depends_on:
       - mongo
-      - redis
+      - cache
       - message-broker
       - guardian-service
       - auth-service

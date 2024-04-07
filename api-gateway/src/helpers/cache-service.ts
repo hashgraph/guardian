@@ -1,15 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 //helpers
-import { REDIS_CLIENT, RedisClient } from './redis-provider.js';
+import { CACHE_CLIENT, CacheClient } from './cache-provider.js';
 
 @Injectable()
-export class RedisService {
+export class CacheService {
   public constructor(
-    @Inject(REDIS_CLIENT)
-    private readonly client: RedisClient,
-  ) {
-  }
+    @Inject(CACHE_CLIENT)
+    private readonly client: CacheClient,
+  ) {}
 
   async set(key: string, value: string, expirationSeconds: number) {
     await this.client.set(key, value, 'EX', expirationSeconds);
