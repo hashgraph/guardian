@@ -4,13 +4,11 @@
 
 - Introduction
 - Key Objectives and Scope
-- Aspects of Methodology
 - Significance and Environmental Impact
 - Demo Video
 - Policy Workflow
 - Policy flow
 - Available Roles
-- Token (Carbon Foward)
 - Step-by-Step
   
 <!-- /TOC -->
