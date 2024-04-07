@@ -180,8 +180,7 @@ export async function importSchemaByFiles(
     files: ISchema[],
     topicId: string,
     notifier: INotifier,
-    skipGenerateId = false,
-    outerSchemasMapping?: { name: string, iri: string }[]
+    skipGenerateId = false
 ): Promise<ImportResult> {
     notifier.start('Import schemas');
 
@@ -213,19 +212,6 @@ export async function importSchemaByFiles(
         file.owner = owner;
         file.topicId = topicId || 'draft';
         file.status = SchemaStatus.DRAFT;
-        if (file.document?.$defs && outerSchemasMapping) {
-            for (const def of Object.values(file.document.$defs)) {
-                if (!def || uuidMap.has(def.$id)) {
-                    continue;
-                }
-                const subSchemaMapping = outerSchemasMapping.find(
-                    (item) => item.name === def.title
-                );
-                if (subSchemaMapping) {
-                    uuidMap.set(def.$id, subSchemaMapping.iri);
-                }
-            }
-        }
     }
 
     notifier.info(`Found ${files.length} schemas`);

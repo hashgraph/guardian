@@ -38,4 +38,3 @@ export * from './wizard-config.interface.js';
 export * from './schema-node.interface.js';
 export * from './policy-category-export.interface.js';
 export * from './migration-config.interface.js';
-export * from './policy-tool-metadata.interface.js';

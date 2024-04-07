@@ -645,12 +645,12 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE, async (msg) => {
         try {
-            const { zip, owner, metadata } = msg;
+            const { zip, owner } = msg;
             if (!zip) {
                 throw new Error('file in body is empty');
             }
             const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata);
+            const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier());
             if (errors?.length) {
                 const message = importToolErrors(errors);
                 new Logger().warn(message, ['GUARDIAN_SERVICE']);
@@ -688,14 +688,14 @@ export async function toolsAPI(): Promise<void> {
     });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE_ASYNC, async (msg) => {
-        const { zip, owner, task, metadata} = msg;
+        const { zip, owner, task } = msg;
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!zip) {
                 throw new Error('file in body is empty');
             }
             const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const { tool, errors } = await importToolByFile(owner, preview, notifier, metadata);
+            const { tool, errors } = await importToolByFile(owner, preview, notifier);
             if (errors?.length) {
                 const message = importToolErrors(errors);
                 notifier.error(message);

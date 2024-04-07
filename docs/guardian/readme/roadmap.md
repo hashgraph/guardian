@@ -1,4 +1,4 @@
-# 🛣️ Roadmap
+# 🛣 Roadmap
 
 To get more information on Roadmap, please click: [https://app.zenhub.com/workspaces/guardian-618c27c08661c0001461263a/roadmap?invite=true](https://app.zenhub.com/workspaces/guardian-618c27c08661c0001461263a/roadmap?invite=true)
 
@@ -78,6 +78,12 @@ Introduce the ability to mint Mitigation Asset Type tokens as the result of the 
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/54](https://github.com/hashgraph/guardian/issues/54)
 
+### FireBlocks Integration
+
+We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
+
 ### Development of AMS-II.J.: Demand-Side Activities for Efficient Lighting Technologies
 
 1. Designing of the Schema and getting it approved. Development of the policy using Schema
@@ -121,6 +127,22 @@ Update to memo field VP/DID structure to normalize DID spec with the rest of Hed
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2211](https://github.com/hashgraph/guardian/issues/2211)
 
+### Remove requirement for hardcoded (error prone) status options
+
+The ability to define states and to link it to a type, perhaps been able to link a button or UI to a set of states. There should be warnings for modifying, a state label or title within the UI, whereby it makes it harder for an asset to be identified. In addition, the validation check should ensure that the correct states have been selected for button objects or other like-UI, to reduce the time and frustration hardcoding different states.
+
+In short, standardizing all state options for all policies -- perhaps having a new type of button that is linked to a custom state list/enum sat with drop-down links could be the way to go.
+
+The states could be anything, but the goal would be to be standardized throughout all policies:
+
+* approved
+* rejected
+* etc
+
+While this is good for the demand side of value extraction. This is highly beneficial for the creator of policies as you could select the correct value from a state-list drop down instead of having to hardcode all state options for button, selection or filters for approved or rejected states.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2791](https://github.com/hashgraph/guardian/issues/2791)
+
 ### Development of PWRM0002 Plastic Waste Recycling Methodology, v1.1
 
 Designing of the Schema and getting it approved.&#x20;
@@ -130,6 +152,12 @@ Development of the policy using Schema&#x20;
 Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2920](https://github.com/hashgraph/guardian/issues/2920)
+
+### DLT to Address Flawed Methodologies Blog
+
+Draft and published a blog post on the topic of DLT as a solution to address poor data quality and flawed emission and carbon credit methodologies.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2906](https://github.com/hashgraph/guardian/issues/2906)
 
 ### Development of AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
 
@@ -181,16 +209,9 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://githu
 
     Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
 
+
+
 ## ---- April 2024----
-
-### Full project data comparison as produced/captured by policies
-
-Introduce a comparison functionality where it'd be possible to 'diff' arbitrary sections or the entire trust-chains for different tokens, potentially issued by different policies such that the system would:
-
-* graphically display the differences where a user would then be able to 'scroll' through and review them in the UI
-* get a numerical 'similarity score' indicating how similar the two 'chains' are
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://github.com/hashgraph/guardian/issues/2704)
 
 ### Live project (data) migration across Policies, across Guardian instances
 
@@ -212,7 +233,7 @@ The migration process should be automated, and should result in the 'stopped' pr
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3176](https://github.com/hashgraph/guardian/issues/3176)
 
-## Development of Gold Standard's Methodology for Methane Emission Reduction by Adjusted Water Management Practice in Rice Cultivation
+### Development of AMS-III.AU: Methane Emission Reduction by Adjusted Water Management Practice in Rice Cultivation – v.4.0
 
 Designing of the Schema and getting it approved.&#x20;
 
@@ -221,18 +242,6 @@ Development of the policy using Schema&#x20;
 Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://github.com/hashgraph/guardian/issues/2921)
-
-### FireBlocks Integration
-
-We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
-
-### DLT to Address Flawed Methodologies Blog
-
-Draft and published a blog post on the topic of DLT as a solution to address poor data quality and flawed emission and carbon credit methodologies.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2906](https://github.com/hashgraph/guardian/issues/2906)
 
 ## ---- May 2024----
 
@@ -243,6 +252,15 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2906](https://gith
 * Extend [Block and policy discoverability/search #2281](https://github.com/hashgraph/guardian/issues/2281) for users to be able to preview the usage of the block without having to import "other SR's" policy into their Guardian instance
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://github.com/hashgraph/guardian/issues/2629)
+
+### Full project data comparison as produced/captured by policies
+
+Introduce a comparison functionality where it'd be possible to 'diff' arbitrary sections or the entire trust-chains for different tokens, potentially issued by different policies such that the system would:
+
+* graphically display the differences where a user would then be able to 'scroll' through and review them in the UI
+* get a numerical 'similarity score' indicating how similar the two 'chains' are
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://github.com/hashgraph/guardian/issues/2704)
 
 ### Revamp Guardian user/roles and permissions model
 
@@ -350,3 +368,4 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2924](https://gith
 * Identify the business requirements for the Environmental Scorecards, i.e., how they could be used by supply and demand-side actors, markets, etc.?
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1017](https://github.com/hashgraph/guardian/issues/1017)
+

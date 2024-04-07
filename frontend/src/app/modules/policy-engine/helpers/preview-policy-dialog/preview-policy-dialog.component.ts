@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
@@ -16,7 +15,6 @@ export class PreviewPolicyDialog {
     public schemas!: string;
     public tokens!: string;
     public tools!: string;
-    public toolConfigs!: { name: string, messageId: string }[];
     public policyGroups!: string;
     public newVersions: any[] = [];
     public versionOfTopicId: any;
@@ -26,8 +24,6 @@ export class PreviewPolicyDialog {
     public tool!: any;
     public xlsx!: any;
     public errors!: any;
-    public toolForm?: FormGroup;
-    public isFile?: boolean;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -66,18 +62,6 @@ export class PreviewPolicyDialog {
                     return s.name;
                 })
                 .join(', ');
-
-            this.toolConfigs = importFile.tools || [];
-            this.toolForm = new FormGroup({});
-            for (const toolConfigs of this.toolConfigs) {
-                this.toolForm.addControl(
-                    toolConfigs.messageId,
-                    new FormControl(toolConfigs.messageId, [
-                        Validators.required,
-                        Validators.pattern(/^[0-9]{10}\.[0-9]{9}$/),
-                    ])
-                );
-            }
         }
 
         if (this.config.data.module) {
@@ -86,21 +70,6 @@ export class PreviewPolicyDialog {
 
         if (this.config.data.tool) {
             this.tool = this.config.data.tool?.tool;
-            this.isFile = this.config.data.isFile;
-            this.toolConfigs = this.config.data.tool.tools || [];
-            if (this.isFile) {
-                this.toolForm = new FormGroup({});
-                for (const toolConfigs of this.toolConfigs) {
-                    this.toolForm.addControl(
-                        toolConfigs.messageId,
-                        new FormControl(toolConfigs.messageId, [
-                            Validators.required,
-                            Validators.pattern(/^[0-9]{10}\.[0-9]{9}$/),
-                        ])
-                    );
-                }
-            }
-            this.tools = this.toolConfigs.map((tool) => tool.name).join(', ');
         }
 
         if (this.config.data.xlsx) {
@@ -152,14 +121,12 @@ export class PreviewPolicyDialog {
     onImport() {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
-            tools: this.toolForm?.value,
         });
     }
 
     onNewVersionClick(messageId: string) {
         this.ref.close({
             messageId,
-            tools: this.toolForm?.value,
         });
     }
 }

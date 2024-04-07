@@ -1,19 +1,7 @@
 import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Req,
-    Response,
-    UploadedFiles,
-    UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiExtraModels,
@@ -24,15 +12,12 @@ import {
     ApiTags,
     ApiUnauthorizedResponse,
     ApiForbiddenResponse,
-    getSchemaPath,
-    ApiBody,
-    ApiConsumes
+    getSchemaPath
 } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -142,23 +127,6 @@ export class ArtifactApi {
         required: true,
         example: '000000000000000000000001'
     })
-    @ApiConsumes('multipart/form-data')
-    @ApiBody({
-        description: 'Form data with artifacts.',
-        required: true,
-        schema: {
-            type: 'array',
-            items: {
-                type: 'object',
-                properties: {
-                    'artifacts': {
-                        type: 'string',
-                        format: 'binary',
-                    }
-                }
-            }
-        }
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -181,25 +149,26 @@ export class ArtifactApi {
         }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
-    @UseInterceptors(FilesInterceptor('artifacts'))
     @HttpCode(HttpStatus.CREATED)
-    async uploadArtifacts(@Req() req, @UploadedFiles() files): Promise<any> {
+    async uploadArtifacts(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
+            const files = req.files;
             if (!files) {
                 throw new HttpException('There are no files to upload', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const owner = req.user.did;
             const parentId = req.params.parentId;
             const uploadedArtifacts = [];
+            const artifacts = Array.isArray(files.artifacts) ? files.artifacts : [files.artifacts];
             const guardian = new Guardians();
-            for (const artifact of files) {
+            for (const artifact of artifacts) {
                 if (artifact) {
                     const result = await guardian.uploadArtifact(artifact, owner, parentId);
                     uploadedArtifacts.push(result);
                 }
             }
-            return uploadedArtifacts;
+            return res.status(201).json(uploadedArtifacts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

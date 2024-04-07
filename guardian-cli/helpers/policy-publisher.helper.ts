@@ -3,20 +3,15 @@ import fs from 'fs';
 import WebSocket from 'ws';
 import Path from 'path';
 
-interface Task {
-    action: string; options?: any; resolve: Function
-}
 export class PolicyPublisher {
     private _policiesConfig: Map<string, string> = new Map();
     private _accessToken: string;
     private _refreshToken: string;
     private _pingInterval;
     private _updateTokenInterval;
-    private _tasks: Map<
-        string,
-        Task
-    > = new Map();
+    private _tasks: Map<string, { action: string; options?: any }> = new Map();
     private _ws: WebSocket;
+    private _resolver: Function;
 
     private constructor(
         private _policiesDirectory: string,
@@ -63,6 +58,7 @@ export class PolicyPublisher {
                     if (task.action === 'Publish policy') {
                         this.onPolicyPublished(taskId, result.policyId);
                     }
+                    return;
                 } else if (error) {
                     this._tasks.delete(taskId);
                     return;
@@ -122,7 +118,6 @@ export class PolicyPublisher {
             this._tasks.set(taskId, {
                 action,
                 options: task.options,
-                resolve: task.resolve,
             });
         } catch (error) {
             this._policiesConfig.delete(task.options.file);
@@ -146,14 +141,24 @@ export class PolicyPublisher {
         } catch (error) {
             console.error(error);
         } finally {
+            this._policiesConfig.delete(task.options.file);
             this._tasks.delete(publishTaskId);
-            task.resolve();
+            await this.checkFinish();
+        }
+    }
+
+    private async checkFinish() {
+        if (this._policiesConfig.size === 0) {
+            await this.finish();
         }
     }
 
     private async finish() {
         if (this._ws) {
             this._ws?.close();
+        }
+        if (this._resolver) {
+            this._resolver();
         }
         if (this._pingInterval) {
             clearInterval(this._pingInterval);
@@ -216,11 +221,17 @@ export class PolicyPublisher {
         await policyPublisher.authorize();
         await policyPublisher.parseConfigFile(configFilePath);
         await policyPublisher.start();
-        await policyPublisher.finish();
     }
 
-    private async start(): Promise<void> {
-        await this.read(this._policiesDirectory);
+    private start(): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                this._resolver = resolve;
+                await this.read(this._policiesDirectory);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     private async read(dirPath) {
@@ -239,16 +250,13 @@ export class PolicyPublisher {
                 await fs.readFileSync(dirPath)
             );
             console.log(`Import policy ${file} is started`);
-            await new Promise((resolve) =>
-                this._tasks.set(taskId, {
-                    action,
-                    options: {
-                        version,
-                        file,
-                    },
-                    resolve,
-                })
-            );
+            this._tasks.set(taskId, {
+                action,
+                options: {
+                    version,
+                    file,
+                },
+            });
         }
         if (stat.isDirectory()) {
             const dirs = fs.readdirSync(dirPath);

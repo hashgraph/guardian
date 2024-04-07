@@ -1,8 +1,8 @@
-const PORT = 4200;
+const PORT = 3000;
 
 const URL = {
     // Web
-    Root: "http://localhost:"+PORT+"",
+    Root: "http://localhost:"+PORT+"/",
 
   
     //Tabs

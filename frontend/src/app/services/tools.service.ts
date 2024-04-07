@@ -2,7 +2,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
-import { PolicyToolMetadata } from '@guardian/interfaces';
+import { ISchema } from '@guardian/interfaces';
 
 /**
  * Services for working from tools.
@@ -75,46 +75,28 @@ export class ToolsService {
         });
     }
 
-    public importByMessage(messageId: string, metadata?:  { tools: { [key: string]: string }}): Observable<any[]> {
-        return this.http.post<any[]>(`${this.url}/import/message`, { messageId, metadata });
+    public importByMessage(messageId: string): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
     }
 
-    public importByFile(file: any, metadata?: { tools: { [key: string]: string }}): Observable<any[]> {
-        const formData = new FormData();
-        formData.append('file', new Blob([file], { type: "application/octet-stream" }));
-        if (metadata) {
-            formData.append('metadata', new Blob([JSON.stringify(metadata)], {
-                type: "application/json",
-            }));
-        }
-        return this.http.post<any[]>(`${this.url}/import/file-metadata`, formData);
+    public importByFile(file: any): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/import/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
     }
 
     public pushImportByMessage(messageId: string): Observable<{ taskId: string, expectation: number }> {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message`, { messageId });
     }
 
-    public pushImportByFile(
-        file: any,
-        metadata?: PolicyToolMetadata
-    ): Observable<{ taskId: string; expectation: number }> {
-        const formData = new FormData();
-        formData.append(
-            'file',
-            new Blob([file], { type: 'application/octet-stream' })
-        );
-        if (metadata) {
-            formData.append(
-                'metadata',
-                new Blob([JSON.stringify(metadata)], {
-                    type: 'application/json',
-                })
-            );
-        }
-        return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/push/import/file-metadata`,
-            formData
-        );
+    public pushImportByFile(file: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
     }
 
     public validate(policy: any): Observable<any> {

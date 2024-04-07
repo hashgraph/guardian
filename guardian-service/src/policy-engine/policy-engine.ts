@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DataBaseHelper,
@@ -973,8 +973,7 @@ export class PolicyEngine extends NatsService {
         owner: string,
         hederaAccount: IRootConfig,
         versionOfTopicId: string,
-        notifier: INotifier,
-        metadata?: PolicyToolMetadata
+        notifier: INotifier
     ): Promise<{
         /**
          * New Policy
@@ -1024,14 +1023,7 @@ export class PolicyEngine extends NatsService {
             } as any);
         }
         notifier.completed();
-        return await PolicyImportExportHelper.importPolicy(
-            policyToImport,
-            owner,
-            versionOfTopicId,
-            notifier,
-            undefined,
-            metadata
-        );
+        return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
     }
 
     /**

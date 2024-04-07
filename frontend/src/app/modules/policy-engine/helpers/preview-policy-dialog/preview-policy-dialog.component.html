@@ -67,16 +67,6 @@
             <div class="field-name">Similar Policies</div>
             <div class="field-value">{{ similar }}</div>
         </div>
-
-        <div *ngIf="toolConfigs && toolForm" class="fields-container">
-            <div class="field-name">Tools</div>
-            <form [formGroup]="toolForm!">
-                <div class="field-input p-float-label" *ngFor="let toolConfig of toolConfigs">
-                    <input id="float-input" class="input" type="text" pInputText [formControlName]="toolConfig.messageId">
-                    <label for="float-input">{{toolConfig.name}}</label>
-                </div>
-            </form>
-        </div>
     </div>
 
     <div *ngIf="module" class="policy">
@@ -106,21 +96,6 @@
         <div class="field">
             <div class="field-name">Creator</div>
             <div [title]="tool.owner" class="field-value">{{ tool.owner }}</div>
-        </div>
-
-        <div *ngIf="!isFile" class="field">
-            <div class="field-name">Tools</div>
-            <div class="field-value">{{ tools }}</div>
-        </div>
-
-        <div *ngIf="isFile && toolConfigs && toolForm" class="fields-container">
-            <div class="field-name">Tools</div>
-            <form [formGroup]="toolForm!">
-                <div class="field-input p-float-label" *ngFor="let toolConfig of toolConfigs">
-                    <input id="float-input" class="input" type="text" pInputText [formControlName]="toolConfig.messageId">
-                    <label for="float-input">{{toolConfig.name}}</label>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -159,7 +134,7 @@
         </div>
         <div [ngSwitch]="!!(xlsx && errors?.length)">
             <p-button *ngSwitchCase="true" (click)="onImport()" label="Skip & Import"></p-button>
-            <p-button *ngSwitchCase="false" [disabled]="!toolForm?.valid" (click)="onImport()" label="Import"></p-button>
+            <p-button *ngSwitchCase="false" (click)="onImport()" label="Import"></p-button>
         </div>
     </div>
 </div>

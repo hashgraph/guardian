@@ -14,7 +14,6 @@ export enum MessageAPI {
     SET_TOKEN = 'set-token',
     SET_TOKEN_ASYNC = 'set-token-async',
     SET_ACCESS_TOKEN = 'SET_ACCESS_TOKEN',
-    UPDATE_TOKEN = 'update-token',
     UPDATE_TOKEN_ASYNC = 'update-token-async',
     DELETE_TOKEN_ASYNC = 'delete-token-async',
     IMPORT_TOKENS = 'import-tokens',

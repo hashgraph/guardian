@@ -58,17 +58,17 @@ export async function artifactAPI(): Promise<void> {
                 }
             }
 
-            const extention = getArtifactExtention(msg.artifact.originalname);
+            const extention = getArtifactExtention(msg.artifact.name);
             const type = getArtifactType(extention);
             const artifact = await DatabaseServer.saveArtifact({
-                name: msg.artifact.originalname.split('.')[0],
+                name: msg.artifact.name.split('.')[0],
                 extention,
                 type,
                 policyId: msg.parentId,
                 owner: msg.owner,
                 category
             } as any);
-            await DatabaseServer.saveArtifactFile(artifact.uuid, Buffer.from(msg.artifact.buffer));
+            await DatabaseServer.saveArtifactFile(artifact.uuid, Buffer.from(msg.artifact.data));
             return new MessageResponse(artifact);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

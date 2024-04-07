@@ -603,24 +603,6 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
         return new MessageResponse(task);
     });
 
-    ApiResponse(MessageAPI.UPDATE_TOKEN, async (msg) => {
-        try {
-        const { token } = msg;
-        if (!msg) {
-            throw new Error('Invalid Params');
-        }
-        const item = await tokenRepository.findOne({ tokenId: token.tokenId });
-        if (!item) {
-            throw new Error('Token not found');
-        }
-
-        return new MessageResponse(await updateToken(item, token, tokenRepository, emptyNotifier()));
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
     ApiResponse(MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {
         const { token, task } = msg;
         const notifier = await initNotifier(task);
