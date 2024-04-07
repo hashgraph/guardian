@@ -6,10 +6,10 @@
     "@types/mime": "3.0.4"
   },
   "dependencies": {
-    "@guardian/common": "^2.23.1",
-    "@guardian/interfaces": "^2.23.1",
     "@mikro-orm/core": "^6.1.11",
     "@mikro-orm/mongodb": "^6.1.11",
+    "@guardian/common": "^2.23.0",
+    "@guardian/interfaces": "^2.23.0",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
@@ -54,5 +54,5 @@
     "watch": "nodemon src/index.ts"
   },
   "type": "module",
-  "version": "2.23.1"
+  "version": "2.23.0"
 }

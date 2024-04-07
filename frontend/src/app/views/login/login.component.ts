@@ -14,6 +14,7 @@ import { environment } from 'src/environments/environment';
 import { takeUntil } from 'rxjs/operators';
 import { BrandingService } from '../../services/branding.service';
 import { DialogService } from 'primeng/dynamicdialog';
+import { TermsConditionsComponent } from './register-dialogs/terms-conditions-dialog/terms-conditions.component';
 import { AccountTypeSelectorDialogComponent } from './register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
 import { ForgotPasswordDialogComponent } from './forgot-password-dialog/forgot-password-dialog.component';
 import { RegisterDialogComponent } from './register-dialogs/register-dialog/register-dialog.component';
@@ -340,11 +341,19 @@ export class LoginComponent implements OnInit, OnDestroy {
             })
         }
 
-        if (this.isMgsMode) {
-            part2();
-        } else {
-            part3(UserRole.USER)
-        }
+        this.dialogService.open(TermsConditionsComponent, {
+            header: 'Terms and Conditions',
+            width: '640px',
+            modal: true,
+        }).onClose.subscribe((submit) => {
+            if (submit) {
+                if (this.isMgsMode) {
+                    part2();
+                } else {
+                    part3(UserRole.USER)
+                }
+            }
+        });
     }
 
     forgotPasswordInit() {
