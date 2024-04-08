@@ -75,6 +75,12 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 
 When you click on Save to file, Policy is exported as a .zip file.
 
+**Note:** While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
+
+To get complete information about tools, please refer to [Tools](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/readme.md) section.
+
+<figure><img src="../../../../.gitbook/assets/image (587).png" alt=""><figcaption></figcaption></figure>
+
 ### 3. Filtering Policies
 
 On the Policy page, it is now possible to filter the policies list by policy name and tags. All available tags are presented in the dropdown list, which you can create using "Create Tag" for each policy, which makes it easier using the filter.
