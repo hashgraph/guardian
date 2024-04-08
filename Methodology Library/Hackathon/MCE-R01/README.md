@@ -74,12 +74,12 @@ UNFCCC - CDM Tool 27 Investment Analysis.
 ## Important Parameters
 
 At Validation:
-- Grid Emission Factor: To be determined at validation and can also be monitored ex post.
-  
-At Monitoring Periods:
-- Quantity of Net Electricity Supplied to the Grid
-- Quantity of Biomass/Fossil Fuel Consumed
-- Net Calorific Value of Biomass
+- Net emissions from recycling
+- Net emission factors
+- Total weight of baseline chemical and/or mechanical recycled plastic in year
+- Total weight of project chemical and mechanical recycled plastic in year
+- Total weight of project plastic leakage in year
+- Circular plastic credits or net plastic recycled in year
 
 ## Demo Video
 
@@ -91,7 +91,7 @@ Coming Soon
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
+This policy is published to Hedera Testnet and can either be imported via Github (.policy file) which is attached above. 
  
 ## Available Roles
 
@@ -192,3 +192,7 @@ Circular Economy Credits (CEC), each equivalent to one tonne of CO2.
 ![image](https://github.com/hashgraph/guardian/assets/79293833/34b052be-fe7e-498c-9e93-524a24595e9c)
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/84e492eb-bebe-4ab7-bce7-190c4abc9176)
+
+All needed information about Cercarbono and Allcot's Circular Economy Material can be seen here
+
+[Voluntary Programme on Circular Economy](https://www.cercarbono.com/voluntary-programme-circular-economy/)
