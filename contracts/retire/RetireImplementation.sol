@@ -127,6 +127,8 @@ abstract contract RetireImplementation is RetireCommon {
                     usr,
                     tokens[i].serials
                 );
+            } else {
+                revert('UNSUPPORTED_TOKEN_TYPE');
             }
         }
         emit Retire(usr, tokens);
@@ -170,12 +172,17 @@ abstract contract RetireImplementation is RetireCommon {
         internal
         returns (int64)
     {
-        int64 count = 0;
         int32 tokenType = safeGetTokenType(opt.token);
+        int64 count;
         if (tokenType == 0) {
             count = opt.count;
-        } else if (tokenType == 1) {
+        } else if (tokenType == 1){
             count = int64(int256(opt.serials.length));
+            if (count > 10) {
+                revert('NFTS_LIMIT');
+            }
+        } else {
+            revert('UNSUPPORTED_TOKEN_TYPE');
         }
         return count;
     }
