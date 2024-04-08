@@ -143,8 +143,6 @@ abstract contract RetireImplementation is RetireCommon {
         require(RetireCommon(this).retireCheck(tokens), "RETIRE_CHECK");
         address[] memory tokenAddresses = new address[](tokens.length);
         for (uint256 i = 0; i < tokens.length; i++) {
-            // Validate for max int64
-            require(tokens[i].serials.length < 9223372036854775807);
             tokenAddresses[i] = tokens[i].token;
         }
         (, bool immediately) = RetireCommon(this).getPool(tokenAddresses);
@@ -178,9 +176,7 @@ abstract contract RetireImplementation is RetireCommon {
             count = opt.count;
         } else if (tokenType == 1){
             count = int64(int256(opt.serials.length));
-            if (count > 10) {
-                revert('NFTS_LIMIT');
-            }
+            require(count <= 10, 'NFTS_LIMIT');
         } else {
             revert('UNSUPPORTED_TOKEN_TYPE');
         }

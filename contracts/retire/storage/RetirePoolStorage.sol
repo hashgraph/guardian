@@ -25,9 +25,7 @@ abstract contract RetirePoolStorage is Access, SafeViewHTS {
         for(uint256 i = 0; i < tokens.length; i++) {
             int32 tokenType = safeGetTokenType(tokens[i].token);
             if (tokenType == 1) {
-                if (tokens[i].count > 10) {
-                    revert('NFTS_LIMIT');
-                }
+                require(tokens[i].count <= 10, 'NFTS_LIMIT');
             } else if (tokenType != 0){
                 revert('UNSUPPORTED_TOKEN_TYPE');
             }
