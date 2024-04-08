@@ -1,0 +1,60 @@
+* Elevator pitch
+Provide a short tagline for the project. You can change this later.
+We remotely monitor the energy consumption of installed Envirofit cookstoves, utilizing Hedera Guardian to develop IoT applications for secure, transparent , and accountable data collection.
+## Inspiration 
+Our project, Cookstove Senegal, responds to the pressing need for sustainable energy solutions in Senegal's rural communities. We are motivated by the challenge of monitoring enormous numbers of manually installed cookstoves, Cookstove Senegal seeks to leverage Hedera Guardian technology and innovative methodologies to overcome barriers and promote energy accountability.
+
+## What it does
+Cookstove Senegal pioneers remote monitoring by deploying IoT (Internet of Things) sensors on manually installed Envirofit cookstoves across Senegalese villages. The Hedera Guardian platform enables us to easily develop IoT applications to remotely monitor the installed cookstove with security and transparency. We aim to drive climate accountability and support the mission of DLT Earth by ensuring auditable, discoverable assets.  Integrated with the AMS-II.G methodology from the Gold Standard, Cookstove Senegal ensures accurate tracking of energy consumption and greenhouse gas emissions reductions. We also offer real-time insights and empower stakeholders to optimize energy usage and foster environmental sustainability.
+
+## How we built it
+Cookstove Senegal harnesses advanced technologies to overcome monitoring challenges:
+•	IoT Sensor Deployment: Strategically installed on 200,000 cookstoves to capture energy consumption data.
+•	AMS-II.G Methodology Implementation: ensures compliance with Gold Standard guidelines for robust emissions monitoring and verification.
+•	Cloud-Based Analytics Platform: Facilitates secure data transmission, storage, and real-time analysis to drive informed decision-making.
+• Hedera Guardian: enhanced Collaborative efforts with local communities and government agencies to enhance project implementation and sustainability for more accountability among stakeholders.
+• Hedera Guardian: development of the IoT applications for a secure and transparent data cllection and monitoring.
+
+### Policy Description:
+Through our project smart Cookstove Senegal, we are committed in upholding high standards of climate accountability and sustainability. during the implementation stage, the following policies were outlined with the following approach such as data collection, usage, and transparency regarding climate impact metrics.
+The different stages and policy workflow can be found below:
+	-Data Collection Protocol:
+guaranteeing a reliable and accurate data collection from the IOT sensors of our improved cookstoves installed in Senegalese villages. 
+	-Data Usage Guidelines:
+We ensure that the general data protection law policies on data privacy and security are respected. 
+We collect data for emissions monitoring, energy consumption analysis, and real-time insights delivery to stakeholders.
+	-Transparency Measures:
+Furthermore, we provide transparent access to climate impact metrics, emissions reductions, and energy optimization insights for stakeholders, promoting accountability. These datas are crucial to make decision regarding carbon pricing and crediting.
+##Workflow Description
+The smart Cookstove Senegal works with the key functionalities and methodologies:
+ IoT Sensor Deployment Process:
+First of all, we are strategically installing IoT sensors on Envirofit cookstoves across Senegalese villages to capture energy consumption data accurately. Secondly, we implementing robust procedures for data collection, storage, and analysis, ensuring data integrity, privacy, and compliance with regulatory standards in Senegal. Thirdly, we leverage Hedera Guardian for secure and transparent data handling, ensuring data consistency, auditability, and accountability throughout the project lifecycle. Along with the usage of the Gold standards AMS-II.G methodology Integration for emissions monitoring and verification, ensuring alignment with international sustainability standards. Then, real time insight are delivered to strengthen key stakeholders into energy usage patterns, emissions reductions, and sustainability metrics, enabling proactive decision-making for environmental conservation and energy optimization.
+Comparative Analysis:
+The uniqueness and value proposition of our project is that the Hedera Guardian integration ensures secure and data handling integrity, enhancing trust and reliability in climate impact contribution and measurements.  The project also facilitates data collection, monitoring and reporting compliance under article 6 of the Paris agreement while, fostering collaboration and collective action towards sustainability goals.
+
+## Challenges we ran into
+Monitoring 200,000 manually installed cookstoves posed significant logistical and technical challenges. Overcoming data transmission limitations, ensuring sensor accuracy, and addressing community engagement are key hurdles. Additionally, aligning with AMS-II.G methodology requirements required meticulous planning and execution.
+
+## Accomplishments that we're proud of
+Cookstove Senegal's successful deployment marks a milestone in promoting energy transparency and accountability in Senegal. Overcoming monitoring challenges underscores our commitment to innovation and sustainability. Cookstove Senegal's potential to drive positive impact on energy usage and environmental stewardship validates our dedication to meaningful change.
+
+## What we learned
+The Cookstove Senegal project provided outstanding insights into the complexities of monitoring large-scale cookstove installations and navigating diverse stakeholder dynamics. We learned the importance of adaptability, collaboration, and perseverance in overcoming challenges and achieving project objectives.
+
+## What's next 
+
+ Cookstove Senegal aims to expand its reach and impact by refining monitoring processes, enhancing stakeholder engagement, and exploring emerging technologies. Continued collaboration and innovation will drive Cookstove Senegal's evolution as a catalyst for sustainable energy practices in Senegal.
+
+ Built with
+What languages, frameworks, platforms, cloud services, databases, APIs, or other technologies did you use?
+•	iot
+•	azure
+•	machine-learning
+•	data-analytics
+•	web-developpment
+•	mobile-application
+•	ams-ii.G
+•	data-storage
+•	ledger
+•	Hedera's-distributed-ledger
+
