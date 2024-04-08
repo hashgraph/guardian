@@ -47,7 +47,7 @@ ACM0014 promotes the transition to low-carbon wastewater treatment technologies,
 
 ## Policy Workflow
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/workflow/ACM0014_Workflow.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/workflow/ACM0014_Workflow.png)
 
 
 ## Policy Guide
@@ -78,76 +78,76 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_1.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_1.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_2.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_2.png)
 
 2. To start using the policy you first have to change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” button.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_3.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_3.png)
 
 3. Create a new user by clicking the “Create User” button and assign their role as Project Participant.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_4.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_4.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_5.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_5.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_6.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_6.png)
 
 4. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_7.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_7.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_8.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_8.png)
 
 5. Сreate a new user again and assign their role as VVB.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_9.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_9.png)
 
 7. Log in as the SR and select the “Approve PP” or the “Approve VVB” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_10.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_10.png)
 
 8. Log in as the Project Participant and create a new project by clicking on the "New Project" button. This form is used to collect information about the project, organization, and all the data needed to run the emission reduction calculations. Once all the required fields have been filled the “Create” button will turn dark blue. By selecting the “Create” button all the data will be sent to the SR for review/approval.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_11.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_11.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_12.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_12.png)
 
 9. Log back in as the SR and after reviewing the document by selecting the “View Document” button, the SR can validate the project submitted by the Project Participant by clicking the “Validate” button. If the data does not satisfy the rules set by the SR, then the “Reject” button can be used.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_15.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_15.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_14.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_14.png)
 
 10. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_16.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_16.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_17.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_17.png)
 
 11. After creating the monitoring report, the project participant assigns the VVB to verify it by navigating to the “Monitoring Reports” tab and selecting the dropdown under “Assign”.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_18.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_18.png)
 
 12. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Participant. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_20.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_20.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_19.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_19.png)
 
 13. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”. This will also trigger the minting process. You can see the minting status under “Status” change from “Minting” to “Minted”.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_22.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_22.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_21.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_21.png)
 
 14. Once the minting process is completed, you can view the token amount by selecting the “Token History” tab.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_23.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_23.png)
 
 15. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1/47191” when the tokens are still minting like the example provided below.
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_24.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_24.png)
 
-![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/CDM/CDM%20ACM0014/assets/steps/step_25.png)
+![image](https://github.com/riush03/guardian/blob/main/Methodology%20Library/Hackathon/CDM%20ACM0014/assets/steps/step_25.png)
