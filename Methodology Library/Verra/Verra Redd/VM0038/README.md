@@ -51,9 +51,9 @@ Additionally, this policy marks a milestone as the first in the Guardian focusin
 
 ### Policy Workflow 
 
-<figure><img src="./assets/workflow-original.png" alt=""><figcaption></figcaption></figure>
+![workflow-original](https://github.com/hashgraph/guardian/assets/47194071/f4bc9902-34b3-4c8e-afcf-6a3c5832da9b)
 
-<figure><img src="./assets/workflow.png" alt=""><figcaption></figcaption></figure>
+![workflow](https://github.com/hashgraph/guardian/assets/47194071/870eaa94-cbdd-472c-b4fd-66a96baf2b9b)
 
 ### Policy Guide
 
