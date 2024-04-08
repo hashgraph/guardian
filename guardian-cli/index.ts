@@ -760,7 +760,6 @@ function main() {
         .argument('<contract-name>', 'Contract name')
         .argument('<account>', 'Hedera account id')
         .argument('<key>', 'Hedera private key')
-        .option('-o --output <path>', 'Output contract bytecode file path')
         .option('-n --network <network>', 'Network', Network.TESTNET)
         .action(async (contractPath, contractName, account, key, options) => {
             try {
@@ -778,7 +777,7 @@ function main() {
                             operatorKey: key,
                         }
                     );
-                console.log(contractFileId.toString());
+                console.log(`${contractName} file identifier - ${contractFileId}`);
             } catch (error) {
                 console.error(error);
                 process.exit(1);

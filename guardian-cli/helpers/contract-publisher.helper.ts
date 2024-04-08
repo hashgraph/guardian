@@ -23,19 +23,6 @@ export enum Network {
  */
 export class ContractPublisher {
     /**
-     * Get imports resolver
-     * @param dir Directory
-     * @returns Imports resolver
-     */
-    private static _getFileImportsResolver(dir: string) {
-        return (relativePath) => {
-            const absolutePath = path.resolve(dir, relativePath);
-            const source = fs.readFileSync(absolutePath, 'utf8');
-            return { contents: source };
-        };
-    }
-
-    /**
      * Deploy contract file
      * @param bytecode Bytecode
      * @param credentials Credentials
@@ -71,7 +58,8 @@ export class ContractPublisher {
             const fileAppendTx = new FileAppendTransaction()
                 .setFileId(bytecodeFileId)
                 .setContents(bytecode)
-                .setMaxChunks(Number.MAX_SAFE_INTEGER);
+                .setMaxChunks(Number.MAX_SAFE_INTEGER)
+                .setTransactionValidDuration(180);
             const fileAppendEx = await fileAppendTx.execute(client);
             const fileAppendTr = await fileAppendEx.getReceipt(client);
             if (fileAppendTr.status !== Status.Success) {
@@ -107,10 +95,9 @@ export class ContractPublisher {
         if (!stat.isFile()) {
             throw new Error(`${filePath} is not file`);
         }
-        const absoluteFilePath = path.resolve(filePath);
         const sources: any = {};
-        sources[absoluteFilePath] = {
-            content: await fs.readFileSync(absoluteFilePath, {
+        sources[filePath] = {
+            content: await fs.readFileSync(filePath, {
                 encoding: 'utf8',
             }),
         };
@@ -126,14 +113,14 @@ export class ContractPublisher {
             },
         };
         const compileStringResult = solc.compile(JSON.stringify(solcOptions), {
-            import: ContractPublisher._getFileImportsResolver(
-                path.dirname(absoluteFilePath)
-            ),
+            import: (relativePath) => {
+                const source = fs.readFileSync(relativePath, 'utf8');
+                return { contents: source };
+            },
         });
         const compileResult = JSON.parse(compileStringResult);
         const bytecode =
-            compileResult.contracts[absoluteFilePath][contractName].evm.bytecode
-                .object;
+            compileResult.contracts[filePath][contractName].evm.bytecode.object;
         if (output) {
             const outputAbsolutePath = path.resolve(output);
             const outputDirectory = path.dirname(outputAbsolutePath);
@@ -142,7 +129,7 @@ export class ContractPublisher {
             }
             fs.writeFileSync(outputAbsolutePath, bytecode);
         }
-        return compileResult.contracts[absoluteFilePath][contractName].evm
-            .bytecode.object;
+        return compileResult.contracts[filePath][contractName].evm.bytecode
+            .object;
     }
 }
