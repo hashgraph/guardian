@@ -30,6 +30,9 @@ Implemented effectively, this methodology holds the potential to not only mitiga
 
 It covers a range of activities, including the establishment of new recycling facilities, capacity enhancements in existing facilities, retrofitting of idle facilities, and improvements in collection or sorting capacities. By providing options for involvement from both formal and informal sectors, the framework seeks to promote transparency, compliance, and accountability in plastic recycling initiatives while contributing to the transition towards a circular economy.
 
+<img width="365" alt="Scope CE" src="https://github.com/Mcnoble1/guardian/assets/40045755/1ad7a106-4b22-4729-a78f-962b49e04e5c">
+
+
 
 ## Applicability
 
@@ -50,19 +53,23 @@ This methodology is applicable to projects meeting the following criteria:
 
 The project boundary spans from the sites where plastic waste originates to its ultimate utilization as raw material. This includes the initial generation sites, waste collection points, gathering and sorting facilities, as well as plastic waste recycling facilities. Furthermore, it extends to identifiable plants or retailers where the recycled plastic serves as feedstock for industrial processes or the manufacturing of new products.
 
+<img width="538" alt="project boundary ce" src="https://github.com/Mcnoble1/guardian/assets/40045755/8f22e73f-07bf-471e-8d23-5e36440bdf34">
+
+
 ## Baseline Scenarios
 
 For plastic recycling, the baseline scenarios correspond to the amount of plastic waste that would have been recycled in the project area.
 
 ## Tools Referenced
 
-Tool to Report Contributions of Circular Economy Initiatives to the Sustainable Development Goals
-
 PCEMs adequately implementing Cercarbono's SDGs tool shall be awarded a
-differentiation seal, shown on the retirement certificate and in EcoRegistry platform
+differentiation seal, shown on the retirement certificate and in the EcoRegistry platform
 
 Financial additionality must be demonstrated applying the most recent version of
 UNFCCC - CDM Tool 27 Investment Analysis.
+
+<img width="488" alt="additionality tree ce" src="https://github.com/Mcnoble1/guardian/assets/40045755/0b046ef1-564f-4b70-b941-471917d8dbe1">
+
 
 ## Important Parameters
 
@@ -80,7 +87,7 @@ Coming Soon
 
 ## Policy Workflow
 
-![image](https://github.com/hashgraph/guardian/assets/79293833/9f871d97-a8a2-4c6a-a204-55265f49ecf7)
+![MCE-R01 Workflow](https://github.com/Mcnoble1/guardian/assets/40045755/204906c4-7ac0-4362-a585-45feb9ff1957)
 
 ## Policy Guide
 
@@ -90,16 +97,18 @@ This policy is published to Hedera network and can either be imported via Github
 
 - PCEM Participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined in the VPCE PDD and provide evidence of the emission reductions achieved. Upon successful verification, the PCEM participant receives circular plastic credit (CPC) tokens as an incentive for their emission reductions.  
 - Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
-Cercarbono and Allcot are usinf Icontec as their VVB.
+Cercarbono and Allcot are using Icontec as their VVB.
 - Registry (EcoRegistry) - EcoRegistry serves as the registry for the VPCE under Cercarbono and Allcot. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
 ## Important Documents and Schemas
 
-Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
+Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions and quantification etc. 
 
-Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
+GHG Emissions Calculation – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
 
-Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology. 
+
+VVB Information - Schema showing all the needed information about a VVB and their accredited bodies and certifications.
 
 ## Token (Carbon Emission Reduction)
 
