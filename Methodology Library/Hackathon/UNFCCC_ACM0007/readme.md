@@ -48,7 +48,7 @@ YouTube Link: https://youtu.be/kvK95WS3tCc
 ### Step by Step Guide:
 1)	Login into the service by making an account on hedera blockchain and inviting yourself into a tenant. (requires a blockchain wallet such as MetaMask). 
 Admin Page:
-![image](https://github.com/ankurgupta007/guardian/assets/98680735/925c07e4-7aed-4cfc-b607-7fe7039944e6)
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/925c07e4-7aed-4cfc-b607-7fe7039944e6) \
 User Page:
 ![image](https://github.com/ankurgupta007/guardian/assets/98680735/d219a30a-ffa1-4dfc-9122-efc8d43d44c1)
 
