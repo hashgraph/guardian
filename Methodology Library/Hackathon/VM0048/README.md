@@ -52,10 +52,10 @@ This comprehensive workflow integrates detailed procedural steps for project sub
 [Demo Video of Guardian Policy and Schemas]()
 
 ## Policy Guide
-This policy can be imported via Github (.policy file).
+This policy can be imported via Github (.policy file) or IPFS timestamp.
 
 ### Available Roles
-- Project Proponent - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Verra’s VCS program and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Carbon Units (VCU) as an incentive for their emission reductions.
+- Project Proponent - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Verra’s VCS program and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Carbon Units (VCU) as an incentive sfor their emission reductions.
   
 - Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
     
