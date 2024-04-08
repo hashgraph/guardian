@@ -11,6 +11,8 @@ The VM0019 policy envisions a future where commercial fleets operate predominant
 - [Roles and Responsibilities](#roles-and-responsibilities)
 - [Workflow](#workflow)
 - [Getting Started](#getting-started)
+- [Demo Video](#demo-video)
+- [Resources](#resources)
 
 ## Introduction
 The VM0019 policy methodology is a pioneering initiative aimed at transitioning commercial fleets from gasoline to ethanol, leveraging renewable fuel sources to enhance environmental sustainability and energy efficiency.
@@ -43,3 +45,9 @@ Import the .policy file into your Guardian instance.
 ## Demo Video
 
 [VM0019 Methodology](https://youtu.be/-BsdC37HKPE?feature=shared)
+
+## Resources
+
+- [VM0019](https://verra.org/methodologies/vm0019-fuel-switch-from-gasoline-to-ethanol-in-flex-fuel-vehicle-fleets-v1-0/#:~:text=This%20methodology%20calculates%20the%20GHG,data%20for%20the%20commercial%20fleets.)
+- [Tool to calculate project or leakage CO2 emissions from fossil fuel combustion](https://cdm.unfccc.int/methodologies/PAmethodologies/tools/am-tool-03-v2.pdf/history_view)
+- [Combined tool to identify the baseline scenario and demonstrate additionality](https://cdm.unfccc.int/methodologies/ARmethodologies/tools/ar-am-tool-02-v1.pdf)
