@@ -1,5 +1,5 @@
 # Overview 
-The overarll aim of this policy is to furnish verifiable ESG scores for financial institutions. Through seamless integration, it unlocks boundless opportunities. These ESG scores are sourced from registrars, specifically FSIs, and subsequently authenticated by ADMIN.
+The overall aim of this policy is to furnish verifiable ESG scores for financial institutions. Through seamless integration, it unlocks boundless opportunities. These ESG scores are sourced from registrars, specifically FSIs, and subsequently authenticated by ADMIN.
 
 Once validated, these ESG scores empower governments, investors, and consumers alike with heightened confidence in their decision-making processes.
 The overall objective of this policy is to monitor Greenhouse Gas (GHG) emissions during the production life cycle stage for products within the atma.io digital product cloud. The calculation and tracking of emission data is based on the energy consumption during the production of a single item or batch of items.
