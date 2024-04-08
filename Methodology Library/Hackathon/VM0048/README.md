@@ -49,7 +49,7 @@ The introduction of VM0048 and its module for Avoiding Unplanned Deforestation (
 This comprehensive workflow integrates detailed procedural steps for project submission, validation, monitoring, verification, and the issuance of carbon credits under the VM0048 and VMD0055.
 
 ## Demo Video
-[Demo Video of Guardian Policy and Schemas]()
+[Demo Video of Guardian Policy and Schemas](https://www.youtube.com/watch?v=80XNErfW2A4)
 
 ## Policy Guide
 This policy can be imported via Github (.policy file) or IPFS timestamp.
