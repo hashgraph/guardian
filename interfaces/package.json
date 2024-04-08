@@ -33,9 +33,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
-  "version": "2.23.0",
-    "resolutions": {
-      "@types/mime": "3.0.4"
+  "version": "2.23.1",
+  "resolutions": {
+    "@types/mime": "3.0.4"
   }
 }
-
