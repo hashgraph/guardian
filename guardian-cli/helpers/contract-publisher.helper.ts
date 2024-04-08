@@ -121,15 +121,6 @@ export class ContractPublisher {
         const compileResult = JSON.parse(compileStringResult);
         const bytecode =
             compileResult.contracts[filePath][contractName].evm.bytecode.object;
-        if (output) {
-            const outputAbsolutePath = path.resolve(output);
-            const outputDirectory = path.dirname(outputAbsolutePath);
-            if (!fs.existsSync(outputDirectory)) {
-                fs.mkdirSync(outputDirectory);
-            }
-            fs.writeFileSync(outputAbsolutePath, bytecode);
-        }
-        return compileResult.contracts[filePath][contractName].evm.bytecode
-            .object;
+        return bytecode;
     }
 }
