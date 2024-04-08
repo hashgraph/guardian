@@ -21,6 +21,8 @@ In many developing countries  urban areas waste collection services are inadequa
 - Waste segregation schema.
 - Waste handling schema.
 
+[Demo Video](https://youtu.be/w1L84VGHJt8)
+
 ## Tokens:
 -  IWCSH Token:   Issued to waste collection, segregation and  handling projects that use methods that promote climate mitigation measures in their operations, such as proper waste handling methods e.t.c
 -  Waste Segregation Token: Issued to projects that demonstrate proven waste segregation in their reporting upon verification
