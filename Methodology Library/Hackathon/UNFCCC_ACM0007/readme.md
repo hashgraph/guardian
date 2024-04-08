@@ -28,6 +28,8 @@ Entities operating single cycle power plants can use ACM0007 to develop carbon o
 ## Technical Aspects of the Project (Policy Guide):
 This policy can be imported to hedera guardian via the Github file(.policy) or IPSF timestamp(1706881469.628524368). \
 **Policy Workflow**:
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/ae68213a-d1a3-4b78-848b-1b69b0e215ec)
+
 ### Token Used (Carbon Emission Reduction):
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 ### Key Documents & Schemas:
@@ -46,38 +48,54 @@ YouTube Link: https://youtu.be/kvK95WS3tCc
 ### Step by Step Guide:
 1)	Login into the service by making an account on hedera blockchain and inviting yourself into a tenant. (requires a blockchain wallet such as MetaMask). 
 Admin Page:
- 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/925c07e4-7aed-4cfc-b607-7fe7039944e6)
 User Page:
- 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/d219a30a-ffa1-4dfc-9122-efc8d43d44c1)
 
 2) Import the policy using the import function given. 
- 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/9036a304-e259-40fe-894e-87f1a31e18d8)
+
 3) You can view the policy by clicking on the policy configuration button. 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/825d721a-d3a0-4438-948c-04df6c9a5219)
  
 4) You can start working on the policy by clicking on dry run under status and then on register under instance. 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/9d6612d7-a908-4e0e-9d00-bc0152a5e0d6)
  
 5) Then we will create two users namely the project participant (Ankur here) and VVB (Validation & Verification Board) (Validator here). 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/a340c60b-1c31-4025-a360-2297d082fbe5)
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/99844ab5-1fd9-48e8-b388-8923978df749)
  
- 
-6) Then we have to have both the profiles using the Administrator panel. We can view the document of the request alongside. (We can view the document as a form..) 
+6) Then we have to have both the profiles using the Administrator panel. We can view the document of the request alongside.
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/d2b113f7-7208-4141-a30d-44c525ca2ba1)
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/5a6697aa-62f6-439f-9f6f-873564282f82) \
+(We can view the document as a form..) 
 
-8) We now head back to the Project Participant profile and create a new project. 
+7) We now head back to the Project Participant profile and create a new project. 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/897a2a39-7f37-4f65-ac21-c691ae129f26)
+
+8) We have to fill the all the data necessary according to the reports of the corporation. (For now we can use test button which inserts all the test data into all the fields). \
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/b1c8dd2e-35be-41c4-beb4-93b5affcfeaf)
  
-9) We have to fill the all the data necessary according to the reports of the corporation. (For now we can use test button which inserts all the test data into all the fields). 
+9) Now we head back to the administrator panel and look into the report by view document. We can accept or reject the report accordingly. 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/091560fb-b63f-4d39-9c07-063545d1fbeb)
  
-10) Now we head back to the administrator panel and look into the report by view document. We can accept or reject the report accordingly. 
+10) Now we head back to the project participant tab to add report to the monitoring report section. We have to review the report before sending to the monitoring report section. \
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/64e1ffc1-5244-44ac-b4bb-1bccd3f24135)
  
-11) Now we head back to the project participant tab to add report to the monitoring report section. We have to review the report before sending to the monitoring report section. 
+11) Now head to the monitoring reports section to assign the report to the required VVB (Validator in our case). 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/0b5f5cf1-354f-4814-8ab7-b4cd77daf44b)
  
-12) Now head to the monitoring reports section to assign the report to the required VVB (Validator in our case). 
+12) Now simply head to the VVB profile to validate the monitoring report after reviewing. 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/279efd02-3858-42be-86b0-0cfaa6c03577)
  
-13) Now simply head to the VVB profile to validate the monitoring report after reviewing. 
+13) The report now goes to the administrator. Head to the administrator profile and review the profile after viewing the document. You can approve or reject accordingly. If you approve the document, the minting process starts simultaneously. 
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/9ef7bf21-2cbc-48bb-8600-e7fe01a8eafe)
  
-14) The report now goes to the administrator. Head to the administrator profile and review the profile after viewing the document. You can approve or reject accordingly. If you approve the document, the minting process starts simultaneously. 
+14) You can view the minted tokens on the blockchain/DLT by going to the VPs section and clicking the view TrustChain.
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/acd6c894-8ae5-4361-9ab4-d54c593de927)
  
-15) You can view the minted tokens on the blockchain/DLT by going to the VPs section and clicking the view TrustChain. 
- 
-16) Finally the TrustChain contains all the important transaction data.
+15) Finally the TrustChain contains all the important transaction data.
+![image](https://github.com/ankurgupta007/guardian/assets/98680735/68322998-b1ef-4608-83e9-cad62a860402)
  
 ## Epilogue:
 This project and documentation made by a contestant during the DLT Climate Hackathon. Therefore contains a few bugs. A few changes can be done to improve the system: 
