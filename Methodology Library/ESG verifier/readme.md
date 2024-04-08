@@ -1,12 +1,12 @@
 # Overview 
-The overarching aim of this policy is to furnish verifiable ESG scores for financial institutions. Through seamless integration, it unlocks boundless opportunities. These ESG scores are sourced from registrars, specifically FSIs, and subsequently authenticated by ADMIN.
+The overarll aim of this policy is to furnish verifiable ESG scores for financial institutions. Through seamless integration, it unlocks boundless opportunities. These ESG scores are sourced from registrars, specifically FSIs, and subsequently authenticated by ADMIN.
 
 Once validated, these ESG scores empower governments, investors, and consumers alike with heightened confidence in their decision-making processes.
 The overall objective of this policy is to monitor Greenhouse Gas (GHG) emissions during the production life cycle stage for products within the atma.io digital product cloud. The calculation and tracking of emission data is based on the energy consumption during the production of a single item or batch of items.
 
 The calculated GHG emissions are then published to a dedicated topic for easier display outside of the policy. At the end of each month the total emissions are aggregated and a emission token is minted. 
 
-![](C:\Users\0157209\guardian-contrib\guardian\Demo Artifacts\ESG verifier\workflow.png)
+![](./workflow.png)
 
 The policy was written and tested with version 2.6.3 of Guardian.   
 
