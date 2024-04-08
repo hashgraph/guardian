@@ -2,7 +2,7 @@
 
 Solar Positive Household Methodology (SPH001) is an initiative to reduce GHG emissions by focusing on 3 factors at household level: 1. Cooking 2. Water Heating 3. Energy Generation
 
-Do you know large population in developing countries still rely on wood burning, fossil fuels like kerosene/LPG, or non-renewable biomass, including electricity generated from non-renewable sources for their most basic needs like cooking or hot water? Climate organizations like UNFCCC and green funding organizations across globe have stressed on reducing GHG emissions by introducing change at household level to achieve global goal of keeping tempraturewell below 2°C above pre-industrial levels. 
+Do you know large population in developing countries still rely on wood burning, fossil fuels like kerosene/LPG, or non-renewable biomass, including electricity generated from non-renewable sources for their most basic needs like cooking or hot water? Climate organizations like UNFCCC and green funding organizations across globe have stressed on reducing GHG emissions by introducing change at household level to achieve global goal of keeping temperature well below 2°C above pre-industrial levels. 
 
 Solar Positive Household Methodology (SPH001) is hedera/guardian based workflow that helps initiate solar positive projects, monitor progress and allocate tokens to participating projects.
 
