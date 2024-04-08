@@ -39,3 +39,7 @@ The workflow has been explained in the diagram given below
 ## Getting Started
 
 Import the .policy file into your Guardian instance.
+
+## Demo Video
+
+[VM0019 Methodology](https://youtu.be/-BsdC37HKPE?feature=shared)
