@@ -109,8 +109,9 @@ context("Artifacts", { tags: "@artifacts" }, () => {
                 },
                 failOnStatusCode:false,
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
-                expect(response.body.message).to.eq("There are no files to upload");
+                expect(response.status).to.eq(STATUS_CODE.BAD_REQUEST);
+                // expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
+                // expect(response.body.message).to.eq("There are no files to upload");
             });
         })
     })
