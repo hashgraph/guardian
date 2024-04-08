@@ -38,10 +38,10 @@ https://verra.org/methodologies/time-savings-from-improved-cookstoves-ics/
 
 ## Workflow Overview
 
-###Manual Workflow (Without Guardian)
+Manual Workflow (Without Guardian)
 ![](Manual Workflow.JPG)
 
-###Workflow Using Guardian
+Workflow Using Guardian
 ![](Guardian Workflow.JPG)
 ![](Guardian Workflow 1.JPG)
 
@@ -81,3 +81,4 @@ For the sake of this demo, our design focuses on one token - the asset as a fung
 Import the .policy file into your Guardian instance.
 Follow the setup instructions to initiate your role in the policy.
 
+Demo Video: https://youtu.be/nstGiYoHvmI?si=x4PC8BPSisMr24si
