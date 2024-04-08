@@ -120,10 +120,6 @@ All needed information about Cercarbono and Allcot's Circular Economy Material c
 
 [Voluntary Programme on Circular Economy](https://www.cercarbono.com/voluntary-programme-circular-economy/)
 
-<img width="960" alt="vvb profile" src="https://github.com/Mcnoble1/guardian/assets/40045755/3b953fb3-d5c3-4a76-a1f6-c63b37584368">
-<img width="252" alt="Screenshot 2024-03-02 142213" src="https://github.com/Mcnoble1/guardian/assets/40045755/a7b4a672-1922-487b-b3db-baac70ee70b4">
-
-
 
 https://github.com/Mcnoble1/guardian/assets/40045755/016f631f-c8d4-4519-824b-13b78d34718c
 
