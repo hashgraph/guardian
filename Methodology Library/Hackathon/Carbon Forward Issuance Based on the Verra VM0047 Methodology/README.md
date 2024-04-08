@@ -21,7 +21,7 @@ The Evercity Platform enables the issuance of Guardian-based carbon forwards for
 
 ### Policy workflow
 
-![Carbon Forward Issuance](https://github.com/hashgraph/guardian/blob/a99a85e526f85f8c6e6465b05e222ede822a6fa9/Methodology%20Library/Hackathon/Carbon%20Forward%20Issuance%20Based%20on%20the%20Verra%20VM0047%20Methodology/policy_1712582899423.policy)
+![Carbon Forward Issuance](https://evercity-carbon-public-store.s3.eu-central-1.amazonaws.com/policy_1712582899423.policy)
 
 The workflow begins with the Project Proponent creating the project on the Evercity Platform. After they create the Project Idea Note (PIN) using the Evercity PIN Builder, they proceed to identify relevant project partners using the Evercity Service Providers Listing. Together with the selected partner, they create the Project Design Document (PDD). The PDD includes project details, and ex-ante estimates of the monitoring parameters to demonstrate alignment with the VCS. Once provided the necessary information, the Guardian automatically calculates the project’s baselines, as well as project’s net GHG emissions reductions and removals. The Registry then adds the project to the pipeline on the Guardian. Next, the Project Proponent assigns the VVB that can be found on the Evercity Service Providers Listing, to validate the PDD and provide the Validation Statement on the TrustChain. Once the project has been validated by the VVB, the Project Proponent can issue the Guardian-native carbon forwards in order to raise upfront finance. 
 
