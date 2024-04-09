@@ -10,6 +10,7 @@
 - Demo Video
 - Policy Workflow
 - Policy Baseline
+- -Step by Step
 
 
 ## Introduction:
@@ -61,6 +62,20 @@ IWCSH policy  emphasizes on waste segregation, recycling, composting, and respon
 ## Policy Baseline
 
 Any waste that can be recycled, reused or composted goes along way towards reduction of landfill gasses and reduces amount of waste deposited on landfills.
+
+## Step By Step
+-  Sign Up for Tenant Admin Account on [MGS](https://guardianservice.app/)
+    
+-  
+-  Click on “Sign Up” and enter your username, email, password, and agree to the terms of use.
+-  Sign in for  admin Login and Tenant Configuration.
+   
+-  Select IPFS Storage Provider.
+-  Invite Users and Customizing Tenant Branding.
+
+-  Set Up Policy User Account
+-  Login in as user (Invited through Admin)
+-  Set Up a Standard Registry User Account
 
 ## Note
 Policy is still under development
