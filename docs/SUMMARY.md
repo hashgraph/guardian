@@ -530,6 +530,7 @@
     * [🌲 Verra Afforestation, Reforestation, and Revegetation (ARR) v0.1](guardian/demo-guide/carbon-offsets/verra-afforestation-reforestation-and-revegetation-arr-v0.1.md)
     * [🌲 Gold Standard Afforestation and Reforestation (AR) v2.0](guardian/demo-guide/carbon-offsets/gold-standard-afforestation-and-reforestation-ar-v2.0.md)
     * [🍃 Dovu Methodologies](guardian/demo-guide/carbon-offsets/dovu-methodologies.md)
+    * [🍀 Dovu MMCM](guardian/demo-guide/carbon-offsets/dovu-mmcm.md)
     * [♨️ Improved Cookstove](guardian/demo-guide/carbon-offsets/improved-cookstove.md)
     * [♨️ GoldStandard - Metered Energy Cooking](guardian/demo-guide/carbon-offsets/goldstandard-metered-energy-cooking.md)
     * [🍀 Carbon Reduction Measurement - GHG Corporate Standard Policy Guid](guardian/demo-guide/carbon-offsets/carbon-reduction-measurement-ghg-corporate-standard-policy-guide.md)
