@@ -116,6 +116,8 @@ VVB Information - Schema showing all the needed information about a VVB and thei
 Circular Plastic Credits (CPC), each equivalent to one tonne of CO2. 
 Circular Economy Credits (CEC), each equivalent to one tonne of CO2.
 
+## Methodology Source
+
 All needed information about Cercarbono and Allcot's Circular Economy Material can be seen here
 
 [Voluntary Programme on Circular Economy](https://www.cercarbono.com/voluntary-programme-circular-economy/)
