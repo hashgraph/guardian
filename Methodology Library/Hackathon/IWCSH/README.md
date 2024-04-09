@@ -15,7 +15,7 @@
 
 ## Introduction:
 In most developing countries, waste handling is a menace and most if not all ends up in a landfills, which in turn poses a greater risk to sorrounding communities and is responsible for  production of methane gas.
-With proper waste segregation and handling, lots of waste that could otherwise end up in a landfill, could be reused, recycled or composted thereby overstretching landfills in developing countries.
+With proper waste segregation and handling, lots of waste that could otherwise end up in a landfill, could be reused, recycled or composted thereby overstretching landfills in most countries.
 In many developing countries  urban areas waste collection services are inadequate or non-existent, Lack of proper infrastructure, equipment, and funding for waste collection services leads to the accumulation of waste in public spaces and illegal dumping. 
 
 [IWCSH policy ](https://github.com/kephothoX/guardian/tree/main) incentivises both formal and informal waste collectors who  play a significant role in waste collection and recycling of valuable materials from waste. 
@@ -34,6 +34,7 @@ Waste management is a challenge to many nations around the worth and its effect 
 ## Policy Description:
 IWCSH policy  emphasizes on waste segregation, recycling, composting, and responsible disposal methods, in turn significantly reducing  environmental impact  from poorly handled waste and contributing  towards mitigating climate change.
 
+Tokens can only be minted after a project and reports has been approved by external project Verifier.
 
 ## Roles:
 
@@ -65,17 +66,21 @@ Any waste that can be recycled, reused or composted goes along way towards reduc
 
 ## Step By Step
 -  Sign Up for Tenant Admin Account on [MGS](https://guardianservice.app/)
-    
--  
--  Click on “Sign Up” and enter your username, email, password, and agree to the terms of use.
--  Sign in for  admin Login and Tenant Configuration.
+    ![Admin Login](https://github.com/kephothoX/guardian/blob/main/Methodology%20Library/Hackathon/IWCSH/Managed_Guardian_Service_Admin_Login.png)
    
+-  Click on “Sign Up” and enter your username, email, password, and agree to the terms of use.
+-  Sign in for  admin Lohttps://github.com/kephothoX/guardian/blob/main/Methodology%20Library/Hackathon/IWCSH/Managed_Guardian_Service_Import_Policy.pnggin and Tenant Configuration.
+  ![Admin Tenant Configuration](https://github.com/kephothoX/guardian/blob/main/Methodology%20Library/Hackathon/IWCSH/Managed_Guardian_Service_Invite_Tenants.png)
+
 -  Select IPFS Storage Provider.
 -  Invite Users and Customizing Tenant Branding.
-
+    ![Invite users](https://github.com/kephothoX/guardian/blob/main/Methodology%20Library/Hackathon/IWCSH/Managed_Guardian_Service_Invite_Tenants.png)
+   
 -  Set Up Policy User Account
 -  Login in as user (Invited through Admin)
--  Set Up a Standard Registry User Account
+-  Set Up a Standard Registry User Account.
+-  Import IWCSH policy
+   ![Import Policy From  File](https://github.com/kephothoX/guardian/blob/main/Methodology%20Library/Hackathon/IWCSH/Managed_Guardian_Service_Import_Policy.png)
 
 ## Note
 Policy is still under development
