@@ -7,9 +7,15 @@ In many developing countries  urban areas waste collection services are inadequa
 
 [Improves waste collection, segregation and handling policy ](https://github.com/kephothoX/Improved-Waste-Collection-Segregation-and-Handling-policy/tree/main) incentivises both foemal and informal waste pickers who  play a significant role in collecting and recycling valuable materials from waste streams. 
 
+IWCSH quantifies waste interms of recycling, reusing, composting, chemical depolymerization, incineration and controlled landfills.
 
 
-## Policy Description:
+
+## Why the policy is necessary:
+Garbage is a problem in developing countries due to inefficient waste handling and management practices, many landfills are stretched beyond their capacity posing danger not only to the environmnet, but communities within.
+IWCSH approach attempts to salvage the situation by incorporating waste segregation and proper handling i.e composting, controlled incineration, chemical deppolymerization e.t.c
+
+Any waste that is either recycled, reused or composted goes along way in reducing the amount of waste that ends up on landfills which are responsible for Methane gas emmisions.
 
 ## Roles:
 
