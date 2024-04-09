@@ -74,6 +74,10 @@ Monitoring Report: Periodic monitoring report with data for monitored parameters
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
+### Demo Video
+
+![video](https://www.youtube.com/watch?v=xG3Cawe5sUI)
+
 ### Step By Step 
 
 1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
