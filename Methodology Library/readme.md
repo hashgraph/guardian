@@ -67,12 +67,23 @@ This folder contains sub folders for each Methodology and their authors (with ma
 3. GF0001
 4. Puro.Earth Biochar
 5. SaniChain
-6. VM0047 with Forward Module
-7. VMR0006
-8. VM0038 ( Electrical vehicle charging systems )
-9. AMS-III.Z - Sustainable Brick Manufacturing Methodology
+6. Verra VM0047 with Forward Module
+7. VErra VMR0006
+8. Verra VM0038 ( Electrical vehicle charging systems )
+9. CDM AMS-III.Z - Sustainable Brick Manufacturing Methodology
 10. SmartCookStove
-11. AMS-III.C
-12. AM0124 - a Large scale CDM Methodology
+11. CDM AMS-III.C
+12. CDM AM0124
 13. SDVISTa SDVM001 - Improved Cookstoves (ICS)
 14. CDM ACM0014
+15. Improved-Waste-Collection-Segregation-and-Handling (IWCSH)
+16. GreenTrace
+17. M/CE-R01 Circular Economy Methodology for Encouraging Plastic Recycling (MCER01)
+18. Solar Positive Household Methodology
+19. ZEV Ledger: Tokenization & management of ZEV credits in alignment with the "VM0038 Methodology for Electric Vehicle Charging Systems" and "Two and Three Wheeled Personal Transportation" methodologies
+20. Agrify Regenerative Methodology
+21. Sector-Specific Food Loss & Waste GHG Reduction Policy 1.0 (SSFLWGRP001)
+22. Food Loss & Waste (International) 1.0 Methodology
+23. ESG Verifier
+24. Verra VM0019 Methodology
+25. EcoRegen Alliance
