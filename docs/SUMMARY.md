@@ -563,6 +563,7 @@
       * [💻 Remote GHG Policy Demo Guide](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/remote-ghg-policy-demo-guide.md)
     * [🏢 Carbon Emissions Measurement - GHG Corporate Standard Policy Guide](guardian/demo-guide/carbon-emissions/carbon-emissions-measurement-ghg-corporate-standard-policy-guide.md)
     * [🏭 atma GHG Scope II Carbon Emission Policy](guardian/demo-guide/carbon-emissions/atma-ghg-scope-ii-carbon-emission-policy.md)
+    * [🏭 Atma Scope 3 GHG Policy](guardian/demo-guide/carbon-emissions/atma-scope-3-ghg-policy.md)
     * [🏭 GHGP Corporate Standard](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard.md)
     * [🏭 GHGP Corporate Standard V2](guardian/demo-guide/carbon-emissions/ghgp-corporate-standard-v2.md)
 * [❓ FAQs](guardian/faqs.md)
