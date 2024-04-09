@@ -766,8 +766,7 @@ function main() {
                 const contractByteCode =
                     await ContractPublisher.compileContract(
                         contractPath,
-                        contractName,
-                        options.output
+                        contractName
                     );
                 const contractFileId =
                     await ContractPublisher.deployContractFile(
@@ -775,9 +774,40 @@ function main() {
                         {
                             operatorId: account,
                             operatorKey: key,
-                        }
+                        },
+                        options.network
                     );
-                console.log(`${contractName} file identifier - ${contractFileId}`);
+                console.log(
+                    `${contractName} contract file identifier - ${contractFileId}`
+                );
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('deploy-contract')
+        .description('Deploy contract file')
+        .argument('<contract-file-id>', 'Contract file identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractFileId, account, key, options) => {
+            try {
+                const contractId = await ContractPublisher.deployContract(
+                    contractFileId,
+                    options.gas && parseInt(options.gas, 10),
+                    {
+                        operatorId: account,
+                        operatorKey: key,
+                    },
+                    options.network
+                );
+                console.log(
+                    `${contractFileId} contract identifier - ${contractId}`
+                );
             } catch (error) {
                 console.error(error);
                 process.exit(1);

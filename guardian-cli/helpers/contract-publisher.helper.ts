@@ -3,6 +3,7 @@ import fs from 'fs';
 import solc from 'solc';
 import {
     Client,
+    ContractCreateTransaction,
     FileAppendTransaction,
     FileCreateTransaction,
     PrivateKey,
@@ -22,6 +23,30 @@ export enum Network {
  * Contract publisher
  */
 export class ContractPublisher {
+    /**
+     * Chunk size
+     */
+    public static readonly CHUNK_SIZE = 20000;
+
+    /**
+     * Split contract bytecode
+     * @param bytecode Contract bytecode
+     * @returns Chunks
+     */
+    private static _splitContractBytecode(bytecode: string) {
+        const chunks = [];
+        let chuckedSize = 0;
+        while (chuckedSize < bytecode.length) {
+            const chunk = bytecode.slice(
+                chuckedSize,
+                chuckedSize + ContractPublisher.CHUNK_SIZE
+            );
+            chunks.push(chunk);
+            chuckedSize += chunk.length;
+        }
+        return chunks;
+    }
+
     /**
      * Deploy contract file
      * @param bytecode Bytecode
@@ -55,17 +80,62 @@ export class ContractPublisher {
             const fileCreateTr = await fileCreateEx.getReceipt(client);
             const bytecodeFileId = fileCreateTr.fileId;
 
-            const fileAppendTx = new FileAppendTransaction()
-                .setFileId(bytecodeFileId)
-                .setContents(bytecode)
-                .setMaxChunks(Number.MAX_SAFE_INTEGER)
-                .setTransactionValidDuration(180);
-            const fileAppendEx = await fileAppendTx.execute(client);
-            const fileAppendTr = await fileAppendEx.getReceipt(client);
-            if (fileAppendTr.status !== Status.Success) {
-                throw new Error('Error while uploading contract code');
+            const chunks = ContractPublisher._splitContractBytecode(bytecode);
+            for (const chunk of chunks) {
+                const fileAppendTx = new FileAppendTransaction()
+                    .setFileId(bytecodeFileId)
+                    .setContents(chunk)
+                    .setMaxChunks(Number.MAX_SAFE_INTEGER)
+                    .setTransactionValidDuration(180);
+                const fileAppendEx = await fileAppendTx.execute(client);
+                const fileAppendTr = await fileAppendEx.getReceipt(client);
+                if (fileAppendTr.status !== Status.Success) {
+                    throw new Error('Error while uploading contract code');
+                }
             }
             return bytecodeFileId.toString();
+        } catch (error) {
+            throw error;
+        } finally {
+            client.close();
+        }
+    }
+
+    /**
+     * Deploy contract
+     * @param contractFileId Contract file identifier
+     * @param gas Gas
+     * @param credentials Credentials
+     * @param network Network
+     * @returns Contract identifier
+     */
+    public static async deployContract(
+        contractFileId: string,
+        gas: number = 5000000,
+        credentials: { operatorId: string; operatorKey: string },
+        network?: Network
+    ) {
+        let client: Client;
+        switch (network) {
+            case Network.MAINNET:
+                client = Client.forMainnet();
+                break;
+            case Network.PREVIEWNET:
+                client = Client.forPreviewnet();
+                break;
+            default:
+                client = Client.forTestnet();
+        }
+        const operatorKey = PrivateKey.fromString(credentials.operatorKey);
+        client = client.setOperator(credentials.operatorId, operatorKey);
+        try {
+            const contractTx = await new ContractCreateTransaction()
+                .setBytecodeFileId(contractFileId)
+                .setGas(gas);
+            const contractResponse = await contractTx.execute(client);
+            const contractReceipt = await contractResponse.getReceipt(client);
+            const newContractId = contractReceipt.contractId;
+            return newContractId.toString();
         } catch (error) {
             throw error;
         } finally {
@@ -82,8 +152,7 @@ export class ContractPublisher {
      */
     public static async compileContract(
         filePath: string,
-        contractName: string,
-        output?: string
+        contractName: string
     ) {
         if (!fs.existsSync(filePath)) {
             throw new Error(`${filePath} is not exists`);
