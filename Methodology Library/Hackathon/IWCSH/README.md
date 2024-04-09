@@ -62,3 +62,6 @@ IWCSH policy  emphasizes on waste segregation, recycling, composting, and respon
 
 Any waste that can be recycled, reused or composted goes along way towards reduction of landfill gasses and reduces amount of waste deposited on landfills.
 
+## Note
+Policy is still under development
+
