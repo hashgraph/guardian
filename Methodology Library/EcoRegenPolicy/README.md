@@ -27,11 +27,13 @@ The core of our methodology focuses on the carbon absorption capabilities of alg
 
 ## Demo Video
 
-[https://youtu.be/p7ttrVuw27E](#)
+[Watch demo video](https://youtu.be/dDNxUK2bs-M?si=EBVXIEVtbyxKsICy)
 
 ## Policy Workflow
 
 Our policy workflow incorporates the entire lifecycle of carbon sequestration from algae cultivation to the final biochar production and its utilization. In addition to the standard workflow that builds on the to Verra standard [VM0044](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/Verra/Verra%20Redd/VM0044), we've introduced a critical feature: the **Damage Report System**. This system is activated if our monitoring partner platforms detect any damage to a given batch of biochar associated with an ECO token, for instance, due to fire. It allows the Project Proponent, with the assistance of the Verifier or VVB (Verification and Validation Body), to accurately identify the tokenID of the affected batch, ensuring a timely and documented response including evidence, a date and time stamp, and reporter information.
+
+To view a workflow of the Damage Report policy click [here](https://www.figma.com/file/AaGT3x86k3cZZI15dHIKRq/Damage-Report-Workflow?type=whiteboard&node-id=0%3A1&t=qoztTkgeE5xdEjqQ-1).
 
 ## Policy Guide
 
@@ -113,6 +115,8 @@ This guide outlines the steps to set up and use the Algae-based Carbon Sequestra
 
 By following these steps, you can effectively set up and use the Algae-based Carbon Sequestration Policy to manage carbon sequestration projects, mint tokens, and ensure the integrity of the process.
 
+## Getting Started
+
+To use this policy, setup a Guardian Managed Service account as an admin, and add a user-tenant, and enter the policy screen. Once there, import the .policy file using the wizard. Check the schemas section and edit and then save the damage-reports-schema file manually to ensure it is working properly. Then to run the test go to the policies page and select the dry run drop down (from draft), and hit Register. Then follow the steps above. Note that due to potential system issues the steps to view the Damage Report screens after the VVB submits a new damage report may not display correctly. This version is not for full production or commercial use and is a prototype only for illustrative purposes.
 
 For more information and updates, please visit our [https://www.ecoregen.earth/](#) or contact our support team. This methodology is part of a wider ecosystem of activity, which is still in its early stages of development. You can find out more about it and our longer term vision and roadmap at our git here [https://github.com/EcoRegen-Alliance/DLT-Climate-hackathon-entry](#).
-
