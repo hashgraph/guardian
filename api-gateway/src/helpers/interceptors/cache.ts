@@ -1,12 +1,12 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 
-import { Observable, tap } from 'rxjs';
+import { Observable, of, switchMap, tap } from 'rxjs';
 
 //services
 import { CacheService } from '../cache-service.js';
 
 //constants
-const DEFAULT_TTL = 5;
+import { CACHE, META_DATA } from '../../constants/index.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
@@ -16,19 +16,30 @@ export class CacheInterceptor implements NestInterceptor {
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest();
     const route = request.url;
-    const cacheKey = `cache:${route}`;
+    const cacheKey = `cache/${route}`;
 
-    const ttl = Reflect.getMetadata(route, context.getHandler()) ?? DEFAULT_TTL;
+    const ttl = Reflect.getMetadata(`${META_DATA.TTL}${route}`, context.getHandler()) ?? CACHE.DEFAULT_TTL;
 
-    const cachedResponse = await this.cacheService.get(cacheKey);
+    return of(null).pipe(
+      switchMap(async () => {
+        const cachedResponse = await this.cacheService.get(cacheKey);
 
-    if (cachedResponse) {
-      return JSON.parse(cachedResponse);
-    }
+        if (cachedResponse) {
+          return JSON.parse(cachedResponse);
+        }
+      }),
+      switchMap(cachedResponse => {
+        if (cachedResponse) {
+          return of(cachedResponse);
+        }
 
-    return next.handle().pipe(
-      tap(response => {
-        this.cacheService.set(cacheKey, JSON.stringify(response), ttl);
+        return next.handle().pipe(
+          tap(async response => {
+            if (response) {
+              await this.cacheService.set(cacheKey, JSON.stringify(response), ttl);
+            }
+          }),
+        );
       }),
     );
   }

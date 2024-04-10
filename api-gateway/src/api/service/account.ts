@@ -12,8 +12,10 @@ import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, Bal
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApplicationEnvironment } from '../../environment';
-import { CacheInterceptor } from '@helpers/interceptors/cache';
-import { CacheTTL } from '@helpers/decorators/cache.ttl';
+import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
+import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
+import { META_DATA } from '../../constants/index.js';
+import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
 
 /**
  * User account route
@@ -48,8 +50,8 @@ export class AccountApi {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @Get('/session')
-    @CacheTTL('/accounts/session', 10)
-    @UseInterceptors(CacheInterceptor)
+    @SetMetadata(`${META_DATA.TTL}/accounts/session`, 15)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getSession(@Headers() headers: { [key: string]: string }): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
         try {
