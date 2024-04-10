@@ -1,3 +1,4 @@
+import { TimeoutError } from '@guardian/interfaces';
 import { PrivateKey } from '@hashgraph/sdk';
 
 /**
@@ -11,7 +12,7 @@ export function timeout(timeoutValue: number, messageError?: string) {
         descriptor.value = async function () {
             const timeoutPromise = new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    reject(new Error(messageError || 'Transaction timeout exceeded'));
+                    reject(new TimeoutError(messageError || 'Transaction timeout exceeded'));
                 }, timeoutValue);
             })
             return Promise.race([oldFunc.apply(this, arguments), timeoutPromise]);

@@ -32,9 +32,11 @@ export enum WorkerTaskType {
     CUSTOM_CONTRACT_QUERY = 'custom-contract-query',
     GET_CONTRACT_INFO = 'get-contract-info',
     GET_USER_NFTS_SERIALS = 'get-user-nfts-serials',
+    GET_TOKEN_NFTS = 'get-token-nfts',
     HTTP_REQUEST = 'http-request',
     GET_TOKEN_INFO = 'get-token-info',
-    GET_CONTRACT_EVENTS = 'get-contract-events'
+    GET_CONTRACT_EVENTS = 'get-contract-events',
+    GET_TRANSACTIONS = 'get-transaction',
 }
 
 /**
@@ -104,6 +106,10 @@ export interface ITaskResult {
      * Task error
      */
     error?: any;
+    /**
+     * Is timeout error
+     */
+    isTimeoutError?: boolean;
 }
 
 /**
@@ -122,5 +128,5 @@ export interface IActiveTask {
      * Ready callback
      * @param data
      */
-    callback: (data: any, error: any) => void;
+    callback: (data: any, error: any, isTimeoutError?: boolean) => void;
 }

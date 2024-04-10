@@ -5,8 +5,7 @@ import API from "../../../support/ApiUrls";
 context('Profiles', { tags: '@profiles' },() => {
     const authorization = Cypress.env('authorization');
 
-    it('set Creds for Installer and link it to existing SR', () => {
-        //get refresh and access tokens
+    it('Set Hedera credentials for the Installer', () => {
         let username = "Installer";
         cy.request({
             method: "POST",
@@ -24,20 +23,13 @@ context('Profiles', { tags: '@profiles' },() => {
                 }
             }).then((response) => {
                 let accessToken = "Bearer " + response.body.accessToken
-                //get SR did
                 cy.request({
                     method: 'GET',
                     url: API.ApiServer + 'accounts/standard-registries/aggregated',
-                    body: {
-                        username: username,
-                        password: 'test'
-                    },
                     headers: {
                         authorization: accessToken
                     }
                 }).then((response) => {
-                    cy.log(response.body[0].did)
-                    cy.log(accessToken)
                     let SRDid = response.body[0].did
                     cy.request({
                         method: METHOD.GET,
@@ -45,9 +37,7 @@ context('Profiles', { tags: '@profiles' },() => {
                         headers: {authorization},
                     }).then((response) => {
                         let hederaAccountId = response.body.id
-                        cy.log(response)
                         let hederaAccountKey = response.body.key
-                        cy.log(response)
                         cy.request({
                             method: 'PUT',
                             url: API.ApiServer + 'profiles/' + username,

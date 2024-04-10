@@ -6,7 +6,7 @@ context("Modules", { tags: '@modules' },() => {
     const moduleName = Math.floor(Math.random() * 999) + "APIModuleForPublish";
     let moduleId;
 
-    it("create module and get id ", () => {
+    before(() => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ListOfAllModules,
@@ -27,7 +27,7 @@ context("Modules", { tags: '@modules' },() => {
         });
     });
 
-    it("publish module", () => {
+    it("Publish the module", () => {
         cy.request({
             method: METHOD.PUT,
             url: API.ApiServer + API.ListOfAllModules + moduleId + "/publish",

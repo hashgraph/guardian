@@ -1,5 +1,5 @@
 import { MikroORM, UseRequestContext, wrap } from '@mikro-orm/core';
-import { MongoDriver, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
+import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models';
 import { DataBaseNamingStrategy } from './db-naming-strategy';
 import { GridFSBucket } from 'mongodb';
@@ -309,5 +309,24 @@ export class DataBaseHelper<T extends BaseEntity> {
         return entitiesToUpdate.length === 1
             ? entitiesToUpdate[0]
             : entitiesToUpdate;
+    }
+
+    /**
+     * Create a lot of data
+     * @param data Data
+     * @param amount Amount
+     */
+    @UseRequestContext(() => DataBaseHelper.orm)
+    public async createMuchData(data: any, amount: number): Promise<void> {
+        const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
+        delete data.id;
+        delete data._id;
+        while(amount > 0) {
+            delete data.id;
+            delete data._id;
+            await this._em.persist(repository.create(data));
+            amount --;
+        }
+        await this._em.flush();
     }
 }

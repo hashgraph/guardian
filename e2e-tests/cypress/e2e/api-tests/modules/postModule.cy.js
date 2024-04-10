@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Modules", { tags: '@modules' },() => {
     const authorization = Cypress.env("authorization");
     const moduleName = Math.floor(Math.random() * 999) + "APIModule";
-    it("create module", () => {
+    it("Create a new module", () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ListOfAllModules,

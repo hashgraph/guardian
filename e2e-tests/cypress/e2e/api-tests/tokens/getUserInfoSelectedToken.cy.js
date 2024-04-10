@@ -5,7 +5,7 @@ context("Tokens", { tags: "@tokens" }, () => {
     const authorization = Cypress.env("authorization");
     const user = Cypress.env("root_user");
 
-    it("get token info", () => {
+    it("Get user information for the token", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfTokens,

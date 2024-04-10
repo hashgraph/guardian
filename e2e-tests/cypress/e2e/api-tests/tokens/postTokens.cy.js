@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Tokens",{ tags: '@tokens' }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("post for creating new token", () => {
+    it("Create a new token", () => {
         cy.request({
             method: "POST",
             url: API.ApiServer + API.ListOfTokens,

@@ -1,0 +1,2625 @@
+{
+  "id": "660753c2f06c4dd32f804c6f",
+  "uuid": "7b24a10e-7f1a-4d3a-938c-5f28c3677490",
+  "name": "UrbanO2asis FINAL",
+  "version": "",
+  "description": "",
+  "topicDescription": "",
+  "status": "DRAFT",
+  "creator": "did:hedera:testnet:2awyV3iZHCwNjruSYGaJdj7Gjfw4GUr2xrfYgcKT3Zru_0.0.3763803",
+  "owner": "did:hedera:testnet:2awyV3iZHCwNjruSYGaJdj7Gjfw4GUr2xrfYgcKT3Zru_0.0.3763803",
+  "topicId": "0.0.3836662",
+  "instanceTopicId": "0.0.1712010670155",
+  "synchronizationTopicId": null,
+  "policyTag": "Tag_1711756187393",
+  "codeVersion": "1.5.1",
+  "createDate": "2024-03-29T23:50:26.711Z",
+  "policyRoles": [
+    "Project Proponent",
+    "Verifier",
+    "Air Quality Monitor",
+    "Local Community Representative",
+    "Urban Planner"
+  ],
+  "policyNavigation": [
+    {
+      "role": "Project Proponent",
+      "steps": []
+    },
+    {
+      "role": "Verifier",
+      "steps": []
+    },
+    {
+      "role": "Air Quality Monitor",
+      "steps": []
+    },
+    {
+      "role": "Local Community Representative",
+      "steps": []
+    },
+    {
+      "role": "Urban Planner",
+      "steps": []
+    },
+    {
+      "role": "NO_ROLE",
+      "steps": []
+    },
+    {
+      "role": "OWNER",
+      "steps": []
+    }
+  ],
+  "policyTopics": [],
+  "policyTokens": [
+    {
+      "templateTokenTag": "AirQualityImprovementToken",
+      "tokenName": "Air Quality Improvement Token",
+      "tokenSymbol": "AQI",
+      "decimals": ""
+    },
+    {
+      "templateTokenTag": "UrbanGreeningToken",
+      "tokenName": "Urban Greening Token",
+      "tokenSymbol": "UG",
+      "decimals": ""
+    },
+    {
+      "templateTokenTag": "CommunityEngagementToken",
+      "tokenName": "Community Engagement Token",
+      "tokenSymbol": "CE",
+      "decimals": ""
+    }
+  ],
+  "policyGroups": [],
+  "config": {
+    "blockType": "interfaceContainerBlock",
+    "permissions": [
+      "ANY_ROLE"
+    ],
+    "id": "f5006680-ef30-4990-b34d-eaae147aa3cc",
+    "onErrorAction": "no-action",
+    "uiMetaData": {
+      "type": "blank"
+    },
+    "tag": "",
+    "children": [
+      {
+        "id": "ba89a4ec-ecf4-4f0e-a653-657d31c50528",
+        "blockType": "policyRolesBlock",
+        "defaultActive": true,
+        "permissions": [
+          "NO_ROLE"
+        ],
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+          "title": "Registration",
+          "description": "Choose a role"
+        },
+        "roles": [
+          "Project Proponent",
+          "Verifier",
+          "Air Quality Monitor",
+          "Local Community Representative",
+          "Urban Planner"
+        ],
+        "tag": "choose_role",
+        "children": [],
+        "events": [],
+        "artifacts": []
+      },
+      {
+        "id": "bd20b7d5-f22b-43a8-9e8a-afc35f4aee1d",
+        "blockType": "interfaceContainerBlock",
+        "defaultActive": true,
+        "permissions": [
+          "Project Proponent"
+        ],
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+          "type": "blank"
+        },
+        "tag": "pp_workflow",
+        "children": [
+          {
+            "id": "8a44b058-3035-4508-94c5-d77c30216490",
+            "blockType": "interfaceStepBlock",
+            "defaultActive": true,
+            "permissions": [
+              "Project Proponent"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "blank"
+            },
+            "tag": "pp_workflow_steps",
+            "children": [
+              {
+                "id": "99654981-4b26-43a8-ae0a-2f7871047268",
+                "blockType": "requestVcDocumentBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "type": "page",
+                  "title": "Registrant Application"
+                },
+                "presetFields": [],
+                "schema": "#62206f5e-15ac-4d9f-9396-e2b1891fbaf1",
+                "idType": "OWNER",
+                "tag": "create_application",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "b43301a7-d1e6-4d1c-b270-186763d49a65",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Waiting for approval"
+                  }
+                ],
+                "dataType": "vc-documents",
+                "entityType": "registrant",
+                "tag": "create_application(db)",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "bd2f13d2-b9a1-4736-80fa-815b83342ab9",
+                "blockType": "informationBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "description": "The page will refresh automatically once the application is approved.",
+                  "type": "text",
+                  "title": "Submitted for Approval"
+                },
+                "stopPropagation": true,
+                "tag": "wait_for_approve",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "c62ecba6-ce35-476e-8aa8-66ed4d023039",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Approved"
+                  }
+                ],
+                "dataType": "vc-documents",
+                "entityType": "registrant",
+                "tag": "save_application_status(appove)",
+                "children": [],
+                "events": [
+                  {
+                    "target": "registrants_grid",
+                    "source": "save_application_status(appove)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              },
+              {
+                "id": "a824e084-54aa-4da7-a36a-d80d27543196",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [],
+                "dataType": "hedera",
+                "entityType": "registrant",
+                "tag": "save_application(hedera)",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "ff05a207-ce1a-42d9-bba6-7df84dc0c697",
+                "blockType": "reassigningBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "uiMetaData": {
+                  "type": "blank"
+                },
+                "onErrorAction": "no-action",
+                "issuer": "policyOwner",
+                "actor": "owner",
+                "tag": "sign_by_issuer",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "ad478d65-ce81-44a2-a635-f5e125cc6e25",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Approved"
+                  }
+                ],
+                "dataType": "vc-documents",
+                "entityType": "registrant(Approved)",
+                "forceNew": true,
+                "tag": "save_copy_application",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "541c9e66-c0f2-46be-a49e-9f36059849d0",
+                "blockType": "interfaceContainerBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "type": "tabs"
+                },
+                "tag": "registrants_page",
+                "children": [
+                  {
+                    "id": "f82aef4f-c1e4-4df1-9cd5-c0bc7d663257",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                      "Project Proponent"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                      "type": "blank",
+                      "title": "Farm Projects"
+                    },
+                    "tag": "farmers_page",
+                    "children": [
+                      {
+                        "id": "c13afe9c-8ba0-4667-bf3e-1ddcda50f201",
+                        "blockType": "interfaceDocumentsSourceBlock",
+                        "defaultActive": true,
+                        "permissions": [
+                          "Project Proponent"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                          "fields": [
+                            {
+                              "title": "Project Name",
+                              "name": "document.credentialSubject.0.field1",
+                              "type": "text"
+                            },
+                            {
+                              "title": "Description",
+                              "name": "document.credentialSubject.0.field2",
+                              "type": "text"
+                            },
+                            {
+                              "title": "Owners",
+                              "name": "document.credentialSubject.0.field3",
+                              "type": "text"
+                            },
+                            {
+                              "title": "Issue Request",
+                              "name": "option.status",
+                              "type": "text",
+                              "bindGroup": "farms_source",
+                              "width": "150px"
+                            },
+                            {
+                              "title": "Issue Request",
+                              "name": "",
+                              "type": "block",
+                              "action": "",
+                              "url": "",
+                              "dialogContent": "",
+                              "dialogClass": "",
+                              "dialogType": "",
+                              "bindBlock": "create_issue_request_form",
+                              "width": "150px",
+                              "bindGroup": "farms_source(approved)"
+                            },
+                            {
+                              "name": "document",
+                              "title": "Document",
+                              "tooltip": "",
+                              "type": "button",
+                              "action": "dialog",
+                              "content": "View Document",
+                              "uiClass": "link",
+                              "dialogContent": "VC",
+                              "dialogClass": "",
+                              "dialogType": "json"
+                            }
+                          ]
+                        },
+                        "dependencies": [
+                          "create_farm",
+                          "create_issue_request",
+                          "save_farm_status(approved)",
+                          "save_farm_status(reject)"
+                        ],
+                        "tag": "farmers_grid",
+                        "children": [
+                          {
+                            "id": "cbacb740-9cb5-4490-b160-1aa32ead45c7",
+                            "blockType": "documentsSourceAddon",
+                            "defaultActive": false,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "filters": [
+                              {
+                                "value": "Approved",
+                                "field": "option.status",
+                                "type": "not_equal"
+                              },
+                              {
+                                "value": "farm",
+                                "field": "type",
+                                "type": "equal"
+                              }
+                            ],
+                            "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                            "dataType": "vc-documents",
+                            "onlyOwnDocuments": true,
+                            "tag": "farms_source",
+                            "children": [],
+                            "events": [],
+                            "artifacts": []
+                          },
+                          {
+                            "id": "2882ac5c-f991-414f-bc14-74d1e8ae2d36",
+                            "blockType": "documentsSourceAddon",
+                            "defaultActive": false,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "filters": [
+                              {
+                                "value": "Approved",
+                                "field": "option.status",
+                                "type": "equal"
+                              },
+                              {
+                                "value": "farm",
+                                "field": "type",
+                                "type": "equal"
+                              }
+                            ],
+                            "dataType": "vc-documents",
+                            "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                            "onlyOwnDocuments": true,
+                            "tag": "farms_source(approved)",
+                            "children": [],
+                            "events": [],
+                            "artifacts": []
+                          }
+                        ],
+                        "events": [],
+                        "artifacts": []
+                      },
+                      {
+                        "id": "73414ff1-1292-49f3-8308-726cd8a7762f",
+                        "blockType": "interfaceStepBlock",
+                        "defaultActive": true,
+                        "permissions": [
+                          "Project Proponent"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                          "type": "blank"
+                        },
+                        "cyclic": true,
+                        "tag": "new_farm",
+                        "children": [
+                          {
+                            "id": "ef7f8461-5c31-40b7-becb-5798a5acafc8",
+                            "blockType": "requestVcDocumentBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                              "type": "dialog",
+                              "content": "Create New Farm",
+                              "dialogContent": "Farm Registration"
+                            },
+                            "presetFields": [],
+                            "idType": "DID",
+                            "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                            "preset": true,
+                            "presetSchema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                            "tag": "create_farm_form",
+                            "children": [
+                              {
+                                "id": "5f1bd461-6c4f-4ab8-9f6a-c8c4a3bdff0e",
+                                "blockType": "documentsSourceAddon",
+                                "defaultActive": false,
+                                "permissions": [
+                                  "Project Proponent"
+                                ],
+                                "onErrorAction": "no-action",
+                                "filters": [
+                                  {
+                                    "value": "registrant(Approved)",
+                                    "field": "type",
+                                    "type": "equal"
+                                  }
+                                ],
+                                "onlyOwnDocuments": true,
+                                "schema": "#62206f5e-15ac-4d9f-9396-e2b1891fbaf1",
+                                "dataType": "vc-documents",
+                                "tag": "current_registrant",
+                                "children": [],
+                                "events": [],
+                                "artifacts": []
+                              },
+                              {
+                                "id": "87efc440-e549-44fb-b496-112f107d1d34",
+                                "blockType": "documentValidatorBlock",
+                                "defaultActive": false,
+                                "permissions": [
+                                  "Project Proponent"
+                                ],
+                                "onErrorAction": "no-action",
+                                "conditions": [
+                                  {
+                                    "value": "Approved",
+                                    "field": "option.status",
+                                    "type": "equal"
+                                  }
+                                ],
+                                "checkOwnerDocument": true,
+                                "documentType": "related-vc-document",
+                                "tag": "project_validation",
+                                "children": [],
+                                "events": [],
+                                "artifacts": []
+                              }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                          },
+                          {
+                            "id": "ded102dd-dc5c-4cdd-8ad2-de8fb75478c2",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                              {
+                                "name": "status",
+                                "value": "Waiting for approval"
+                              }
+                            ],
+                            "entityType": "farm",
+                            "dataType": "vc-documents",
+                            "tag": "create_farm",
+                            "children": [],
+                            "events": [
+                              {
+                                "target": "farmers_grid",
+                                "source": "create_farm",
+                                "input": "RefreshEvent",
+                                "output": "RefreshEvent",
+                                "actor": "",
+                                "disabled": false
+                              },
+                              {
+                                "target": "approve_projects_grid",
+                                "source": "create_farm",
+                                "input": "RefreshEvent",
+                                "output": "RefreshEvent",
+                                "actor": "",
+                                "disabled": false
+                              }
+                            ],
+                            "artifacts": []
+                          }
+                        ],
+                        "events": [],
+                        "artifacts": []
+                      },
+                      {
+                        "id": "8dad329a-3eb1-4b63-a208-5fb7299b399b",
+                        "blockType": "interfaceStepBlock",
+                        "defaultActive": false,
+                        "permissions": [
+                          "Project Proponent"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                          "type": "blank"
+                        },
+                        "cyclic": true,
+                        "tag": "new_issue_request",
+                        "children": [
+                          {
+                            "id": "28a06a61-ec5a-4891-806a-bc9f1685263f",
+                            "blockType": "requestVcDocumentBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                              "type": "dialog",
+                              "content": "Submit Agrecalc Document",
+                              "dialogContent": "New Agrecalc Submission",
+                              "buttonClass": "link"
+                            },
+                            "presetFields": [],
+                            "idType": "UUID",
+                            "schema": "#14360345-e888-48dd-bb9f-64013d9a58ce",
+                            "preset": true,
+                            "tag": "create_issue_request_form",
+                            "children": [
+                              {
+                                "id": "a222ff20-b171-4e54-8e0a-bc4b17cc8672",
+                                "blockType": "documentValidatorBlock",
+                                "defaultActive": false,
+                                "permissions": [
+                                  "Project Proponent"
+                                ],
+                                "onErrorAction": "no-action",
+                                "conditions": [
+                                  {
+                                    "value": "Approved",
+                                    "field": "option.status",
+                                    "type": "equal"
+                                  }
+                                ],
+                                "checkOwnerDocument": true,
+                                "documentType": "related-vc-document",
+                                "tag": "create_issue_validator",
+                                "children": [],
+                                "events": [],
+                                "artifacts": []
+                              }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                          },
+                          {
+                            "id": "1dd8a679-97a2-43bd-b294-436b63d2ae1e",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                              {
+                                "name": "status",
+                                "value": "Waiting for approval"
+                              }
+                            ],
+                            "dataType": "vc-documents",
+                            "entityType": "issue_request",
+                            "tag": "create_issue_request",
+                            "children": [],
+                            "events": [
+                              {
+                                "target": "farmers_grid",
+                                "source": "create_issue_request",
+                                "input": "RefreshEvent",
+                                "output": "RefreshEvent",
+                                "actor": "",
+                                "disabled": false
+                              },
+                              {
+                                "target": "issue_requests_grid",
+                                "source": "create_issue_request",
+                                "input": "RefreshEvent",
+                                "output": "RefreshEvent",
+                                "actor": "",
+                                "disabled": false
+                              },
+                              {
+                                "target": "issue_requests_grid(evident)",
+                                "source": "create_issue_request",
+                                "input": "RefreshEvent",
+                                "output": "RefreshEvent",
+                                "actor": "",
+                                "disabled": false
+                              }
+                            ],
+                            "artifacts": []
+                          }
+                        ],
+                        "events": [],
+                        "artifacts": []
+                      }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "848e831f-a9b5-4619-b3dc-c2aa3559c590",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                      "Project Proponent"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                      "type": "blank",
+                      "title": "Issue Requests"
+                    },
+                    "tag": "issue_requests_page",
+                    "children": [
+                      {
+                        "id": "4a282a25-39fb-4831-ba29-173cbbd5f486",
+                        "blockType": "interfaceDocumentsSourceBlock",
+                        "defaultActive": true,
+                        "permissions": [
+                          "Project Proponent"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                          "fields": [
+                            {
+                              "title": "Emissions from farming",
+                              "name": "document.credentialSubject.field5",
+                              "type": "text",
+                              "tooltip": "Total CO2e emissions from farming"
+                            },
+                            {
+                              "title": "Negative Claimable - Net emissions  ",
+                              "name": "document.credentialSubject.field10",
+                              "type": "text",
+                              "tooltip": "Net emissions from land use (inc SoilCarbon)"
+                            },
+                            {
+                              "title": "Total Farm Emissions",
+                              "name": "document.credentialSubject.0.field14",
+                              "type": "text",
+                              "tooltip": "Farm and enterprise output - KG"
+                            },
+                            {
+                              "title": "Date",
+                              "name": "document.issuanceDate",
+                              "type": "text"
+                            },
+                            {
+                              "name": "option.status",
+                              "title": "Status",
+                              "type": "text"
+                            },
+                            {
+                              "name": "document",
+                              "title": "Document",
+                              "tooltip": "",
+                              "type": "button",
+                              "action": "dialog",
+                              "content": "View Document",
+                              "uiClass": "link",
+                              "dialogContent": "VC",
+                              "dialogClass": "",
+                              "dialogType": "json"
+                            }
+                          ]
+                        },
+                        "dependencies": [
+                          "create_issue_request",
+                          "save_issue_status(minted)",
+                          "save_issue_status(minting)",
+                          "save_issue_status(reject)"
+                        ],
+                        "tag": "issue_requests_grid",
+                        "children": [
+                          {
+                            "id": "3c01f586-5b93-4288-8623-9bd7ef9c28ba",
+                            "blockType": "documentsSourceAddon",
+                            "defaultActive": false,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "filters": [
+                              {
+                                "value": "issue_request",
+                                "field": "type",
+                                "type": "equal"
+                              }
+                            ],
+                            "dataType": "vc-documents",
+                            "schema": "#14360345-e888-48dd-bb9f-64013d9a58ce",
+                            "onlyOwnDocuments": true,
+                            "tag": "issue_requests_source",
+                            "children": [
+                              {
+                                "id": "5161e974-c715-4414-a3c3-cd80610f1aa3",
+                                "blockType": "filtersAddon",
+                                "defaultActive": true,
+                                "permissions": [
+                                  "Project Proponent"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                  "options": [],
+                                  "content": "Farm"
+                                },
+                                "type": "dropdown",
+                                "field": "document.credentialSubject.0.ref",
+                                "optionName": "document.credentialSubject.0.field3.field0",
+                                "optionValue": "document.credentialSubject.0.id",
+                                "tag": "issue_by_farm",
+                                "children": [
+                                  {
+                                    "id": "1e330f19-a187-4e32-9463-d40a3b0e5f67",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                      "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                      {
+                                        "value": "Approved",
+                                        "field": "option.status",
+                                        "type": "equal"
+                                      },
+                                      {
+                                        "value": "farm",
+                                        "field": "type",
+                                        "type": "equal"
+                                      }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                                    "onlyOwnDocuments": true,
+                                    "tag": "farm_source_from_filters",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                  }
+                                ],
+                                "events": [],
+                                "artifacts": []
+                              }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                          }
+                        ],
+                        "events": [],
+                        "artifacts": []
+                      }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "8b3ce83e-e90a-43fe-bf14-90f208027e0f",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                      "Project Proponent"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                      "type": "blank",
+                      "title": "Token History"
+                    },
+                    "tag": "token_history_page",
+                    "children": [
+                      {
+                        "id": "30a2c22b-6c77-44f3-9a03-3533d3dd9b09",
+                        "blockType": "interfaceDocumentsSourceBlock",
+                        "defaultActive": true,
+                        "permissions": [
+                          "Project Proponent"
+                        ],
+                        "onErrorAction": "no-action",
+                        "uiMetaData": {
+                          "fields": [
+                            {
+                              "title": "Date",
+                              "name": "document.verifiableCredential.1.credentialSubject.0.date",
+                              "tooltip": "",
+                              "type": "text"
+                            },
+                            {
+                              "title": "Token Id",
+                              "name": "document.verifiableCredential.1.credentialSubject.0.tokenId",
+                              "tooltip": "",
+                              "type": "text"
+                            },
+                            {
+                              "title": "Serials",
+                              "name": "document.verifiableCredential.1.credentialSubject.0.serials",
+                              "tooltip": "",
+                              "type": "text"
+                            }
+                          ]
+                        },
+                        "tag": "token_history_grid",
+                        "children": [
+                          {
+                            "id": "91c07778-56d1-4edb-b629-f7561365024e",
+                            "blockType": "documentsSourceAddon",
+                            "defaultActive": false,
+                            "permissions": [
+                              "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "filters": [],
+                            "dataType": "vp-documents",
+                            "onlyOwnDocuments": false,
+                            "tag": "token_history_source",
+                            "children": [
+                              {
+                                "id": "f36fe7c5-4e23-417b-a6be-824423d0b709",
+                                "blockType": "filtersAddon",
+                                "defaultActive": true,
+                                "permissions": [
+                                  "Project Proponent"
+                                ],
+                                "onErrorAction": "no-action",
+                                "uiMetaData": {
+                                  "options": [],
+                                  "content": "Farm"
+                                },
+                                "type": "dropdown",
+                                "optionName": "document.credentialSubject.0.field3.field0",
+                                "optionValue": "document.credentialSubject.0.id",
+                                "field": "document.verifiableCredential.0.credentialSubject.0.field1",
+                                "tag": "Block_73",
+                                "children": [
+                                  {
+                                    "id": "bfb8ab64-b20b-4bb6-872f-2a3e80d81694",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                      "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                      {
+                                        "value": "Approved",
+                                        "field": "option.status",
+                                        "type": "equal"
+                                      },
+                                      {
+                                        "value": "farm",
+                                        "field": "type",
+                                        "type": "equal"
+                                      }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                                    "onlyOwnDocuments": true,
+                                    "tag": "farms_source_from_filters2",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                  }
+                                ],
+                                "events": [],
+                                "artifacts": []
+                              }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                          }
+                        ],
+                        "events": [],
+                        "artifacts": []
+                      }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                  }
+                ],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "74d69c34-d5f2-4c02-92ff-f29c17ee129a",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Rejected"
+                  }
+                ],
+                "dataType": "vc-documents",
+                "entityType": "registrant",
+                "tag": "save_application_status(reject)",
+                "children": [],
+                "events": [
+                  {
+                    "target": "registrants_grid",
+                    "source": "save_application_status(reject)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              },
+              {
+                "id": "9820dff8-d861-45e3-96c8-3c8e94c9cedf",
+                "blockType": "informationBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Project Proponent"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "title": "Rejected",
+                  "description": "Your application was rejected",
+                  "type": "text"
+                },
+                "stopPropagation": true,
+                "tag": "application_rejected",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          }
+        ],
+        "events": [],
+        "artifacts": []
+      },
+      {
+        "id": "e7808be6-dd96-40de-876e-d77e1e8928f9",
+        "blockType": "interfaceContainerBlock",
+        "defaultActive": true,
+        "permissions": [
+          "OWNER"
+        ],
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+          "type": "tabs"
+        },
+        "tag": "verifier_workflow_1",
+        "children": [
+          {
+            "id": "69e94dad-2910-4b08-839f-84c3e7b5777b",
+            "blockType": "interfaceContainerBlock",
+            "defaultActive": true,
+            "permissions": [
+              "OWNER"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "blank",
+              "title": "Applications"
+            },
+            "tag": "approve_application_page",
+            "children": [
+              {
+                "id": "a8b40398-23a1-4b5e-bd97-0101c0f880ff",
+                "blockType": "interfaceDocumentsSourceBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "fields": [
+                    {
+                      "title": "Project ID",
+                      "name": "document.credentialSubject.0.field0",
+                      "type": "text"
+                    },
+                    {
+                      "title": "Project Name",
+                      "name": "document.credentialSubject.0.field1",
+                      "type": "text"
+                    },
+                    {
+                      "title": "Operation",
+                      "name": "option.status",
+                      "type": "text",
+                      "width": "250px",
+                      "bindGroup": "registrants_source(approved)",
+                      "action": "",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": ""
+                    },
+                    {
+                      "title": "Operation",
+                      "name": "option.status",
+                      "tooltip": "",
+                      "type": "block",
+                      "action": "",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": "approve_registrant_btn",
+                      "width": "250px",
+                      "bindGroup": "registrants_source(need_approve)"
+                    },
+                    {
+                      "name": "document",
+                      "title": "Document",
+                      "tooltip": "",
+                      "type": "button",
+                      "action": "dialog",
+                      "content": "View Document",
+                      "uiClass": "link",
+                      "dialogContent": "VC",
+                      "dialogClass": "",
+                      "dialogType": "json"
+                    }
+                  ]
+                },
+                "dependencies": [
+                  "save_application_status(appove)",
+                  "save_application_status(reject)"
+                ],
+                "tag": "registrants_grid",
+                "children": [
+                  {
+                    "id": "81314f12-e2b8-49e8-b272-aefc4e0e4ce4",
+                    "blockType": "documentsSourceAddon",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "Waiting for approval",
+                        "field": "option.status",
+                        "type": "equal"
+                      },
+                      {
+                        "value": "registrant",
+                        "field": "type",
+                        "type": "equal"
+                      }
+                    ],
+                    "dataType": "vc-documents",
+                    "schema": "#62206f5e-15ac-4d9f-9396-e2b1891fbaf1",
+                    "tag": "registrants_source(need_approve)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "34d14d08-176f-429a-8aa1-7196086fea1d",
+                    "blockType": "documentsSourceAddon",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "Waiting for approval",
+                        "field": "option.status",
+                        "type": "not_equal"
+                      },
+                      {
+                        "value": "registrant",
+                        "field": "type",
+                        "type": "equal"
+                      }
+                    ],
+                    "dataType": "vc-documents",
+                    "schema": "#62206f5e-15ac-4d9f-9396-e2b1891fbaf1",
+                    "tag": "registrants_source(approved)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  }
+                ],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "6263b0ef-b49e-4bfa-8566-6fa7528598aa",
+                "blockType": "buttonBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "buttons": [
+                    {
+                      "tag": "Option_0",
+                      "name": "Approve",
+                      "type": "selector",
+                      "filters": [],
+                      "field": "option.status",
+                      "value": "Approved",
+                      "uiClass": "btn-approve"
+                    },
+                    {
+                      "tag": "Option_1",
+                      "name": "Reject",
+                      "type": "selector",
+                      "filters": [],
+                      "field": "option.status",
+                      "value": "Rejected",
+                      "uiClass": "btn-reject"
+                    }
+                  ]
+                },
+                "type": "selector",
+                "field": "option.status",
+                "tag": "approve_registrant_btn",
+                "children": [],
+                "events": [
+                  {
+                    "target": "save_application_status(appove)",
+                    "source": "approve_registrant_btn",
+                    "input": "RunEvent",
+                    "output": "Option_0",
+                    "actor": "owner",
+                    "disabled": false
+                  },
+                  {
+                    "target": "save_application_status(reject)",
+                    "source": "approve_registrant_btn",
+                    "input": "RunEvent",
+                    "output": "Option_1",
+                    "actor": "owner",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "04d91b1c-b69e-4a28-a18e-1c60077bf004",
+            "blockType": "interfaceContainerBlock",
+            "defaultActive": true,
+            "permissions": [
+              "OWNER"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "blank",
+              "title": "Urban Greening Projects"
+            },
+            "tag": "approve_projects_page",
+            "children": [
+              {
+                "id": "76affde5-4a9e-416c-9116-3137a27ca276",
+                "blockType": "interfaceDocumentsSourceBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "fields": [
+                    {
+                      "title": "Project Name",
+                      "name": "document.credentialSubject.0.field1",
+                      "type": "text"
+                    },
+                    {
+                      "title": "Description",
+                      "name": "document.credentialSubject.0.field2",
+                      "type": "text"
+                    },
+                    {
+                      "title": "Owners",
+                      "name": "document.credentialSubject.0.field3",
+                      "type": "text"
+                    },
+                    {
+                      "name": "option.status",
+                      "title": "Operation",
+                      "type": "text",
+                      "width": "250px",
+                      "bindGroup": "approve_farms_source(approved)",
+                      "action": "",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": ""
+                    },
+                    {
+                      "title": "Operation",
+                      "name": "option.status",
+                      "tooltip": "",
+                      "type": "block",
+                      "action": "",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": "approve_farm_button",
+                      "width": "250px",
+                      "bindGroup": "approve_farms_source(need_approve)"
+                    },
+                    {
+                      "name": "document",
+                      "title": "Document",
+                      "tooltip": "",
+                      "type": "button",
+                      "action": "dialog",
+                      "content": "View Document",
+                      "uiClass": "link",
+                      "dialogContent": "VC",
+                      "dialogClass": "",
+                      "dialogType": "json",
+                      "bindGroup": "approve_farm_button"
+                    }
+                  ]
+                },
+                "dependencies": [
+                  "create_farm",
+                  "save_farm_status(approved)",
+                  "save_farm_status(reject)"
+                ],
+                "tag": "approve_projects_grid",
+                "children": [
+                  {
+                    "id": "6ec98f1b-57fd-4b0a-b802-cd268bbbcca6",
+                    "blockType": "documentsSourceAddon",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "Waiting for approval",
+                        "field": "option.status",
+                        "type": "equal"
+                      },
+                      {
+                        "value": "farm",
+                        "field": "type",
+                        "type": "equal"
+                      }
+                    ],
+                    "dataType": "vc-documents",
+                    "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                    "tag": "approve_farms_source(need_approve)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "91fe34c0-0379-4dac-9fa1-ab54c6fcc7cf",
+                    "blockType": "documentsSourceAddon",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "Waiting for approval",
+                        "field": "option.status",
+                        "type": "not_equal"
+                      },
+                      {
+                        "value": "farm",
+                        "field": "type",
+                        "type": "equal"
+                      }
+                    ],
+                    "dataType": "vc-documents",
+                    "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                    "tag": "approve_farms_source(approved)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  }
+                ],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "7e6bc3ec-e8a6-4038-9d52-7543fde76e29",
+                "blockType": "buttonBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "buttons": [
+                    {
+                      "tag": "Option_0",
+                      "name": "Approve",
+                      "type": "selector",
+                      "filters": [],
+                      "field": "option.status",
+                      "value": "Approved",
+                      "uiClass": "btn-approve"
+                    },
+                    {
+                      "tag": "Option_1",
+                      "name": "Reject",
+                      "type": "selector",
+                      "filters": [],
+                      "field": "option.status",
+                      "value": "Rejected",
+                      "uiClass": "btn-reject"
+                    }
+                  ]
+                },
+                "type": "selector",
+                "field": "option.status",
+                "tag": "approve_farm_button",
+                "children": [],
+                "events": [
+                  {
+                    "target": "save_projects_status(approved)",
+                    "source": "approve_farm_button",
+                    "input": "RunEvent",
+                    "output": "Option_0",
+                    "actor": "owner",
+                    "disabled": false
+                  },
+                  {
+                    "target": "save_projects_status(reject)",
+                    "source": "approve_farm_button",
+                    "input": "RunEvent",
+                    "output": "Option_1",
+                    "actor": "owner",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              },
+              {
+                "id": "12bbc84b-e8ad-4952-927f-f5c19c476d6e",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Approved"
+                  }
+                ],
+                "stopPropagation": false,
+                "dataType": "vc-documents",
+                "entityType": "farm",
+                "tag": "save_projects_status(approved)",
+                "children": [],
+                "events": [
+                  {
+                    "target": "farmers_grid",
+                    "source": "save_projects_status(approved)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  },
+                  {
+                    "target": "approve_projects_grid",
+                    "source": "save_projects_status(approved)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              },
+              {
+                "id": "4f4caf70-70d6-4877-859f-8a234b5840ab",
+                "blockType": "reassigningBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "OWNER"
+                ],
+                "uiMetaData": {
+                  "type": "blank"
+                },
+                "onErrorAction": "no-action",
+                "issuer": "policyOwner",
+                "actor": "owner",
+                "tag": "sign_projects_by_issuer",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "067acd1b-5c00-40e7-9b7b-ff04c4a25de8",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Approved"
+                  }
+                ],
+                "entityType": "farm(Approved)",
+                "dataType": "vc-documents",
+                "stopPropagation": true,
+                "forceNew": true,
+                "tag": "save_copy_projects",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "c6e3b9d2-d847-4b16-9f5c-cb56b2c59fe2",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Rejected"
+                  }
+                ],
+                "stopPropagation": true,
+                "dataType": "vc-documents",
+                "entityType": "farm",
+                "tag": "save_projects_status(reject)",
+                "children": [],
+                "events": [
+                  {
+                    "target": "farmers_grid",
+                    "source": "save_projects_status(reject)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  },
+                  {
+                    "target": "approve_projects_grid",
+                    "source": "save_projects_status(reject)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "dbbe36d0-95fa-49c3-84e1-13a3a62e7bfc",
+            "blockType": "interfaceContainerBlock",
+            "defaultActive": true,
+            "permissions": [
+              "OWNER"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "blank",
+              "title": "TrustChain"
+            },
+            "tag": "trust_chain",
+            "children": [
+              {
+                "id": "6066e3e0-c1b7-4ca1-ace6-368ff6410a92",
+                "blockType": "reportBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "tag": "trustChainBlock",
+                "children": [
+                  {
+                    "id": "629577d4-2a8b-44ac-b86d-1f9ee5b65731",
+                    "blockType": "reportItemBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "type": "equal",
+                        "typeValue": "variable",
+                        "field": "document.id",
+                        "value": "actionId"
+                      }
+                    ],
+                    "variables": [],
+                    "visible": true,
+                    "iconType": "COMMON",
+                    "title": "Carbon Offset Token",
+                    "description": "Token[s] minted.",
+                    "tag": "MintTokenItem",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "59174e69-ea46-4cd9-9328-89220b0a67de",
+                    "blockType": "reportItemBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "typeValue": "value",
+                        "field": "type",
+                        "type": "equal",
+                        "value": "issue_request(Approved)"
+                      },
+                      {
+                        "type": "equal",
+                        "typeValue": "variable",
+                        "field": "document.id",
+                        "value": "documentId"
+                      }
+                    ],
+                    "variables": [
+                      {
+                        "value": "document.credentialSubject.0.id",
+                        "name": "issueId"
+                      },
+                      {
+                        "name": "farmId",
+                        "value": "document.credentialSubject.0.ref"
+                      }
+                    ],
+                    "visible": true,
+                    "iconType": "COMMON",
+                    "title": "Agrecalc MRV Submission Review",
+                    "description": "Agrecalc Submission processed.",
+                    "tag": "issue_report(approved)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "9dd79ad7-e65e-4996-bb1b-986660465edf",
+                    "blockType": "reportItemBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "typeValue": "value",
+                        "field": "type",
+                        "type": "equal",
+                        "value": "issue_request"
+                      },
+                      {
+                        "type": "equal",
+                        "typeValue": "variable",
+                        "field": "document.credentialSubject.0.id",
+                        "value": "issueId"
+                      }
+                    ],
+                    "variables": [],
+                    "visible": true,
+                    "iconType": "COMMON",
+                    "description": "Registrant submitted Agrecalc Documentation to Issuer.",
+                    "title": "Agrecalc Documentation Request",
+                    "tag": "issue_report(submit)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "d7ad0dd3-6997-4e89-8500-59018fbcecd8",
+                    "blockType": "reportItemBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "typeValue": "value",
+                        "type": "equal",
+                        "field": "type",
+                        "value": "farm(Approved)"
+                      },
+                      {
+                        "field": "document.credentialSubject.0.id",
+                        "value": "farmId",
+                        "type": "equal",
+                        "typeValue": "variable"
+                      }
+                    ],
+                    "variables": [
+                      {
+                        "name": "registrantId",
+                        "value": "document.credentialSubject.0.ref"
+                      }
+                    ],
+                    "visible": true,
+                    "iconType": "COMMON",
+                    "description": "Ecological Project registration request processed.",
+                    "title": "Ecological Project Review",
+                    "tag": "devace_report(approved)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "8933a70a-e15e-4d12-b3a2-704dffbd4513",
+                    "blockType": "reportItemBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "farm",
+                        "field": "type",
+                        "type": "equal",
+                        "typeValue": "value"
+                      },
+                      {
+                        "field": "document.credentialSubject.0.id",
+                        "value": "farmId",
+                        "type": "equal",
+                        "typeValue": "variable"
+                      }
+                    ],
+                    "variables": [],
+                    "visible": true,
+                    "iconType": "COMMON",
+                    "title": "Ecological Project Registration",
+                    "description": "Ecological Project registration request submitted to Issuer.",
+                    "tag": "devace_report(submit)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "e049eaef-7e3c-4916-926b-bc44160e6a17",
+                    "blockType": "reportItemBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "type": "equal",
+                        "typeValue": "value",
+                        "field": "type",
+                        "value": "registrant(Approved)"
+                      },
+                      {
+                        "field": "document.credentialSubject.0.id",
+                        "value": "registrantId",
+                        "type": "equal",
+                        "typeValue": "variable"
+                      }
+                    ],
+                    "variables": [],
+                    "visible": true,
+                    "iconType": "COMMON",
+                    "description": "DOVU project initial application processed.",
+                    "title": "Initial Application Review",
+                    "tag": "registrant_report(approved)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "d91f4907-e0b0-45ad-a783-c95e2e8c7586",
+                    "blockType": "reportItemBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "registrant",
+                        "field": "type",
+                        "type": "equal",
+                        "typeValue": "value"
+                      },
+                      {
+                        "field": "document.credentialSubject.0.id",
+                        "value": "registrantId",
+                        "type": "equal",
+                        "typeValue": "variable"
+                      }
+                    ],
+                    "variables": [],
+                    "visible": true,
+                    "iconType": "COMMON",
+                    "description": "Application submitted to Issuer.",
+                    "title": "DOVU Project Initial Application",
+                    "tag": "registrant_report(submit)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  }
+                ],
+                "events": [],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "6007aed9-0faa-43cf-9471-60f037caa3b6",
+            "blockType": "interfaceContainerBlock",
+            "defaultActive": true,
+            "permissions": [
+              "OWNER"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "blank",
+              "title": "Token History"
+            },
+            "tag": "VP",
+            "children": [
+              {
+                "id": "57444899-662b-4563-bd1c-ebb8f978f86b",
+                "blockType": "interfaceDocumentsSourceBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "OWNER"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "fields": [
+                    {
+                      "title": "HASH",
+                      "name": "hash",
+                      "tooltip": "",
+                      "type": "text"
+                    },
+                    {
+                      "title": "Date",
+                      "name": "document.verifiableCredential.1.credentialSubject.0.date",
+                      "tooltip": "",
+                      "type": "text"
+                    },
+                    {
+                      "title": "Token Id",
+                      "name": "document.verifiableCredential.1.credentialSubject.0.tokenId",
+                      "tooltip": "",
+                      "type": "text"
+                    },
+                    {
+                      "title": "Serials",
+                      "name": "document.verifiableCredential.1.credentialSubject.0.serials",
+                      "tooltip": "",
+                      "type": "text"
+                    },
+                    {
+                      "title": "TrustChain",
+                      "name": "hash",
+                      "tooltip": "",
+                      "type": "button",
+                      "action": "link",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": "trustChainBlock",
+                      "content": "View TrustChain",
+                      "width": "150px"
+                    }
+                  ]
+                },
+                "tag": "vp_grid",
+                "children": [
+                  {
+                    "id": "b300ef85-43a6-42c1-a2d7-4a146603e8b1",
+                    "blockType": "documentsSourceAddon",
+                    "defaultActive": false,
+                    "permissions": [
+                      "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [],
+                    "dataType": "vp-documents",
+                    "tag": "vp_source",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  }
+                ],
+                "events": [],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          }
+        ],
+        "events": [],
+        "artifacts": []
+      },
+      {
+        "id": "66675d0d-71b5-4852-b78f-661361d269a1",
+        "blockType": "interfaceContainerBlock",
+        "defaultActive": true,
+        "permissions": [
+          "Verifier"
+        ],
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+          "type": "tabs"
+        },
+        "tag": "verifier_workflow_2",
+        "children": [
+          {
+            "id": "bece1b8d-7fb6-46dc-9642-44acb5bcb8b5",
+            "blockType": "interfaceContainerBlock",
+            "defaultActive": true,
+            "permissions": [
+              "Verifier"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "blank",
+              "title": "Issue Requests"
+            },
+            "tag": "approve_issue_requests_page",
+            "children": [
+              {
+                "id": "77c63e2f-948b-41db-9561-06ffb2825db6",
+                "blockType": "interfaceDocumentsSourceBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Verifier"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "fields": [
+                    {
+                      "title": "Emissions from farming",
+                      "name": "document.credentialSubject.0.field5",
+                      "type": "text",
+                      "tooltip": "Total CO2e emissions from farming"
+                    },
+                    {
+                      "title": "Negative Claimable - Net emissions  ",
+                      "name": "document.credentialSubject.0.field10",
+                      "type": "text",
+                      "action": "",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": "",
+                      "tooltip": "Net emissions from land use (inc SoilCarbon)"
+                    },
+                    {
+                      "title": "Emissions per Ha",
+                      "name": "document.credentialSubject.0.field13",
+                      "type": "text",
+                      "tooltip": "Emissions per hectare (inc. Soil Carbon)"
+                    },
+                    {
+                      "title": "Total Farm Emissions",
+                      "name": "document.credentialSubject.0.field14",
+                      "type": "text",
+                      "tooltip": "Farm and enterprise output - KG"
+                    },
+                    {
+                      "title": "Date",
+                      "name": "document.issuanceDate",
+                      "type": "text"
+                    },
+                    {
+                      "name": "option.status",
+                      "title": "Operation",
+                      "type": "text",
+                      "width": "250px",
+                      "bindGroup": "issue_requests_source(approved)",
+                      "action": "",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": ""
+                    },
+                    {
+                      "title": "Operation",
+                      "name": "option.status",
+                      "tooltip": "",
+                      "type": "block",
+                      "action": "",
+                      "url": "",
+                      "dialogContent": "",
+                      "dialogClass": "",
+                      "dialogType": "",
+                      "bindBlock": "approve_issue_requests_btn",
+                      "width": "250px",
+                      "bindGroup": "issue_requests_source(need_approve)"
+                    },
+                    {
+                      "name": "document",
+                      "title": "Document",
+                      "tooltip": "",
+                      "type": "button",
+                      "action": "dialog",
+                      "content": "View Document",
+                      "uiClass": "link",
+                      "dialogContent": "VC",
+                      "dialogClass": "",
+                      "dialogType": "json"
+                    }
+                  ]
+                },
+                "dependencies": [
+                  "create_issue_request",
+                  "save_issue_status(minted)",
+                  "save_issue_status(minting)",
+                  "save_issue_status(reject)"
+                ],
+                "tag": "issue_requests_grid(evident)",
+                "children": [
+                  {
+                    "id": "dfd5b068-3855-4092-a219-656e148e95b5",
+                    "blockType": "documentsSourceAddon",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "Waiting for approval",
+                        "field": "option.status",
+                        "type": "equal"
+                      },
+                      {
+                        "value": "issue_request",
+                        "field": "type",
+                        "type": "equal"
+                      }
+                    ],
+                    "dataType": "vc-documents",
+                    "schema": "#14360345-e888-48dd-bb9f-64013d9a58ce",
+                    "tag": "issue_requests_source(need_approve)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "bb6353ee-9bc0-43dd-a2b0-0989db1f3c3a",
+                    "blockType": "documentsSourceAddon",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "filters": [
+                      {
+                        "value": "Waiting for approval",
+                        "field": "option.status",
+                        "type": "not_equal"
+                      },
+                      {
+                        "value": "issue_request",
+                        "field": "type",
+                        "type": "equal"
+                      }
+                    ],
+                    "dataType": "vc-documents",
+                    "schema": "#14360345-e888-48dd-bb9f-64013d9a58ce",
+                    "tag": "issue_requests_source(approved)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  }
+                ],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "821a1f9a-0a90-4ada-be64-d06b29243e3a",
+                "blockType": "buttonBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Verifier"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "buttons": [
+                    {
+                      "tag": "Option_0",
+                      "name": "Approve",
+                      "type": "selector",
+                      "filters": [],
+                      "field": "option.status",
+                      "value": "Approved",
+                      "uiClass": "btn-approve"
+                    },
+                    {
+                      "tag": "Option_1",
+                      "name": "Reject",
+                      "type": "selector",
+                      "filters": [],
+                      "field": "option.status",
+                      "value": "Rejected",
+                      "uiClass": "btn-reject"
+                    }
+                  ],
+                  "type": "blank"
+                },
+                "type": "selector",
+                "field": "option.status",
+                "tag": "approve_issue_requests_btn",
+                "children": [],
+                "events": [
+                  {
+                    "target": "farm_approved_validation",
+                    "source": "approve_issue_requests_btn",
+                    "input": "RunEvent",
+                    "output": "Option_0",
+                    "actor": "",
+                    "disabled": false
+                  },
+                  {
+                    "target": "save_issue_status(reject)",
+                    "source": "approve_issue_requests_btn",
+                    "input": "RunEvent",
+                    "output": "Option_1",
+                    "actor": "",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              },
+              {
+                "id": "a89112a5-6265-40df-9cc6-11993c72ecc3",
+                "blockType": "interfaceContainerBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Verifier"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "type": "blank"
+                },
+                "tag": "mint_token_folder",
+                "children": [
+                  {
+                    "id": "dcc012f1-ba11-4f26-a6ba-13115ad9f817",
+                    "blockType": "documentValidatorBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "conditions": [
+                      {
+                        "value": "Approved",
+                        "field": "option.status",
+                        "type": "equal"
+                      }
+                    ],
+                    "documentType": "related-vc-document",
+                    "schema": "#3f9cfcd6-1aaf-4cdb-9be1-fca269d07c89",
+                    "checkOwnerDocument": false,
+                    "tag": "farm_approved_validation",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "7208f3c5-f691-4ce0-b50b-d9828691b467",
+                    "blockType": "sendToGuardianBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {},
+                    "options": [
+                      {
+                        "name": "status",
+                        "value": "Approved"
+                      }
+                    ],
+                    "entityType": "issue_request",
+                    "dataType": "vc-documents",
+                    "tag": "save_issue_status(approved)",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "7bb5311f-dfa0-4da5-ac74-1ff49a0f3f43",
+                    "blockType": "reassigningBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {},
+                    "issuer": "",
+                    "actor": "",
+                    "tag": "sign_issue_by_isuer",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "b4ade6d0-e446-46b8-b27c-426f36d8f40c",
+                    "blockType": "sendToGuardianBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {},
+                    "options": [
+                      {
+                        "name": "status",
+                        "value": "Minting"
+                      }
+                    ],
+                    "entityType": "issue_request(Approved)",
+                    "dataType": "vc-documents",
+                    "forceNew": true,
+                    "tag": "save_copy_issue",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "946e0bc1-05c9-400f-8c05-9644e8eab288",
+                    "blockType": "mintDocumentBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {},
+                    "tokenId": "a66d3602-e55a-4739-a905-c59eda2d67f8",
+                    "rule": "field3 / 1000",
+                    "accountType": "default",
+                    "tag": "mint_token",
+                    "children": [],
+                    "events": [],
+                    "artifacts": []
+                  },
+                  {
+                    "id": "bb9515c6-920a-488e-a555-014b8baac6e4",
+                    "blockType": "sendToGuardianBlock",
+                    "defaultActive": false,
+                    "permissions": [
+                      "Verifier"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {},
+                    "options": [
+                      {
+                        "name": "status",
+                        "value": "Minted"
+                      }
+                    ],
+                    "entityType": "issue_request(Approved)",
+                    "dataType": "vc-documents",
+                    "tag": "save_issue_status(minted)",
+                    "children": [],
+                    "events": [
+                      {
+                        "target": "issue_requests_grid",
+                        "source": "save_issue_status(minted)",
+                        "input": "RefreshEvent",
+                        "output": "RefreshEvent",
+                        "actor": "",
+                        "disabled": false
+                      },
+                      {
+                        "target": "issue_requests_grid(evident)",
+                        "source": "save_issue_status(minted)",
+                        "input": "RefreshEvent",
+                        "output": "RefreshEvent",
+                        "actor": "",
+                        "disabled": false
+                      }
+                    ],
+                    "artifacts": []
+                  }
+                ],
+                "events": [],
+                "artifacts": []
+              },
+              {
+                "id": "aa812bd9-d768-46ea-a2d2-9369c9b2211f",
+                "blockType": "sendToGuardianBlock",
+                "defaultActive": false,
+                "permissions": [
+                  "Verifier"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {},
+                "options": [
+                  {
+                    "name": "status",
+                    "value": "Rejected"
+                  }
+                ],
+                "entityType": "issue_request",
+                "dataType": "vc-documents",
+                "stopPropagation": true,
+                "tag": "save_issue_status(reject)",
+                "children": [],
+                "events": [
+                  {
+                    "target": "issue_requests_grid",
+                    "source": "save_issue_status(reject)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  },
+                  {
+                    "target": "issue_requests_grid(evident)",
+                    "source": "save_issue_status(reject)",
+                    "input": "RefreshEvent",
+                    "output": "RefreshEvent",
+                    "actor": "",
+                    "disabled": false
+                  }
+                ],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          }
+        ],
+        "events": [],
+        "artifacts": []
+      },
+      {
+        "id": "dc52fc44-582d-4c8d-9a2f-27bb019bc806",
+        "blockType": "interfaceContainerBlock",
+        "defaultActive": true,
+        "permissions": [
+          "Air Quality Monitor"
+        ],
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+          "type": "blank",
+          "title": "Air Quality Monitor"
+        },
+        "tag": "air_quality_monitor_workflow",
+        "children": [
+          {
+            "id": "6ab9b13c-d838-4b16-8d25-52b61299fc49",
+            "blockType": "requestVcDocumentBlock",
+            "defaultActive": true,
+            "permissions": [
+              "Air Quality Monitor"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "page"
+            },
+            "presetFields": [],
+            "schema": "#1955da1b-7055-49cc-9d67-81d5b01d4bfe",
+            "tag": "aqm-request",
+            "children": [],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "e3b97801-d37d-4f9e-af82-6b9529d64a5d",
+            "blockType": "sendToGuardianBlock",
+            "defaultActive": false,
+            "permissions": [
+              "Air Quality Monitor"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {},
+            "options": [],
+            "dataSource": "database",
+            "tag": "aqm-save",
+            "children": [],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "20082b9a-c576-4067-8ec8-843d92857b86",
+            "blockType": "mintDocumentBlock",
+            "defaultActive": false,
+            "permissions": [
+              "Air Quality Monitor"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {},
+            "accountType": "default",
+            "rule": "1",
+            "useTemplate": false,
+            "tokenId": "984795e3-6e2b-433b-8019-cfb40cf8eabd",
+            "tag": "mint_aqIt",
+            "children": [
+              {
+                "id": "d112a6d4-b8a4-4979-a1d6-7c3aa66412e5",
+                "blockType": "informationBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Air Quality Monitor"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "title": "Success!",
+                  "description": "Air Quality Improvement Token (AQI) have been minted!",
+                  "type": "text"
+                },
+                "tag": "aqmi_success",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          }
+        ],
+        "events": [],
+        "artifacts": []
+      },
+      {
+        "id": "5b10d6e1-4377-4b08-9917-bc957ce52c1d",
+        "blockType": "interfaceContainerBlock",
+        "defaultActive": true,
+        "permissions": [
+          "Local Community Representative"
+        ],
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+          "type": "blank"
+        },
+        "tag": "local_community_rep_workflow",
+        "children": [
+          {
+            "id": "c9ceb504-4b8f-4b9c-a6b8-0d7c7d574e2b",
+            "blockType": "requestVcDocumentBlock",
+            "defaultActive": true,
+            "permissions": [
+              "Local Community Representative"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "page",
+              "title": "Local Community Representative",
+              "description": "Please fill out the form."
+            },
+            "presetFields": [],
+            "schema": "#444a3dd6-c86b-44c5-833e-eb848074b033",
+            "tag": "lcr_request",
+            "children": [],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "2f5d8159-99e1-4cc7-97d5-02b9b3fd36e2",
+            "blockType": "sendToGuardianBlock",
+            "defaultActive": false,
+            "permissions": [
+              "ANY_ROLE"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {},
+            "options": [],
+            "dataSource": "database",
+            "tag": "lcr_save",
+            "children": [],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "7a309ac6-3364-415c-be33-d9a732d736cc",
+            "blockType": "mintDocumentBlock",
+            "defaultActive": false,
+            "permissions": [
+              "Local Community Representative"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {},
+            "tokenId": "07e638a1-33f1-4fc9-aa4c-616e131111b4",
+            "rule": "1",
+            "accountType": "default",
+            "tag": "mint_ce_tokens",
+            "children": [
+              {
+                "id": "cee56876-9794-45f0-be1d-b409bf3a16d7",
+                "blockType": "informationBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Local Community Representative"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "title": "Success!",
+                  "description": "Community Engagement Tokens have been minted.",
+                  "type": "text"
+                },
+                "tag": "ce_success",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          }
+        ],
+        "events": [],
+        "artifacts": []
+      },
+      {
+        "id": "ec42931a-9e92-418e-ae5a-aba064cc32eb",
+        "blockType": "interfaceContainerBlock",
+        "defaultActive": true,
+        "permissions": [
+          "Urban Planner"
+        ],
+        "onErrorAction": "no-action",
+        "uiMetaData": {
+          "type": "blank"
+        },
+        "tag": "urban_planner_workflow",
+        "children": [
+          {
+            "id": "32a7f0e2-e9f0-40f4-9d65-68c1b7b889bc",
+            "blockType": "requestVcDocumentBlock",
+            "defaultActive": true,
+            "permissions": [
+              "Urban Planner"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+              "type": "page",
+              "title": "Please fill out the form."
+            },
+            "presetFields": [],
+            "schema": "#cd07be51-0e4e-47eb-962a-7d0c21725590",
+            "tag": "up_request",
+            "children": [],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "d13ef90e-9991-4bf5-897d-613300b263b3",
+            "blockType": "sendToGuardianBlock",
+            "defaultActive": false,
+            "permissions": [
+              "Urban Planner"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {},
+            "options": [],
+            "dataSource": "database",
+            "tag": "up_save",
+            "children": [],
+            "events": [],
+            "artifacts": []
+          },
+          {
+            "id": "3856d6ac-7c0e-4ee4-93cf-90948c4295ae",
+            "blockType": "mintDocumentBlock",
+            "defaultActive": false,
+            "permissions": [
+              "Urban Planner"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {},
+            "tokenId": "20356d88-2bd5-4a4e-ae6d-407e235937b0",
+            "rule": "1",
+            "accountType": "default",
+            "tag": "mint_ug_token",
+            "children": [
+              {
+                "id": "49113277-d1f8-4d41-845c-202fa9cf708c",
+                "blockType": "informationBlock",
+                "defaultActive": true,
+                "permissions": [
+                  "Urban Planner"
+                ],
+                "onErrorAction": "no-action",
+                "uiMetaData": {
+                  "type": "text",
+                  "title": "Success!",
+                  "description": "Urban Greening Token has been minted"
+                },
+                "tag": "mint_ug_success",
+                "children": [],
+                "events": [],
+                "artifacts": []
+              }
+            ],
+            "events": [],
+            "artifacts": []
+          }
+        ],
+        "events": [],
+        "artifacts": []
+      }
+    ],
+    "events": [],
+    "artifacts": []
+  }
+}

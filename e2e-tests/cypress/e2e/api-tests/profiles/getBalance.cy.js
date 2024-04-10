@@ -5,7 +5,7 @@ import API from "../../../support/ApiUrls";
 context('Profiles', { tags: '@profiles' },() => {
     const authorization = Cypress.env('authorization');
 
-    it('it returns user account information', () => {
+    it('Get Hedera account balance', () => {
         const options = {
             method: 'GET',
             url: API.ApiServer + 'profiles/' + Cypress.env('root_user') + '/balance',

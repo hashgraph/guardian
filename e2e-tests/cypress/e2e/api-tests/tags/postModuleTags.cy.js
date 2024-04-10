@@ -30,7 +30,7 @@ context("Tags", {tags: '@tags'}, () => {
     });
 
 
-    it("should create a tag", () => {
+    it("Create new tag(module)", () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + API.Tags,

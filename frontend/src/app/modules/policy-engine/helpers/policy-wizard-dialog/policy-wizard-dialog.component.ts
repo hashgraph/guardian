@@ -1,26 +1,6 @@
-import {
-    AfterViewInit,
-    ChangeDetectorRef,
-    Component,
-    Inject,
-    OnInit,
-    TemplateRef,
-    ViewChild,
-} from '@angular/core';
-import {
-    Validators,
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    FormArray,
-    AbstractControl,
-} from '@angular/forms';
-import {
-    IWizardConfig,
-    Schema,
-    SchemaField,
-    Token,
-} from '@guardian/interfaces';
+import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnInit, TemplateRef, ViewChild, } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
+import { IWizardConfig, PolicyCategoryType, Schema, SchemaField, Token, } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { takeUntil } from 'rxjs/operators';
@@ -29,7 +9,6 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyCategory } from '../../structures';
 import { PolicyEngineService } from '../../../../services/policy-engine.service';
-import { PolicyCategoryType } from '@guardian/interfaces';
 
 @Component({
     selector: 'app-policy-wizard-dialog',
@@ -113,6 +92,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     destroy$: Subject<boolean> = new Subject<boolean>();
 
     preset: any;
+    private existingTopicIds: Set<string>;
 
     constructor(
         private fb: FormBuilder,
@@ -125,7 +105,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         ) => string,
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private policyEngineService: PolicyEngineService
+        private policyEngineService: PolicyEngineService,
     ) {
         this.schemas = this.config.data?.schemas || [];
         this.policies = this.config.data?.policies || [];
@@ -179,9 +159,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         this.preset = this.config.data?.state || [];
 
         this.loading = true;
-        this.policyEngineService
-            .getPolicyCategories()
-            .subscribe((data: any) => {
+        this.policyEngineService.getPolicyCategories().subscribe((data: any[]) => {
                 this.loading = false;
                 this.categories = data;
 
@@ -228,6 +206,14 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         }
     }
 
+    private getDraftSchemas(): any[] {
+        const policyTopicIds = this.policies.map(p => p.topicId);
+        return this.schemas.filter(s => {
+            return !policyTopicIds.includes(s.topicId);
+        });
+
+    }
+
     private mapGroupedSchemas(
         groupedSchemasByTopic: any,
         policies: any[],
@@ -243,13 +229,13 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                   },
                   {
                       name: 'Draft schemas',
-                      schemas: groupedSchemasByTopic['draft'],
+                      schemas: this.getDraftSchemas(),
                   },
               ]
             : [
                   {
                       name: 'Draft schemas',
-                      schemas: groupedSchemasByTopic['draft'],
+                      schemas: this.getDraftSchemas(),
                   },
               ];
         for (const group of Object.entries(groupedSchemasByTopic)) {

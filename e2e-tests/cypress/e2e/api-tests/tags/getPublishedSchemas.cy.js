@@ -98,7 +98,7 @@ context("Tags", {tags: '@tags'}, () => {
         });
     })
 
-    it("should return list of published schemas", () => {
+    it("Get a list of all published schemas", () => {
         //get published tag schemas
         cy.request({
             method: "GET",

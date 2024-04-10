@@ -40,11 +40,11 @@ AMS-I.F. is comprehensive and versatile, covering various renewable energy techn
 
 ## Tools Referenced
 
-**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%203/readme.md)** – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
+**[Methodological Tool 03](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2003/readme.md)** – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. 
 
-**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%205/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
+**[Methodological Tool 05](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2005/readme.md)** – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation. 
 
-**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%207/readme.md)** – Tool to calculate the emission factor for an electricity system.  
+**[Methodological Tool 07](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2007/readme.md)** – Tool to calculate the emission factor for an electricity system.  
 
 **[Methodological Tool 16](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2016/readme.md)** – Project emissions from cultivation of biomass.  
 

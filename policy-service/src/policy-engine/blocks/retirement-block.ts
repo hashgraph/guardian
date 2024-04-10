@@ -10,7 +10,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { MintService } from '@policy-engine/multi-policy-service/mint-service';
+import { MintService } from '@policy-engine/mint/mint-service';
 
 /**
  * Retirement block

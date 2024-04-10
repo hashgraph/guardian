@@ -11,7 +11,7 @@ context("Policies", { tags: '@policies' },() => {
         cy.request({
             method: "POST",
             url: `${API.ApiServer}policies/import/message`,
-            body: { "messageId":"1707125414.999819805"}, //iRec4
+            body: { messageId: (Cypress.env('irec_policy')) },
             headers: {
                 authorization,
             },
@@ -22,7 +22,7 @@ context("Policies", { tags: '@policies' },() => {
     });
 
 
-    it("check returns of the blocks", () => {
+    it("Send data to the specified block", () => {
         cy.request({
             method: "GET",
             url: API.ApiServer + "policies",
@@ -31,25 +31,25 @@ context("Policies", { tags: '@policies' },() => {
             },
         }).then((response) => {
             expect(response.status).to.eq(200);
-            const policyId = response.body[0].id;
-            const blockId = response.body[0].uuid;
+            const policyId = response.body.at(-1).id;
+            const blockId = response.body.at(-1).uuid;
 
-
-            // cy.request({
-            //     method: "POST",
-            //     url:
-            //         API.ApiServer +
-            //         "policies/" +
-            //         policyId +
-            //         "/blocks/" +
-            //         blockId,
-            //     headers: {
-            //         authorization,
-            //     },
-            //     body: {}
-            // }).then((response) => {
-            //     expect(response.status).to.eq(200);
-            // });
+            cy.request({
+                method: "POST",
+                url:
+                    API.ApiServer +
+                    "policies/" +
+                    policyId +
+                    "/blocks/" +
+                    blockId,
+                headers: {
+                    authorization,
+                },
+                body: {},
+                timeout:180000
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+            });
         });
     });
 });
