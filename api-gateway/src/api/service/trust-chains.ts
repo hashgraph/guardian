@@ -45,6 +45,11 @@ export class TrustChainsApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('/:hash')
     @HttpCode(HttpStatus.OK)
     async getTrustChainByHash(@Req() req, @Response() res): Promise<any> {

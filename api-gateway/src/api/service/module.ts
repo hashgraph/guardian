@@ -144,6 +144,14 @@ export class ModulesApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     * @param pageIndex
+     * @param pageSize
+     * @param topicId
+     */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
     async getModuleSchemas(
@@ -233,6 +241,11 @@ export class ModulesApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Return a list of modules.',
         description: 'Returns modules menu. Only users with the Standard Registry and Installer role are allowed to make the request.'
@@ -269,6 +282,10 @@ export class ModulesApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Retrieves module configuration.',
         description: 'Retrieves module configuration for the specified module ID. Only users with the Standard Registry role are allowed to make the request.'

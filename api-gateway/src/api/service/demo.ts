@@ -13,6 +13,9 @@ import { Auth } from '@auth/auth.decorator';
 @Controller('demo')
 @ApiTags('demo')
 export class DemoApi {
+    /**
+     * use cache
+     */
     @ApiOperation({
         summary: 'Returns list of registered users.',
         description: 'Returns list of registered users.',

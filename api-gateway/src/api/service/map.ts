@@ -5,6 +5,9 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('map')
 @ApiTags('map')
 export class MapApi {
+    /**
+     * use cache long ttl
+     */
     @Get('/key')
     @HttpCode(HttpStatus.OK)
     async getKey() {
@@ -12,6 +15,9 @@ export class MapApi {
         return await guardians.getMapApiKey();
     }
 
+    /**
+     * use cache long ttl
+     */
     @Get('/sh')
     @HttpCode(HttpStatus.OK)
     async getSentinelKey() {

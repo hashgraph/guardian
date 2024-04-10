@@ -78,6 +78,11 @@ export class LoggerApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('attributes')
     @HttpCode(HttpStatus.OK)
     async getAttributes(@Req() req, @Response() res): Promise<any> {

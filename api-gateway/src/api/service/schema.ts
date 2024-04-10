@@ -125,6 +125,11 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
 @Controller('schema')
 @ApiTags('schema')
 export class SingleSchemaApi {
+    /**
+     * use cache 30s test
+     * @param req
+     * @param res
+     */
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
     async getSchema(@Req() req, @Response() res): Promise<any> {
@@ -509,6 +514,7 @@ export class SchemaApi {
     }
 
     /**
+     * use cache
      * Get all schemas
      */
     @Get('/list/all')
@@ -550,6 +556,7 @@ export class SchemaApi {
     }
 
     /**
+     * use cache
      * Get sub schemas
      */
     @Get('/list/sub')
@@ -2185,6 +2192,7 @@ export class SchemaApi {
     }
 
     /**
+     * use cache
      * Get sub schemas
      */
     @Get('/export/template')

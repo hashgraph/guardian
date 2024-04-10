@@ -8,44 +8,10 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { TaskManager } from '@helpers/task-manager';
 import { Users } from '@helpers/users';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import {
-    MigrationConfigDTO,
-    PolicyCategoryDTO,
-} from '@middlewares/validation/schemas/policies';
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Param,
-    Post,
-    Put,
-    Query,
-    Req,
-    Response,
-    UploadedFiles,
-    UseInterceptors,
-} from '@nestjs/common';
+import { MigrationConfigDTO, PolicyCategoryDTO, } from '@middlewares/validation/schemas/policies';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import {
-    ApiAcceptedResponse,
-    ApiBody,
-    ApiConsumes,
-    ApiExtraModels,
-    ApiForbiddenResponse,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiSecurity,
-    ApiTags,
-    ApiUnauthorizedResponse,
-    getSchemaPath,
-} from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
@@ -661,6 +627,11 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * use cache test dry run
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Returns a policy navigation.',
         description: 'Returns a policy navigation.',
@@ -692,6 +663,11 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * use cache need test
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Returns a list of groups the user is a member of.',
         description: 'Returns a list of groups the user is a member of.',
@@ -827,6 +803,10 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Retrieves data for the policy root block.',
         description: 'Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.',
@@ -1859,6 +1839,11 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * use cache long ttl
+     * @param req
+     * @param res
+     */
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)
     async getBlockAbout(@Req() req, @Response() res) {
@@ -2114,6 +2099,11 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('/methodologies/categories')
     @ApiOperation({
         summary: 'Get all categories',

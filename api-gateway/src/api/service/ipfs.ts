@@ -38,6 +38,10 @@ export class IpfsApi {
         }
     }
 
+    /**
+     * @param body
+     * @param policyId
+     */
     @ApiOperation({
         summary: 'Add file from ipfs for dry run mode.',
         description: 'Add file from ipfs for dry run mode.',
@@ -65,6 +69,11 @@ export class IpfsApi {
         }
     }
 
+    /**
+     * use cache long ttl
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Get file from ipfs.',
         description: 'Get file from ipfs.',
@@ -94,6 +103,11 @@ export class IpfsApi {
         }
     }
 
+    /**
+     * use cache long ttl
+     * @param cid
+     * @param res
+     */
     @ApiOperation({
         summary: 'Get file from ipfs for dry run mode.',
         description: 'Get file from ipfs for dry run mode.',

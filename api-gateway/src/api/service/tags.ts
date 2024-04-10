@@ -137,6 +137,11 @@ export class TagsApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
     async getSchemas(@Req() req, @Response() res): Promise<any> {

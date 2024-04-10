@@ -1,41 +1,11 @@
 import { Guardians } from '@helpers/guardians';
 import { ContractType, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Req,
-    Response,
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response, } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import {
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiCreatedResponse,
-    ApiOperation,
-    ApiUnauthorizedResponse,
-    ApiExtraModels,
-    ApiForbiddenResponse,
-    ApiTags,
-    ApiBody,
-    ApiBearerAuth,
-    ApiQuery,
-    ApiParam,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import {
-    ContractDTO,
-    RetirePoolDTO,
-    RetirePoolTokenDTO,
-    RetireRequestDTO,
-    RetireRequestTokenDTO,
-    WiperRequestDTO,
-} from '@middlewares/validation/schemas/contracts';
+import { ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, } from '@middlewares/validation/schemas/contracts';
 
 /**
  * Contracts api
@@ -229,6 +199,10 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     */
     @Get('/:contractId/permissions')
     @ApiBearerAuth()
     @ApiExtraModels(InternalServerErrorDTO)
@@ -329,6 +303,11 @@ export class ContractsApi {
     //#endregion
     //#region Wipe contract endpoints
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('/wipe/requests')
     @ApiBearerAuth()
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
@@ -1048,6 +1027,11 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('/retire/requests')
     @ApiBearerAuth()
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
@@ -1125,6 +1109,11 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('/retire/pools')
     @ApiBearerAuth()
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
@@ -1721,6 +1710,11 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * use cache
+     * @param req
+     * @param res
+     */
     @Get('/retire')
     @ApiBearerAuth()
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)

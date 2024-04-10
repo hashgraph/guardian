@@ -29,6 +29,7 @@ export class AccountApi {
 
     /**
      * getSession
+     * use cache
      * @param headers
      */
     @ApiOperation({
@@ -198,6 +199,7 @@ export class AccountApi {
 
     /**
      * Accounts
+     * use cache
      */
     @ApiOperation({
         summary: 'Returns a list of users, excluding Standard Registry and Auditors.',
@@ -254,6 +256,7 @@ export class AccountApi {
 
     /**
      * Get SAs
+     * use cache
      */
     @ApiOperation({
         summary: 'Returns all Standard Registries.',
@@ -309,6 +312,7 @@ export class AccountApi {
 
     /**
      * Get aggregated SAs
+     * use cache
      */
     @ApiOperation({
         summary: 'Returns all Standard Registries aggregated with polices and vcDocuments.',
@@ -374,6 +378,10 @@ export class AccountApi {
         }
     }
 
+    /**
+     * use cache ttl 30s
+     * @param headers
+     */
     @ApiOperation({
         summary: 'Returns user\'s Hedera account balance.',
         description: 'Requests current Hedera account balance.'

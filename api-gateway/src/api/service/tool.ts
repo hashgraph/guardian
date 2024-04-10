@@ -1,33 +1,9 @@
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Put,
-    Req,
-    Response,
-    UploadedFiles,
-    UseInterceptors
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { TaskAction, UserRole } from '@guardian/interfaces';
-import {
-    ApiBody,
-    ApiConsumes,
-    ApiForbiddenResponse,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiTags,
-    ApiUnauthorizedResponse,
-    getSchemaPath
-} from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
@@ -987,6 +963,7 @@ export class ToolsApi {
     }
 
     /**
+     * use cache
      * Policy config menu
      */
     @Get('/menu/all')

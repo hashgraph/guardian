@@ -5,33 +5,9 @@ import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
 import { prepareValidationResponse } from '@middlewares/validation';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Put,
-    Req,
-    Response,
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
-import {
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiUnauthorizedResponse,
-    ApiExtraModels,
-    ApiForbiddenResponse,
-    ApiTags,
-    ApiBearerAuth,
-    ApiParam,
-    ApiBody,
-    ApiSecurity,
-    ApiUnprocessableEntityResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiSecurity, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse, } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
 import { Auth } from '@auth/auth.decorator';
 
@@ -634,6 +610,10 @@ export class TokensApi {
         return res.status(202).send(task);
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/:tokenId/:username/info')
     @HttpCode(HttpStatus.OK)
     async getTokenInfo(@Req() req, @Response() res): Promise<any> {
@@ -660,6 +640,10 @@ export class TokensApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/:tokenId/serials')
     @ApiBearerAuth()
     @ApiExtraModels(InternalServerErrorDTO)

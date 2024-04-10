@@ -3,12 +3,12 @@ import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { AuthUser } from '@auth/authorization-helper';
 import { Auth } from '@auth/auth.decorator';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '@middlewares/validation/schemas';
+import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO } from '@middlewares/validation/schemas';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -224,6 +224,7 @@ export class ProfileApi {
     }
 
     /**
+     * use cache 30s
      * Get user balance
      */
     @Get('/:username/balance')
