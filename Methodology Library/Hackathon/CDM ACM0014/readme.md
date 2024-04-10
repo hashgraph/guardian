@@ -45,6 +45,10 @@ ACM0014 promotes the transition to low-carbon wastewater treatment technologies,
 
 **[Methodological Tool 32](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/Tools/Tool%2032/readme.md)** - Positive lists of technologies. 
 
+## Demo Video
+
+[Youtube](https://www.youtube.com/watch?v=xG3Cawe5sUI)
+
 ## Policy Workflow
 
 ![image](https://github.com/riush03/CDM-ACM0014/blob/main/assets/workflow/ACM0014_Workflow.png)
@@ -74,9 +78,6 @@ Monitoring Report: Periodic monitoring report with data for monitored parameters
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
-### Demo Video
-
-![video](https://www.youtube.com/watch?v=xG3Cawe5sUI)
 
 ### Step By Step 
 
