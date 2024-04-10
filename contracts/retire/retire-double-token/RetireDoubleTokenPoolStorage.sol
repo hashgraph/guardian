@@ -38,6 +38,7 @@ contract RetireDoubleTokenPoolStorage is RetirePoolStorage {
         override
         role(OWNER)
     {
+        super.setPool(tokens, immediately);
         address base = tokens[0].token;
         address opposite = tokens[1].token;
         int64 baseCount = tokens[0].count;

@@ -60,3 +60,30 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | Mainnet    | 0.0.1368856               |
 | Testnet    | 0.0.2411                  |
 | Previewnet | 0.0.10071                 |
+
+### RETIRE\_CONTRACT\_FILE\_ID and WIPE\_CONTRACT\_FILE\_ID for different Hedera Networks
+
+<table><thead><tr><th width="146">Network</th><th width="258">RETIRE_CONTRACT_FILE_ID</th><th>WIPE_CONTRACT_FILE_ID</th></tr></thead><tbody><tr><td>Mainnet</td><td>0.0.5344116</td><td>0.0.5344170</td></tr><tr><td>Testnet</td><td>0.0.2219</td><td>0.0.2235</td></tr></tbody></table>
+
+### **How to Deploy Contracts on Mainnet using your own account:**
+
+**Note:** If you wish you have an option to deploy your own instances (from an account that your organization controls - e.g. an ‘official’ account of your organization). We have created scripts for easy deployment you can use. In this case the following procedure needs to be followed:
+
+1. Navigate to `./guardian-cli`folder.
+2. Execute `npm install`  followed by `npm run build`  and `npm i -g`
+3. Now the scripts are ready, and you can execute at the level of the `guardian-cli` folder
+4. RETIRE contract deployment:&#x20;
+
+`guardian-cli deploy-contract-file ../contracts/retire/Retire.sol Retire {account} {key} -n {network}`
+
+5. WIPE contract deployment:&#x20;
+
+`guardian-cli deploy-contract-file ../contracts/wipe/Wipe.sol Wipe {account} {key} -n {network}`
+
+Where:
+
+* `account` - accound ID in hedera
+* `key` - its private key
+* `network` - the target network (testnet, mainnet, previewnet), by default it uses testnet
+
+The contract file identifier will be printed out in the terminal.
