@@ -1,51 +1,62 @@
-## What it does
+# Chain Assurance README.md Methodology Library
 
-Chain Assurance is a web-based application designed to assist businesses in managing and enhancing their suppliers' Climate Preparedness and ESG practices. Our platform provides functionalities such as automated supplier assessments, customized questionnaire creation, ESG score benchmarks, and action plans for operation improvements.
+## Introduction
 
-### Policy Description
+Chain Assurance is built on Hedera Hashgraph technology and is tailored to improve supplier climate preparedness in alignment with ESG practices. The platform helps businesses to conduct rigorous environmental accountability assessments, facilitating transparent, discoverable, and liquid sustainability assets.
 
-Our policy focuses on bridging the gaps between businesses and their suppliers, ensuring that both parties are committed to upholding mutually agreed climate goals and ESG standards. By systematically recording, analyzing, and sharing suppliers' sustainability performances, businesses can drive a standardized approach towards improved sustainability.
+## Need and Use for Supplier Climate Due Diligence
 
-### Workflow Description
+In the age of informed consumers and stringent environmental regulations, businesses are increasingly required to demonstrate their commitment to sustainable practices, not just within their operations but equally importantly, within their supply chain. Conducting supplier climate due diligence helps companies manage reputational, regulatory, and operational risks and enhances their competitiveness in the sustainability-driven market.
 
-Here is a detailed breakdown of our automated workflow within each menu item:
+## Policy Workflow
 
-1. **Dashboard:** Chain Assurance's workflow begins with the Dashboard, providing an at-a-glance overview of key operational metrics such as active surveys, average ESG scores, and recent supplier updates. All metrics are dynamically updated in real-time to provide a snapshot of current operations.
+**Step 1:** Create supplier-specific ESG survey questionnaires.
+  
+**Step 2:** Distribute surveys and track the response status.
+  
+**Step 3:** Collect supplier data and calculate ESG scores using Hedera Smart Contract.
+  
+**Step 4:** Generate performance reports based on ESG scores.
+  
+**Step 5:** Benchmark performance against industry standards.
+  
+**Step 6:** Provide suggestions for operation improvements based on scores.
 
-2. **Supplier Management:** Users can leverage automation technologies to manage their supplier base effectively. With the click of a button, new suppliers can be added, existing ones edited, and their ESG performances tracked over time. As a digital hub, this area ensures all relevant supplier data is accessible and easy to manage.
+## Comparative Analysis
 
-3. **Survey Management:** Our platform eases the survey process using automation. With intuitive forms, users create tailored surveys for each supplier. Once approved, these are automatically sent out to respective suppliers. The responses are collected, validated, and stored, minimizing manual input and reducing the chance of errors.
+While other supplier management tools exist, Chain Assurance's distinctiveness lies in its integration with Hedera Guardian that enhances transparency and its utilization of machine learning for predictive analytics.
 
-4. **Scoring & Benchmarking:** After responses are collected, the system automatically calculates ESG scores using a set formula embedded within the smart contract. These scores are then used to generate performance reports and can be benchmarked against industry standards, providing a comparative view of a supplier's commitment to ESG practices.
+## Policy Guide
 
-5. **Reports & Analytics:** Chain Assurance promotes data-driven decisions, with automated reports on ESG performance readily available. Our machine learning algorithms analyze these scores to produce predictive analytics reports, offering valuable insights into likely future trends and outcomes.
+Our policy is centered on enhancing the bond between businesses and suppliers, systemically compiling and analyzing supplier's ESG performances to drive mindful climate action.
 
-6. **Administration:** Management of platform settings, user roles and permissions are enabled through automation, making the administration process more streamlined and less time-consuming.
+## [Demo Video Link](https://vimeo.com/932253887)
 
-7. **Help Center:** To assist users, our Help Center offers resources and guides on using different features of the application, providing 24/7 support through automated FAQs and troubleshooting tips. 
+This video demonstrates Chain Assurance in action, showcasing how the platform's features work together to facilitate ESG due diligence.
 
-In summary, our workflow exercises automation in every possible aspect, from survey distribution to report generation, ensuring an efficient operational management approach for users and promoting sustainable supply chain practices.
+## Available Roles
 
-### Comparative Analysis to Similar Methodologies
+1. **Supplier Manager:** Manages and views supplier information.
+2. **Survey Manager:** Administers the creation and distribution of surveys.
+3. **Analyst:** Utilizes reporting and analytics features to understand and react to ESG performance metrics.
+4. **Administrator:** Manages users and platform-wide settings.
 
-There are a number of other supplier assessment tools available but the key differentiating factor of Chain Assurance is its integration with Hedera Guardian for added transparency and the ongoing use of machine learning tools to provide predictive analytics. 
+## Important Documents & Schemas
 
-## How we built it
+1. [ESG Assessment Form Template](https://concepts.mukhwana.guru/chainassurance/esgtemplate.pdf)
+2. [Supplier Management Policy](https://concepts.mukhwana.guru/chainassurance/smp.pdf)
+3. [Benchmarking Guide](https://concepts.mukhwana.guru/chainassurance/benchmark.pdf)
 
-Chain Assurance is built on Hedera Hashgraph technology. We utilized the Hedera Consensus Service for our audit log and the Hedera Smart Contract Service for establishing digital agreements with suppliers. For scoring calculations and predictive analytics, we have integrated machine learning algorithms.
+## Step by Step
 
-## Challenges we ran into
+**Step 1:** Register on Chain Assurance and add your supplier's information on the 'Supplier Management' section.
 
-We faced challenges in setting up Hedera smart contracts as it was a new technology for us. Additionally building an intuitive and user-friendly interface that handles complex data algorithms in a digestible way was another challenge.
+**Step 2:** Create a new survey questionnaire tailored to the supplier's operations in the 'Survey Management' section.
 
-## Accomplishments that we're proud of
+**Step 3:** Once the survey is approved, it is automatically sent to the supplier for completion.
 
-We've created a platform that doesn't just encourage but enforces transparency and climate accountability in supply chains. Our machine-learning driven predictive analytics feature is a highlight and testament to our commitment of innovation.
- 
-## What we learned
+**Step 4:** The responses are used to calculate the supplier's ESG score using Hedera Smart contract.
 
-We learned about Hedera's application in real-world use-cases, gained practical experience in smart contract development, and deepened our understanding of the impact blockchain can have on climate health.
+**Step 5:** A performance report is generated and the score is benchmarked against past scores or industry standards to identify areas that require improvement.
 
-## What's next for Chain Assurance
-
-We aim to improve our predictive analysis features and streamline our survey distribution process. Furthermore, we plan to expand beyond the B2B market to allow chain stores and end consumers to track the carbon footprint of their purchases, driving widespread climate accountability. 
+**Step 6:** Suggestions for operation improvements based on scores are provided and can be enacted upon for enhanced ESG practices.
