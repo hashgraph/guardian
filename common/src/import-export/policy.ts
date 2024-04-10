@@ -207,32 +207,28 @@ export class PolicyImportExport {
             throw new Error('Zip file is not a policy');
         }
         const policyString = await content.files[PolicyImportExport.policyFileName].async('string');
-        const tokensStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^tokens\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
+        const policy = JSON.parse(policyString);
 
-        const schemasStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^schem[a,e]s\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
+        const fileEntries = Object.entries(content.files).filter(file => !file[1].dir);
+        const [tokensStringArray, schemasStringArray, toolsStringArray, tagsStringArray] = await Promise.all([
+            Promise.all(fileEntries.filter(file => /^tokens\/.+/.test(file[0])).map(file => file[1].async('string'))),
+            Promise.all(fileEntries.filter(file => /^schem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
+            Promise.all(fileEntries.filter(file => /^tools\/.+/.test(file[0])).map(file => file[1].async('string'))),
+            Promise.all(fileEntries.filter(file => /^tags\/.+/.test(file[0])).map(file => file[1].async('string')))
+        ]);
 
-        const toolsStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^tools\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
+        const tokens = tokensStringArray.map(item => JSON.parse(item));
+        const schemas = schemasStringArray.map(item => JSON.parse(item));
+        const tools = toolsStringArray.map(item => JSON.parse(item));
+        const tags = tagsStringArray.map(item => JSON.parse(item));
 
-        const metaDataFile = (Object.entries(content.files)
-            .find(file => file[0] === 'artifacts/metadata.json'));
+        const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
         const metaDataBody: any[] = JSON.parse(metaDataString);
 
         let artifacts: any;
         if (includeArtifactsData) {
-            const data = Object.entries(content.files)
-                .filter(file => !file[1].dir)
-                .filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json')
-                .map(async file => {
+            const data = fileEntries.filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json').map(async file => {
                     const uuid = file[0].split('/')[1];
                     const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
                     return {
@@ -254,31 +250,13 @@ export class PolicyImportExport {
             });
         }
 
-        const tagsStringArray = await Promise.all(Object.entries(content.files)
-            .filter(file => !file[1].dir)
-            .filter(file => /^tags\/.+/.test(file[0]))
-            .map(file => file[1].async('string')));
-
-        const policy = JSON.parse(policyString);
-        const tokens = tokensStringArray.map(item => JSON.parse(item));
-        const schemas = schemasStringArray.map(item => JSON.parse(item));
-        const tools = toolsStringArray.map(item => JSON.parse(item));
-        const tags = tagsStringArray.map(item => JSON.parse(item));
-
         if (policy.categoriesExport?.length) {
             const allCategories = await DatabaseServer.getPolicyCategories();
             policy.categories = PolicyImportExport.parsePolicyCategories(policy, allCategories);
             policy.categoriesExport = [];
         }
 
-        return {
-            policy,
-            tokens,
-            schemas,
-            artifacts,
-            tags,
-            tools
-        };
+        return { policy, tokens, schemas, artifacts, tags, tools };
     }
 
     /**

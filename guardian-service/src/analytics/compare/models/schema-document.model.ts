@@ -41,31 +41,25 @@ export class SchemaDocumentModel {
      * @private
      */
     private parseFields(document: any, index: number, defs?: any): FieldModel[] {
+        if (!document?.properties) {
+            return [];
+        }
+
         const fields: FieldModel[] = [];
+        const required = new Set(document.required || []);
+        const properties = Object.keys(document.properties).filter(name => name !== '@context' && name !== 'type');
+        const subSchemas = new Map();
 
-        if (!document || !document.properties) {
-            return fields;
-        }
-
-        const required = {};
-        if (document.required) {
-            for (const element of document.required) {
-                required[element] = true;
-            }
-        }
-
-        const properties = Object.keys(document.properties);
         for (const name of properties) {
-            if (name === '@context' || name === 'type') {
-                continue;
-            }
-
             const property = document.properties[name];
 
-            const field = new FieldModel(name, property, !!required[name], index);
+            const field = new FieldModel(name, property, required.has(name), index);
             if (field.isRef) {
-                const subSchemas = defs || document.$defs;
-                const subDocument = subSchemas[field.type];
+                let subDocument = subSchemas.get(field.type);
+                if (!subDocument) {
+                    subDocument = (defs || document.$defs)[field.type];
+                    subSchemas.set(field.type, subDocument);
+                }
                 const subSchema = new SchemaDocumentModel(subDocument, index + 1, subSchemas);
                 field.setSubSchema(subSchema);
             }
@@ -89,27 +83,33 @@ export class SchemaDocumentModel {
         fields: FieldModel[],
         defs: any = null
     ): ConditionModel[] {
-        const conditions: ConditionModel[] = [];
         if (!document || !document.allOf) {
-            return conditions;
+            return [];
         }
-        const allOf = Object.keys(document.allOf);
-        for (const oneOf of allOf) {
+
+        const conditions: ConditionModel[] = [];
+        const allOfKeys = Object.keys(document.allOf);
+
+        for (const oneOf of allOfKeys) {
             const condition = document.allOf[oneOf];
             if (!condition.if) {
                 continue;
             }
             const ifConditionFieldName = Object.keys(condition.if.properties)[0];
+            const ifFieldValue = condition.if.properties[ifConditionFieldName].const;
+            const thenFields = this.parseFields(condition.then, index, document.$defs || defs);
+            const elseFields = this.parseFields(condition.else, index, document.$defs || defs);
             conditions.push(new ConditionModel(
                 fields.find(field => field.name === ifConditionFieldName),
-                condition.if.properties[ifConditionFieldName].const,
-                this.parseFields(condition.then, index, document.$defs || defs),
-                this.parseFields(condition.else, index, document.$defs || defs),
+                ifFieldValue,
+                thenFields,
+                elseFields,
                 index
             ));
         }
         return conditions;
     }
+
     /**
      * Update conditions
      * @private
