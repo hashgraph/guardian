@@ -29,13 +29,18 @@ const API = {
 
     //Contracts
     ListOfContracts: "contracts/",
+    ImportContracts: "contracts/import/",
+    ContractPermissions: "permissions/",
     ListOfPairs: "contracts/pairs/",
     RetireRequests: "contracts/retire/requests/",
     WipeRequests: "contracts/wipe/requests/",
     RetireContract: "contracts/retire/",
+    WipeContract: "contracts/wipe/",
     PoolContract: "pools/",
     Retire: "retire/",
     RetirePools: "contracts/retire/pools/",
+    ManagerRole: "manager/",
+    WiperRole: "wiper/",
 
     //Modules
     ListOfAllModules: "modules/",

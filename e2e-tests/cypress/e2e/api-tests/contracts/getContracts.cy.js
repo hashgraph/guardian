@@ -33,21 +33,6 @@ context("Contracts", { tags: '@contracts' },() => {
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.SUCCESS);
         });
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicisImportMsg,
-            body: {
-                "messageId": Cypress.env('policy_for_compare1')//iRec 4
-            },
-            headers: {
-                authorization,
-            },
-            timeout: 180000
-        })
-            .then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyid = response.body.at(-1).id;
-            })
     })
 
     it("Get list of contracts", () => {
@@ -100,6 +85,38 @@ context("Contracts", { tags: '@contracts' },() => {
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get list of contracts as User - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountsLogin,
+            body: {
+                username: "Registrant",
+                password: "test"
+            }
+        }).then((response) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
+                body: {
+                    refreshToken: response.body.refreshToken
+                }
+            }).then((response) => {
+                let accessToken = "Bearer " + response.body.accessToken
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.ListOfContracts,
+                    headers: {
+                        authorization: accessToken
+                    },
+                    failOnStatusCode: false,
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.ERROR);
+                    //expect(response.status).eql(STATUS_CODE.FORBIDDEN);
+                });
+            });
         });
     });
 });

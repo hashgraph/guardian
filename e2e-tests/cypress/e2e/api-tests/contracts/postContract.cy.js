@@ -76,9 +76,9 @@ context("Contracts", { tags: '@contracts' },() => {
         });
     });
 
-    it("Get list of users as User - Negative", () => {
+    it("Create retire contract as User - Negative", () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
             body: {
                 username: "Registrant",
@@ -86,7 +86,7 @@ context("Contracts", { tags: '@contracts' },() => {
             }
         }).then((response) => {
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken
@@ -180,9 +180,9 @@ context("Contracts", { tags: '@contracts' },() => {
         });
     });
 
-    it("Get list of users as User - Negative", () => {
+    it("Create wipe contract as User - Negative", () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
             body: {
                 username: "Registrant",
@@ -190,7 +190,7 @@ context("Contracts", { tags: '@contracts' },() => {
             }
         }).then((response) => {
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken

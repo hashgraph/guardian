@@ -57,7 +57,7 @@ context("Accounts",  { tags: '@accounts' },() => {
 
     it("Get list of users as User - Negative", () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
             body: {
                 username: "Registrant",
@@ -65,7 +65,7 @@ context("Accounts",  { tags: '@accounts' },() => {
             }
         }).then((response) => {
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken

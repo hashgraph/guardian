@@ -20,7 +20,7 @@ context("Accounts", { tags: '@accounts' }, () => {
     it('Get User balance', () => {
         let username = "UserTest";
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
             body: {
                 username: username,
@@ -30,7 +30,7 @@ context("Accounts", { tags: '@accounts' }, () => {
             }
         }).then(() => {
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.AccountsLogin,
                 body: {
                     username: username,
@@ -38,7 +38,7 @@ context("Accounts", { tags: '@accounts' }, () => {
                 }
             }).then((response) => {
                 cy.request({
-                    method: "POST",
+                    method: METHOD.POST,
                     url: API.ApiServer + API.AccessToken,
                     body: {
                         refreshToken: response.body.refreshToken
@@ -46,7 +46,7 @@ context("Accounts", { tags: '@accounts' }, () => {
                 }).then((response) => {
                     let accessToken = "Bearer " + response.body.accessToken
                     cy.request({
-                        method: 'GET',
+                        method: METHOD.GET,
                         url: API.ApiServer + API.StandardRegistriesAggregated,
                         headers: {
                             authorization: accessToken
@@ -59,7 +59,7 @@ context("Accounts", { tags: '@accounts' }, () => {
                             headers: {authorization},
                         }).then((response) => {
                             cy.request({
-                                method: 'PUT',
+                                method: METHOD.PUT,
                                 url: API.ApiServer + API.Profiles + username,
                                 body: {
                                     hederaAccountId: response.body.id,
