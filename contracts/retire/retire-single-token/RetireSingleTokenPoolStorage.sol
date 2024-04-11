@@ -38,6 +38,7 @@ contract RetireSingleTokenPoolStorage is RetirePoolStorage {
         override
         role(OWNER)
     {
+        super.setPool(tokens, immediately);
         address base = tokens[0].token;
         int64 baseCount = tokens[0].count;
         if (poolPos[base] > 0) {

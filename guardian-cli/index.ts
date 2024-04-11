@@ -2,7 +2,13 @@
 
 import { spawnSync } from 'child_process';
 import { Command } from 'commander';
+
 import { PolicyPublisher } from './helpers/policy-publisher.helper.js';
+import {
+  ContractPublisher,
+  Network,
+} from './helpers/contract-publisher.helper.js';
+
 
 const GUARDIAN_REPOSITORY = 'https://github.com/hashgraph/guardian';
 
@@ -719,8 +725,16 @@ function main() {
         .command('publish-policies')
         .description('Import and publish policies')
         .argument('<policies-directory>', 'Path to policiy files')
-        .option('-c --config-file-path <path>', 'Path to config file', './config.json')
-        .option('-b --base-url <url>', 'Base guardian URL', 'http://localhost:3002/')
+        .option(
+            '-c --config-file-path <path>',
+            'Path to config file',
+            './config.json'
+        )
+        .option(
+            '-b --base-url <url>',
+            'Base guardian URL',
+            'http://localhost:3002/'
+        )
         .option('-u --user <user>', 'User', 'StandardRegistry')
         .option('-p --password <password>', 'Password', 'test')
         .option('-o --output <path>', 'Output information file path')
@@ -734,6 +748,67 @@ function main() {
                     options.user,
                     options.password,
                     options.output
+                );
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('deploy-contract-file')
+        .description('Deploy contract file')
+        .argument('<contract-path>', 'Path to contract file')
+        .argument('<contract-name>', 'Contract name')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractPath, contractName, account, key, options) => {
+            try {
+                const contractByteCode =
+                    await ContractPublisher.compileContract(
+                        contractPath,
+                        contractName
+                    );
+                const contractFileId =
+                    await ContractPublisher.deployContractFile(
+                        contractByteCode,
+                        {
+                            operatorId: account,
+                            operatorKey: key,
+                        },
+                        options.network
+                    );
+                console.log(
+                    `${contractName} contract file identifier - ${contractFileId}`
+                );
+            } catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+    program
+        .command('deploy-contract')
+        .description('Deploy contract file')
+        .argument('<contract-file-id>', 'Contract file identifier')
+        .argument('<account>', 'Hedera account id')
+        .argument('<key>', 'Hedera private key')
+        .option('-g --gas <gas>', 'Gas')
+        .option('-n --network <network>', 'Network', Network.TESTNET)
+        .action(async (contractFileId, account, key, options) => {
+            try {
+                const contractId = await ContractPublisher.deployContract(
+                    contractFileId,
+                    options.gas && parseInt(options.gas, 10),
+                    {
+                        operatorId: account,
+                        operatorKey: key,
+                    },
+                    options.network
+                );
+                console.log(
+                    `${contractFileId} contract identifier - ${contractId}`
                 );
             } catch (error) {
                 console.error(error);

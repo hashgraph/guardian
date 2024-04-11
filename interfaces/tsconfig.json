@@ -8,11 +8,11 @@
         ],
         "moduleResolution": "node",
         "sourceMap": true,
+        "skipLibCheck": true,
         "outDir": "dist/",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
-        "skipLibCheck": true,
         "declaration": true
     },
     "include": [
