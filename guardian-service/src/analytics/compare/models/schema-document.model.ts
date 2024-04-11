@@ -3,6 +3,7 @@ import { ConditionModel } from './condition.model.js';
 import { CompareOptions } from '../interfaces/compare-options.interface.js';
 import MurmurHash3 from 'imurmurhash';
 import { ComparePolicyUtils } from '../utils/compare-policy-utils.js';
+import { ISchemaDocument } from '@guardian/interfaces';
 
 /**
  * Schema Model
@@ -26,62 +27,67 @@ export class SchemaDocumentModel {
      */
     private _weight: string;
 
-    constructor(document: any, index: number, defs?: any) {
+    constructor(
+        document: ISchemaDocument,
+        defs: { [x: string]: ISchemaDocument },
+        cache: Map<string, SchemaDocumentModel>
+    ) {
         this._weight = '';
-        this.fields = this.parseFields(document, index + 1, defs);
-        this.conditions = this.parseConditions(document, index + 1, this.fields, defs);
+        this.fields = this.parseFields(document, defs, cache);
+        this.conditions = this.parseConditions(document, this.fields, defs, cache);
         this.fields = this.updateConditions();
     }
 
     /**
      * Parse fields
      * @param document
-     * @param contextURL
      * @param defs
+     * @param cache
      * @private
      */
-    private parseFields(document: any, index: number, defs?: any): FieldModel[] {
+    private parseFields(
+        document: ISchemaDocument,
+        defs: { [x: string]: ISchemaDocument },
+        cache: Map<string, SchemaDocumentModel> = new Map()
+    ): FieldModel[] {
         if (!document?.properties) {
             return [];
         }
 
-        const fields: FieldModel[] = [];
         const required = new Set(document.required || []);
-        const properties = Object.keys(document.properties).filter(name => name !== '@context' && name !== 'type');
-        const subSchemas = new Map();
-
-        for (const name of properties) {
-            const property = document.properties[name];
-
-            const field = new FieldModel(name, property, required.has(name), index);
+        const subSchemas = defs || document.$defs || {};
+        const fields: FieldModel[] = [];
+        const properties = Object.entries(document.properties).filter(([name]) => name !== '@context' && name !== 'type');
+        for (const [name, property] of properties) {
+            const field = new FieldModel(name, property, required.has(name));
             if (field.isRef) {
-                let subDocument = subSchemas.get(field.type);
-                if (!subDocument) {
-                    subDocument = (defs || document.$defs)[field.type];
-                    subSchemas.set(field.type, subDocument);
+                let subSchema = cache.get(field.type);
+                if (!subSchema) {
+                    const subDocument = subSchemas[field.type];
+                    subSchema = new SchemaDocumentModel(subDocument, subSchemas, cache);
+                    cache.set(field.type, subSchema);
                 }
-                const subSchema = new SchemaDocumentModel(subDocument, index + 1, subSchemas);
                 field.setSubSchema(subSchema);
             }
             fields.push(field);
-        }
-
+        };
+        
         return fields;
     }
 
     /**
      * Parse conditions
      * @param document
-     * @param index
      * @param fields
      * @param defs
+     * @param cache
      * @private
      */
     private parseConditions(
-        document: any,
-        index: number,
+        document: ISchemaDocument,
         fields: FieldModel[],
-        defs: any = null
+        defs: { [x: string]: ISchemaDocument },
+        cache?: Map<string, SchemaDocumentModel>
     ): ConditionModel[] {
         if (!document || !document.allOf) {
             return [];
@@ -97,14 +103,13 @@ export class SchemaDocumentModel {
             }
             const ifConditionFieldName = Object.keys(condition.if.properties)[0];
             const ifFieldValue = condition.if.properties[ifConditionFieldName].const;
-            const thenFields = this.parseFields(condition.then, index, document.$defs || defs);
-            const elseFields = this.parseFields(condition.else, index, document.$defs || defs);
+            const thenFields = this.parseFields(condition.then, document.$defs || defs, cache);
+            const elseFields = this.parseFields(condition.else, document.$defs || defs, cache);
             conditions.push(new ConditionModel(
                 fields.find(field => field.name === ifConditionFieldName),
                 ifFieldValue,
                 thenFields,
-                elseFields,
-                index
+                elseFields
             ));
         }
         return conditions;
@@ -205,5 +210,15 @@ export class SchemaDocumentModel {
         }
 
         return Math.floor(total / rates.length);
+    }
+
+    /**
+     * Create model
+     * @param document
+     * @public
+     */
+    public static from(document: ISchemaDocument): SchemaDocumentModel {
+        const cache = new Map<string, SchemaDocumentModel>();
+        return new SchemaDocumentModel(document, document?.$defs, cache);
     }
 }

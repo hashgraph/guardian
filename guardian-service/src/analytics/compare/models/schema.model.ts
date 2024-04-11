@@ -108,10 +108,12 @@ export class SchemaModel {
         options: CompareOptions
     ) {
         this.options = options;
+
         this._weight = this._weightDocument = '';
-    
+
         if (!schema) {
             this.id = this.name = this.uuid = this.description = this.topicId = this.version = this.iri = '';
+            return;
         }
 
         const {
@@ -133,10 +135,9 @@ export class SchemaModel {
         this.topicId = topicId;
         this.version = version || sourceVersion;
         this.iri = iri;
-
         if (document) {
             const parsedDocument = typeof document === 'string' ? JSON.parse(document) : document;
-            this.document = new SchemaDocumentModel(parsedDocument, 0, parsedDocument?.$defs);
+            this.document = SchemaDocumentModel.from(parsedDocument);
             this.document.update(this.options);
         }
     }

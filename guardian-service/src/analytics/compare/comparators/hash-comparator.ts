@@ -55,10 +55,10 @@ export class HashComparator {
             }
 
             const { policy, schemas, tokens, artifacts } = file;
-    
+
             //Policy
             const policyModel = new PolicyModel(policy, HashComparator.options);
-    
+
             //Schemas
             const schemaModels = schemas.map(schema => {
                 const m = new SchemaModel(schema, HashComparator.options);
@@ -66,7 +66,7 @@ export class HashComparator {
                 m.update(HashComparator.options);
                 return m;
             });
-            
+
             policyModel.setSchemas(schemaModels);
 
             //Tokens
@@ -88,7 +88,7 @@ export class HashComparator {
                 return t;
             });
             policyModel.setTokens(tokenModels);
-    
+
             //Artifacts
             const artifactsModels = artifacts.map(artifact => {
                 const f = new FileModel(artifact, artifact.data, HashComparator.options);
@@ -96,10 +96,10 @@ export class HashComparator {
                 return f;
             });
             policyModel.setArtifacts(artifactsModels);
-    
+
             //Compare
             policyModel.update();
-    
+
             return policyModel;
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
