@@ -69,4 +69,19 @@ export class DataBaseHelper {
         }
         return DataBaseHelper.orm.em.fork();
     }
+
+    public static async loadFile(filename: string): Promise<string> {
+        const files = await DataBaseHelper.gridFS.find({ filename }).toArray();
+        if (files.length === 0) {
+            return null;
+        }
+        const file = files[0];
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        const buffer = Buffer.concat(bufferArray);
+        return buffer.toString();
+    }
 }

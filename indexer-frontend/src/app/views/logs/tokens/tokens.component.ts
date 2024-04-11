@@ -36,10 +36,17 @@ export class TokensComponent {
     public items: any[] = [];
     public orderField: string = '';
     public orderDir: string = '';
-
+    public type: string = '';
+    public tokenId: string = '';
+    
     public displayedColumns: string[] = [
         'tokenId',
-        'serialNumber'
+        'name',
+        'symbol',
+        'type',
+        'treasury',
+        'status',
+        'totalSupply'
     ];
 
     @ViewChild(MatSort) sort!: MatSort;
@@ -72,6 +79,12 @@ export class TokensComponent {
             option.orderDir = this.orderDir.toUpperCase();
             option.orderField = this.orderField;
         }
+        if (this.type) {
+            option.type = this.type;
+        }
+        if (this.tokenId) {
+            option.tokenId = this.tokenId;
+        }
         this.logsService.getTokens(option).subscribe({
             next: (rows) => {
                 if (rows) {
@@ -81,6 +94,9 @@ export class TokensComponent {
                 } else {
                     this.items = [];
                     this.total = 0;
+                }
+                for (const row of this.items) {
+                    row.__total = this.numberWithSpaces(row.totalSupply);
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -107,5 +123,19 @@ export class TokensComponent {
 
     public onFilter() {
         this.loadData();
+    }
+
+    public numberWithSpaces(value: number | string): string {
+        const parts = value.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        return parts.join(".");
+    }
+
+    public onInput(event: any) {
+        const value = (event.target.value || '').trim();
+        if (this.tokenId !== value) {
+            this.tokenId = value;
+            this.loadData();
+        }
     }
 }

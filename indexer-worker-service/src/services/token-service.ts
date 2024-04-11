@@ -1,7 +1,8 @@
-import { MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
+import { EntityData, MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
 import { LogService } from './log-service.js';
 import { HederaService } from '../loaders/hedera-service.js';
 import { DataBaseHelper, Job, NFTCache, NFT, TokenCache, Utils } from '@indexer/common';
+import { TopicService } from './topic-service.js';
 
 export class TokenService {
     public static CYCLE_TIME: number = 0;
@@ -15,19 +16,45 @@ export class TokenService {
                 return;
             }
 
-            const data = await HederaService.getSerials(row.tokenId, row.serialNumber);
+            const data: EntityData<TokenCache> = {};
+            data.type = row.type;
+            data.lastUpdate = Date.now();
 
-            if (data && data.nfts.length) {
-                const rowMessages = await TokenService.saveSerials(data.nfts);
-                if (rowMessages) {
-                    await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, {
-                        serialNumber: data.nfts[data.nfts.length - 1].serial_number,
-                        lastUpdate: Date.now(),
-                        hasNext: !!data.links.next
-                    });
-                }
+            const info = await HederaService.getToken(row.tokenId);
+            if (info && row.status !== 'UPDATED') {
+                data.status = 'UPDATED';
+                data.name = info.name;
+                data.symbol = info.symbol;
+                data.type = info.type;
+                data.treasury = info.treasury_account_id;
+                data.memo = info.memo;
+                data.totalSupply = info.total_supply;
             }
 
+            if (data.memo && row.status !== 'UPDATED') {
+                await TopicService.addTopic(data.memo);
+            }
+
+            if (data.type === 'NON_FUNGIBLE_UNIQUE') {
+                const nfts = await HederaService.getSerials(row.tokenId, row.serialNumber);
+                if (!nfts) {
+                    return;
+                }
+                if (nfts.nfts.length) {
+                    const rowMessages = await TokenService.saveSerials(nfts.nfts);
+                    if (!rowMessages) {
+                        return;
+                    }
+                    data.serialNumber = nfts.nfts[nfts.nfts.length - 1].serial_number;
+                    data.lastUpdate = Date.now();
+                    data.hasNext = !!nfts.links.next;
+                }
+                await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
+            } else if (data.type === 'FUNGIBLE_COMMON') {
+                await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
+            } else {
+                await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
+            }
         } catch (error) {
             await LogService.error(error, 'update topic');
         }
@@ -43,7 +70,12 @@ export class TokenService {
                     status: '',
                     lastUpdate: 0,
                     serialNumber: 0,
-                    hasNext: false
+                    hasNext: false,
+                    name: '',
+                    symbol: '',
+                    type: '',
+                    treasury: '',
+                    memo: ''
                 }));
                 return true;
             } else {
@@ -110,7 +142,7 @@ export class TokenService {
             for (const nft of nfts) {
                 const row = await TokenService.insertSerial(nft, em);
                 if (!row) {
-                    return;
+                    return null;
                 }
                 rows.push(row);
             }

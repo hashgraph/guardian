@@ -309,6 +309,8 @@ export class LogsApi {
         @Query('pageSize') pageSize?: number,
         @Query('orderField') orderField?: string,
         @Query('orderDir') orderDir?: string,
+        @Query('type') type?: string,
+        @Query('tokenId') tokenId?: string
 
     ): Promise<any> {
         return await this.send<IPage<any>>(IndexerMessageAPI.GET_LOG_TOKENS,
@@ -316,7 +318,9 @@ export class LogsApi {
                 pageIndex,
                 pageSize,
                 orderField,
-                orderDir
+                orderDir,
+                type,
+                tokenId
             }
         );
     }

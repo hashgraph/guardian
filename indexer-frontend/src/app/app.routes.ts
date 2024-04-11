@@ -5,9 +5,11 @@ import { TopicsComponent } from './views/logs/topics/topics.component';
 import { DocumentsComponent } from './views/logs/documents/documents.component';
 import { TokensComponent } from './views/logs/tokens/tokens.component';
 import { NftsComponent } from './views/logs/nfts/nfts.component';
+import { ElasticComponent } from './views/elastic/elastic.component';
 
 export const routes: Routes = [
     { path: 'status', component: StatusComponent },
+    { path: 'elastic', component: ElasticComponent },
     { path: 'messages', component: MessagesComponent },
     { path: 'topics', component: TopicsComponent },
     { path: 'documents', component: DocumentsComponent },

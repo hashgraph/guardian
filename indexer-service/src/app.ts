@@ -5,6 +5,7 @@ import { ClientsModule, MicroserviceOptions, Transport } from '@nestjs/microserv
 import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, entities } from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
 import { LogService } from './api/log.service.js';
+import { ElasticService } from './api/elastic.service.js';
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 
@@ -23,7 +24,8 @@ const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.Gen
     ],
     controllers: [
         ChannelService,
-        LogService
+        LogService,
+        ElasticService
     ]
 })
 class AppModule { }

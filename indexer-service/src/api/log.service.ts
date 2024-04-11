@@ -16,26 +16,6 @@ import {
 
 @Controller()
 export class LogService {
-    private async loadFile(filename: string): Promise<string> {
-        try {
-            const files = await DataBaseHelper.gridFS.find({ filename }).toArray();
-            if (files.length === 0) {
-                return null;
-            }
-            const file = files[0];
-            const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
-            const bufferArray = [];
-            for await (const data of fileStream) {
-                bufferArray.push(data);
-            }
-            const buffer = Buffer.concat(bufferArray);
-            return buffer.toString();
-        } catch (error) {
-            console.error(error);
-            return null;
-        }
-    }
-
     /**
      * Get all messages
      * @param msg options
@@ -183,8 +163,12 @@ export class LogService {
             for (const row of rows) {
                 row.documents = [];
                 for (const fileName of row.files) {
-                    const file = await this.loadFile(fileName);
-                    row.documents.push(file);
+                    try {
+                        const file = await DataBaseHelper.loadFile(fileName);
+                        row.documents.push(file);
+                    } catch (error) {
+                        row.documents.push(null);
+                    }
                 }
             }
 
@@ -240,12 +224,27 @@ export class LogService {
             orderField?: string;
             orderDir?: string;
             //filters
+            type?: number;
+            tokenId?: string;
         }
     ) {
         try {
-            const { pageIndex, pageSize, orderField, orderDir } = msg;
+            const {
+                pageIndex,
+                pageSize,
+                orderField,
+                orderDir,
+                type,
+                tokenId
+            } = msg;
 
             const filters: any = {};
+            if (type) {
+                filters.type = type;
+            }
+            if (tokenId) {
+                filters.tokenId = tokenId;
+            }
             const em = DataBaseHelper.getEntityManager();
             const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
             const [rows, count] = await em.findAndCount(TokenCache, filters, options);

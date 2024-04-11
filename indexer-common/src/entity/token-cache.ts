@@ -27,4 +27,22 @@ export class TokenCache {
 
     @Property()
     hasNext: boolean;
+
+    @Property()
+    name: string;
+
+    @Property()
+    symbol: string;
+
+    @Property()
+    type: string;
+
+    @Property()
+    treasury: string;
+
+    @Property()
+    memo: string;
+
+    @Property()
+    totalSupply: any;
 }

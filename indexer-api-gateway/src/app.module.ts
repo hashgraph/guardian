@@ -5,6 +5,7 @@ import express from 'express';
 
 import { StatusApi } from './api/services/status.js';
 import { LogsApi } from './api/services/logs.js';
+import { ElasticApi } from './api/services/elastic.js';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 
@@ -23,7 +24,8 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
     ],
     controllers: [
         StatusApi,
-        LogsApi
+        LogsApi,
+        ElasticApi
     ],
     providers: [
         // LoggerService,
