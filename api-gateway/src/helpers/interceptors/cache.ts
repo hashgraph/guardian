@@ -10,8 +10,7 @@ import { CACHE, META_DATA } from '../../constants/index.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  constructor(private readonly cacheService: CacheService) {
-  }
+  constructor(private readonly cacheService: CacheService) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest();

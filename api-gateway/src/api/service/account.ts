@@ -14,7 +14,7 @@ import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApplicationEnvironment } from '../../environment';
 import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
 import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
-import { META_DATA } from '../../constants/index.js';
+import { CACHE, META_DATA } from '../../constants/index.js';
 import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
 
 /**
@@ -51,7 +51,6 @@ export class AccountApi {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @Get('/session')
-    @SetMetadata(`${META_DATA.TTL}/accounts/session`, 15)
     @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getSession(@Headers() headers: { [key: string]: string }): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
@@ -199,7 +198,6 @@ export class AccountApi {
 
     /**
      * Accounts
-     * use cache
      */
     @ApiOperation({
         summary: 'Returns a list of users, excluding Standard Registry and Auditors.',
@@ -230,6 +228,7 @@ export class AccountApi {
     // @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get()
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
         // await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const authHeader = req.headers.authorization;
@@ -256,7 +255,6 @@ export class AccountApi {
 
     /**
      * Get SAs
-     * use cache
      */
     @ApiOperation({
         summary: 'Returns all Standard Registries.',
@@ -284,6 +282,7 @@ export class AccountApi {
     })
     @Get('/standard-registries')
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getStandatdRegistries(@Req() req): Promise<any> {
         const authHeader = req.headers.authorization;
         const token = authHeader?.split(' ')[1];
@@ -312,7 +311,6 @@ export class AccountApi {
 
     /**
      * Get aggregated SAs
-     * use cache
      */
     @ApiOperation({
         summary: 'Returns all Standard Registries aggregated with polices and vcDocuments.',
@@ -343,6 +341,7 @@ export class AccountApi {
     })
     @Get('/standard-registries/aggregated')
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getAggregatedStandardRegistries(): Promise<any> {
         const engineService = new PolicyEngine();
         const guardians = new Guardians();
@@ -379,7 +378,6 @@ export class AccountApi {
     }
 
     /**
-     * use cache ttl 30s
      * @param headers
      */
     @ApiOperation({
@@ -408,6 +406,8 @@ export class AccountApi {
     })
     @Get('/balance')
     @HttpCode(HttpStatus.OK)
+    @SetMetadata(`${META_DATA.TTL}/accounts/balance`, CACHE.SHORT_TTL)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getBalance(@Headers() headers): Promise<any> {
         try {
             const authHeader = headers.authorization;

@@ -2,7 +2,7 @@ import { Guardians } from '@helpers/guardians';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response, UseInterceptors } from '@nestjs/common';
 import process from 'process';
 import { AuthUser, checkPermission } from '@auth/authorization-helper';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
@@ -13,6 +13,10 @@ import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-q
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '@middlewares/validation/schemas';
 import { Auth } from '@auth/auth.decorator';
+import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
+import { CACHE, META_DATA } from '../../constants/index.js';
+import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
+import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -132,6 +136,8 @@ export class SingleSchemaApi {
      */
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
+    @SetMetadata(`${META_DATA.TTL}/schema/:schemaId`, CACHE.SHORT_TTL)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getSchema(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
@@ -514,7 +520,6 @@ export class SchemaApi {
     }
 
     /**
-     * use cache
      * Get all schemas
      */
     @Get('/list/all')
@@ -539,6 +544,7 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getAll(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -556,7 +562,6 @@ export class SchemaApi {
     }
 
     /**
-     * use cache
      * Get sub schemas
      */
     @Get('/list/sub')
@@ -595,6 +600,7 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getSub(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -2192,7 +2198,6 @@ export class SchemaApi {
     }
 
     /**
-     * use cache
      * Get sub schemas
      */
     @Get('/export/template')
@@ -2222,6 +2227,7 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async exportTemplate(
         @AuthUser() user: IAuthUser,
         @Response() res: any

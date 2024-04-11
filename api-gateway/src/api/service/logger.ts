@@ -1,10 +1,12 @@
 import { IPageParameters, MessageAPI, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Req, Response, UseInterceptors } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { checkPermission } from '@auth/authorization-helper';
 import { ApiTags } from '@nestjs/swagger';
 import axios from 'axios';
+import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
+import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
 
 @Injectable()
 export class LoggerService {
@@ -79,12 +81,12 @@ export class LoggerApi {
     }
 
     /**
-     * use cache
      * @param req
      * @param res
      */
     @Get('attributes')
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getAttributes(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {

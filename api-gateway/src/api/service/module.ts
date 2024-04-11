@@ -1,12 +1,14 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Query, Req, Res, Response } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Query, Req, Res, Response, UseInterceptors } from '@nestjs/common';
 import { checkPermission } from '@auth/authorization-helper';
 import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 import { SchemaUtils } from '@helpers/schema-utils';
+import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
+import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
 
 @Controller('modules')
 @ApiTags('modules')
@@ -145,7 +147,6 @@ export class ModulesApi {
     }
 
     /**
-     * use cache
      * @param req
      * @param res
      * @param pageIndex
@@ -154,6 +155,7 @@ export class ModulesApi {
      */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getModuleSchemas(
         @Req() req,
         @Res() res,
@@ -242,7 +244,6 @@ export class ModulesApi {
     }
 
     /**
-     * use cache
      * @param req
      * @param res
      */
@@ -270,6 +271,7 @@ export class ModulesApi {
     })
     @Get('/menu')
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getMenu(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {

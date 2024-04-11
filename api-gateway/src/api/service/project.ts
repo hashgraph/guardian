@@ -1,11 +1,15 @@
 import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Req, Response } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Req, Response, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { ProjectService } from '@helpers/projects';
 import { ProjectDTO, PropertiesDTO } from '@middlewares/validation/schemas/projects';
 import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '@middlewares/validation/schemas';
 import { Guardians } from '@helpers/guardians';
+import { SetMetadata } from '../../helpers/decorators/set-metadata';
+import { CACHE, META_DATA } from '../../constants';
+import { PerformanceInterceptor } from '../../helpers/interceptors/performance';
+import { CacheInterceptor } from '../../helpers/interceptors/cache';
 
 /**
  * Projects route
@@ -146,11 +150,12 @@ export class ProjectsAPI {
     }
 
     /**
-     * use cache long ttl
      * @param req
      * @param res
      */
     @Get('/properties')
+    @SetMetadata(`${META_DATA.TTL}/projects/properties`, CACHE.LONG_TTL)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     @ApiOperation({
         summary: 'Get all properties',
         description: 'Get all properties',

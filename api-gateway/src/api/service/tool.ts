@@ -10,6 +10,8 @@ import { ServiceError } from '@helpers/service-requests-base';
 import { InternalServerErrorDTO, TaskDTO, ToolDTO } from '@middlewares/validation/schemas';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
+import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -963,7 +965,6 @@ export class ToolsApi {
     }
 
     /**
-     * use cache
      * Policy config menu
      */
     @Get('/menu/all')
@@ -990,6 +991,7 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async getMenu(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {

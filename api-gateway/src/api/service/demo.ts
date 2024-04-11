@@ -3,19 +3,18 @@ import { Users } from '@helpers/users';
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
-import { Controller, Get, HttpCode, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { TaskAction, UserRole } from '@guardian/interfaces';
 import { RegisteredUsersDTO } from '@middlewares/validation/schemas';
 import { AuthUser } from '@auth/authorization-helper';
 import { Auth } from '@auth/auth.decorator';
+import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
+import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
 
 @Controller('demo')
 @ApiTags('demo')
 export class DemoApi {
-    /**
-     * use cache
-     */
     @ApiOperation({
         summary: 'Returns list of registered users.',
         description: 'Returns list of registered users.',
@@ -29,6 +28,7 @@ export class DemoApi {
     })
     @Get('/registered-users')
     @HttpCode(HttpStatus.OK)
+    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
     async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
         const guardians = new Guardians();
