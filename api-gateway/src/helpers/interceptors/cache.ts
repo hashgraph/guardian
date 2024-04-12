@@ -35,7 +35,12 @@ export class CacheInterceptor implements NestInterceptor {
         return next.handle().pipe(
           tap(async response => {
             if (response) {
-              await this.cacheService.set(cacheKey, JSON.stringify(response), ttl);
+              try {
+                await this.cacheService.set(cacheKey, JSON.stringify(response), ttl);
+              } catch(error) {
+                console.log('catch error', error);
+                console.log('catch response', response);
+              }
             }
           }),
         );

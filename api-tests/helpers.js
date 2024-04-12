@@ -1,5 +1,6 @@
-const axios = require("axios");
-const BASE_URL = 'http://localhost:3002'
+import axios from 'axios';
+
+const BASE_URL = 'http://localhost:3002';
 
 let tokens = [
 ];
@@ -139,11 +140,11 @@ function GenerateUUIDv4() {
     });
 }
 
-module.exports = {
+export {
     sleep,
     GetURL,
     SaveToken,
     GetToken,
     GenerateTokens,
-    GenerateUUIDv4
-}
+    GenerateUUIDv4,
+};

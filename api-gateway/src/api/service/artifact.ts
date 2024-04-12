@@ -1,6 +1,6 @@
 import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import {
     Controller,
     Delete,
@@ -14,7 +14,7 @@ import {
     UploadedFiles,
     UseInterceptors,
 } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiExtraModels,
     ApiInternalServerErrorResponse,
@@ -28,10 +28,10 @@ import {
     ApiBody,
     ApiConsumes
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { ArtifactDTOItem } from '@middlewares/validation/schemas/artifacts';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('artifacts')

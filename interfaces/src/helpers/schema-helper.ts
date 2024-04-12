@@ -1,9 +1,9 @@
-import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '..';
-import { SchemaDataTypes } from '../interface/schema-document.interface';
-import { Schema } from '../models/schema';
-import geoJson from './geojson-schema/geo-json';
-import { ModelHelper } from './model-helper';
-import SentinelHubSchema from './sentinel-hub/sentinel-hub-schema';
+import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '../index.js';
+import { SchemaDataTypes } from '../interface/schema-document.interface.js';
+import { Schema } from '../models/schema.js';
+import geoJson from './geojson-schema/geo-json.js';
+import { ModelHelper } from './model-helper.js';
+import SentinelHubSchema from './sentinel-hub/sentinel-hub-schema.js';
 
 /**
  * Schema helper class

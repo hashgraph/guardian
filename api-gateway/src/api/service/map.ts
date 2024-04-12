@@ -1,7 +1,7 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { Controller, Get, HttpCode, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { SetMetadata } from '@helpers/decorators/set-metadata';
+import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
 import { CACHE, META_DATA } from '../../constants/index.js';
 import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
 import { CacheInterceptor } from '../../helpers/interceptors/cache.js';

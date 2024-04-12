@@ -1,7 +1,7 @@
 import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { PolicyContainer } from '@helpers/policy-container';
-import { startMetricsServer } from './utils/metrics';
+import { PolicyContainer } from './helpers/policy-container.js';
+import { startMetricsServer } from './utils/metrics.js';
 
 export const obj = {};
 

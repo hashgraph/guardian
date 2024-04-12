@@ -1,8 +1,8 @@
-import { CompareOptions, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
-import { IProperties } from '../interfaces/properties.interface';
-import { PropertyType } from '../types/property.type';
-import { SchemaModel } from './schema.model';
-import { TokenModel } from './token.model';
+import { CompareOptions, IIdLvl, IKeyLvl, IPropertiesLvl } from '../interfaces/compare-options.interface.js';
+import { IProperties } from '../interfaces/properties.interface.js';
+import { PropertyType } from '../types/property.type.js';
+import { SchemaModel } from './schema.model.js';
+import { TokenModel } from './token.model.js';
 
 /**
  * Property Model

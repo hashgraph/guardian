@@ -1,6 +1,6 @@
-import { UserRole } from '../type/user-role.type';
-import { IDidObject } from './did-object.interface';
-import { IVCDocument } from './vc-document.interface';
+import { UserRole } from '../type/user-role.type.js';
+import { IDidObject } from './did-object.interface.js';
+import { IVCDocument } from './vc-document.interface.js';
 
 /**
  * Session interface

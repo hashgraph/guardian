@@ -1,6 +1,7 @@
-import { IAuthUser } from '@api/auth.interface';
-import { sign, verify } from 'jsonwebtoken';
-import { User } from '@entity/user';
+import { IAuthUser } from './auth.interface.js';
+import pkg from 'jsonwebtoken';
+
+import { User } from '../entity/user.js';
 import * as util from 'util';
 import crypto from 'crypto';
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
@@ -24,6 +25,8 @@ import {
     IUser,
     UserRole
 } from '@guardian/interfaces';
+
+const { sign, verify } = pkg;
 
 /**
  * Account service

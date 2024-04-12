@@ -40,7 +40,7 @@ services:
             - ./:/app
             - ~/.npm/:/root/.npm
         restart: "no"
-        command: 'node dev.js'
+        command: 'node dev.mjs'
 
     logger-service:
         image: guardian-development

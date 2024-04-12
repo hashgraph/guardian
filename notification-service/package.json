@@ -8,8 +8,8 @@
   "dependencies": {
     "@guardian/common": "^2.23.1",
     "@guardian/interfaces": "^2.23.1",
-    "@mikro-orm/core": "5.7.12",
-    "@mikro-orm/mongodb": "5.7.12",
+    "@mikro-orm/core": "^6.1.11",
+    "@mikro-orm/mongodb": "^6.1.11",
     "@nestjs/common": "^9.4.1",
     "@nestjs/core": "^9.4.1",
     "@nestjs/microservices": "^9.4.1",
@@ -53,5 +53,6 @@
     "start": "node dist/index.js",
     "watch": "nodemon src/index.ts"
   },
+  "type": "module",
   "version": "2.23.1"
 }

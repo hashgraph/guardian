@@ -1,7 +1,7 @@
-import { Singleton } from '@helpers/decorators/singleton';
+import { Singleton } from '../helpers/decorators/singleton.js';
 import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
-import { NewTask } from './task-manager';
+import { NewTask } from './task-manager.js';
 
 /**
  * Policy engine service

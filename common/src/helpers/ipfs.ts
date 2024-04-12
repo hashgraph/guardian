@@ -1,6 +1,6 @@
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
-import { Workers } from './workers';
-import { MessageBrokerChannel } from '../mq';
+import { Workers } from './workers.js';
+import { MessageBrokerChannel } from '../mq/index.js';
 
 /**
  * IPFS service

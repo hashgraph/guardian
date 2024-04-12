@@ -1,5 +1,5 @@
 import { Artifact } from '@guardian/common';
-import { CompareOptions } from '../interfaces/compare-options.interface';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
 import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'crypto';
 

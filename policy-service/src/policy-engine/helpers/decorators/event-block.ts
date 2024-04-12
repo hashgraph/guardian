@@ -1,7 +1,7 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
-import { BasicBlock } from './basic-block';
-import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
+import { BasicBlock } from './basic-block.js';
+import { BlockActionError } from '../../errors/index.js';
+import { IPolicyUser } from '../../policy-user.js';
 import { PolicyType } from '@guardian/interfaces';
 
 /**

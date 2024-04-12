@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
-import { Record } from '../entity';
-import { DatabaseServer } from '../database-modules';
+import { Record } from '../entity/index.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * Record result

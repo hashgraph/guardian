@@ -1,6 +1,6 @@
 import { Entity, Property } from '@mikro-orm/core';
 import { IWalletAccount } from '@guardian/interfaces';
-import { BaseEntity } from '../../models';
+import { BaseEntity } from '../../models/index.js';
 
 /**
  * Wallet collection

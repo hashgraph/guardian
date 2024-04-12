@@ -21,7 +21,7 @@ import {
     SchemaCategory,
     SchemaHelper,
 } from '@guardian/interfaces';
-import { INotifier } from '@helpers/notifier';
+import { INotifier } from '../../helpers/notifier.js';
 
 export class PolicyDataMigrator {
     constructor(

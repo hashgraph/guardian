@@ -1,13 +1,13 @@
 import axios from 'axios';
-import PubSub from 'connections/pub-subs/interfaces/PubSub';
-import WebhookService from './WebhookService';
+import PubSub from '../connections/pub-subs/interfaces/PubSub.js';
+import WebhookService from './WebhookService.js';
 
 import {
   PolicyEvents,
   PolicyEngineEvents,
   ExternalMessageEvents
 } from '@guardian/interfaces';
-import WebhookStore from '../singletons/WebhookStore';
+import WebhookStore from '../singletons/WebhookStore.js';
 
 const avoidEvents = [
   'WRITE_LOG',

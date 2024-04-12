@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { GroupCategories } from './general-helper';
+
+import { GroupCategories } from './general-helper.js';
+import { PolicyDescription } from '../models/models.js';
 import { PolicyCategoryType } from '@guardian/interfaces';
-import { PolicyDescription } from '../models/models';
 import { Logger, Policy, PolicyCategory } from '@guardian/common';
 
 const MIN_DESCRIPTION_WORDS = 5;

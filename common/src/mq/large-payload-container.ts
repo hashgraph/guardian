@@ -1,7 +1,7 @@
 import express from 'express'
 import { hostname } from 'os';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Singleton } from '../decorators/singleton';
+import { Singleton } from '../decorators/singleton.js';
 
 /**
  * Large objects container

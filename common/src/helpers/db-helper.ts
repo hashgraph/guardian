@@ -1,14 +1,14 @@
-import { MikroORM, UseRequestContext, wrap } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext, wrap } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
-import { BaseEntity } from '../models';
-import { DataBaseNamingStrategy } from './db-naming-strategy';
+import { BaseEntity } from '../models/index.js';
+import { DataBaseNamingStrategy } from './db-naming-strategy.js';
 import { GridFSBucket } from 'mongodb';
 
 /**
  * Common connection config
  */
 export const COMMON_CONNECTION_CONFIG: any = {
-    type: 'mongo',
+    driver: MongoDriver,
     namingStrategy: DataBaseNamingStrategy,
     dbName: (process.env.GUARDIAN_ENV || (process.env.HEDERA_NET !== process.env.PREUSED_HEDERA_NET)) ?
         `${process.env.GUARDIAN_ENV}_${process.env.HEDERA_NET}_${process.env.DB_DATABASE}` :
@@ -88,7 +88,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param filters filters
      * @returns Count
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async delete(filters: any | string | ObjectId): Promise<number> {
         return await this._em.nativeDelete(this.entityClass, filters);
     }
@@ -97,7 +97,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * Remove entities or entity
      * @param entity Entities or entity
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async remove(entity: T | T[]): Promise<void> {
         if (Array.isArray(entity)) {
             for (const element of entity) {
@@ -137,7 +137,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param pipeline Pipeline
      * @returns Result
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async aggregate(pipeline: any[]): Promise<any[]> {
         const aggregateEntities = await this._em.aggregate(
             this.entityClass,
@@ -169,7 +169,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entities and count
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async findAndCount(filters: any | string | ObjectId, options?: any): Promise<[T[], number]> {
         return await this._em.findAndCount(this.entityClass, filters?.where || filters, options);
     }
@@ -180,7 +180,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Count
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async count(filters?: any | string | ObjectId, options?: any): Promise<number> {
         return await this._em.count(this.entityClass, filters?.where || filters, options);
     }
@@ -191,7 +191,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entities
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async find(filters?: any | string | ObjectId, options?: any): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).find(filters?.where || filters || {}, options);
     }
@@ -201,7 +201,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entities
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async findAll(options?: any): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).findAll(options);
     }
@@ -212,7 +212,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entity
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async findOne(filter: any | string | ObjectId, options: any = {}): Promise<T | null> {
         return await this._em.getRepository<T>(this.entityClass).findOne(filter?.where || filter, options);
     }
@@ -230,7 +230,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities
      */
     public async save(entites: any[]): Promise<T[]>;
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async save(
         entity: any,
         filter?: any
@@ -246,7 +246,7 @@ export class DataBaseHelper<T extends BaseEntity> {
         const repository = this._em.getRepository(this.entityClass);
         if (!entity.id && !entity._id && !filter) {
             const e = repository.create(Object.assign({}, entity));
-            await repository.persistAndFlush(e);
+            await this._em.persistAndFlush(e);
             return e;
         }
 
@@ -257,13 +257,16 @@ export class DataBaseHelper<T extends BaseEntity> {
                     entity[systemFileField] = entityToUpdateOrCreate[systemFileField];
                 }
             });
-            wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
+            wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() }, { merge: false });
         } else {
             entityToUpdateOrCreate = repository.create({ ...entity });
-            await repository.persist(entityToUpdateOrCreate);
+            this._em.persist(entityToUpdateOrCreate);
         }
-        await repository.flush();
-        return entityToUpdateOrCreate;
+
+        await this._em.flush();
+        await this._em.persistAndFlush(entityToUpdateOrCreate);
+
+      return entityToUpdateOrCreate;
     }
 
     /**
@@ -278,7 +281,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param entities Entities
      */
     public async update(entities: any[]): Promise<T[]>;
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async update(
         entity: any | any[],
         filter?: any
@@ -303,9 +306,9 @@ export class DataBaseHelper<T extends BaseEntity> {
                     entity[systemFileField] = entityToUpdate[systemFileField];
                 }
             });
-            wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
+            wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() }, { mergeObjectProperties: false });
         }
-        await repository.flush();
+        await this._em.flush();
         return entitiesToUpdate.length === 1
             ? entitiesToUpdate[0]
             : entitiesToUpdate;
@@ -316,7 +319,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param data Data
      * @param amount Amount
      */
-    @UseRequestContext(() => DataBaseHelper.orm)
+    @CreateRequestContext(() => DataBaseHelper.orm)
     public async createMuchData(data: any, amount: number): Promise<void> {
         const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
         delete data.id;

@@ -11428,6 +11428,27 @@ components:
         - right
         - total
         - documents
+    RegisteredUsersDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        did:
+          type: string
+        parent:
+          type: string
+        role:
+          type: string
+        policyRoles:
+          type: array
+          items:
+            type: string
+      required:
+        - username
+        - did
+        - parent
+        - role
+        - policyRoles
     ToolDTO:
       type: object
       properties:
@@ -11468,27 +11489,6 @@ components:
         - messageId
         - codeVersion
         - createDate
-    RegisteredUsersDTO:
-      type: object
-      properties:
-        username:
-          type: string
-        did:
-          type: string
-        parent:
-          type: string
-        role:
-          type: string
-        policyRoles:
-          type: array
-          items:
-            type: string
-      required:
-        - username
-        - did
-        - parent
-        - role
-        - policyRoles
     Credentials:
       type: object
       required:

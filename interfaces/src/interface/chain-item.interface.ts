@@ -1,4 +1,4 @@
-import { IconType, IVCDocument, IVPDocument } from '..';
+import { IconType, IVCDocument, IVPDocument } from '../index.js';
 
 /**
  * Chain item interface

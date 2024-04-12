@@ -2,11 +2,13 @@
 
 import { spawnSync } from 'child_process';
 import { Command } from 'commander';
-import { PolicyPublisher } from './helpers/policy-publisher.helper';
+
+import { PolicyPublisher } from './helpers/policy-publisher.helper.js';
 import {
-    ContractPublisher,
-    Network,
-} from './helpers/contract-publisher.helper';
+  ContractPublisher,
+  Network,
+} from './helpers/contract-publisher.helper.js';
+
 
 const GUARDIAN_REPOSITORY = 'https://github.com/hashgraph/guardian';
 

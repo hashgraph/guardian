@@ -1,7 +1,7 @@
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from 'mongodb'
-import { BaseEntity } from '../models';
-import { DataBaseHelper } from '../helpers';
+import { BaseEntity } from '../models/index.js';
+import { DataBaseHelper } from '../helpers/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 @Entity()

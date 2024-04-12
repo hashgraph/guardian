@@ -1,11 +1,41 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { ContractType, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response, UseInterceptors } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
-import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, } from '@middlewares/validation/schemas/contracts';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+  Req,
+  Response, UseInterceptors,
+} from '@nestjs/common';
+import { checkPermission } from '../../auth/authorization-helper.js';
+import {
+    ApiInternalServerErrorResponse,
+    ApiOkResponse,
+    ApiCreatedResponse,
+    ApiOperation,
+    ApiUnauthorizedResponse,
+    ApiExtraModels,
+    ApiForbiddenResponse,
+    ApiTags,
+    ApiBody,
+    ApiBearerAuth,
+    ApiQuery,
+    ApiParam,
+} from '@nestjs/swagger';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import {
+    ContractDTO,
+    RetirePoolDTO,
+    RetirePoolTokenDTO,
+    RetireRequestDTO,
+    RetireRequestTokenDTO,
+    WiperRequestDTO,
+} from '../../middlewares/validation/schemas/contracts.js';
 import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
 import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
 

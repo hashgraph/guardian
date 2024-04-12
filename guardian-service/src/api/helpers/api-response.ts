@@ -1,6 +1,6 @@
 import { ApplicationState, MessageInitialization, MessageResponse } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { GuardiansService } from '@helpers/guardians';
+import { GuardiansService } from '../../helpers/guardians.js';
 
 /**
  * API response

@@ -1,4 +1,4 @@
-import { IReportTable } from './report-table.interface';
+import { IReportTable } from './report-table.interface.js';
 
 /**
  * Compare Result

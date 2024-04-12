@@ -1,7 +1,7 @@
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { TopicConfig, MessageAction, MessageServer, TopicMessage } from '.';
-import { TopicMemo } from './memo-mappings/topic-memo';
-import { Workers } from '../helpers';
+import { TopicConfig, MessageAction, MessageServer, TopicMessage } from './index.js';
+import { TopicMemo } from './memo-mappings/topic-memo.js';
+import { Workers } from '../helpers/index.js';
 
 /**
  * Topic Helper

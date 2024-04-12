@@ -1,8 +1,8 @@
 import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
-import { Auth } from '@auth/auth.decorator';
+import { Auth } from '../../auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
 import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
 import { CacheInterceptor } from '../../helpers/interceptors/cache.js';

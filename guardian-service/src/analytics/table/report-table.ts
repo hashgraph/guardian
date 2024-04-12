@@ -1,6 +1,6 @@
-import { IKeyMap } from 'analytics/compare/interfaces/key-map.interface';
-import { IColumn } from './report-column';
-import { ReportRow } from './report-row';
+import { IKeyMap } from 'analytics/compare/interfaces/key-map.interface.js';
+import { IColumn } from './report-column.js';
+import { ReportRow } from './report-row.js';
 
 /**
  * Table

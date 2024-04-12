@@ -1,7 +1,7 @@
 import { DefaultAzureCredential } from '@azure/identity';
 import { SecretClient } from '@azure/keyvault-secrets';
-import { SecretManagerBase } from '../secret-manager-base';
-import { IAzureSecretManagerConfigs } from './azure-secret-manager-configs';
+import { SecretManagerBase } from '../secret-manager-base.js';
+import { IAzureSecretManagerConfigs } from './azure-secret-manager-configs.js';
 
 /**
  * This class is responsible for managing secrets in Azure Secret Manager
