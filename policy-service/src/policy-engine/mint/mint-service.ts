@@ -1,4 +1,4 @@
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType } from '../policy-engine.interface.js';
 import {
     ContractParamType,
     ExternalMessageEvents,
@@ -27,11 +27,11 @@ import {
     Workers,
 } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
-import { TokenConfig } from './configs/token-config';
-import { MintNFT } from './types/mint-nft';
-import { MintFT } from './types/mint-ft';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { TokenConfig } from './configs/token-config.js';
+import { MintNFT } from './types/mint-nft.js';
+import { MintFT } from './types/mint-ft.js';
 
 /**
  * Mint Service

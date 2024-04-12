@@ -6,7 +6,7 @@ import {
     PropertyType,
     SchemaModel,
     TokenModel
-} from '@analytics';
+} from '../analytics/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Migration } from '@mikro-orm/migrations-mongodb';
 import { GridFSBucket, ObjectId } from 'mongodb';

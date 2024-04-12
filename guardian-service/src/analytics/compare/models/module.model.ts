@@ -1,11 +1,11 @@
 import { PolicyModule } from '@guardian/common';
-import { BlockModel } from './block.model';
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { PropertyModel } from './property.model';
-import { PropertyType } from '../types/property.type';
-import { VariableModel } from './variable.model';
-import { CompareUtils } from '../utils/utils';
+import { BlockModel } from './block.model.js';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { PropertyModel } from './property.model.js';
+import { PropertyType } from '../types/property.type.js';
+import { VariableModel } from './variable.model.js';
+import { CompareUtils } from '../utils/utils.js';
 
 /**
  * Policy Model

@@ -1,4 +1,4 @@
-import { ReportTable } from './report-table';
+import { ReportTable } from './report-table.js';
 
 /**
  * Row

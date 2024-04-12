@@ -1,14 +1,14 @@
-import '../config'
+import '../config.js'
 import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, NotificationService, OldSecretManager, Users, Workers } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
-import { PolicyValidator } from '@policy-engine/block-validators';
+import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import process from 'process';
-import { CommonVariables } from '@helpers/common-variables';
+import { CommonVariables } from '../helpers/common-variables.js';
 import { PolicyEvents } from '@guardian/interfaces';
 import { GridFSBucket } from 'mongodb';
-import { SynchronizationService } from '@policy-engine/multi-policy-service';
+import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

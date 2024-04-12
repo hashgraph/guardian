@@ -1,5 +1,5 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import {
     Entity,
@@ -10,7 +10,7 @@ import {
     BeforeUpdate,
     AfterDelete,
 } from '@mikro-orm/core';
-import { DataBaseHelper } from '../helpers';
+import { DataBaseHelper } from '../helpers/index.js';
 
 /**
  * Block state

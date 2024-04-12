@@ -1,11 +1,11 @@
-import { ActionCallback, ContainerBlock, StateField } from '@policy-engine/helpers/decorators';
-import { BlockActionError } from '@policy-engine/errors';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType, SelectItemType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ActionCallback, ContainerBlock, StateField } from '../helpers/decorators/index.js';
+import { BlockActionError } from '../errors/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType, SelectItemType } from '../interfaces/block-about.js';
+import { IPolicyUser } from '../policy-user.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Step block
@@ -59,7 +59,7 @@ export class InterfaceStepBlock {
      * Block state
      */
     @StateField()
-    state: { [key: string]: any } = { index: 0 };
+    declare state: { [key: string]: any };
     /**
      * Final steps
      */
@@ -69,6 +69,8 @@ export class InterfaceStepBlock {
      * Before init callback
      */
     public async beforeInit(): Promise<void> {
+        this.state = {}
+
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         this.endIndexes[ref.children.length - 1] = true;
         if (ref.options?.finalBlocks && Array.isArray(ref.options.finalBlocks)) {

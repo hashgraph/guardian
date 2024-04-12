@@ -1,5 +1,5 @@
-import { ApiResponse } from '../../helpers/api-response';
-import { AIManager } from '../../ai-manager';
+import { ApiResponse } from '../../helpers/api-response.js';
+import { AIManager } from '../../ai-manager.js';
 import { MessageAPI } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common';
 

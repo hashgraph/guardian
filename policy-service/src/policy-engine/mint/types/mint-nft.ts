@@ -5,10 +5,10 @@ import {
     MintRequest,
 } from '@guardian/common';
 import { MintTransactionStatus, WorkerTaskType } from '@guardian/interfaces';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IHederaCredentials } from '@policy-engine/policy-user';
-import { TypedMint } from './typed-mint';
-import { TokenConfig } from '../configs/token-config';
+import { PolicyUtils } from '../../helpers/utils.js';
+import { IHederaCredentials } from '../../policy-user.js';
+import { TypedMint } from './typed-mint.js';
+import { TokenConfig } from '../configs/token-config.js';
 
 /**
  * Mint NFT

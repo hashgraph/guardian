@@ -1,17 +1,17 @@
-import { Auth } from '@auth/auth.decorator';
-import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { Auth } from '../../auth/auth.decorator.js';
+import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '@helpers/policy-engine';
-import { ProjectService } from '@helpers/projects';
-import { ServiceError } from '@helpers/service-requests-base';
-import { TaskManager } from '@helpers/task-manager';
-import { Users } from '@helpers/users';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { PolicyEngine } from '../../helpers/policy-engine.js';
+import { ProjectService } from '../../helpers/projects.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { Users } from '../../helpers/users.js';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import {
     MigrationConfigDTO,
     PolicyCategoryDTO,
-} from '@middlewares/validation/schemas/policies';
+} from '../../middlewares/validation/schemas/policies.js';
 import {
     Body,
     Controller,
@@ -46,8 +46,8 @@ import {
     ApiUnauthorizedResponse,
     getSchemaPath,
 } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 

@@ -1,10 +1,10 @@
 import * as yup from 'yup';
-import fieldsValidation from '../fields-validation'
+import fieldsValidation from '../fields-validation.js'
 import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 import { UserRole } from '@guardian/interfaces';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { Match } from '@helpers/decorators/match.validator';
+import { Match } from '../../../helpers/decorators/match.validator.js';
 
 export class AccountsResponseDTO {
     @ApiProperty()

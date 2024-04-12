@@ -1,4 +1,4 @@
-import { Singleton } from '@helpers/decorators/singleton';
+import { Singleton } from '../helpers/decorators/singleton.js';
 import { AuthEvents, GenerateUUIDv4 } from '@guardian/interfaces';
 import { CredentialSubject, generateNumberFromString, MeecoApprovedSubmission, MeecoJwt, NatsService, Vc, VerifiableCredential } from '@guardian/common';
 import * as jwt from 'jsonwebtoken';

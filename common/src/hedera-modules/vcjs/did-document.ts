@@ -1,6 +1,6 @@
 import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
-import { Environment } from '../environment';
-import { Hashing } from '../hashing';
+import { Environment } from '../environment.js';
+import { Hashing } from '../hashing.js';
 import { IVerificationMethod, IDidDocument } from '@guardian/interfaces';
 import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
 

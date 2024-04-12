@@ -1,10 +1,10 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { ITokenInfo, TaskAction, UserRole } from '@guardian/interfaces';
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { PolicyEngine } from '@helpers/policy-engine';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
-import { prepareValidationResponse } from '@middlewares/validation';
+import { PolicyEngine } from '../../helpers/policy-engine.js';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
+import { prepareValidationResponse } from '../../middlewares/validation/index.js';
 import {
     Controller,
     Delete,
@@ -17,7 +17,7 @@ import {
     Req,
     Response,
 } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
@@ -32,8 +32,8 @@ import {
     ApiSecurity,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
-import { Auth } from '@auth/auth.decorator';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 /**
  * Token route

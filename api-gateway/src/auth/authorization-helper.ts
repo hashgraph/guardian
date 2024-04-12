@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { Users } from '@helpers/users';
+import { Users } from '../helpers/users.js';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 

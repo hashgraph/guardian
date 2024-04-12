@@ -1,8 +1,8 @@
-import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface';
-import { FieldModel } from './field.model';
-import { SchemaDocumentModel } from './schema-document.model';
+import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface.js';
+import { FieldModel } from './field.model.js';
+import { SchemaDocumentModel } from './schema-document.model.js';
 import { Policy, PolicyTool, Schema as SchemaCollection } from '@guardian/common';
-import { HashUtils } from '../utils/hash-utils';
+import { HashUtils } from '../utils/hash-utils.js';
 
 /**
  * Schema Model

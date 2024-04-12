@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.yarn \
 FROM base as deps
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
-COPY --link auth-service/package.json auth-service/tsconfig*.json auth-service/Gulpfile.js yarn.lock ./
+COPY --link auth-service/package.json auth-service/tsconfig*.json auth-service/Gulpfile.mjs yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN --mount=type=cache,target=/root/.yarn,sharing=private \
     yarn install --prod
@@ -36,7 +36,7 @@ RUN --mount=type=cache,target=/root/.yarn,sharing=private \
 FROM base as build
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
-COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/Gulpfile.js /usr/local/app/yarn.lock ./
+COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/Gulpfile.mjs /usr/local/app/yarn.lock ./
 COPY --link auth-service/environments environments/
 COPY --link auth-service/src src/
 RUN --mount=type=cache,target=/root/.yarn \

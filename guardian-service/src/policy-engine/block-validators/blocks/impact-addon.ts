@@ -1,5 +1,5 @@
-import { BlockValidator, IBlockProp, PropertyValidator } from '@policy-engine/block-validators';
-import { CommonBlock } from './common';
+import { BlockValidator, IBlockProp, PropertyValidator } from '../../block-validators/index.js';
+import { CommonBlock } from './common.js';
 
 /**
  * Calculate math addon

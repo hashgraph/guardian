@@ -1,7 +1,7 @@
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
+import { PolicyUtils } from '../helpers/utils.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
+import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type.js';
 
 /**
  * Event callback type
