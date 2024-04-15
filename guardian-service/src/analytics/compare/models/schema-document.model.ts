@@ -70,8 +70,8 @@ export class SchemaDocumentModel {
                 field.setSubSchema(subSchema);
             }
             fields.push(field);
-        };
-        
+        }
+
         return fields;
     }
 
@@ -94,19 +94,23 @@ export class SchemaDocumentModel {
         }
 
         const conditions: ConditionModel[] = [];
-        const allOfKeys = Object.keys(document.allOf);
+        const fieldsMap = new Map(fields.map(field => [field.name, field]));
+        const combinedDefs = document.$defs || defs;
 
-        for (const oneOf of allOfKeys) {
-            const condition = document.allOf[oneOf];
+        for (const condition of document.allOf) {
             if (!condition.if) {
                 continue;
             }
             const ifConditionFieldName = Object.keys(condition.if.properties)[0];
+            const field = fieldsMap.get(ifConditionFieldName);
+            if (!field) {
+                continue;
+            }
             const ifFieldValue = condition.if.properties[ifConditionFieldName].const;
-            const thenFields = this.parseFields(condition.then, document.$defs || defs, cache);
-            const elseFields = this.parseFields(condition.else, document.$defs || defs, cache);
+            const thenFields = this.parseFields(condition.then, combinedDefs, cache);
+            const elseFields = this.parseFields(condition.else, combinedDefs, cache);
             conditions.push(new ConditionModel(
-                fields.find(field => field.name === ifConditionFieldName),
+                field,
                 ifFieldValue,
                 thenFields,
                 elseFields
