@@ -13,7 +13,7 @@ export class ElasticHelper {
     }
 
     public getIndexName(value: any): string {
-        return String((value || '')).toLowerCase().replaceAll(' ', '_');
+        return String((value || '') + '-messages').toLowerCase().replaceAll(' ', '-');
     }
 
     public async getIndex(value: any): Promise<string> {
