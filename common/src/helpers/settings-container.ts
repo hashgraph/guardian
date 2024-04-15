@@ -1,7 +1,7 @@
-import { Singleton } from '../decorators/singleton';
-import { Logger } from './logger';
+import { Singleton } from '../decorators/singleton.js';
+import { Logger } from './logger.js';
 import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
-import { NatsService } from '../mq';
+import { NatsService } from '../mq/index.js';
 
 /**
  * Application settings container

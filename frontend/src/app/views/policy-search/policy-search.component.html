@@ -6,7 +6,7 @@
         <h1>Search for Policies</h1>
         <mat-tab-group (selectedIndexChange)="onChange($event)" *ngIf="!loading && isConfirmed"
                        [selectedIndex]="selectedIndex" style="height: calc(100vh - 120px);">
-            <mat-tab label="Search with AI">
+            <mat-tab *useWithServiceDecorator="'AI_SERVICE'" label="Search with AI">
                 <app-policy-ai-search></app-policy-ai-search>
             </mat-tab>
             <mat-tab label="Guided Search">

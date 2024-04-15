@@ -1,4 +1,4 @@
-import { PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
+import { PolicyInputEventType, PolicyOutputEventType } from './policy-event-type.js';
 
 /**
  * Children type

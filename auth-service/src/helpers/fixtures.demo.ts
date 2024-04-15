@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { User } from '@entity/user';
+import { User } from '../entity/user.js';
 import { UserRole } from '@guardian/interfaces';
 import { DataBaseHelper } from '@guardian/common';
 

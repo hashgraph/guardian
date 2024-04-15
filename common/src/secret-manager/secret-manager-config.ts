@@ -1,8 +1,8 @@
-import { AwsSecretManagerConfigs } from './aws/aws-secret-manager-configs'
-import { AzureSecretManagerConfigs } from './azure/azure-secret-manager-configs'
-import { GcpSecretManagerConfigs } from './gcp/gcp-secret-manager-configs'
-import { HcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs'
-import { ISecretManagerConfigs } from './secret-manager-config-base'
+import { AwsSecretManagerConfigs } from './aws/aws-secret-manager-configs.js'
+import { AzureSecretManagerConfigs } from './azure/azure-secret-manager-configs.js'
+import { GcpSecretManagerConfigs } from './gcp/gcp-secret-manager-configs.js'
+import { HcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs.js'
+import { ISecretManagerConfigs } from './secret-manager-config-base.js'
 
 /**
  * Enum for secret manager types

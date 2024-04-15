@@ -1,7 +1,7 @@
 import { ContractType } from '@guardian/interfaces';
-import { MessageStatus } from './message';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
+import { MessageStatus } from './message.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
 
 /**
  * Message body

@@ -1,5 +1,5 @@
 import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 

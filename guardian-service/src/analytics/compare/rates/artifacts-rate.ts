@@ -1,6 +1,6 @@
-import { Status } from '../types/status.type';
-import { ArtifactModel } from '../models/artifact.model';
-import { Rate } from './rate';
+import { Status } from '../types/status.type.js';
+import { ArtifactModel } from '../models/artifact.model.js';
+import { Rate } from './rate.js';
 
 /**
  * Calculates the difference between two Artifacts

@@ -1,7 +1,7 @@
-import { Singleton } from '@helpers/decorators/singleton';
-import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
+import { Singleton } from '../helpers/decorators/singleton.js';
+import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, PolicyToolMetadata, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
-import { NewTask } from './task-manager';
+import { NewTask } from './task-manager.js';
 
 /**
  * Filters type
@@ -168,6 +168,14 @@ export class Guardians extends NatsService {
      */
     public async setTokenAsync(token: IToken | any, owner: any, task: NewTask): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.SET_TOKEN_ASYNC, { token, owner, task });
+    }
+
+    /**
+     * Update token
+     * @param token
+     */
+    public async updateToken(token: IToken | any): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_TOKEN, { token });
     }
 
     /**
@@ -910,6 +918,24 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Add file to dry run storage
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileToDryRunStorage(buffer: any, policyId: string): Promise<{
+        /**
+         * CID
+         */
+        cid,
+        /**
+         * URL
+         */
+        url
+    }> {
+        return await this.sendMessage(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, {buffer, policyId});
+    }
+
+    /**
      * Get file from IPFS
      * @param cid CID
      * @param responseType Response type
@@ -917,6 +943,18 @@ export class Guardians extends NatsService {
      */
     public async getFileIpfs(cid: string, responseType: any): Promise<any> {
         return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
+            cid, responseType
+        });
+    }
+
+    /**
+     * Get file from dry run storage
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileFromDryRunStorage(cid: string, responseType: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_FILE_DRY_RUN_STORAGE, {
             cid, responseType
         });
     }
@@ -1912,9 +1950,10 @@ export class Guardians extends NatsService {
      * Load tool file for import
      * @param zip
      * @param owner
+     * @param metadata
      */
-    public async importToolFile(zip: any, owner: string) {
-        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner });
+    public async importToolFile(zip: any, owner: string, metadata?: PolicyToolMetadata) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner, metadata });
     }
 
     /**
@@ -1949,9 +1988,10 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      * @param task
+     * @param metadata
      */
-    public async importToolFileAsync(zip: any, owner: string, task: NewTask) {
-        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_ASYNC, { zip, owner, task });
+    public async importToolFileAsync(zip: any, owner: string, task: NewTask, metadata?: PolicyToolMetadata) {
+        return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE_ASYNC, { zip, owner, task, metadata });
     }
 
     /**

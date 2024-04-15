@@ -1,5 +1,5 @@
-import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
-import { CommonBlock } from './common';
+import { BlockValidator, IBlockProp } from '../../block-validators/index.js';
+import { CommonBlock } from './common.js';
 
 /**
  * Documents source addon

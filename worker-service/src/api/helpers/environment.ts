@@ -32,6 +32,10 @@ export class Environment {
      * Mainnet tokens API
      */
     public static readonly HEDERA_MAINNET_TOKENS_API: string = Environment.HEDERA_MAINNET_API + '/tokens';
+    /**
+     * Mainnet tokens API
+     */
+    public static readonly HEDERA_MAINNET_TRANSACTIONS_API: string = Environment.HEDERA_MAINNET_API + '/transactions';
 
     /**
      * Testnet API
@@ -61,6 +65,10 @@ export class Environment {
      * Testnet tokens API
      */
     public static readonly HEDERA_TESTNET_TOKENS_API: string = Environment.HEDERA_TESTNET_API + '/tokens';
+    /**
+     * Testnet tokens API
+     */
+    public static readonly HEDERA_TESTNET_TRANSACTIONS_API: string = Environment.HEDERA_TESTNET_API + '/transactions';
 
     /**
      * Preview API
@@ -90,6 +98,10 @@ export class Environment {
      * Preview tokens API
      */
     public static readonly HEDERA_PREVIEW_TOKENS_API: string = Environment.HEDERA_PREVIEW_API + '/tokens';
+    /**
+     * Preview tokens API
+     */
+    public static readonly HEDERA_PREVIEW_TRANSACTIONS_API: string = Environment.HEDERA_PREVIEW_API + '/transactions';
 
     /**
      * Localnode API
@@ -119,6 +131,10 @@ export class Environment {
      * Localnode tokens API
      */
     public static HEDERA_LOCALNODE_TOKENS_API: string = Environment.HEDERA_LOCALNODE_API + `/tokens/`;
+    /**
+     * Localnode tokens API
+     */
+    public static readonly HEDERA_LOCALNODE_TRANSACTIONS_API: string = Environment.HEDERA_LOCALNODE_API + '/transactions';
 
     /**
      * Localnode protocol
@@ -165,6 +181,11 @@ export class Environment {
      * @private
      */
     private static _tokensApi: string = Environment.HEDERA_TESTNET_TOKENS_API;
+    /**
+     * Tokens API
+     * @private
+     */
+    private static _transactionsApi: string = Environment.HEDERA_TESTNET_TRANSACTIONS_API;
 
     /**
      * Hedera nodes
@@ -192,6 +213,7 @@ export class Environment {
                 Environment._balancesApi = Environment.HEDERA_MAINNET_BALANCES_API;
                 Environment._contractsApi = Environment.HEDERA_MAINNET_CONTRACT_API;
                 Environment._tokensApi = Environment.HEDERA_MAINNET_TOKENS_API;
+                Environment._transactionsApi = Environment.HEDERA_MAINNET_TRANSACTIONS_API;
                 break;
 
             case 'testnet':
@@ -202,6 +224,7 @@ export class Environment {
                 Environment._balancesApi = Environment.HEDERA_TESTNET_BALANCES_API;
                 Environment._contractsApi = Environment.HEDERA_TESTNET_CONTRACT_API;
                 Environment._tokensApi = Environment.HEDERA_TESTNET_TOKENS_API;
+                Environment._transactionsApi = Environment.HEDERA_TESTNET_TRANSACTIONS_API;
                 break;
 
             case 'previewnet':
@@ -212,6 +235,7 @@ export class Environment {
                 Environment._balancesApi = Environment.HEDERA_PREVIEW_BALANCES_API;
                 Environment._contractsApi = Environment.HEDERA_PREVIEW_CONTRACT_API;
                 Environment._tokensApi = Environment.HEDERA_PREVIEW_TOKENS_API;
+                Environment._transactionsApi = Environment.HEDERA_PREVIEW_TRANSACTIONS_API;
                 break;
 
             case 'localnode':
@@ -222,6 +246,7 @@ export class Environment {
                 Environment._balancesApi = Environment.HEDERA_LOCALNODE_BALANCES_API;
                 Environment._contractsApi = Environment.HEDERA_LOCALNODE_CONTRACT_API;
                 Environment._tokensApi = Environment.HEDERA_LOCALNODE_TOKENS_API;
+                Environment._transactionsApi = Environment.HEDERA_LOCALNODE_TRANSACTIONS_API;
                 break;
 
             default:
@@ -362,6 +387,14 @@ export class Environment {
      */
     public static get HEDERA_TOKENS_API(): string {
         return Environment._tokensApi;
+    }
+
+    /**
+     * Hedera tokens API
+     * @constructor
+     */
+    public static get HEDERA_TRANSACTIONS_API(): string {
+        return Environment._transactionsApi;
     }
 
     /**

@@ -1,5 +1,5 @@
 import { Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 
 /**
  * MultiPolicy collection
@@ -17,6 +17,12 @@ export class MultiPolicyTransaction extends BaseEntity {
      */
     @Property({ nullable: true })
     policyId?: string;
+
+    /**
+     * Vp message identifier
+     */
+    @Property({ nullable: true })
+    vpMessageId?: string;
 
     /**
      * User DID

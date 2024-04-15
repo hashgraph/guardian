@@ -10,7 +10,8 @@ export enum PolicyInputEventType {
     ReleaseEvent = 'ReleaseEvent',
     PopEvent = 'PopEvent',
     RestoreEvent = 'RestoreEvent',
-    AdditionalMintEvent = 'AdditionalMintEvent'
+    AdditionalMintEvent = 'AdditionalMintEvent',
+    RetryMintEvent = 'RetryMintEvent'
 }
 
 /**

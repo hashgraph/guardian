@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     BinaryMessageResponse,
     DatabaseServer,
@@ -27,15 +27,15 @@ import {
     SchemaStatus,
     TopicType
 } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { findAndPublishSchema } from '@api/helpers/schema-publish-helper';
-import { incrementSchemaVersion } from '@api/helpers/schema-helper';
-import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
-import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
-import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
+import { incrementSchemaVersion } from '../api/helpers/schema-helper.js';
+import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
+import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
+import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js';
+import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers/index.js';
 import * as crypto from 'crypto';
-import { publishToolTags } from './tag.service';
+import { publishToolTags } from './tag.service.js';
 
 /**
  * Sha256
@@ -645,12 +645,12 @@ export async function toolsAPI(): Promise<void> {
 
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE, async (msg) => {
         try {
-            const { zip, owner } = msg;
+            const { zip, owner, metadata } = msg;
             if (!zip) {
                 throw new Error('file in body is empty');
             }
             const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier());
+            const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata);
             if (errors?.length) {
                 const message = importToolErrors(errors);
                 new Logger().warn(message, ['GUARDIAN_SERVICE']);
@@ -688,14 +688,14 @@ export async function toolsAPI(): Promise<void> {
     });
 
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE_ASYNC, async (msg) => {
-        const { zip, owner, task } = msg;
+        const { zip, owner, task, metadata} = msg;
         const notifier = await initNotifier(task);
         RunFunctionAsync(async () => {
             if (!zip) {
                 throw new Error('file in body is empty');
             }
             const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const { tool, errors } = await importToolByFile(owner, preview, notifier);
+            const { tool, errors } = await importToolByFile(owner, preview, notifier, metadata);
             if (errors?.length) {
                 const message = importToolErrors(errors);
                 notifier.error(message);

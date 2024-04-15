@@ -4,27 +4,27 @@ import {
     TopicId,
 } from '@hashgraph/sdk';
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, Logger, Workers } from '../../helpers';
-import { TransactionLogger } from '../transaction-logger';
-import { Environment } from '../environment';
-import { MessageMemo } from '../memo-mappings/message-memo';
-import { DatabaseServer } from '../../database-modules';
-import { TopicConfig } from '../topic';
-import { Message } from './message';
-import { MessageType } from './message-type';
-import { MessageAction } from './message-action';
-import { VCMessage } from './vc-message';
-import { DIDMessage } from './did-message';
-import { PolicyMessage } from './policy-message';
-import { SchemaMessage } from './schema-message';
-import { VPMessage } from './vp-message';
-import { RegistrationMessage } from './registration-message';
-import { TopicMessage } from './topic-message';
-import { TokenMessage } from './token-message';
-import { ModuleMessage } from './module-message';
-import { TagMessage } from './tag-message';
-import { ToolMessage } from './tool-message';
-import { RoleMessage } from './role-message';
+import { IPFS, Logger, Workers } from '../../helpers/index.js';
+import { TransactionLogger } from '../transaction-logger.js';
+import { Environment } from '../environment.js';
+import { MessageMemo } from '../memo-mappings/message-memo.js';
+import { DatabaseServer } from '../../database-modules/index.js';
+import { TopicConfig } from '../topic.js';
+import { Message } from './message.js';
+import { MessageType } from './message-type.js';
+import { MessageAction } from './message-action.js';
+import { VCMessage } from './vc-message.js';
+import { DIDMessage } from './did-message.js';
+import { PolicyMessage } from './policy-message.js';
+import { SchemaMessage } from './schema-message.js';
+import { VPMessage } from './vp-message.js';
+import { RegistrationMessage } from './registration-message.js';
+import { TopicMessage } from './topic-message.js';
+import { TokenMessage } from './token-message.js';
+import { ModuleMessage } from './module-message.js';
+import { TagMessage } from './tag-message.js';
+import { ToolMessage } from './tool-message.js';
+import { RoleMessage } from './role-message.js';
 
 /**
  * Message server
@@ -239,7 +239,8 @@ export class MessageServer {
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,
                 localNodeProtocol: Environment.localNodeProtocol,
-                memo: memo || MessageMemo.getMessageMemo(message)
+                memo: memo || MessageMemo.getMessageMemo(message),
+                dryRun: this.dryRun,
             }
         }, 10);
         await this.messageEndLog(time, 'Hedera');

@@ -1,5 +1,5 @@
 import * as mathjs from 'mathjs';
-import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import {
     DidDocumentStatus,
     DocumentSignature,
@@ -28,8 +28,8 @@ import {
     HederaDidDocument
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
-import { IPolicyUser, UserCredentials, PolicyUser, IHederaCredentials } from '@policy-engine/policy-user';
-import { DocumentType } from '@policy-engine/interfaces/document.type';
+import { IPolicyUser, UserCredentials, PolicyUser, IHederaCredentials } from '../policy-user.js';
+import { DocumentType } from '../interfaces/document.type.js';
 
 /**
  * Data types
@@ -1184,7 +1184,7 @@ export class PolicyUtils {
     public static createVP(
         ref: AnyBlockType,
         owner: IPolicyUser,
-        document: VpDocument
+        document: VpDocument,
     ): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -1194,7 +1194,7 @@ export class PolicyUtils {
             owner: owner.did,
             group: owner.group,
             status: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW
+            signature: DocumentSignature.NEW,
         };
     }
 

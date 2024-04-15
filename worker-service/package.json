@@ -2,8 +2,8 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "^2.22.0",
-        "@guardian/interfaces": "^2.22.0",
+        "@guardian/common": "^2.23.1",
+        "@guardian/interfaces": "^2.23.1",
         "@hashgraph/sdk": "2.34.1",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
@@ -61,9 +61,12 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "2.22.0"
+    "version": "2.23.1",
+    "resolutions": {
+        "@types/mime": "3.0.4"
+    }
 }

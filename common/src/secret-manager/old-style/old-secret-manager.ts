@@ -1,8 +1,8 @@
-import { SecretManagerBase } from '../secret-manager-base';
-import { NatsService } from '../../mq';
+import { SecretManagerBase } from '../secret-manager-base.js';
+import { NatsService } from '../../mq/index.js';
 import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
-import { Singleton } from '../../decorators/singleton';
-import { timeout } from '../../hedera-modules';
+import { Singleton } from '../../decorators/singleton.js';
+import { timeout } from '../../hedera-modules/index.js';
 
 /**
  * Old secret manager implementation

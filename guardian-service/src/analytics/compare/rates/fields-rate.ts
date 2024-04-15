@@ -1,12 +1,12 @@
-import { Status } from '../types/status.type';
-import { IRate } from '../interfaces/rate.interface';
-import { FieldModel } from '../models/field.model';
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { PropertiesRate } from './properties-rate';
-import { Rate } from './rate';
-import { IRateMap } from '../interfaces/rate-map.interface';
-import { PropertyModel } from '../models/property.model';
-import { CompareUtils } from '../utils/utils';
+import { Status } from '../types/status.type.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { FieldModel } from '../models/field.model.js';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { PropertiesRate } from './properties-rate.js';
+import { Rate } from './rate.js';
+import { IRateMap } from '../interfaces/rate-map.interface.js';
+import { PropertyModel } from '../models/property.model.js';
+import { CompareUtils } from '../utils/utils.js';
 
 /**
  * Calculates the difference between two Fields

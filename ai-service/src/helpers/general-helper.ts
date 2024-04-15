@@ -1,17 +1,16 @@
-import { Policy } from '../models/common/policy';
-import { PolicyCategory } from '../models/common/policy-category';
-import { Methodology } from '../models/models';
+import { Methodology } from '../models/models.js';
+import { Policy, PolicyCategory } from '@guardian/common';
 
-export function GetMehodologiesByPolicies(responseText: string, policies: Array<Policy>) {
-    const methodologies: Array<Methodology> = [];
+export function GetMehodologiesByPolicies(responseText: string, policies: Policy[]) {
+    const methodologies: Methodology[] = [];
 
     policies.map((policy) => {
 
         const reg = new RegExp(`\\b${policy.name}\\b`, 'i');
 
-        if (reg.test(responseText) && !methodologies.find((methodology: Methodology) => methodology.id === policy._id)) {
+        if (reg.test(responseText) && !methodologies.find((methodology: Methodology) => methodology.id === policy._id.toString())) {
             methodologies.push({
-                id: policy._id,
+                id: policy._id.toString(),
                 label: policy.name,
                 text: policy.topicDescription ?? '',
                 url: policy.detailsUrl ?? ''

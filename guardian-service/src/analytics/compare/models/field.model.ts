@@ -1,11 +1,11 @@
 import MurmurHash3 from 'imurmurhash';
-import { CompareOptions, IIdLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { IWeightModel } from '../interfaces/weight-model.interface';
-import { PropertyType } from '../types/property.type';
-import { WeightType } from '../types/weight.type';
-import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model';
-import { SchemaDocumentModel } from './schema-document.model';
+import { CompareOptions, IIdLvl, IPropertiesLvl } from '../interfaces/compare-options.interface.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { IWeightModel } from '../interfaces/weight-model.interface.js';
+import { PropertyType } from '../types/property.type.js';
+import { WeightType } from '../types/weight.type.js';
+import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model.js';
+import { SchemaDocumentModel } from './schema-document.model.js';
 
 /**
  * Field Model
@@ -423,6 +423,9 @@ export class FieldModel implements IWeightModel {
         }
         if (this.required !== undefined) {
             properties.push(new AnyPropertyModel('required', this.required));
+        }
+        if (this.isArray !== undefined) {
+            properties.push(new AnyPropertyModel('multiple', this.isArray));
         }
         if (this.type) {
             properties.push(new UUIDPropertyModel('type', this.type));

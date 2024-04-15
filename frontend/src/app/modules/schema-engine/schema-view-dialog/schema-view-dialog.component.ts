@@ -14,15 +14,22 @@ export class SchemaViewDialog {
     schemas!: any[];
     topicId: any;
     policies: any[];
+    modules: any[];
+    tools: any[];
     errors: any[];
+    schemaType: string;
 
     constructor(
         public dialogRef: MatDialogRef<SchemaViewDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.schemas = this.data.schemas || [];
         this.topicId = this.data.topicId || null;
-        this.policies = this.data.policies || [];
         this.errors = this.data.errors || [];
+
+        this.schemaType = data.schemaType || 'policy';
+        this.policies = data.policies || [];
+        this.modules = data.modules || [];
+        this.tools = data.tools || [];
     }
 
     ngOnInit() {

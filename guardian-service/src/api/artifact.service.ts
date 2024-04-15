@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, getArtifactExtention, getArtifactType, Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { MessageAPI, ModuleStatus, PolicyType } from '@guardian/interfaces';
 
@@ -58,17 +58,17 @@ export async function artifactAPI(): Promise<void> {
                 }
             }
 
-            const extention = getArtifactExtention(msg.artifact.name);
+            const extention = getArtifactExtention(msg.artifact.originalname);
             const type = getArtifactType(extention);
             const artifact = await DatabaseServer.saveArtifact({
-                name: msg.artifact.name.split('.')[0],
+                name: msg.artifact.originalname.split('.')[0],
                 extention,
                 type,
                 policyId: msg.parentId,
                 owner: msg.owner,
                 category
             } as any);
-            await DatabaseServer.saveArtifactFile(artifact.uuid, Buffer.from(msg.artifact.data));
+            await DatabaseServer.saveArtifactFile(artifact.uuid, Buffer.from(msg.artifact.buffer));
             return new MessageResponse(artifact);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

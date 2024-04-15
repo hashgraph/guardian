@@ -1,52 +1,43 @@
-import {
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    PolicyEngineEvents,
-    PolicyEvents,
-    PolicyType,
-    Schema,
-    SchemaField,
-    TopicType
-} from '@guardian/interfaces';
+import { ExternalMessageEvents, GenerateUUIDv4, PolicyEngineEvents, PolicyEvents, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
     DatabaseServer,
     findAllEntities,
+    GenerateBlocks,
     IAuthUser,
+    JsonToXlsx,
     Logger,
+    MessageAction,
     MessageError,
     MessageResponse,
+    MessageServer,
+    MessageType,
     NatsService,
     Policy,
     PolicyImportExport,
-    RunFunctionAsync,
-    Singleton,
-    Users,
-    Schema as SchemaCollection,
-    MessageServer,
     PolicyMessage,
-    MessageType,
-    MessageAction,
+    RunFunctionAsync,
+    Schema as SchemaCollection,
+    Singleton,
     TopicConfig,
+    Users,
+    VcHelper,
     Wallet,
-    XlsxToJson,
-    JsonToXlsx,
-    GenerateBlocks,
-    VcHelper
+    XlsxToJson
 } from '@guardian/common';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { PolicyComponentsUtils } from './policy-components-utils';
-import { IPolicyUser } from './policy-user';
-import { emptyNotifier, initNotifier } from '@helpers/notifier';
-import { PolicyEngine } from './policy-engine';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { IPolicyUser } from './policy-user.js';
+import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
+import { PolicyEngine } from './policy-engine.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
-import { GuardiansService } from '@helpers/guardians';
-import { Inject } from '@helpers/decorators/inject';
-import { BlockAboutString } from './block-about';
-import { HashComparator } from '@analytics';
-import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '@api/helpers';
-import { PolicyDataMigrator } from './helpers/policy-data-migrator';
+import { GuardiansService } from '../helpers/guardians.js';
+import { BlockAboutString } from './block-about.js';
+import { HashComparator } from '../analytics/index.js';
+import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '../api/helpers/index.js';
+import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
+import { Inject } from '../helpers/decorators/inject.js';
 
 /**
  * PolicyEngineChannel
@@ -77,13 +68,14 @@ export class PolicyEngineChannel extends NatsService {
 /**
  * Policy engine service
  */
+
 export class PolicyEngineService {
     /**
      * Users helper
      * @private
      */
     @Inject()
-    private readonly users: Users;
+    declare private readonly users: Users;
 
     /**
      * Message broker service
@@ -935,14 +927,21 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg) => {
             try {
-                const { zip, user, versionOfTopicId } = msg;
+                const { zip, user, versionOfTopicId, metadata } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
                 const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
-                const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
+                const result = await PolicyImportExportHelper.importPolicy(
+                    policyToImport,
+                    did,
+                    versionOfTopicId,
+                    emptyNotifier(),
+                    undefined,
+                    metadata
+                );
                 if (result?.errors?.length) {
                     const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
@@ -957,7 +956,7 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, async (msg) => {
-            const { zip, user, versionOfTopicId, task } = msg;
+            const { zip, user, versionOfTopicId, task, metadata } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -969,7 +968,14 @@ export class PolicyEngineService {
                 notifier.start('File parsing');
                 const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                 notifier.completed();
-                const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
+                const result = await PolicyImportExportHelper.importPolicy(
+                    policyToImport,
+                    did,
+                    versionOfTopicId,
+                    notifier,
+                    undefined,
+                    metadata
+                );
                 if (result?.errors?.length) {
                     const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     notifier.error(message);
@@ -1151,7 +1157,7 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
             try {
-                const { messageId, user, versionOfTopicId } = msg;
+                const { messageId, user, versionOfTopicId, metadata } = msg;
                 const did = await this.getUserDid(user.username);
                 if (!messageId) {
                     throw new Error('Policy ID in body is empty');
@@ -1159,7 +1165,7 @@ export class PolicyEngineService {
 
                 const root = await this.users.getHederaAccount(did);
 
-                const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
+                const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier(), metadata);
                 if (result?.errors?.length) {
                     const message = PolicyImportExportHelper.errorsMessage(result.errors);
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
@@ -1175,7 +1181,7 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, async (msg) => {
-            const { messageId, user, versionOfTopicId, task } = msg;
+            const { messageId, user, versionOfTopicId, task, metadata } = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
@@ -1187,7 +1193,7 @@ export class PolicyEngineService {
                     const did = await this.getUserDid(user.username);
                     const root = await this.users.getHederaAccount(did);
                     notifier.completed();
-                    const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier);
+                    const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier, metadata);
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         notifier.error(message);

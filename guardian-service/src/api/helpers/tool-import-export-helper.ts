@@ -20,14 +20,15 @@ import {
     GenerateUUIDv4,
     IRootConfig,
     ModuleStatus,
+    PolicyToolMetadata,
     SchemaCategory,
     SchemaStatus,
     TagType,
     TopicType
 } from '@guardian/interfaces';
-import { INotifier } from '@helpers/notifier';
-import { importTag } from './tag-import-export-helper';
-import { importSchemaByFiles } from './schema-import-export-helper';
+import { INotifier } from '../../helpers/notifier.js';
+import { importTag } from './tag-import-export-helper.js';
+import { importSchemaByFiles } from './schema-import-export-helper.js';
 
 /**
  * Import Result
@@ -64,7 +65,8 @@ interface ImportResults {
  */
 export async function replaceConfig(
     tool: PolicyTool,
-    schemasMap: any[]
+    schemasMap: any[],
+    tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
 ) {
     if (await DatabaseServer.getTool({ name: tool.name })) {
         tool.name = tool.name + '_' + Date.now();
@@ -73,6 +75,14 @@ export async function replaceConfig(
     for (const item of schemasMap) {
         replaceAllEntities(tool.config, SchemaFields, item.oldIRI, item.newIRI);
         replaceAllVariables(tool.config, 'Schema', item.oldIRI, item.newIRI);
+    }
+
+    for (const item of tools) {
+        if (!item.newHash || !item.messageId) {
+            continue;
+        }
+        replaceAllEntities(tool.config, ['messageId'], item.oldMessageId, item.messageId);
+        replaceAllEntities(tool.config, ['hash'], item.oldHash, item.newHash);
     }
 }
 
@@ -85,7 +95,6 @@ export async function replaceConfig(
 export async function importSubTools(
     hederaAccount: IRootConfig,
     messages: {
-        uuid?: string,
         name?: string,
         messageId?: string
     }[],
@@ -116,7 +125,6 @@ export async function importSubTools(
         } catch (error) {
             errors.push({
                 type: 'tool',
-                hash: message.uuid,
                 name: message.name,
                 messageId: message.messageId,
                 error: 'Invalid tool'
@@ -331,7 +339,8 @@ export function importToolErrors(errors: any[]): string {
 export async function importToolByFile(
     owner: string,
     components: IToolComponents,
-    notifier: INotifier
+    notifier: INotifier,
+    metadata?: PolicyToolMetadata
 ): Promise<ImportResult> {
     notifier.start('Import tool');
 
@@ -341,6 +350,33 @@ export async function importToolByFile(
         tools,
         schemas
     } = components;
+
+    notifier.completedAndStart('Resolve Hedera account');
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
+
+    const toolsMapping: {
+        oldMessageId: string;
+        messageId: string;
+        oldHash: string;
+        newHash?: string;
+    }[] = [];
+    if (metadata?.tools) {
+        // tslint:disable-next-line:no-shadowed-variable
+        for (const tool of tools) {
+            if (
+                metadata.tools[tool.messageId] &&
+                tool.messageId !== metadata.tools[tool.messageId]
+            ) {
+                toolsMapping.push({
+                    oldMessageId: tool.messageId,
+                    messageId: metadata.tools[tool.messageId],
+                    oldHash: tool.hash,
+                });
+                tool.messageId = metadata.tools[tool.messageId];
+            }
+        }
+    }
 
     delete tool._id;
     delete tool.id;
@@ -352,10 +388,6 @@ export async function importToolByFile(
     tool.status = ModuleStatus.DRAFT;
 
     await updateToolConfig(tool);
-
-    notifier.completedAndStart('Resolve Hedera account');
-    const users = new Users();
-    const root = await users.getHederaAccount(owner);
 
     notifier.completedAndStart('Create topic');
     const parent = await TopicConfig.fromObject(
@@ -401,20 +433,41 @@ export async function importToolByFile(
     const toolsResult = await importSubTools(root, tools, notifier);
     notifier.sub(true);
 
+    for (const toolMapping of toolsMapping) {
+        const toolByMessageId = toolsResult.tools.find(
+            // tslint:disable-next-line:no-shadowed-variable
+            (tool) => tool.messageId === toolMapping.messageId
+        );
+        toolMapping.newHash = toolByMessageId?.hash;
+    }
+
+    const toolsSchemas = (await DatabaseServer.getSchemas(
+        {
+            category: SchemaCategory.TOOL,
+            // tslint:disable-next-line:no-shadowed-variable
+            topicId: { $in: toolsResult.tools.map((tool) => tool.topicId) },
+        },
+        {
+            fields: ['name', 'iri'],
+        }
+    )) as { name: string; iri: string }[];
+
     // Import Schemas
     const schemasResult = await importSchemaByFiles(
         SchemaCategory.TOOL,
         owner,
         schemas,
         tool.topicId,
-        notifier
+        notifier,
+        false,
+        toolsSchemas
     );
     const schemasMap = schemasResult.schemasMap;
 
     notifier.completedAndStart('Saving in DB');
 
     // Replace id
-    await replaceConfig(tool, schemasMap);
+    await replaceConfig(tool, schemasMap, toolsMapping);
 
     const item = await DatabaseServer.createTool(tool);
     const _topicRow = await DatabaseServer.getTopicById(topic.topicId);

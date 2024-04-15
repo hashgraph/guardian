@@ -10,10 +10,10 @@
         "lib": [
             "es6"
         ],
-        "module": "commonjs",
+        "module": "ESNext",
         "moduleResolution": "node",
         "outDir": "dist/",
-        "target": "es6"
+        "target": "es2022"
     },
     "exclude": [
         "node_modules",

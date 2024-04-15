@@ -1,7 +1,7 @@
-import { ApiResponse, ApiResponseSubscribe } from '@api/helpers/api-response';
-import { IPFS, Logger, MessageError, MessageResponse } from '@guardian/common';
+import { ApiResponse, ApiResponseSubscribe } from '../api/helpers/api-response.js';
+import { DataBaseHelper, DryRunFiles, IPFS, Logger, MessageError, MessageResponse } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
-import { IPFSTaskManager } from '@helpers/ipfs-task-manager';
+import { IPFSTaskManager } from '../helpers/ipfs-task-manager.js';
 
 /**
  * TODO
@@ -56,6 +56,28 @@ export async function ipfsAPI(): Promise<void> {
         }
     })
 
+    ApiResponse(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, async (msg) => {
+        try {
+            const policyId = msg.policyId;
+            const fileBuffer = Buffer.from(msg.buffer.data);
+
+            const entity = new DataBaseHelper(DryRunFiles).create({
+                policyId,
+                file: fileBuffer
+            });
+
+            await new DataBaseHelper(DryRunFiles).save(entity)
+
+            return new MessageResponse({
+                cid: entity.id,
+                url: IPFS.IPFS_PROTOCOL + entity.id
+            });
+        } catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageError(error);
+        }
+    })
+
     ApiResponse(MessageAPI.IPFS_GET_FILE, async (msg) => {
         try {
             if (!msg) {
@@ -73,6 +95,27 @@ export async function ipfsAPI(): Promise<void> {
         catch (error) {
             new Logger().error(error, ['IPFS_CLIENT']);
             return new MessageResponse({ error: error.message });
+        }
+    })
+
+    ApiResponse(MessageAPI.GET_FILE_DRY_RUN_STORAGE, async (msg): Promise<any> => {
+        try {
+            if (!msg) {
+                throw new Error('Invalid payload');
+            }
+            if (!msg.cid) {
+                throw new Error('Invalid cid');
+            }
+            if (!msg.responseType) {
+                throw new Error('Invalid response type');
+            }
+
+            const file = await new DataBaseHelper(DryRunFiles).findOne({id: msg.cid});
+
+            return new MessageResponse(file.file);
+        } catch (error) {
+            new Logger().error(error, ['IPFS_CLIENT']);
+            return new MessageResponse({error: error.message});
         }
     })
 }

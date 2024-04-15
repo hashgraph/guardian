@@ -22,6 +22,7 @@
                     (onChange)="onFilter($event)"
                     [options]="policies"
                     [showClear]="true"
+                    [disabled]="!isNewSchema"
                     appendTo="body"
                     formControlName="topicId"
                     id="policy"
@@ -145,7 +146,7 @@
                             <div class="if-condition-equality-container">
                                 <div class="if-dropdown-field">
                                     <label class="form-label">* Field</label>
-                                    <p-dropdown 
+                                    <p-dropdown
                                         (onChange)="onIfConditionFieldChange(condition,$event)"
                                         [formControl]="condition.field"
                                         [options]="getFieldsForCondition()"

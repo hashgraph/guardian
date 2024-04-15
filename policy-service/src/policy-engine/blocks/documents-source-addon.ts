@@ -1,10 +1,10 @@
-import { SourceAddon, StateField } from '@policy-engine/helpers/decorators';
-import { BlockActionError } from '@policy-engine/errors';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyAddonBlock, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { SourceAddon, StateField } from '../helpers/decorators/index.js';
+import { BlockActionError } from '../errors/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { IPolicyUser } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
 
@@ -172,6 +172,11 @@ export class DocumentsSourceAddon {
             case 'vp-documents':
                 filters.policyId = ref.policyId;
                 data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult);
+                if (!countResult) {
+                    for (const item of data as any[]) {
+                        [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
+                    }
+                }
                 break;
             case 'standard-registries':
                 data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);

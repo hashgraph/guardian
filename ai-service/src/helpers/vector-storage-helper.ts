@@ -16,7 +16,7 @@ export class VectorStorage {
     static async create(docPath: string, vectorPath: string) {
         try {
             if (docPath && vectorPath) {
-                let textLoader = new DirectoryLoader(docPath, {
+                const textLoader = new DirectoryLoader(docPath, {
                     '.txt': (path) => new TextLoader(path),
                 });
 

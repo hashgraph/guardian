@@ -1,11 +1,11 @@
-import { configAPI } from '@api/config.service';
-import { documentsAPI } from '@api/documents.service';
-import { loaderAPI } from '@api/loader.service';
-import { profileAPI } from '@api/profile.service';
-import { schemaAPI } from '@api/schema.service';
-import { tokenAPI } from '@api/token.service';
-import { trustChainAPI } from '@api/trust-chain.service';
-import { PolicyEngineService } from '@policy-engine/policy-engine.service';
+import { configAPI } from './api/config.service.js';
+import { documentsAPI } from './api/documents.service.js';
+import { loaderAPI } from './api/loader.service.js';
+import { profileAPI } from './api/profile.service.js';
+import { schemaAPI } from './api/schema.service.js';
+import { tokenAPI } from './api/token.service.js';
+import { trustChainAPI } from './api/trust-chain.service.js';
+import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
     ApplicationState,
     Branding,
@@ -43,34 +43,34 @@ import {
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
-import { ipfsAPI } from '@api/ipfs.service';
-import { artifactAPI } from '@api/artifact.service';
-import { sendKeysToVault } from '@helpers/send-keys-to-vault';
-import { contractAPI, syncRetireContracts, syncWipeContracts } from '@api/contract.service';
-import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { PolicyEngine } from '@policy-engine/policy-engine';
-import { modulesAPI } from '@api/module.service';
-import { toolsAPI } from '@api/tool.service';
-import { GuardiansService } from '@helpers/guardians';
-import { mapAPI } from '@api/map.service';
-import { tagsAPI } from '@api/tag.service';
-import { setDefaultSchema } from '@api/helpers/schema-helper';
-import { demoAPI } from '@api/demo.service';
-import { themeAPI } from '@api/theme.service';
-import { brandingAPI } from '@api/branding.service';
-import { wizardAPI } from '@api/wizard.service';
-import { startMetricsServer } from './utils/metrics';
+import { ipfsAPI } from './api/ipfs.service.js';
+import { artifactAPI } from './api/artifact.service.js';
+import { sendKeysToVault } from './helpers/send-keys-to-vault.js';
+import { contractAPI, syncRetireContracts, syncWipeContracts } from './api/contract.service.js';
+import { PolicyServiceChannelsContainer } from './helpers/policy-service-channels-container.js';
+import { PolicyEngine } from './policy-engine/policy-engine.js';
+import { modulesAPI } from './api/module.service.js';
+import { toolsAPI } from './api/tool.service.js';
+import { GuardiansService } from './helpers/guardians.js';
+import { mapAPI } from './api/map.service.js';
+import { tagsAPI } from './api/tag.service.js';
+import { setDefaultSchema } from './api/helpers/schema-helper.js';
+import { demoAPI } from './api/demo.service.js';
+import { themeAPI } from './api/theme.service.js';
+import { brandingAPI } from './api/branding.service.js';
+import { wizardAPI } from './api/wizard.service.js';
+import { startMetricsServer } from './utils/metrics.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { AppModule } from './app.module';
-import { analyticsAPI } from '@api/analytics.service';
+import { AppModule } from './app.module.js';
+import { analyticsAPI } from './api/analytics.service.js';
 import { GridFSBucket } from 'mongodb';
-import { suggestionsAPI } from '@api/suggestions.service';
-import { SynchronizationTask } from '@helpers/synchronization-task';
-import { recordAPI } from '@api/record.service';
-import { projectsAPI } from '@api/projects.service';
-import { AISuggestionsService } from '@helpers/ai-suggestions';
+import { suggestionsAPI } from './api/suggestions.service.js';
+import { SynchronizationTask } from './helpers/synchronization-task.js';
+import { recordAPI } from './api/record.service.js';
+import { projectsAPI } from './api/projects.service.js';
+import { AISuggestionsService } from './helpers/ai-suggestions.js';
 
 export const obj = {};
 
@@ -115,6 +115,7 @@ Promise.all([
     app.listen();
 
     DataBaseHelper.orm = db;
+
     DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
@@ -252,7 +253,7 @@ Promise.all([
             return false;
         }
         try {
-            if (process.env.INITIALIZATION_TOPIC_KEY) {
+            if (process.env.INITIALIZATION_TOPIC_ID) {
                 // if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
                 //     throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
                 // }

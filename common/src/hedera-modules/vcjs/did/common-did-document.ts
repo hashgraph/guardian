@@ -1,11 +1,11 @@
-import { DidDocumentProperties } from './types/did-document-properties';
-import { DocumentContext } from './components/document-context';
-import { CommonDid } from './common-did';
-import { HederaDid } from './hedera-did';
-import { VerificationMethod } from './components/verification-method';
-import { Hashing } from '../../hashing';
-import { DocumentService } from './components/document-service';
-import { IDidDocument } from './types/did-document';
+import { DidDocumentProperties } from './types/did-document-properties.js';
+import { DocumentContext } from './components/document-context.js';
+import { CommonDid } from './common-did.js';
+import { HederaDid } from './hedera-did.js';
+import { VerificationMethod } from './components/verification-method.js';
+import { Hashing } from '../../hashing.js';
+import { DocumentService } from './components/document-service.js';
+import { IDidDocument } from './types/did-document.js';
 
 /**
  * Did document base

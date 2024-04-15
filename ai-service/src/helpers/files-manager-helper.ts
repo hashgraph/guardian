@@ -1,23 +1,22 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { PolicyCategory } from '../models/common/policy-category';
-import { GroupCategories } from './general-helper';
-import { Policy } from '../models/common/policy';
+
+import { GroupCategories } from './general-helper.js';
+import { PolicyDescription } from '../models/models.js';
 import { PolicyCategoryType } from '@guardian/interfaces';
-import { PolicyDescription } from '../models/models';
-import { Logger } from '@guardian/common';
+import { Logger, Policy, PolicyCategory } from '@guardian/common';
 
 const MIN_DESCRIPTION_WORDS = 5;
 
 export class FilesManager {
 
     static async generateData(dirPath: string, policies: Policy[], categories: PolicyCategory[], policyDescriptions: PolicyDescription[]): Promise<boolean> {
-        this.checkDir(dirPath);
-        this.deleteAllFilesInDirectory(dirPath);
+        FilesManager.checkDir(dirPath);
+        FilesManager.deleteAllFilesInDirectory(dirPath);
 
         try {
-            await this.generateMethodologyFiles(dirPath, policies, categories, policyDescriptions);
-            await this.generateMetadataFile(dirPath, policies, categories);
+            await FilesManager.generateMethodologyFiles(dirPath, policies, categories, policyDescriptions);
+            await FilesManager.generateMetadataFile(dirPath, policies, categories);
             return true;
         } catch (e) {
             console.log(e);
@@ -30,26 +29,26 @@ export class FilesManager {
             return false;
         }
 
-        for (let i = 0; i < policies.length; i++) {
-            const policyDescription = policyDescriptions.find((description: PolicyDescription) => description.policyId === policies[i]._id);
+        for (const policy of policies) {
+            const policyDescription = policyDescriptions.find((description: PolicyDescription) => description.policyId === policy._id.toString());
 
             const descriptions = policyDescription?.descriptions?.filter((description: string) => description && FilesManager.wordsCount(description) > MIN_DESCRIPTION_WORDS) ?? [];
 
-            const filePath = this.getFileName(dirPath, policies[i].name);
-            const content = this.getFileData(policies[i], categories, descriptions);
+            const filePath = FilesManager.getFileName(dirPath, policy.name);
+            const content = FilesManager.getFileData(policy, categories, descriptions);
 
             if (content) {
-                await this.generateFile(filePath, content);
+                await FilesManager.generateFile(filePath, content);
             }
         }
     }
 
     static async generateMetadataFile(dirPath: string, policies: Policy[], categories: PolicyCategory[]) {
-        const content = this.getMetadataContent(policies, categories);
+        const content = FilesManager.getMetadataContent(policies, categories);
 
         if (content) {
             const fileName = `${dirPath}/metadata.txt`;
-            await this.generateFile(fileName, content);
+            await FilesManager.generateFile(fileName, content);
         }
     }
 
@@ -66,7 +65,7 @@ export class FilesManager {
 
                 if (policyNamesByCategory.length) {
                     if (index === 0) {
-                        content += `${this.getNameByCategoryType(type)} \n`;
+                        content += `${FilesManager.getNameByCategoryType(type)} \n`;
                     }
 
                     content += `${category.name}: ${policyNamesByCategory.join(', ')} \n\n`;
@@ -129,13 +128,13 @@ export class FilesManager {
 
         content += policy.description ? `\n ${policy.description} \n` : '';
 
-        content += this.getCategoryRowByType(policy, categories, PolicyCategoryType.PROJECT_SCALE, `methodology by scale type`);
-        content += this.getCategoryRowByType(policy, categories, PolicyCategoryType.SECTORAL_SCOPE, `by sectoral scope`);
-        content += this.getCategoryRowByType(policy, categories, PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE, `by applied technology type`);
-        content += this.getCategoryRowByType(policy, categories, PolicyCategoryType.SUB_TYPE, `by subtype`);
-        content += this.getCategoryRowByType(policy, categories, PolicyCategoryType.MITIGATION_ACTIVITY_TYPE, `by mitigation activity type`);
+        content += FilesManager.getCategoryRowByType(policy, categories, PolicyCategoryType.PROJECT_SCALE, `methodology by scale type`);
+        content += FilesManager.getCategoryRowByType(policy, categories, PolicyCategoryType.SECTORAL_SCOPE, `by sectoral scope`);
+        content += FilesManager.getCategoryRowByType(policy, categories, PolicyCategoryType.APPLIED_TECHNOLOGY_TYPE, `by applied technology type`);
+        content += FilesManager.getCategoryRowByType(policy, categories, PolicyCategoryType.SUB_TYPE, `by subtype`);
+        content += FilesManager.getCategoryRowByType(policy, categories, PolicyCategoryType.MITIGATION_ACTIVITY_TYPE, `by mitigation activity type`);
 
-        let policyName = policy.topicDescription ? `${policy.name} (${policy.topicDescription})` : policy.name;
+        const policyName = policy.topicDescription ? `${policy.name} (${policy.topicDescription})` : policy.name;
 
         if (descriptions.length) {
             content += '\n';

@@ -1,5 +1,5 @@
-import { PolicyCategory } from '../entity';
-import { DataBaseHelper } from './db-helper';
+import { PolicyCategory } from '../entity/index.js';
+import { DataBaseHelper } from './db-helper.js';
 
 export function GetGroupedCategories(categories: PolicyCategory[]) {
     const groupedCategories = categories.reduce((result, item: PolicyCategory) => {

@@ -1,6 +1,6 @@
 import { PrivateKey } from '@hashgraph/sdk';
 import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
-import { VerificationMethod } from './verification-method';
+import { VerificationMethod } from './verification-method.js';
 
 /**
  * DID document method (Bls12381G2Key2020)

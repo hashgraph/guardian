@@ -1,8 +1,8 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { PolicyComponentsUtils } from '../../policy-components-utils';
-import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/index.js';
+import { BasicBlock } from '../../helpers/decorators/basic-block.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
+import { BlockActionError } from '../../errors/index.js';
+import { IPolicyUser } from '../../policy-user.js';
 
 /**
  * Data source addon decorator

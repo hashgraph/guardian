@@ -1,6 +1,6 @@
 import { NatsConnection, headers, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { ZipCodec } from './zip-codec';
+import { ZipCodec } from './zip-codec.js';
 
 /**
  * Nats service
@@ -44,7 +44,7 @@ export abstract class NatsService {
             throw new Error('Connection must set first');
         }
         this.connection.subscribe(this.replySubject, {
-            callback: async (error, msg) => {;
+            callback: async (error, msg) => {
                 if (!error) {
                     const messageId = msg.headers.get('messageId');
                     const fn = this.responseCallbacksMap.get(messageId);

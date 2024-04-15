@@ -1,7 +1,7 @@
 import { BlockErrorActions } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { Logger } from '@guardian/common';
-import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyOutputEventType } from '../../interfaces/index.js';
 
 /**
  * Catch errors decorator

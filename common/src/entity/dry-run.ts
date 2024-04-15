@@ -1,8 +1,8 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterCreate, AfterUpdate } from '@mikro-orm/core';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../helpers';
+import { DataBaseHelper } from '../helpers/index.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
 
@@ -622,6 +622,90 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true, type: 'unknown' })
     verificationMethods?: any;
+
+    /**
+     * Vp message identifier
+     */
+    @Property({ nullable: true })
+    vpMessageId?: string;
+
+    /**
+     * Secondary vp identifiers
+     */
+    @Property({ nullable: true })
+    secondaryVpIds?: string[]
+
+    /**
+     * Start serial
+     */
+    @Property({ nullable: true })
+    startSerial?: number
+
+    /**
+     * Start transaction
+     */
+    @Property({ nullable: true })
+    startTransaction?: string
+
+    /**
+     * Is mint needed
+     */
+    @Property({ default: true })
+    isMintNeeded: boolean = true;
+
+    /**
+     * Is transfer needed
+     */
+    @Property({ default: false })
+    isTransferNeeded: boolean = false;
+
+    /**
+     * Was transfer needed
+     */
+    @Property({ default: false })
+    wasTransferNeeded: boolean = false;
+
+    /**
+     * Memo
+     */
+    @Property({ nullable: true })
+    memo?: string;
+
+    /**
+     * Metadata
+     */
+    @Property({ nullable: true })
+    metadata?: string;
+
+    /**
+     * Mint request identifier
+     */
+    @Property({ nullable: true })
+    mintRequestId?: string;
+
+    /**
+     * Mint status
+     */
+    @Property({ nullable: true, type: 'unknown'})
+    mintStatus?: any;
+
+    /**
+     * Transfer status
+     */
+    @Property({ nullable: true, type: 'unknown'})
+    transferStatus?: any;
+
+    /**
+     * Error
+     */
+    @Property({ nullable: true })
+    error?: string;
+
+    /**
+     * Mint date
+     */
+    @Property({ nullable: true })
+    processDate?: Date;
 
     /**
      * Default document values

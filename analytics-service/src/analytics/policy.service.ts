@@ -10,19 +10,19 @@ import {
     TokenMessage,
     UrlType,
 } from '@guardian/common';
-import { AnalyticsModule as Module } from '@entity/analytics-module';
-import { AnalyticsPolicy as Policy } from '@entity/analytics-policy';
-import { AnalyticsPolicyInstance as PolicyInstance } from '@entity/analytics-policy-instance';
-import { AnalyticsSchema as Schema } from '@entity/analytics-schema';
-import { AnalyticsStatus as Status } from '@entity/analytics-status';
-import { AnalyticsTag as Tag } from '@entity/analytics-tag';
-import { AnalyticsToken as Token } from '@entity/analytics-token';
-import { AnalyticsUser as User } from '@entity/analytics-user';
-import { ReportStatus } from '@interfaces/report-status.type';
-import { ReportSteep } from '@interfaces/report-steep.type';
-import { UserType } from '@interfaces/user.type';
-import { Tasks } from '@helpers/tasks';
-import { AnalyticsUtils } from '@helpers/utils';
+import { AnalyticsModule as Module } from '../entity/analytics-module.js';
+import { AnalyticsPolicy as Policy } from '../entity/analytics-policy.js';
+import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
+import { AnalyticsSchema as Schema } from '../entity/analytics-schema.js';
+import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
+import { AnalyticsTag as Tag } from '../entity/analytics-tag.js';
+import { AnalyticsToken as Token } from '../entity/analytics-token.js';
+import { AnalyticsUser as User } from '../entity/analytics-user.js';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
+import { UserType } from '../interfaces/user.type.js';
+import { Tasks } from '../helpers/tasks.js';
+import { AnalyticsUtils } from '../helpers/utils.js';
 
 /**
  * Search policy\version\schemas\tokens in user topics
@@ -286,7 +286,6 @@ export class AnalyticsPolicyService {
                 }
             });
         } catch (error) {
-            console.log('--- policy.topicId 2', policy.topicId, error);
             report.error = String(error);
             return report;
         }

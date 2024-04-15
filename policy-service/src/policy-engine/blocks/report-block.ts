@@ -1,13 +1,13 @@
-import { Report } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
+import { Report } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyReportBlock } from '../policy-engine.interface.js';
 import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, SchemaEntity, } from '@guardian/interfaces';
-import { BlockActionError } from '@policy-engine/errors';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { BlockActionError } from '../errors/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { PolicyInputEventType } from '../interfaces/index.js';
+import { IPolicyUser } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { getVCField, VcDocument, VpDocument } from '@guardian/common';
 
 /**
@@ -108,7 +108,7 @@ export class ReportBlock {
     private async addReportByVP(
         report: IReport,
         variables: any,
-        vp: VpDocument,
+        vp: VpDocument & { transferAmount?: number, wasTransferNeeded?: boolean, tokenIds?: string[] },
         isMain: boolean = false
     ): Promise<IReport> {
         const vcs = vp.document.verifiableCredential || [];
@@ -123,19 +123,15 @@ export class ReportBlock {
             username: vp.owner,
             document: vp
         }
-        let amount = -1;
-        if (vp.amount) {
-            amount = vp.amount;
-        } else if (Array.isArray(vp.serials)) {
-            amount = vp.serials.length;
-        }
-        console.log(vp);
+
         report.mintDocument = {
             type: 'VC',
-            tokenId: getVCField(mint, 'tokenId'),
+            tokenId: vp.tokenIds?.join(', '),
             date: getVCField(mint, 'date'),
             expected: getVCField(mint, 'amount'),
-            amount: String(amount),
+            amount: String(vp.amount),
+            transferAmount: String(vp.transferAmount),
+            wasTransferNeeded: vp.wasTransferNeeded,
             tag: vp.tag,
             issuer: vp.owner,
             username: vp.owner,
@@ -362,19 +358,20 @@ export class ReportBlock {
         }
         const additionalReports = [];
         if (messageIds.length) {
-            const additionalVps = await ref.databaseServer.getVpDocuments<VpDocument[]>({
+            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument[]>({
                 where: {
                     messageId: { $in: messageIds },
                     policyId: { $eq: ref.policyId }
                 }
             });
             for (const additionalVp of additionalVps) {
+                [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
                 additionalReports.push(additionalReport);
             }
         }
         if (vp.messageId) {
-            const additionalVps = await ref.databaseServer.getVpDocuments<VpDocument[]>({
+            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument[]>({
                 where: {
                     'document.verifiableCredential.credentialSubject.type': { $eq: 'TokenDataSource' },
                     'document.verifiableCredential.credentialSubject.relationships': { $eq: vp.messageId },
@@ -382,6 +379,7 @@ export class ReportBlock {
                 }
             });
             for (const additionalVp of additionalVps) {
+                [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
                 additionalReports.push(additionalReport);
             }
@@ -427,8 +425,9 @@ export class ReportBlock {
                 documents
             }
 
-            const vp = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
+            const vp: any = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
             if (vp) {
+                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds] = await ref.databaseServer.getVPMintInformation(vp);
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })

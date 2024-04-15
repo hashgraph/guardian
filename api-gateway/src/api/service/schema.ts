@@ -1,18 +1,18 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
 import process from 'process';
-import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
-import { SchemaUtils } from '@helpers/schema-utils';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '@middlewares/validation/schemas';
-import { Auth } from '@auth/auth.decorator';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
+import { SchemaUtils } from '../../helpers/schema-utils.js';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '../../middlewares/validation/schemas/index.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -73,7 +73,7 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
  * @param {string} topicId
  * @param {any} task
  */
-export async function createSchemaAsync(newSchema: ISchema, owner: string, topicId: string, task: any): Promise<any> {
+export async function createSchemaAsync(newSchema: ISchema, owner: string, topicId: string | undefined, task: any): Promise<any> {
     const taskManager = new TaskManager();
     const guardians = new Guardians();
     taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
@@ -746,7 +746,7 @@ export class SchemaApi {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const newSchema = req.body;
-        const topicId = req.params.topicId;
+        const topicId = (req.params.topicId === null || req.params.topicId === undefined) ? undefined : req.params.topicId;
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_SCHEMA, user.id);
         RunFunctionAsync<ServiceError>(async () => {

@@ -1,17 +1,17 @@
-import { Users } from '@helpers/users';
+import { Users } from '../../helpers/users.js';
 import { IAuthUser, Logger, NotificationHelper } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { SchemaEntity, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '@helpers/policy-engine';
-import { PolicyListResponse } from '@entities/policy';
-import { StandardRegistryAccountResponse } from '@entities/account';
+import { PolicyEngine } from '../../helpers/policy-engine.js';
+import { PolicyListResponse } from '../../entities/policy.js';
+import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '@middlewares/validation/schemas/accounts';
+import { checkPermission } from '../../auth/authorization-helper.js';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '../../middlewares/validation/schemas/accounts.js';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { ApplicationEnvironment } from '../../environment';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { ApplicationEnvironment } from '../../environment.js';
 
 /**
  * User account route

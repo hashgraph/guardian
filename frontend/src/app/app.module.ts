@@ -56,6 +56,7 @@ import { BrandingComponent } from './views/branding/branding.component';
 import { StandardRegistryCardComponent } from './components/standard-registry-card/standard-registry-card.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { NotificationComponent } from './components/notification/notification.component';
+import { TokenDialogComponent } from './components/token-dialog/token-dialog.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -115,6 +116,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 // Prototypes
 import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
+import { UseWithServiceDirective } from './directives/use-with-service.directive';
 
 @NgModule({
     declarations: [
@@ -154,7 +156,9 @@ import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
         TermsConditionsComponent,
         AccountTypeSelectorDialogComponent,
         ForgotPasswordDialogComponent,
-        OnlyForDemoDirective
+        OnlyForDemoDirective,
+        TokenDialogComponent,
+        UseWithServiceDirective,
     ],
     imports: [
         BrowserModule,

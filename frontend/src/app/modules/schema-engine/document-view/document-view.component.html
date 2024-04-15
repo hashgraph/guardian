@@ -69,7 +69,7 @@
                      [attr.index]="this.subjects.indexOf(credentialSubject)">
                     <div class="form-field-group">
                         <app-schema-form-view [private-fields]="hideFields" [schema]="schemaMap[credentialSubject.type]"
-                                              [delimiter-hide]="true" [values]="credentialSubject">
+                                              [delimiter-hide]="true" [dryRun]="dryRun" [values]="credentialSubject">
                         </app-schema-form-view>
                     </div>
                 </div>
@@ -84,7 +84,8 @@
                 <div *ngFor="let vcDocument of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
                      [attr.index]="this.subjects.indexOf(vcDocument)">
                     <div class="form-field-group">
-                        <app-document-view [document]="vcDocument" [hide-fields]="this.hideFields" type="VC">
+                        <app-document-view [document]="vcDocument" [dryRun]="dryRun" [hide-fields]="this.hideFields"
+                                           type="VC">
                         </app-document-view>
                     </div>
                 </div>

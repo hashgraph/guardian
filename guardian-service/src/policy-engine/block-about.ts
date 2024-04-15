@@ -338,7 +338,8 @@ export const BlockAbout = {
         'control': 'Server',
         'input': [
             'RunEvent',
-            'AdditionalMintEvent'
+            'AdditionalMintEvent',
+            'RetryMintEvent'
         ],
         'output': [
             'RunEvent',

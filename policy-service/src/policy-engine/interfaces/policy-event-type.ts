@@ -12,7 +12,8 @@ export enum PolicyInputEventType {
     RestoreEvent = 'RestoreEvent',
     AdditionalMintEvent = 'AdditionalMintEvent',
     ModuleEvent = 'ModuleEvent',
-    ToolEvent = 'ToolEvent'
+    ToolEvent = 'ToolEvent',
+    RetryMintEvent = 'RetryMintEvent',
 }
 
 /**

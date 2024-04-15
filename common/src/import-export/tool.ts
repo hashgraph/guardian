@@ -1,8 +1,8 @@
 import JSZip from 'jszip';
-import { PolicyTool, Schema, Tag } from '../entity';
-import { DataBaseHelper } from '../helpers';
-import { DatabaseServer } from '../database-modules';
-import { ImportExportUtils } from './utils';
+import { PolicyTool, Schema, Tag } from '../entity/index.js';
+import { DataBaseHelper } from '../helpers/index.js';
+import { DatabaseServer } from '../database-modules/index.js';
+import { ImportExportUtils } from './utils.js';
 
 /**
  * Tool components

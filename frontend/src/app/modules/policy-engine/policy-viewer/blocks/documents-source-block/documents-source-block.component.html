@@ -76,18 +76,18 @@
                                         keyboard_arrow_down
                                     </mat-icon>
                                 </span>
-                                <span 
-                                    *ngIf="option.type == 'serials' && element.serials" 
-                                    [title]="getText(element, option)" 
+                                <span
+                                    *ngIf="option.type == 'serials' && element.serials"
+                                    [title]="getText(element, option)"
                                     class="text serials"
                                 >
                                     <hedera-explorer
                                         *ngFor="let serial of element.serials"
-                                        [params]="element.tokenId"
-                                        [subParams]="serial"
+                                        [params]="serial.tokenId"
+                                        [subParams]="serial.serial"
                                         subType="serials"
                                         type="tokens"
-                                    >{{ serial }}</hedera-explorer>
+                                    >{{ serial.serial }}</hedera-explorer>
                                     <mat-icon (click)="onSerials($event, element, option)">
                                         keyboard_arrow_down
                                     </mat-icon>
@@ -106,10 +106,10 @@
                                     *ngIf="option.type == 'block'"
                                     class="col-btn"
                                 >
-                                    <render-block 
-                                        [block]="option._block" 
+                                    <render-block
+                                        [block]="option._block"
                                         [dryRun]="dryRun"
-                                        [policyId]="policyId" 
+                                        [policyId]="policyId"
                                         [static]="getConfig(element, option, option._block)"
                                     >
                                     </render-block>
@@ -120,19 +120,19 @@
                 </ng-container>
 
                 <ng-container [matColumnDef]="'statusDetails'">
-                    <td 
-                        *matCellDef="let element" 
-                        [attr.colspan]="fields.length + 1" 
-                        class="expanded-detail" 
+                    <td
+                        *matCellDef="let element"
+                        [attr.colspan]="fields.length + 1"
+                        class="expanded-detail"
                         let mat-cell
                     >
-                        <div 
-                            *ngIf="element.history" 
+                        <div
+                            *ngIf="element.history"
                             [@statusExpand]="element == statusDetailed? 'expanded': 'collapsed'"
                         >
                             <div class="timeline-container">
-                                <div 
-                                    *ngFor="let historyElem of element.history" 
+                                <div
+                                    *ngFor="let historyElem of element.history"
                                     [attr.date-is]="historyElem.created"
                                     class="timeline-item"
                                 >

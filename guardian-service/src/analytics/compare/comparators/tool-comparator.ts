@@ -1,18 +1,18 @@
 import { DatabaseServer } from '@guardian/common';
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface';
-import { ToolModel } from '../models/tool.model';
-import { SchemaModel } from '../models/schema.model';
-import { ICompareResult } from '../interfaces/compare-result.interface';
-import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface';
-import { FileModel } from '../models/file.model';
-import { ReportTable } from '../../table/report-table';
-import { ComparePolicyUtils } from '../utils/compare-policy-utils';
-import { BlocksRate } from '../rates/blocks-rate';
-import { IRate } from '../interfaces/rate.interface';
-import { CompareUtils } from '../utils/utils';
-import { CSV } from '../../table/csv';
-import { IReportTable } from '../interfaces/report-table.interface';
-import { MultiCompareUtils } from '../utils/multi-compare-utils';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface.js';
+import { ToolModel } from '../models/tool.model.js';
+import { SchemaModel } from '../models/schema.model.js';
+import { ICompareResult } from '../interfaces/compare-result.interface.js';
+import { IMultiCompareResult } from '../interfaces/multi-compare-result.interface.js';
+import { FileModel } from '../models/file.model.js';
+import { ReportTable } from '../../table/report-table.js';
+import { ComparePolicyUtils } from '../utils/compare-policy-utils.js';
+import { BlocksRate } from '../rates/blocks-rate.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { CompareUtils } from '../utils/utils.js';
+import { CSV } from '../../table/csv.js';
+import { IReportTable } from '../interfaces/report-table.interface.js';
+import { MultiCompareUtils } from '../utils/multi-compare-utils.js';
 
 /**
  * Component for comparing tools
