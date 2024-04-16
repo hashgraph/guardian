@@ -25,10 +25,14 @@ export class CacheInterceptor implements NestInterceptor {
     const isExpress = Reflect.getMetadata(META_DATA.EXPRESS, context.getHandler());
 
     const token = request.headers.authorization?.split(' ')[1];
-    const users: Users = new Users();
-    const user = await users.getUserByToken(token);
+    let user = {}
 
-    const hashUser: string = crypto.createHash('md5').update(user.toString()).digest('hex');
+    if(token) {
+      const users: Users = new Users();
+      user = await users.getUserByToken(token);
+    }
+
+    const hashUser: string = crypto.createHash('md5').update(JSON.stringify(user)).digest('hex');
     const { url: route } = request;
     const cacheKey = `cache/${route}:${hashUser}`;
 
