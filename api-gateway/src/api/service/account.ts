@@ -6,16 +6,14 @@ import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '../../middlewares/validation/schemas/accounts.js';
 import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { ApplicationEnvironment } from '../../environment.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
-import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
-import { CACHE, META_DATA } from '../../constants/index.js';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 /**
  * User account route
@@ -24,12 +22,11 @@ import { PerformanceInterceptor } from '../../helpers/interceptors/performance.j
 @ApiTags('accounts')
 export class AccountApi {
 
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
-    }
+  constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
+  }
 
     /**
      * getSession
-     * use cache
      * @param headers
      */
     @ApiOperation({
@@ -51,7 +48,7 @@ export class AccountApi {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @Get('/session')
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache()
     async getSession(@Headers() headers: { [key: string]: string }): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
         try {
@@ -228,7 +225,7 @@ export class AccountApi {
     // @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get()
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache()
     async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
         // await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const authHeader = req.headers.authorization;
@@ -282,7 +279,7 @@ export class AccountApi {
     })
     @Get('/standard-registries')
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache()
     async getStandatdRegistries(@Req() req): Promise<any> {
         const authHeader = req.headers.authorization;
         const token = authHeader?.split(' ')[1];
@@ -341,7 +338,7 @@ export class AccountApi {
     })
     @Get('/standard-registries/aggregated')
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache()
     async getAggregatedStandardRegistries(): Promise<any> {
         const engineService = new PolicyEngine();
         const guardians = new Guardians();
@@ -406,8 +403,7 @@ export class AccountApi {
     })
     @Get('/balance')
     @HttpCode(HttpStatus.OK)
-    @SetMetadata(`${META_DATA.TTL}/accounts/balance`, CACHE.SHORT_TTL)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ ttl: CACHE.SHORT_TTL })
     async getBalance(@Headers() headers): Promise<any> {
         try {
             const authHeader = headers.authorization;

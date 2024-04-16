@@ -3,16 +3,14 @@ import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '../../middlewares/validation/schemas/index.js';
-import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
-import { CACHE, META_DATA } from '../../constants/index.js';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -263,8 +261,7 @@ export class ProfileApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    @SetMetadata(`${META_DATA.TTL}/profiles/:username/balance`, CACHE.SHORT_TTL)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ ttl: CACHE.SHORT_TTL })
     async getUserBalance(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string

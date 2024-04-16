@@ -1,12 +1,11 @@
 import { Guardians } from '../../helpers/guardians.js';
 import { Users } from '../../helpers/users.js';
 import { IAuthUser, Logger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpStatus, Req, Response, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import { UserRole } from '@guardian/interfaces';
 import { ApiTags } from '@nestjs/swagger';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('trust-chains')
 @ApiTags('trust-chains')
@@ -53,7 +52,7 @@ export class TrustChainsApi {
      */
     @Get('/:hash')
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getTrustChainByHash(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.AUDITOR)(req.user);
         try {

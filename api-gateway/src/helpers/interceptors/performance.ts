@@ -6,12 +6,14 @@ import { Observable, tap } from 'rxjs';
 export class PerformanceInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const start = Date.now();
+    const request = context.switchToHttp().getRequest();
+    const route = request.url;
 
     return next.handle().pipe(
       tap(() => {
         const end = Date.now();
         const executionTime = end - start;
-        console.log(`Execution time for ${context.getHandler().name}: ${executionTime}ms`);
+        console.log(`Execution time for ${route}: ${executionTime}ms`);
       }),
     );
   }

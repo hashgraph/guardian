@@ -2,11 +2,10 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { SchemaUtils } from '../../helpers/schema-utils.js';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import { ApiTags } from '@nestjs/swagger';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('tags')
 @ApiTags('tags')
@@ -145,7 +144,7 @@ export class TagsApi {
      */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getSchemas(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {

@@ -1,11 +1,10 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 /**
  * Branding route
@@ -52,7 +51,7 @@ export class BrandingApi{
     }
 
     @Get('/')
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache()
     async getBranding(): Promise<any> {
         try {
             const guardians = new Guardians();

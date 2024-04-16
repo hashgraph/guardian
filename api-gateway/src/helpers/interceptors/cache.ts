@@ -1,47 +1,63 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 
+import crypto from 'crypto';
+
 import { Observable, of, switchMap, tap } from 'rxjs';
 
 //services
 import { CacheService } from '../cache-service.js';
+import { Users } from '../users.js';
 
 //constants
 import { CACHE, META_DATA } from '../../constants/index.js';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  constructor(private readonly cacheService: CacheService) {}
+  constructor(private readonly cacheService: CacheService) {
+  }
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
-    const request = context.switchToHttp().getRequest();
-    const route = request.url;
-    const cacheKey = `cache/${route}`;
+    const httpContext = context.switchToHttp();
+    const request = httpContext.getRequest();
+    const responseContext = httpContext.getResponse();
 
-    const ttl = Reflect.getMetadata(`${META_DATA.TTL}${route}`, context.getHandler()) ?? CACHE.DEFAULT_TTL;
+    const ttl = Reflect.getMetadata(META_DATA.TTL, context.getHandler()) ?? CACHE.DEFAULT_TTL;
+    const isExpress = Reflect.getMetadata(META_DATA.EXPRESS, context.getHandler());
+
+    const token = request.headers.authorization?.split(' ')[1];
+    const users: Users = new Users();
+    const user = await users.getUserByToken(token);
+
+    const hashUser: string = crypto.createHash('md5').update(user.toString()).digest('hex');
+    const { url: route } = request;
+    const cacheKey = `cache/${route}:${hashUser}`;
 
     return of(null).pipe(
       switchMap(async () => {
-        const cachedResponse = await this.cacheService.get(cacheKey);
+        const cachedResponse: string = await this.cacheService.get(cacheKey);
 
         if (cachedResponse) {
           return JSON.parse(cachedResponse);
         }
       }),
-      switchMap(cachedResponse => {
-        if (cachedResponse) {
-          return of(cachedResponse);
+      switchMap(resultResponse => {
+        if (resultResponse) {
+          if (isExpress) {
+            return of(responseContext.json(resultResponse));
+          }
+
+          return of(resultResponse);
         }
 
         return next.handle().pipe(
           tap(async response => {
-            if (response) {
-              try {
-                await this.cacheService.set(cacheKey, JSON.stringify(response), ttl);
-              } catch(error) {
-                console.log('catch error', error);
-                console.log('catch response', response);
-              }
+            let result = response;
+
+            if (isExpress) {
+              result = response.outputData;
             }
+
+            await this.cacheService.set(cacheKey, JSON.stringify(result), ttl);
           }),
         );
       }),

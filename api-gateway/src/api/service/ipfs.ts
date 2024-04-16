@@ -1,13 +1,11 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response } from '@nestjs/common';
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
-import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
-import { CACHE, META_DATA } from '../../constants/index.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
@@ -84,8 +82,7 @@ export class IpfsApi {
     @ApiSecurity('bearerAuth')
     @Get('/file/:cid')
     @HttpCode(HttpStatus.OK)
-    @SetMetadata(`${META_DATA.TTL}/file/:cid`, CACHE.LONG_TTL)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
     async getFile(@Req() req, @Response() res): Promise<any> {
         if (!req.user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
@@ -123,8 +120,7 @@ export class IpfsApi {
     )
     @Get('/file/:cid/dry-run')
     @HttpCode(HttpStatus.OK)
-    @SetMetadata(`${META_DATA.TTL}/ipfs/file/:cid/dry-run`, CACHE.LONG_TTL)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
     async getFileDryRun(@Param('cid') cid: string, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();

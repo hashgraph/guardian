@@ -10,7 +10,7 @@ import {
   HttpStatus,
   Post,
   Req,
-  Response, UseInterceptors,
+  Response,
 } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import {
@@ -36,8 +36,7 @@ import {
     RetireRequestTokenDTO,
     WiperRequestDTO,
 } from '../../middlewares/validation/schemas/contracts.js';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 /**
  * Contracts api
@@ -264,7 +263,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache()
     async contractPermissions(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -393,7 +392,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getWipeRequests(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -1116,7 +1115,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getRetireRequests(@Req() req, @Response() res): Promise<any> {
         await checkPermission(
             UserRole.STANDARD_REGISTRY,
@@ -1205,7 +1204,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getRetirePools(@Req() req, @Response() res): Promise<any> {
         await checkPermission(
             UserRole.STANDARD_REGISTRY,
@@ -1792,7 +1791,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getRetireVCs(@Req() req, @Response() res): Promise<any> {
         await checkPermission(
             UserRole.STANDARD_REGISTRY,

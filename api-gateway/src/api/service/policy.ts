@@ -48,10 +48,8 @@ import {
 } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
-import { PerformanceInterceptor } from '../../helpers/interceptors/performance.js';
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
-import { SetMetadata } from '../../helpers/decorators/set-metadata.js';
-import { CACHE, META_DATA } from '../../constants/index.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -690,7 +688,7 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/navigation')
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getPolicyNavigation(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
@@ -727,7 +725,7 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getPolicyGroups(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
@@ -1885,8 +1883,7 @@ export class PolicyApi {
      */
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)
-    @SetMetadata(`${META_DATA.TTL}/policies/blocks/about`, CACHE.LONG_TTL)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
     async getBlockAbout(@Req() req, @Response() res) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
@@ -2161,7 +2158,7 @@ export class PolicyApi {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
-    @UseInterceptors(PerformanceInterceptor, CacheInterceptor)
+    @UseCache({ isExpress: true })
     async getPolicyCategoriesAsync(@Req() req, @Response() res): Promise<any> {
         try {
             const projectService = new ProjectService();
