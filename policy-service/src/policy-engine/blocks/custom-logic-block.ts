@@ -18,6 +18,9 @@ import { IPolicyUser, UserCredentials } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { fileURLToPath } from 'url';
+
+const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
     owner: IPolicyUser;
@@ -160,7 +163,7 @@ export class CustomLogicBlock {
 
                 const importCode = `const [done, user, documents, mathjs, artifacts, formulajs] = arguments;\r\n`;
                 const expression = ref.options.expression || '';
-                const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {
+                const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
                     workerData: {
                         execFunc: `${importCode}${execCode}${expression}`,
                         user,
