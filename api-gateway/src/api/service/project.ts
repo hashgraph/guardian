@@ -152,7 +152,6 @@ export class ProjectsAPI {
      * @param res
      */
     @Get('/properties')
-    @UseCache({ ttl: CACHE.LONG_TTL })
     @ApiOperation({
         summary: 'Get all properties',
         description: 'Get all properties',
@@ -169,6 +168,7 @@ export class ProjectsAPI {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
     async getPolicyProperties(@Req() req, @Response() res): Promise<any> {
         try {
             const projectService = new ProjectService();
