@@ -84,7 +84,7 @@ At Validation:
 
 ## Demo Video
 
-[Demo Video](https://youtu.be/CWmabIYZ-tM)
+[Demo Video](https://youtu.be/BFypZ915U4s)
 
 ## Policy Workflow
 
@@ -97,7 +97,7 @@ This policy is published to Hedera Testnet and can either be imported via Github
 ## Available Roles
 
 - PCEM Participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined in the VPCE PDD and provide evidence of the emission reductions achieved. Upon successful verification, the PCEM participant receives circular plastic credit (CPC) tokens as an incentive for their emission reductions.  
-- Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
+- Verification and Validation Body (VVB or VPCE) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 Cercarbono and Allcot are using Icontec as their VVB.
 - Registry (EcoRegistry) - EcoRegistry serves as the registry for the VPCE under Cercarbono and Allcot. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. 
 
@@ -111,16 +111,27 @@ Monitoring Report – The monitoring report is to be filled out based on the mon
 
 VVB Information - Schema showing all the needed information about a VVB and their accredited bodies and certifications.
 
-## Token (Carbon Emission Reduction)
+## Tokens
 
 Circular Plastic Credits (CPC), each equivalent to one tonne of CO2. 
 Circular Economy Credits (CEC), each equivalent to one tonne of CO2.
+
+## Methodology Source
 
 All needed information about Cercarbono and Allcot's Circular Economy Material can be seen here
 
 [Voluntary Programme on Circular Economy](https://www.cercarbono.com/voluntary-programme-circular-economy/)
 
-
 https://github.com/Mcnoble1/guardian/assets/40045755/016f631f-c8d4-4519-824b-13b78d34718c
 
+## Comparative Analysis (M/CE-R01 vs PWRM002)
+Circular economy and plastic recycling can help displace the production of virgin materials in dedicated facilities, potentially resulting in the avoidance of energy use and greenhouse gas (GHG) emissions. 
+
+- M/CE-R01 includes a guide for calculating GHG emissions from plastic waste recycling (which wasn't included in the PWRM002 methodology), emphasizing the importance of emission reduction through recycling. By promoting the formalization of plastic recycling projects, the methodology aims to increase recycling rates and contribute to achieving Sustainable Development Goal 13 on climate action.
+- M/CE-R01 factored in the recycling process (chemical or mechanical) in the baseline scenario, project scenario, leakage calculation, and net plastic recycled estimation while PWRM002 focused on depolymerization and non-depolymerization.
+
+
+<img width="960" alt="Screenshot 2024-04-08 223853" src="https://github.com/Mcnoble1/guardian/assets/40045755/b6f505bd-c8e9-42c8-a987-f4a887eaa6a2">
+
+<img width="960" alt="comparison2" src="https://github.com/Mcnoble1/guardian/assets/40045755/c41b4114-abb4-4706-b34b-9a2b6bc05f05">
 
