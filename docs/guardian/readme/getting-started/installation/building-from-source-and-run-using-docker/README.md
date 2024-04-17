@@ -163,6 +163,23 @@ IPFS_STORAGE_PROOF="..."
 
 To know complete process of How to setup IPFS Storage variables, please check [How to generate Web3.Storage API values](../../how-to-generate-web3.storage-api-key.md)
 
+#### 4.3 Setting up IPFS Filebase Bucket:
+
+To configure the Filebase IPFS provider, set the following variables in the file *
+`./configs/.env.<environment>.guardian.system`
+
+   ```
+   IPFS_STORAGE_API_KEY="Generated Firebase Bucket Token"
+   IPFS_PROVIDER="filebase"
+   ```
+
+Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service API Endpoint** service. The **token**
+generated for a bucket corresponds to the **IPFS_STORAGE_API_KEY** environment variable within the guardian's
+configuration.
+
+For detailed setup instructions, refer to the
+official <https://docs.filebase.com/api-documentation/ipfs-pinning-service-api>.
+
 #### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
 
 For setting up AI and Guided Search, we need to set OPENAI\_API\_KEY variable in `./configs/.env*` files.
