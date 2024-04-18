@@ -15,18 +15,11 @@ import {
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { firstValueFrom, timeout } from 'rxjs';
 import { AnyResponse, IPage, IndexerMessageAPI, responseFrom } from '@indexer/common';
+import { ApiClient } from '../api-client.js';
 
 @Controller('logs')
 @ApiTags('logs')
-export class LogsApi {
-    constructor(@Inject('INDEXER_API') private readonly client: ClientProxy) {
-    }
-
-    private async send<T>(api: IndexerMessageAPI, body: any): Promise<T> {
-        const result = await firstValueFrom(this.client.send<AnyResponse<T>>(api, body));
-        return responseFrom(result);
-    }
-
+export class LogsApi extends ApiClient {
     /**
      * Get
      */

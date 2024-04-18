@@ -1,0 +1,21 @@
+<div>
+    <mat-spinner *ngIf="loading"></mat-spinner>
+
+    <form class="example-form">
+        <mat-form-field class="example-full-width">
+            <mat-label>Item ID</mat-label>
+            <input matInput placeholder="Search by item id" [formControl]="searchControl">
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" (click)="onSearch()" [disabled]="searchControl.invalid">Search</button>
+    </form>
+
+    <div class="results">
+        @for (item of results; track item;) {
+        <div class="result" (click)="onOpen(item)">
+            <div class="result__type">{{item.type}}</div>
+            <a class="result__id">{{item.id}}</a>
+        </div>
+        }
+    </div>
+</div>

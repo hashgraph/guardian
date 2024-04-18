@@ -1,0 +1,19 @@
+<div>
+    <form class="example-form">
+        <mat-form-field class="example-full-width">
+            <mat-label>Item ID</mat-label>
+            <input matInput placeholder="Search by item id" [formControl]="searchControl">
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" (click)="onSearch()" [disabled]="searchControl.invalid">Search</button>
+    </form>
+
+    <div class="results">
+        @for (item of results; track item;) {
+        <div class="result">
+            <div class="result__type">{{item.type}}</div>
+            <div class="result__id">{{item.id}}</div>
+        </div>
+        }
+    </div>
+</div>

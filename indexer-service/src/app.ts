@@ -6,6 +6,7 @@ import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, entities } 
 import { ChannelService } from './api/channel.service.js';
 import { LogService } from './api/log.service.js';
 import { ElasticService } from './api/elastic.service.js';
+import { SearchService } from './api/search.service.js';
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 
@@ -25,7 +26,8 @@ const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.Gen
     controllers: [
         ChannelService,
         LogService,
-        ElasticService
+        ElasticService,
+        SearchService
     ]
 })
 class AppModule { }

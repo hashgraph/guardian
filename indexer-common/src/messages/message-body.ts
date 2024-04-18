@@ -23,3 +23,13 @@ export interface IPage<T> {
      */
     readonly order?: { [field: string]: string };
 }
+
+/**
+ * Message response interface
+ */
+export interface IResults<T> {
+    /**
+     * Items
+     */
+    readonly results: T;
+}

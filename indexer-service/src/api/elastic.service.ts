@@ -4,14 +4,9 @@ import {
     IndexerMessageAPI,
     MessageResponse,
     MessageError,
-    IPage,
     DataBaseHelper,
-    MessageCache,
-    DataBaseUtils,
-    TopicCache,
     Message,
     ElasticCache,
-    NFTCache,
     ElasticHelper,
     ElasticItem,
     FileHelper
@@ -37,9 +32,6 @@ export class ElasticService {
         });
         const em = DataBaseHelper.getEntityManager();
         const fh = new FileHelper(DataBaseHelper.gridFS);
-
-        console.log(' ---- find ----');
-        console.time('find');
 
         await fh.load();
 
@@ -96,7 +88,6 @@ export class ElasticService {
                 })
                 await em.upsertMany(ElasticCache, rows);
                 dataset.length = 0;
-                console.log((i++) * 100);
             }
         }
         if (dataset.length) {
@@ -109,9 +100,6 @@ export class ElasticService {
 
         fh.close();
         await elastic.close();
-
-        console.timeEnd('find');
-        console.log(' ---- end ----');
     }
 
 

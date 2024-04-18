@@ -1,5 +1,4 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Param, Inject, Query } from '@nestjs/common';
-import { ClientProxy, EventPattern, MessagePattern } from '@nestjs/microservices';
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Get, Post, Param, Inject, Query } from '@nestjs/common';
 import { InternalServerErrorDTO, PageDTO } from '../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
@@ -12,21 +11,26 @@ import {
     ApiTags,
     ApiQuery
 } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { firstValueFrom, timeout } from 'rxjs';
-import { AnyResponse, IPage, IndexerMessageAPI, responseFrom } from '@indexer/common';
+import { AnyResponse, IPage, IResults, IndexerMessageAPI, responseFrom } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 
-@Controller('elastic')
-@ApiTags('elastic')
-export class ElasticApi extends ApiClient {
+@Controller('search')
+@ApiTags('search')
+export class SearchApi extends ApiClient {
     /**
      * Get
+     * @get
      */
-    @Post('/update')
+    @Get('/')
     @ApiOperation({
         summary: '.',
         description: '.'
+    })
+    @ApiQuery({
+        name: 'search',
+        description: 'Search.',
+        type: String,
+        example: '0.0.1'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -40,7 +44,9 @@ export class ElasticApi extends ApiClient {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async getAllMessages(): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.ELASTIC_UPDATE_DATA, {});
+    async search(
+        @Query('search') search?: string
+    ): Promise<any> {
+        return await this.send<IResults<any>>(IndexerMessageAPI.GET_SEARCH_API, { search });
     }
 }

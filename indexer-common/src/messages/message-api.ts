@@ -13,4 +13,6 @@ export enum IndexerMessageAPI {
     GET_LOG_TOKENS = 'GET_LOG_TOKENS',
     GET_LOG_NFTS = 'GET_LOG_NFTS',
     ELASTIC_UPDATE_DATA = 'ELASTIC_UPDATE_DATA',
+    //
+    GET_SEARCH_API = 'GET_SEARCH_API',
 }
