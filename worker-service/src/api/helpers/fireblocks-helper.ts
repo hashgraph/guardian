@@ -1,0 +1,55 @@
+import { Singleton } from '@guardian/common';
+import { FireblocksSDK, PeerType, TransactionOperation, TransactionResponse, TransactionStatus } from 'fireblocks-sdk'
+
+@Singleton
+export class FireblocksHelper{
+
+    private client: FireblocksSDK;
+
+    constructor(
+        private apiKey: string,
+        private privateKey: string,
+        private vaultId: string,
+        private assetId: string,
+    ) {
+        const baseUrl = process.env.FIREBLOCKS_BASEURL || 'https://api.fireblocks.io';
+
+        this.client = new FireblocksSDK(this.privateKey, this.apiKey, baseUrl)
+
+        console.log(this);
+
+    }
+
+    async createTransaction(message: string) {
+        try {
+            const transaction = await this.client.createTransaction({
+                operation: TransactionOperation.RAW,
+                source: {type: PeerType.VAULT_ACCOUNT, id: this.vaultId},
+                assetId: this.assetId,
+                extraParameters: {rawMessageData: {messages: [{content: Buffer.from(message).toString('hex')}]}}
+            });
+            console.log(transaction)
+            return await this.getTransactionResult(transaction.id);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    private async delay(time: number): Promise<null> {
+        return new Promise((resolve: any) => setTimeout(resolve, time));
+    }
+
+    private async getTransactionResult(transactionId: string): Promise<TransactionResponse> {
+        const txInfo = await this.client.getTransactionById(transactionId);
+        if ([TransactionStatus.CANCELLED, TransactionStatus.FAILED].includes(txInfo.status)) {
+            throw new Error(`Fireblocks transaction "${transactionId}" failed with status ${txInfo.status}`);
+        }
+        if (txInfo.status === TransactionStatus.COMPLETED) {
+            return txInfo;
+        } else {
+            await this.delay(2000);
+            return this.getTransactionResult(transactionId);
+        }
+
+    }
+}

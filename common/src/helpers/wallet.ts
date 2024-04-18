@@ -1,6 +1,6 @@
 import { Singleton } from '../decorators/singleton.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Wallet as WalletManager} from '../wallet/index.js'
+import { Wallet as WalletManager } from '../wallet/index.js'
 import { NatsService } from '../mq/index.js';
 import { Users } from './users.js';
 
@@ -18,7 +18,8 @@ export enum KeyType {
     TOKEN_KYC_KEY = 'TOKEN_KYC_KEY',
     TOKEN_WIPE_KEY = 'TOKEN_WIPE_KEY',
     TOPIC_SUBMIT_KEY = 'TOPIC_SUBMIT_KEY',
-    TOPIC_ADMIN_KEY = 'TOPIC_ADMIN_KEY'
+    TOPIC_ADMIN_KEY = 'TOPIC_ADMIN_KEY',
+    FIREBLOCKS_KEY = 'FIREBLOCKS_KEY',
 }
 
 /**

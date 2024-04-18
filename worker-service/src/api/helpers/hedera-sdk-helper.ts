@@ -17,6 +17,7 @@ import {
     Hbar,
     HbarUnit,
     PrivateKey,
+    PublicKey,
     Status,
     Timestamp,
     TokenAssociateTransaction,
@@ -50,6 +51,7 @@ import { ContractParamType, GenerateUUIDv4, HederaResponseCode } from '@guardian
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
+import { FireblocksHelper } from './fireblocks-helper';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -898,9 +900,21 @@ export class HederaSDKHelper {
         topicId: string | TopicId,
         message: string,
         privateKey?: string | PrivateKey,
-        transactionMemo?: string
+        transactionMemo?: string,
+        fireblocksConfig?: any
     ): Promise<string> {
         const client = this.client;
+
+        let fireblocksClient;
+
+        if (fireblocksConfig) {
+            fireblocksClient = new FireblocksHelper(
+                fireblocksConfig.fireBlocksApiKey,
+                fireblocksConfig.fireBlocksPrivateiKey,
+                fireblocksConfig.fireBlocksVaultId,
+                fireblocksConfig.fireBlocksAssetId,
+            );
+        }
 
         const maxChunks = (process.env.HEDERA_MAX_CHUNKS) ? parseInt(process.env.HEDERA_MAX_CHUNKS, 10) : 20;
         let messageTransaction: Transaction = new TopicMessageSubmitTransaction({
@@ -913,7 +927,17 @@ export class HederaSDKHelper {
             messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
         }
 
-        if (privateKey) {
+        if (fireblocksClient) {
+            const tx = await fireblocksClient.createTransaction(message);
+
+            if (tx.signedMessages[0]) {
+                const pubKey = PublicKey.fromStringED25519(tx.signedMessages[0].publicKey);
+                const signature = Uint8Array.from(Buffer.from(tx.signedMessages[0].signature.fullSig, 'hex'));
+                messageTransaction.setNodeAccountIds([Object.values(this.client.network)[0] as AccountId]);
+                messageTransaction = messageTransaction.freezeWith(client);
+                messageTransaction.addSignature(pubKey, signature);
+            }
+        } else if (privateKey) {
             messageTransaction = messageTransaction.freezeWith(client);
             messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
         }

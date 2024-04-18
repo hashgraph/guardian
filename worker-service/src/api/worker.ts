@@ -333,9 +333,10 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.SEND_HEDERA: {
                     const { operatorId, operatorKey, dryRun } = task.data.clientOptions;
+                    const fireblocksConfig = task.data.fireblocksConfig;
                     client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     const { topicId, buffer, submitKey, memo } = task.data;
-                    result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
+                    result.data = await client.submitMessage(topicId, buffer, submitKey, memo, fireblocksConfig);
                     break;
                 }
 

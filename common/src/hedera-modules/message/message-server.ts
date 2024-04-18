@@ -1,10 +1,6 @@
-import {
-    AccountId,
-    PrivateKey,
-    TopicId,
-} from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, Logger, Workers } from '../../helpers/index.js';
+import { IPFS, KeyType, Logger, Users, Wallet, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -226,6 +222,16 @@ export class MessageServer {
         if (!this.topicId) {
             throw new Error('Topic is not set');
         }
+
+        const users = new Users();
+        const wallet = new Wallet()
+
+        const currentUser = await users.getUserByAccount(this.clientOptions.operatorId);
+        let fireblocksCreds: any | null = null;
+        if (currentUser && currentUser.useFireblocksSigning) {
+            fireblocksCreds = await wallet.getKey(currentUser.walletToken, KeyType.FIREBLOCKS_KEY, currentUser.did);
+        }
+
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
@@ -239,6 +245,7 @@ export class MessageServer {
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,
                 localNodeProtocol: Environment.localNodeProtocol,
+                fireblocksConfig: fireblocksCreds,
                 memo: memo || MessageMemo.getMessageMemo(message),
                 dryRun: this.dryRun,
             }
