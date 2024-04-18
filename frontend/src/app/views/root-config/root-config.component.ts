@@ -1,10 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import {
-    FormBuilder,
-    FormControl,
-    FormGroup,
-    Validators,
-} from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
@@ -48,7 +43,12 @@ export class RootConfigComponent implements OnInit {
     public schema!: Schema;
     public hederaForm = this.fb.group({
         hederaAccountId: ['', Validators.required],
-        hederaAccountKey: ['', Validators.required]
+        hederaAccountKey: ['', Validators.required],
+        useFireblocksSigning: [false],
+        fireBlocksVaultId: [''],
+        fireBlocksAssetId: [''],
+        fireBlocksApiKey: [''],
+        fireBlocksPrivateiKey: ['']
     });
     public selectedTokenId = new FormControl(null, Validators.required);
     public vcForm = new FormGroup({});
@@ -93,7 +93,12 @@ export class RootConfigComponent implements OnInit {
         this.loading = true;
         this.hederaForm.setValue({
             hederaAccountId: '',
-            hederaAccountKey: ''
+            hederaAccountKey: '',
+            useFireblocksSigning: false,
+            fireBlocksVaultId: '',
+            fireBlocksAssetId: '',
+            fireBlocksApiKey: '',
+            fireBlocksPrivateiKey: ''
         });
         this.vcForm.setValue({});
         this.loadProfile();
@@ -427,7 +432,7 @@ export class RootConfigComponent implements OnInit {
                     switch (operationMode) {
                         case OperationMode.Generate: {
                             const { id, key } = task.result;
-                            this.hederaForm.setValue({
+                            this.hederaForm.patchValue({
                                 hederaAccountId: id,
                                 hederaAccountKey: key,
                             });
@@ -536,8 +541,15 @@ export class RootConfigComponent implements OnInit {
             const data: any = {
                 hederaAccountId: hederaForm.hederaAccountId?.trim(),
                 hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
-                vcDocument: vcDocument,
+                vcDocument,
                 didDocument: JSON.parse(didDocument),
+                useFireblocksSigning: hederaForm.useFireblocksSigning,
+                fireblocksConfig: {
+                    fireBlocksVaultId: hederaForm.fireBlocksVaultId,
+                    fireBlocksAssetId: hederaForm.fireBlocksAssetId,
+                    fireBlocksApiKey: hederaForm.fireBlocksApiKey,
+                    fireBlocksPrivateiKey: hederaForm.fireBlocksPrivateiKey
+                },
                 didKeys
             };
             this.loading = true;

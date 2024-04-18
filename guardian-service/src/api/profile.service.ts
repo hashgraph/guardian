@@ -37,6 +37,13 @@ import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
+interface IFireblocksConfig{
+    fireBlocksVaultId: string;
+    fireBlocksAssetId: string;
+    fireBlocksApiKey: string;
+    fireBlocksPrivateiKey: string;
+}
+
 /**
  * User credentials
  */
@@ -47,7 +54,9 @@ interface ICredentials {
     hederaAccountKey: string,
     vcDocument: any,
     didDocument: any,
-    didKeys: IDidKey[]
+    didKeys: IDidKey[],
+    useFireblocksSigning: boolean,
+    fireblocksConfig: IFireblocksConfig,
 }
 
 /**
@@ -111,10 +120,14 @@ async function setupUserProfile(
     await users.updateCurrentUser(username, {
         did,
         parent: profile.parent,
-        hederaAccountId: profile.hederaAccountId
+        hederaAccountId: profile.hederaAccountId,
+        useFireblocksSigning: profile.useFireblocksSigning
     });
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
+    if (profile.useFireblocksSigning) {
+        await wallet.setKey(user.walletToken, KeyType.FIREBLOCKS_KEY, did, profile.fireblocksConfig);
+    }
     notifier.completed();
 
     return did;
@@ -167,7 +180,9 @@ async function createUserProfile(
         vcDocument,
         didDocument,
         didKeys,
-        entity
+        entity,
+        useFireblocksSigning,
+        fireblocksConfig
     } = profile;
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
