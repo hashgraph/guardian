@@ -81,19 +81,17 @@ export class LoggerApi {
 
     /**
      * @param req
-     * @param res
      */
     @Get('attributes')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    async getAttributes(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getAttributes(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {
                 req.query.existingAttributes = [req.query.existingAttributes as string];
             }
-            const attributes = await this.loggerService.getAttributes(escapeRegExp(req.query.name as string), req.query.existingAttributes as string[]);
-            return res.send(attributes);
+            return await this.loggerService.getAttributes(escapeRegExp(req.query.name as string), req.query.existingAttributes as string[]);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

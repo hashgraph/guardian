@@ -178,6 +178,7 @@ export class ModulesApi {
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner
             });
+            res.locals.data = SchemaUtils.toOld(items)
             return res
                 .setHeader('X-Total-Count', count)
                 .json(SchemaUtils.toOld(items));
@@ -244,7 +245,6 @@ export class ModulesApi {
 
     /**
      * @param req
-     * @param res
      */
     @ApiOperation({
         summary: 'Return a list of modules.',
@@ -270,13 +270,12 @@ export class ModulesApi {
     })
     @Get('/menu')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    async getMenu(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getMenu(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
-            const items = await guardians.getMenuModule(req.user.did);
-            return res.json(items);
+            return await guardians.getMenuModule(req.user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

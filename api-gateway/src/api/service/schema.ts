@@ -130,12 +130,11 @@ export class SingleSchemaApi {
     /**
      * use cache 30s test
      * @param req
-     * @param res
      */
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ ttl: CACHE.SHORT_TTL, isExpress: true })
-    async getSchema(@Req() req, @Response() res): Promise<any> {
+    @UseCache({ ttl: CACHE.SHORT_TTL })
+    async getSchema(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const user = req.user;
@@ -158,7 +157,7 @@ export class SingleSchemaApi {
             } else {
                 SchemaHelper.updatePermission([schema], owner);
             }
-            return res.json(SchemaUtils.toOld(schema));
+            return SchemaUtils.toOld(schema);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
@@ -541,17 +540,16 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    async getAll(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getAll(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
             if (user.did) {
-                const schemas = await guardians.getListSchemas(user.did);
-                return res.send(schemas);
+                return await guardians.getListSchemas(user.did);
             }
-            res.send([]);
+            return [];
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -597,20 +595,19 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    async getSub(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getSub(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             if (!req.user.did) {
-                return res.send([]);
+                return [];
             }
-            const schemas = await guardians.getSubSchemas(
+            return await guardians.getSubSchemas(
                 req.query.category,
                 req.query.topicId,
                 req.user.did
             );
-            return res.send(schemas);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -2236,6 +2233,7 @@ export class SchemaApi {
             const fileBuffer = Buffer.from(file, 'base64');
             res.setHeader('Content-disposition', `attachment; filename=` + filename);
             res.setHeader('Content-type', 'application/zip');
+            res.locals.data = fileBuffer
             return res.send(fileBuffer);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

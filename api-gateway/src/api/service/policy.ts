@@ -666,7 +666,6 @@ export class PolicyApi {
     /**
      * use cache test dry run
      * @param req
-     * @param res
      */
     @ApiOperation({
         summary: 'Returns a policy navigation.',
@@ -688,12 +687,12 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/navigation')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    async getPolicyNavigation(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getPolicyNavigation(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.getNavigation(req.user, req.params.policyId));
+            return await engineService.getNavigation(req.user, req.params.policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -703,7 +702,6 @@ export class PolicyApi {
     /**
      * use cache need test
      * @param req
-     * @param res
      */
     @ApiOperation({
         summary: 'Returns a list of groups the user is a member of.',
@@ -725,12 +723,12 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    async getPolicyGroups(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getPolicyGroups(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.getGroups(req.user, req.params.policyId));
+            return await engineService.getGroups(req.user, req.params.policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1879,16 +1877,15 @@ export class PolicyApi {
 
     /**
      * @param req
-     * @param res
      */
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
-    async getBlockAbout(@Req() req, @Response() res) {
+    @UseCache({ ttl: CACHE.LONG_TTL })
+    async getBlockAbout(@Req() req) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.blockAbout());
+            return await engineService.blockAbout();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2138,8 +2135,6 @@ export class PolicyApi {
     }
 
     /**
-     * @param req
-     * @param res
      */
     @Get('/methodologies/categories')
     @ApiOperation({
@@ -2158,12 +2153,11 @@ export class PolicyApi {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
-    @UseCache({ isExpress: true })
-    async getPolicyCategoriesAsync(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getPolicyCategoriesAsync(): Promise<any> {
         try {
             const projectService = new ProjectService();
-            const categories = await projectService.getPolicyCategories();
-            return res.send(categories);
+            return await projectService.getPolicyCategories();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

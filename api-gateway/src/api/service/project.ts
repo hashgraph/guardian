@@ -148,8 +148,6 @@ export class ProjectsAPI {
     }
 
     /**
-     * @param req
-     * @param res
      */
     @Get('/properties')
     @ApiOperation({
@@ -168,12 +166,11 @@ export class ProjectsAPI {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
-    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
-    async getPolicyProperties(@Req() req, @Response() res): Promise<any> {
+    @UseCache({ ttl: CACHE.LONG_TTL })
+    async getPolicyProperties(): Promise<any> {
         try {
             const projectService = new ProjectService();
-            const policyProperties = await projectService.getPolicyProperties();
-            return res.send(policyProperties);
+            return await projectService.getPolicyProperties();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

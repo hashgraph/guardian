@@ -58,7 +58,7 @@ export class CacheInterceptor implements NestInterceptor {
             let result = response;
 
             if (isExpress) {
-              result = response.outputData;
+              result = response.locals.data;
             }
 
             await this.cacheService.set(cacheKey, JSON.stringify(result), ttl);

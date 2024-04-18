@@ -48,12 +48,11 @@ export class TrustChainsApi {
 
     /**
      * @param req
-     * @param res
      */
     @Get('/:hash')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    async getTrustChainByHash(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getTrustChainByHash(@Req() req): Promise<any> {
         await checkPermission(UserRole.AUDITOR)(req.user);
         try {
             const guardians = new Guardians();
@@ -79,7 +78,7 @@ export class TrustChainsApi {
                 return { username: user.username, did: user.did }
             })
 
-            return res.json({ chain, userMap });
+            return { chain, userMap };
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
