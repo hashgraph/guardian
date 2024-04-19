@@ -930,6 +930,10 @@ export class HederaSDKHelper {
         if (fireblocksClient) {
             const tx = await fireblocksClient.createTransaction(message);
 
+            if (!tx || !Array.isArray(tx.signedMessages)) {
+                throw new Error(`Fireblocks signing failed`);
+            }
+
             if (tx.signedMessages[0]) {
                 const pubKey = PublicKey.fromStringED25519(tx.signedMessages[0].publicKey);
                 const signature = Uint8Array.from(Buffer.from(tx.signedMessages[0].signature.fullSig, 'hex'));

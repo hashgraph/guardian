@@ -124,10 +124,10 @@ export class UserProfileComponent implements OnInit {
             id: new FormControl('', [Validators.required, noWhitespaceValidator()]),
             key: new FormControl('', [Validators.required, noWhitespaceValidator()]),
             useFireblocksSigning: new FormControl(false),
-            fireBlocksVaultId: new FormControl(''),
-            fireBlocksAssetId: new FormControl(''),
-            fireBlocksApiKey: new FormControl(''),
-            fireBlocksPrivateiKey: new FormControl('')
+            fireBlocksVaultId: new FormControl('', [Validators.required, noWhitespaceValidator()]),
+            fireBlocksAssetId: new FormControl('', [Validators.required, noWhitespaceValidator()]),
+            fireBlocksApiKey: new FormControl('', [Validators.required, noWhitespaceValidator()]),
+            fireBlocksPrivateiKey: new FormControl('', [Validators.pattern(/-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----/gm)])
         });
         this.didDocumentType = new FormControl(false, [Validators.required]);
         this.didDocumentForm = new FormControl('', [Validators.required]);

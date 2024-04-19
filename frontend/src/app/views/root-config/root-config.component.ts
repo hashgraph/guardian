@@ -12,6 +12,7 @@ import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
+import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
 
 enum OperationMode {
     None,
@@ -45,10 +46,10 @@ export class RootConfigComponent implements OnInit {
         hederaAccountId: ['', Validators.required],
         hederaAccountKey: ['', Validators.required],
         useFireblocksSigning: [false],
-        fireBlocksVaultId: [''],
-        fireBlocksAssetId: [''],
-        fireBlocksApiKey: [''],
-        fireBlocksPrivateiKey: ['']
+        fireBlocksVaultId: ['', [Validators.required, noWhitespaceValidator()]],
+        fireBlocksAssetId: ['', [Validators.required, noWhitespaceValidator()]],
+        fireBlocksApiKey: ['', [Validators.required, noWhitespaceValidator()]],
+        fireBlocksPrivateiKey: ['', Validators.pattern(/-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----/gm)]
     });
     public selectedTokenId = new FormControl(null, Validators.required);
     public vcForm = new FormGroup({});
