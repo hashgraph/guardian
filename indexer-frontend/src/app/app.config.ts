@@ -8,6 +8,7 @@ import { LogsService } from './services/logs.service';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { ElasticService } from './services/elastic.service';
 import { SearchService } from './services/search.service';
+import { provideEcharts } from 'ngx-echarts';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
         ElasticService,
         SearchService,
         provideHttpClient(),
-        provideRouter(routes), provideAnimationsAsync()
+        provideRouter(routes), provideAnimationsAsync(),
+        provideEcharts(),
     ]
 };

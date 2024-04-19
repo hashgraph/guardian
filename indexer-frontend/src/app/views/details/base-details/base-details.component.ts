@@ -21,7 +21,7 @@ export abstract class BaseDetailsComponent {
     public last: any = null;
     public target: any = null;
     public row: any = null;
-    public relationships: any = null;
+    public relationships: IRelationshipsResults | null = null;
     public tab: string = '';
     public tabIndex: number = 0;
 
@@ -71,7 +71,7 @@ export abstract class BaseDetailsComponent {
         this.last = null;
         this.target = null;
         this.row = null;
-        this.relationships = [];
+        this.relationships = null;
         if (result) {
             this.row = result.row;
             this.target = result.item;
@@ -88,7 +88,7 @@ export abstract class BaseDetailsComponent {
         this.tabIndex = this.getTabIndex();
     }
 
-    protected setRelationships(result?: IRelationshipsResults): void {
+    protected setRelationships(result: IRelationshipsResults): void {
         this.relationships = result;
     }
 

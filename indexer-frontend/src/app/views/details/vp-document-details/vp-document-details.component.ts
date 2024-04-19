@@ -4,7 +4,43 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { SearchService } from '../../../services/search.service';
 import { BaseDetailsComponent } from '../base-details/base-details.component';
 import { LoadingComponent } from '../../../components/loading/loading.component';
-import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
+import { EChartsOption } from 'echarts';
+import { NgxEchartsDirective } from 'ngx-echarts';
+
+function createChart(data: any[], links: any): EChartsOption {
+    return {
+        title: {
+            text: 'Relationships'
+        },
+        tooltip: {},
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        series: [
+            {
+                type: 'graph',
+                layout: 'none',
+                symbolSize: 50,
+                roam: true,
+                label: {
+                    show: true
+                },
+                edgeSymbol: ['circle', 'arrow'],
+                edgeSymbolSize: [4, 10],
+                edgeLabel: {
+                    fontSize: 20
+                },
+                data,
+                links,
+                lineStyle: {
+                    opacity: 0.9,
+                    width: 2,
+                    curveness: 0
+                }
+            }
+        ]
+    };
+}
 
 @Component({
     selector: 'vp-document-details',
@@ -17,10 +53,13 @@ import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
     imports: [
         CommonModule,
         LoadingComponent,
-        MatTabsModule
+        MatTabsModule,
+        NgxEchartsDirective
     ]
 })
 export class VpDocumentDetailsComponent extends BaseDetailsComponent {
+    public chartOption: EChartsOption = createChart([], []);
+
     constructor(
         private searchService: SearchService,
         route: ActivatedRoute,
@@ -55,6 +94,7 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
             this.searchService.getVpRelationships(this.id).subscribe({
                 next: (result) => {
                     this.setRelationships(result);
+                    this.setChartData();
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
@@ -79,6 +119,45 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
             }
         } else {
             return 0;
+        }
+    }
+
+    private setChartData() {
+        if (
+            this.relationships &&
+            this.relationships.relationships &&
+            this.relationships.links
+        ) {
+            const data = [];
+            let index = 0;
+            for (const item of this.relationships.relationships) {
+                data.push(
+                    {
+                        name: item.id,
+                        x: Math.random() * 1000,
+                        y: Math.random() * 1000,
+                        itemStyle: {
+                            color: item.id === this.relationships.target.id ? '#ff942c' : '#556fc3'
+                        }
+                    },
+                )
+                index += 100;
+            }
+            const links = [];
+            for (const item of this.relationships.links) {
+                links.push(
+                    {
+                        source: item.source,
+                        target: item.target,
+                        lineStyle: {
+                            curveness: 0.2
+                        }
+                    }
+                )
+            }
+            this.chartOption = createChart(data, links);
+        } else {
+            this.chartOption = createChart([], []);
         }
     }
 
