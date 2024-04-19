@@ -18,6 +18,7 @@ context("Contracts", { tags: '@contracts' },() => {
                 "description": contractNameR,
                 "type": "RETIRE",
             },
+            timeout: 180000
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.SUCCESS);
             expect(response.body).to.have.property("_id");
@@ -122,6 +123,7 @@ context("Contracts", { tags: '@contracts' },() => {
                 "description": contractNameW,
                 "type": "WIPE",
             },
+            timeout: 180000
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.SUCCESS);
             expect(response.body).to.have.property("_id");

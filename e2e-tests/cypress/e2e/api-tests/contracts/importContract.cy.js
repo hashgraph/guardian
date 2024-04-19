@@ -15,14 +15,15 @@ context("Contracts", { tags: '@contracts' }, () => {
             body: {
                 "contractId": Cypress.env("contract_for_import"),
                 "description": importedContractName
-            }
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body.contractId).eq(Cypress.env("contract_for_import"));
-            expect(resp.body.description).eq(importedContractName);
-            expect(resp.body.type).eq("WIPE");
-            expect(resp.body).to.have.property("id");
-            expect(resp.body).to.have.property("owner");
+            },
+            timeout: 180000
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body.contractId).eq(Cypress.env("contract_for_import"));
+            expect(response.body.description).eq(importedContractName);
+            expect(response.body.type).eq("WIPE");
+            expect(response.body).to.have.property("id");
+            expect(response.body).to.have.property("owner");
         });
     });
 

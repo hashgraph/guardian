@@ -17,8 +17,8 @@ context("Contracts", { tags: '@contracts' },() => {
                 "description": contractNameR,
                 "type": "RETIRE",
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
         });
         cy.request({
             method: METHOD.POST,
@@ -30,8 +30,8 @@ context("Contracts", { tags: '@contracts' },() => {
                 "description": contractNameW,
                 "type": "WIPE",
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
         });
     })
 
@@ -42,13 +42,13 @@ context("Contracts", { tags: '@contracts' },() => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body.at(-1)).to.have.property("_id");
-            expect(resp.body.at(-1)).to.have.property("contractId");
-            expect(resp.body.at(-1)).to.have.property("type");
-            expect(resp.body.at(-1)).to.have.property("description");
-            expect(resp.body.at(-1)).to.have.property("owner");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body.at(-1)).to.have.property("_id");
+            expect(response.body.at(-1)).to.have.property("contractId");
+            expect(response.body.at(-1)).to.have.property("type");
+            expect(response.body.at(-1)).to.have.property("description");
+            expect(response.body.at(-1)).to.have.property("owner");
         });
     });
 

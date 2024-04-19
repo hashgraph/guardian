@@ -41,6 +41,8 @@ const API = {
     RetirePools: "contracts/retire/pools/",
     ManagerRole: "manager/",
     WiperRole: "wiper/",
+    AdminRole: "admin/",
+    SyncPools: "pools/sync",
 
     //Modules
     ListOfAllModules: "modules/",
@@ -118,6 +120,10 @@ const API = {
     Async: "push/",
     Publish: "publish/",
     Blocks: "blocks/",
-    Approve: "approve/"
+    Approve: "approve/",
+    Reject: "reject/",
+    Requests: "requests/",
+    Disable: "disable/",
+    Enable: "enable/"
 };
 export default API;

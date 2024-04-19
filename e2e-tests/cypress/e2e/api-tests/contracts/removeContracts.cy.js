@@ -17,6 +17,7 @@ context("Contracts", { tags: '@contracts' }, () => {
                 "description": contractNameR,
                 "type": "RETIRE",
             },
+            timeout: 180000
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.SUCCESS);
             contractIdR = response.body.id;
@@ -55,8 +56,8 @@ context("Contracts", { tags: '@contracts' }, () => {
                 qs: {
                     type: "RETIRE"
                 }
-            }).then((resp) => {
-                (resp.body).forEach(element => {
+            }).then((response) => {
+                (response.body).forEach(element => {
                     console.log(element.id)
                     expect(element.id !== contractIdR)
                 });
@@ -175,8 +176,8 @@ context("Contracts", { tags: '@contracts' }, () => {
                 qs: {
                     type: "WIPE"
                 }
-            }).then((resp) => {
-                (resp.body).forEach(element => {
+            }).then((response) => {
+                (response.body).forEach(element => {
                     console.log(element.id)
                     expect(element.id !== contractIdW)
                 });

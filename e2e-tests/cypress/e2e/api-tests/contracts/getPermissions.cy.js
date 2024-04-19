@@ -201,7 +201,7 @@ context("Contracts", { tags: '@contracts' }, () => {
     it("Get smart-contract(wipe) permissions by Verra", () => {
         cy.request({
             method: "POST",
-            url: API.ApiServer + "accounts/login",
+            url: API.ApiServer + API.AccountsLogin,
             body: {
                 username: username,
                 password: "test"
@@ -209,7 +209,7 @@ context("Contracts", { tags: '@contracts' }, () => {
         }).then((response) => {
             cy.request({
                 method: "POST",
-                url: API.ApiServer + "accounts/access-token",
+                url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken
                 }

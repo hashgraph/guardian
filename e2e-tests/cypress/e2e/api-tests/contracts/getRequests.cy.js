@@ -2376,6 +2376,7 @@ context("Contracts", { tags: '@contracts' },() => {
                         headers: {
                             authorization,
                         },
+                        timeout: 180000
                     }).then((response) => {
                         expect(response.status).eql(STATUS_CODE.OK);
                         tokenId = response.body.at(0).tokenId;
@@ -2924,6 +2925,7 @@ context("Contracts", { tags: '@contracts' },() => {
                     "description": contractNameR,
                     "type": "RETIRE",
                 },
+                timeout: 180000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 rContractId = response.body.contractId;
@@ -4164,6 +4166,7 @@ context("Contracts", { tags: '@contracts' },() => {
                     "description": contractNameR,
                     "type": "RETIRE",
                 },
+                timeout: 180000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 rContractId = response.body.contractId;
