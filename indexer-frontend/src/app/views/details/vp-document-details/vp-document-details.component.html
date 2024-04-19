@@ -1,3 +1,44 @@
 <div>
-    <mat-spinner *ngIf="loading"></mat-spinner>
+    <app-loading [loading]="loading"></app-loading>
+
+    <div class="header">
+
+    </div>
+    <div class="content">
+        @if (row) {
+        <mat-tab-group [selectedIndex]="tabIndex" (selectedTabChange)="onTab($event)">
+
+            @if (target) {
+            <mat-tab label="OVERVIEW">
+                <textarea name="" id="" cols="30" rows="10">
+                    {{getJson(target)}}
+                </textarea>
+            </mat-tab>
+
+            <mat-tab label="DOCUMENT">
+                <textarea name="" id="" cols="30" rows="10">
+                    {{getJson(first)}}
+                </textarea>
+            </mat-tab>
+
+            <mat-tab label="HISTORY">
+                <textarea name="" id="" cols="30" rows="10">
+                    {{getJson(history)}}
+                </textarea>
+            </mat-tab>
+
+            <mat-tab label="RELATIONSHIPS">
+            </mat-tab>
+            }
+            <mat-tab label="ROW DATA">
+                <textarea name="" id="" cols="30" rows="10">
+                    {{getJson(row)}}
+                </textarea>
+            </mat-tab>
+        </mat-tab-group>
+        }
+        @else {
+        <div>Not found</div>
+        }
+    </div>
 </div>

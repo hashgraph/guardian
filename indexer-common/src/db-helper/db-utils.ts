@@ -9,10 +9,10 @@ export class DataBaseUtils {
     ): {
         orderBy: { [x: string]: string },
         limit: number,
-        offset?: number
+        offset: number
     } {
-        const otherOptions: any = { limit };
-        if(orderField && orderDir) {
+        const otherOptions: any = { limit, offset: 0 };
+        if (orderField && orderDir) {
             otherOptions.orderBy = {};
             otherOptions.orderBy[orderField] = orderDir;
         }
@@ -31,8 +31,12 @@ export class DataBaseUtils {
         } else {
             return otherOptions;
         }
-        otherOptions.limit = Math.min(limit, _pageSize);
-        otherOptions.offset = _pageIndex * _pageSize;
+        if (Number.isFinite(_pageSize) && _pageSize) {
+            otherOptions.limit = Math.min(limit, _pageSize);
+        }
+        if (Number.isFinite(_pageIndex)) {
+            otherOptions.offset = _pageIndex * otherOptions.limit;
+        }
         return otherOptions;
     }
 }

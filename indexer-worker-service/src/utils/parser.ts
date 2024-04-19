@@ -1,4 +1,4 @@
-import { MessageCache, Message } from '@indexer/common';
+import { MessageCache, Message, MessageType } from '@indexer/common';
 
 export class Parser {
     public static parseMassage(row: MessageCache): Message | null {
@@ -39,8 +39,8 @@ export class Parser {
             message.tokens = [];
 
             switch (json.type) {
-                case 'EVC-Document':
-                case 'VC-Document':
+                case MessageType.EVC_DOCUMENT:
+                case MessageType.VC_DOCUMENT:
                     message.options.issuer = json.issuer;
                     message.options.relationships = json.relationships;
                     message.options.documentStatus = json.documentStatus;
@@ -49,15 +49,15 @@ export class Parser {
                         message.files.push(json.cid);
                     }
                     break;
-                case 'DID-Document':
+                case MessageType.DID_DOCUMENT:
                     message.options.did = json.did;
                     message.options.relationships = json.relationships;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }
                     break;
-                case 'Schema':
-                case 'schema-document':
+                case MessageType.SCHEMA:
+                case MessageType.SCHEMA_DOCUMENT:
                     message.options.name = json.name;
                     message.options.description = json.description;
                     message.options.entity = json.entity;
@@ -71,8 +71,8 @@ export class Parser {
                         message.files.push(json.context_cid);
                     }
                     break;
-                case 'Policy':
-                case 'Instance-Policy':
+                case MessageType.POLICY:
+                case MessageType.INSTANCE_POLICY:
                     message.options.uuid = json.uuid;
                     message.options.name = json.name;
                     message.options.description = json.description;
@@ -95,21 +95,21 @@ export class Parser {
                         json.synchronizationTopicId
                     ];
                     break;
-                case 'VP-Document':
+                case MessageType.VP_DOCUMENT:
                     message.options.issuer = json.issuer;
                     message.options.relationships = json.relationships;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }
                     break;
-                case 'Standard Registry':
+                case MessageType.STANDARD_REGISTRY:
                     message.options.did = json.did;
                     message.options.registrantTopicId = json.topicId;
                     message.options.lang = json.lang;
                     message.options.attributes = json.attributes || {};
                     message.topics = [json.topicId];
                     break;
-                case 'Topic':
+                case MessageType.TOPIC:
                     message.options.name = json.name;
                     message.options.description = json.description;
                     message.options.owner = json.owner;
@@ -118,7 +118,7 @@ export class Parser {
                     message.options.parentId = json.parentId;
                     message.options.rationale = json.rationale;
                     break;
-                case 'Token':
+                case MessageType.TOKEN:
                     message.options.tokenId = json.tokenId;
                     message.options.tokenName = json.tokenName;
                     message.options.tokenSymbol = json.tokenSymbol;
@@ -127,7 +127,7 @@ export class Parser {
                     message.options.owner = json.owner;
                     message.tokens = [json.tokenId];
                     break;
-                case 'Module':
+                case MessageType.MODULE:
                     message.options.uuid = json.uuid;
                     message.options.name = json.name;
                     message.options.description = json.description;
@@ -138,7 +138,7 @@ export class Parser {
                     }
                     message.topics = [json.topicId];
                     break;
-                case 'Tool':
+                case MessageType.TOOL:
                     message.options.uuid = json.uuid;
                     message.options.name = json.name;
                     message.options.description = json.description;
@@ -151,7 +151,7 @@ export class Parser {
                     }
                     message.topics = [json.topicId, json.tagsTopicId];
                     break;
-                case 'Tag':
+                case MessageType.TAG:
                     message.options.uuid = json.uuid;
                     message.options.name = json.name;
                     message.options.description = json.description;
@@ -164,11 +164,11 @@ export class Parser {
                         message.files.push(json.cid);
                     }
                     break;
-                case 'Role-Document':
+                case MessageType.ROLE_DOCUMENT:
                     message.options.role = json.role;
                     message.options.group = json.group;
                     break;
-                case 'Synchronization Event':
+                case MessageType.SYNCHRONIZATION_EVENT:
                     message.options.user = json.user;
                     message.options.policy = json.policy;
                     message.options.policyType = json.policyType;
@@ -179,7 +179,7 @@ export class Parser {
                     message.options.target = json.target;
                     message.options.policyOwner = json.policyOwner;
                     break;
-                case 'Contract':
+                case MessageType.CONTRACT:
                     message.options.contractId = json.contractId;
                     message.options.description = json.description;
                     message.options.contractType = json.contractType;

@@ -1,0 +1,41 @@
+.table {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 80px);
+    overflow: hidden;
+    padding: 14px;
+    box-sizing: border-box;
+
+    .table-filters {
+        width: 100%;
+        height: 70px;
+        overflow: hidden;
+        display: flex;
+
+        .filter {
+            width: 230px;
+            height: 60px;
+            overflow: hidden;
+            margin-right: 20px;
+
+            mat-form-field {
+                width: 100%;
+            }
+        }
+    }
+
+    .table-body {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 230px);
+        overflow: auto;
+    }
+
+    .table-paginator {
+        position: relative;
+        width: 100%;
+        height: 60px;
+        padding-top: 4px;
+        box-sizing: border-box;
+    }
+}

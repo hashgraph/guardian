@@ -43,11 +43,11 @@ export class MessageResponse<T> implements IMessageResponse<T> {
 /**
  * Message error class
  */
-export class MessageError<T> implements IMessageResponse<T>, Error {
+export class MessageError implements IMessageResponse<any>, Error {
     /**
      * Response body
      */
-    readonly body: T;
+    readonly body: any;
     /**
      * Response code
      */
@@ -82,7 +82,7 @@ export class MessageError<T> implements IMessageResponse<T>, Error {
     }
 }
 
-export type AnyResponse<T> = MessageError<T> | MessageResponse<T>;
+export type AnyResponse<T> = MessageError | MessageResponse<T>;
 
 /**
  * Response function

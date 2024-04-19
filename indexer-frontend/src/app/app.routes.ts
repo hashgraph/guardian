@@ -9,6 +9,7 @@ import { ElasticComponent } from './views/elastic/elastic.component';
 import { SearchViewComponent } from './views/search/search.component';
 import { HomeComponent } from './views/home/home.component';
 
+//Details
 import { DidDocumentDetailsComponent } from './views/details/did-document-details/did-document-details.component';
 import { EventDetailsComponent } from './views/details/event-details/event-details.component';
 import { InstancePolicyDetailsComponent } from './views/details/instance-policy-details/instance-policy-details.component';
@@ -28,6 +29,9 @@ import { VcDocumentDetailsComponent } from './views/details/vc-document-details/
 import { VpDocumentDetailsComponent } from './views/details/vp-document-details/vp-document-details.component';
 import { ContractDetailsComponent } from './views/details/contract-details/contract-details.component';
 
+//collections
+import { VpDocumentsComponent } from './views/collections/vp-documents/vp-documents.component';
+
 export const routes: Routes = [
     { path: 'status', component: StatusComponent },
     { path: 'elastic', component: ElasticComponent },
@@ -40,6 +44,9 @@ export const routes: Routes = [
     //
     { path: '', component: HomeComponent },
     { path: 'search', component: SearchViewComponent },
+
+    //collections
+    { path: 'vp-documents', component: VpDocumentsComponent },
 
     //details
     { path: 'did-documents/:id', component: DidDocumentDetailsComponent },
