@@ -4,18 +4,7 @@ import { DocumentStatus } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import {
-    MessageAction,
-    MessageServer,
-    VcDocumentDefinition as VcDocument,
-    VpDocumentDefinition as VpDocument,
-    VCMessage,
-    MessageMemo,
-    VPMessage,
-    DIDMessage,
-    Message,
-    HederaDidDocument
-} from '@guardian/common';
+import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, MessageServer, VcDocumentDefinition as VcDocument, VCMessage, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
@@ -434,8 +423,9 @@ export class SendToGuardianBlock {
             const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
 
             const userHederaCred = await user.loadHederaCredentials(ref);
+            const signOptions = await user.loadSignOptions(ref);
             const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, ref.dryRun
+                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
             );
             const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
             const vcMessageResult = await messageServer

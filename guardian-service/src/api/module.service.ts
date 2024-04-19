@@ -1,29 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    BinaryMessageResponse,
-    DatabaseServer,
-    Logger,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    MessageType,
-    ModuleImportExport,
-    ModuleMessage,
-    PolicyModule,
-    TagMessage,
-    TopicConfig,
-    TopicHelper,
-    Users
-} from '@guardian/common';
-import {
-    GenerateUUIDv4,
-    MessageAPI,
-    ModuleStatus,
-    SchemaCategory,
-    TagType,
-    TopicType
-} from '@guardian/interfaces';
+import { BinaryMessageResponse, DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { GenerateUUIDv4, MessageAPI, ModuleStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ModuleValidator } from '../policy-engine/block-validators/module-validator.js';
@@ -62,7 +39,7 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
 
     const users = new Users();
     const root = await users.getHederaAccount(owner);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer.getMessage<ModuleMessage>(messageId);
     if (message.type !== MessageType.Module) {
         throw new Error('Invalid Message Type');
@@ -140,11 +117,11 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     notifier.completedAndStart('Find topic');
 
     const userTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(userTopic);
 
     notifier.completedAndStart('Create module topic');
-    const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+    const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const rootTopic = await topicHelper.create({
         type: TopicType.ModuleTopic,
         name: model.name || TopicType.ModuleTopic,

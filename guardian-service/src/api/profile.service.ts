@@ -1,4 +1,4 @@
-import { DidDocumentStatus, DocumentStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentStatus, ISignOptions, MessageAPI, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
@@ -126,7 +126,7 @@ async function setupUserProfile(
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
     if (profile.useFireblocksSigning) {
-        await wallet.setKey(user.walletToken, KeyType.FIREBLOCKS_KEY, did, profile.fireblocksConfig);
+        await wallet.setKey(user.walletToken, KeyType.FIREBLOCKS_KEY, did, JSON.stringify(profile.fireblocksConfig));
     }
     notifier.completed();
 
@@ -184,7 +184,21 @@ async function createUserProfile(
         useFireblocksSigning,
         fireblocksConfig
     } = profile;
-    const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+    let signOptions: ISignOptions = {
+        signType: SignType.INTERNAL
+    }
+    if (useFireblocksSigning) {
+        signOptions = {
+            signType: SignType.FIREBLOCKS,
+            data: {
+                apiKey: fireblocksConfig.fireBlocksApiKey,
+                privateKey: fireblocksConfig.fireBlocksPrivateiKey,
+                assetId: fireblocksConfig.fireBlocksAssetId,
+                vaultId: fireblocksConfig.fireBlocksVaultId
+            }
+        }
+    }
+    const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
 
     // ------------------------
     // <-- Check hedera key
@@ -221,7 +235,7 @@ async function createUserProfile(
     if (!topicConfig) {
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
-        const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
+        const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
         topicConfig = await topicHelper.create({
             type: TopicType.UserTopic,
             name: TopicType.UserTopic,

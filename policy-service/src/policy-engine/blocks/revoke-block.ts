@@ -133,8 +133,9 @@ export class RevokeBlock {
 
         const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
         const userHederaCred = await userCred.loadHederaCredentials(ref);
+        const signOptions = await userCred.loadSignOptions(ref);
         const messageServer = new MessageServer(
-            userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, ref.dryRun
+            userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
         );
         const policyTopics = await ref.databaseServer.getTopics({ policyId: ref.policyId });
 

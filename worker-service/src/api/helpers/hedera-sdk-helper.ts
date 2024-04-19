@@ -47,7 +47,7 @@ import {
 import { HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { Environment } from './environment.js';
-import { ContractParamType, GenerateUUIDv4, HederaResponseCode } from '@guardian/interfaces';
+import { ContractParamType, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
@@ -893,6 +893,7 @@ export class HederaSDKHelper {
      *
      * @param privateKey
      * @param transactionMemo
+     * @param signOptions
      * @returns Message timestamp
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic message submit transaction timeout exceeded')
@@ -901,18 +902,17 @@ export class HederaSDKHelper {
         message: string,
         privateKey?: string | PrivateKey,
         transactionMemo?: string,
-        fireblocksConfig?: any
+        signOptions?: ISignOptions
     ): Promise<string> {
         const client = this.client;
 
-        let fireblocksClient;
-
-        if (fireblocksConfig) {
+        let fireblocksClient = null;
+        if (signOptions.signType === SignType.FIREBLOCKS) {
             fireblocksClient = new FireblocksHelper(
-                fireblocksConfig.fireBlocksApiKey,
-                fireblocksConfig.fireBlocksPrivateiKey,
-                fireblocksConfig.fireBlocksVaultId,
-                fireblocksConfig.fireBlocksAssetId,
+                signOptions.data.apiKey,
+                signOptions.data.privateKey,
+                signOptions.data.vaultId,
+                signOptions.data.assetId,
             );
         }
 

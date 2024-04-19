@@ -13,11 +13,7 @@ export class FireblocksHelper{
         private assetId: string,
     ) {
         const baseUrl = process.env.FIREBLOCKS_BASEURL || 'https://api.fireblocks.io';
-
         this.client = new FireblocksSDK(this.privateKey, this.apiKey, baseUrl)
-
-        console.log(this);
-
     }
 
     async createTransaction(message: string) {
@@ -28,7 +24,6 @@ export class FireblocksHelper{
                 assetId: this.assetId,
                 extraParameters: {rawMessageData: {messages: [{content: Buffer.from(message).toString('hex')}]}}
             });
-            console.log(transaction)
             return await this.getTransactionResult(transaction.id);
         } catch (e) {
             console.log(e);
@@ -41,13 +36,18 @@ export class FireblocksHelper{
 
     private async getTransactionResult(transactionId: string): Promise<TransactionResponse> {
         const txInfo = await this.client.getTransactionById(transactionId);
-        if ([TransactionStatus.CANCELLED, TransactionStatus.FAILED].includes(txInfo.status)) {
+        if ([
+            TransactionStatus.CANCELLED,
+            TransactionStatus.FAILED,
+            TransactionStatus.BLOCKED,
+            TransactionStatus.REJECTED,
+        ].includes(txInfo.status)) {
             throw new Error(`Fireblocks transaction "${transactionId}" failed with status ${txInfo.status}`);
         }
         if (txInfo.status === TransactionStatus.COMPLETED) {
             return txInfo;
         } else {
-            await this.delay(2000);
+            await this.delay(3000);
             return this.getTransactionResult(transactionId);
         }
 
