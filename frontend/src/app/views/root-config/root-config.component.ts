@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
 import { SchemaService } from '../../services/schema.service';
 import { IUser, Schema, SchemaEntity } from '@guardian/interfaces';
@@ -12,7 +12,7 @@ import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
-import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
+import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 
 enum OperationMode {
     None,
@@ -28,7 +28,7 @@ enum OperationMode {
     templateUrl: './root-config.component.html',
     styleUrls: ['./root-config.component.scss'],
 })
-export class RootConfigComponent implements OnInit {
+export class RootConfigComponent implements OnInit, OnDestroy{
     @ViewChild('actionMenu') actionMenu: any;
 
     public loading: boolean = true;
@@ -46,10 +46,14 @@ export class RootConfigComponent implements OnInit {
         hederaAccountId: ['', Validators.required],
         hederaAccountKey: ['', Validators.required],
         useFireblocksSigning: [false],
-        fireBlocksVaultId: ['', [Validators.required, noWhitespaceValidator()]],
-        fireBlocksAssetId: ['', [Validators.required, noWhitespaceValidator()]],
-        fireBlocksApiKey: ['', [Validators.required, noWhitespaceValidator()]],
-        fireBlocksPrivateiKey: ['', Validators.pattern(/-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----/gm)]
+        fireBlocksVaultId: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]],
+        fireBlocksAssetId: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]],
+        fireBlocksApiKey: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]],
+        fireBlocksPrivateiKey: [
+            '', ValidateIfFieldEqual('useFireblocksSigning', true,
+                [
+                    Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
+                ])]
     });
     public selectedTokenId = new FormControl(null, Validators.required);
     public vcForm = new FormGroup({});
@@ -66,6 +70,7 @@ export class RootConfigComponent implements OnInit {
 
     private operationMode: OperationMode = OperationMode.None;
     private expectedTaskMessages: number = 0;
+    private subscriptions = new Subscription()
     public isRestore = false;
 
     constructor(
@@ -81,6 +86,7 @@ export class RootConfigComponent implements OnInit {
         public dialog: DialogService,
         private cdRef: ChangeDetectorRef
     ) {
+        console.log(this);
         this.profile = null;
         this.balance = null;
         this.vcForm.statusChanges.subscribe((result) => {
@@ -107,6 +113,7 @@ export class RootConfigComponent implements OnInit {
     }
 
     ngOnDestroy(): void {
+        this.subscriptions.unsubscribe();
     }
 
     private loadProfile() {

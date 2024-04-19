@@ -16,6 +16,7 @@ import { TasksService } from '../../services/tasks.service';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { DialogService } from 'primeng/dynamicdialog';
+import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 
 enum OperationMode {
     None,
@@ -124,10 +125,14 @@ export class UserProfileComponent implements OnInit {
             id: new FormControl('', [Validators.required, noWhitespaceValidator()]),
             key: new FormControl('', [Validators.required, noWhitespaceValidator()]),
             useFireblocksSigning: new FormControl(false),
-            fireBlocksVaultId: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            fireBlocksAssetId: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            fireBlocksApiKey: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            fireBlocksPrivateiKey: new FormControl('', [Validators.pattern(/-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----/gm)])
+            fireBlocksVaultId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksAssetId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksApiKey: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksPrivateiKey: new FormControl('', [
+                ValidateIfFieldEqual('useFireblocksSigning', true,
+                    [
+                        Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
+                    ])])
         });
         this.didDocumentType = new FormControl(false, [Validators.required]);
         this.didDocumentForm = new FormControl('', [Validators.required]);
