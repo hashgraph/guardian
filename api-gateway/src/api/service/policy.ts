@@ -723,7 +723,7 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    // @UseCache()
     async getPolicyGroups(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
