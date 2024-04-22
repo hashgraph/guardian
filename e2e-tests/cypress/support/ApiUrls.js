@@ -122,6 +122,7 @@ const API = {
     Blocks: "blocks/",
     Approve: "approve/",
     Reject: "reject/",
+    Cancel: "cancel/",
     Requests: "requests/",
     Disable: "disable/",
     Enable: "enable/"
