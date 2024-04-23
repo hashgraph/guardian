@@ -84,6 +84,7 @@ const API = {
 
     //Demo
     RandomKey: "demo/random-key",
+    RegUsers: "demo/registered-users",
 
     //Policies
     Policies: "policies/",
