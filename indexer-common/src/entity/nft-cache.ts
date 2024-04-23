@@ -7,7 +7,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'serial_number', properties: ['serialNumber'] })
 @Unique({ name: 'unique_id', properties: ['tokenId', 'serialNumber'] })
 @Index({ name: 'last_update', properties: ['lastUpdate'] })
-export class NFTCache {
+export class NftCache {
     @PrimaryKey()
     _id: ObjectId;
 

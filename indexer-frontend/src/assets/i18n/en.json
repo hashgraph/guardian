@@ -1,0 +1,28 @@
+{
+    "header": {
+        "header": "Guardian",
+        "name": "Indexer",
+        "messages": "Messages",
+        "standard_registries": "Standard Registries",
+        "topics": "Topics",
+        "tags": "Tags",
+        "roles": "Roles",
+        "events": "Events",
+        "contracts": "Contracts",
+        "tokens": "Tokens",
+        "tools": "Tools",
+        "modules": "Modules",
+        "schemas": "Schemas",
+        "instances": "Instances",
+        "policies": "Policies",
+        "vps": "Verifiable Presentation  (VPs)",
+        "vcs": "Verifiable Credentials (VCs)",
+        "dids": "Decentralized Identifiers (DIDs)",
+        "documents": "Documents",
+        "search_placeholder": "Search by keyword "
+    },
+    "home": {
+        "header": "Indexer",
+        "description": "Guardian Indexer by Managed Guardian Service"
+    }
+}

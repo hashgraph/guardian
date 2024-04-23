@@ -15,6 +15,7 @@ export class Parser {
 
             message.topicId = row.topicId;
             message.consensusTimestamp = row.consensusTimestamp;
+            message.owner = row.owner;
 
             message.uuid = json.id;
             message.status = json.status || 'ISSUE';
@@ -117,6 +118,7 @@ export class Parser {
                     message.options.childId = json.childId;
                     message.options.parentId = json.parentId;
                     message.options.rationale = json.rationale;
+                    message.topics = [json.childId];
                     break;
                 case MessageType.TOKEN:
                     message.options.tokenId = json.tokenId;

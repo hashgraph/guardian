@@ -19,6 +19,9 @@ export class Message {
     @Property()
     consensusTimestamp: string;
 
+    @Property()
+    owner: string;
+
     @Property({ nullable: true })
     uuid: string;
 

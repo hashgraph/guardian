@@ -1,4 +1,34 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family-inter);
+}
+
+.page-content {
+    position: absolute;
+    left: 0px;
+    top: var(--header-height, 0px);
+    bottom: 0px;
+    right: 0px;
+    overflow: auto;
+}
+
+@font-face {
+    font-family: 'Archivo Black';
+    src: url('assets/fonts/Archivo_Black/ArchivoBlack-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Bebas Neue';
+    src: url('assets/fonts/Bebas_Neue/BebasNeue-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}

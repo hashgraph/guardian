@@ -13,7 +13,7 @@ import {
     TopicCache,
     Message,
     TokenCache,
-    NFTCache,
+    NftCache,
     MessageType
 } from '@indexer/common';
 import { RelationshipsUtils } from '../utils/relationships-utils.js';

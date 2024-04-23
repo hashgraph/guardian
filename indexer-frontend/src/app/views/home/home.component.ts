@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SearchService } from '../../services/search.service';
 import { MatInputModule } from '@angular/material/input';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { Params, Router } from '@angular/router';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
     selector: 'app-home',
@@ -18,7 +18,8 @@ import { Params, Router } from '@angular/router';
         MatFormFieldModule,
         MatInputModule,
         ReactiveFormsModule,
-        MatButtonModule
+        MatButtonModule,
+        TranslocoModule
     ]
 })
 export class HomeComponent {

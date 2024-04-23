@@ -1,0 +1,20 @@
+:root {
+    --font-family-inter: 'Inter', sans-serif;
+    --font-family-archivo-black: 'Archivo Black';
+    --font-family-bebas-neue: 'Bebas Neue';
+
+    --font-size-header-3: 48px;
+    --font-size-header-2: 32px;
+    --font-size-header-1: 20px;
+    --font-size-normal: 14px;
+    --font-size-small-1: 12px;
+
+    --header-height: 84px;
+
+    --color-primary: #6000C4;
+    --color-primary-negative: #fff;
+    --color-primary-background: #1F023D;
+    --color-primary-border: #6a458d;
+}
+
+@media (max-width: 810px) {}

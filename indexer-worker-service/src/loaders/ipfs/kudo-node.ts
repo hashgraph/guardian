@@ -5,9 +5,11 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import all from 'it-all'
 import { nanoid } from 'nanoid'
+import { IPFSHTTPClient, create } from 'kubo-rpc-client'
+import { CID } from 'kubo-rpc-client'
 
-export class IPFSNode {
-    private node: any;
+export class KudoNode {
+    private node: IPFSHTTPClient;
     private index: number;
     private readonly limit: number;
     private readonly timeout: number;
@@ -18,26 +20,12 @@ export class IPFSNode {
         this.timeout = 60 * 1000;
         this.limit = 10;
         this.index = 0;
-        this.node = 0;
+        this.node = null;
     }
 
     public async start() {
         const repoDir = path.join(os.tmpdir(), `repo-${this.id}`)
-        this.node = await IPFS.create({
-            repo: repoDir,
-            config: {
-                Addresses: {
-                    Swarm: [
-                        `/ip4/0.0.0.0/tcp/0`,
-                        `/ip4/127.0.0.1/tcp/0/ws`
-                    ],
-                    API: `/ip4/127.0.0.1/tcp/0`,
-                    Gateway: `/ip4/127.0.0.1/tcp/0`,
-                    RPC: `/ip4/127.0.0.1/tcp/0`
-                },
-                Bootstrap: []
-            }
-        });
+        this.node = create({ url: '/ip4/127.0.0.1/tcp/5001' });
     }
 
     public async stop() {
@@ -51,15 +39,19 @@ export class IPFSNode {
         if (!this.node) {
             throw new Error('Node stopped.')
         }
+        console.time(cid);
         try {
             this.index++;
             const items = this.node.cat(cid, { timeout: this.timeout });
             const buffer = uint8ArrayConcat(await all(items));
             const document = uint8ArrayToString(buffer);
             this.index--;
+            console.timeEnd(cid);
             return document;
         } catch (error) {
             this.index--;
+            console.timeEnd(cid);
+            console.log(cid)
             throw error;
         }
     }

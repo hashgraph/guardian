@@ -29,8 +29,8 @@ export abstract class BaseDetailsComponent {
     private _paramsObserver?: Subscription;
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router
+        protected route: ActivatedRoute,
+        protected router: Router
     ) {
     }
 
@@ -96,7 +96,8 @@ export abstract class BaseDetailsComponent {
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { tab },
-            queryParamsHandling: 'merge'
+            queryParamsHandling: 'merge',
+            replaceUrl: true
         });
     }
 

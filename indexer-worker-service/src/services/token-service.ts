@@ -1,7 +1,7 @@
 import { EntityData, MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
 import { LogService } from './log-service.js';
 import { HederaService } from '../loaders/hedera-service.js';
-import { DataBaseHelper, Job, NFTCache, NFT, TokenCache, Utils } from '@indexer/common';
+import { DataBaseHelper, Job, NftCache, NFT, TokenCache, Utils } from '@indexer/common';
 import { TopicService } from './topic-service.js';
 
 export class TokenService {
@@ -56,7 +56,7 @@ export class TokenService {
                 await em.nativeUpdate(TokenCache, { tokenId: row.tokenId }, data);
             }
         } catch (error) {
-            await LogService.error(error, 'update topic');
+            await LogService.error(error, 'update token');
         }
     }
 
@@ -75,7 +75,8 @@ export class TokenService {
                     symbol: '',
                     type: '',
                     treasury: '',
-                    memo: ''
+                    memo: '',
+                    totalSupply: 0
                 }));
                 return true;
             } else {
@@ -135,7 +136,7 @@ export class TokenService {
         }
     }
 
-    public static async saveSerials(nfts: NFT[]): Promise<NFTCache[]> {
+    public static async saveSerials(nfts: NFT[]): Promise<NftCache[]> {
         try {
             const em = DataBaseHelper.getEntityManager();
             const rows = [];
@@ -156,9 +157,9 @@ export class TokenService {
     public static async insertSerial(
         nft: NFT,
         em: MongoEntityManager<MongoDriver>
-    ): Promise<NFTCache> {
+    ): Promise<NftCache> {
         try {
-            const row = em.create(NFTCache, {
+            const row = em.create(NftCache, {
                 tokenId: nft.token_id,
                 serialNumber: nft.serial_number,
                 metadata: nft.metadata,
@@ -168,7 +169,7 @@ export class TokenService {
             await em.flush();
             return row;
         } catch (error) {
-            return await em.findOne(NFTCache, {
+            return await em.findOne(NftCache, {
                 tokenId: nft.token_id,
                 serialNumber: nft.serial_number
             });

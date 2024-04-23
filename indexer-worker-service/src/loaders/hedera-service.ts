@@ -9,41 +9,51 @@ export class HederaService {
     }
 
     public static async getMessages(topicId: string, lastNumber: number): Promise<TopicInfo | null> {
-        const url = this.mirrorNodeUrl + 'topics/' + topicId + '/messages';
-        const option: any = {
-            params: {
-                limit: 100
-            },
-            responseType: 'json',
-            timeout: 2 * 60 * 1000,
-        };
-        if (lastNumber > 0) {
-            option.params.sequencenumber = `gt:${lastNumber}`;
-        }
-        const response = await axios.get(url, option);
-        const topicInfo = response?.data as TopicInfo;
-        if (topicInfo && Array.isArray(topicInfo.messages)) {
-            if (!topicInfo.links) {
-                topicInfo.links = { next: null };
+        try {
+            const url = this.mirrorNodeUrl + 'topics/' + topicId + '/messages';
+            const option: any = {
+                params: {
+                    limit: 100
+                },
+                responseType: 'json',
+                timeout: 2 * 60 * 1000,
+            };
+            if (lastNumber > 0) {
+                option.params.sequencenumber = `gt:${lastNumber}`;
             }
-            return topicInfo;
-        } else {
-            return null;
+            const response = await axios.get(url, option);
+            const topicInfo = response?.data as TopicInfo;
+            if (topicInfo && Array.isArray(topicInfo.messages)) {
+                if (!topicInfo.links) {
+                    topicInfo.links = { next: null };
+                }
+                return topicInfo;
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.log('getMessages ', topicId, error.message);
+            throw error;
         }
     }
 
     public static async getToken(tokenId: string): Promise<TokenInfo | null> {
-        const url = this.mirrorNodeUrl + 'tokens/' + tokenId;
-        const option: any = {
-            responseType: 'json',
-            timeout: 2 * 60 * 1000,
-        };
-        const response = await axios.get(url, option);
-        const tokenInfo = response?.data as TokenInfo;
-        if (tokenInfo) {
-            return tokenInfo;
-        } else {
-            return null;
+        try {
+            const url = this.mirrorNodeUrl + 'tokens/' + tokenId;
+            const option: any = {
+                responseType: 'json',
+                timeout: 2 * 60 * 1000,
+            };
+            const response = await axios.get(url, option);
+            const tokenInfo = response?.data as TokenInfo;
+            if (tokenInfo) {
+                return tokenInfo;
+            } else {
+                return null;
+            }
+        } catch (error) {
+            console.log('getToken ', tokenId, error.message);
+            throw error;
         }
     }
 

@@ -21,6 +21,7 @@
         "@angular/platform-browser": "^17.3.0",
         "@angular/platform-browser-dynamic": "^17.3.0",
         "@angular/router": "^17.3.0",
+        "@jsverse/transloco": "^7.2.1",
         "echarts": "^5.5.0",
         "ngx-echarts": "^17.1.0",
         "rxjs": "~7.8.0",

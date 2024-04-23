@@ -1,11 +1,15 @@
 import { CID } from 'multiformats/cid'
-import { IPFSNode } from './ipfs-node.js'
+import { BaseNode } from './ipfs/base-node.js';
+
+import { IPFSNode } from './ipfs/ipfs-node.js'
+import { HeliaNode } from './ipfs/helia-node.js'
+import { KudoNode } from './ipfs/kudo-node.js';
 
 export class IPFSService {
-    public static node: IPFSNode;
+    public static node: BaseNode;
 
     public static async init() {
-        this.node = new IPFSNode()
+        this.node = new KudoNode()
         await this.node.start();
     }
 
@@ -23,10 +27,15 @@ export class IPFSService {
 
     public static async getFile(cid: string): Promise<string | null> {
         try {
-            const document = await this.node.get(cid);
-            return document;
+            const timeoutPromise = new Promise<string>((resolve, reject) => {
+                setTimeout(() => {
+                    reject(new Error('IPFS timeout exceeded'));
+                }, 60 * 1000);
+            });
+            return Promise.race([this.node.get(cid), timeoutPromise]);
+            // return await this.node.get(cid);;
         } catch (error) {
-            console.log('error ', error);
+            console.log('IPFS ', cid, error.message);
             throw error;
         }
     }

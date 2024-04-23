@@ -1,0 +1,91 @@
+.container {
+    .main {
+        width: 100%;
+        min-height: calc(480px - var(--header-height));
+        height: calc(50vh - var(--header-height));
+        max-height: calc(600px - var(--header-height));
+        background: var(--color-primary-background);
+        background-image: url("../../../assets/main.jfif");
+        background-position-y: calc(0px - var(--header-height));
+        background-size: 100% auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .search-container {
+            width: 530px;
+            height: 144px;
+
+            .search-label {
+                color: var(--color-primary-negative);
+                text-align: center;
+                margin-bottom: 32px;
+
+                &__header {
+                    font-family: var(--font-family-bebas-neue);
+                    font-size: var(--font-size-header-3);
+                }
+
+                &__description {
+                    font-family: var(--font-family-inter);
+                    font-size: var(--font-size-small-1);
+                }
+            }
+
+            .search-control {
+                width: 530px;
+                height: 40px;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+
+                &__form {
+                    width: 100%;
+                    display: flex;
+                }
+
+                &__input {
+                    width: 100%;
+                    height: 40px;
+                    overflow: hidden;
+                    box-sizing: border-box;
+                    transition: width 0.3s ease-in-out;
+                    cursor: text;
+
+                    &::ng-deep {
+                        .mat-mdc-form-field-subscript-wrapper {
+                            display: none !important;
+                        }
+        
+                        .mat-mdc-text-field-wrapper {
+                            border-radius: 8px !important;
+                        }
+        
+                        .mat-mdc-form-field-infix {
+                            padding-top: 9px !important;
+                            padding-bottom: 9px !important;
+                            min-height: 40px !important;
+                            font-size: var(--font-size-normal) !important;
+                        }
+        
+                        .mdc-line-ripple {
+                            display: none !important;
+                        }
+                    }
+                }
+
+                &__icon {
+                    position: absolute;
+                    top: 4px;
+                    right: 8px;
+                    width: 32px;
+                    height: 32px;
+                    padding: 9px 9px;
+                    box-sizing: border-box;
+                    pointer-events: none;
+                }
+
+            }
+        }
+    }
+}

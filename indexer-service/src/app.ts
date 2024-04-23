@@ -76,7 +76,7 @@ Promise.all([
     // await state.updateState(ApplicationStates.READY);
     // await new Logger().info('Worker started', ['INDEXER_WORKER']);
 
-    ElasticService.updateElastic().then();
+    // ElasticService.updateElastic().then();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

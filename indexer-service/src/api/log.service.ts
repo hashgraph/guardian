@@ -11,7 +11,7 @@ import {
     TopicCache,
     Message,
     TokenCache,
-    NFTCache
+    NftCache
 } from '@indexer/common';
 
 @Controller()
@@ -307,9 +307,9 @@ export class LogService {
 
             const em = DataBaseHelper.getEntityManager();
             const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
-            const [rows, count] = await em.findAndCount(NFTCache, filters, options);
+            const [rows, count] = await em.findAndCount(NftCache, filters, options);
 
-            const result: IPage<NFTCache> = {
+            const result: IPage<NftCache> = {
                 items: rows,
                 pageIndex: pageIndex,
                 pageSize: pageSize,

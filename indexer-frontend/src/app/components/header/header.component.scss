@@ -1,0 +1,185 @@
+*[loading="true"] * {
+    opacity: 0;
+}
+
+.header {
+    width: 100%;
+    height: var(--header-height);
+    padding: 26px 80px 26px 80px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: var(--color-primary-background);
+    display: flex;
+    flex-direction: row;
+
+    &[home="true"] {
+        background: var(--color-primary-background);
+        background-image: url("../../../assets/main.jfif");
+        background-size: 100% auto;
+    }
+
+    .header-logo {
+        height: 32px;
+        color: var(--color-primary-negative);
+        font-size: var(--font-size-header-1);
+        text-transform: uppercase;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        user-select: none;
+        cursor: pointer;
+
+        &__icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        &__header {
+            font-family: var(--font-family-archivo-black);
+            padding-left: 16px;
+        }
+
+        &__delimiter {
+            height: 26px;
+            width: 8px;
+            margin-left: 8px;
+            border-left: 1px solid var(--color-primary-negative);
+        }
+
+        &__name {
+            font-family: var(--font-family-bebas-neue);
+        }
+    }
+
+    .header-nav {
+        height: 32px;
+        align-items: center;
+        justify-content: end;
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+        color: var(--color-primary-negative);
+        font-size: var(--font-size-small-1);
+    }
+
+    .header-nav-search {
+        min-width: 32px;
+        height: 32px;
+        width: 100%;
+        padding-left: 16px;
+        padding-right: 16px;
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+        position: relative;
+
+        &__form {
+            max-width: 700px;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: end;
+        }
+
+        &__input {
+            height: 32px;
+            overflow: hidden;
+            box-sizing: border-box;
+            transition: width 0.3s ease-in-out;
+            cursor: text;
+
+            &:not(.mat-focused) {
+                opacity: 0;
+                width: 32px;
+            }
+
+            &.mat-focused {
+                opacity: 1;
+                width: 100%;
+            }
+
+            &::ng-deep {
+                .mat-mdc-form-field-subscript-wrapper {
+                    display: none !important;
+                }
+
+                .mat-mdc-text-field-wrapper {
+                    border-radius: 8px !important;
+                }
+
+                .mat-mdc-form-field-infix {
+                    padding-top: 4px !important;
+                    padding-bottom: 4px !important;
+                    min-height: 32px !important;
+                    font-size: var(--font-size-small-1) !important;
+                }
+
+                .mdc-line-ripple {
+                    display: none !important;
+                }
+            }
+        }
+
+        &__icon {
+            position: absolute;
+            top: 0px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            padding: 9px 9px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .header-nav-search__input.mat-focused+.header-nav-search__icon {
+            background: transparent;
+            color: var(--color-primary-background);
+        }
+    }
+
+    .header-nav-menu {
+        user-select: none;
+        height: 32px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        cursor: pointer;
+        margin-right: 8px;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+
+    .header-nav-item {
+        user-select: none;
+        height: 32px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        cursor: pointer;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+}
+
+::ng-deep .nav-menu-component {
+    background-color: var(--color-primary-background) !important;
+    border: 1px solid #6a458d;
+
+    *[mat-menu-item] {
+        min-width: 150px;
+        background-color: var(--color-primary-background) !important;
+        color: var(--color-primary-negative) !important;
+
+        &:not([disabled]):hover {
+            background-color: var(--color-primary-background) !important;
+            color: var(--color-primary-negative) !important;
+            opacity: 0.9 !important;
+        }
+    }
+}

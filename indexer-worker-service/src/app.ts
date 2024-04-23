@@ -95,18 +95,18 @@ Promise.all([
     await worker.init({
         NAME: channelName,
         CYCLE_TIME: Utils.getIntParm(process.env.CYCLE_TIME, 60 * 60 * 1000),
-        TOPIC_READ_DELAY: Utils.getIntParm(process.env.TOPIC_READ_DELAY, 1000),
-        TOPIC_READ_TIMEOUT: Utils.getIntParm(process.env.TOPIC_READ_TIMEOUT, 60000),
-        TOPIC_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOPIC_JOB_REFRESH_TIME, 60000),
-        TOPIC_JOB_COUNT: Utils.getIntParm(process.env.TOPIC_JOB_COUNT, 10),
         MESSAGE_READ_DELAY: Utils.getIntParm(process.env.MESSAGE_READ_DELAY, 1000),
         MESSAGE_READ_TIMEOUT: Utils.getIntParm(process.env.MESSAGE_READ_TIMEOUT, 60000),
         MESSAGE_JOB_REFRESH_TIME: Utils.getIntParm(process.env.MESSAGE_JOB_REFRESH_TIME, 60000),
         MESSAGE_JOB_COUNT: Utils.getIntParm(process.env.MESSAGE_JOB_COUNT, 10),
+        TOPIC_READ_DELAY: Utils.getIntParm(process.env.TOPIC_READ_DELAY, 1000),
+        TOPIC_READ_TIMEOUT: Utils.getIntParm(process.env.TOPIC_READ_TIMEOUT, 60000),
+        TOPIC_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOPIC_JOB_REFRESH_TIME, 60000),
+        TOPIC_JOB_COUNT: Utils.getIntParm(process.env.TOPIC_JOB_COUNT, 5),
         TOKEN_READ_DELAY: Utils.getIntParm(process.env.TOKEN__READ_DELAY, 1000),
         TOKEN_READ_TIMEOUT: Utils.getIntParm(process.env.TOKEN__READ_TIMEOUT, 60000),
         TOKEN_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOKEN__JOB_REFRESH_TIME, 60000),
-        TOKEN_JOB_COUNT: Utils.getIntParm(process.env.TOKEN__JOB_COUNT, 10),
+        TOKEN_JOB_COUNT: Utils.getIntParm(process.env.TOKEN__JOB_COUNT, 2),
     }).start();
 
     // await state.updateState(ApplicationStates.READY);
