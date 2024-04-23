@@ -5,6 +5,7 @@ import { SchemaUtils } from '../../helpers/schema-utils.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import { ApiTags } from '@nestjs/swagger';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('tags')
 @ApiTags('tags')
@@ -137,8 +138,13 @@ export class TagsApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
+    @UseCache({ isExpress: true })
     async getSchemas(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -153,6 +159,7 @@ export class TagsApi {
             }
             const { items, count } = await guardians.getTagSchemas(owner, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
+            res.locals.data = SchemaUtils.toOld(items)
             return res
                 .setHeader('X-Total-Count', count)
                 .json(SchemaUtils.toOld(items));

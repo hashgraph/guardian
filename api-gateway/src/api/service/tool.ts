@@ -1,18 +1,18 @@
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Put,
-    Req,
-    Response,
-    UploadedFiles,
-    UseInterceptors
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+  Put,
+  Req,
+  Response,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import { TaskAction, UserRole } from '@guardian/interfaces';
@@ -34,6 +34,7 @@ import { ServiceError } from '../../helpers/service-requests-base.js';
 import { InternalServerErrorDTO, TaskDTO, ToolDTO } from '../../middlewares/validation/schemas/index.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -1013,12 +1014,12 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
-    async getMenu(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getMenu(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
-            const items = await guardians.getMenuTool(req.user.did);
-            return res.json(items);
+            return await guardians.getMenuTool(req.user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
