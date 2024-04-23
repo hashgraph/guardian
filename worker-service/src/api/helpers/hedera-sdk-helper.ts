@@ -927,7 +927,7 @@ export class HederaSDKHelper {
             messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
         }
 
-        if (fireblocksClient) {
+        if (fireblocksClient && privateKey) {
             messageTransaction.setNodeAccountIds([Object.values(this.client.network)[0] as AccountId]);
             messageTransaction = messageTransaction.freezeWith(client);
             const tx = await fireblocksClient.createTransaction(messageTransaction.toBytes());
