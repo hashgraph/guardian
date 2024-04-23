@@ -928,7 +928,9 @@ export class HederaSDKHelper {
         }
 
         if (fireblocksClient) {
-            const tx = await fireblocksClient.createTransaction(message);
+            messageTransaction.setNodeAccountIds([Object.values(this.client.network)[0] as AccountId]);
+            messageTransaction = messageTransaction.freezeWith(client);
+            const tx = await fireblocksClient.createTransaction(messageTransaction.toBytes());
 
             if (!tx || !Array.isArray(tx.signedMessages)) {
                 throw new Error(`Fireblocks signing failed`);
@@ -941,6 +943,7 @@ export class HederaSDKHelper {
                 messageTransaction = messageTransaction.freezeWith(client);
                 messageTransaction.addSignature(pubKey, signature);
             }
+            messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
         } else if (privateKey) {
             messageTransaction = messageTransaction.freezeWith(client);
             messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
