@@ -106,6 +106,30 @@ export class PolicyImportExport {
     }
 
     /**
+     * Load policy components (deep find)
+     * @param policy policy
+     *
+     * @returns components
+     */
+    public static async loadAllSchemas(policy: Policy) {
+        const components = await PolicyImportExport.loadPolicyComponents(policy);
+        const toolsMap = new Set<string>();
+        for (const tool of components.tools) {
+            toolsMap.add(tool.messageId);
+            if (Array.isArray(tool.tools)) {
+                for (const subTool of tool.tools) {
+                    toolsMap.add(subTool.messageId);
+                }
+            }
+        }
+        const tools = await new DataBaseHelper(PolicyTool).find({ messageId: { $in: Array.from(toolsMap) } });
+        const toolsTopicMap = tools.map((t) => t.topicId);
+        const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: toolsTopicMap } });
+        const schemas = components.schemas;
+        return { schemas, tools, toolSchemas };
+    }
+
+    /**
      * Generate Zip File
      * @param policy policy to pack
      *
