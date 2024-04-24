@@ -7,7 +7,8 @@
 * [Policy Workflow](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#policy-workflow)
 * [Policy Guide](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#policy-guide)
 * [Available Roles](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#available-roles)
-* [Important Documents \\& Schemas](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#important-documents--schemas)
+* [Important Documents & Schemas](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#important-documents--schemas)
+* [Tools Referenced](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#tools-referenced)
 * [Token(Carbon Emissions Reduction)](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#tokencarbon-emissions-reduction)
 * [Step By Step](cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment.md#step-by-step)
 
@@ -37,8 +38,6 @@ In the modern landscape of emission reduction initiatives, transparency and cred
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Policy Timestamp:&#x20;
-
 ## Available Roles <a href="#available-roles" id="available-roles"></a>
 
 * Project participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
@@ -52,7 +51,7 @@ Policy Timestamp:&#x20;
 * Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
 * Monitoring Report: Periodic monitoring report with data for parameters like methane captured, combusted etc.
 
-## Tools referenced in this methodology: 
+## Tools Referenced
 
 * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
 * Tool 04- Emissions from solid waste disposal sites

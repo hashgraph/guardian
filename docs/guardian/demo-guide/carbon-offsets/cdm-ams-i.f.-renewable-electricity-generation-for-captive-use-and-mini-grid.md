@@ -16,11 +16,11 @@
 
 [Key Documents and Schemas](cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md#key-documents-and-schemas)
 
+[Tools Referenced](cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md#tools-referenced)
+
 [Token (Carbon Emission Reduction)](cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md#token-carbon-emission-reduction)
 
 [Workflow](cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md#workflow)
-
-[IPFS Timestamp](cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md#ipfs-timestamp)
 
 [Step-by-Step](cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid.md#step-by-step)
 
@@ -60,21 +60,17 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 ### Key Documents and Schemas&#x20;
 
-Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.&#x20;
 
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.&#x20;
+### Tools Referenced
 
-Methodological Tool 07 – Tool to calculate the emission factor for an electricity system. &#x20;
-
-Methodological Tool 16 – Project emissions from cultivation of biomass. &#x20;
-
-Methodological Tool 33 – Default values for common parameters. &#x20;
-
-Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
-
-Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
-
-Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.&#x20;
+* Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+* Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.&#x20;
+* Methodological Tool 07 – Tool to calculate the emission factor for an electricity system. &#x20;
+* Methodological Tool 16 – Project emissions from cultivation of biomass. &#x20;
+* Methodological Tool 33 – Default values for common parameters. &#x20;
 
 ### Token (Carbon Emission Reduction)&#x20;
 
@@ -84,10 +80,6 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (371).png" alt=""><figcaption></figcaption></figure>
 
-### IPFS Timestamp&#x20;
-
-(Placeholder)&#x20;
-
 ### Step-by-Step &#x20;
 
-(Screenshots)&#x20;
+Coming Soon

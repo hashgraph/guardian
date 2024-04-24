@@ -1,6 +1,6 @@
 # 🏨 CDM AMS II.G: Energy Efficiency Measures in Thermal Applications of Non-Renewable Biomass
 
-Table of Contents
+## Table of Contents
 
 [Introduction](cdm-ams-ii.g.md#\_toc975016542)
 
@@ -15,6 +15,8 @@ Table of Contents
 [Available Roles](cdm-ams-ii.g.md#\_toc21187385)
 
 [Important Documents & Schemas](cdm-ams-ii.g.md#\_toc1808393583)
+
+[Tools Referenced](cdm-ams-ii.g.md#tools-referenced)
 
 [Token (Carbon Emission Reduction)](cdm-ams-ii.g.md#\_toc360615091)
 
@@ -54,8 +56,6 @@ AMS-II.G provides a standardized and measurable framework for clean cooking proj
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-Latest Version - 1706881318.979259003
-
 ### **Available Roles** <a href="#toc21187385" id="toc21187385"></a>
 
 Project Proponent - The project proponent is responsible for executing the emission reduction project. They develop and implement strategies to substitute fossil fuel-based lighting systems with LED/CFL lighting systems. The project proponent must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
@@ -70,8 +70,11 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 1. Project Description - Project Proponent information, standard project information, methodology information, etc.
 2. Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
-3. Default Values (Tool 33) - Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like fNRB (Fraction of non-renewable biomass).
-4. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+
+### Tools Referenced
+
+* Tool 33 - Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like fNRB (Fraction of non-renewable biomass).
 
 ### Token (Carbon Emission Reduction) <a href="#toc360615091" id="toc360615091"></a>
 

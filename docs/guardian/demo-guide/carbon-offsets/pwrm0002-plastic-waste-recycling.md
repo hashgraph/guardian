@@ -40,8 +40,6 @@ Plastic waste presents an escalating environmental crisis, with over 300 million
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
 
-Policy: &#x20;
-
 ## Available Roles&#x20;
 
 * Project Proponent - The project proponent is responsible for executing the waste reduction project. The project proponent must adhere to the requirements outlined by Verra’s Plastic Waste Reduction Standard and provide evidence of the waste collection achieved. Upon successful verification, the project proponent receives Waste Recycling Credits (WRC) as an incentive for their waste reductions.&#x20;

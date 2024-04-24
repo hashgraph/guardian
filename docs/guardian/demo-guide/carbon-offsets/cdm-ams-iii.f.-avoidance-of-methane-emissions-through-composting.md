@@ -18,6 +18,8 @@
 
 [Important Documents & Schemas ](cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting.md#important-documents-and-schemas)
 
+[Tools Referenced](cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting.md#tools-referenced)
+
 [Token (Carbon Emission Reduction)](cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting.md#token-carbon-emission-reduction)
 
 [Step by Step](cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting.md#step-by-step)
@@ -62,8 +64,6 @@ AMS-III.F's emphasis on controlled aerobic treatment of organic waste, notably t
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
 
-Policy:
-
 ### Available Roles
 
 Project Participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions. &#x20;
@@ -74,13 +74,16 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 ### Important Documents & Schemas&#x20;
 
-1. Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
-2. Methodological Tool 04 - Emissions from solid waste disposal sites&#x20;
-3. Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
-4. Methodological Tool 13 - Project and leakage emissions from composting
-5. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
-6. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
-7. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+
+### Tools Referenced
+
+* Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+* Methodological Tool 04 - Emissions from solid waste disposal sites&#x20;
+* Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+* Methodological Tool 13 - Project and leakage emissions from composting
 
 ### Token (Carbon Emission Reduction)&#x20;
 

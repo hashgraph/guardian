@@ -89,8 +89,6 @@ Carbon sequestration projects play a crucial role in addressing global climate c
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
 
-Policy: 1706888033.418420003
-
 ### Available Roles  <a href="#toc157611388" id="toc157611388"></a>
 
 **Project Proponent -** The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Gold Standard’s methodology and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Emission Reductions (VER) as an incentive for their emission reductions.&#x20;

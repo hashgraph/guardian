@@ -16,6 +16,8 @@
 
 [Important Documents & Schemas](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#important-documents-and-schemas)
 
+[Tools Referenced](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#tools-referenced)
+
 [Token (Carbon Emission Reduction) ](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#token-carbon-emission-reduction)
 
 [Step by Step](cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems.md#step-by-step)
@@ -42,9 +44,7 @@ Safe drinking water is an indispensable component of public health and well-bein
 
 ### Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. &#x20;
-
-Policy:&#x20;
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
 
 ### Available Roles 
 
@@ -54,15 +54,18 @@ Policy:&#x20;
 
 ### Important Documents & Schemas 
 
-1. Methodological Tool 01- Tool for the demonstration and assessment of additionality&#x20;
-2. Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
-3. Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
-4. Methodological Tool 19- Demonstration of additionality of microscale project activities
-5. Methodological Tool 21- Demonstration of additionality of small-scale project activities
-6. Methodological Tool 30- Calculation of the fraction of non-renewable biomass
-7. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
-8. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
-9. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology. 
+1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. 
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. 
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology. 
+
+### Tools Referenced
+
+* Methodological Tool 01- Tool for the demonstration and assessment of additionality&#x20;
+* Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+* Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+* Methodological Tool 19- Demonstration of additionality of microscale project activities
+* Methodological Tool 21- Demonstration of additionality of small-scale project activities
+* Methodological Tool 30- Calculation of the fraction of non-renewable biomass
 
 ### Token (Carbon Emission Reduction) &#x20;
 

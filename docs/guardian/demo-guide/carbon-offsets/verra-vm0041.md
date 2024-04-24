@@ -62,9 +62,7 @@ VM0041 represents a pivotal methodology in addressing methane emissions within t
 
 ### Demo Video <a href="#toc154152884" id="toc154152884"></a>
 
-[https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk](https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk)
-
-![Video titled: VM0041 - Reduction of Enteric Methane Emissions from Ruminants through the Use of Feed Ingredients](<../../../.gitbook/assets/0 (1).jpeg>)
+[Youtube](https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk)
 
 ### Policy Workflow <a href="#toc154152885" id="toc154152885"></a>
 
@@ -73,8 +71,6 @@ VM0041 represents a pivotal methodology in addressing methane emissions within t
 ### Policy Guide <a href="#toc154152886" id="toc154152886"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
-
-Policy: 1707208032.927115206
 
 ### Available Roles <a href="#toc154152887" id="toc154152887"></a>
 
