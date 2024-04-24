@@ -180,8 +180,7 @@ export class FieldModel implements IWeightModel {
     constructor(
         name: string,
         prop: any,
-        required: boolean,
-        index: number
+        required: boolean
     ) {
         let _property = prop;
         if (_property.oneOf && _property.oneOf.length) {
