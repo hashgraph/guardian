@@ -9,6 +9,7 @@ import { TaskAction, UserRole } from '@guardian/interfaces';
 import { RegisteredUsersDTO } from '../../middlewares/validation/schemas/index.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('demo')
 @ApiTags('demo')
@@ -26,6 +27,7 @@ export class DemoApi {
     })
     @Get('/registered-users')
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
         const guardians = new Guardians();

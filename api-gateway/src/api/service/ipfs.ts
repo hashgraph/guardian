@@ -4,6 +4,8 @@ import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post
 import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
@@ -38,6 +40,10 @@ export class IpfsApi {
         }
     }
 
+    /**
+     * @param body
+     * @param policyId
+     */
     @ApiOperation({
         summary: 'Add file from ipfs for dry run mode.',
         description: 'Add file from ipfs for dry run mode.',
@@ -65,6 +71,10 @@ export class IpfsApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Get file from ipfs.',
         description: 'Get file from ipfs.',
@@ -72,6 +82,7 @@ export class IpfsApi {
     @ApiSecurity('bearerAuth')
     @Get('/file/:cid')
     @HttpCode(HttpStatus.OK)
+    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
     async getFile(@Req() req, @Response() res): Promise<any> {
         if (!req.user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
@@ -94,6 +105,10 @@ export class IpfsApi {
         }
     }
 
+    /**
+     * @param cid
+     * @param res
+     */
     @ApiOperation({
         summary: 'Get file from ipfs for dry run mode.',
         description: 'Get file from ipfs for dry run mode.',
@@ -105,6 +120,7 @@ export class IpfsApi {
     )
     @Get('/file/:cid/dry-run')
     @HttpCode(HttpStatus.OK)
+    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
     async getFileDryRun(@Param('cid') cid: string, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();

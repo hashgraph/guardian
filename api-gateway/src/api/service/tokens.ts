@@ -634,6 +634,10 @@ export class TokensApi {
         return res.status(202).send(task);
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/:tokenId/:username/info')
     @HttpCode(HttpStatus.OK)
     async getTokenInfo(@Req() req, @Response() res): Promise<any> {
@@ -660,6 +664,10 @@ export class TokensApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/:tokenId/serials')
     @ApiBearerAuth()
     @ApiExtraModels(InternalServerErrorDTO)
