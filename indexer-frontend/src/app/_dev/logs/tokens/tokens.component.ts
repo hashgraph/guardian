@@ -3,13 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageEvent } from '@angular/material/paginator';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { LogsService } from '../../../services/logs.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { LogsService } from './../../services/logs.service';
 
 @Component({
     selector: 'app-tokens',

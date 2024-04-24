@@ -9,9 +9,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { SearchService } from '../../../services/search.service';
+import { SearchService } from '@services/search.service';
+import { LoadingComponent } from '@components/loading/loading.component';
 import { BaseGridComponent } from '../base-grid/base-grid.component';
-import { LoadingComponent } from '../../../components/loading/loading.component';
 
 @Component({
     selector: 'vp-documents',

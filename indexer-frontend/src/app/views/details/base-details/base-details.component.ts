@@ -1,8 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { MatSort, Sort } from '@angular/material/sort';
-import { PageEvent } from '@angular/material/paginator';
-import { IDetailsResults, IGridFilters, IGridResults, IRelationshipsResults } from '../../../services/search.service';
+import { Component } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { IDetailsResults, IRelationshipsResults } from '@services/search.service';
 import { Subscription } from 'rxjs';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 

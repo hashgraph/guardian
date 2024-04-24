@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ElasticService } from '../../services/elastic.service';
+import { ElasticService } from '../services/elastic.service';
 
 @Component({
     selector: 'app-elastic',

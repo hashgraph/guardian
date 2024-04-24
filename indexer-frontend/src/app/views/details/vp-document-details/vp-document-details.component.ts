@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { SearchService } from '../../../services/search.service';
-import { BaseDetailsComponent } from '../base-details/base-details.component';
-import { LoadingComponent } from '../../../components/loading/loading.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SearchService } from '@services/search.service';
+import { LoadingComponent } from '@components/loading/loading.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { MatInputModule } from '@angular/material/input';
+import { BaseDetailsComponent } from '../base-details/base-details.component';
 
 function createChart(data: any[], links: any): EChartsOption {
     return {

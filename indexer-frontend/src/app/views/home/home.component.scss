@@ -5,7 +5,7 @@
         height: calc(50vh - var(--header-height));
         max-height: calc(600px - var(--header-height));
         background: var(--color-primary-background);
-        background-image: url("../../../assets/main.jfif");
+        background-image: url("@assets/main.jfif");
         background-position-y: calc(0px - var(--header-height));
         background-size: 100% auto;
         display: flex;
@@ -56,18 +56,18 @@
                         .mat-mdc-form-field-subscript-wrapper {
                             display: none !important;
                         }
-        
+
                         .mat-mdc-text-field-wrapper {
                             border-radius: 8px !important;
                         }
-        
+
                         .mat-mdc-form-field-infix {
                             padding-top: 9px !important;
                             padding-bottom: 9px !important;
                             min-height: 40px !important;
                             font-size: var(--font-size-normal) !important;
                         }
-        
+
                         .mdc-line-ripple {
                             display: none !important;
                         }

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
-import { HeaderComponent } from './components/header/header.component';
-import { TranslocoService } from '@jsverse/transloco';
+import { HeaderComponent } from '@components/header/header.component';
 
 @Component({
     selector: 'app-root',

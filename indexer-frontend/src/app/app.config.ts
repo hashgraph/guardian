@@ -1,16 +1,17 @@
 import { ApplicationConfig, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
 import { routes } from './app.routes';
-import { StatusService } from './services/status.service';
 import { provideHttpClient } from '@angular/common/http';
-import { LogsService } from './services/logs.service';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { ElasticService } from './services/elastic.service';
-import { SearchService } from './services/search.service';
 import { provideEcharts } from 'ngx-echarts';
-import { TranslocoHttpLoader } from './transloco-loader';
 import { provideTransloco } from '@jsverse/transloco';
+import { TranslocoHttpLoader } from './transloco-loader';
+import { SearchService } from '@services/search.service';
+
+// _DEV
+import { StatusService } from '@dev/services/status.service';
+import { LogsService } from '@dev/services/logs.service';
+import { ElasticService } from '@dev/services/elastic.service';
 
 export const appConfig: ApplicationConfig = {
     providers: [

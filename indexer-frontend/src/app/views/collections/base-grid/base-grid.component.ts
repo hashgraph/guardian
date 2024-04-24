@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
 import { PageEvent } from '@angular/material/paginator';
-import { IGridFilters, IGridResults } from '../../../services/search.service';
+import { IGridFilters, IGridResults } from '@services/search.service';
 import { Subscription } from 'rxjs';
 
 @Component({
