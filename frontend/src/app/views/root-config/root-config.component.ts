@@ -46,12 +46,13 @@ export class RootConfigComponent implements OnInit, OnDestroy{
         hederaAccountId: ['', Validators.required],
         hederaAccountKey: ['', Validators.required],
         useFireblocksSigning: [false],
-        fireBlocksVaultId: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]],
-        fireBlocksAssetId: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]],
-        fireBlocksApiKey: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]],
+        fireBlocksVaultId: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [Validators.required])]],
+        fireBlocksAssetId: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [Validators.required])]],
+        fireBlocksApiKey: ['', [ValidateIfFieldEqual('useFireblocksSigning', true, [Validators.required])]],
         fireBlocksPrivateiKey: [
             '', ValidateIfFieldEqual('useFireblocksSigning', true,
                 [
+                    Validators.required,
                     Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
                 ])]
     });

@@ -125,7 +125,7 @@
                                 label="Use fireblocks signing"
                         ></p-checkbox>
                     </div>
-                    <ng-container *ngIf="hederaForm.get('useFireblocksSigning')?.value">
+                    <div [ngClass]="{'hide-block': hederaForm.get('useFireblocksSigning')?.value === false}">
                         <div class="input-field-container">
                             <label class="form-label" htmlFor="fireBlocksVaultId">
                                 * Fireblocks Vault ID:
@@ -174,7 +174,7 @@
                                     type="text"
                             ></textarea>
                         </div>
-                    </ng-container>
+                    </div>
                 </div>
 
                 <div *ngIf="step === 'RESTORE'" class="list-item">

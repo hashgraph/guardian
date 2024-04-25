@@ -936,11 +936,12 @@ export class HederaSDKHelper {
                 throw new Error(`Fireblocks signing failed`);
             }
 
-            if (tx.signedMessages[0]) {
-                const pubKey = PublicKey.fromStringED25519(tx.signedMessages[0].publicKey);
-                const signature = Uint8Array.from(Buffer.from(tx.signedMessages[0].signature.fullSig, 'hex'));
-                messageTransaction.setNodeAccountIds([Object.values(this.client.network)[0] as AccountId]);
-                messageTransaction = messageTransaction.freezeWith(client);
+            console.log(tx)
+
+            const signedMessage = tx.signedMessages[0];
+            if (signedMessage) {
+                const pubKey = PublicKey.fromStringED25519(signedMessage.publicKey);
+                const signature = Buffer.from(signedMessage.signature.fullSig, 'hex');
                 messageTransaction.addSignature(pubKey, signature);
             }
             messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
