@@ -19,6 +19,8 @@ import { MeecoAuth } from './helpers/meeco.js';
 import * as extraModels from './middlewares/validation/schemas/index.js'
 import { ProjectService } from './helpers/projects.js';
 import { AISuggestions } from './helpers/ai-suggestions.js';
+import { FastifyAdapter } from '@nestjs/platform-fastify';
+
 
 const PORT = process.env.PORT || 3002;
 
@@ -30,7 +32,7 @@ const PORT = process.env.PORT || 3002;
 // });
 
 Promise.all([
-    NestFactory.create(AppModule, {
+    NestFactory.create(AppModule, new FastifyAdapter(), {
         rawBody: true,
         bodyParser: false
     }),
