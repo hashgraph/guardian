@@ -4,12 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SearchService } from '@services/search.service';
 import { LoadingComponent } from '@components/loading/loading.component';
 import { MatTabsModule } from '@angular/material/tabs';
-import { EChartsOption } from 'echarts';
+import { ECElementEvent, EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { MatInputModule } from '@angular/material/input';
 import { BaseDetailsComponent } from '../base-details/base-details.component';
 import { TranslocoModule } from '@jsverse/transloco';
-import { createChart, createChartData, createChartLink } from './chart.config';
+import { createChart } from '../base-details/relationships-chart.config';
 
 @Component({
     selector: 'vp-document-details',
@@ -109,38 +109,12 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     }
 
     private setChartData() {
-        if (
-            this.relationships &&
-            this.relationships.relationships &&
-            this.relationships.links
-        ) {
-            const data = [];
-            const relationships = this.relationships.relationships.sort((a, b) => {
-                return a.id > b.id ? 1 : -1;
-            });
-            for (let index = 0; index < relationships.length; index++) {
-                data.push(
-                    createChartData(
-                        relationships[index],
-                        this.relationships.target,
-                        index,
-                        relationships.length
-                    )
-                )
-            }
-            const links = [];
-            for (const item of this.relationships.links) {
-                links.push(createChartLink(item));
-            }
-            this.chartOption = createChart(data, links);
-        } else {
-            this.chartOption = createChart();
-        }
+        this.chartOption = createChart(this.relationships);
     }
 
-    public onSelect(event: any) {
+    public onSelect(event: ECElementEvent) {
         if (event.dataType === 'node') {
-            this.router.navigate([`/vp-documents/${event.name}`]);
+            this.toEntity(String(event.value), event.name, 'relationships');
         }
     }
 

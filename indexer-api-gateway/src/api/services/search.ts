@@ -180,7 +180,132 @@ export class SearchApi extends ApiClient {
         return await this.send<any>(IndexerMessageAPI.GET_VP_RELATIONSHIPS, { messageId });
     }
 
+    /**
+     * Get vc documents
+     * @get
+     */
+    @Get('/vc-documents')
+    @ApiOperation({
+        summary: '.',
+        description: '.'
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        description: 'Page index.',
+        type: Number,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        description: 'Page size.',
+        type: Number,
+        example: 20
+    })
+    @ApiQuery({
+        name: 'orderField',
+        description: 'Order field.',
+        type: String,
+        example: 'topicId'
+    })
+    @ApiQuery({
+        name: 'orderDir',
+        description: 'Order direction.',
+        type: String,
+        example: 'DESC'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PageDTO
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getVcDocuments(
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+    ): Promise<any> {
+        return await this.send<IPage<any>>(IndexerMessageAPI.GET_VC_DOCUMENTS,
+            {
+                pageIndex,
+                pageSize,
+                orderField,
+                orderDir,
+            }
+        );
+    }
 
+    /**
+     * Get vc documents
+     * @get
+     */
+    @Get('/vc-documents/:messageId')
+    @ApiOperation({
+        summary: '.',
+        description: '.'
+    })
+    @ApiImplicitParam({
+        name: 'messageId',
+        type: String,
+        description: '.',
+        required: true,
+        example: '1706817574.985741019'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PageDTO
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getVcDocument(
+        @Param('messageId') messageId: string
+    ): Promise<any> {
+        return await this.send<any>(IndexerMessageAPI.GET_VC_DOCUMENT, { messageId });
+    }
 
-
+    /**
+     * Get vc relationships
+     * @get
+     */
+    @Get('/vc-documents/:messageId/relationships')
+    @ApiOperation({
+        summary: '.',
+        description: '.'
+    })
+    @ApiImplicitParam({
+        name: 'messageId',
+        type: String,
+        description: '.',
+        required: true,
+        example: '1706817574.985741019'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PageDTO
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async getVcRelationships(
+        @Param('messageId') messageId: string
+    ): Promise<any> {
+        return await this.send<any>(IndexerMessageAPI.GET_VC_RELATIONSHIPS, { messageId });
+    }
 }

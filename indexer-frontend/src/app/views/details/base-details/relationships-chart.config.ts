@@ -1,6 +1,7 @@
+import { IRelationshipsResults } from "@services/search.service";
 import { EChartsOption } from "echarts";
 
-export function createChart(data: any[] = [], links: any = []): EChartsOption {
+export function createChartConfig(data: any[] = [], links: any = []): EChartsOption {
     return {
         title: {
             text: 'Relationships'
@@ -90,5 +91,35 @@ export function createChartLink(item: any): any {
         tooltip: {
             show: false
         }
+    }
+}
+
+export function createChart(result: IRelationshipsResults | null = null) {
+    if (
+        result &&
+        result.relationships &&
+        result.links
+    ) {
+        const data = [];
+        const relationships = result.relationships.sort((a, b) => {
+            return a.id > b.id ? 1 : -1;
+        });
+        for (let index = 0; index < relationships.length; index++) {
+            data.push(
+                createChartData(
+                    relationships[index],
+                    result.target,
+                    index,
+                    relationships.length
+                )
+            )
+        }
+        const links = [];
+        for (const item of result.links) {
+            links.push(createChartLink(item));
+        }
+        return createChartConfig(data, links);
+    } else {
+        return createChartConfig();
     }
 }

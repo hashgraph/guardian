@@ -15,11 +15,11 @@ import { BaseGridComponent } from '../base-grid/base-grid.component';
 import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
-    selector: 'vp-documents',
-    templateUrl: './vp-documents.component.html',
+    selector: 'vc-documents',
+    templateUrl: './vc-documents.component.html',
     styleUrls: [
         '../base-grid/base-grid.component.scss',
-        './vp-documents.component.scss',
+        './vc-documents.component.scss',
     ],
     standalone: true,
     imports: [
@@ -36,7 +36,7 @@ import { TranslocoModule } from '@jsverse/transloco';
         TranslocoModule
     ]
 })
-export class VpDocumentsComponent extends BaseGridComponent {
+export class VcDocumentsComponent extends BaseGridComponent {
     constructor(
         private searchService: SearchService,
         route: ActivatedRoute,
@@ -57,7 +57,7 @@ export class VpDocumentsComponent extends BaseGridComponent {
     protected loadData(): void {
         const filters = this.getFilters();
         this.loading = true;
-        this.searchService.getVpDocuments(filters).subscribe({
+        this.searchService.getVcDocuments(filters).subscribe({
             next: (result) => {
                 this.setResult(result);
                 setTimeout(() => {
@@ -72,6 +72,6 @@ export class VpDocumentsComponent extends BaseGridComponent {
     }
 
     public onOpen(element: any) {
-        this.router.navigate([`/vp-documents/${element.consensusTimestamp}`]);
+        this.router.navigate([`/vc-documents/${element.consensusTimestamp}`]);
     }
 }

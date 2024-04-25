@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Get, Param, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern, MessagePattern } from '@nestjs/microservices';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
+import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
     ApiUnauthorizedResponse,

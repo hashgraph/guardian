@@ -4,8 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import { ClientsModule, MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, entities } from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
-import { LogService } from './api/log.service.js';
-import { ElasticService } from './api/elastic.service.js';
+import { LogService } from './_dev/api/log.service.js';
+import { ElasticService } from './_dev/api/elastic.service.js';
 import { SearchService } from './api/search.service.js';
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`).toUpperCase();

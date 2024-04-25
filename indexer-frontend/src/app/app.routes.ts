@@ -35,6 +35,7 @@ import { ContractDetailsComponent } from '@views/details/contract-details/contra
 
 //Collections
 import { VpDocumentsComponent } from '@views/collections/vp-documents/vp-documents.component';
+import { VcDocumentsComponent } from '@views/collections/vc-documents/vc-documents.component';
 
 export const routes: Routes = [
 
@@ -53,6 +54,7 @@ export const routes: Routes = [
 
     //Collections
     { path: 'vp-documents', component: VpDocumentsComponent },
+    { path: 'vc-documents', component: VcDocumentsComponent },
 
     //Details
     { path: 'did-documents/:id', component: DidDocumentDetailsComponent },

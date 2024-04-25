@@ -61,6 +61,7 @@ export class SearchService {
         return this.http.get<any>(this.url, options);
     }
 
+    //VP
     public getVpDocuments(filters: IGridFilters): Observable<IGridResults> {
         const options = ApiUtils.getOptions(filters);
         return this.http.get<any>(`${this.url}/vp-documents`, options) as any;
@@ -72,5 +73,19 @@ export class SearchService {
 
     public getVpRelationships(messageId: string): Observable<IRelationshipsResults> {
         return this.http.get<any>(`${this.url}/vp-documents/${messageId}/relationships`) as any;
+    }
+
+    //VC
+    public getVcDocuments(filters: IGridFilters): Observable<IGridResults> {
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<any>(`${this.url}/vc-documents`, options) as any;
+    }
+
+    public getVcDocument(messageId: string): Observable<IDetailsResults> {
+        return this.http.get<any>(`${this.url}/vc-documents/${messageId}`) as any;
+    }
+
+    public getVcRelationships(messageId: string): Observable<IRelationshipsResults> {
+        return this.http.get<any>(`${this.url}/vc-documents/${messageId}/relationships`) as any;
     }
 }

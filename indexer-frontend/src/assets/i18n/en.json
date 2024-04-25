@@ -26,7 +26,13 @@
         "description": "Guardian Indexer by Managed Guardian Service"
     },
     "grid": {
-
+        "topic_id": "Topic Id",
+        "consensus_timestamp": "Message Id",
+        "uuid": "UUID",
+        "status": "Status",
+        "issuer": "Issuer",
+        "account": "Account",
+        "open": "Open"
     },
     "details": {
         "overview": "OVERVIEW",

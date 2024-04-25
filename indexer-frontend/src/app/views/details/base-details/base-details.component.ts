@@ -103,6 +103,82 @@ export abstract class BaseDetailsComponent {
         this.setTab(this.getTabName(event.index));
     }
 
+    protected toEntity(type: string, id: string, tab?: string) {
+        const queryParams = tab ? { tab } : undefined;
+        const option = queryParams ? { queryParams } : undefined;
+        switch (type) {
+            case 'EVC-Document':
+            case 'VC-Document': {
+                this.router.navigate([`/vc-documents/${id}`], option);
+                break;
+            }
+            case 'DID-Document': {
+                this.router.navigate([`/did-documents/${id}`], option);
+                break;
+            }
+            case 'Schema':
+            case 'schema-document': {
+                this.router.navigate([`/schemas/${id}`], option);
+                break;
+            }
+            case 'Policy': {
+                this.router.navigate([`/policies/${id}`], option);
+                break;
+            }
+            case 'Instance-Policy': {
+                this.router.navigate([`/instance-policies/${id}`], option);
+                break;
+            }
+            case 'VP-Document': {
+                this.router.navigate([`/vp-documents/${id}`], option);
+                break;
+            }
+            case 'Standard Registry': {
+                this.router.navigate([`/standard-registries/${id}`], option);
+                break;
+            }
+            case 'Topic': {
+                debugger;
+                this.router.navigate([`/topic-documents/${id}`], option);
+                break;
+            }
+            case 'Token': {
+                this.router.navigate([`/tokens/${id}`], option);
+                break;
+            }
+            case 'Module': {
+                this.router.navigate([`/modules/${id}`], option);
+                break;
+            }
+            case 'Tool': {
+                this.router.navigate([`/tools/${id}`], option);
+                break;
+            }
+            case 'Tag': {
+                this.router.navigate([`/tags/${id}`], option);
+                break;
+            }
+            case 'Role-Document': {
+                this.router.navigate([`/roles/${id}`], option);
+                break;
+            }
+            case 'Synchronization Event': {
+                this.router.navigate([`/events/${id}`], option);
+                break;
+            }
+            case 'Contract': {
+                this.router.navigate([`/contracts/${id}`], option);
+                break;
+            }
+            default: {
+                //TODO
+                debugger;
+                this.router.navigate([`/messages/${id}`], option);
+                break;
+            }
+        }
+    }
+
     protected abstract onNavigate(): void;
 
     protected abstract loadData(): void;

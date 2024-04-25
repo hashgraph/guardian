@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Param, Inject, Query } from '@nestjs/common';
 import { ClientProxy, EventPattern, MessagePattern } from '@nestjs/microservices';
-import { InternalServerErrorDTO, PageDTO } from '../../middlewares/validation/schemas/index.js';
+import { InternalServerErrorDTO, PageDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
     ApiUnauthorizedResponse,
@@ -15,7 +15,7 @@ import {
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { firstValueFrom, timeout } from 'rxjs';
 import { AnyResponse, IPage, IndexerMessageAPI, responseFrom } from '@indexer/common';
-import { ApiClient } from '../api-client.js';
+import { ApiClient } from '../../api-client.js';
 
 @Controller('elastic')
 @ApiTags('elastic')

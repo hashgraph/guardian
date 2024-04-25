@@ -125,6 +125,13 @@ export class SearchService {
         }
     }
 
+
+
+
+
+
+
+
     /**
      * Get vp documents
      * @param {IPageFilters} msg filters
@@ -242,4 +249,131 @@ export class SearchService {
             return new MessageError(error);
         }
     }
+
+
+
+
+
+
+
+
+
+    /**
+     * Get vc documents
+     * @param {IPageFilters} msg filters
+     * @returns {IPage} pages
+     */
+    @MessagePattern(IndexerMessageAPI.GET_VC_DOCUMENTS)
+    async getVcDocuments(
+        @Payload() msg: IPageFilters
+    ): Promise<AnyResponse<IPage<Message>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.VC_DOCUMENT;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = await em.findAndCount(Message, filters, options);
+            const result: IPage<Message> = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy
+            }
+            return new MessageResponse(result);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    /**
+     * Get vc document
+     * @param msg options
+     * @returns details
+     */
+    @MessagePattern(IndexerMessageAPI.GET_VC_DOCUMENT)
+    async getVcDocument(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IDetailsResults>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.VC_DOCUMENT
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            if (!item) {
+                return new MessageResponse<IDetailsResults>({
+                    id: messageId,
+                    row
+                });
+            }
+
+            await loadDocuments(item);
+            const history = await em.find(Message, {
+                uuid: item.uuid,
+                type: MessageType.VC_DOCUMENT
+            }, {
+                orderBy: {
+                    consensusTimestamp: 'ASC'
+                }
+            });
+            for (const row of history) {
+                await loadDocuments(row);
+            }
+            return new MessageResponse<IDetailsResults>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                history,
+                row
+            });
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+
+    /**
+     * Get vc relationships
+     * @param msg options
+     * @returns details
+     */
+    @MessagePattern(IndexerMessageAPI.GET_VC_RELATIONSHIPS)
+    async getVcRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IRelationshipsResults>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.VC_DOCUMENT
+            });
+            if (!item) {
+                return new MessageResponse<IRelationshipsResults>({
+                    id: messageId
+                });
+            }
+
+            const utils = new RelationshipsUtils(item);
+            const { target, relationships, links } = await utils.load();
+
+            return new MessageResponse<IRelationshipsResults>({
+                id: messageId,
+                item,
+                target,
+                relationships,
+                links
+            });
+        } catch (error) {
+            console.log(error)
+            return new MessageError(error);
+        }
+    }
+
 }
