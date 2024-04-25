@@ -39,12 +39,12 @@ export abstract class BaseDetailsComponent {
             if (this.id) {
                 if (this.tab !== tab) {
                     this.tab = tab;
-                    this.tabIndex = this.getTabIndex();
+                    this.tabIndex = this.getTabIndex(tab);
                     this.onNavigate();
                 }
             } else {
                 this.tab = tab;
-                this.tabIndex = this.getTabIndex();
+                this.tabIndex = this.getTabIndex(tab);
             }
         });
         this._paramsObserver = this.route.params.subscribe(params => {
@@ -83,7 +83,7 @@ export abstract class BaseDetailsComponent {
                 this.history = [this.target]
             }
         }
-        this.tabIndex = this.getTabIndex();
+        this.tabIndex = this.getTabIndex(this.tab);
     }
 
     protected setRelationships(result: IRelationshipsResults): void {
@@ -100,12 +100,14 @@ export abstract class BaseDetailsComponent {
     }
 
     protected onTab(event: MatTabChangeEvent) {
-        this.setTab(event.tab.textLabel);
+        this.setTab(this.getTabName(event.index));
     }
 
     protected abstract onNavigate(): void;
 
     protected abstract loadData(): void;
 
-    protected abstract getTabIndex(): number;
+    protected abstract getTabIndex(name: string): number;
+
+    protected abstract getTabName(index: number): string;
 }

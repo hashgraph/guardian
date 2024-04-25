@@ -24,5 +24,29 @@
     "home": {
         "header": "Indexer",
         "description": "Guardian Indexer by Managed Guardian Service"
+    },
+    "grid": {
+
+    },
+    "details": {
+        "overview": "OVERVIEW",
+        "documents": "DOCUMENT",
+        "history": "HISTORY",
+        "relationships": "RELATIONSHIPS",
+        "raw_data": "RAW DATA",
+
+        "hedera": {
+            "topic_id": "TOPIC ID",
+            "consensus_timestamp": "CONSENSUS TIMESTAMP",
+            "uuid": "UUID",
+            "type": "TYPE",
+            "action": "ACTION",
+            "status": "STATUS",
+            "status_reason": "REASON",
+            "issuer": "ISSUER"
+        },
+
+        "ipfs": "IPFS",
+        "not_found": "Not found"
     }
 }
