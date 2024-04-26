@@ -176,7 +176,7 @@ class MigrationConfig {
             groups: this._groups,
             roles: this._roles,
             migrateState: this.migrateState,
-            editedVCs: this.editedVCs, // fx
+            editedVCs: this.editedVCs,
             blocks: this._blocks,
         };
     }
@@ -644,7 +644,15 @@ export class MigrateData {
                     return;
                 }
                 try {
-                    this.migrationConfig.editedVCs[doc.id] = JSON.parse(result);
+                    const editedVC = JSON.parse(result);
+                    if (
+                        JSON.stringify(editedVC) ===
+                        JSON.stringify(doc.document.credentialSubject[0])
+                    ) {
+                        delete this.migrationConfig.editedVCs[doc.id];
+                    } else {
+                        this.migrationConfig.editedVCs[doc.id] = editedVC;
+                    }
                 } catch {}
             });
     }

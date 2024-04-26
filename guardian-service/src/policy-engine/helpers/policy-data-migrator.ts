@@ -767,7 +767,6 @@ export class PolicyDataMigrator {
                 const dataKeys = Object.keys(data);
                 for (const key of dataKeys) {
                     const newKey = await this._replaceDidTopicId(key);
-                    console.log(newKey, key);
                     data[newKey] = data[key];
                     if (data[newKey] !== data[key]) {
                         delete data[key];
@@ -947,7 +946,6 @@ export class PolicyDataMigrator {
             mintRequestsMapping.set(oldMintRequestId, newMintRequest.id);
         }
         for (const mintTransaction of mintTransactions) {
-            console.log(mintTransaction, mintRequestsMapping);
             const newMintRequestId = mintRequestsMapping.get(
                 mintTransaction.mintRequestId
             );
@@ -978,7 +976,6 @@ export class PolicyDataMigrator {
         if (!doc) {
             return doc;
         }
-        console.log('VC', typeof doc.id);
 
         doc.relationships = doc.relationships || [];
         for (let i = 0; i < doc.relationships.length; i++) {
@@ -1053,17 +1050,8 @@ export class PolicyDataMigrator {
             topicId: this._policyTopicId,
             iri: this._schemas[doc.schema],
         });
-        if (!schema) {
-            console.log('error migrating schema');
-            console.log(
-                doc.id,
-                doc.schema,
-                this._schemas,
-                this._schemas[doc.schema],
-                this._policyTopicId
-            );
-        }
         if (
+            this._editedVCs[doc.id] ||
             doc.schema !== schema.iri ||
             this._policyTopicId !== this._oldPolicyTopicId
         ) {

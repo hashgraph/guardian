@@ -1528,7 +1528,7 @@ export class PolicyEngineService {
                 try {
                     const userPolicy = await DatabaseServer.getPolicyCache({
                         id: msg?.policyId,
-                        owner: msg?.owner,
+                        userId: msg?.owner,
                     });
                     if (userPolicy) {
                         return new MessageResponse(userPolicy.blocks);
