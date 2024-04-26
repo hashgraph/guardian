@@ -598,7 +598,6 @@ export class PolicyDataMigrator {
             return did;
         }
         this._notifier?.info(`Migrating DID ${did}`);
-        //didObj.topicId = this._policyInstanceTopic.topicId;
         await this._db.saveDid(didObj);
         return did;
     }
@@ -1093,7 +1092,6 @@ export class PolicyDataMigrator {
             );
             vcMessage.setRelationships([...doc.relationships, doc.messageId]);
             if (role && schema.category === SchemaCategory.POLICY) {
-                // Double check for category
                 vcMessage.setUser(role.messageId);
             }
             const message = vcMessage;
