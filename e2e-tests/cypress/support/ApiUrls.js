@@ -80,7 +80,8 @@ const API = {
     External: "external",
 
     //ipfs
-    IPFSFile: "ipfs/file",
+    IPFSFile: "ipfs/file/",
+    IPFS: "ipfs/",
 
     //Demo
     RandomKey: "demo/random-key",
@@ -89,10 +90,12 @@ const API = {
     //Policies
     Policies: "policies/",
     PolicisImportMsg: "policies/import/message/",
+    PolicisImportMsgPush: "policies/push/import/message/",
     PolicisImportFile: "policies/import/file/",
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     PolicyGroups: "groups/",
+    DryRun: "groups/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     CreateApplication: "tag/create_application/blocks",
     WaitForApproveApplication: "tag/wait_for_approve",
