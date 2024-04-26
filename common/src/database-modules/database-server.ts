@@ -30,7 +30,6 @@ import {
     Token as TokenCollection,
     Topic as TopicCollection,
     VcDocument as VcDocumentCollection,
-    VcDocument,
     VpDocument,
     VpDocument as VpDocumentCollection,
     PolicyCache,
@@ -38,7 +37,6 @@ import {
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
-    DocumentType,
     GenerateUUIDv4,
     IVC,
     MintTransactionStatus,
