@@ -20,6 +20,8 @@
 
 [Key Documents and Schemas](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#key-documents-and-schemas)
 
+[Tools Referenced](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#tools-referenced)
+
 [Token (Carbon Emission Reduction)](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#token-carbon-emission-reduction)
 
 [Step-by-Step](cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies.md#step-by-step)
@@ -66,17 +68,17 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 ### Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp : 1706881157.848214003
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
 ### Key Documents and Schemas&#x20;
 
-Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.&#x20;
+1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.&#x20;
 
-Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
+### Tools Referenced
 
-Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
-
-Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.&#x20;
+* Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.&#x20;
 
 ### Token (Carbon Emission Reduction)&#x20;
 

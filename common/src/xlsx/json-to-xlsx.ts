@@ -278,7 +278,7 @@ export class JsonToXlsx {
                     .getCell(table.getCol(Dictionary.ANSWER), row)
                     .setList2(_enum.getData());
             } else {
-                throw new Error(`Enum (field.path) not found.`);
+                throw new Error(`Enum ('${worksheet.name}', ${field.name}, '${field.description}', ${field.path}) not found.`);
             }
         }
         if (type && !field.isRef) {

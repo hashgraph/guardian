@@ -16,11 +16,11 @@
 
 ​ [Key Documents and Schemas](cdm-acm0001-flaring-or-use-of-landfill-gas.md#key-documents-and-schemas)&#x20;
 
+[Tools Referenced](cdm-acm0001-flaring-or-use-of-landfill-gas.md#tools-referenced)
+
 ​ [Token (Carbon Emission Reduction)](cdm-acm0001-flaring-or-use-of-landfill-gas.md#token-carbon-emission-reduction)&#x20;
 
 ​ [Workflow ](cdm-acm0001-flaring-or-use-of-landfill-gas.md#workflow)
-
-​ [IPFS Timestamp](cdm-acm0001-flaring-or-use-of-landfill-gas.md#ipfs-timestamp)
 
 [Step-by-Step](cdm-acm0001-flaring-or-use-of-landfill-gas.md#step-by-step)​​&#x20;
 
@@ -60,29 +60,23 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 ### Key Documents and Schemas&#x20;
 
-Methodological Tool 02 – Combined tool to identify the baseline scenario and demonstrate additionality.&#x20;
-
-Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
-
-Methodological Tool 04 – Emissions from solid waste disposal sites. &#x20;
-
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.&#x20;
-
-Methodological Tool 06 – Project emissions from flaring. &#x20;
-
-Methodological Tool 08 – Tool to determine the mass flow of a greenhouse gas in a gaseous stream. &#x20;
-
-Methodological Tool 09 – Determining the baseline efficiency of thermal or electric energy generation systems. &#x20;
-
-Methodological Tool 12 – Project and leakage emissions from transportation of freight. &#x20;
-
-Methodological Tool 32 – Positive lists of technologies.&#x20;
-
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
 
 Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
 
 Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.&#x20;
+
+### Tools Referenced
+
+* Methodological Tool 02 – Combined tool to identify the baseline scenario and demonstrate additionality.&#x20;
+* Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+* Methodological Tool 04 – Emissions from solid waste disposal sites. &#x20;
+* Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.&#x20;
+* Methodological Tool 06 – Project emissions from flaring. &#x20;
+* Methodological Tool 08 – Tool to determine the mass flow of a greenhouse gas in a gaseous stream. &#x20;
+* Methodological Tool 09 – Determining the baseline efficiency of thermal or electric energy generation systems. &#x20;
+* Methodological Tool 12 – Project and leakage emissions from transportation of freight.&#x20;
+* Methodological Tool 32 – Positive lists of technologies.&#x20;
 
 ### Token (Carbon Emission Reduction)&#x20;
 
@@ -91,10 +85,6 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 ### Workflow&#x20;
 
 <figure><img src="../../../.gitbook/assets/image (366).png" alt=""><figcaption></figcaption></figure>
-
-### IPFS Timestamp
-
-Coming Soon
 
 ### Step-by-Step
 

@@ -16,6 +16,8 @@
 
 [Important Documents and Schemas](cdm-ams-iii.d.md#important-documents-and-schemas)
 
+[Tools Referenced](cdm-ams-iii.d.md#tools-referenced)
+
 [Token](cdm-ams-iii.d.md#token-carbon-emission-reduction)
 
 [Step By Step](cdm-ams-iii.d.md#step-by-step)
@@ -50,8 +52,6 @@ In the context of modern emission reduction projects, the necessity for transpar
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
-Latest Version - 1698756329.359347003
-
 ## Available Roles
 
 **Project Proponent** - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
@@ -64,19 +64,16 @@ Latest Version - 1698756329.359347003
 
 ## Important Documents & Schemas
 
-1\. Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+1. Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
 
-2\. Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+### Tools Referenced
 
-3\. Methodological Tool 06 - Tool to determine project emissions from flaring gases containing methane.
-
-4\. Methodological Tool 14 - Project and leakage emissions from anaerobic digesters
-
-5\. Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
-
-6\. Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
-
-7\. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+* Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.
+* Methodological Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.
+* Methodological Tool 06 - Tool to determine project emissions from flaring gases containing methane.
+* Methodological Tool 14 - Project and leakage emissions from anaerobic digesters
 
 ## Token (Carbon Emission Reduction)
 

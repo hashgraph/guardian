@@ -1,4 +1,4 @@
-# ⬇ Verra PWRM0001: Plastic Waste Reduction Methodology
+# ⬇️ Verra PWRM0001: Plastic Waste Reduction Methodology
 
 ## Table of Contents
 
@@ -38,9 +38,7 @@ Considering escalating environmental concerns and the imperative to safeguard ou
 
 ### Demo Video <a href="#toc192784261" id="toc192784261"></a>
 
-[https://youtu.be/Xu0lGnJTT3s?si=hKQLuV-5nuL-lLQY](https://youtu.be/Xu0lGnJTT3s?si=hKQLuV-5nuL-lLQY)
-
-![](<../../../.gitbook/assets/0 (4).jpeg>)
+[Youtube](https://youtu.be/Xu0lGnJTT3s?si=hKQLuV-5nuL-lLQY)
 
 ### Policy Workflow <a href="#toc895640644" id="toc895640644"></a>
 
@@ -48,7 +46,7 @@ Considering escalating environmental concerns and the imperative to safeguard ou
 
 ### Policy Guide <a href="#toc1368814671" id="toc1368814671"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp : 1707206885.406272003
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
 ### Available Roles <a href="#toc689999990" id="toc689999990"></a>
 

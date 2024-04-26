@@ -57,21 +57,20 @@ export class HashComparator {
             const { policy, schemas, tokens, artifacts } = file;
 
             //Policy
-            const policyModel = (new PolicyModel(policy, HashComparator.options));
+            const policyModel = new PolicyModel(policy, HashComparator.options);
 
             //Schemas
-            const schemaModels: SchemaModel[] = [];
-            for (const schema of schemas) {
+            const schemaModels = schemas.map(schema => {
                 const m = new SchemaModel(schema, HashComparator.options);
                 m.setPolicy(policy);
                 m.update(HashComparator.options);
-                schemaModels.push(m);
-            }
+                return m;
+            });
+
             policyModel.setSchemas(schemaModels);
 
             //Tokens
-            const tokenModels: TokenModel[] = [];
-            for (const row of tokens) {
+            const tokenModels = tokens.map(row => {
                 const token: any = {
                     tokenId: row.tokenId,
                     tokenName: row.tokenName,
@@ -86,17 +85,16 @@ export class HashComparator {
                 }
                 const t = new TokenModel(token, HashComparator.options);
                 t.update(HashComparator.options);
-                tokenModels.push(t);
-            }
+                return t;
+            });
             policyModel.setTokens(tokenModels);
 
             //Artifacts
-            const artifactsModels: FileModel[] = [];
-            for (const artifact of artifacts) {
+            const artifactsModels = artifacts.map(artifact => {
                 const f = new FileModel(artifact, artifact.data, HashComparator.options);
                 f.update(HashComparator.options);
-                artifactsModels.push(f);
-            }
+                return f;
+            });
             policyModel.setArtifacts(artifactsModels);
 
             //Compare

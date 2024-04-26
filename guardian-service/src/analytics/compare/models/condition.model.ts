@@ -5,12 +5,6 @@ import { FieldModel } from './field.model.js';
  */
 export class ConditionModel {
     /**
-     * Condition index
-     * @public
-     */
-    public readonly index: number;
-
-    /**
      * Field name
      * @public
      */
@@ -50,10 +44,8 @@ export class ConditionModel {
         field: FieldModel,
         fieldValue: any,
         thenFields: FieldModel[],
-        elseFields: FieldModel[],
-        index: number
+        elseFields: FieldModel[]
     ) {
-        this.index = index;
         this.field = field;
         this.fieldValue = fieldValue;
         this.thenFields = thenFields;

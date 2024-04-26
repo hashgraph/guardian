@@ -101,38 +101,44 @@ export class SchemaModel {
      * Compare Map
      * @private
      */
-    private readonly _compareMap: Map<string, number>;
+    private readonly _compareMap: Map<string, number> = new Map();
 
     constructor(
         schema: SchemaCollection,
         options: CompareOptions
     ) {
         this.options = options;
-        this.id = '';
-        this.name = '';
-        this.uuid = '';
-        this.description = '';
-        this.topicId = '';
-        this.version = '';
-        this.iri = '';
-        this._weight = '';
-        this._weightDocument = '';
-        this._compareMap = new Map<string, number>();
-        if (schema) {
-            this.id = schema.id;
-            this.name = schema.name;
-            this.uuid = schema.uuid
-            this.description = schema.description;
-            this.topicId = schema.topicId;
-            this.version = schema.version || schema.sourceVersion;
-            this.iri = schema.iri;
-            if (schema.document) {
-                const document = (typeof schema.document === 'string') ?
-                    JSON.parse(schema.document) :
-                    schema.document;
-                this.document = new SchemaDocumentModel(document, 0, document?.$defs);
-                this.document.update(this.options);
-            }
+
+        this._weight = this._weightDocument = '';
+
+        if (!schema) {
+            this.id = this.name = this.uuid = this.description = this.topicId = this.version = this.iri = '';
+            return;
+        }
+
+        const {
+            id = '',
+            name = '',
+            uuid = '',
+            description = '',
+            topicId = '',
+            version = '',
+            sourceVersion = '',
+            iri = '',
+            document = null
+        } = schema;
+
+        this.id = id;
+        this.name = name;
+        this.uuid = uuid;
+        this.description = description;
+        this.topicId = topicId;
+        this.version = version || sourceVersion;
+        this.iri = iri;
+        if (document) {
+            const parsedDocument = typeof document === 'string' ? JSON.parse(document) : document;
+            this.document = SchemaDocumentModel.from(parsedDocument);
+            this.document.update(this.options);
         }
     }
 

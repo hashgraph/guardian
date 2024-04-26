@@ -9,6 +9,8 @@ import { Auth } from '../../auth/auth.decorator.js';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '../../middlewares/validation/schemas/index.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -259,6 +261,7 @@ export class ProfileApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @UseCache({ ttl: CACHE.SHORT_TTL })
     async getUserBalance(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string

@@ -898,16 +898,7 @@ export class PolicyEngineService {
             try {
                 const { policyId } = msg;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                const components = await PolicyImportExport.loadPolicyComponents(policy);
-                const schemas = components.schemas;
-                const tools = components.tools;
-                const toolSchemas = [];
-                for (const tool of tools) {
-                    const _schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
-                    for (const schema of _schemas) {
-                        toolSchemas.push(schema);
-                    }
-                }
+                const { schemas, tools, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
                 const buffer = await JsonToXlsx.generate(schemas, tools, toolSchemas);
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
