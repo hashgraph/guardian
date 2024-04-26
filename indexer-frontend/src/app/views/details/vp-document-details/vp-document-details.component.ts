@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SearchService } from '@services/search.service';
 import { LoadingComponent } from '@components/loading/loading.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ECElementEvent, EChartsOption } from 'echarts';
@@ -10,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { BaseDetailsComponent } from '../base-details/base-details.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { createChart } from '../base-details/relationships-chart.config';
+import { EntitiesService } from '@services/entities.service';
 
 @Component({
     selector: 'vp-document-details',
@@ -32,7 +32,7 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
 
     constructor(
-        private searchService: SearchService,
+        private entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
@@ -42,7 +42,7 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     protected override loadData(): void {
         if (this.id) {
             this.loading = true;
-            this.searchService.getVpDocument(this.id).subscribe({
+            this.entitiesService.getVpDocument(this.id).subscribe({
                 next: (result) => {
                     this.setResult(result);
                     setTimeout(() => {
@@ -62,7 +62,7 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     protected override onNavigate(): void {
         if (this.id && this.tab === 'relationships') {
             this.loading = true;
-            this.searchService.getVpRelationships(this.id).subscribe({
+            this.entitiesService.getVpRelationships(this.id).subscribe({
                 next: (result) => {
                     this.setRelationships(result);
                     this.setChartData();

@@ -8,35 +8,35 @@
             @if (target) {
             <mat-tab [label]="'details.overview' | transloco">
                 <div class="grid-2">
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.topic_id' | transloco }}</mat-label>
                         <input matInput [value]="target.topicId" readonly="true" />
                     </mat-form-field>
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.consensus_timestamp' | transloco }}</mat-label>
                         <input matInput [value]="target.consensusTimestamp" readonly="true" />
                     </mat-form-field>
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.uuid' | transloco }}</mat-label>
                         <input matInput [value]="target.uuid" readonly="true" />
                     </mat-form-field>
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.type' | transloco }}</mat-label>
                         <input matInput [value]="target.type" readonly="true" />
                     </mat-form-field>
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.action' | transloco }}</mat-label>
                         <input matInput [value]="target.action" readonly="true" />
                     </mat-form-field>
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.status' | transloco }}</mat-label>
                         <input matInput [value]="target.status" readonly="true" />
                     </mat-form-field>
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.status_reason' | transloco }}</mat-label>
                         <input matInput [value]="target.statusReason" readonly="true" />
                     </mat-form-field>
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.hedera.issuer' | transloco }}</mat-label>
                         <input matInput [value]="target.options.issuer" readonly="true" />
                     </mat-form-field>
@@ -46,7 +46,7 @@
             <mat-tab [label]="'details.documents' | transloco">
                 @for (url of first.files; track $index) {
                 <div class="grid-1">
-                    <mat-form-field class="example-full-width">
+                    <mat-form-field class="full-width">
                         <mat-label>{{ 'details.ipfs' | transloco }}</mat-label>
                         <input matInput [value]="url" readonly="true" />
                     </mat-form-field>
@@ -59,23 +59,23 @@
                 <div class="history">
                     @for (item of history; track $index) {
                     <div class="grid-3">
-                        <mat-form-field class="example-full-width">
+                        <mat-form-field class="full-width">
                             <mat-label>{{ 'details.hedera.consensus_timestamp' | transloco }}</mat-label>
                             <input matInput [value]="item.consensusTimestamp" readonly="true" />
                         </mat-form-field>
-                        <mat-form-field class="example-full-width">
+                        <mat-form-field class="full-width">
                             <mat-label>{{ 'details.hedera.topic_id' | transloco }}</mat-label>
                             <input matInput [value]="item.topicId" readonly="true" />
                         </mat-form-field>
-                        <mat-form-field class="example-full-width">
+                        <mat-form-field class="full-width">
                             <mat-label>{{ 'details.hedera.action' | transloco }}</mat-label>
                             <input matInput [value]="item.action" readonly="true" />
                         </mat-form-field>
-                        <mat-form-field class="example-full-width">
+                        <mat-form-field class="full-width">
                             <mat-label>{{ 'details.hedera.status' | transloco }}</mat-label>
                             <input matInput [value]="item.status" readonly="true" />
                         </mat-form-field>
-                        <mat-form-field class="example-full-width">
+                        <mat-form-field class="full-width">
                             <mat-label>{{ 'details.hedera.status_reason' | transloco }}</mat-label>
                             <input matInput [value]="item.statusReason || ''" readonly="true" />
                         </mat-form-field>

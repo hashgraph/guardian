@@ -1,32 +1,89 @@
 <div class="page-content">
-    <app-loading [loading]="loading"></app-loading>
+    <app-loading [loading]="loadingData"></app-loading>
+
+    <form class="filters">
+
+        <div class="left-filters">
+            <div class="search-filter">
+                <mat-form-field class="full-width">
+                    <input 
+                        matInput 
+                        placeholder="" 
+                        [formControl]="searchFilter.control"
+                        (change)="onFilter()">
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="right-filters">
+            <div class="select-filter">
+                <app-select-filter 
+                    [label]="'grid.filter.status' | transloco"
+                    [control]="statusFilter.control"
+                    [multiple]="statusFilter.multiple"
+                    [data]="statusFilter.data"
+                    (select)="onFilter()"
+                ></app-select-filter>
+            </div>
+            <div class="select-filter">
+                <app-select-filter 
+                    [label]="'grid.filter.policy' | transloco"
+                    [control]="policyFilter.control"
+                    [multiple]="policyFilter.multiple"
+                    [data]="policyFilter.data"
+                    (select)="onFilter()"
+                ></app-select-filter>
+            </div>
+            <div class="select-filter">
+                <app-select-filter 
+                    [label]="'grid.filter.schema' | transloco"
+                    [control]="schemaFilter.control"
+                    [multiple]="schemaFilter.multiple"
+                    [data]="schemaFilter.data"
+                    (select)="onFilter()"
+                ></app-select-filter>
+            </div>
+        </div>
+    </form>
 
     <div class="table">
         <div class="table-body">
             <table mat-table [dataSource]="items" matSort class="mat-elevation-z8">
 
                 <ng-container matColumnDef="topicId">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'grid.topic_id' | transloco }}</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        {{ 'grid.topic_id' | transloco }}
+                    </th>
                     <td mat-cell *matCellDef="let element">{{element.topicId}}</td>
                 </ng-container>
                 <ng-container matColumnDef="consensusTimestamp">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'grid.consensus_timestamp' | transloco }}</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        {{ 'grid.consensus_timestamp' | transloco }}
+                    </th>
                     <td mat-cell *matCellDef="let element">{{element.consensusTimestamp}}</td>
                 </ng-container>
                 <ng-container matColumnDef="uuid">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'grid.uuid' | transloco }}</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        {{ 'grid.uuid' | transloco }}
+                    </th>
                     <td mat-cell *matCellDef="let element">{{element.uuid}}</td>
                 </ng-container>
                 <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'grid.status' | transloco }}</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        {{ 'grid.status' | transloco }}
+                    </th>
                     <td mat-cell *matCellDef="let element">{{element.status}}</td>
                 </ng-container>
                 <ng-container matColumnDef="option.issuer">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'grid.issuer' | transloco }}</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        {{ 'grid.issuer' | transloco }}
+                    </th>
                     <td mat-cell *matCellDef="let element">{{element.option?.issuer}}</td>
                 </ng-container>
                 <ng-container matColumnDef="account">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'grid.account' | transloco }}</th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        {{ 'grid.account' | transloco }}
+                    </th>
                     <td mat-cell *matCellDef="let element">{{element.account}}</td>
                 </ng-container>
 

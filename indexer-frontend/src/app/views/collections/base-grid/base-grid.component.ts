@@ -4,6 +4,41 @@ import { MatSort, Sort } from '@angular/material/sort';
 import { PageEvent } from '@angular/material/paginator';
 import { IGridFilters, IGridResults } from '@services/search.service';
 import { Subscription } from 'rxjs';
+import { FormControl } from '@angular/forms';
+
+export class Filter {
+    public readonly type: string;
+    public readonly field: string;
+    public readonly multiple: boolean;
+    public readonly control: FormControl;
+    public data: any;
+
+    constructor(option: {
+        type: string,
+        field: string,
+        multiple?: boolean,
+        control?: FormControl,
+        data?: any,
+    }) {
+        this.type = option.type;
+        this.field = option.field;
+        this.multiple = !!option.multiple;
+        this.control = option.control || new FormControl();
+        this.data = option.data;
+    }
+
+    public setData(data: any) {
+        this.data = data;
+    }
+
+    public setValue(value: any) {
+        this.control.setValue(value);
+    }
+
+    public get value(): any {
+        return this.control.value;
+    }
+}
 
 @Component({
     selector: 'base-grid',
@@ -13,7 +48,8 @@ import { Subscription } from 'rxjs';
 export abstract class BaseGridComponent {
     @ViewChild(MatSort) sort!: MatSort;
 
-    public loading: boolean = true;
+    public loadingData: boolean = true;
+    public loadingFilters: boolean = true;
 
     public pageIndex: number = 0;
     public pageSize: number = 20;
@@ -25,7 +61,7 @@ export abstract class BaseGridComponent {
     public displayedColumns: string[] = [];
     public pageSizeOptions = [5, 10, 25, 100];
 
-    public filters: any[] = [];
+    public filters: Filter[] = [];
 
     private _queryObserver?: Subscription;
 
@@ -36,11 +72,12 @@ export abstract class BaseGridComponent {
     }
 
     ngOnInit(): void {
-        this.loading = false;
+        this.loadingData = false;
+        this.loadingFilters = false;
         this._queryObserver = this.route.queryParams.subscribe(params => {
             this.onNavigate(params);
         });
-        this.loadData();
+        this.loadFilters();
     }
 
     ngOnDestroy(): void {
@@ -54,13 +91,13 @@ export abstract class BaseGridComponent {
     public onPage(pageEvent: PageEvent): void {
         this.pageIndex = pageEvent.pageIndex;
         this.pageSize = pageEvent.pageSize;
-        this.loadData();
+        this.onFilter();
     }
 
     public onSort(sortEvent: Sort): void {
         this.orderField = sortEvent.active;
         this.orderDir = sortEvent.direction
-        this.loadData();
+        this.onFilter();
     }
 
     public onFilter(): void {
@@ -70,11 +107,16 @@ export abstract class BaseGridComponent {
             queryParams: filters,
             queryParamsHandling: 'merge'
         });
-        this.loadData();
     }
 
     protected onNavigate(params: Params): void {
-
+        for (const key in params) {
+            const filter = this.filters.find((f) => f.field === key);
+            if (filter) {
+                filter.setValue(params[key]);
+            }
+        }
+        this.loadData();
     }
 
     protected getFilters(): IGridFilters {
@@ -103,5 +145,22 @@ export abstract class BaseGridComponent {
         }
     }
 
+    protected setFilters(result?: any): void {
+        if (result) {
+            const configs = new Map();
+            for (const filter of result) {
+                configs.set(filter.field, filter.data);
+            }
+            for (const filter of this.filters) {
+                filter.setData(configs.get(filter.field));
+            }
+        } else {
+            for (const filter of this.filters) {
+                filter.setData(null);
+            }
+        }
+    }
+
     protected abstract loadData(): void;
+    protected abstract loadFilters(): void;
 }

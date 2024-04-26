@@ -3,10 +3,14 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
 import express from 'express';
 import {
+    // _DEV
     ElasticApi,
     LogsApi,
+    StatusApi,
+    //
     SearchApi,
-    StatusApi
+    FiltersApi,
+    EntityApi
 } from './api/index.js';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
@@ -28,7 +32,9 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
         StatusApi,
         LogsApi,
         ElasticApi,
-        SearchApi
+        SearchApi,
+        FiltersApi,
+        EntityApi
     ],
     providers: [
         // LoggerService,

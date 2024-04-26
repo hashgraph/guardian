@@ -9,10 +9,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { SearchService } from '@services/search.service';
 import { LoadingComponent } from '@components/loading/loading.component';
 import { BaseGridComponent } from '../base-grid/base-grid.component';
 import { TranslocoModule } from '@jsverse/transloco';
+import { EntitiesService } from '@services/entities.service';
+import { FiltersService } from '@services/filters.service';
 
 @Component({
     selector: 'vc-documents',
@@ -38,7 +39,8 @@ import { TranslocoModule } from '@jsverse/transloco';
 })
 export class VcDocumentsComponent extends BaseGridComponent {
     constructor(
-        private searchService: SearchService,
+        private entitiesService: EntitiesService,
+        private filtersService: FiltersService,
         route: ActivatedRoute,
         router: Router
     ) {
@@ -56,16 +58,32 @@ export class VcDocumentsComponent extends BaseGridComponent {
 
     protected loadData(): void {
         const filters = this.getFilters();
-        this.loading = true;
-        this.searchService.getVcDocuments(filters).subscribe({
+        this.loadingData = true;
+        this.entitiesService.getVcDocuments(filters).subscribe({
             next: (result) => {
                 this.setResult(result);
                 setTimeout(() => {
-                    this.loading = false;
+                    this.loadingData = false;
                 }, 500);
             },
             error: ({ message }) => {
-                this.loading = false;
+                this.loadingData = false;
+                console.error(message);
+            }
+        });
+    }
+
+    protected loadFilters(): void {
+        this.loadingFilters = true;
+        this.filtersService.getVcFilters().subscribe({
+            next: (result) => {
+                debugger;
+                setTimeout(() => {
+                    this.loadingFilters = false;
+                }, 500);
+            },
+            error: ({ message }) => {
+                this.loadingFilters = false;
                 console.error(message);
             }
         });

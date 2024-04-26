@@ -19,6 +19,10 @@ body {
     overflow: auto;
 }
 
+.full-width {
+    width: 100%;
+}
+
 @font-face {
     font-family: 'Archivo Black';
     src: url('assets/fonts/Archivo_Black/ArchivoBlack-Regular.ttf') format('truetype');

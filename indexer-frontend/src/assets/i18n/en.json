@@ -1,4 +1,5 @@
 {
+    "title": "Indexer",
     "header": {
         "header": "Guardian",
         "name": "Indexer",
@@ -25,6 +26,12 @@
         "header": "Indexer",
         "description": "Guardian Indexer by Managed Guardian Service"
     },
+    "filter": {
+        "placeholder": "placeholder",
+        "clear": "clear",
+        "more": "more ( {{ current }} / {{ total }} )",
+        "header": "Filter by {{ label }}"
+    },
     "grid": {
         "topic_id": "Topic Id",
         "consensus_timestamp": "Message Id",
@@ -32,7 +39,12 @@
         "status": "Status",
         "issuer": "Issuer",
         "account": "Account",
-        "open": "Open"
+        "open": "Open",
+        "filter": {
+            "policy": "Policy",
+            "schema": "Schema",
+            "status": "Status"
+        }
     },
     "details": {
         "overview": "OVERVIEW",

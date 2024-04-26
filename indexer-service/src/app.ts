@@ -7,6 +7,8 @@ import { ChannelService } from './api/channel.service.js';
 import { LogService } from './_dev/api/log.service.js';
 import { ElasticService } from './_dev/api/elastic.service.js';
 import { SearchService } from './api/search.service.js';
+import { EntityService } from './api/entities.service.js';
+import { FiltersService } from './api/filters.service.js';
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 
@@ -27,7 +29,9 @@ const channelName = (process.env.SERVICE_CHANNEL || `indexer-service.${Utils.Gen
         ChannelService,
         LogService,
         ElasticService,
-        SearchService
+        SearchService,
+        EntityService,
+        FiltersService
     ]
 })
 class AppModule { }

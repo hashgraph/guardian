@@ -1,3 +1,9 @@
+// _DEV
+import { StatusService } from '@dev/services/status.service';
+import { LogsService } from '@dev/services/logs.service';
+import { ElasticService } from '@dev/services/elastic.service';
+
+//
 import { ApplicationConfig, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
@@ -7,11 +13,8 @@ import { provideEcharts } from 'ngx-echarts';
 import { provideTransloco } from '@jsverse/transloco';
 import { TranslocoHttpLoader } from './transloco-loader';
 import { SearchService } from '@services/search.service';
-
-// _DEV
-import { StatusService } from '@dev/services/status.service';
-import { LogsService } from '@dev/services/logs.service';
-import { ElasticService } from '@dev/services/elastic.service';
+import { EntitiesService } from '@services/entities.service';
+import { FiltersService } from '@services/filters.service';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -19,6 +22,8 @@ export const appConfig: ApplicationConfig = {
         LogsService,
         ElasticService,
         SearchService,
+        EntitiesService,
+        FiltersService,
         provideHttpClient(),
         provideRouter(routes), 
         provideAnimationsAsync(),
