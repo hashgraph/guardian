@@ -13,8 +13,8 @@ context("Trustchains", { tags: '@trustchains' },() => {
             }
         }).then((responseWithRT) => {
             cy.request({
-                method: "POST",
-                url: API.ApiServer + "accounts/access-token",
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: responseWithRT.body.refreshToken
                 }
@@ -44,8 +44,8 @@ context("Trustchains", { tags: '@trustchains' },() => {
             }
         }).then((responseWithRT) => {
             cy.request({
-                method: "POST",
-                url: API.ApiServer+"accounts/access-token",
+                method: METHOD.POST,
+                url: API.ApiServer+API.AccessToken,
                 body: {
                     refreshToken: responseWithRT.body.refreshToken
                 }

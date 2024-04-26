@@ -7,7 +7,7 @@ context('Policies', { tags: '@policies' }, () => {
 
     it('Imports new policy and all associated artifacts from file', () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.PolicisImportMsg,
             body: {messageId: (Cypress.env('policy_with_artifacts'))}, //Remote Work GHG Policy
             headers: {
@@ -16,7 +16,7 @@ context('Policies', { tags: '@policies' }, () => {
             timeout: 300000
         })
             .then((response) => {
-                expect(response.status).to.eq(201);
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             })
     })
 })

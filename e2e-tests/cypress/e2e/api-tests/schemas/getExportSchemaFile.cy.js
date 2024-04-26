@@ -23,7 +23,7 @@ context("Schema", { tags: '@schemas' }, () => {
                     authorization,
                 },
             }).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body).to.not.be.oneOf([null, ""]);
                 let schema = Cypress.Blob.arrayBufferToBinaryString(
                     response.body

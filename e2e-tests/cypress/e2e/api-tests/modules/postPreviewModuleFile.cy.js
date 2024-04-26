@@ -16,8 +16,8 @@ context("Modules", { tags: '@modules' },() => {
                         authorization,
                     },
                     timeout: 180000,
-                }).then((resp) => {
-                    expect(resp.status).eql(STATUS_CODE.OK);
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
                 });
             });
     });

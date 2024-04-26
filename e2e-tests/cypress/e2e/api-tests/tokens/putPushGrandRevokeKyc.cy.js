@@ -12,10 +12,10 @@ context("Tokens", { tags: "@tokens" }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
 
-            const tokenId = resp.body[0].tokenId;
+            const tokenId = response.body[0].tokenId;
 
             cy.request({
                 method: METHOD.PUT,
@@ -30,8 +30,8 @@ context("Tokens", { tags: "@tokens" }, () => {
                 headers: {
                     authorization,
                 },
-            }).then((resp) => {
-                expect(resp.status).eql(STATUS_CODE.ACCEPTED);
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.ACCEPTED);
             });
         });
     });
@@ -43,10 +43,10 @@ context("Tokens", { tags: "@tokens" }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
 
-            const tokenId = resp.body[0].tokenId;
+            const tokenId = response.body[0].tokenId;
 
             cy.request({
                 method: METHOD.PUT,
@@ -61,8 +61,8 @@ context("Tokens", { tags: "@tokens" }, () => {
                 headers: {
                     authorization,
                 },
-            }).then((resp) => {
-                expect(resp.status).eql(STATUS_CODE.ACCEPTED);
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.ACCEPTED);
             });
         });
     });

@@ -13,7 +13,7 @@ context('Settings',{ tags: '@settings' },  () => {
             },
         })
             .then((response) => {
-                expect(response.status).to.eq(200)
+                expect(response.status).to.eq(STATUS_CODE.OK)
                 expect(response.body).to.have.property('ipfsStorageApiKey')
                 expect(response.body).to.have.property('operatorId')
                 expect(response.body).to.have.property('operatorKey')

@@ -13,11 +13,11 @@ context("Schemas", {tags: '@schemas'}, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            topicUid = resp.body[0].topicId;
+        }).then((response) => {
+            topicUid = response.body[0].topicId;
             //Create new schema
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.Schemas + topicUid,
                 headers: {authorization},
                 body: {
@@ -40,13 +40,13 @@ context("Schemas", {tags: '@schemas'}, () => {
                 headers: {
                     authorization,
                 },
-            }).then((resp) => {
-                expect(resp.status).eql(STATUS_CODE.OK);
-                const schemaId = resp.body.at(0).id;
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                const schemaId = response.body.at(0).id;
                 const versionNum = ("1." + Math.floor(Math.random() * 999))
                 //Publish schema
                 cy.request({
-                    method: "PUT",
+                    method: METHOD.PUT,
                     url: API.ApiServer + API.Schemas + "push/" + schemaId + "/publish",
                     headers: {authorization},
                     body: {

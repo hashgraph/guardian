@@ -12,13 +12,13 @@ context("Tokens", { tags: "@tokens" }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body[0]).to.have.property("_id");
-            expect(resp.body[0]).to.have.property("tokenId");
-            expect(resp.body[0]).to.have.property("tokenName");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body[0]).to.have.property("_id");
+            expect(response.body[0]).to.have.property("tokenId");
+            expect(response.body[0]).to.have.property("tokenName");
 
-            const topicUid = resp.body[0].tokenId;
+            const topicUid = response.body[0].tokenId;
 
             cy.request({
                 method: METHOD.GET,
@@ -32,9 +32,9 @@ context("Tokens", { tags: "@tokens" }, () => {
                 headers: {
                     authorization,
                 },
-            }).then((resp) => {
-                expect(resp.status).eql(STATUS_CODE.OK);
-                expect(resp.body).to.not.be.oneOf([null, ""]);
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body).to.not.be.oneOf([null, ""]);
             });
         });
     });

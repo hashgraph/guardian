@@ -13,8 +13,8 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
             }
         }).then((responseWithRT) => {
             cy.request({
-                method: "POST",
-                url: API.ApiServer + "accounts/access-token",
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: responseWithRT.body.refreshToken
                 }
@@ -46,8 +46,8 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
     //         }
     //     }).then((responseWithRT) => {
     //         cy.request({
-    //             method: "POST",
-    //             url: API.ApiServer + "accounts/access-token",
+    //             method: METHOD.POST,
+    //             url: API.ApiServer + API.AccessToken,
     //             body: {
     //                 refreshToken: responseWithRT.body.refreshToken
     //             }
@@ -61,7 +61,7 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
     //                     authorization: accessToken
     //                 }
     //             }).then((response) => {
-    //                 expect(response.status).to.eq(200);
+    //                 expect(response.status).to.eq(STATUS_CODE.OK);
     //                 let hash = response.body[0].hash;
     //                 cy.request({
     //                     method: 'GET',
@@ -70,7 +70,7 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
     //                         authorization: accessToken
     //                     }
     //                 }).then((response) => {
-    //                     expect(response.status).to.eq(200);
+    //                     expect(response.status).to.eq(STATUS_CODE.OK);
     //                 })
     //             })
     //         })

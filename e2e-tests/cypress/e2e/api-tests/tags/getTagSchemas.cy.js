@@ -10,7 +10,7 @@ context("Tags", {tags: '@tags'}, () => {
 
     before(() => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Tags + "schemas",
             headers: {
                 authorization,
@@ -92,7 +92,7 @@ context("Tags", {tags: '@tags'}, () => {
     it("Get all schemas", () => {
         //get published tag schemas
         cy.request({
-            method: "GET",
+            method: METHOD.GET,
             url: API.ApiServer + API.Tags + "schemas/",
             headers: {
                 authorization,

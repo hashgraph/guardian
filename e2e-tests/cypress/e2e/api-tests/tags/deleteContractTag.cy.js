@@ -11,7 +11,7 @@ context("Tags", {tags: '@tags'}, () => {
 
     before(() => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.ListOfContracts,
             headers: {
                 authorization,

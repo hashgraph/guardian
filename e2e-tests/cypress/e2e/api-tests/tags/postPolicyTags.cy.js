@@ -13,7 +13,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create a policy for tag addition
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Policies,
             headers: {
                 authorization,

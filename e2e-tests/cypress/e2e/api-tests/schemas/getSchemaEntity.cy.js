@@ -23,8 +23,8 @@ context("Schemas",  { tags: '@schemas' }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
         });
     });
 });

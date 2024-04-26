@@ -7,19 +7,19 @@ context("Policies", { tags: '@policies' }, () => {
 
     it("Update policy configuration for the specified policy ID", () => {
         const urlPolicies = {
-            method: "GET",
-            url: API.ApiServer + "policies",
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
         };
 
         cy.request(urlPolicies).then((response) => {
-            expect(response.status).to.eq(200);
+            expect(response.status).to.eq(STATUS_CODE.OK);
             const policyId = response.body.at(-1).id;
 
             const urlPoliciesId = {
-                method: "PUT",
+                method: METHOD.PUT,
                 url: API.ApiServer + "policies/" + policyId,
                 headers: {
                     authorization,
@@ -48,7 +48,7 @@ context("Policies", { tags: '@policies' }, () => {
                 },
             };
             cy.request(urlPoliciesId).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
             });
         });
     });

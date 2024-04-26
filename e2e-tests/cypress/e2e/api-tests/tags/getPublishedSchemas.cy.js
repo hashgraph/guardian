@@ -11,7 +11,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create tag schema for publish
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Tags + "schemas",
             headers: {
                 authorization,
@@ -88,7 +88,7 @@ context("Tags", {tags: '@tags'}, () => {
         }).then((response) => {
             schemaId = response.body.id;
             cy.request({
-                method: "PUT",
+                method: METHOD.PUT,
                 url: API.ApiServer + API.Tags + "schemas/" + schemaId + "/publish",
                 headers: {
                     authorization,
@@ -101,7 +101,7 @@ context("Tags", {tags: '@tags'}, () => {
     it("Get a list of all published schemas", () => {
         //get published tag schemas
         cy.request({
-            method: "GET",
+            method: METHOD.GET,
             url: API.ApiServer + API.Tags + "schemas/" + "published",
             headers: {
                 authorization,

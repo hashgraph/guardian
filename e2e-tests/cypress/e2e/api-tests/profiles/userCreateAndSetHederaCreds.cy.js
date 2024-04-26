@@ -13,8 +13,8 @@ context('Profiles', {tags: '@profiles'}, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            did = resp.body[0].did
+        }).then((response) => {
+            did = response.body[0].did
         });
     });
 
@@ -33,7 +33,7 @@ context('Profiles', {tags: '@profiles'}, () => {
         };
         cy.request(options)
             .then((response) => {
-                expect(response.status).to.eq(201)
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS)
                 expect(response.body.username).to.equal(name)
                 expect(response.body.role).to.equal('USER')
                 cy.request({
@@ -89,7 +89,7 @@ context('Profiles', {tags: '@profiles'}, () => {
                 let role = response.body.role
                 let username = response.body.username
 
-                expect(response.status).to.eq(201)
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS)
                 expect(username).to.equal(name)
                 expect(role).to.equal('USER')
 
@@ -103,7 +103,7 @@ context('Profiles', {tags: '@profiles'}, () => {
                     }
                 })
                     .then((response) => {
-                        expect(response.status).to.eq(200)
+                        expect(response.status).to.eq(STATUS_CODE.OK)
                         let accessToken = 'bearer ' + response.body.accessToken
                         cy.request({
                             method: 'PUT',
@@ -126,7 +126,7 @@ context('Profiles', {tags: '@profiles'}, () => {
                             timeout: 200000
                         })
                             .then((response) => {
-                                expect(response.status).to.eq(401)
+                                expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
                             })
                     })
             })

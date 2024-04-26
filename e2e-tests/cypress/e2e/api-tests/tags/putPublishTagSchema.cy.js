@@ -11,7 +11,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create tag schema for publish
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Tags + "schemas",
             headers: {
                 authorization,
@@ -93,7 +93,7 @@ context("Tags", {tags: '@tags'}, () => {
     it("Publish the schema with the provided (internal) schema ID", () => {
         //publish tag schema
         cy.request({
-            method: "PUT",
+            method: METHOD.PUT,
             url: API.ApiServer + API.Tags + "schemas/" + schemaId + "/publish",
             headers: {
                 authorization,

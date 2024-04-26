@@ -29,7 +29,7 @@ context(" Policies", { tags: '@policies' }, () => {
             .then((response) => {
               let secondPolicyId = response.body.policies.at(-1).id
               let policyStatus = response.body.policies.at(-1).status
-              expect(response.status).to.eq(200)
+              expect(response.status).to.eq(STATUS_CODE.OK)
               expect(response.body).to.not.be.oneOf([null, ""])
               expect(firstPolicyId).to.equal(secondPolicyId)
               expect(policyStatus).to.equal('PUBLISH')
@@ -39,11 +39,11 @@ context(" Policies", { tags: '@policies' }, () => {
 
     it("Validate the policy", () => {
         cy.request({
-            method: "GET",
-            url: API.ApiServer + "policies",
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies,
             headers: { authorization }
         }).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
                 const policyId = response.body.at(-1).id;
                 cy.request({
                     method: 'GET',
@@ -59,7 +59,7 @@ context(" Policies", { tags: '@policies' }, () => {
                     const topicId = response.body.topicId;
 
                     cy.request({
-                        method: "POST",
+                        method: METHOD.POST,
                         url: API.ApiServer + "policies/validate",
                         headers: { authorization },
                         body:
@@ -72,7 +72,7 @@ context(" Policies", { tags: '@policies' }, () => {
                                 topicId
                             }
                     }).then((response) => {
-                        expect(response.status).to.eq(200);
+                        expect(response.status).to.eq(STATUS_CODE.OK);
                     });
                 })
             });

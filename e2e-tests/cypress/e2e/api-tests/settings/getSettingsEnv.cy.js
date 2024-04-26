@@ -11,9 +11,9 @@ context("Settings", { tags: '@settings' }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).eql("testnet");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body).eql("testnet");
         });
     });
 });

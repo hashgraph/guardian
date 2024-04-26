@@ -10,7 +10,7 @@ context("Tags", {tags: '@tags'}, () => {
     it("Create new schema", () => {
         //create tag schema
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Tags + "schemas",
             headers: {
                 authorization,

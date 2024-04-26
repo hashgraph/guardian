@@ -14,7 +14,7 @@ context('Profiles', { tags: '@profiles' },() => {
             }};
         cy.request(options)
           .should((response) => {
-            expect(response.status).to.eq(200)
+            expect(response.status).to.eq(STATUS_CODE.OK)
             expect(response.body).to.have.property('confirmed')
             expect(response.body).to.have.property('failed')
             expect(response.body).to.have.property('username', Cypress.env('root_user'))

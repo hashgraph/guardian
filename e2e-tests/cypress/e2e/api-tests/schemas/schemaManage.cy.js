@@ -13,11 +13,11 @@ context("Schemas", {tags: '@schemas'}, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            topicUid = resp.body.at(-1).topicId;
+        }).then((response) => {
+            topicUid = response.body.at(-1).topicId;
             //Create new schema
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.Schemas + topicUid,
                 headers: {authorization},
                 body: {
@@ -50,7 +50,7 @@ context("Schemas", {tags: '@schemas'}, () => {
 
             //Delete schema
             cy.request({
-                method: "DELETE",
+                method: METHOD.DELETE,
                 url: API.ApiServer + API.Schemas + schemaId,
                 headers: { authorization },
             }).then((response) => {

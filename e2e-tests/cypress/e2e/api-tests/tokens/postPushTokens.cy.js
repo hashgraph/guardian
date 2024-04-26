@@ -6,7 +6,7 @@ context("Tokens", { tags: '@tokens' },() => {
 
     it("Push create a new token", () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.ListOfTokens + "push",
             headers: { authorization },
             body: {

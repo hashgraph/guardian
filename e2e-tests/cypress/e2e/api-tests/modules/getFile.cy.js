@@ -20,9 +20,9 @@ context("Modules", { tags: '@modules' },() => {
                     "blockType": "module"
                 }
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
-            moduleId = resp.body.uuid;
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
+            moduleId = response.body.uuid;
         });
     });
 
@@ -33,9 +33,9 @@ context("Modules", { tags: '@modules' },() => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).to.not.be.oneOf([null, ""]);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body).to.not.be.oneOf([null, ""]);
         });
     });
 });

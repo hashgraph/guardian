@@ -9,8 +9,8 @@ context("Schemas", { tags: '@schemas' }, () => {
             method: METHOD.GET,
             url: API.ApiServer + API.SchemasType,
             headers: { authorization, type: "array" },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
         });
     });
 });

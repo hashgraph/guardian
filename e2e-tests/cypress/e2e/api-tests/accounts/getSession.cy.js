@@ -48,7 +48,7 @@ context('Accounts', { tags: '@accounts' }, () => {
                         authorization: "Bearer " + response.body.accessToken
                     }
                 }).then((response) => {
-                    expect(response.status).to.eq(200)
+                    expect(response.status).to.eq(STATUS_CODE.OK)
                     expect(response.body).to.have.property('id')
                     expect(response.body).to.have.property('password')
                     expect(response.body.role).eq('USER')
@@ -67,7 +67,7 @@ context('Accounts', { tags: '@accounts' }, () => {
     //         },
     //         failOnStatusCode: false
     //     }).then((response) => {
-    //         expect(response.status).to.eq(401)
+    //         expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
     //     })
     // })
     //
@@ -81,7 +81,7 @@ context('Accounts', { tags: '@accounts' }, () => {
     //         },
     //         failOnStatusCode: false
     //     }).then((response) => {
-    //         expect(response.status).to.eq(401)
+    //         expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
     //     })
     // })
     //
@@ -93,7 +93,7 @@ context('Accounts', { tags: '@accounts' }, () => {
     //         },
     //         failOnStatusCode: false
     //     }).then((response) => {
-    //         expect(response.status).to.eq(401)
+    //         expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
     //     })
     // })
 })

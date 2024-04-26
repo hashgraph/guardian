@@ -11,7 +11,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create tag schema for delete
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Tags + "schemas",
             headers: {
                 authorization,
@@ -93,7 +93,7 @@ context("Tags", {tags: '@tags'}, () => {
     it("Delete tag(schema)", () => {
         //delete tag schema
         cy.request({
-            method: "DELETE",
+            method: METHOD.DELETE,
             url: API.ApiServer + API.Tags + "schemas/" + schemaId,
             headers: {
                 authorization,

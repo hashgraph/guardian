@@ -12,11 +12,11 @@ context("Schemas", { tags: '@schemas' }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            const topicUid = resp.body.at(-1).topicId;
+        }).then((response) => {
+            const topicUid = response.body.at(-1).topicId;
             //Create new schema
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.Schemas + topicUid,
                 headers: { authorization },
                 body: {
@@ -50,7 +50,7 @@ context("Schemas", { tags: '@schemas' }, () => {
             const versionNum = "1." + Math.floor(Math.random() * 999);
             //Publish schema
             cy.request({
-                method: "PUT",
+                method: METHOD.PUT,
                 url:
                     API.ApiServer +
                     API.Schemas +

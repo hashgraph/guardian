@@ -11,7 +11,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create tag schema for edit
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Tags + "schemas",
             headers: {
                 authorization,
@@ -95,7 +95,7 @@ context("Tags", {tags: '@tags'}, () => {
     it("Update the schema with the provided schema ID", () => {
         //edit tag schema
         cy.request({
-            method: "PUT",
+            method: METHOD.PUT,
             url: API.ApiServer + API.Tags + "schemas/" + schemaId,
             headers: {
                 authorization,

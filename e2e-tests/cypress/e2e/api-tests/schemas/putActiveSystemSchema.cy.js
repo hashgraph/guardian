@@ -9,7 +9,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("Make the created scheme active", () => {
         //Create new schema
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.SchemasSystem + username,
             headers: { authorization },
             body: {
@@ -31,16 +31,16 @@ context("Schemas", { tags: '@schemas' }, () => {
                 headers: {
                     authorization,
                 },
-            }).then((resp) => {
-                expect(resp.status).eql(STATUS_CODE.OK);
-                expect(resp.body[0]).to.have.property("uuid");
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body[0]).to.have.property("uuid");
 
-                let schemaId = resp.body.at(0).id;
+                let schemaId = response.body.at(0).id;
 
                 const versionNum = "1." + Math.floor(Math.random() * 999);
 
                 cy.request({
-                    method: "PUT",
+                    method: METHOD.PUT,
                     url:
                         API.ApiServer +
                         API.SchemasSystem +

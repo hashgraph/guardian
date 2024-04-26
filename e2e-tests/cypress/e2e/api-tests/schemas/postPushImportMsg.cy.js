@@ -11,8 +11,8 @@ context("Schemas",{ tags: '@schemas' },  () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            const topicUid = resp.body[0].topicId;
+        }).then((response) => {
+            const topicUid = response.body[0].topicId;
             cy.request({
                 method: METHOD.POST,
                 url:

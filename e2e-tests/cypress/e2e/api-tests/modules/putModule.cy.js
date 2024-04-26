@@ -21,9 +21,9 @@ context("Modules", { tags: '@modules' },() => {
                     "blockType": "module"
                 }
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
-            moduleId = resp.body.uuid;
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
+            moduleId = response.body.uuid;
         });
     });
 
@@ -42,12 +42,12 @@ context("Modules", { tags: '@modules' },() => {
                     "blockType": "module"
                 }
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
-            expect(resp.body).to.have.property("_id");
-            expect(resp.body).to.have.property("name", moduleName + "Test");
-            expect(resp.body).to.have.property("description", moduleName + "Test2");
-            expect(resp.body).to.have.property("status", "DRAFT");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
+            expect(response.body).to.have.property("_id");
+            expect(response.body).to.have.property("name", moduleName + "Test");
+            expect(response.body).to.have.property("description", moduleName + "Test2");
+            expect(response.body).to.have.property("status", "DRAFT");
         });
     });
 });

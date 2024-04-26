@@ -15,8 +15,8 @@ context("Modules", { tags: '@modules' },() => {
                 "messageId": Cypress.env('module_for_import')
             },
             timeout: 180000
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
         });
     });
 });

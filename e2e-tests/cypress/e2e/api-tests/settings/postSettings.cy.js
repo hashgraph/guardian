@@ -18,7 +18,7 @@ context('Settings', {tags: '@settings'}, () => {
             }
         })
             .then((response) => {
-                expect(response.status).to.eq(201)
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS)
             })
     })
 })

@@ -10,12 +10,12 @@ context("Modules", { tags: '@modules' },() => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            if (resp.body.length != 0) {
-                expect(resp.body.at(-1)).to.have.property("_id");
-                expect(resp.body.at(-1)).to.have.property("uuid");
-                expect(resp.body.at(-1)).to.have.property("status");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            if (response.body.length != 0) {
+                expect(response.body.at(-1)).to.have.property("_id");
+                expect(response.body.at(-1)).to.have.property("uuid");
+                expect(response.body.at(-1)).to.have.property("status");
             }
         });
     });

@@ -8,16 +8,16 @@ context('Profiles', { tags: '@profiles' },() => {
     it('Set Hedera credentials for the Installer', () => {
         let username = "Installer";
         cy.request({
-            method: "POST",
-            url: API.ApiServer + "accounts/login",
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountsLogin,
             body: {
                 username: username,
                 password: "test"
             }
         }).then((response) => {
             cy.request({
-                method: "POST",
-                url: API.ApiServer + "accounts/access-token",
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken
                 }

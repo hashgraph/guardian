@@ -15,7 +15,7 @@ context('Profiles', { tags: '@profiles' },() => {
            };
         cy.request(options)
           .should((response) => {
-            expect(response.status).to.eq(200)
+            expect(response.status).to.eq(STATUS_CODE.OK)
         })
     })
 })

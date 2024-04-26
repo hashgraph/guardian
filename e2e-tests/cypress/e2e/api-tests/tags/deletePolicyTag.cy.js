@@ -13,7 +13,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create policy and tag for tag deletion
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Policies,
             headers: {
                 authorization,

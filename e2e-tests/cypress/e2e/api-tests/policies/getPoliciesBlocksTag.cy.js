@@ -28,7 +28,7 @@ context("Policies", { tags: '@policies' }, () => {
             .then((response) => {
               let secondPolicyId = response.body.policies.at(-1).id
               let policyStatus = response.body.policies.at(-1).status
-              expect(response.status).to.eq(200)
+              expect(response.status).to.eq(STATUS_CODE.OK)
               expect(response.body).to.not.be.oneOf([null, ""])
               expect(firstPolicyId).to.equal(secondPolicyId)
               expect(policyStatus).to.equal('PUBLISH')
@@ -38,20 +38,20 @@ context("Policies", { tags: '@policies' }, () => {
 
     it("Get block data by tag", () => {
         const urlPolicies = {
-            method: "GET",
-            url: API.ApiServer + "policies",
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
         };
 
         cy.request(urlPolicies).then((response) => {
-            expect(response.status).to.eq(200);
+            expect(response.status).to.eq(STATUS_CODE.OK);
             const policyId = response.body.at(-1).id;
             const tag = response.body.at(-1).policyTag;
 
             const url = {
-                method: "GET",
+                method: METHOD.GET,
                 url:
                     API.ApiServer +
                     "policies/" +
@@ -64,7 +64,7 @@ context("Policies", { tags: '@policies' }, () => {
                 timeout: 180000
             };
             cy.request(url).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
             });
         });
     });

@@ -14,10 +14,10 @@ context("Modules", { tags: '@modules' },() => {
             body: {
                 "messageId": Cypress.env('module_for_import')
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body.module).to.have.property("name");
-            expect(resp.body.module).to.have.property("description");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body.module).to.have.property("name");
+            expect(response.body.module).to.have.property("description");
         });
     });
 });

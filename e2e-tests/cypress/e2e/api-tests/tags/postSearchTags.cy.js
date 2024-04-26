@@ -12,7 +12,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create a contract for tag searching
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.ListOfContracts,
             headers: {
                 authorization,

@@ -11,8 +11,8 @@ context("Schemas", { tags: '@schemas' },() => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            const topicUid = resp.body[0].topicId;
+        }).then((response) => {
+            const topicUid = response.body[0].topicId;
             cy.request({
                 method: METHOD.POST,
                 url:
@@ -23,8 +23,8 @@ context("Schemas", { tags: '@schemas' },() => {
                 headers: {
                     authorization,
                 },
-            }).then((resp) => {
-                expect(resp.status).to.eq(STATUS_CODE.ACCEPTED);
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
             });
         });
     });
