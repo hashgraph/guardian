@@ -32,18 +32,6 @@ import { IPolicyUser, UserCredentials, PolicyUser, IHederaCredentials } from '..
 import { DocumentType } from '../interfaces/document.type.js';
 
 /**
- * Data types
- */
-export enum DataTypes {
-    MRV = 'mrv',
-    REPORT = 'report',
-    MINT = 'mint',
-    RETIREMENT = 'retirement',
-    USER_ROLE = 'user-role',
-    MULTI_SIGN = 'MULTI_SIGN'
-}
-
-/**
  * Policy engine utils
  */
 export class PolicyUtils {

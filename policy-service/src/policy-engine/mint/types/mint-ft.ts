@@ -2,6 +2,7 @@ import { MintRequest, NotificationHelper, Workers } from '@guardian/common';
 import {
     WorkerTaskType,
     MintTransactionStatus,
+    TokenType,
 } from '@guardian/interfaces';
 import { TypedMint } from './typed-mint.js';
 import { IHederaCredentials } from '../../policy-user.js';
@@ -55,6 +56,8 @@ export class MintFT extends TypedMint {
             vpMessageId: string;
             memo: string;
             tokenId: string;
+            tokenType: TokenType;
+            decimals: number;
             secondaryVpIds?: string[];
         },
         root: IHederaCredentials,

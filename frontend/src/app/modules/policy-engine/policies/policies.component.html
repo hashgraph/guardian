@@ -28,9 +28,9 @@
                     class="tags-dropdown"
                     formControlName="tag"
                     placeholder="Tags"></p-dropdown>
-                <button (click)="applyFilters()" 
-			class="button ml-8" 
-			label="Apply Filters" 
+                <button (click)="applyFilters()"
+			class="button ml-8"
+			label="Apply Filters"
 			pButton></button>
                 <button (click)="clearFilters()"
                     [disabled]="!filtersForm.dirty"
@@ -340,6 +340,28 @@
             <svg-icon src="/assets/images/icons/export.svg" svgClass="primary-color"></svg-icon>
         </p-button>
 
+        <p-button (click)="['PUBLISH', 'DRY-RUN', 'DISCONTINUED'].includes(status) && exportPolicyData(id)"
+            [disabled]="!['PUBLISH', 'DRY-RUN', 'DISCONTINUED'].includes(status)" label="Export policy data"
+            class="policy-menu-btn" styleClass="p-button-outlined" [pTooltip]="'Export policy data'" tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/export.svg"
+                [svgClass]="['PUBLISH', 'DRY-RUN', 'DISCONTINUED'].includes(status) ? 'primary-color' : 'disabled-color'"></svg-icon>
+        </p-button>
+
+        <p-button (click)="exportVirtualKeys(id)"
+            *ngIf="'DRY-RUN' === status" label="Export virtual keys"
+            class="policy-menu-btn" styleClass="p-button-outlined" [pTooltip]="'Export virtual keys'" tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/export.svg"
+                [svgClass]="'primary-color'"></svg-icon>
+        </p-button>
+
+        <p-button (click)="importVirtualKeys(id)"
+            *ngIf="'DRY-RUN' === status" label="Import virtual keys"
+            class="policy-menu-btn" styleClass="p-button-outlined" [pTooltip]="'Import virtual keys'" tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/export.svg"
+                [svgClass]="'primary-color'"></svg-icon>
+        </p-button>
+
+
         <p-button
             (click)="exportToExcel(id)"
             label="Export schemas to Excel"
@@ -358,11 +380,11 @@
             styleClass="p-button-outlined"
             [pTooltip]="'Import schemas from excel'"
             tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/import.svg" 
+            <svg-icon src="/assets/images/icons/import.svg"
                 [svgClass]="status === 'DRAFT' ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button>
 
-        
+
         <div class="policy-menu-delimiter"></div>
 
         <p-button

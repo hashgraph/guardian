@@ -14,7 +14,7 @@ export interface MigrationConfig {
          * Destination policy
          */
         dst: string;
-    }
+    };
     /**
      * VC documents
      */
@@ -26,13 +26,28 @@ export interface MigrationConfig {
     /**
      * Schemas
      */
-    schemas: { [key: string]: string }
+    schemas: { [key: string]: string };
     /**
      * Groups
      */
-    groups: { [key: string]: string }
+    groups: { [key: string]: string };
     /**
      * Roles
      */
-    roles: { [key: string]: string }
+    roles: { [key: string]: string };
+
+    /**
+     * Blocks
+     */
+    blocks: { [key: string]: string };
+
+    /**
+     * Edited VCS
+     */
+    editedVCs: { [key: string]: any };
+
+    /**
+     * Migrate state
+     */
+    migrateState: boolean;
 }

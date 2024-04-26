@@ -289,4 +289,42 @@ export class PolicyEngineService {
     public getMethodologies(categoryIds?: string[], text?: string): Observable<any[]> {
         return this.http.post<any[]>(`${this.url}/methodologies/search`, { categoryIds, text });
     }
+
+    public exportPolicyData(policyId: string) {
+        return this.http.get(`${this.url}/${policyId}/data`, {
+            responseType: 'blob',
+            observe: 'response',
+        });
+    }
+
+    public exportVirtualKeys(policyId: string) {
+        return this.http.get(`${this.url}/${policyId}/virtual-keys`, {
+            responseType: 'blob',
+            observe: 'response',
+        });
+    }
+
+    public getTagBlockMap(policyId: string) {
+        return this.http.get<any>(`${this.url}/${policyId}/tag-block-map`);
+    }
+
+    public importData(data: any) {
+        return this.http.post<string>(`${this.url}/data`, data, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
+    public importVirtualKeys(policyId: string, data: any) {
+        return this.http.post<string>(
+            `${this.url}/${policyId}/virtual-keys`,
+            data,
+            {
+                headers: {
+                    'Content-Type': 'binary/octet-stream',
+                },
+            }
+        );
+    }
 }

@@ -411,6 +411,66 @@ export class PoliciesComponent implements OnInit {
             );
     }
 
+    public exportPolicyData(policyId: any) {
+        this.policyEngineService
+            .exportPolicyData(policyId)
+            .subscribe((response) => {
+                const fileName =
+                    response.headers
+                        ?.get('Content-Disposition')
+                        ?.split('filename=')[1]
+                        .split(';')[0] || '';
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    response.body as Blob
+                );
+                downloadLink.setAttribute('download', fileName);
+                downloadLink.click();
+            });
+    }
+
+    public exportVirtualKeys(policyId: any) {
+        this.policyEngineService
+            .exportVirtualKeys(policyId)
+            .subscribe((response) => {
+                const fileName =
+                    response.headers
+                        ?.get('Content-Disposition')
+                        ?.split('filename=')[1]
+                        .split(';')[0] || '';
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    response.body as Blob
+                );
+                downloadLink.setAttribute('download', fileName);
+                downloadLink.click();
+            });
+    }
+
+    private _input?: any;
+    public importVirtualKeys(policyId: any) {
+        const handler = () => {
+            input.removeEventListener('change', handler);
+            this._input = null;
+            this.loading = true;
+            this.policyEngineService
+                .importVirtualKeys(policyId, input.files![0])
+                .subscribe({
+                    complete: () => this.loading = false
+                });
+        };
+        if (this._input) {
+            this._input.removeEventListener('change', handler);
+            this._input = null;
+        }
+        const input = document.createElement('input');
+        this._input = input;
+        input.type = 'file';
+        input.accept = '.vk';
+        input.click();
+        input.addEventListener('change', handler);
+    }
+
     public importPolicy(messageId?: string) {
         const dialogRef = this.dialogService.open(ImportPolicyDialog, {
             header: 'Select action',
@@ -795,11 +855,11 @@ export class PoliciesComponent implements OnInit {
         const item = this.policies?.find((e) => e.id === policyId);
         const dialogRef = this.dialogService.open(MigrateData, {
             header: 'Migrate Data',
-            width: '650px',
+            width: '750px',
             styleClass: 'custom-dialog',
             data: {
                 policy: item,
-                policies: this.policies?.filter(item => [PolicyType.PUBLISH, PolicyType.DISCONTINUED].includes(item.status)),
+                policies: this.policies?.filter(item => [PolicyType.PUBLISH, PolicyType.DISCONTINUED, PolicyType.DRY_RUN].includes(item.status)),
             },
         });
         dialogRef.onClose.subscribe(async (result) => {
