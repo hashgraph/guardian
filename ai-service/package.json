@@ -32,8 +32,5 @@
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "resolutions": {
-    "@types/mime": "3.0.4"
-  },
   "type": "module"
 }
