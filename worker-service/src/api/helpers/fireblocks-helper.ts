@@ -4,13 +4,13 @@ import { FireblocksSDK, PeerType, TransactionOperation, TransactionResponse, Tra
 @Singleton
 export class FireblocksHelper{
 
-    private client: FireblocksSDK;
+    private readonly client: FireblocksSDK;
 
     constructor(
-        private apiKey: string,
-        private privateKey: string,
-        private vaultId: string,
-        private assetId: string,
+        private readonly apiKey: string,
+        private readonly privateKey: string,
+        private readonly vaultId: string,
+        private readonly assetId: string,
     ) {
         const baseUrl = process.env.FIREBLOCKS_BASEURL || 'https://api.fireblocks.io';
         this.client = new FireblocksSDK(this.privateKey, this.apiKey, baseUrl)
