@@ -15,7 +15,7 @@
         "@transmute/jsonld-schema": "0.7.0-unstable.80",
         "@transmute/security-context": "0.7.0-unstable.80",
         "@transmute/vc.js": "0.7.0-unstable.80",
-        "@web3-storage/access": "^18.1.0",
+        "@web3-storage/access": "^18.3.2",
         "@web3-storage/w3up-client": "^12.0.0",
         "axios": "^1.3.6",
         "axios-retry": "^3.2.4",
