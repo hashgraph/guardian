@@ -42,7 +42,7 @@
     "jszip": "^3.7.1",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
-    "mathjs": "^10.1.0",
+    "mathjs": "^12.4.2",
     "moment": "^2.29.2",
     "mongodb": "^6.5.0",
     "nats": "^2.6.1",
