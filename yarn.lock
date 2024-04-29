@@ -1592,20 +1592,20 @@
     mikro-orm "6.2.1"
     reflect-metadata "0.2.2"
 
-"@mikro-orm/migrations-mongodb@^6.1.11":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations-mongodb/-/migrations-mongodb-6.2.1.tgz#2c331382397e17e1601309dfc14482f93478052e"
-  integrity sha512-zqeYo7p/nbLd0QJ1edxK3cEb1hbZciUlOZ3owHybiFVYD96CsfXgzjYLc1C1npbe1uYfFB9iOOQ/7yEiHuwchg==
+"@mikro-orm/migrations-mongodb@^6.2.3":
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations-mongodb/-/migrations-mongodb-6.2.3.tgz#592e10bf4a659fa8443ec6de9dd188633f274dcc"
+  integrity sha512-ChZf1PIzl1JIqQsbJY7gctqvFSr8msWDuzQbTXzBi09zEoVP/F7ARS7rDA1EpzO8+AP0Xg3xgPJakNgh5oNogg==
   dependencies:
-    "@mikro-orm/mongodb" "6.2.1"
+    "@mikro-orm/mongodb" "6.2.3"
     fs-extra "11.2.0"
     mongodb "6.5.0"
     umzug "3.8.0"
 
-"@mikro-orm/mongodb@6.2.1", "@mikro-orm/mongodb@^6.1.11":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-6.2.1.tgz#62354bc5ba757341325e0be2ed942139e9017799"
-  integrity sha512-9rVDPmUh2jNlZKs2Pp7V+YOA4FISioEi+EvWFYVExbVuMWO67+iO/E6iWZZtWL/dkR4kwTKrfSOI6eckZmN6xw==
+"@mikro-orm/mongodb@6.2.3", "@mikro-orm/mongodb@^6.1.11":
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-6.2.3.tgz#9db60ab8590370fd2f0b2dc355fc8c54d23c1b3e"
+  integrity sha512-bXJU2monK41crlNtcupAEYChFAN5lLXOV3/jSppfmSmtLKfkXSpcRoFf5gOhi8fpVA2UDiRdO0YhP3FGB221cg==
   dependencies:
     bson "^6.4.0"
     mongodb "6.5.0"
