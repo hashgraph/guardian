@@ -933,10 +933,10 @@ export class HederaSDKHelper {
                         signData.vaultId,
                         signData.assetId,
                     );
-
-                    messageTransaction.setNodeAccountIds(Object.values(this.client.network) as AccountId[]);
+                    const accountIds = Object.values(this.client.network) as AccountId[];
+                    messageTransaction.setNodeAccountIds([accountIds[0]]);
                     messageTransaction = messageTransaction.freezeWith(client);
-                    // messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
+                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
                     const tx = await fireblocksClient.createTransaction(messageTransaction.toBytes());
 
                     if (!tx || !Array.isArray(tx.signedMessages)) {
@@ -947,7 +947,11 @@ export class HederaSDKHelper {
                     if (signedMessage) {
                         const pubKey = PublicKey.fromStringED25519(signedMessage.publicKey);
                         const signature = Buffer.from(signedMessage.signature.fullSig, 'hex');
-                        messageTransaction.addSignature(pubKey, signature);
+                        try {
+                            messageTransaction.addSignature(pubKey, signature);
+                        } catch (error) {
+                            throw new Error(error);
+                        }
                     }
                     break;
                 }
