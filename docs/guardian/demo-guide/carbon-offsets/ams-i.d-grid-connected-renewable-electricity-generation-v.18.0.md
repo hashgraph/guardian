@@ -26,6 +26,8 @@
 
 [Important Documents & Schemas](ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md#toc160021935)
 
+[Tools Referenced](ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md#toc160021936)
+
 [Token (Carbon Emission Reduction)](ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md#toc160021936)
 
 [Step by Step](ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md#toc160021937)
@@ -79,7 +81,9 @@ At Monitoring Periods:
 * Quantity of Biomass/Fossil Fuel Consumed
 * Net Calorific Value of Biomass&#x20;
 
-### Demo Video   <a href="#toc160021931" id="toc160021931"></a>
+### Demo Video
+
+[Youtube ](https://www.youtube.com/watch?v=QiH0R3NVKJo\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG\_\&index=3)&#x20;
 
 ### Policy Workflow  <a href="#toc160021932" id="toc160021932"></a>
 
@@ -88,8 +92,6 @@ At Monitoring Periods:
 ### Policy Guide  <a href="#toc160021933" id="toc160021933"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
-
-Policy:&#x20;
 
 ### Available Roles  <a href="#toc160021934" id="toc160021934"></a>
 
@@ -101,12 +103,15 @@ Policy:&#x20;
 
 ### Important Documents & Schemas  <a href="#toc160021935" id="toc160021935"></a>
 
-1. Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
-2. Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
-3. Methodological Tool 10 - Tool to determine the remaining lifetime of equipment.
-4. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
-5. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
-6. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  &#x20;
+1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.  &#x20;
+
+### Tools Referenced <a href="#toc160021936" id="toc160021936"></a>
+
+* Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+* Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
+* Methodological Tool 10 - Tool to determine the remaining lifetime of equipment.
 
 ### Token (Carbon Emission Reduction)  <a href="#toc160021936" id="toc160021936"></a>
 

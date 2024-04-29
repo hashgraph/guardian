@@ -4,6 +4,7 @@ import { Guardians } from '../../helpers/guardians.js';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 /**
  * Branding route
@@ -50,12 +51,12 @@ export class BrandingApi{
     }
 
     @Get('/')
+    @UseCache()
     async getBranding(): Promise<any> {
         try {
             const guardians = new Guardians();
             const brandingDataString = await guardians.getBranding();
-            const brandingData = JSON.parse(brandingDataString.config);
-            return brandingData;
+            return JSON.parse(brandingDataString.config);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;

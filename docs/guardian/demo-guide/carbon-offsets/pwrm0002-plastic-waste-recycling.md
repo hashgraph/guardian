@@ -30,7 +30,7 @@ Plastic waste presents an escalating environmental crisis, with over 300 million
 
 ## Demo Video
 
-Coming Soon
+[Youtube](https://youtu.be/S1nyOxvnf3A?si=IWd6maYKIurLq4jU)
 
 ## Policy Workflow
 
@@ -39,8 +39,6 @@ Coming Soon
 ## Policy Guide&#x20;
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
-
-Policy: &#x20;
 
 ## Available Roles&#x20;
 

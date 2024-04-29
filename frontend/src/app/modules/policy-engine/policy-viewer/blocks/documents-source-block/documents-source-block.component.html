@@ -77,12 +77,12 @@
                                     </mat-icon>
                                 </span>
                                 <span
-                                    *ngIf="option.type == 'serials' && element.serials"
+                                    *ngIf="option.type == 'serials' && getArray(element, option)"
                                     [title]="getText(element, option)"
                                     class="text serials"
                                 >
                                     <hedera-explorer
-                                        *ngFor="let serial of element.serials"
+                                        *ngFor="let serial of getArray(element, option)"
                                         [params]="serial.tokenId"
                                         [subParams]="serial.serial"
                                         subType="serials"

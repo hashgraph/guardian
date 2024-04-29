@@ -7,7 +7,8 @@ Table of contents
 * [Policy Workflow](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#policy-workflow)
 * [Policy Guide](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#policy-guide)
 * [Available Roles](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#available-roles)
-* [Important Documents \\& Schemas](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#important-documents--schemas)
+* [Important Documents & Schemas](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#important-documents--schemas)
+* [Tools Referenced](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#tools-referenced)
 * [Token(Carbon Emissions Reduction)](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#tokencarbon-emissions-reduction)
 * [Step By Step](cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation.md#step-by-step)
 
@@ -39,36 +40,33 @@ ACM0007 thus enables a practical solution to reduce grid emissions intensity in 
 
 ### Policy Guide <a href="#policy-guide" id="policy-guide"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp: 1706881469.628524368
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp
 
-#### Available Roles <a href="#available-roles" id="available-roles"></a>
+### Available Roles <a href="#available-roles" id="available-roles"></a>
 
 * Project participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
 * Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 * Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
-#### Important Documents & Schemas <a href="#important-documents--schemas" id="important-documents--schemas"></a>
+### Important Documents & Schemas <a href="#important-documents--schemas" id="important-documents--schemas"></a>
 
 * Project Description: Information on project participant, location, technology, configuration, crediting period etc.
 * Emission Reductions Calculation: Calculate and specify baseline emissions, project emissions and leakage as per methodology equations.
 * Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
 * Monitoring Report: Periodic monitoring report with data for monitored parameters and calculated emission reductions.
 
-#### Tools referenced:&#x20;
+### Tools referenced
 
-Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality
+* Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality
+* Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion&#x20;
+* Tool 07 - Tool to calculate the emission factor for an electricity system&#x20;
+* Tool 10 - Tool to determine the remaining lifetime of equipment
 
-Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion&#x20;
-
-Tool 07 - Tool to calculate the emission factor for an electricity system&#x20;
-
-Tool 10 - Tool to determine the remaining lifetime of equipment
-
-#### Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>
+### Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
-#### Step By Step <a href="#step-by-step" id="step-by-step"></a>
+### Step By Step <a href="#step-by-step" id="step-by-step"></a>
 
 1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
 

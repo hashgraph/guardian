@@ -14,6 +14,8 @@ import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -627,6 +629,10 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * use cache test dry run
+     * @param req
+     */
     @ApiOperation({
         summary: 'Returns a policy navigation.',
         description: 'Returns a policy navigation.',
@@ -647,17 +653,22 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/navigation')
     @HttpCode(HttpStatus.OK)
-    async getPolicyNavigation(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getPolicyNavigation(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.getNavigation(req.user, req.params.policyId));
+            return await engineService.getNavigation(req.user, req.params.policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * use cache need test
+     * @param req
+     */
     @ApiOperation({
         summary: 'Returns a list of groups the user is a member of.',
         description: 'Returns a list of groups the user is a member of.',
@@ -678,11 +689,12 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
-    async getPolicyGroups(@Req() req, @Response() res): Promise<any> {
+    // @UseCache()
+    async getPolicyGroups(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.getGroups(req.user, req.params.policyId));
+            return await engineService.getGroups(req.user, req.params.policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -793,6 +805,10 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Retrieves data for the policy root block.',
         description: 'Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.',
@@ -1825,13 +1841,17 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * @param req
+     */
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)
-    async getBlockAbout(@Req() req, @Response() res) {
+    @UseCache({ ttl: CACHE.LONG_TTL })
+    async getBlockAbout(@Req() req) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.blockAbout());
+            return await engineService.blockAbout();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2080,6 +2100,8 @@ export class PolicyApi {
         }
     }
 
+    /**
+     */
     @Get('/methodologies/categories')
     @ApiOperation({
         summary: 'Get all categories',
@@ -2097,7 +2119,8 @@ export class PolicyApi {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
-    async getPolicyCategoriesAsync(@Req() req): Promise<any> {
+    @UseCache()
+    async getPolicyCategoriesAsync(): Promise<any> {
         try {
             const projectService = new ProjectService();
             return await projectService.getPolicyCategories();

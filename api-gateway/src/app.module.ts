@@ -38,6 +38,8 @@ import { RolesGuard } from './auth/roles-guard.js';
 import { RecordApi } from './api/service/record.js';
 import { ProjectsAPI } from './api/service/project.js';
 import { AISuggestionsAPI } from './api/service/ai-suggestions.js';
+import { cacheProvider } from './helpers/cache-provider.js';
+import { CacheService } from './helpers/cache-service.js';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -107,7 +109,9 @@ const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
         NotificationService,
         AuthGuard,
         RolesGuard,
-        UsersService
+        UsersService,
+        cacheProvider,
+        CacheService,
     ]
 })
 export class AppModule {
