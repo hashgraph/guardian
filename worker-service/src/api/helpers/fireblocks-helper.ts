@@ -17,11 +17,6 @@ export class FireblocksHelper{
     }
 
     async createTransaction(message: Uint8Array) {
-        // const info = await this.client.getVaultAccountAsset(this.vaultId, this.assetId)
-        const w = await this.client.getVaultAccountById(this.vaultId);
-        console.log(w);
-        const a = await this.client.getVaultAccountAsset(this.vaultId, 'ETC_TEST');
-        console.log(a)
         try {
             const transaction = await this.client.createTransaction({
                 operation: TransactionOperation.RAW,

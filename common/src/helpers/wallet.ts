@@ -103,7 +103,7 @@ export class Wallet extends NatsService {
      */
     public async getUserSignOptions(user: IAuthUser): Promise<ISignOptions> {
         if (user.useFireblocksSigning) {
-            const signData = await this.getKey(user.walletToken, KeyType.FIREBLOCKS_KEY, user.did) as any;
+            const signData = JSON.parse(await this.getKey(user.walletToken, KeyType.FIREBLOCKS_KEY, user.did)) as any;
             if (signData) {
                 return {
                     signType: SignType.FIREBLOCKS,
