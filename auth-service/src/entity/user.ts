@@ -76,6 +76,12 @@ export class User extends BaseEntity implements IUser {
     refreshToken?: string;
 
     /**
+     * Use fireblocks signing
+     */
+    @Property({nullable: true})
+    useFireblocksSigning: boolean;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

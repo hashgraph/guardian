@@ -1,8 +1,9 @@
 import { Singleton } from '../decorators/singleton.js';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Wallet as WalletManager} from '../wallet/index.js'
+import { GenerateUUIDv4, ISignOptions, SignType } from '@guardian/interfaces';
+import { Wallet as WalletManager } from '../wallet/index.js'
 import { NatsService } from '../mq/index.js';
 import { Users } from './users.js';
+import { IAuthUser } from '../interfaces';
 
 /**
  * Key type
@@ -18,7 +19,8 @@ export enum KeyType {
     TOKEN_KYC_KEY = 'TOKEN_KYC_KEY',
     TOKEN_WIPE_KEY = 'TOKEN_WIPE_KEY',
     TOPIC_SUBMIT_KEY = 'TOPIC_SUBMIT_KEY',
-    TOPIC_ADMIN_KEY = 'TOPIC_ADMIN_KEY'
+    TOPIC_ADMIN_KEY = 'TOPIC_ADMIN_KEY',
+    FIREBLOCKS_KEY = 'FIREBLOCKS_KEY',
 }
 
 /**
@@ -93,5 +95,29 @@ export class Wallet extends NatsService {
 
         const wallet = new WalletManager();
         await wallet.setKey(walletToken, type, key, value);
+    }
+
+    /**
+     * Get user sign options
+     * @param user
+     */
+    public async getUserSignOptions(user: IAuthUser): Promise<ISignOptions> {
+        if (user.useFireblocksSigning) {
+            const signData = JSON.parse(await this.getKey(user.walletToken, KeyType.FIREBLOCKS_KEY, user.did)) as any;
+            if (signData) {
+                return {
+                    signType: SignType.FIREBLOCKS,
+                    data: {
+                        apiKey: signData.fireBlocksApiKey,
+                        privateKey: signData.fireBlocksPrivateiKey,
+                        assetId: signData.fireBlocksAssetId,
+                        vaultId: signData.fireBlocksVaultId
+                    },
+                }
+            }
+        }
+        return {
+            signType: SignType.INTERNAL
+        }
     }
 }

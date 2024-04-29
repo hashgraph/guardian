@@ -1,26 +1,5 @@
-import {
-    DatabaseServer,
-    KeyType,
-    MessageAction,
-    MessageServer,
-    TopicConfig,
-    Users,
-    VCMessage,
-    VPMessage,
-    VcDocument,
-    VcDocumentDefinition,
-    VcHelper,
-    VpDocument,
-    VpDocumentDefinition,
-    Wallet,
-} from '@guardian/common';
-import {
-    DocumentStatus,
-    MigrationConfig,
-    Schema,
-    SchemaCategory,
-    SchemaHelper,
-} from '@guardian/interfaces';
+import { DatabaseServer, KeyType, MessageAction, MessageServer, TopicConfig, Users, VcDocument, VcDocumentDefinition, VcHelper, VCMessage, VpDocument, VpDocumentDefinition, VPMessage, Wallet, } from '@guardian/common';
+import { DocumentStatus, MigrationConfig, Schema, SchemaCategory, SchemaHelper, } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 
 export class PolicyDataMigrator {
@@ -133,6 +112,7 @@ export class PolicyDataMigrator {
                 KeyType.KEY,
                 owner
             );
+            const signOptions = await this._wallet.getUserSignOptions(root);
             const topic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicById(dstModel.instanceTopicId),
                 true
@@ -200,7 +180,8 @@ export class PolicyDataMigrator {
 
                     const messageServer = new MessageServer(
                         root.hederaAccountId,
-                        rootKey
+                        rootKey,
+                        signOptions
                     );
                     const vcMessage = new VCMessage(MessageAction.MigrateVC);
                     vcMessage.setDocument(vc);
@@ -275,7 +256,8 @@ export class PolicyDataMigrator {
                     this._notifier?.info(`Publishing VP ${doc.id}`);
                     const messageServer = new MessageServer(
                         root.hederaAccountId,
-                        rootKey
+                        rootKey,
+                        signOptions
                     );
                     const vpMessage = new VPMessage(MessageAction.MigrateVP);
                     vpMessage.setDocument(vp);

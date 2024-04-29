@@ -10,7 +10,7 @@ import { publishTokenTags } from './tag.service.js';
  * @param user
  */
 export async function createHederaToken(token: any, user: IRootConfig) {
-    const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey);
+    const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
     const topic = await topicHelper.create({
         type: TopicType.TokenTopic,
         name: TopicType.TokenTopic,

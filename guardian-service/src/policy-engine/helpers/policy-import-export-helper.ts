@@ -1,48 +1,12 @@
-
-import {
-    BlockType,
-    ConfigType,
-    GenerateUUIDv4,
-    ModuleStatus,
-    PolicyToolMetadata,
-    PolicyType,
-    SchemaCategory,
-    SchemaEntity,
-    TagType,
-    TopicType
-} from '@guardian/interfaces';
+import { BlockType, ConfigType, GenerateUUIDv4, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
 import { publishSystemSchemas } from '../../api/helpers/schema-publish-helper.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier } from '../../helpers/notifier.js';
-import {
-    DataBaseHelper,
-    DatabaseServer,
-    IPolicyComponents,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    Policy,
-    PolicyMessage,
-    regenerateIds,
-    replaceAllEntities,
-    replaceAllVariables,
-    replaceArtifactProperties,
-    Schema,
-    SchemaFields,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users
-} from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, IPolicyComponents, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
 import { SchemaImportResult } from '../../api/helpers/schema-helper.js';
 import { HashComparator } from '../../analytics/index.js';
-import {
-    importSubTools,
-    importSchemaByFiles,
-    importTokensByFiles,
-    importArtifactsByFiles
-} from '../../api/helpers/index.js';
+import { importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles } from '../../api/helpers/index.js';
 
 /**
  * Policy import export helper
@@ -158,7 +122,7 @@ export class PolicyImportExportHelper {
         const parent = await TopicConfig.fromObject(
             await DatabaseServer.getTopicByType(policyOwner, TopicType.UserTopic), true
         );
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
 
         let topicRow: TopicConfig;
         if (versionOfTopicId) {
@@ -180,7 +144,7 @@ export class PolicyImportExportHelper {
 
         if (!versionOfTopicId) {
             notifier.completedAndStart('Publish Policy in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(policy);
             const messageStatus = await messageServer

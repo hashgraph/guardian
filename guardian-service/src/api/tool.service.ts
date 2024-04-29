@@ -1,32 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    BinaryMessageResponse,
-    DatabaseServer,
-    Logger,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    MessageType,
-    ToolMessage,
-    PolicyTool,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    ToolImportExport,
-    RunFunctionAsync,
-    SchemaFields,
-    replaceAllEntities,
-    replaceAllVariables,
-    Hashing
-} from '@guardian/common';
-import {
-    IRootConfig,
-    MessageAPI,
-    ModuleStatus,
-    SchemaStatus,
-    TopicType
-} from '@guardian/interfaces';
+import { BinaryMessageResponse, DatabaseServer, Hashing, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
 import { incrementSchemaVersion } from '../api/helpers/schema-helper.js';
@@ -74,7 +48,7 @@ export async function preparePreviewMessage(
 
     const users = new Users();
     const root = await users.getHederaAccount(owner);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer.getMessage<ToolMessage>(messageId);
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
@@ -157,14 +131,14 @@ export async function publishTool(
 
         notifier.completedAndStart('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
         tool = await publishSchemas(tool, owner, root, notifier);
 
         notifier.completedAndStart('Create tags topic');
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const tagsTopic = await topicHelper.create({
             type: TopicType.TagsTopic,
             name: tool.name || TopicType.TagsTopic,
@@ -315,7 +289,7 @@ export async function createTool(
             const parent = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true
             );
-            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const topic = await topicHelper.create({
                 type: TopicType.ToolTopic,
                 name: tool.name || TopicType.ToolTopic,
@@ -327,7 +301,7 @@ export async function createTool(
             await topic.saveKeys();
 
             notifier.completedAndStart('Create tool in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const message = new ToolMessage(MessageType.Tool, MessageAction.CreateTool);
             message.setDocument(tool);
             const messageStatus = await messageServer

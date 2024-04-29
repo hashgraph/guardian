@@ -8,6 +8,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, AuditorGuard, StandardRegistryGuard, UserGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
+import { CheckboxModule } from 'primeng/checkbox';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -199,6 +200,7 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         ContractEngineModule,
         ProjectComparisonModule,
         DndModule,
+        CheckboxModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [],

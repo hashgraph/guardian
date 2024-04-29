@@ -1,31 +1,5 @@
-import {
-    DatabaseServer,
-    IToolComponents,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    PolicyTool,
-    SchemaFields,
-    TagMessage,
-    ToolImportExport,
-    ToolMessage,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    replaceAllEntities,
-    replaceAllVariables
-} from '@guardian/common';
-import {
-    BlockType,
-    GenerateUUIDv4,
-    IRootConfig,
-    ModuleStatus,
-    PolicyToolMetadata,
-    SchemaCategory,
-    SchemaStatus,
-    TagType,
-    TopicType
-} from '@guardian/interfaces';
+import { DatabaseServer, IToolComponents, MessageAction, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, SchemaFields, TagMessage, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BlockType, GenerateUUIDv4, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 import { importTag } from './tag-import-export-helper.js';
 import { importSchemaByFiles } from './schema-import-export-helper.js';
@@ -189,7 +163,8 @@ export async function importToolByMessage(
 
     const messageServer = new MessageServer(
         hederaAccount.hederaAccountId,
-        hederaAccount.hederaAccountKey
+        hederaAccount.hederaAccountKey,
+        hederaAccount.signOptions
     );
     if (!messageId || typeof messageId !== 'string') {
         throw new Error('Invalid Message Id');
@@ -393,7 +368,7 @@ export async function importToolByFile(
     const parent = await TopicConfig.fromObject(
         await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true
     );
-    const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+    const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const topic = await topicHelper.create({
         type: TopicType.ToolTopic,
         name: tool.name || TopicType.ToolTopic,
@@ -405,7 +380,7 @@ export async function importToolByFile(
     await topic.saveKeys();
 
     notifier.completedAndStart('Create tool in Hedera');
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = new ToolMessage(MessageType.Tool, MessageAction.CreateTool);
     message.setDocument(tool);
     const messageStatus = await messageServer

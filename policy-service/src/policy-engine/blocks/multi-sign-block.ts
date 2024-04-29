@@ -6,15 +6,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
-import {
-    PolicyRoles,
-    VcDocument as VcDocumentCollection,
-    MessageAction,
-    MessageServer,
-    VcHelper,
-    VcDocumentDefinition as VcDocument,
-    VPMessage,
-} from '@guardian/common';
+import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
 
@@ -229,6 +221,7 @@ export class MultiSignBlock {
             );
 
             const documentOwnerHederaCred = await documentOwnerCred.loadHederaCredentials(ref);
+            const signOptions = await documentOwnerCred.loadSignOptions(ref);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
@@ -237,6 +230,7 @@ export class MultiSignBlock {
             const messageServer = new MessageServer(
                 documentOwnerHederaCred.hederaAccountId,
                 documentOwnerHederaCred.hederaAccountKey,
+                signOptions,
                 ref.dryRun
             );
 

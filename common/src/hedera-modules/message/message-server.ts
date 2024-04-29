@@ -1,9 +1,5 @@
-import {
-    AccountId,
-    PrivateKey,
-    TopicId,
-} from '@hashgraph/sdk';
-import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
+import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
+import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
 import { IPFS, Logger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
@@ -58,13 +54,20 @@ export class MessageServer {
      */
     private readonly clientOptions: any;
 
+    /**
+     * Sign options
+     * @private
+     */
+    private readonly signOptions: ISignOptions;
+
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
+        signOptions: ISignOptions = {signType: SignType.INTERNAL},
         dryRun: string = null
     ) {
-
         this.clientOptions = { operatorId, operatorKey, dryRun };
+        this.signOptions = signOptions;
 
         this.dryRun = dryRun || null;
     }
@@ -226,6 +229,7 @@ export class MessageServer {
         if (!this.topicId) {
             throw new Error('Topic is not set');
         }
+
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
@@ -239,6 +243,7 @@ export class MessageServer {
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,
                 localNodeProtocol: Environment.localNodeProtocol,
+                signOptions: this.signOptions,
                 memo: memo || MessageMemo.getMessageMemo(message),
                 dryRun: this.dryRun,
             }

@@ -1,24 +1,7 @@
-import {
-    IRootConfig,
-    PolicyType,
-    WorkerTaskType
-} from '@guardian/interfaces';
+import { IRootConfig, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { CronJob } from 'cron';
 import { MintService } from '../mint/mint-service.js';
-import {
-    Logger,
-    Token,
-    DatabaseServer,
-    MultiPolicyTransaction,
-    Policy,
-    Users,
-    MessageAction,
-    MessageServer,
-    SynchronizationMessage,
-    TopicConfig,
-    Workers,
-    NotificationHelper,
-} from '@guardian/common';
+import { DatabaseServer, Logger, MessageAction, MessageServer, MultiPolicyTransaction, NotificationHelper, Policy, SynchronizationMessage, Token, TopicConfig, Users, Workers, } from '@guardian/common';
 
 /**
  * Synchronization Service
@@ -126,7 +109,7 @@ export class SynchronizationService {
             }
 
             const topic = new TopicConfig({ topicId: policy.synchronizationTopicId }, null, null);
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey).setTopicObject(topic);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions).setTopicObject(topic);
 
             const workers = new Workers();
             const messages = await workers.addRetryableTask({

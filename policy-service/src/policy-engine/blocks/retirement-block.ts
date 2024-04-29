@@ -3,7 +3,7 @@ import { BlockActionError } from '../errors/index.js';
 import { DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
+import { HederaDidDocument, MessageAction, MessageServer, Token as TokenCollection, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage } from '@guardian/common';
 import { DataTypes, PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -113,6 +113,7 @@ export class RetirementBlock {
 
         const didDocument = await root.loadDidDocument(ref);
         const hederaCred = await root.loadHederaCredentials(ref);
+        const signOptions = await root.loadSignOptions(ref);
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
@@ -121,7 +122,7 @@ export class RetirementBlock {
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(didDocument, uuid, vcs);
 
-        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
