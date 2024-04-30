@@ -2,9 +2,12 @@ import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Auth } from '../../auth/auth.decorator.js';
+import { UserRole } from '@guardian/interfaces';
 
 @Controller('themes')
 @ApiTags('themes')
+@Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
 export class ThemesApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
@@ -12,7 +15,7 @@ export class ThemesApi {
         try {
             const guardians = new Guardians();
             const item = await guardians.createTheme(req.body, req.user.did);
-            return res.status(201).json(item);
+            return res.status(201).send(item);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
             throw error;
@@ -21,6 +24,7 @@ export class ThemesApi {
 
     @Put('/:themeId')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async updateTheme(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -34,7 +38,7 @@ export class ThemesApi {
                 throw new HttpException('Theme not found.', HttpStatus.NOT_FOUND)
             }
             const theme = await guardians.updateTheme(req.params.themeId, newTheme, user.did);
-            return res.json(theme);
+            return res.send(theme);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -43,6 +47,7 @@ export class ThemesApi {
 
     @Delete('/:themeId')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async deleteTheme(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -50,7 +55,7 @@ export class ThemesApi {
                 throw new HttpException('Invalid theme id', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const result = await guardians.deleteTheme(req.params.themeId, req.user.did);
-            return res.json(result);
+            return res.send(result);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
             throw error;
@@ -59,6 +64,7 @@ export class ThemesApi {
 
     @Get('/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getThemes(@Req() req, @Response() res): Promise<any> {
         try {
             const user = req.user;
@@ -76,6 +82,7 @@ export class ThemesApi {
 
     @Post('/import/file')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async importTheme(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
@@ -89,12 +96,13 @@ export class ThemesApi {
 
     @Get('/:themeId/export/file')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async exportTheme(@Req() req, @Response() res): Promise<any> {
         const guardian = new Guardians();
         try {
             const file: any = await guardian.exportThemeFile(req.params.themeId, req.user.did);
-            res.setHeader('Content-disposition', `attachment; filename=theme_${Date.now()}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=theme_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

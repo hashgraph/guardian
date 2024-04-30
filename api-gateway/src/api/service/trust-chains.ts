@@ -2,18 +2,18 @@ import { Guardians } from '../../helpers/guardians.js';
 import { Users } from '../../helpers/users.js';
 import { IAuthUser, Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Req, Response } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import { UserRole } from '@guardian/interfaces';
 import { ApiTags } from '@nestjs/swagger';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('trust-chains')
 @ApiTags('trust-chains')
 export class TrustChainsApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.AUDITOR)
     async getTrustChains(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.AUDITOR)(req.user);
         try {
             const guardians = new Guardians();
             let pageIndex: any;
@@ -39,7 +39,7 @@ export class TrustChainsApi {
                 pageIndex,
                 pageSize
             });
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -52,8 +52,8 @@ export class TrustChainsApi {
     @Get('/:hash')
     @HttpCode(HttpStatus.OK)
     @UseCache()
+    @Auth(UserRole.AUDITOR)
     async getTrustChainByHash(@Req() req): Promise<any> {
-        await checkPermission(UserRole.AUDITOR)(req.user);
         try {
             const guardians = new Guardians();
             const hash = req.params.hash;

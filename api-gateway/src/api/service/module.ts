@@ -1,13 +1,13 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Query, Req, Res, Response } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { SchemaUtils } from '../../helpers/schema-utils.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('modules')
 @ApiTags('modules')
@@ -28,8 +28,8 @@ export class ModulesApi {
     })
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async postModules(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             const module = req.body;
@@ -37,7 +37,7 @@ export class ModulesApi {
                 throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const item = await guardian.createModule(module, req.user.did);
-            return res.status(201).json(item);
+            return res.status(201).send(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -122,8 +122,8 @@ export class ModulesApi {
     })
     @Get('/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getModules(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
 
@@ -138,7 +138,7 @@ export class ModulesApi {
                 pageIndex,
                 pageSize
             });
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -155,6 +155,7 @@ export class ModulesApi {
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
     @UseCache({ isExpress: true })
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getModuleSchemas(
         @Req() req,
         @Res() res,
@@ -162,7 +163,6 @@ export class ModulesApi {
         @Query('pageSize') pageSize,
         @Query('topicId') topicId
     ): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -180,8 +180,8 @@ export class ModulesApi {
             });
             res.locals.data = SchemaUtils.toOld(items)
             return res
-                .setHeader('X-Total-Count', count)
-                .json(SchemaUtils.toOld(items));
+                .header('X-Total-Count', count)
+                .send(SchemaUtils.toOld(items));
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
             throw error;
@@ -190,8 +190,8 @@ export class ModulesApi {
 
     @Post('/schemas')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async postSchemas(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -214,7 +214,7 @@ export class ModulesApi {
             SchemaHelper.updateOwner(newSchema, owner);
             const schema = await guardians.createSchema(newSchema);
 
-            return res.status(201).json(SchemaUtils.toOld(schema));
+            return res.status(201).send(SchemaUtils.toOld(schema));
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
             throw error;
@@ -228,15 +228,15 @@ export class ModulesApi {
     @ApiSecurity('bearerAuth')
     @Delete('/:uuid')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async deleteModule(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
                 throw new Error('Invalid uuid')
             }
             const result = await guardian.deleteModule(req.params.uuid, req.user.did);
-            return res.status(200).json(result);
+            return res.status(200).send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -271,8 +271,8 @@ export class ModulesApi {
     @Get('/menu')
     @HttpCode(HttpStatus.OK)
     @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getMenu(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             return await guardians.getMenuModule(req.user.did);
@@ -310,15 +310,15 @@ export class ModulesApi {
     })
     @Get('/:uuid')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getModule(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             if (!req.params.uuid) {
                 throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const item = await guardian.getModuleById(req.params.uuid, req.user.did);
-            return res.json(item);
+            return res.send(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -349,8 +349,8 @@ export class ModulesApi {
     })
     @Put('/:uuid')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async putModule(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         if (!req.params.uuid) {
             throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
         }
@@ -361,7 +361,7 @@ export class ModulesApi {
         }
         try {
             const result = await guardian.updateModule(req.params.uuid, module, req.user.did);
-            return res.status(201).json(result);
+            return res.status(201).send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -392,13 +392,13 @@ export class ModulesApi {
     })
     @Get('/:uuid/export/file')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async moduleExportFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const file: any = await guardian.exportModuleFile(req.params.uuid, req.user.did);
-            res.setHeader('Content-disposition', `attachment; filename=module_${Date.now()}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=module_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -430,8 +430,8 @@ export class ModulesApi {
     })
     @Get('/:uuid/export/message')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async moduleExportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             return res.send(await guardian.exportModuleMessage(req.params.uuid, req.user.did));
@@ -465,8 +465,8 @@ export class ModulesApi {
     })
     @Post('/import/message')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async moduleImportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.importModuleMessage(req.body.messageId, req.user.did);
@@ -501,8 +501,8 @@ export class ModulesApi {
     })
     @Post('/import/file')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async moduleImportFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.importModuleFile(req.body, req.user.did);
@@ -537,8 +537,8 @@ export class ModulesApi {
     })
     @Post('/import/message/preview')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async moduleImportMessagePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.previewModuleMessage(req.body.messageId, req.user.did);
@@ -573,8 +573,8 @@ export class ModulesApi {
     })
     @Post('/import/file/preview')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async moduleImportFilePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.previewModuleFile(req.body, req.user.did);
@@ -609,12 +609,12 @@ export class ModulesApi {
     })
     @Put('/:uuid/publish')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async publishModule(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const module = await guardian.publishModule(req.params.uuid, req.user.did, req.body);
-            return res.json(module);
+            return res.send(module);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -645,8 +645,8 @@ export class ModulesApi {
     })
     @Post('/validate')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async validateModule(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             return res.send(await guardian.validateModule(req.user.did, req.body));

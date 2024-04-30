@@ -222,12 +222,10 @@ export class AccountApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    // @UseGuards(AuthGuard)
     @HttpCode(HttpStatus.OK)
     @Get()
     @UseCache()
     async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
-        // await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const authHeader = req.headers.authorization;
         const token = authHeader?.split(' ')[1];
         const users = new Users();

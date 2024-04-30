@@ -14,7 +14,6 @@ import {
     UploadedFiles,
     UseInterceptors,
 } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiExtraModels,
     ApiInternalServerErrorResponse,
@@ -33,6 +32,7 @@ import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-q
 import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -101,8 +101,8 @@ export class ArtifactApi {
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getArtifacts(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const options: any = {
@@ -119,7 +119,7 @@ export class ArtifactApi {
                 options.pageSize = req.query.pageSize;
             }
             const { artifacts, count } = await guardians.getArtifacts(options);
-            return res.setHeader('X-Total-Count', count).json(artifacts);
+            return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -183,8 +183,8 @@ export class ArtifactApi {
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @UseInterceptors(FilesInterceptor('artifacts'))
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async uploadArtifacts(@Req() req, @UploadedFiles() files): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             if (!files) {
                 throw new HttpException('There are no files to upload', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -245,8 +245,8 @@ export class ArtifactApi {
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async deleteArtifact(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             await guardian.deleteArtifact(req.params.artifactId, req.user.did)

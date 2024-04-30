@@ -1,11 +1,11 @@
 import { UserRole } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards, } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import { Guardians } from '../../helpers/guardians.js';
 import { ApiBearerAuth, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, } from '../../middlewares/validation/schemas/suggestions.js';
 import { AuthGuard } from '../../auth/auth-guard.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('suggestions')
 @ApiTags('suggestions')
@@ -44,11 +44,11 @@ export class SuggestionsApi {
     @UseGuards(AuthGuard)
     @Post('/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async policySuggestions(
         @Req() req,
         @Body() body: SuggestionsInputDTO
     ): Promise<SuggestionsOutputDTO> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         return await guardians.policySuggestions(body, user);
@@ -85,11 +85,11 @@ export class SuggestionsApi {
     @UseGuards(AuthGuard)
     @Post('/config')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setPolicySuggestionsConfig(
         @Req() req,
         @Body() body: SuggestionsConfigDTO
     ): Promise<SuggestionsConfigDTO> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const user = req.user;
         return {
@@ -127,10 +127,10 @@ export class SuggestionsApi {
     @UseGuards(AuthGuard)
     @Get('/config')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getPolicySuggestionsConfig(
         @Req() req
     ): Promise<SuggestionsConfigDTO> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         return { items: await guardians.getPolicySuggestionsConfig(user) };

@@ -4,7 +4,7 @@ import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardi
 import { ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
 import process from 'process';
-import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
+import { AuthUser } from '../../auth/authorization-helper.js';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
@@ -134,8 +134,8 @@ export class SingleSchemaApi {
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
     @UseCache({ ttl: CACHE.SHORT_TTL })
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getSchema(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const schemaId = req.params.schemaId;
@@ -193,8 +193,8 @@ export class SingleSchemaApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getSchemaParents(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const schemaId = req.params.schemaId;
@@ -251,8 +251,8 @@ export class SingleSchemaApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getSchemaTree(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const user = req.user;
             const schemaId = req.params.schemaId;
@@ -363,15 +363,15 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getSchemasPage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const user = req.user;
             const options: any = prepareSchemaPagination(req, user);
             const { items, count } = await guardians.getSchemasByOwner(options);
             SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -439,8 +439,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getSchemasPageByTopicId(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         try {
             const guardians = new Guardians();
             const user = req.user;
@@ -448,7 +448,7 @@ export class SchemaApi {
             const options = prepareSchemaPagination(req, user, topicId);
             const { items, count } = await guardians.getSchemasByOwner(options);
             SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -485,8 +485,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getSchemaByType(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)
         let schema: any;
         try {
             const guardians = new Guardians();
@@ -541,8 +541,8 @@ export class SchemaApi {
     })
     @HttpCode(HttpStatus.OK)
     @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getAll(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -596,8 +596,8 @@ export class SchemaApi {
     })
     @HttpCode(HttpStatus.OK)
     @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getSub(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             if (!req.user.did) {
@@ -651,8 +651,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async createNewSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -663,7 +663,7 @@ export class SchemaApi {
                 user.did,
                 topicId,
             );
-            return res.status(201).json(SchemaUtils.toOld(schemas));
+            return res.status(201).send(SchemaUtils.toOld(schemas));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -749,8 +749,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async createNewSchemaAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const newSchema = req.body;
         const topicId = (req.params.topicId === null || req.params.topicId === undefined) ? undefined : req.params.topicId;
@@ -802,8 +802,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -821,7 +821,7 @@ export class SchemaApi {
             }
             SchemaUtils.fromOld(newSchema);
             const schemas = await updateSchema(newSchema, user.did);
-            return res.json(SchemaUtils.toOld(schemas));
+            return res.send(SchemaUtils.toOld(schemas));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -860,8 +860,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async deleteSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
@@ -885,7 +885,7 @@ export class SchemaApi {
         try {
             const schemas = (await guardians.deleteSchema(schemaId, user?.did, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, user.did);
-            return res.json(SchemaUtils.toOld(schemas));
+            return res.send(SchemaUtils.toOld(schemas));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -944,8 +944,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async publishSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
@@ -984,7 +984,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1034,8 +1034,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async publishSchemaAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const schemaId = req.params.schemaId;
         const guardians = new Guardians();
@@ -1107,13 +1107,13 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importFromMessagePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const messageId = req.body.messageId;
             const guardians = new Guardians();
             const schemaToPreview = await guardians.previewSchemasByMessages([messageId]);
-            return res.json(schemaToPreview);
+            return res.send(schemaToPreview);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1156,8 +1156,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importFromMessagePreviewAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const messageId = req.body.messageId;
         if (!messageId) {
@@ -1206,8 +1206,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importFromFilePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const zip = req.body;
         if (!zip) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -1216,7 +1216,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             const { schemas } = await SchemaImportExport.parseZipFile(zip);
             const schemaToPreview = await guardians.previewSchemasByFile(schemas);
-            return res.json(schemaToPreview);
+            return res.send(schemaToPreview);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1275,8 +1275,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importFromMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const topicId = req.params.topicId;
         const guardians = new Guardians();
@@ -1291,7 +1291,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1341,8 +1341,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importFromMessageAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const topicId = req.params.topicId;
         const messageId = req.body.messageId;
@@ -1406,8 +1406,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importToTopicFromFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const guardians = new Guardians();
         const zip = req.body;
@@ -1423,7 +1423,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1465,8 +1465,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importToTopicFromFileAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const zip = req.body;
         if (!zip) {
@@ -1515,8 +1515,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async exportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const id = req.params.schemaId;
@@ -1566,8 +1566,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async exportToFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const id = req.params.schemaId;
@@ -1586,8 +1586,8 @@ export class SchemaApi {
                     level: 3
                 }
             });
-            res.setHeader('Content-disposition', `attachment; filename=${name}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${name}`);
+            res.header('Content-type', 'application/zip');
             arcStream.pipe(res);
             return res;
         } catch (error) {
@@ -1627,8 +1627,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async postSystemSchema(@Body() body: SystemSchemaDTO, @Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = body as any;
@@ -1651,7 +1651,7 @@ export class SchemaApi {
             SchemaHelper.updateOwner(newSchema, owner);
             const schema = await guardians.createSystemSchema(newSchema);
 
-            return res.status(201).json(SchemaUtils.toOld(schema));
+            return res.status(201).send(SchemaUtils.toOld(schema));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -1712,8 +1712,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getSystemSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -1726,7 +1726,7 @@ export class SchemaApi {
             }
             const { items, count } = await guardians.getSystemSchemas(owner, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -1763,8 +1763,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.NO_CONTENT)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async deleteSystemSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -1825,8 +1825,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setSystemSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const newSchema = req.body;
@@ -1844,7 +1844,7 @@ export class SchemaApi {
             }
             SchemaUtils.fromOld(newSchema);
             const schemas = await updateSchema(newSchema, user.username);
-            return res.json(SchemaUtils.toOld(schemas));
+            return res.send(SchemaUtils.toOld(schemas));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -1881,8 +1881,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async activeSystemSchema(@Req() req: any): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const schemaId = req.params.schemaId;
@@ -1935,8 +1935,8 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getSchemaEntity(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user)
         try {
             const guardians = new Guardians();
             const schema = await guardians.getSchemaByEntity(req.params.schemaEntity);
@@ -2005,8 +2005,8 @@ export class SchemaApi {
             const guardians = new Guardians();
             const file: any = await guardians.exportSchemasXlsx(user, [schemaId]);
             const schema: any = await guardians.getSchemaById(schemaId);
-            res.setHeader('Content-disposition', `attachment; filename=${schema.name}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${schema.name}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -2072,7 +2072,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2231,8 +2231,8 @@ export class SchemaApi {
             const guardians = new Guardians();
             const file = await guardians.getFileTemplate(filename);
             const fileBuffer = Buffer.from(file, 'base64');
-            res.setHeader('Content-disposition', `attachment; filename=` + filename);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=` + filename);
+            res.header('Content-type', 'application/zip');
             res.locals.data = fileBuffer
             return res.send(fileBuffer);
         } catch (error) {

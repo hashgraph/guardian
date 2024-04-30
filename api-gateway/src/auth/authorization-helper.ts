@@ -2,6 +2,9 @@ import { NextFunction, Response } from 'express';
 import { Users } from '../helpers/users.js';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import { ServerResponse, IncomingMessage } from 'http';
+
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 export const AuthUser = createParamDecorator((data: string = 'user', ctx: ExecutionContext) => {
     const req = ctx.switchToHttp().getRequest();
@@ -48,7 +51,7 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             new Logger().warn(error.message, ['API_GATEWAY']);
         }
     }
-    res.sendStatus(401);
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
 }
 
 /**
@@ -83,9 +86,50 @@ export function permissionHelper(...roles: string[]) {
                     return;
                 }
             }
-            res.sendStatus(403);
+            throw new HttpException('Forbidden', HttpStatus.FORBIDDEN)
         } else {
-            res.sendStatus(401);
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
     }
 }
+
+/**
+ */
+export async function nextHelper(req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
+  console.log("nextHelper");
+  next();
+}
+
+@Injectable()
+export class LoggerMiddleware implements NestMiddleware {
+  use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {
+    console.log('Request...');
+    next();
+  }
+}
+
+@Injectable()
+export class AppMiddleware implements NestMiddleware {
+  async use(req: any, res: any, next: Function) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      next();
+      return;
+    }
+    const users = new Users();
+    const token = authHeader.split(' ')[1];
+    if (authHeader) {
+      try {
+        req.user = await users.getUserByToken(token) as IAuthUser;
+        next();
+        return;
+      } catch (error) {
+        await new Logger().warn(error.message, ['API_GATEWAY']);
+      }
+    }
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+  }
+}
+
+const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
+

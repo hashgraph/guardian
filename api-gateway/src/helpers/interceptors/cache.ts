@@ -47,7 +47,7 @@ export class CacheInterceptor implements NestInterceptor {
       switchMap(resultResponse => {
         if (resultResponse) {
           if (isExpress) {
-            return of(responseContext.json(resultResponse));
+            return of(responseContext.send(resultResponse));
           }
 
           return of(resultResponse);
