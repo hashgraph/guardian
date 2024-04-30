@@ -115,7 +115,7 @@ export class PolicyDataMigrator {
     private constructor(
         private readonly _root: IAuthUser,
         private readonly _rootKey: string,
-        signOptions: ISignOptions,
+        private readonly _signOptions: ISignOptions,
         private readonly _users: Users,
         private readonly _owner: string,
         private readonly _policyId: string,
@@ -140,7 +140,7 @@ export class PolicyDataMigrator {
         this._ms = new MessageServer(
             _root.hederaAccountId,
             _rootKey,
-            signOptions,
+            _signOptions,
             _dryRunId,
         );
         for (const [oldTokenId, newTokenId] of Object.entries(
@@ -710,7 +710,9 @@ export class PolicyDataMigrator {
 
         const topicHelper = new TopicHelper(
             this._root.hederaAccountId,
-            this._rootKey
+            this._rootKey,
+            this._signOptions,
+            this._dryRunId
         );
         const topic = await topicHelper.create(
             {
