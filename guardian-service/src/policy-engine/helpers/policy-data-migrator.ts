@@ -647,9 +647,14 @@ export class PolicyDataMigrator {
             if (!newTokenTemplate) {
                 continue;
             }
-            result[newTokenTemplate] = tokenId;
+
             const existingToken = await DatabaseServer.getTokenById(tokenId);
             if (existingToken) {
+                result[newTokenTemplate] = tokenId;
+                delete existingToken._id;
+                delete existingToken.id;
+                existingToken.policyId = this._policyId;
+                await new DataBaseHelper(Token).save(existingToken);
                 continue;
             }
             const tokenConfig = dynamicTokens.find(
@@ -669,6 +674,7 @@ export class PolicyDataMigrator {
                     hederaAccountKey: this._rootKey,
                 }) as any
             );
+            tokenObject.policyId = this._policyId;
             await new DataBaseHelper(Token).save(tokenObject);
             result[newTokenTemplate] = tokenObject.tokenId;
             this._createdTokens.set(tokenId, tokenObject.tokenId);
