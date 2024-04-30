@@ -1602,10 +1602,18 @@
     mongodb "6.5.0"
     umzug "3.8.0"
 
-"@mikro-orm/mongodb@6.2.1", "@mikro-orm/mongodb@^6.1.11":
+"@mikro-orm/mongodb@6.2.1":
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-6.2.1.tgz#62354bc5ba757341325e0be2ed942139e9017799"
   integrity sha512-9rVDPmUh2jNlZKs2Pp7V+YOA4FISioEi+EvWFYVExbVuMWO67+iO/E6iWZZtWL/dkR4kwTKrfSOI6eckZmN6xw==
+  dependencies:
+    bson "^6.4.0"
+    mongodb "6.5.0"
+
+"@mikro-orm/mongodb@^6.2.3":
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/mongodb/-/mongodb-6.2.3.tgz#9db60ab8590370fd2f0b2dc355fc8c54d23c1b3e"
+  integrity sha512-bXJU2monK41crlNtcupAEYChFAN5lLXOV3/jSppfmSmtLKfkXSpcRoFf5gOhi8fpVA2UDiRdO0YhP3FGB221cg==
   dependencies:
     bson "^6.4.0"
     mongodb "6.5.0"
