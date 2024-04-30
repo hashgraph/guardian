@@ -979,6 +979,15 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get tag block map
+     * @param policyId Policy identifier
+     * @returns Tag block map
+     */
+    public static GetTagBlockMap(policyId: string) {
+        return PolicyComponentsUtils.TagMapByPolicyId.get(policyId);
+    }
+
+    /**
      * Get navigation
      * @param policyId
      * @param role

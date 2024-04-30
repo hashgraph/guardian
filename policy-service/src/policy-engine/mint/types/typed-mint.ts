@@ -10,6 +10,7 @@ import { PolicyUtils } from '../../helpers/utils.js';
 import {
     MintTransactionStatus,
     NotificationAction,
+    TokenType
 } from '@guardian/interfaces';
 
 /**
@@ -86,6 +87,8 @@ export abstract class TypedMint {
             vpMessageId: string;
             memo: string;
             tokenId: string;
+            tokenType: TokenType;
+            decimals: number;
             metadata?: string;
         },
         root: IHederaCredentials,

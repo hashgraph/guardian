@@ -4528,6 +4528,164 @@ paths:
       security:
         - bearerAuth: []
         - bearerAuth: []
+  /policies/{policyId}/data:
+    get:
+      operationId: PolicyApi_downloadPolicyData
+      summary: Get policy data.
+      description: >-
+        Get policy data. Only users with the Standard Registry role are allowed
+        to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      responses:
+        '200':
+          description: Policy data.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
+  /policies/data:
+    post:
+      operationId: PolicyApi_uploadPolicyData
+      summary: Upload policy data.
+      description: >-
+        Upload policy data. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      requestBody:
+        required: true
+        description: Policy data file
+        content:
+          application/json:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Uploaded policy.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
+  /policies/{policyId}/tag-block-map:
+    get:
+      operationId: PolicyApi_getTagBlockMap
+      summary: Get policy tag block map.
+      description: >-
+        Get policy tag block map. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      responses:
+        '200':
+          description: Policy tag block map.
+          content:
+            application/json:
+              schema:
+                type: object
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
+  /policies/{policyId}/virtual-keys:
+    get:
+      operationId: PolicyApi_downloadVirtualKeys
+      summary: Get policy virtual keys.
+      description: >-
+        Get policy virtual keys. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      responses:
+        '200':
+          description: Policy virtual keys.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
+    post:
+      operationId: PolicyApi_uploadVirtualKeys
+      summary: Upload policy virtual keys.
+      description: >-
+        Upload policy virtual keys. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier.
+          schema: {}
+      requestBody:
+        required: true
+        description: Virtual keys file
+        content:
+          application/json:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Operation completed.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_7
+      security:
+        - bearerAuth: []
+        - bearerAuth: []
   /policies/{policyId}/blocks:
     get:
       tags:
@@ -11062,6 +11220,18 @@ components:
           type: object
         roles:
           type: object
+        blocks:
+          type: object
+        tokens:
+          type: object
+        migrateState:
+          type: boolean
+        migrateRetirePools:
+          type: boolean
+        editedVCs:
+          type: object
+        retireContractId:
+          type: string
       required:
         - policies
         - vcs
@@ -11069,6 +11239,12 @@ components:
         - schemas
         - groups
         - roles
+        - blocks
+        - tokens
+        - migrateState
+        - migrateRetirePools
+        - editedVCs
+        - retireContractId
     PolicyCategoryDTO:
       type: object
       properties:
