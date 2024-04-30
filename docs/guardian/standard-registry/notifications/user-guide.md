@@ -9,7 +9,7 @@
 
 Added notification icon and also tooltip with count of unread notifications:
 
-![image4.png](<../../../.gitbook/assets/0 (1) (1).png>)
+![image4.png](<../../../.gitbook/assets/0 (1) (1) (1).png>)
 
 ### 2. View :
 

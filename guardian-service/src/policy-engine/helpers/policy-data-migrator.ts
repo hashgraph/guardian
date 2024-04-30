@@ -45,6 +45,7 @@ import {
     SchemaCategory,
     SchemaHelper,
     TopicType,
+    ISignOptions,
 } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 import { BlockStateLoader } from './policy-data/loaders/block-state.loader.js';
@@ -114,6 +115,7 @@ export class PolicyDataMigrator {
     private constructor(
         private readonly _root: IAuthUser,
         private readonly _rootKey: string,
+        signOptions: ISignOptions,
         private readonly _users: Users,
         private readonly _owner: string,
         private readonly _policyId: string,
@@ -138,7 +140,8 @@ export class PolicyDataMigrator {
         this._ms = new MessageServer(
             _root.hederaAccountId,
             _rootKey,
-            _dryRunId
+            signOptions,
+            _dryRunId,
         );
         for (const [oldTokenId, newTokenId] of Object.entries(
             this._tokensMap
@@ -404,6 +407,7 @@ export class PolicyDataMigrator {
                 KeyType.KEY,
                 owner
             );
+            const signOptions = await wallet.getUserSignOptions(root);
 
             const instanceTopicConfig = await TopicConfig.fromObject(
                 await new DatabaseServer(
@@ -418,6 +422,7 @@ export class PolicyDataMigrator {
             const policyDataMigrator = new PolicyDataMigrator(
                 root,
                 rootKey,
+                signOptions,
                 users,
                 owner,
                 dst,
@@ -748,11 +753,7 @@ export class PolicyDataMigrator {
             MessageAction.CreateContract
         );
         contractMessage.setDocument(contract);
-        const messageServer = new MessageServer(
-            this._root.hederaAccountId,
-            this._rootKey
-        );
-        await messageServer.setTopicObject(topic).sendMessage(contractMessage);
+        await this._ms.setTopicObject(topic).sendMessage(contractMessage);
 
         this._createdWipeContractId = contract.contractId;
         return this._createdWipeContractId;

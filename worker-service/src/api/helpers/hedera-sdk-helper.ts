@@ -17,6 +17,7 @@ import {
     Hbar,
     HbarUnit,
     PrivateKey,
+    PublicKey,
     Status,
     Timestamp,
     TokenAssociateTransaction,
@@ -46,10 +47,11 @@ import {
 import { HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { Environment } from './environment.js';
-import { ContractParamType, GenerateUUIDv4, HederaResponseCode } from '@guardian/interfaces';
+import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
+import { FireblocksHelper } from './fireblocks-helper';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -891,6 +893,7 @@ export class HederaSDKHelper {
      *
      * @param privateKey
      * @param transactionMemo
+     * @param signOptions
      * @returns Message timestamp
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Topic message submit transaction timeout exceeded')
@@ -898,7 +901,8 @@ export class HederaSDKHelper {
         topicId: string | TopicId,
         message: string,
         privateKey?: string | PrivateKey,
-        transactionMemo?: string
+        transactionMemo?: string,
+        signOptions?: ISignOptions
     ): Promise<string> {
         const client = this.client;
 
@@ -913,10 +917,57 @@ export class HederaSDKHelper {
             messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
         }
 
-        if (privateKey) {
-            messageTransaction = messageTransaction.freezeWith(client);
-            messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
+        let signType = SignType.INTERNAL;
+        if (signOptions?.signType) {
+            signType = signOptions.signType;
         }
+
+        if (privateKey) {
+            switch (signType) {
+                case SignType.FIREBLOCKS: {
+                    const signData = (signOptions as any).data as FireblocksCreds;
+
+                    const fireblocksClient = new FireblocksHelper(
+                        signData.apiKey,
+                        signData.privateKey,
+                        signData.vaultId,
+                        signData.assetId,
+                    );
+                    const accountIds = Object.values(this.client.network) as AccountId[];
+                    messageTransaction.setNodeAccountIds([accountIds[0]]);
+                    messageTransaction = messageTransaction.freezeWith(client);
+                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
+                    const tx = await fireblocksClient.createTransaction(messageTransaction.toBytes());
+
+                    if (!tx || !Array.isArray(tx.signedMessages)) {
+                        throw new Error(`Fireblocks signing failed`);
+                    }
+
+                    const signedMessage = tx.signedMessages[0];
+                    if (signedMessage) {
+                        const pubKey = PublicKey.fromStringED25519(signedMessage.publicKey);
+                        const signature = Buffer.from(signedMessage.signature.fullSig, 'hex');
+                        try {
+                            messageTransaction.addSignature(pubKey, signature);
+                        } catch (error) {
+                            throw new Error(error);
+                        }
+                    }
+                    break;
+                }
+
+                case SignType.INTERNAL: {
+                    messageTransaction = messageTransaction.freezeWith(client);
+                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
+                    break;
+                }
+
+                default:
+                    messageTransaction = messageTransaction.freezeWith(client);
+                    messageTransaction = await messageTransaction.sign(HederaUtils.parsPrivateKey(privateKey));
+            }
+        }
+
         const rec = await this.executeAndRecord(client, messageTransaction, 'TopicMessageSubmitTransaction');
         const seconds = rec.consensusTimestamp.seconds.toString();
         const nanos = rec.consensusTimestamp.nanos.toString();

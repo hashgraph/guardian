@@ -6,7 +6,7 @@ import { IPolicyUser, PolicyUser } from '../policy-user.js';
 import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { PolicyUtils } from '../helpers/utils.js';
+import { DataTypes, PolicyUtils } from '../helpers/utils.js';
 import { VcHelper, MessageAction, MessageServer, RoleMessage, IAuthUser } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
@@ -318,6 +318,7 @@ export class PolicyRolesBlock {
 
         const userCred = await PolicyUtils.getUserCredentials(ref, group.owner);
         const hederaCred = await userCred.loadHederaCredentials(ref);
+        const signOptions = await userCred.loadSignOptions(ref)
         const didDocument = await userCred.loadDidDocument(ref);
 
         const uuid: string = await ref.components.generateUUID();
@@ -350,7 +351,7 @@ export class PolicyRolesBlock {
         );
 
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
-        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
         vcMessage.setDocument(userVC);
         vcMessage.setRole(group);

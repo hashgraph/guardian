@@ -9,13 +9,12 @@
     },
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2",
-        "@types/mime": "3.0.4"
+        "image-size": "1.0.2"
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@guardian/common": "^2.23.1",
-        "@guardian/interfaces": "^2.23.1",
+        "@guardian/common": "^2.24.0",
+        "@guardian/interfaces": "^2.24.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/jwt": "^10.0.3",
@@ -83,5 +82,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "2.23.1"
+    "version": "2.24.0"
 }

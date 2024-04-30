@@ -2,8 +2,8 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "^2.23.1",
-        "@guardian/interfaces": "^2.23.1",
+        "@guardian/common": "^2.24.0",
+        "@guardian/interfaces": "^2.24.0",
         "@hashgraph/sdk": "2.34.1",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
@@ -25,7 +25,8 @@
         "jsonwebtoken": "^8.5.1",
         "module-alias": "^2.2.2",
         "reflect-metadata": "^0.1.13",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "fireblocks-sdk": "^5.20.0"
     },
     "description": "",
     "devDependencies": {
@@ -65,8 +66,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "2.23.1",
-    "resolutions": {
-        "@types/mime": "3.0.4"
-    }
+    "version": "2.24.0"
 }

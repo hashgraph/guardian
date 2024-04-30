@@ -3,17 +3,7 @@ import { BlockActionError } from '../errors/index.js';
 import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import {
-    Token as TokenCollection,
-    VcDocumentDefinition as VcDocument,
-    VCMessage,
-    MessageAction,
-    MessageServer,
-    VPMessage,
-    MessageMemo,
-    VcHelper,
-    HederaDidDocument,
-} from '@guardian/common';
+import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as TokenCollection, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage, } from '@guardian/common';
 
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '../policy-engine.interface.js';
@@ -306,9 +296,11 @@ export class MintBlock {
         ref.log(`Topic Id: ${topicId}`);
 
         const policyOwnerHederaCred = await policyOwnerCred.loadHederaCredentials(ref);
+        const signOptions = await policyOwnerCred.loadSignOptions(ref);
         const messageServer = new MessageServer(
             policyOwnerHederaCred.hederaAccountId,
             policyOwnerHederaCred.hederaAccountKey,
+            signOptions,
             ref.dryRun
         );
 
@@ -365,7 +357,8 @@ export class MintBlock {
             accountId,
             vpMessageId,
             transactionMemo,
-            documents
+            documents,
+            signOptions
         );
         return [savedVp, tokenValue];
     }

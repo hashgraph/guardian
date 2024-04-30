@@ -1,11 +1,11 @@
 import { EventBlock } from '../helpers/decorators/index.js';
-import { GroupRelationshipType, GroupAccessType } from '@guardian/interfaces';
+import { GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
 import { IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyUser, PolicyUser } from '../policy-user.js';
-import { PolicyRoles, MessageServer, MessageStatus } from '@guardian/common';
+import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
@@ -113,8 +113,9 @@ export class GroupManagerBlock {
         if (member.messageId) {
             const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
             const userHederaCred = await userCred.loadHederaCredentials(ref);
+            const signOptions = await userCred.loadSignOptions(ref);
             const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, ref.dryRun
+                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
             );
             const message = await messageServer.getMessage(member.messageId);
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);

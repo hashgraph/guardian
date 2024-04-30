@@ -1,5 +1,5 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { PolicyRole } from '@guardian/interfaces';
+import { ISignOptions, PolicyRole, SignType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument } from './policy-engine.interface.js';
 
 /**
@@ -217,6 +217,19 @@ export class UserCredentials {
         } else {
             const wallet = new Wallet();
             return await wallet.getUserKey(this._did, KeyType.KEY, this._did);
+        }
+    }
+
+    public async loadSignOptions(ref: AnyBlockType): Promise<ISignOptions> {
+        if (this._dryRun) {
+            return {
+                signType: SignType.INTERNAL
+            }
+        } else {
+            const users = new Users()
+            const userFull = await users.getUserById(this._did);
+            const wallet = new Wallet();
+            return await wallet.getUserSignOptions(userFull)
         }
     }
 

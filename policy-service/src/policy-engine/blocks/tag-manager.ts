@@ -4,17 +4,8 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
-import { SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
-import {
-    Tag,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    TagMessage,
-    TopicConfig,
-    VcHelper,
-    DatabaseServer,
-} from '@guardian/common';
+import { ISignOptions, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, TopicConfig, VcHelper, } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 
 /**
@@ -192,7 +183,8 @@ export class TagsManagerBlock {
                     tag.target = target.target;
                     tag.status = 'Published';
                     const hederaCred = await userCred.loadHederaCredentials(ref);
-                    await this.publishTag(tag, target.topicId, hederaCred);
+                    const signOptions = await userCred.loadSignOptions(ref);
+                    await this.publishTag(tag, target.topicId, hederaCred, signOptions);
                 } else {
                     tag.target = null;
                     tag.localTarget = target.id;
@@ -293,11 +285,14 @@ export class TagsManagerBlock {
 
     /**
      * Publish tag
-     * @param tag
+     * @param item
+     * @param topicId
+     * @param owner
+     * @param signOptions
      */
-    private async publishTag(item: Tag, topicId: string, owner: IHederaCredentials): Promise<Tag> {
+    private async publishTag(item: Tag, topicId: string, owner: IHederaCredentials, signOptions: ISignOptions): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const messageServer = new MessageServer(owner.hederaAccountId, owner.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(owner.hederaAccountId, owner.hederaAccountKey, signOptions, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
         const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
 
@@ -323,7 +318,8 @@ export class TagsManagerBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user = await PolicyUtils.getUserCredentials(ref, owner);
         const userCred = await user.loadHederaCredentials(ref);
-        const messageServer = new MessageServer(userCred.hederaAccountId, userCred.hederaAccountKey, ref.dryRun);
+        const signOptions = await user.loadSignOptions(ref);
+        const messageServer = new MessageServer(userCred.hederaAccountId, userCred.hederaAccountKey, signOptions, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
         const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
 
@@ -352,7 +348,7 @@ export class TagsManagerBlock {
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const messageServer = new MessageServer(null, null, ref.dryRun);
+        const messageServer = new MessageServer(null, null, null, ref.dryRun);
         const messages = await messageServer.getMessages<TagMessage>(topicId, MessageType.Tag);
         const map = new Map<string, any>();
         for (const message of messages) {

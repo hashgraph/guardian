@@ -307,9 +307,11 @@ export class RequestVcDocumentBlock {
                 message.setDocument(didObject);
 
                 const userHederaCred = await userCred.loadHederaCredentials(ref);
+                const signOptions = await userCred.loadSignOptions(ref);
                 const client = new MessageServer(
                     userHederaCred.hederaAccountId,
                     userHederaCred.hederaAccountKey,
+                    signOptions,
                     ref.dryRun
                 );
                 const messageResult = await client

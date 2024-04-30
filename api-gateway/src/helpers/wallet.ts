@@ -1,5 +1,5 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
-import { WalletEvents, IWalletAccount, GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, IWalletAccount, WalletEvents } from '@guardian/interfaces';
 import { NatsService } from '@guardian/common';
 
 /**
@@ -7,7 +7,8 @@ import { NatsService } from '@guardian/common';
  */
 export enum KeyType {
     ID = 'ID',
-    KEY = 'KEY'
+    KEY = 'KEY',
+    FIREBLOCKS_KEY = 'FIREBLOCKS_KEY',
 }
 
 /**

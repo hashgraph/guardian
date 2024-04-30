@@ -19,14 +19,13 @@
     "ai-service",
     "notification-service"
   ],
-  "version": "2.23.1",
+  "version": "2.24.0",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },
   "resolutions": {
     "@azure/core-rest-pipeline": "1.12.1",
-    "image-size": "1.0.2",
-    "@types/mime": "3.0.4"
+    "image-size": "1.0.2"
   },
   "scripts": {
     "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
