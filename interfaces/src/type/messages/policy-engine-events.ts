@@ -56,4 +56,9 @@ export enum PolicyEngineEvents {
     GET_POLICY_DOCUMENTS = 'policy-engine-event-get-policy-documents',
     MIGRATE_DATA = 'policy-engine-event-migrate-data',
     MIGRATE_DATA_ASYNC = 'policy-engine-event-migrate-data-async',
+    DOWNLOAD_POLICY_DATA = 'policy-engine-event-download-policy-data',
+    DOWNLOAD_VIRTUAL_KEYS = 'policy-engine-event-download-virtual-keys',
+    UPLOAD_POLICY_DATA = 'policy-engine-event-upload-policy-data',
+    UPLOAD_VIRTUAL_KEYS = 'policy-engine-event-upload-virtual-keys',
+    GET_TAG_BLOCK_MAP = 'policy-engine-event-get-tag-block-map',
 }

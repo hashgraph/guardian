@@ -1,4 +1,4 @@
-import { DidDocumentStatus, DocumentStatus, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentStatus, ISignOptions, MessageAPI, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
@@ -37,6 +37,13 @@ import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
+interface IFireblocksConfig{
+    fireBlocksVaultId: string;
+    fireBlocksAssetId: string;
+    fireBlocksApiKey: string;
+    fireBlocksPrivateiKey: string;
+}
+
 /**
  * User credentials
  */
@@ -47,7 +54,9 @@ interface ICredentials {
     hederaAccountKey: string,
     vcDocument: any,
     didDocument: any,
-    didKeys: IDidKey[]
+    didKeys: IDidKey[],
+    useFireblocksSigning: boolean,
+    fireblocksConfig: IFireblocksConfig,
 }
 
 /**
@@ -111,10 +120,14 @@ async function setupUserProfile(
     await users.updateCurrentUser(username, {
         did,
         parent: profile.parent,
-        hederaAccountId: profile.hederaAccountId
+        hederaAccountId: profile.hederaAccountId,
+        useFireblocksSigning: profile.useFireblocksSigning
     });
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
+    if (profile.useFireblocksSigning) {
+        await wallet.setKey(user.walletToken, KeyType.FIREBLOCKS_KEY, did, JSON.stringify(profile.fireblocksConfig));
+    }
     notifier.completed();
 
     return did;
@@ -167,9 +180,25 @@ async function createUserProfile(
         vcDocument,
         didDocument,
         didKeys,
-        entity
+        entity,
+        useFireblocksSigning,
+        fireblocksConfig
     } = profile;
-    const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
+    let signOptions: ISignOptions = {
+        signType: SignType.INTERNAL
+    }
+    if (useFireblocksSigning) {
+        signOptions = {
+            signType: SignType.FIREBLOCKS,
+            data: {
+                apiKey: fireblocksConfig.fireBlocksApiKey,
+                privateKey: fireblocksConfig.fireBlocksPrivateiKey,
+                assetId: fireblocksConfig.fireBlocksAssetId,
+                vaultId: fireblocksConfig.fireBlocksVaultId
+            }
+        }
+    }
+    const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
 
     // ------------------------
     // <-- Check hedera key
@@ -206,7 +235,7 @@ async function createUserProfile(
     if (!topicConfig) {
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
-        const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
+        const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey, signOptions);
         topicConfig = await topicHelper.create({
             type: TopicType.UserTopic,
             name: TopicType.UserTopic,

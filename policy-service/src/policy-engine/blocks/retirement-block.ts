@@ -1,10 +1,10 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
-import { DataTypes, PolicyUtils } from '../helpers/utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
@@ -113,6 +113,7 @@ export class RetirementBlock {
 
         const didDocument = await root.loadDidDocument(ref);
         const hederaCred = await root.loadHederaCredentials(ref);
+        const signOptions = await root.loadSignOptions(ref);
 
         const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
@@ -121,7 +122,7 @@ export class RetirementBlock {
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(didDocument, uuid, vcs);
 
-        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -133,7 +134,7 @@ export class RetirementBlock {
             .sendMessage(vcMessage);
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
-        vcDocument.type = DataTypes.RETIREMENT;
+        vcDocument.type = DocumentCategoryType.RETIREMENT;
         vcDocument.schema = `#${wipeVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
@@ -152,7 +153,7 @@ export class RetirementBlock {
             .sendMessage(vpMessage);
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
-        vpDocument.type = DataTypes.RETIREMENT;
+        vpDocument.type = DocumentCategoryType.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.relationships = relationships;

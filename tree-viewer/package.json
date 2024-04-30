@@ -28,8 +28,5 @@
         "start": "node dist/index.js"
     },
     "type": "module",
-    "version": "2.23.1",
-    "resolutions": {
-        "@types/mime": "3.0.4"
-    }
+    "version": "2.24.0"
 }

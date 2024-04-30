@@ -1,6 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     Contract,
+    ContractMessage,
     DataBaseHelper,
     DatabaseServer,
     KeyType,
@@ -13,6 +14,7 @@ import {
     RetirePool,
     RetireRequest,
     Schema as SchemaCollection,
+    Topic,
     TopicConfig,
     TopicHelper,
     Users,
@@ -20,36 +22,15 @@ import {
     VcDocument as VcDocumentCollection,
     VcHelper,
     VCMessage,
-    ContractMessage,
     Wallet,
     WiperRequest,
     Workers,
-    Topic,
 } from '@guardian/common';
-import {
-    ContractParamType,
-    ContractType,
-    ContractAPI,
-    Schema,
-    SchemaEntity,
-    SchemaHelper,
-    TopicType,
-    WorkerTaskType,
-    UserRole,
-    RetireTokenPool,
-    RetireTokenRequest,
-    TokenType,
-} from '@guardian/interfaces';
+import { ContractAPI, ContractParamType, ContractType, RetireTokenPool, RetireTokenRequest, Schema, SchemaEntity, SchemaHelper, TokenType, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import {
-    contractCall,
-    contractQuery,
-    createContract,
-    customContractCall,
-    publishSystemSchema,
-} from './helpers/index.js';
+import { contractCall, contractQuery, createContract, customContractCall, publishSystemSchema, } from './helpers/index.js';
 
 const retireAbi = new ethers.Interface([
     'function retire(tuple(address, int64, int64[])[])',
@@ -235,7 +216,7 @@ async function setContractWiperPermissions(
     );
 }
 
-async function setPoolContract(
+export async function setPoolContract(
     workers: Workers,
     contractId: string,
     hederaAccountId: string,
@@ -1087,8 +1068,9 @@ export async function contractAPI(
                 KeyType.KEY,
                 did
             );
+            const signOptions = await wallet.getUserSignOptions(root);
 
-            const topicHelper = new TopicHelper(root.hederaAccountId, rootKey);
+            const topicHelper = new TopicHelper(root.hederaAccountId, rootKey, signOptions);
             const topic = await topicHelper.create(
                 {
                     type: TopicType.ContractTopic,
@@ -1132,7 +1114,8 @@ export async function contractAPI(
             contractMessage.setDocument(contract);
             const messageServer = new MessageServer(
                 root.hederaAccountId,
-                rootKey
+                rootKey,
+                signOptions
             );
             await messageServer
                 .setTopicObject(topic)

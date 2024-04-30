@@ -152,10 +152,10 @@
                                     </p>
 
                                     <ul class="standard-registry">
-                                        <app-standard-registry-card 
-                                            (registrySelected)="selectStandardRegistry($event)" 
-                                            *ngFor="let registry of standardRegistriesList; trackBy: trackByDid" 
-                                            [isRegistrySelected]="isRegistrySelected(registry.did)" 
+                                        <app-standard-registry-card
+                                                (registrySelected)="selectStandardRegistry($event)"
+                                                *ngFor="let registry of standardRegistriesList; trackBy: trackByDid"
+                                                [isRegistrySelected]="isRegistrySelected(registry.did)"
                                             [registry]="registry"></app-standard-registry-card>
                                     </ul>
                                 </ng-container>
@@ -199,6 +199,66 @@
                                             type="text"
                                         />
                                     </div>
+                                    <div class="input-field-container">
+                                        <p-checkbox
+                                                [binary]="true"
+                                                formControlName="useFireblocksSigning"
+                                                inputId="useFireblocksSigning"
+                                                label="Use fireblocks signing"
+                                        ></p-checkbox>
+                                    </div>
+                                    <ng-container *ngIf="hederaCredentialsForm.get('useFireblocksSigning')?.value">
+                                        <div class="input-field-container">
+                                            <label class="form-label" htmlFor="fireBlocksVaultId">
+                                                * Fireblocks Vault ID:
+                                            </label>
+                                            <input
+                                                    formControlName="fireBlocksVaultId"
+                                                    id="fireBlocksVaultId"
+                                                    placeholder="0"
+                                                    pInputText
+                                                    type="text"
+                                            />
+                                        </div>
+                                        <div class="input-field-container">
+                                            <label class="form-label" htmlFor="fireBlocksAssetId">
+                                                * Fireblocks Asset ID:
+                                            </label>
+                                            <input
+                                                    formControlName="fireBlocksAssetId"
+                                                    id="fireBlocksAssetId"
+                                                    placeholder="ASSET_NAME"
+                                                    pInputText
+                                                    type="text"
+                                            />
+                                        </div>
+                                        <div class="input-field-container">
+                                            <label class="form-label" htmlFor="fireBlocksApiKey">
+                                                * Fireblocks API Key:
+                                            </label>
+                                            <input
+                                                    formControlName="fireBlocksApiKey"
+                                                    id="fireBlocksApiKey"
+                                                    autocomplete="off"
+                                                    pInputText
+                                                    placeholder="00000000-0000-0000-0000-000000000000"
+                                                    type="text"
+                                            />
+                                        </div>
+                                        <div class="input-field-container">
+                                            <label class="form-label" htmlFor="fireBlocksPrivateiKey">
+                                                * Fireblocks Private Key:
+                                            </label>
+                                            <textarea
+                                                    formControlName="fireBlocksPrivateiKey"
+                                                    id="fireBlocksPrivateiKey"
+                                                    autocomplete="off"
+                                                    pInputText
+                                                    placeholder="-----BEGIN PRIVATE KEY----- ..."
+                                                    type="text"
+                                            ></textarea>
+                                        </div>
+                                    </ng-container>
                                     <p-button
                                         (click)="randomKey()"
                                         class="generate-btn"
@@ -227,7 +287,8 @@
                                     </mat-radio-group>
                                     <mat-form-field appearance="outline" class="example-full-width" [attr.active-field]="didDocumentType.value">
                                         <mat-label>DID Document:</mat-label>
-                                        <textarea matInput [formControl]="didDocumentForm" style="height: 150px"></textarea>        
+                                        <textarea [formControl]="didDocumentForm" matInput
+                                                  style="height: 150px"></textarea>
                                         <mat-error *ngIf="didDocumentForm.hasError('incorrect')">
                                             Invalid DID Document.
                                         </mat-error>

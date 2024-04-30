@@ -1,47 +1,10 @@
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import {
-    DidDocumentStatus,
-    DocumentSignature,
-    DocumentStatus,
-    Schema,
-    SchemaEntity,
-    TopicType,
-    WorkerTaskType
-} from '@guardian/interfaces';
-import {
-    IAuthUser,
-    Token,
-    Topic,
-    Schema as SchemaCollection,
-    VcDocument as VcDocumentCollection,
-    VcDocumentDefinition as VcDocument,
-    VcDocumentDefinition as HVcDocument,
-    TopicHelper,
-    VpDocumentDefinition as VpDocument,
-    TopicConfig,
-    KeyType, Wallet,
-    Users,
-    Workers,
-    NotificationHelper,
-    VcSubject,
-    HederaDidDocument
-} from '@guardian/common';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
-import { IPolicyUser, UserCredentials, PolicyUser, IHederaCredentials } from '../policy-user.js';
+import { IHederaCredentials, IPolicyUser, PolicyUser, UserCredentials } from '../policy-user.js';
 import { DocumentType } from '../interfaces/document.type.js';
-
-/**
- * Data types
- */
-export enum DataTypes {
-    MRV = 'mrv',
-    REPORT = 'report',
-    MINT = 'mint',
-    RETIREMENT = 'retirement',
-    USER_ROLE = 'user-role',
-    MULTI_SIGN = 'MULTI_SIGN'
-}
 
 /**
  * Policy engine utils
@@ -829,8 +792,11 @@ export class PolicyUtils {
                 ? (await root.loadHederaCredentials(ref))
                 : (await user.loadHederaCredentials(ref));
 
+            const signOptions = config.static
+                ? (await root.loadSignOptions(ref))
+                : (await user.loadSignOptions(ref));
             const topicHelper = new TopicHelper(
-                hederaCred.hederaAccountId, hederaCred.hederaAccountKey, ref.dryRun
+                hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun,
             );
             topic = await topicHelper.create({
                 type: TopicType.DynamicTopic,

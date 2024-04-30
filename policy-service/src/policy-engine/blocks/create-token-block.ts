@@ -1,21 +1,9 @@
 import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, StateField } from '../helpers/decorators/index.js';
-import {
-    IPolicyBlock,
-    IPolicyDocument,
-    IPolicyEventState,
-    IPolicyRequestBlock,
-} from '../policy-engine.interface.js';
-import {
-    IPolicyEvent,
-    PolicyInputEventType,
-    PolicyOutputEventType,
-} from '../interfaces/index.js';
-import {
-    ChildrenType,
-    ControlType,
-} from '../interfaces/block-about.js';
+import { IPolicyBlock, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, } from '../policy-engine.interface.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType, } from '../interfaces/index.js';
+import { ChildrenType, ControlType, } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyUser } from '../policy-user.js';
@@ -203,10 +191,12 @@ export class CreateTokenBlock {
 
             // #region Send new token to hedera
             const hederaCred = await policyOwnerCred.loadHederaCredentials(ref);
+            const signOptions = await policyOwnerCred.loadSignOptions(ref);
             const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
             const messageServer = new MessageServer(
                 hederaCred.hederaAccountId,
                 hederaCred.hederaAccountKey,
+                signOptions,
                 ref.dryRun
             ).setTopicObject(rootTopic);
             const tokenMessage = new TokenMessage(MessageAction.CreateToken);

@@ -4,13 +4,7 @@ import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
-import {
-    VcHelper,
-    DIDMessage,
-    MessageAction,
-    MessageServer,
-    HederaDidDocument
-} from '@guardian/common';
+import { DIDMessage, HederaDidDocument, MessageAction, MessageServer, VcHelper } from '@guardian/common';
 import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
@@ -367,9 +361,11 @@ export class CustomLogicBlock {
                 message.setDocument(didObject);
 
                 const hederaCred = await userCred.loadHederaCredentials(ref);
+                const signOptions = await userCred.loadSignOptions(ref);
                 const client = new MessageServer(
                     hederaCred.hederaAccountId,
                     hederaCred.hederaAccountKey,
+                    signOptions,
                     ref.dryRun
                 );
                 const messageResult = await client

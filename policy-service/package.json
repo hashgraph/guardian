@@ -12,12 +12,11 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2",
-        "@types/mime": "3.0.4"
+        "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "2.23.1",
-        "@guardian/interfaces": "2.23.1",
+        "@guardian/common": "2.24.0",
+        "@guardian/interfaces": "2.24.0",
         "@hashgraph/sdk": "2.34.1",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "2.0.2",
@@ -98,5 +97,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "2.23.1"
+    "version": "2.24.0"
 }

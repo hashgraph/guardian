@@ -1,31 +1,6 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
-import {
-    ContractParamType,
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    IRootConfig,
-    NotificationAction,
-    TokenType,
-    WorkerTaskType,
-} from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    ExternalEventChannel,
-    KeyType,
-    Logger,
-    MessageAction,
-    MessageServer,
-    MintRequest,
-    MultiPolicy,
-    NotificationHelper,
-    SynchronizationMessage,
-    Token,
-    TopicConfig,
-    Users,
-    VcDocumentDefinition as VcDocument,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, ISignOptions, NotificationAction, TokenType, WorkerTaskType, } from '@guardian/interfaces';
+import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MintRequest, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
@@ -98,31 +73,153 @@ export class MintService {
     }
 
     /**
-     * Send Synchronization Message
+     * Mint
      * @param ref
-     * @param multipleConfig
+     * @param token
+     * @param tokenValue
+     * @param documentOwner
      * @param root
-     * @param data
+     * @param targetAccount
+     * @param vpMessageId
+     * @param transactionMemo
+     * @param documents
+     * @param signOptions
      */
-    private static async sendMessage(
+    public static async mint(
         ref: AnyBlockType,
-        multipleConfig: MultiPolicy,
+        token: Token,
+        tokenValue: number,
+        documentOwner: IPolicyUser,
         root: IHederaCredentials,
-        data: any
-    ) {
-        const message = new SynchronizationMessage(MessageAction.Mint);
-        message.setDocument(multipleConfig, data);
-        const messageServer = new MessageServer(
-            root.hederaAccountId,
-            root.hederaAccountKey,
-            ref.dryRun
+        targetAccount: string,
+        vpMessageId: string,
+        transactionMemo: string,
+        documents: VcDocument[],
+        signOptions: ISignOptions
+    ): Promise<void> {
+        const multipleConfig = await MintService.getMultipleConfig(
+            ref,
+            documentOwner
         );
-        const topic = new TopicConfig(
-            { topicId: multipleConfig.synchronizationTopicId },
-            null,
-            null
+        const users = new Users();
+        const documentOwnerUser = await users.getUserById(documentOwner.did);
+        const policyOwner = await users.getUserById(ref.policyOwner);
+        const notifier = NotificationHelper.init([
+            documentOwnerUser?.id,
+            policyOwner?.id,
+        ]);
+        if (multipleConfig) {
+            const hash = VcDocument.toCredentialHash(
+                documents,
+                (value: any) => {
+                    delete value.id;
+                    delete value.policyId;
+                    delete value.ref;
+                    return value;
+                }
+            );
+            await MintService.sendMessage(ref, multipleConfig, root, {
+                hash,
+                messageId: vpMessageId,
+                tokenId: token.tokenId,
+                amount: tokenValue,
+                memo: transactionMemo,
+                target: targetAccount,
+            }, signOptions);
+            if (multipleConfig.type === 'Main') {
+                const user = await PolicyUtils.getUserCredentials(
+                    ref,
+                    documentOwner.did
+                );
+                await DatabaseServer.createMultiPolicyTransaction({
+                    uuid: GenerateUUIDv4(),
+                    policyId: ref.policyId,
+                    owner: documentOwner.did,
+                    user: user.hederaAccountId,
+                    hash,
+                    vpMessageId,
+                    tokenId: token.tokenId,
+                    amount: tokenValue,
+                    target: targetAccount,
+                    status: 'Waiting',
+                });
+            }
+            notifier.success(
+                `Multi mint`,
+                multipleConfig.type === 'Main'
+                    ? 'Mint transaction created'
+                    : `Request to mint is submitted`,
+                NotificationAction.POLICY_VIEW,
+                ref.policyId
+            );
+        } else {
+            const tokenConfig = await MintService.getTokenConfig(ref, token);
+            if (token.tokenType === 'non-fungible') {
+                const mintNFT = await MintNFT.create(
+                    {
+                        target: targetAccount,
+                        amount: tokenValue,
+                        vpMessageId,
+                        tokenId: token.tokenId,
+                        metadata: vpMessageId,
+                        tokenType: token.tokenType,
+                        decimals: token.decimals,
+                        memo: transactionMemo,
+                    },
+                    root,
+                    tokenConfig,
+                    ref,
+                    notifier
+                );
+                MintService.activeMintProcesses.add(mintNFT.mintRequestId);
+                mintNFT
+                    .mint()
+                    .catch((error) =>
+                        MintService.error(PolicyUtils.getErrorMessage(error))
+                    )
+                    .finally(() => {
+                        MintService.activeMintProcesses.delete(
+                            mintNFT.mintRequestId
+                        );
+                    });
+            } else {
+                const mintFT = await MintFT.create(
+                    {
+                        target: targetAccount,
+                        amount: tokenValue,
+                        vpMessageId,
+                        tokenId: token.tokenId,
+                        tokenType: token.tokenType,
+                        decimals: token.decimals,
+                        memo: transactionMemo,
+                    },
+                    root,
+                    tokenConfig,
+                    ref,
+                    notifier
+                );
+                MintService.activeMintProcesses.add(mintFT.mintRequestId);
+                mintFT
+                    .mint()
+                    .catch((error) =>
+                        MintService.error(PolicyUtils.getErrorMessage(error))
+                    )
+                    .finally(() => {
+                        MintService.activeMintProcesses.delete(
+                            mintFT.mintRequestId
+                        );
+                    });
+            }
+        }
+
+        new ExternalEventChannel().publishMessage(
+            ExternalMessageEvents.TOKEN_MINTED,
+            {
+                tokenId: token.tokenId,
+                tokenValue,
+                memo: transactionMemo,
+            }
         );
-        await messageServer.setTopicObject(topic).sendMessage(message);
     }
 
     /**
@@ -277,145 +374,34 @@ export class MintService {
     }
 
     /**
-     * Mint
+     * Send Synchronization Message
      * @param ref
-     * @param token
-     * @param tokenValue
-     * @param documentOwner
+     * @param multipleConfig
      * @param root
-     * @param targetAccount
-     * @param uuid
+     * @param data
+     * @param signOptions
      */
-    public static async mint(
+    private static async sendMessage(
         ref: AnyBlockType,
-        token: Token,
-        tokenValue: number,
-        documentOwner: IPolicyUser,
+        multipleConfig: MultiPolicy,
         root: IHederaCredentials,
-        targetAccount: string,
-        vpMessageId: string,
-        transactionMemo: string,
-        documents: VcDocument[]
-    ): Promise<void> {
-        const multipleConfig = await MintService.getMultipleConfig(
-            ref,
-            documentOwner
+        data: any,
+        signOptions: ISignOptions
+    ) {
+        const message = new SynchronizationMessage(MessageAction.Mint);
+        message.setDocument(multipleConfig, data);
+        const messageServer = new MessageServer(
+            root.hederaAccountId,
+            root.hederaAccountKey,
+            signOptions,
+            ref.dryRun
         );
-        const users = new Users();
-        const documentOwnerUser = await users.getUserById(documentOwner.did);
-        const policyOwner = await users.getUserById(ref.policyOwner);
-        const notifier = NotificationHelper.init([
-            documentOwnerUser?.id,
-            policyOwner?.id,
-        ]);
-        if (multipleConfig) {
-            const hash = VcDocument.toCredentialHash(
-                documents,
-                (value: any) => {
-                    delete value.id;
-                    delete value.policyId;
-                    delete value.ref;
-                    return value;
-                }
-            );
-            await MintService.sendMessage(ref, multipleConfig, root, {
-                hash,
-                messageId: vpMessageId,
-                tokenId: token.tokenId,
-                amount: tokenValue,
-                memo: transactionMemo,
-                target: targetAccount,
-            });
-            if (multipleConfig.type === 'Main') {
-                const user = await PolicyUtils.getUserCredentials(
-                    ref,
-                    documentOwner.did
-                );
-                await DatabaseServer.createMultiPolicyTransaction({
-                    uuid: GenerateUUIDv4(),
-                    policyId: ref.policyId,
-                    owner: documentOwner.did,
-                    user: user.hederaAccountId,
-                    hash,
-                    vpMessageId,
-                    tokenId: token.tokenId,
-                    amount: tokenValue,
-                    target: targetAccount,
-                    status: 'Waiting',
-                });
-            }
-            notifier.success(
-                `Multi mint`,
-                multipleConfig.type === 'Main'
-                    ? 'Mint transaction created'
-                    : `Request to mint is submitted`,
-                NotificationAction.POLICY_VIEW,
-                ref.policyId
-            );
-        } else {
-            const tokenConfig = await MintService.getTokenConfig(ref, token);
-            if (token.tokenType === 'non-fungible') {
-                const mintNFT = await MintNFT.create(
-                    {
-                        target: targetAccount,
-                        amount: tokenValue,
-                        vpMessageId,
-                        tokenId: token.tokenId,
-                        metadata: vpMessageId,
-                        memo: transactionMemo,
-                    },
-                    root,
-                    tokenConfig,
-                    ref,
-                    notifier
-                );
-                MintService.activeMintProcesses.add(mintNFT.mintRequestId);
-                mintNFT
-                    .mint()
-                    .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error))
-                    )
-                    .finally(() => {
-                        MintService.activeMintProcesses.delete(
-                            mintNFT.mintRequestId
-                        );
-                    });
-            } else {
-                const mintFT = await MintFT.create(
-                    {
-                        target: targetAccount,
-                        amount: tokenValue,
-                        vpMessageId,
-                        tokenId: token.tokenId,
-                        memo: transactionMemo,
-                    },
-                    root,
-                    tokenConfig,
-                    ref,
-                    notifier
-                );
-                MintService.activeMintProcesses.add(mintFT.mintRequestId);
-                mintFT
-                    .mint()
-                    .catch((error) =>
-                        MintService.error(PolicyUtils.getErrorMessage(error))
-                    )
-                    .finally(() => {
-                        MintService.activeMintProcesses.delete(
-                            mintFT.mintRequestId
-                        );
-                    });
-            }
-        }
-
-        new ExternalEventChannel().publishMessage(
-            ExternalMessageEvents.TOKEN_MINTED,
-            {
-                tokenId: token.tokenId,
-                tokenValue,
-                memo: transactionMemo,
-            }
+        const topic = new TopicConfig(
+            { topicId: multipleConfig.synchronizationTopicId },
+            null,
+            null
         );
+        await messageServer.setTopicObject(topic).sendMessage(message);
     }
 
     /**
@@ -471,6 +457,8 @@ export class MintService {
                     secondaryVpIds: ids,
                     memo,
                     tokenId: token.tokenId,
+                    tokenType: token.tokenType,
+                    decimals: token.decimals,
                 },
                 root,
                 tokenConfig,
@@ -497,6 +485,8 @@ export class MintService {
                     secondaryVpIds: ids,
                     memo,
                     tokenId: token.tokenId,
+                    tokenType: token.tokenType,
+                    decimals: token.decimals,
                 },
                 root,
                 tokenConfig,

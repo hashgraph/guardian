@@ -47,7 +47,7 @@ Once, compare button is clicked, we need to select the first and second modules 
 
 Block comparison structure can be expanded to view the comparison of their Properties:
 
-![image4.png](<../../../../../.gitbook/assets/3 (1) (1) (1) (1).png>)
+![image4.png](<../../../../../.gitbook/assets/3 (1) (1) (1) (1) (1).png>)
 
 *
   *

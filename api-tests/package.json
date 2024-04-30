@@ -1,6 +1,6 @@
 {
     "name": "api-tests",
-    "version": "2.23.1",
+    "version": "2.24.0",
     "description": "API Tests",
     "main": "index.js",
     "type": "module",
@@ -26,8 +26,5 @@
         "gulp-rename": "^2.0.0",
         "gulp-sourcemaps": "^3.0.0",
         "gulp-typescript": "^6.0.0-alpha.1"
-    },
-    "resolutions": {
-        "@types/mime": "3.0.4"
     }
 }

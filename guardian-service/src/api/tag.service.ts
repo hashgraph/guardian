@@ -1,34 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    DatabaseServer,
-    Logger,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    MessageType,
-    PolicyModule as ModuleCollection,
-    Policy as PolicyCollection,
-    PolicyTool as PolicyToolCollection,
-    Schema as SchemaCollection,
-    Token as TokenCollection,
-    Tag,
-    TagMessage,
-    TopicConfig,
-    UrlType,
-    Users,
-    VcHelper,
-} from '@guardian/common';
-import {
-    GenerateUUIDv4,
-    IRootConfig,
-    MessageAPI,
-    Schema,
-    SchemaCategory,
-    SchemaHelper,
-    SchemaStatus,
-    TagType
-} from '@guardian/interfaces';
+import { DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, Policy as PolicyCollection, PolicyModule as ModuleCollection, PolicyTool as PolicyToolCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper, } from '@guardian/common';
+import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 
 /**
  * Publish schema tags
@@ -48,7 +20,7 @@ export async function publishSchemaTags(
 
     const topic = await DatabaseServer.getTopicById(schema.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
@@ -76,7 +48,7 @@ export async function publishPolicyTags(
 
     const topic = await DatabaseServer.getTopicById(policy.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
@@ -104,7 +76,7 @@ export async function publishTokenTags(
 
     const topic = await DatabaseServer.getTopicById(token.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
@@ -131,7 +103,7 @@ export async function publishToolTags(
     const tags = await DatabaseServer.getTags(filter);
     const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
         .setTopicObject(topicConfig);
     for (const tag of tags) {
         tag.target = tool.tagsTopicId;
@@ -158,7 +130,7 @@ export async function publishModuleTags(
 
     const topic = await DatabaseServer.getTopicById(module.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
@@ -389,7 +361,7 @@ export async function tagsAPI(): Promise<void> {
                     tag.status = 'Published';
                     const topic = await DatabaseServer.getTopicById(target.topicId);
                     const topicConfig = await TopicConfig.fromObject(topic, true);
-                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                         .setTopicObject(topicConfig);
                     await publishTag(tag, messageServer);
                 } else {
@@ -541,7 +513,7 @@ export async function tagsAPI(): Promise<void> {
                 const root = await users.getHederaAccount(item.owner);
                 const topic = await DatabaseServer.getTopicById(item.topicId);
                 const topicConfig = await TopicConfig.fromObject(topic, true);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                     .setTopicObject(topicConfig);
                 await deleteTag(item, messageServer);
             }

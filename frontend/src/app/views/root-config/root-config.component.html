@@ -78,248 +78,309 @@
 
 <ng-template #registerDID>
     <form
-        (ngSubmit)="onSubmit()"
-        *ngIf="!isConfirmed && isNewAccount"
-        [formGroup]="hederaForm"
-        class="finish-setup-form"
+            (ngSubmit)="onSubmit()"
+            *ngIf="!isConfirmed && isNewAccount"
+            [formGroup]="hederaForm"
+            class="finish-setup-form"
     >
-            <div *ngIf="!isRestore && step === 'HEDERA'" class="finish-setup-title">Hedera Account</div>
-            <div *ngIf="!isRestore && step === 'DID'" class="finish-setup-title">DID Document</div>
-            <div *ngIf="!isRestore && step === 'DID_KEYS'" class="finish-setup-title">DID Document signing keys</div>
-            <div *ngIf="!isRestore && step === 'VC'" class="finish-setup-title">VC Document</div>
-            <div *ngIf="isRestore" class="finish-setup-title">Restore Data</div>
+        <div *ngIf="!isRestore && step === 'HEDERA'" class="finish-setup-title">Hedera Account</div>
+        <div *ngIf="!isRestore && step === 'DID'" class="finish-setup-title">DID Document</div>
+        <div *ngIf="!isRestore && step === 'DID_KEYS'" class="finish-setup-title">DID Document signing keys</div>
+        <div *ngIf="!isRestore && step === 'VC'" class="finish-setup-title">VC Document</div>
+        <div *ngIf="isRestore" class="finish-setup-title">Restore Data</div>
 
-            <div class="finish-setup-form-container">
-                <div class="list">
+        <div class="finish-setup-form-container">
+            <div class="list">
 
-                    <div *ngIf="step === 'HEDERA'" class="list-item">
-                        <div class="input-field-container">
-                            <label class="form-label" htmlFor="operatorId">
-                                * OPERATOR ID (Hedera Account):
-                            </label>
-                            <input
+                <div *ngIf="step === 'HEDERA'" class="list-item">
+                    <div class="input-field-container">
+                        <label class="form-label" htmlFor="operatorId">
+                            * OPERATOR ID (Hedera Account):
+                        </label>
+                        <input
                                 formControlName="hederaAccountId"
                                 id="operatorId"
                                 pInputText
                                 placeholder="0.0.1548173"
                                 type="text"
-                            />
-                        </div>
-                        <div class="input-field-container">
-                            <label class="form-label" htmlFor="operatorKey">
-                                * OPERATOR KEY (Hedera Account Private Key):
-                            </label>
-                            <input
+                        />
+                    </div>
+                    <div class="input-field-container">
+                        <label class="form-label" htmlFor="operatorKey">
+                            * OPERATOR KEY (Hedera Account Private Key):
+                        </label>
+                        <input
                                 formControlName="hederaAccountKey"
                                 id="operatorKey"
                                 pInputText
                                 placeholder="302e020100300506032b657004220420e..."
                                 type="text"
+                        />
+                    </div>
+                    <div class="input-field-container">
+                        <p-checkbox
+                                [binary]="true"
+                                formControlName="useFireblocksSigning"
+                                inputId="useFireblocksSigning"
+                                label="Use fireblocks signing"
+                        ></p-checkbox>
+                    </div>
+                    <div [ngClass]="{'hide-block': hederaForm.get('useFireblocksSigning')?.value === false}">
+                        <div class="input-field-container">
+                            <label class="form-label" htmlFor="fireBlocksVaultId">
+                                * Fireblocks Vault ID:
+                            </label>
+                            <input
+                                    formControlName="fireBlocksVaultId"
+                                    id="fireBlocksVaultId"
+                                    placeholder="0"
+                                    pInputText
+                                    type="text"
                             />
                         </div>
+                        <div class="input-field-container">
+                            <label class="form-label" htmlFor="fireBlocksAssetId">
+                                * Fireblocks Asset ID:
+                            </label>
+                            <input
+                                    formControlName="fireBlocksAssetId"
+                                    id="fireBlocksAssetId"
+                                    pInputText
+                                    placeholder="ASSET_NAME"
+                                    type="text"
+                            />
+                        </div>
+                        <div class="input-field-container">
+                            <label class="form-label" htmlFor="fireBlocksApiKey">
+                                * Fireblocks API Key:
+                            </label>
+                            <input
+                                    formControlName="fireBlocksApiKey"
+                                    id="fireBlocksApiKey"
+                                    autocomplete="off"
+                                    pInputText
+                                    placeholder="00000000-0000-0000-0000-000000000000"
+                                    type="text"
+                            />
+                        </div>
+                        <div class="input-field-container">
+                            <label class="form-label" htmlFor="fireBlocksPrivateiKey">
+                                * Fireblocks Private Key:
+                            </label>
+                            <textarea
+                                    formControlName="fireBlocksPrivateiKey"
+                                    id="fireBlocksPrivateiKey"
+                                    autocomplete="off"
+                                    pInputText
+                                    placeholder="-----BEGIN PRIVATE KEY----- ..."
+                                    type="text"
+                            ></textarea>
+                        </div>
                     </div>
+                </div>
 
-                    <div *ngIf="step === 'RESTORE'" class="list-item">
-                        <div class="topic-id-field">     
-                            <div class="group-body">
-                                <mat-form-field appearance="outline" class="example-full-width">
-                                    <mat-label>Topic ID:</mat-label>
-                                    <mat-select [formControl]="selectedTokenId">
-                                        <mat-select-trigger>
-                                            {{selectedTokenId.value}}
-                                        </mat-select-trigger>
-                                        <mat-option *ngFor="let topic of userTopics" [value]="topic.topicId">
-                                            <div class="topic-item">
-                                                <span>{{ topic.topicId }}</span>
-                                                <span>
+                <div *ngIf="step === 'RESTORE'" class="list-item">
+                    <div class="topic-id-field">
+                        <div class="group-body">
+                            <mat-form-field appearance="outline" class="example-full-width">
+                                <mat-label>Topic ID:</mat-label>
+                                <mat-select [formControl]="selectedTokenId">
+                                    <mat-select-trigger>
+                                        {{ selectedTokenId.value }}
+                                    </mat-select-trigger>
+                                    <mat-option *ngFor="let topic of userTopics" [value]="topic.topicId">
+                                        <div class="topic-item">
+                                            <span>{{ topic.topicId }}</span>
+                                            <span>
                                                     <hedera-explorer [params]="topic.topicId" type="topics">
                                                         {{topic.date}}
                                                     </hedera-explorer>
                                                 </span>
-                                            </div>
-                                        </mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                                <div class="list-button">
-                                    <p-button
+                                        </div>
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <div class="list-button">
+                                <p-button
                                         (click)="getAllUserTopics($event)"
                                         [disabled]="!hederaForm.valid"
                                         class="generate-btn"
                                         label="Load topics"
                                         styleClass="p-button-outlined"
-                                    >
-                                        <i class="pi pi-replay"></i>
-                                    </p-button>
-                                </div>
+                                >
+                                    <i class="pi pi-replay"></i>
+                                </p-button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div *ngIf="step === 'DID'" class="list-item">
-                        <mat-radio-group [formControl]="didDocumentType" (change)="onChangeDidType()">
-                            <mat-radio-button [value]="false" class="boolean-option" color="primary">
-                                Generate new DID document.
-                            </mat-radio-button>
-                            <mat-radio-button [value]="true" class="boolean-option" color="primary">
-                                Custom DID document.
-                            </mat-radio-button>
-                        </mat-radio-group>
-                        <mat-form-field appearance="outline" class="example-full-width" [attr.active-field]="didDocumentType.value">
-                            <mat-label>DID Document:</mat-label>
-                            <textarea matInput [formControl]="didDocumentForm" style="height: 150px"></textarea>        
-                            <mat-error *ngIf="didDocumentForm.hasError('incorrect')">
-                                Invalid DID Document.
-                            </mat-error>
-                            <mat-error *ngIf="didDocumentForm.hasError('exists')">
-                                DID Document already exists.
+                <div *ngIf="step === 'DID'" class="list-item">
+                    <mat-radio-group (change)="onChangeDidType()" [formControl]="didDocumentType">
+                        <mat-radio-button [value]="false" class="boolean-option" color="primary">
+                            Generate new DID document.
+                        </mat-radio-button>
+                        <mat-radio-button [value]="true" class="boolean-option" color="primary">
+                            Custom DID document.
+                        </mat-radio-button>
+                    </mat-radio-group>
+                    <mat-form-field [attr.active-field]="didDocumentType.value" appearance="outline"
+                                    class="example-full-width">
+                        <mat-label>DID Document:</mat-label>
+                        <textarea [formControl]="didDocumentForm" matInput style="height: 150px"></textarea>
+                        <mat-error *ngIf="didDocumentForm.hasError('incorrect')">
+                            Invalid DID Document.
+                        </mat-error>
+                        <mat-error *ngIf="didDocumentForm.hasError('exists')">
+                            DID Document already exists.
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div *ngIf="step === 'DID_KEYS'" class="list-item">
+                    <div *ngFor="let item of didKeys" class="group-container">
+                        <label [htmlFor]="item.name" class="form-label">
+                            {{ item.name }}:
+                        </label>
+                        <mat-form-field appearance="outline" class="example-full-width">
+                            <mat-label>* Method:</mat-label>
+                            <mat-select [formControl]="item.keyNameControl">
+                                <mat-option *ngFor="let keyItem of item.keyNames" [value]="keyItem.id">
+                                    {{ keyItem.name }}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="example-full-width">
+                            <mat-label>* Key:</mat-label>
+                            <input [formControl]="item.keyValueControl" matInput placeholder="FRs4qVjqvP9Dh...">
+                            <mat-error *ngIf="item.keyValueControl.hasError('incorrect')">
+                                Invalid DID Key
                             </mat-error>
                         </mat-form-field>
                     </div>
+                </div>
 
-                    <div *ngIf="step === 'DID_KEYS'" class="list-item">
-                        <div *ngFor="let item of didKeys" class="group-container">
-                            <label class="form-label" [htmlFor]="item.name">
-                                {{item.name}}:
-                            </label>
-                            <mat-form-field appearance="outline" class="example-full-width">
-                                <mat-label>* Method:</mat-label>
-                                <mat-select [formControl]="item.keyNameControl">
-                                    <mat-option *ngFor="let keyItem of item.keyNames" [value]="keyItem.id">
-                                        {{keyItem.name}}
-                                    </mat-option>
-                                </mat-select>
-                            </mat-form-field>
-                            <mat-form-field class="example-full-width" appearance="outline">
-                                <mat-label>* Key:</mat-label>
-                                <input matInput placeholder="FRs4qVjqvP9Dh..." [formControl]="item.keyValueControl">
-                                <mat-error *ngIf="item.keyValueControl.hasError('incorrect')">
-                                    Invalid DID Key
-                                </mat-error>
-                            </mat-form-field>
-                        </div>
-                    </div>
-
-                    <div *ngIf="step === 'VC'" class="list-item">
-                        <app-schema-form
+                <div *ngIf="step === 'VC'" class="list-item">
+                    <app-schema-form
                             (change)="onChangeForm()"
                             [formGroup]="vcForm"
                             [isFormForFinishSetup]="true"
                             [private-fields]="hidePrivateFields"
                             [schema]="schema"
                             [showButtons]="false"
-                        >
-                        </app-schema-form>
-                    </div>
+                    >
+                    </app-schema-form>
                 </div>
+            </div>
 
-                <div *ngIf="step === 'HEDERA'" class="action-btns">
-                    <p-button
+            <div *ngIf="step === 'HEDERA'" class="action-btns">
+                <p-button
                         (click)="randomKey()"
                         class="generate-btn"
                         label="Generate"
                         styleClass="p-button-outlined"
-                    >
-                    </p-button>
-                    <p-button
+                >
+                </p-button>
+                <p-button
                         (click)="onRestoreStep()"
                         [disabled]="!hederaForm.valid"
                         class="generate-btn"
                         label="Restore data"
                         styleClass="p-button-outlined"
-                    >
-                        <i class="pi pi-replay"></i>
-                    </p-button>
-                    <p-button
+                >
+                    <i class="pi pi-replay"></i>
+                </p-button>
+                <p-button
                         (click)="onNextStep()"
                         [disabled]="!hederaForm.valid"
                         class="next-btn"
                         label="Next"
-                    >
-                    </p-button>
-                </div>
+                >
+                </p-button>
+            </div>
 
-                <div *ngIf="step === 'DID'" class="action-btns">
-                    <div class="row-btns">
-                        <p-button
+            <div *ngIf="step === 'DID'" class="action-btns">
+                <div class="row-btns">
+                    <p-button
                             (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
                             styleClass="p-button-outlined"
-                        >
-                        </p-button>
-                        <p-button
+                    >
+                    </p-button>
+                    <p-button
                             *ngIf="didDocumentType.value"
                             (click)="parseDidDocument()"
                             [disabled]="!didDocumentForm.valid"
                             class="next-btn"
                             label="Next"
-                        >
-                        </p-button>
-                        <p-button
+                    >
+                    </p-button>
+                    <p-button
                             *ngIf="!didDocumentType.value"
                             (click)="onNextStep()"
                             class="next-btn"
                             label="Next"
-                        >
-                        </p-button>
-                    </div>
+                    >
+                    </p-button>
                 </div>
+            </div>
 
-                <div *ngIf="step === 'DID_KEYS'" class="action-btns">
-                    <div class="row-btns">
-                        <p-button
+            <div *ngIf="step === 'DID_KEYS'" class="action-btns">
+                <div class="row-btns">
+                    <p-button
                             (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
                             styleClass="p-button-outlined"
-                        >
-                        </p-button>
-                        <p-button
+                    >
+                    </p-button>
+                    <p-button
                             (click)="parseDidKeys()"
                             [disabled]="!didKeysControl.valid"
                             class="next-btn"
                             label="Next"
-                        >
-                        </p-button>
-                    </div>
+                    >
+                    </p-button>
                 </div>
+            </div>
 
-                <div *ngIf="step === 'RESTORE'" class="action-btns">
-                    <p-button
+            <div *ngIf="step === 'RESTORE'" class="action-btns">
+                <p-button
                         (click)="onPrevStep()"
                         class="generate-btn"
                         label="Prev"
                         styleClass="p-button-outlined"
-                    >
-                    </p-button>
-                    <p-button
+                >
+                </p-button>
+                <p-button
                         (click)="onRestore()"
                         [disabled]="!selectedTokenId.valid"
                         class="next-btn"
                         label="Proceed"
-                    >
-                    </p-button>
-                </div>
+                >
+                </p-button>
+            </div>
 
-                <div *ngIf="step === 'VC'" class="action-btns">
-                    <div class="row-btns">
-                        <p-button
+            <div *ngIf="step === 'VC'" class="action-btns">
+                <div class="row-btns">
+                    <p-button
                             (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
                             styleClass="p-button-outlined"
-                        >
-                        </p-button>
-                        <p-button
+                    >
+                    </p-button>
+                    <p-button
                             [disabled]="!validVC"
                             class="connect-btn"
                             label="Connect"
                             type="submit"
-                        >   
-                        </p-button>
-                    </div>
+                    >
+                    </p-button>
                 </div>
             </div>
+        </div>
 
     </form>
 
@@ -334,10 +395,10 @@
         <p>An error occurred while creating the document.</p>
         <p>Please try again later.</p>
         <button
-            (click)="retry()"
-            color="primary"
-            mat-raised-button
-            type="button"
+                (click)="retry()"
+                color="primary"
+                mat-raised-button
+                type="button"
         >
             Retry
         </button>
@@ -350,9 +411,9 @@
 
 <ng-template #taskExecution>
     <async-progress
-        (completed)="onAsyncCompleted()"
-        (error)="onAsyncError($event)"
-        *ngIf="loading && taskId"
-        [taskId]="taskId"
+            (completed)="onAsyncCompleted()"
+            (error)="onAsyncError($event)"
+            *ngIf="loading && taskId"
+            [taskId]="taskId"
     ></async-progress>
 </ng-template>

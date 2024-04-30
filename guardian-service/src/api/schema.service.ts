@@ -278,6 +278,21 @@ export async function schemaAPI(): Promise<void> {
             }
             if (msg.policyId) {
                 filter.category = SchemaCategory.POLICY;
+                const userPolicy = await DatabaseServer.getPolicyCache({
+                    id: msg.policyId,
+                    userId: msg.owner
+                });
+                if (userPolicy) {
+                    filter.cacheCollection = 'schemas';
+                    filter.cachePolicyId = msg.policyId;
+                    // tslint:disable-next-line:no-shadowed-variable
+                    const [items, count] =
+                        await DatabaseServer.getAndCountPolicyCacheData(
+                            filter,
+                            otherOptions
+                        );
+                    return new MessageResponse({ items, count });
+                }
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
                 filter.topicId = policy?.topicId;
             } else if (msg.moduleId) {

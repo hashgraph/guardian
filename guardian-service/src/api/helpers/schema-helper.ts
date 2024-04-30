@@ -324,7 +324,8 @@ export async function sendSchemaMessage(
 ) {
     const messageServer = new MessageServer(
         root.hederaAccountId,
-        root.hederaAccountKey
+        root.hederaAccountKey,
+        root.signOptions
     );
     const message = new SchemaMessage(action);
     message.setDocument(schema);
@@ -479,7 +480,7 @@ export async function createSchema(
     }
 
     if (!topic && newSchema.topicId !== 'draft') {
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         topic = await topicHelper.create({
             type: TopicType.SchemaTopic,
             name: TopicType.SchemaTopic,

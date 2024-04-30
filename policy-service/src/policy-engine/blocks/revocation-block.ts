@@ -1,28 +1,12 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import {
-    AnyBlockType,
-    IPolicyEventState,
-    IPolicyInterfaceBlock,
-} from '../policy-engine.interface.js';
+import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock, } from '../policy-engine.interface.js';
 import { Message, MessageServer } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
-import {
-    IPolicyEvent,
-    PolicyInputEventType,
-    PolicyOutputEventType,
-} from '../interfaces/index.js';
-import {
-    ChildrenType,
-    ControlType,
-    PropertyType,
-} from '../interfaces/block-about.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType, } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType, } from '../interfaces/block-about.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import {
-    ExternalDocuments,
-    ExternalEvent,
-    ExternalEventType,
-} from '../interfaces/external-event.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType, } from '../interfaces/external-event.js';
 
 export const RevokedStatus = 'Revoked';
 
@@ -178,9 +162,11 @@ export class RevocationBlock {
 
         const userCred = await PolicyUtils.getUserCredentials(ref, event.user.did);
         const userHederaCred = await userCred.loadHederaCredentials(ref);
+        const signOptions = await userCred.loadSignOptions(ref);
         const messageServer = new MessageServer(
             userHederaCred.hederaAccountId,
             userHederaCred.hederaAccountKey,
+            signOptions,
             ref.dryRun
         );
         const policyTopics = await ref.databaseServer.getTopics({
