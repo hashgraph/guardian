@@ -1,34 +1,34 @@
 import { Guardians } from '../../helpers/guardians.js';
-import { ContractType, UserRole } from '@guardian/interfaces';
+import { ContractType, Permissions, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import {
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Post,
-  Req,
-  Response,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Post,
+    Query,
+    Req,
+    Response,
 } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiCreatedResponse,
     ApiOperation,
-    ApiUnauthorizedResponse,
     ApiExtraModels,
-    ApiForbiddenResponse,
     ApiTags,
     ApiBody,
-    ApiBearerAuth,
     ApiQuery,
     ApiParam,
 } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import {
+    ContractConfigDTO,
     ContractDTO,
     RetirePoolDTO,
     RetirePoolTokenDTO,
@@ -37,6 +37,10 @@ import {
     WiperRequestDTO,
 } from '../../middlewares/validation/schemas/contracts.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { AuthUser } from '../../auth/authorization-helper.js';
+import { Auth } from '../../auth/auth.decorator.js';
+import { IAuthUser } from '@guardian/common';
+import { pageHeader } from 'middlewares/validation/page-header.js';
 
 /**
  * Contracts api
@@ -45,9 +49,16 @@ import { UseCache } from '../../helpers/decorators/cache.js';
 @ApiTags('contracts')
 export class ContractsApi {
     //#region Common contract endpoints
+
+    /**
+     * Get all contracts
+     */
     @Get()
-    @ApiBearerAuth()
-    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_CONTRACT_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
     @ApiOperation({
         summary: 'Return a list of all contracts.',
         description: 'Returns all contracts.',
@@ -55,8 +66,7 @@ export class ContractsApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description:
-            'The number of pages to skip before starting to collect the result set',
+        description: 'The number of pages to skip before starting to collect the result set',
         required: false,
         example: 0,
     })
@@ -77,107 +87,87 @@ export class ContractsApi {
     @ApiOkResponse({
         description: 'Contracts.',
         isArray: true,
-        headers: {
-            'x-total-count': {
-                schema: {
-                    type: 'integer',
-                },
-                description: 'Total items in the collection.',
-            },
-        },
+        headers: pageHeader,
         type: ContractDTO,
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getContracts(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
+    async getContracts(
+        @AuthUser() user: IAuthUser,
+        @Query('type') type: ContractType,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<ContractDTO[]> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getContracts(
                 user.parent || user.did,
-                req.query.type as any,
-                req.query.pageIndex as any,
-                req.query.pageSize as any
+                type,
+                pageIndex,
+                pageSize
             );
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Create new smart-contract
+     */
     @Post('/')
-    @ApiBearerAuth()
-    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_CONTRACT_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Create contract.',
-        description:
-            'Create smart-contract. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Create smart-contract. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiBody({
-        schema: {
-            type: 'object',
-            properties: {
-                description: {
-                    type: 'string',
-                },
-            },
-        },
+        type: ContractConfigDTO,
     })
     @ApiCreatedResponse({
         description: 'Created contract.',
         type: ContractDTO,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async createContract(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async createContract(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ContractConfigDTO
+    ): Promise<ContractDTO> {
         try {
-            const user = req.user;
-            const { description, type } = req.body;
+            const { description, type } = body;
             const guardians = new Guardians();
             return await guardians.createContract(user.did, description, type);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Import new smart-contract
+     */
     @Post('/import')
-    @ApiBearerAuth()
-    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_CONTRACT_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Import contract.',
-        description:
-            'Import smart-contract. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Import smart-contract. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiBody({
         schema: {
@@ -199,47 +189,37 @@ export class ContractsApi {
         description: 'Imported contract.',
         type: ContractDTO,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async importContract(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async importContract(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<ContractDTO> {
         try {
-            const user = req.user;
-            const { contractId, description } = req.body;
+            const { contractId, description } = body;
             const guardians = new Guardians();
-            return await guardians.importContract(
-                user.did,
-                contractId,
-                description
-            );
+            return await guardians.importContract(user.did, contractId, description);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * @param req
+     * Get contract permissions
      */
     @Get('/:contractId/permissions')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_PERMISSIONS_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get contract permissions.',
-        description:
-            'Get smart-contract permissions. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Get smart-contract permissions. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -252,39 +232,34 @@ export class ContractsApi {
         description: 'Contract permissions.',
         type: Number,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
-    async contractPermissions(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    @HttpCode(HttpStatus.OK)
+    async contractPermissions(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+    ): Promise<number> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return await guardians.checkContractPermissions(
-                user.did,
-                req.params.contractId
-            );
+            return await guardians.checkContractPermissions(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Remove contract
+     */
     @Delete('/:contractId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_CONTRACT_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Remove contract.',
         description:
@@ -301,56 +276,43 @@ export class ContractsApi {
         description: 'Successful operation.',
         type: Boolean,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async removeContract(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async removeContract(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.removeContract(
-                    user?.did,
-                    req.params?.contractId as string
-                )
-            );
+            return await guardians.removeContract(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     //#endregion
     //#region Wipe contract endpoints
 
     /**
-     * @param req
-     * @param res
+     * Get list of all wipe requests
      */
     @Get('/wipe/requests')
-    @ApiBearerAuth()
-    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_REQUEST_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return a list of all wipe requests.',
-        description:
-            'Returns all wipe requests. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Returns all wipe requests. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description:
-            'The number of pages to skip before starting to collect the result set',
+        description: 'The number of pages to skip before starting to collect the result set',
         required: false,
         example: 0,
     })
@@ -371,57 +333,50 @@ export class ContractsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        headers: {
-            'x-total-count': {
-                schema: {
-                    type: 'integer',
-                },
-                description: 'Total items in the collection.',
-            },
-        },
+        headers: pageHeader,
         type: WiperRequestDTO,
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.OK)
     @UseCache({ isExpress: true })
-    async getWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getWipeRequests(
+        @AuthUser() user: IAuthUser,
+        @Query('contractId') contractId: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<WiperRequestDTO[]> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getWipeRequests(
                 user.parent || user.did,
-                req.query.contractId as any,
-                req.query.pageIndex as any,
-                req.query.pageSize as any
+                contractId,
+                pageIndex,
+                pageSize
             );
             res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Enable wipe requests
+     */
     @Post('/wipe/:contractId/requests/enable')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_REQUEST_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Enable wipe requests.',
-        description:
-            'Enable wipe contract requests. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Enable wipe contract requests. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -432,45 +387,38 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async enableWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async enableWipeRequests(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.enableWipeRequests(
-                    user.did,
-                    req.params.contractId
-                )
-            );
+            return await guardians.enableWipeRequests(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Disable wipe requests
+     */
     @Post('/wipe/:contractId/requests/disable')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_REQUEST_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Disable wipe requests.',
-        description:
-            'Disable wipe contract requests. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Disable wipe contract requests. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -481,45 +429,38 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async disableWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async disableWipeRequests(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.disableWipeRequests(
-                    user.did,
-                    req.params.contractId
-                )
-            );
+            return await guardians.disableWipeRequests(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Approve wipe request
+     */
     @Post('/wipe/requests/:requestId/approve')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_REQUEST_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Approve wipe request.',
-        description:
-            'Approve wipe contract request. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Approve wipe contract request. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'requestId',
@@ -530,45 +471,38 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async approveWipeRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async approveWipeRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('requestId') requestId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.approveWipeRequest(
-                    user.did,
-                    req.params.requestId
-                )
-            );
+            return await guardians.approveWipeRequest(user.did, requestId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Reject wipe request
+     */
     @Delete('/wipe/requests/:requestId/reject')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_REQUEST_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Reject wipe request.',
-        description:
-            'Reject wipe contract request. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Reject wipe contract request. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'requestId',
@@ -585,46 +519,43 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async rejectWipeRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async rejectWipeRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('requestId') requestId: string,
+        @Query('ban') ban: boolean,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.rejectWipeRequest(
-                    user.did,
-                    req.params.requestId,
-                    req.query.ban?.toLowerCase() === 'true'
-                )
+            return await guardians.rejectWipeRequest(
+                user.did,
+                requestId,
+                String(ban).toLowerCase() === 'true'
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Remove all wipe requests
+     */
     @Delete('/wipe/:contractId/requests')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_REQUEST_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Clear wipe requests.',
-        description:
-            'Clear wipe contract requests. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Clear wipe contract requests. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -635,102 +566,88 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async clearWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async clearWipeRequests(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.clearWipeRequests(
-                    user.did,
-                    req.params.contractId
-                )
-            );
+            return await guardians.clearWipeRequests(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Add wipe admin
+     */
     @Post('/wipe/:contractId/admin/:hederaId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_ADMIN_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Add wipe admin.',
-        description:
-            'Add wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Add wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
-        type: String,
         description: 'Contract identifier',
+        type: String,
         required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiParam({
         name: 'hederaId',
-        type: String,
         description: 'Hedera identifier',
+        type: String,
         required: true,
         example: '0.0.1',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async wipeAddAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async wipeAddAdmin(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.addWipeAdmin(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
+            return await guardians.addWipeAdmin(user.did, contractId, hederaId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Remove wipe admin
+     */
     @Delete('/wipe/:contractId/admin/:hederaId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_ADMIN_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Remove wipe admin.',
-        description:
-            'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -748,46 +665,39 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async wipeRemoveAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async wipeRemoveAdmin(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.removeWipeAdmin(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
+            return await guardians.removeWipeAdmin(user.did, contractId, hederaId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Add wipe manager
+     */
     @Post('/wipe/:contractId/manager/:hederaId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_MANAGER_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Add wipe manager.',
-        description:
-            'Add wipe contract manager. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Add wipe contract manager. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -805,46 +715,39 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async wipeAddManager(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async wipeAddManager(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.addWipeManager(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
+            return await guardians.addWipeManager(user.did, contractId, hederaId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Remove wipe manager
+     */
     @Delete('/wipe/:contractId/manager/:hederaId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPE_MANAGER_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Remove wipe manager.',
-        description:
-            'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -862,46 +765,39 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async wipeRemoveManager(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async wipeRemoveManager(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.removeWipeManager(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
+            return await guardians.removeWipeManager(user.did, contractId, hederaId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Add wipe wiper
+     */
     @Post('/wipe/:contractId/wiper/:hederaId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPER_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Add wipe wiper.',
-        description:
-            'Add wipe contract wiper. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Add wipe contract wiper. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -919,46 +815,39 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async wipeAddWiper(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async wipeAddWiper(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.addWipeWiper(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
+            return await guardians.addWipeWiper(user.did, contractId, hederaId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Remove wipe wiper
+     */
     @Delete('/wipe/:contractId/wiper/:hederaId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_WIPER_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Remove wipe wiper.',
-        description:
-            'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -976,49 +865,42 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async wipeRemoveWiper(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async wipeRemoveWiper(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.removeWipeWiper(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
+            return await guardians.removeWipeWiper(user.did, contractId, hederaId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     //#endregion
     //#region Retire contract endpoints
 
+    /**
+     * Sync retire contract pools
+     */
     @Post('/retire/:contractId/pools/sync')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_POOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Sync retire pools.',
-        description:
-            'Sync retire contract pools. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Sync retire contract pools. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -1031,41 +913,34 @@ export class ContractsApi {
         description: 'Sync date.',
         type: Date,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async retireSyncPools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async retireSyncPools(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string
+    ): Promise<string> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.syncRetirePools(user.did, req.params.contractId)
-            );
+            return await guardians.syncRetirePools(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * @param req
-     * @param res
+     * Get list of all retire requests
      */
     @Get('/retire/requests')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_RETIRE_REQUEST_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
     @ApiOperation({
         summary: 'Return a list of all retire requests.',
         description: 'Returns all retire requests.',
@@ -1073,8 +948,7 @@ export class ContractsApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description:
-            'The number of pages to skip before starting to collect the result set',
+        description: 'The number of pages to skip before starting to collect the result set',
         required: false,
         example: 0,
     })
@@ -1095,60 +969,48 @@ export class ContractsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        headers: {
-            'x-total-count': {
-                schema: {
-                    type: 'integer',
-                },
-                description: 'Total items in the collection.',
-            },
-        },
+        headers: pageHeader,
         type: RetireRequestDTO,
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @UseCache({ isExpress: true })
-    async getRetireRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
+    @HttpCode(HttpStatus.OK)
+    async getRetireRequests(
+        @AuthUser() user: IAuthUser,
+        @Query('contractId') contractId: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<RetireRequestDTO[]> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getRetireRequests(
                 user.did,
-                req.query.contractId as any,
-                req.query.pageIndex as any,
-                req.query.pageSize as any
+                contractId,
+                pageIndex,
+                pageSize
             );
             res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * @param req
-     * @param res
+     * Get list of all retire pools
      */
     @Get('/retire/pools')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_POOL_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
     @ApiOperation({
         summary: 'Return a list of all retire pools.',
         description: 'Returns all retire pools.',
@@ -1156,8 +1018,7 @@ export class ContractsApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description:
-            'The number of pages to skip before starting to collect the result set',
+        description: 'The number of pages to skip before starting to collect the result set',
         required: false,
         example: 0,
     })
@@ -1185,61 +1046,52 @@ export class ContractsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        headers: {
-            'x-total-count': {
-                schema: {
-                    type: 'integer',
-                },
-                description: 'Total items in the collection.',
-            },
-        },
+        headers: pageHeader,
         type: RetirePoolDTO,
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @UseCache({ isExpress: true })
-    async getRetirePools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
+    @HttpCode(HttpStatus.OK)
+    async getRetirePools(
+        @AuthUser() user: IAuthUser,
+        @Query('contractId') contractId: string,
+        @Query('tokens') tokens: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<RetirePoolDTO[]> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getRetirePools(
                 user.did,
-                req.query.tokens?.split(','),
-                req.query.contractId as any,
-                req.query.pageIndex as any,
-                req.query.pageSize as any
+                tokens?.split(','),
+                contractId,
+                pageIndex,
+                pageSize
             );
             res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Remove retire requests.
+     */
     @Delete('/retire/:contractId/requests')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_RETIRE_REQUEST_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Clear retire requests.',
-        description:
-            'Clear retire contract requests. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Clear retire contract requests. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -1252,44 +1104,36 @@ export class ContractsApi {
         description: 'Successful operation.',
         type: Boolean,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async clearRetireRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async clearRetireRequests(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.clearRetireRequests(
-                    user.did,
-                    req.params.contractId
-                )
-            );
+            return await guardians.clearRetireRequests(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Clear retire pools.
+     */
     @Delete('/retire/:contractId/pools')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_POOL_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Clear retire pools.',
-        description:
-            'Clear retire contract pools. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Clear retire contract pools. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -1302,44 +1146,36 @@ export class ContractsApi {
         description: 'Successful operation.',
         type: Boolean,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async clearRetirePools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async clearRetirePools(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.clearRetirePools(
-                    user.did,
-                    req.params.contractId
-                )
-            );
+            return await guardians.clearRetirePools(user.did, contractId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Set retire pool.
+     */
     @Post('/retire/:contractId/pools')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetirePoolDTO, RetirePoolTokenDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_POOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Set retire pool.',
-        description:
-            'Set retire contract pool. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Set retire contract pool. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiBody({
         type: RetirePoolTokenDTO,
@@ -1355,45 +1191,37 @@ export class ContractsApi {
         description: 'Successful operation.',
         type: RetirePoolDTO,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(RetirePoolDTO, RetirePoolTokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async setRetirePool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async setRetirePool(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Body() body: any
+    ): Promise<RetirePoolDTO> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.setRetirePool(
-                    user.did,
-                    req.params.contractId,
-                    req.body
-                )
-            );
+            return await guardians.setRetirePool(user.did, contractId, body);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Unset retire pool.
+     */
     @Delete('/retire/pools/:poolId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_POOL_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Unset retire pool.',
-        description:
-            'Unset retire contract pool. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Unset retire contract pool. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'poolId',
@@ -1406,41 +1234,36 @@ export class ContractsApi {
         description: 'Successful operation.',
         type: Boolean,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async unsetRetirePool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async unsetRetirePool(
+        @AuthUser() user: IAuthUser,
+        @Param('poolId') poolId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.unsetRetirePool(user.did, req.params.poolId)
-            );
+            return await guardians.unsetRetirePool(user.did, poolId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Unset retire request.
+     */
     @Delete('/retire/requests/:requestId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_RETIRE_REQUEST_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Unset retire request.',
-        description:
-            'Unset retire contract request. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Unset retire contract request. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'requestId',
@@ -1453,40 +1276,34 @@ export class ContractsApi {
         description: 'Successful operation.',
         type: Boolean,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async unsetRetireRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async unsetRetireRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('requestId') requestId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.unsetRetireRequest(
-                    user.did,
-                    req.params.requestId
-                )
-            );
+            return await guardians.unsetRetireRequest(user.did, requestId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Retire tokens.
+     */
     @Post('/retire/pools/:poolId/retire')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetireRequestTokenDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_RETIRE_REQUEST_CREATE,
+        //???? UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
     @ApiOperation({
         summary: 'Retire tokens.',
         description: 'Retire tokens.',
@@ -1505,44 +1322,37 @@ export class ContractsApi {
         description: 'Successful operation.',
         type: Boolean,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(RetireRequestTokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async retire(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
+    async retire(
+        @AuthUser() user: IAuthUser,
+        @Param('poolId') poolId: string,
+        @Body() body: any
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.retire(user.did, req.params.poolId, req.body)
-            );
+            return await guardians.retire(user.did, poolId, body);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Approve retire request
+     */
     @Post('/retire/requests/:requestId/approve')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_RETIRE_REQUEST_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Approve retire request.',
-        description:
-            'Approve retire contract request. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Approve retire contract request. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'requestId',
@@ -1553,38 +1363,36 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async approveRetire(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async approveRetire(
+        @AuthUser() user: IAuthUser,
+        @Param('requestId') requestId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.approveRetire(user.did, req.params.requestId)
-            );
+            return await guardians.approveRetire(user.did, requestId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Cancel retire request.
+     */
     @Delete('/retire/requests/:requestId/cancel')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_RETIRE_REQUEST_CREATE,
+        //???? UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
     @ApiOperation({
         summary: 'Cancel retire request.',
         description: 'Cancel retire contract request.',
@@ -1598,159 +1406,136 @@ export class ContractsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.OK)
-    async cancelRetireRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
-        try {
-            const user = req.user;
-            const guardians = new Guardians();
-            return res.json(
-                await guardians.cancelRetire(user.did, req.params.requestId)
-            );
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
-        }
-    }
-
-    @Post('/retire/:contractId/admin/:hederaId')
-    @ApiBearerAuth()
     @ApiExtraModels(InternalServerErrorDTO)
-    @ApiOperation({
-        summary: 'Add retire admin.',
-        description:
-            'Add retire contract admin. Only users with the Standard Registry role are allowed to make the request.',
-    })
-    @ApiParam({
-        name: 'contractId',
-        type: String,
-        description: 'Contract identifier',
-        required: true,
-        example: '652745597a7b53526de37c05',
-    })
-    @ApiParam({
-        name: 'hederaId',
-        type: String,
-        description: 'Hedera identifier',
-        required: true,
-        example: '0.0.1',
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
     @HttpCode(HttpStatus.OK)
-    async retireAddAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async cancelRetireRequest(
+        @AuthUser() user: IAuthUser,
+        @Param('requestId') requestId: string
+    ): Promise<boolean> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.addRetireAdmin(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
+            return await guardians.cancelRetire(user.did, requestId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
-        }
-    }
-
-    @Delete('/retire/:contractId/admin/:hederaId')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
-    @ApiOperation({
-        summary: 'Remove wipe admin.',
-        description:
-            'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
-    })
-    @ApiParam({
-        name: 'contractId',
-        type: String,
-        description: 'Contract identifier',
-        required: true,
-        example: '652745597a7b53526de37c05',
-    })
-    @ApiParam({
-        name: 'hederaId',
-        type: String,
-        description: 'Hedera identifier',
-        required: true,
-        example: '0.0.1',
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
-    @HttpCode(HttpStatus.OK)
-    async retireRemoveAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        try {
-            const user = req.user;
-            const guardians = new Guardians();
-            return res.json(
-                await guardians.removeRetireAdmin(
-                    user.did,
-                    req.params.contractId,
-                    req.params.hederaId
-                )
-            );
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * @param req
-     * @param res
+     * Add retire admin.
+     */
+    @Post('/retire/:contractId/admin/:hederaId')
+    @Auth(
+        Permissions.CONTRACT_RETIRE_ADMIN_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Add retire admin.',
+        description: 'Add retire contract admin. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        type: String,
+        description: 'Hedera identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async retireAddAdmin(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.addRetireAdmin(user.did, contractId, hederaId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Remove wipe admin.
+     */
+    @Delete('/retire/:contractId/admin/:hederaId')
+    @Auth(
+        Permissions.CONTRACT_RETIRE_ADMIN_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Remove wipe admin.',
+        description: 'Remove wipe contract admin. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        type: String,
+        description: 'Hedera identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async retireRemoveAdmin(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string
+    ): Promise<boolean> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.removeRetireAdmin(user.did, contractId, hederaId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get a list of all retire vcs
      */
     @Get('/retire')
-    @ApiBearerAuth()
-    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
+    @Auth(
+        Permissions.CONTRACT_DOCUMENT_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
     @ApiOperation({
         summary: 'Return a list of all retire vcs.',
         description: 'Returns all retire vcs.',
@@ -1758,8 +1543,7 @@ export class ContractsApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description:
-            'The number of pages to skip before starting to collect the result set',
+        description: 'The number of pages to skip before starting to collect the result set',
         required: false,
         example: 0,
     })
@@ -1773,41 +1557,25 @@ export class ContractsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        headers: {
-            'x-total-count': {
-                schema: {
-                    type: 'integer',
-                },
-                description: 'Total items in the collection.',
-            },
-        },
+        headers: pageHeader,
         type: 'object',
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
     @UseCache({ isExpress: true })
-    async getRetireVCs(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
+    @HttpCode(HttpStatus.OK)
+    async getRetireVCs(
+        @AuthUser() user: IAuthUser,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<any[]> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            const [vcs, count] = await guardians.getRetireVCs(
-                user.did,
-                req.query.pageIndex as any,
-                req.query.pageSize as any
-            );
+            const [vcs, count] = await guardians.getRetireVCs(user.did, pageIndex, pageSize);
             res.locals.data = vcs
             return res.setHeader('X-Total-Count', count).json(vcs);
         } catch (error) {

@@ -1,4 +1,4 @@
-import { UserRole } from '@guardian/interfaces';
+import { Permissions } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import {
@@ -9,21 +9,18 @@ import {
     HttpException,
     HttpStatus,
     Post,
-    Req,
+    Query,
+    Param,
     Response,
     UploadedFiles,
     UseInterceptors,
 } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiExtraModels,
     ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiOperation,
-    ApiSecurity,
     ApiTags,
-    ApiUnauthorizedResponse,
-    ApiForbiddenResponse,
     getSchemaPath,
     ApiBody,
     ApiConsumes
@@ -33,17 +30,22 @@ import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-q
 import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { AuthUser } from '../../auth/authorization-helper.js';
+import { Auth } from '../../auth/auth.decorator.js';
+import { IAuthUser } from '@guardian/common';
+import { pageHeader } from 'middlewares/validation/page-header.js';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
 export class ArtifactApi {
     /**
      * Get artifacts
-     * @param req
-     * @param res
      */
     @Get('/')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ARTIFACT_FILE_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Returns all artifacts.',
         description: 'Returns all artifacts.',
@@ -80,44 +82,45 @@ export class ArtifactApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(ArtifactDTOItem),
-            }
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        isArray: true,
+        headers: pageHeader,
+        type: ArtifactDTOItem
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getArtifacts(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getArtifacts(
+        @AuthUser() user: IAuthUser,
+        @Query('type') type: string,
+        @Query('policyId') policyId: string,
+        @Query('toolId') toolId: string,
+        @Query('id') id: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<any> {
         try {
+            const options: any = { owner: user.did };
+            if (type) {
+                options.type = type;
+            }
+            if (policyId) {
+                options.policyId = policyId;
+            }
+            if (toolId) {
+                options.toolId = toolId;
+            }
+            if (id) {
+                options.id = id;
+            }
+            if (pageIndex && pageSize) {
+                options.pageIndex = pageIndex;
+                options.pageSize = pageSize;
+            }
             const guardians = new Guardians();
-            const options: any = {
-                owner: req.user.did,
-            }
-            if (req.query) {
-                options.type = req.query.type;
-                options.policyId = req.query.policyId;
-                options.toolId = req.query.toolId;
-                options.id = req.query.id;
-            }
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                options.pageIndex = req.query.pageIndex;
-                options.pageSize = req.query.pageSize;
-            }
             const { artifacts, count } = await guardians.getArtifacts(options);
             return res.setHeader('X-Total-Count', count).json(artifacts);
         } catch (error) {
@@ -130,7 +133,10 @@ export class ArtifactApi {
      * Upload artifact
      */
     @Post('/:parentId')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ARTIFACT_FILE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Upload artifact.',
         description: 'Upload artifact. For users with the Standard Registry role only.',
@@ -161,36 +167,26 @@ export class ArtifactApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(ArtifactDTOItem),
-            }
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        isArray: true,
+        type: ArtifactDTOItem
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @UseInterceptors(FilesInterceptor('artifacts'))
     @HttpCode(HttpStatus.CREATED)
-    async uploadArtifacts(@Req() req, @UploadedFiles() files): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async uploadArtifacts(
+        @AuthUser() user: IAuthUser,
+        @Param('parentId') parentId: string,
+        @UploadedFiles() files: any
+    ): Promise<any> {
         try {
             if (!files) {
                 throw new HttpException('There are no files to upload', HttpStatus.UNPROCESSABLE_ENTITY)
             }
-            const owner = req.user.did;
-            const parentId = req.params.parentId;
+            const owner = user.did;
             const uploadedArtifacts = [];
             const guardian = new Guardians();
             for (const artifact of files) {
@@ -210,7 +206,10 @@ export class ArtifactApi {
      * Delete artifact
      */
     @Delete('/:artifactId')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ARTIFACT_FILE_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Delete artifact.',
         description: 'Delete artifact.',
@@ -224,33 +223,20 @@ export class ArtifactApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(ArtifactDTOItem),
-            }
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
-    async deleteArtifact(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async deleteArtifact(
+        @AuthUser() user: IAuthUser,
+        @Param('artifactId') artifactId: string,
+    ): Promise<any> {
         try {
             const guardian = new Guardians();
-            await guardian.deleteArtifact(req.params.artifactId, req.user.did)
-            return res.status(204).send();
+            await guardian.deleteArtifact(artifactId, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

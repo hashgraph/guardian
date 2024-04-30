@@ -148,6 +148,16 @@ export class FilterSearchPoliciesDTO {
     policyId: string;
 }
 
+export class FilterSearchBlocksDTO {
+    @ApiProperty()
+    @IsString()
+    id: string;
+
+    @ApiProperty()
+    @IsString()
+    config: string;
+}
+
 export class FilterPoliciesDTO {
     @ApiProperty()
     @IsString()
@@ -232,6 +242,22 @@ export class FilterDocumentsDTO {
     @IsArray()
     @Type(() => String)
     documentIds: string[];
+
+    @ApiProperty()
+    @IsNumber()
+    eventsLvl?: number;
+
+    @ApiProperty()
+    @IsNumber()
+    propLvl?: number;
+
+    @ApiProperty()
+    @IsNumber()
+    childrenLvl?: number;
+
+    @ApiProperty()
+    @IsNumber()
+    idLvl?: number;
 }
 
 export class FilterToolsDTO {
@@ -247,4 +273,20 @@ export class FilterToolsDTO {
     @IsArray()
     @Type(() => String)
     toolIds: string[];
+
+    @ApiProperty()
+    @IsNumber()
+    eventsLvl?: number;
+
+    @ApiProperty()
+    @IsNumber()
+    propLvl?: number;
+
+    @ApiProperty()
+    @IsNumber()
+    childrenLvl?: number;
+
+    @ApiProperty()
+    @IsNumber()
+    idLvl?: number;
 }

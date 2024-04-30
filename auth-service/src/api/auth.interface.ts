@@ -32,4 +32,12 @@ export interface IAuthUser {
      * login expire date
      */
     expireAt?: number
+    /**
+     * Group name
+     */
+    permissionsGroupName?: string;
+    /**
+     * Permissions
+     */
+    permissions?: string[];
 }

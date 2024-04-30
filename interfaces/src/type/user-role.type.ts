@@ -1,8 +1,11 @@
+import { Permissions } from "./permissions.type";
+
 /**
  * User role
  */
 export enum UserRole {
     STANDARD_REGISTRY = 'STANDARD_REGISTRY',
+    WORKER = 'WORKER',
     USER = 'USER',
     AUDITOR = 'AUDITOR'
 }
@@ -13,5 +16,5 @@ export enum UserRole {
 export type PolicyRole = 'NO_ROLE' | 'OWNER' | 'ANY_ROLE' | 'STANDARD_REGISTRY' | string;
 
 export enum ExternalProviders {
-  MEECO = 'MEECO',
+    MEECO = 'MEECO',
 }

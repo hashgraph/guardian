@@ -1,22 +1,48 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
-import { UserRole } from '@guardian/interfaces';
+import { Permissions } from '@guardian/interfaces';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { BrandingDTO, InternalServerErrorDTO } from 'middlewares/validation/index.js';
+
+const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 /**
  * Branding route
  */
 @Controller('branding')
 @ApiTags('branding')
-export class BrandingApi{
-
-    @Auth(UserRole.STANDARD_REGISTRY)
-    @HttpCode(HttpStatus.NO_CONTENT)
+export class BrandingApi {
+    /**
+     * Set branding
+     */
     @Post('/')
-    async setBranding(@Body() body: any): Promise<any> {
+    @Auth(
+        Permissions.BRANDING_CONFIG_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Update branding.',
+        description: 'Update branding.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Object that contains config.',
+        required: true,
+        type: BrandingDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async setBranding(
+        @Body() body: BrandingDTO
+    ): Promise<any> {
         try {
             const {
                 headerColor,
@@ -39,19 +65,28 @@ export class BrandingApi{
                 headerColor1,
                 termsAndConditions
             };
-
-          const guardians = new Guardians();
-          await guardians.setBranding(JSON.stringify(data));
+            const guardians = new Guardians();
+            await guardians.setBranding(JSON.stringify(data));
         } catch (error) {
-          new Logger().error(error, ['API_GATEWAY']);
-          throw error;
+            new Logger().error(error, ['API_GATEWAY']);
+            throw error;
         }
-
-        return;
     }
 
+    /**
+     * Get branding
+     */
     @Get('/')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: BrandingDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
     @UseCache()
+    @HttpCode(HttpStatus.OK)
     async getBranding(): Promise<any> {
         try {
             const guardians = new Guardians();

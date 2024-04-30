@@ -29,7 +29,7 @@ Promise.all([
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('AUTH_SERVICE'),
-    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
             queue: 'auth-service',
@@ -40,7 +40,7 @@ Promise.all([
         },
     }),
     InitializeVault(process.env.VAULT_PROVIDER)
-]).then(async ([_, db, cn,  app, vault]) => {
+]).then(async ([_, db, cn, app, vault]) => {
     DataBaseHelper.orm = db;
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
@@ -79,10 +79,10 @@ Promise.all([
 
         await new OldSecretManager().setConnection(cn).init();
         const secretManager = SecretManager.New();
-        let {ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
+        let { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
         if (!ACCESS_TOKEN_SECRET) {
             ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-            await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET  });
+            await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET });
         }
 
         state.updateState(ApplicationStates.READY);

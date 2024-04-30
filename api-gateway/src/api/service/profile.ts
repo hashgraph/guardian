@@ -1,5 +1,5 @@
 import { Guardians } from '../../helpers/guardians.js';
-import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
+import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
@@ -16,13 +16,14 @@ import { UseCache } from '../../helpers/decorators/cache.js';
 @ApiTags('profiles')
 export class ProfileApi {
     /**
-     * Get user.profile
+     * Get user profile.
      */
     @Get('/:username/')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILE_USER_VIEW
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -122,9 +123,10 @@ export class ProfileApi {
      */
     @Put('/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILE_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -172,9 +174,10 @@ export class ProfileApi {
      */
     @Put('/push/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILE_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -230,9 +233,10 @@ export class ProfileApi {
      */
     @Get('/:username/balance')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILE_BALANCE_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -283,7 +287,8 @@ export class ProfileApi {
      */
     @Put('/restore/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.PROFILE_RESTORE_ALL,
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -339,7 +344,8 @@ export class ProfileApi {
      */
     @Put('/restore/topics/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.PROFILE_RESTORE_ALL,
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -395,8 +401,9 @@ export class ProfileApi {
      */
     @Post('/did-document/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER
+        Permissions.PROFILE_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -444,8 +451,9 @@ export class ProfileApi {
      */
     @Post('/did-keys/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER
+        Permissions.PROFILE_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({

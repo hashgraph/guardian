@@ -1,4 +1,4 @@
-import { PolicyType, UserRole } from '@guardian/interfaces';
+import { Permissions, PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { IAuthUser, Logger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
@@ -46,7 +46,8 @@ export class RecordApi {
      */
     @Get('/:policyId/status')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -94,7 +95,8 @@ export class RecordApi {
      */
     @Post('/:policyId/recording/start')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -148,7 +150,8 @@ export class RecordApi {
      */
     @Post('/:policyId/recording/stop')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -209,7 +212,8 @@ export class RecordApi {
      */
     @Get('/:policyId/recording/actions')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -258,7 +262,8 @@ export class RecordApi {
      */
     @Post('/:policyId/running/start')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -313,7 +318,8 @@ export class RecordApi {
      */
     @Post('/:policyId/running/stop')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -367,7 +373,8 @@ export class RecordApi {
      */
     @Get('/:policyId/running/results')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -415,7 +422,8 @@ export class RecordApi {
      */
     @Get('/:policyId/running/details')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -463,7 +471,8 @@ export class RecordApi {
      */
     @Post('/:policyId/running/fast-forward')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -517,7 +526,8 @@ export class RecordApi {
      */
     @Post('/:policyId/running/retry')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({
@@ -571,7 +581,8 @@ export class RecordApi {
      */
     @Post('/:policyId/running/skip')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_RECORD_ALL
+        // UserRole.STANDARD_REGISTRY
     )
     @ApiSecurity('bearerAuth')
     @ApiOperation({

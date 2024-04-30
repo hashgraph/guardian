@@ -20,7 +20,7 @@ export class AccountsResponseDTO {
     @ApiProperty()
     @IsString()
     @Expose()
-    did: string
+    did?: string
 }
 
 export class AccountsSessionResponseDTO {

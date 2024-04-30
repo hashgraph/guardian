@@ -2,9 +2,9 @@ import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Req } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { AISuggestions } from '../../helpers/ai-suggestions.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
+import { AISuggestions } from '../../helpers/ai-suggestions.js';
+import { InternalServerErrorDTO } from '../../middlewares/validation/index.js';
 
 /**
  * AI suggestions route
@@ -39,9 +39,7 @@ export class AISuggestionsAPI {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAIAnswer(@Req() req): Promise<string> {
