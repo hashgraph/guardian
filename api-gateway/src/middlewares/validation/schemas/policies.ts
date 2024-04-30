@@ -35,7 +35,7 @@ export class MigrationConfigDTO {
      * Policies
      */
     @ApiProperty({ type: () => MigrationConfigPoliciesDTO })
-    policies: MigrationConfigPoliciesDTO
+    policies: MigrationConfigPoliciesDTO;
     /**
      * VC documents
      */
@@ -50,15 +50,47 @@ export class MigrationConfigDTO {
      * Schemas
      */
     @ApiProperty({ type: 'object' })
-    schemas: { [key: string]: string }
+    schemas: { [key: string]: string };
     /**
      * Groups
      */
     @ApiProperty({ type: 'object' })
-    groups: { [key: string]: string }
+    groups: { [key: string]: string };
     /**
      * Roles
      */
     @ApiProperty({ type: 'object' })
-    roles: { [key: string]: string }
+    roles: { [key: string]: string };
+    /**
+     * Blocks
+     */
+    @ApiProperty({ type: 'object' })
+    blocks: { [key: string]: string };
+    /**
+     * Tokens
+     */
+    @ApiProperty({ type: 'object' })
+    tokens: { [key: string]: string };
+    /**
+     * Migrate state
+     */
+    @ApiProperty({ type: 'boolean' })
+    migrateState: boolean;
+    /**
+     * Migrate retire pools
+     */
+    @ApiProperty({ type: 'boolean' })
+    migrateRetirePools: boolean;
+    /**
+     * Edited VCs
+     */
+    @ApiProperty({ type: 'object' })
+    editedVCs: { [key: string]: any };
+    /**
+     * Retire contract identifier
+     */
+    @ApiProperty({
+        type: 'string',
+    })
+    retireContractId: string;
 }

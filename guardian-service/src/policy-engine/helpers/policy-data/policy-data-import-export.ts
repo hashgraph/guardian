@@ -15,9 +15,17 @@ import {
 } from './loaders/index.js';
 import { GuardiansService } from '../../../helpers/guardians.js';
 import { PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, DidDocument, Policy, Users } from '@guardian/common';
+import {
+    DatabaseServer,
+    DidDocument,
+    Policy,
+    Users,
+    findAllEntities,
+} from '@guardian/common';
 import { SchemasLoader } from './loaders/schemas.loader.js';
 import { ObjectId } from 'bson';
+import { TokensLoader } from './loaders/tokens.loader.js';
+import { RetirePoolLoader } from './loaders/retire-pool.loader.js';
 
 /**
  * Static loaders
@@ -54,6 +62,8 @@ export class PolicyDataImportExport {
         ['mintRequests', MintRequestLoader],
         ['mintTransactions', MintTransactionLoader],
         ['documentStates', DocumentStateLoader],
+        ['tokens', TokensLoader],
+        ['retirePools', RetirePoolLoader],
     ]);
 
     /**
@@ -74,6 +84,7 @@ export class PolicyDataImportExport {
                     'mintRequests',
                     'mintTransactions',
                     'documentStates',
+                    'retirePools',
                 ].includes(name)
             ) {
                 this._loaderInstances.set(
@@ -95,10 +106,7 @@ export class PolicyDataImportExport {
      */
     async exportData() {
         const zip = new JSZip();
-        zip.file(
-            'policy.json',
-            JSON.stringify(Object.assign(this._policy, { config: undefined }))
-        );
+        zip.file('policy.json', JSON.stringify(this._policy));
 
         for (const [loaderName, loader] of this._loaderInstances) {
             zip.folder(loaderName);
@@ -164,6 +172,25 @@ export class PolicyDataImportExport {
                     zip.file(
                         `mintTransactions/${mintTransaction.id}.json`,
                         JSON.stringify(mintTransaction)
+                    );
+                }
+            }
+
+            if (loaderName === 'tokens') {
+                const policyTokens = findAllEntities(this._policy.config, [
+                    'tokenId',
+                ]);
+                const retirePools = await new RetirePoolLoader(
+                    this._policy.id,
+                    this._policy.topicId,
+                    this._policy.instanceTopicId,
+                    this._isDryRun
+                ).get(policyTokens.concat(files.map((item) => item.tokenId)));
+                zip.folder('retirePools');
+                for (const retirePool of retirePools) {
+                    zip.file(
+                        `retirePools/${retirePool.id}.json`,
+                        JSON.stringify(retirePool)
                     );
                 }
             }

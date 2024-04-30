@@ -2,6 +2,9 @@ import {
     AggregateVC,
     BaseEntity,
     BlockState,
+    Contract,
+    ContractMessage,
+    DataBaseHelper,
     DatabaseServer,
     DidDocument,
     DocumentState,
@@ -13,10 +16,13 @@ import {
     MintTransaction,
     MultiDocuments,
     PolicyRoles,
+    RetirePool,
     RoleMessage,
     SplitDocuments,
+    Token,
     Topic,
     TopicConfig,
+    TopicHelper,
     Users,
     VCMessage,
     VPMessage,
@@ -26,8 +32,12 @@ import {
     VpDocument,
     VpDocumentDefinition,
     Wallet,
+    Workers,
+    findAllEntities,
 } from '@guardian/common';
 import {
+    ContractAPI,
+    ContractType,
     DocumentStatus,
     MigrationConfig,
     PolicyType,
@@ -48,6 +58,11 @@ import {
     DocumentStateLoader,
 } from './policy-data/loaders/index.js';
 import { SplitDocumentLoader } from './policy-data/loaders/split-document.loader.js';
+import { TokensLoader } from './policy-data/loaders/tokens.loader.js';
+import { RetirePoolLoader } from './policy-data/loaders/retire-pool.loader.js';
+import { createHederaToken } from '../../api/token.service.js';
+import { createContract } from '../../api/helpers/contract-api.js';
+import { setPoolContract } from '../../api/contract.service.js';
 
 /**
  * Document error
@@ -77,6 +92,16 @@ export class PolicyDataMigrator {
     private readonly vcIds = new Map<string, any>();
 
     /**
+     * Created tokens
+     */
+    private readonly _createdTokens = new Map<string, any>();
+
+    /**
+     * Created wipe contract identifier
+     */
+    private _createdWipeContractId;
+
+    /**
      * Database server instance
      */
     private readonly _db!: DatabaseServer;
@@ -87,8 +112,8 @@ export class PolicyDataMigrator {
     private readonly _ms!: MessageServer;
 
     private constructor(
-        root: IAuthUser,
-        rootKey: string,
+        private readonly _root: IAuthUser,
+        private readonly _rootKey: string,
         private readonly _users: Users,
         private readonly _owner: string,
         private readonly _policyId: string,
@@ -102,13 +127,24 @@ export class PolicyDataMigrator {
         private readonly _groups: any,
         private readonly _schemas: any,
         private readonly _blocks: any,
+        private readonly _tokens: any,
+        private readonly _tokensMap: any,
         private readonly _editedVCs: any,
         private readonly _dids: DidDocument[],
         private readonly _dryRunId?: string,
         private readonly _notifier?: INotifier
     ) {
         this._db = new DatabaseServer(_dryRunId);
-        this._ms = new MessageServer(root.hederaAccountId, rootKey, _dryRunId);
+        this._ms = new MessageServer(
+            _root.hederaAccountId,
+            _rootKey,
+            _dryRunId
+        );
+        for (const [oldTokenId, newTokenId] of Object.entries(
+            this._tokensMap
+        )) {
+            this._createdTokens.set(oldTokenId, newTokenId);
+        }
     }
 
     /**
@@ -131,9 +167,13 @@ export class PolicyDataMigrator {
                 schemas,
                 groups,
                 roles,
+                tokens,
+                tokensMap,
                 blocks,
                 editedVCs,
                 migrateState,
+                migrateRetirePools,
+                retireContractId,
             } = migrationConfig;
             const { src, dst } = policies;
             const users = new Users();
@@ -157,6 +197,8 @@ export class PolicyDataMigrator {
             let srcAggregateVCs;
             let srcSplitDocuments;
             let srcDocumentStates;
+            let srcTokens;
+            let srcRetirePools;
 
             const userPolicy = await DatabaseServer.getPolicyCache({
                 id: src,
@@ -227,6 +269,14 @@ export class PolicyDataMigrator {
                     cacheCollection: 'documentStates',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
+                });
+                srcTokens = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'tokens',
+                    cachePolicyId: userPolicy.id,
+                });
+                srcRetirePools = await DatabaseServer.getPolicyCacheData({
+                    cacheCollection: 'retirePools',
+                    cachePolicyId: userPolicy.id,
                 });
             } else {
                 srcModel = await DatabaseServer.getPolicy({
@@ -307,6 +357,23 @@ export class PolicyDataMigrator {
                     srcModel.instanceTopicId,
                     srcModel.status === PolicyType.DRY_RUN
                 ).get(vcs);
+                srcTokens = await new TokensLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModel.status === PolicyType.DRY_RUN
+                ).get();
+                const policyTokens = findAllEntities(srcModel.config, [
+                    'tokenId',
+                ]);
+                srcRetirePools = await new RetirePoolLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModel.status === PolicyType.DRY_RUN
+                ).get(
+                    srcTokens.map((token) => token.tokenId).concat(policyTokens)
+                );
             }
 
             const dstModel = await DatabaseServer.getPolicy({
@@ -363,8 +430,10 @@ export class PolicyDataMigrator {
                 roles,
                 groups,
                 schemas,
-                blocks,
-                editedVCs,
+                blocks || {},
+                tokens || {},
+                tokensMap || {},
+                editedVCs || {},
                 srcDids,
                 dstModel.status === PolicyType.DRY_RUN ? dstModel.id : null,
                 notifier
@@ -382,7 +451,11 @@ export class PolicyDataMigrator {
                 srcAggregateVCs,
                 srcSplitDocuments,
                 srcDocumentStates,
-                migrateState
+                srcTokens,
+                srcRetirePools,
+                migrateState,
+                migrateRetirePools,
+                retireContractId
             );
 
             return migrationErrors;
@@ -427,7 +500,11 @@ export class PolicyDataMigrator {
         aggregateVCs: AggregateVC[],
         splitDocuments: SplitDocuments[],
         documentStates: DocumentState[],
-        migrateState = false
+        dynamicTokens: Token[],
+        retirePools: RetirePool[],
+        migrateState = false,
+        migrateRetirePools = false,
+        retireContractId?: string
     ) {
         const errors = new Array<DocumentError>();
         this._notifier?.start(`Migrate policy state`);
@@ -449,7 +526,8 @@ export class PolicyDataMigrator {
         this._notifier?.completedAndStart(`Migrate ${vcs.length} VC documents`);
         await this._migrateDocument(
             vcs,
-            (vc: VcDocument) => this._migrateVcDocument(vc, vcs, roles, errors),
+            (vc: VcDocument) =>
+                this._migrateVcDocument(vc, vcs, roles, dynamicTokens, errors),
             this._db.saveVC.bind(this._db),
             errors
         );
@@ -494,7 +572,184 @@ export class PolicyDataMigrator {
             errors
         );
         await this._migrateMintRequests(mintRequests, mintTransactions);
+
+        if (migrateRetirePools && migrateState) {
+            await this.migrateTokenPools(retireContractId, retirePools, errors);
+        }
         return errors;
+    }
+
+    /**
+     * Migrate token pools
+     * @param contractId Contract identifier
+     * @param pools Pools
+     * @param errors Errors
+     */
+    async migrateTokenPools(
+        contractId: string,
+        pools: RetirePool[],
+        errors: DocumentError[]
+    ) {
+        if (!contractId) {
+            return;
+        }
+        for (const pool of pools) {
+            try {
+                await setPoolContract(
+                    new Workers(),
+                    contractId,
+                    this._root.hederaAccountId,
+                    this._rootKey,
+                    this.replacePoolTokens(pool.tokens),
+                    pool.immediately
+                );
+            } catch (error) {
+                errors.push({
+                    id: pool.id,
+                    message: error?.toString(),
+                });
+            }
+        }
+    }
+
+    /**
+     * Replace pool tokens
+     * @param tokens Tokens
+     * @returns Replaces tokens
+     */
+    replacePoolTokens(tokens: { token: string }[]) {
+        const result = [];
+        for (const token of tokens) {
+            const newTokenId =
+                this._tokensMap.get(token.token) ||
+                this._createdTokens.get(token.token);
+            if (!newTokenId) {
+                continue;
+            }
+            result.push(Object.assign(token, { token: newTokenId }));
+        }
+
+        return result;
+    }
+
+    /**
+     * Migrate tokens
+     * @param dynamicTokens Dynamic tokens
+     * @param tokenTemplates Token templates
+     */
+    async migrateTokenTemplates(
+        dynamicTokens: Token[],
+        tokenTemplates: { [key: string]: string }
+    ) {
+        const result: any = {};
+        for (const [tokenTemplate, tokenId] of Object.entries(tokenTemplates)) {
+            const newTokenTemplate = this._tokens[tokenTemplate];
+            if (!newTokenTemplate) {
+                continue;
+            }
+            result[newTokenTemplate] = tokenId;
+            const existingToken = await DatabaseServer.getTokenById(tokenId);
+            if (existingToken) {
+                continue;
+            }
+            const tokenConfig = dynamicTokens.find(
+                (item) => item.tokenId === tokenId
+            );
+            if (!tokenConfig) {
+                continue;
+            }
+
+            tokenConfig.wipeContractId = await this.createWipeContract(
+                tokenConfig.wipeContractId
+            );
+
+            const tokenObject = await createHederaToken(
+                tokenConfig,
+                Object.assign(this._root, {
+                    hederaAccountKey: this._rootKey,
+                }) as any
+            );
+            await new DataBaseHelper(Token).save(tokenObject);
+            result[newTokenTemplate] = tokenObject.tokenId;
+            this._createdTokens.set(tokenId, tokenObject.tokenId);
+        }
+        return result;
+    }
+
+    /**
+     * Create wipe contract
+     * @param wipeContractId Wipe contract identifier
+     * @returns Wipe contract identifier
+     */
+    async createWipeContract(wipeContractId: string) {
+        const existingWipeContract = await new DataBaseHelper(Contract).findOne(
+            {
+                type: ContractType.WIPE,
+                wipeContractId,
+                owner: this._owner,
+            }
+        );
+        if (existingWipeContract) {
+            return wipeContractId;
+        }
+
+        if (this._createdWipeContractId) {
+            return this._createdWipeContractId;
+        }
+
+        const topicHelper = new TopicHelper(
+            this._root.hederaAccountId,
+            this._rootKey
+        );
+        const topic = await topicHelper.create(
+            {
+                type: TopicType.ContractTopic,
+                name: TopicType.ContractTopic,
+                description: TopicType.ContractTopic,
+                owner: this._owner,
+                policyId: null,
+                policyUUID: null,
+            },
+            {
+                admin: true,
+                submit: false,
+            }
+        );
+
+        const contractId = await createContract(
+            ContractAPI.CREATE_CONTRACT,
+            new Workers(),
+            ContractType.WIPE,
+            this._root.hederaAccountId,
+            this._rootKey,
+            topic.topicId
+        );
+
+        await topic.saveKeys();
+        await DatabaseServer.saveTopic(topic.toObject());
+
+        const contract = await new DataBaseHelper(Contract).save({
+            contractId,
+            owner: this._owner,
+            description: `Migration ${this._policyId} wipe contract`,
+            permissions: 15,
+            type: ContractType.WIPE,
+            topicId: topic.topicId,
+            wipeContractIds: [],
+        });
+
+        const contractMessage = new ContractMessage(
+            MessageAction.CreateContract
+        );
+        contractMessage.setDocument(contract);
+        const messageServer = new MessageServer(
+            this._root.hederaAccountId,
+            this._rootKey
+        );
+        await messageServer.setTopicObject(topic).sendMessage(contractMessage);
+
+        this._createdWipeContractId = contract.contractId;
+        return this._createdWipeContractId;
     }
 
     /**
@@ -907,7 +1162,7 @@ export class PolicyDataMigrator {
             this._notifier?.info(`Publishing VP ${doc.id}`);
             const vpMessage = new VPMessage(MessageAction.MigrateVP);
             vpMessage.setDocument(vp);
-            vpMessage.setUser(null); // Double check for it
+            vpMessage.setUser(null);
             vpMessage.setRelationships([...doc.relationships, doc.messageId]);
             const vpMessageResult = await this._ms
                 .setTopicObject(this._policyInstanceTopic)
@@ -970,6 +1225,7 @@ export class PolicyDataMigrator {
         doc: VcDocument,
         vcs: VcDocument[],
         roles: PolicyRoles[],
+        tokens: Token[],
         errors: DocumentError[]
     ) {
         if (!doc) {
@@ -989,6 +1245,7 @@ export class PolicyDataMigrator {
                         rs,
                         vcs,
                         roles,
+                        tokens,
                         errors
                     );
                     doc.relationships[i] = republishedDocument.messageId;
@@ -1105,6 +1362,10 @@ export class PolicyDataMigrator {
         }
 
         this.vcIds.set(doc.id, doc);
+
+        if (doc.tokens) {
+            doc.tokens = await this.migrateTokenTemplates(tokens, doc.tokens);
+        }
 
         return doc;
     }

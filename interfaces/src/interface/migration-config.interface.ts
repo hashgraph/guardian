@@ -42,6 +42,16 @@ export interface MigrationConfig {
     blocks: { [key: string]: string };
 
     /**
+     * Tokens
+     */
+    tokens: { [key: string]: string };
+
+    /**
+     * Tokens map
+     */
+    tokensMap: { [key: string]: string };
+
+    /**
      * Edited VCS
      */
     editedVCs: { [key: string]: any };
@@ -50,4 +60,14 @@ export interface MigrationConfig {
      * Migrate state
      */
     migrateState: boolean;
+
+    /**
+     * Migrate retire pools
+     */
+    migrateRetirePools: boolean;
+
+    /**
+     * Retire contract identifier
+     */
+    retireContractId: string;
 }

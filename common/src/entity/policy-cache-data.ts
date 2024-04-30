@@ -45,6 +45,30 @@ export class PolicyCacheData extends BaseEntity {
     newId: ObjectId;
 
     /**
+     * Hedera Contract Id
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    contractId?: any;
+
+    /**
+     * Token identifiers
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    tokenIds?: any;
+
+    /**
+     * Immediately retire
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    immediately?: any;
+
+    /**
+     * Enabled
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    enabled?: any;
+
+    /**
      * id
      */
     @Property({ nullable: true, type: 'unknown' })

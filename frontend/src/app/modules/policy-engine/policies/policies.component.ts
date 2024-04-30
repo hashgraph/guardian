@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
+import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -28,6 +28,7 @@ import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-ver
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
+import { ContractService } from 'src/app/services/contract.service';
 
 /**
  * Component for choosing a policy and
@@ -142,6 +143,7 @@ export class PoliciesComponent implements OnInit {
         private tokenService: TokenService,
         private analyticsService: AnalyticsService,
         private changeDetector: ChangeDetectorRef,
+        private contractSerivce: ContractService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
     ) {
@@ -853,33 +855,41 @@ export class PoliciesComponent implements OnInit {
 
     public migrateData(policyId?: any) {
         const item = this.policies?.find((e) => e.id === policyId);
-        const dialogRef = this.dialogService.open(MigrateData, {
-            header: 'Migrate Data',
-            width: '750px',
-            styleClass: 'custom-dialog',
-            data: {
-                policy: item,
-                policies: this.policies?.filter(item => [PolicyType.PUBLISH, PolicyType.DISCONTINUED, PolicyType.DRY_RUN].includes(item.status)),
-            },
-        });
-        dialogRef.onClose.subscribe(async (result) => {
-            if (!result) {
-                return;
-            }
-            this.policyEngineService.migrateDataAsync(result).subscribe(
-                (result) => {
-                    const { taskId } = result;
-                    this.router.navigate(['task', taskId], {
-                        queryParams: {
-                            last: btoa(location.href),
+        this.loading = true;
+        this.contractSerivce.getContracts({ type: ContractType.RETIRE }).subscribe({
+            next: (res) => {
+                const dialogRef = this.dialogService.open(MigrateData, {
+                    header: 'Migrate Data',
+                    width: '750px',
+                    styleClass: 'custom-dialog',
+                    data: {
+                        policy: item,
+                        policies: this.policies?.filter(item => [PolicyType.PUBLISH, PolicyType.DISCONTINUED, PolicyType.DRY_RUN].includes(item.status)),
+                        contracts: res.body
+                    },
+                });
+                dialogRef.onClose.subscribe(async (result) => {
+                    if (!result) {
+                        return;
+                    }
+                    this.policyEngineService.migrateDataAsync(result).subscribe(
+                        (result) => {
+                            const { taskId } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
                         },
-                    });
-                },
-                (e) => {
-                    this.loading = false;
-                }
-            );
-        });
+                        (e) => {
+                            this.loading = false;
+                        }
+                    );
+                });
+            },
+            complete: () => this.loading = false
+        })
+
     }
 
     public createNewPolicy() {

@@ -34,6 +34,7 @@ import {
     VpDocument as VpDocumentCollection,
     PolicyCache,
     PolicyCacheData,
+    RetirePool,
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -2938,6 +2939,15 @@ export class DatabaseServer {
      */
     public static async getTokenById(id: string): Promise<TokenCollection | null> {
         return await new DataBaseHelper(TokenCollection).findOne(id);
+    }
+
+    /**
+     * Get retire pools
+     * @param tokenIds Token identifiers
+     * @returns Retire pools
+     */
+    public static async getRetirePools(tokenIds: string[]): Promise<RetirePool[]> {
+        return await new DataBaseHelper(RetirePool).find({ tokenIds: { $in: tokenIds } });
     }
 
     /**

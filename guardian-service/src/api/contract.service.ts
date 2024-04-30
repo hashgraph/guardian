@@ -235,7 +235,7 @@ async function setContractWiperPermissions(
     );
 }
 
-async function setPoolContract(
+export async function setPoolContract(
     workers: Workers,
     contractId: string,
     hederaAccountId: string,
