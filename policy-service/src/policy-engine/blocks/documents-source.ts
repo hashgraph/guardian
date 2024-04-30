@@ -1,11 +1,11 @@
-import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { StateField } from '@policy-engine/helpers/decorators';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { DataSourceBlock } from '../helpers/decorators/data-source-block.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyAddonBlock, IPolicySourceBlock } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyInputEventType } from '../interfaces/index.js';
+import { IPolicyUser } from '../policy-user.js';
+import { StateField } from '../helpers/decorators/index.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
 
 /**

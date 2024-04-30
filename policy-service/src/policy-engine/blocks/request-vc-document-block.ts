@@ -1,15 +1,15 @@
 import { CheckResult, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { BlockActionError } from '@policy-engine/errors';
-import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
+import { PolicyUtils } from '../helpers/utils.js';
+import { BlockActionError } from '../errors/index.js';
+import { ActionCallback, StateField } from '../helpers/decorators/index.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, IPolicyValidatorBlock } from '../policy-engine.interface.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { EventBlock } from '../helpers/decorators/event-block.js';
 import { DIDMessage, MessageAction, MessageServer, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import deepEqual from 'deep-equal';
 
 /**
@@ -307,9 +307,11 @@ export class RequestVcDocumentBlock {
                 message.setDocument(didObject);
 
                 const userHederaCred = await userCred.loadHederaCredentials(ref);
+                const signOptions = await userCred.loadSignOptions(ref);
                 const client = new MessageServer(
                     userHederaCred.hederaAccountId,
                     userHederaCred.hederaAccountKey,
+                    signOptions,
                     ref.dryRun
                 );
                 const messageResult = await client

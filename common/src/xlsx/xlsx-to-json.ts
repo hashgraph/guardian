@@ -1,15 +1,15 @@
-import { Workbook, Worksheet } from './models/workbook';
-import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary';
-import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from './models/value-converters';
-import { Table } from './models/table';
+import { Workbook, Worksheet } from './models/workbook.js';
+import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
+import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from './models/value-converters.js';
+import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
-import { XlsxSchemaConditions } from './models/schema-condition';
+import { XlsxSchemaConditions } from './models/schema-condition.js';
 import { SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
-import { XlsxResult } from './models/xlsx-result';
-import { XlsxEnum } from './models/xlsx-enum';
-import { EnumTable } from './models/enum-table';
-import { XlsxSchema, XlsxTool } from './models/xlsx-schema';
-import { XlsxExpressions } from './models/xlsx-expressions';
+import { XlsxResult } from './models/xlsx-result.js';
+import { XlsxEnum } from './models/xlsx-enum.js';
+import { EnumTable } from './models/enum-table.js';
+import { XlsxSchema, XlsxTool } from './models/xlsx-schema.js';
+import { XlsxExpressions } from './models/xlsx-expressions.js';
 
 export class XlsxToJson {
     public static async parse(buffer: Buffer): Promise<XlsxResult> {

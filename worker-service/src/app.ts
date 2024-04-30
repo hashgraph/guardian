@@ -1,6 +1,6 @@
 import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, NotificationService, OldSecretManager, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
-import { Worker } from './api/worker';
-import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
+import { Worker } from './api/worker.js';
+import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import * as process from 'process';
 import { Module } from '@nestjs/common';

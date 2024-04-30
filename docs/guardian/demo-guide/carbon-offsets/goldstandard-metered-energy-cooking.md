@@ -12,13 +12,13 @@ description: Policy developed by Gautam Prajapati during the SBS Hackathon
 * [Demo Video](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
 * [Policy Workflow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
 * [Policy Guide](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-  * [Available Roles](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-  * [Important Documents & Schemas](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-  * [Token(Carbon credit)](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-  * [Step By Step](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-    * [Registry(Gold Standard) Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-    * [Project Proponent Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
-    * [VVB Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Available Roles](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Important Documents & Schemas](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Token(Carbon credit)](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+* [Step By Step](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+  * [Registry(Gold Standard) Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+  * [Project Proponent Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
+  * [VVB Flow](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
 * [Futureproofing(Automated credit issuance)](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
 * [TODO](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
 * [Existing Cookstove Policy Comparison](https://github.com/hashgraph/guardian/blob/main/docs/guardian/demo-guide/carbon-offsets/broken-reference/README.md)
@@ -55,7 +55,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 ### Policy Workflow
 
-<figure><img src="../../../.gitbook/assets/image (12) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide
 
@@ -129,7 +129,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 <figure><img src="../../../.gitbook/assets/image (38) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Once project is approved by registry, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions.
 

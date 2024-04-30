@@ -1,14 +1,16 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
-import { AuthUser } from '@auth/authorization-helper';
-import { Auth } from '@auth/auth.decorator';
+import { AuthUser } from '../../auth/authorization-helper.js';
+import { Auth } from '../../auth/auth.decorator.js';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '@middlewares/validation/schemas';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '../../middlewares/validation/schemas/index.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -259,6 +261,7 @@ export class ProfileApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @UseCache({ ttl: CACHE.SHORT_TTL })
     async getUserBalance(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string

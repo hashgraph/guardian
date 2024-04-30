@@ -1,18 +1,21 @@
-import { Auth } from '@auth/auth.decorator';
-import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { Auth } from '../../auth/auth.decorator.js';
+import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '@helpers/policy-engine';
-import { ProjectService } from '@helpers/projects';
-import { ServiceError } from '@helpers/service-requests-base';
-import { TaskManager } from '@helpers/task-manager';
-import { Users } from '@helpers/users';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { MigrationConfigDTO, PolicyCategoryDTO } from '@middlewares/validation/schemas/policies';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
+import { PolicyEngine } from '../../helpers/policy-engine.js';
+import { ProjectService } from '../../helpers/projects.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { Users } from '../../helpers/users.js';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { MigrationConfigDTO, PolicyCategoryDTO, } from '../../middlewares/validation/schemas/policies.js';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -626,6 +629,10 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * use cache test dry run
+     * @param req
+     */
     @ApiOperation({
         summary: 'Returns a policy navigation.',
         description: 'Returns a policy navigation.',
@@ -646,17 +653,22 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/navigation')
     @HttpCode(HttpStatus.OK)
-    async getPolicyNavigation(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getPolicyNavigation(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.getNavigation(req.user, req.params.policyId));
+            return await engineService.getNavigation(req.user, req.params.policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * use cache need test
+     * @param req
+     */
     @ApiOperation({
         summary: 'Returns a list of groups the user is a member of.',
         description: 'Returns a list of groups the user is a member of.',
@@ -677,11 +689,12 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
-    async getPolicyGroups(@Req() req, @Response() res): Promise<any> {
+    // @UseCache()
+    async getPolicyGroups(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.getGroups(req.user, req.params.policyId));
+            return await engineService.getGroups(req.user, req.params.policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -762,6 +775,253 @@ export class PolicyApi {
     }
 
     @ApiOperation({
+        summary: 'Get policy data.',
+        description: 'Get policy data.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Policy data.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/data')
+    @HttpCode(HttpStatus.OK)
+    async downloadPolicyData(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            const policy = await engineService.getPolicy({
+                userDid: req.user.did,
+                filters: req.params.policyId,
+            });
+            if (!policy) {
+                throw new Error(`Policy doesn't exist`);
+            }
+            const downloadResult = await engineService.downloadPolicyData(
+                req.params.policyId,
+                req.user.did
+            );
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename=${policy.name}.data`
+            );
+            res.setHeader('Content-Type', 'application/policy-data');
+            return res.send(downloadResult);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Upload policy data.',
+        description: 'Upload policy data.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Policy data file',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiOkResponse({
+        description: 'Uploaded policy.',
+        schema: {
+            type: 'object'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Post('/data')
+    @HttpCode(HttpStatus.OK)
+    async uploadPolicyData(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return await engineService.uploadPolicyData(req.user.did, req.body);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Get policy tag block map.',
+        description: 'Get policy tag block map.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Policy tag block map.',
+        schema: {
+            type: 'object'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/tag-block-map')
+    @HttpCode(HttpStatus.OK)
+    async getTagBlockMap(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return await engineService.getTagBlockMap(
+                req.params.policyId,
+                req.user.did
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Get policy virtual keys.',
+        description: 'Get policy virtual keys.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Policy virtual keys.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/virtual-keys')
+    @HttpCode(HttpStatus.OK)
+    async downloadVirtualKeys(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            const policy = await engineService.getPolicy({
+                userDid: req.user.did,
+                filters: req.params.policyId,
+            });
+            if (!policy) {
+                throw new Error(`Policy doesn't exist`);
+            }
+            const downloadResult = await engineService.downloadVirtualKeys(
+                req.params.policyId,
+                req.user.did
+            );
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename=${policy.name}.vk`
+            );
+            res.setHeader('Content-Type', 'application/virtual-keys');
+            return res.send(downloadResult);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Upload policy virtual keys.',
+        description: 'Upload policy virtual keys.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Virtual keys file',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiOkResponse({
+        description: 'Operation completed.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Post('/:policyId/virtual-keys')
+    @HttpCode(HttpStatus.OK)
+    async uploadVirtualKeys(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return await engineService.uploadVirtualKeys(
+                req.user.did,
+                req.body,
+                req.params.policyId
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
         summary: 'Makes the selected group active.',
         description: 'Makes the selected group active. if UUID is not set then returns the user to the default state.',
     })
@@ -792,6 +1052,10 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Retrieves data for the policy root block.',
         description: 'Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.',
@@ -1178,11 +1442,19 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         try {
-            const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId);
+            const policies = await engineService.importMessage(
+                req.user,
+                req.body.messageId,
+                versionOfTopicId,
+                req.body.metadata
+            );
             return res.status(201).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -1212,14 +1484,29 @@ export class PolicyApi {
         const messageId = req.body.messageId;
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.IMPORT_POLICY_MESSAGE, user.id);
-        RunFunctionAsync<ServiceError>(async () => {
-            const engineService = new PolicyEngine();
-            await engineService.importMessageAsync(user, messageId, versionOfTopicId, task);
-        }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        });
+        const task = taskManager.start(
+            TaskAction.IMPORT_POLICY_MESSAGE,
+            user.id
+        );
+        RunFunctionAsync<ServiceError>(
+            async () => {
+                const engineService = new PolicyEngine();
+                await engineService.importMessageAsync(
+                    user,
+                    messageId,
+                    versionOfTopicId,
+                    task,
+                    req.body.metadata
+                );
+            },
+            async (error) => {
+                new Logger().error(error, ['API_GATEWAY']);
+                taskManager.addError(task.taskId, {
+                    code: 500,
+                    message: 'Unknown error: ' + error.message,
+                });
+            }
+        );
         return res.status(202).send(task);
     }
 
@@ -1348,6 +1635,91 @@ export class PolicyApi {
     }
 
     /**
+     * Policy import from a zip file with metadata.
+     */
+    @Post('/import/file-metadata')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file with metadata.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'Topic Id',
+        required: false
+    })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Form data with policy file and metadata.',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                'policyFile': {
+                    type: 'string',
+                    format: 'binary',
+                },
+                'metadata': {
+                    type: 'string',
+                    format: 'binary',
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.CREATED)
+    @UseInterceptors(AnyFilesInterceptor())
+    async importPolicyFromFileWithMetadata(
+        @AuthUser() user: IAuthUser,
+        @UploadedFiles() files: any,
+        @Query('versionOfTopicId') versionOfTopicId,
+    ): Promise<any> {
+        try {
+            const policyFile = files.find(
+                (item) => item.fieldname === 'policyFile'
+            );
+            if (!policyFile) {
+                throw new Error('There is no policy file');
+            }
+            const metadata = files.find(
+                (item) => item.fieldname === 'metadata'
+            );
+            const engineService = new PolicyEngine();
+            return await engineService.importFile(
+                user,
+                policyFile.buffer,
+                versionOfTopicId,
+                metadata?.buffer && JSON.parse(metadata.buffer.toString())
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    /**
      * Policy import from a zip file (async).
      */
     @Post('/push/import/file')
@@ -1403,6 +1775,98 @@ export class PolicyApi {
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return res.status(202).send(task);
+    }
+
+    /**
+     * Policy import from a zip file with metadata (async).
+     */
+    @Post('/push/import/file-metadata')
+    @Auth(
+        UserRole.STANDARD_REGISTRY
+    )
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new policy from a zip file with metadata.',
+        description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiImplicitQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'Topic Id',
+        required: false
+    })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Form data with policy file and metadata.',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                'policyFile': {
+                    type: 'string',
+                    format: 'binary',
+                },
+                'metadata': {
+                    type: 'string',
+                    format: 'binary',
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            'type': 'object'
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    @UseInterceptors(AnyFilesInterceptor())
+    async importPolicyFromFileWithMetadataAsync(
+        @AuthUser() user: IAuthUser,
+        @UploadedFiles() files: any,
+        @Query('versionOfTopicId') versionOfTopicId,
+    ): Promise<any> {
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
+        RunFunctionAsync<ServiceError>(
+            async () => {
+                const policyFile = files.find(
+                    (item) => item.fieldname === 'policyFile'
+                );
+                if (!policyFile) {
+                    throw new Error('There is no policy file');
+                }
+                const metadata = files.find(
+                    (item) => item.fieldname === 'metadata'
+                );
+                const engineService = new PolicyEngine();
+                await engineService.importFileAsync(
+                    user,
+                    policyFile.buffer,
+                    versionOfTopicId,
+                    task,
+                    metadata?.buffer && JSON.parse(metadata.buffer.toString())
+                );
+            },
+            async (error) => {
+                new Logger().error(error, ['API_GATEWAY']);
+                taskManager.addError(task.taskId, {
+                    code: 500,
+                    message: 'Unknown error: ' + error.message,
+                });
+            }
+        );
+        return task;
     }
 
     /**
@@ -1624,13 +2088,17 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * @param req
+     */
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)
-    async getBlockAbout(@Req() req, @Response() res) {
+    @UseCache({ ttl: CACHE.LONG_TTL })
+    async getBlockAbout(@Req() req) {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.blockAbout());
+            return await engineService.blockAbout();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1879,6 +2347,8 @@ export class PolicyApi {
         }
     }
 
+    /**
+     */
     @Get('/methodologies/categories')
     @ApiOperation({
         summary: 'Get all categories',
@@ -1896,11 +2366,11 @@ export class PolicyApi {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
-    async getPolicyCategoriesAsync(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getPolicyCategoriesAsync(): Promise<any> {
         try {
             const projectService = new ProjectService();
-            const categories = await projectService.getPolicyCategories();
-            return res.send(categories);
+            return await projectService.getPolicyCategories();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

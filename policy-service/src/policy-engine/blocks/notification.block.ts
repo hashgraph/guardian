@@ -1,26 +1,26 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import {
     IPolicyEventState,
     IPolicyRequestBlock,
-} from '@policy-engine/policy-engine.interface';
+} from '../policy-engine.interface.js';
 import {
     IPolicyEvent,
     PolicyInputEventType,
     PolicyOutputEventType,
-} from '@policy-engine/interfaces';
+} from '../interfaces/index.js';
 import {
     ChildrenType,
     ControlType,
     PropertyType,
     SelectItemType,
-} from '@policy-engine/interfaces/block-about';
+} from '../interfaces/block-about.js';
 import {
     ExternalDocuments,
     ExternalEvent,
     ExternalEventType,
-} from '@policy-engine/interfaces/external-event';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+} from '../interfaces/external-event.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { NotificationHelper, Users } from '@guardian/common';
 import {
     NotificationAction,
@@ -201,19 +201,25 @@ export class NotificationBlock {
 
         switch (ref.options.user) {
             case UserOption.ALL: {
-                const policyUsers = await ref.databaseServer.getAllPolicyUsers(
-                    ref.policyId
-                );
-                for (const user of policyUsers) {
-                    await notify(
-                        ref.options.title,
-                        ref.options.message,
-                        user.userId
+                if (!ref.dryRun) {
+                    const policyUsers =
+                        await ref.databaseServer.getAllPolicyUsers(
+                            ref.policyId
+                        );
+                    const users = await new Users().getUsersByIds(
+                        policyUsers.map((pu) => pu.did)
                     );
+                    for (const user of users) {
+                        await notify(
+                            ref.options.title,
+                            ref.options.message,
+                            user.id
+                        );
+                    }
                 }
             }
             case UserOption.CURRENT: {
-                if (event.user.did !== ref.policyOwner) {
+                if (event.user.did !== ref.policyOwner && !ref.dryRun) {
                     const user = await PolicyUtils.getUser(ref, event.user.did);
                     await notify(
                         ref.options.title,
@@ -239,7 +245,13 @@ export class NotificationBlock {
                         ? event.data.data[0].owner
                         : event.data.data.owner
                 );
-                await notify(ref.options.title, ref.options.message, user.id);
+                if (user.did === ref.policyOwner || !ref.dryRun) {
+                    await notify(
+                        ref.options.title,
+                        ref.options.message,
+                        user.id
+                    );
+                }
                 break;
             }
             case UserOption.DOCUMENT_ISSUER: {
@@ -249,7 +261,13 @@ export class NotificationBlock {
                         ? event.data.data[0].document?.issuer
                         : event.data.data.document?.issuer
                 );
-                await notify(ref.options.title, ref.options.message, user.id);
+                if (user.did === ref.policyOwner || !ref.dryRun) {
+                    await notify(
+                        ref.options.title,
+                        ref.options.message,
+                        user.id
+                    );
+                }
                 break;
             }
             case UserOption.GROUP_OWNER: {
@@ -259,30 +277,38 @@ export class NotificationBlock {
                 );
                 for (const role of roles) {
                     const owner = await PolicyUtils.getUser(ref, role.owner);
-                    await notify(
-                        ref.options.title,
-                        ref.options.message,
-                        owner.id
-                    );
+                    if (owner.did === ref.policyOwner || !ref.dryRun) {
+                        await notify(
+                            ref.options.title,
+                            ref.options.message,
+                            owner.id
+                        );
+                    }
                 }
                 break;
             }
             case UserOption.ROLE: {
-                const users = ref.options.grouped
+                let policyUsers = ref.options.grouped
                     ? await ref.databaseServer.getAllUsersByRole(
-                        ref.policyId,
-                        event.user.group,
-                        ref.options.role
-                    )
+                          ref.policyId,
+                          event.user.group,
+                          ref.options.role
+                      )
                     : await ref.databaseServer.getUsersByRole(
-                        ref.policyId,
-                        ref.options.role
-                    );
+                          ref.policyId,
+                          ref.options.role
+                      );
+                policyUsers = ref.dryRun
+                    ? policyUsers.filter((pu) => pu.did === ref.policyOwner)
+                    : policyUsers;
+                const users = await new Users().getUsersByIds(
+                    policyUsers.map((pu) => pu.did)
+                );
                 for (const user of users) {
                     await notify(
                         ref.options.title,
                         ref.options.message,
-                        user.userId
+                        user.id
                     );
                 }
                 break;

@@ -165,20 +165,32 @@ To know complete process of How to setup IPFS Storage variables, please check [H
 
 #### 4.3 Setting up IPFS Filebase Bucket:
 
-To configure the Filebase IPFS provider, set the following variables in the file *
-`./configs/.env.<environment>.guardian.system`
+To configure the Filebase IPFS provider, set the following variables in the file `./configs/.env.<environment>.guardian.system`**:**
 
-   ```
-   IPFS_STORAGE_API_KEY="Generated Firebase Bucket Token"
-   IPFS_PROVIDER="filebase"
-   ```
+```
+IPFS_STORAGE_API_KEY="Generated Firebase Bucket Token"
+IPFS_PROVIDER="filebase"
+```
 
-Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service API Endpoint** service. The **token**
-generated for a bucket corresponds to the **IPFS_STORAGE_API_KEY** environment variable within the guardian's
-configuration.
+Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service API Endpoint** service. The **token** generated for a bucket corresponds to the **IPFS\_STORAGE\_API\_KEY** environment variable within the guardian's configuration.
 
-For detailed setup instructions, refer to the
-official <https://docs.filebase.com/api-documentation/ipfs-pinning-service-api>.
+For detailed setup instructions, refer to the official [https://docs.filebase.com/api-documentation/ipfs-pinning-service-api](https://docs.filebase.com/api-documentation/ipfs-pinning-service-api).
+
+**4.4 Implement and test a custom IPFS provider:**
+
+We provide a flexible workflow for integrating additional IPFS providers:
+
+* Configure your environment variables under "configs/".
+* In the "worker-service" directory, execute `yarn test:ipfs` to:
+  * Build the project within the directory.
+  * Run tests to verify the validity of your configuration without needing to build the entire Guardian system.
+*   To add a new provider, extend the "IpfsProvider" enum in the "ipfs-client" with your provider's enum value and implement your logic following the given examples. Consider the following recommendations:
+
+    * Design your logic based on interfaces for greater simplicity and maintainability _**(This requires more work in v2.20.x)**_.
+    * Ensure that a custom validator for your new client is present in the "worker-service".
+    * Test iteratively by running `yarn test:ipfs` in the "worker-service" directory until your client is fully functional with your desired configuration.
+
+    This streamlined process allows any product team to swiftly integrate new IPFS clients into the Guardian system, significantly reducing development time
 
 #### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
 

@@ -1,11 +1,11 @@
-import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-addon';
-import { BlockActionError } from '@policy-engine/errors';
-import { findOptions } from '@policy-engine/helpers/find-options';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { DataSourceAddon } from '../helpers/decorators/data-source-addon.js';
+import { BlockActionError } from '../errors/index.js';
+import { findOptions } from '../helpers/find-options.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyAddonBlock } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { IPolicyUser } from '../policy-user.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Filters addon

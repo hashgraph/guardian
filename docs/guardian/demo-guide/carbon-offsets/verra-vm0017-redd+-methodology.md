@@ -38,7 +38,7 @@ You'll now be prompted to configure your Standard Registry account. Go through t
 
 Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.
 
-For this demo guide, we will use the "Import from Open Source" way. Click on that button and find the policy for this guide and click on the import button through IPFS timestamp: 1707207701.007757003
+For this demo guide, we will use the "Import from Open Source" way. Click on that button and find the policy for this guide and click on the import button.
 
 Once the policy is imported successfully, you get two options: Publish and Dry Run mode. We select the Dry Run option and select Go.
 

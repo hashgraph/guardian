@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Theme } from '../entity';
+import { Theme } from '../entity/index.js';
 
 /**
  * Theme components

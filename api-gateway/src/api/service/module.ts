@@ -1,12 +1,13 @@
 import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Query, Req, Res, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { SchemaUtils } from '@helpers/schema-utils';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { SchemaUtils } from '../../helpers/schema-utils.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('modules')
 @ApiTags('modules')
@@ -144,8 +145,16 @@ export class ModulesApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     * @param pageIndex
+     * @param pageSize
+     * @param topicId
+     */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
+    @UseCache({ isExpress: true })
     async getModuleSchemas(
         @Req() req,
         @Res() res,
@@ -169,6 +178,7 @@ export class ModulesApi {
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner
             });
+            res.locals.data = SchemaUtils.toOld(items)
             return res
                 .setHeader('X-Total-Count', count)
                 .json(SchemaUtils.toOld(items));
@@ -233,6 +243,9 @@ export class ModulesApi {
         }
     }
 
+    /**
+     * @param req
+     */
     @ApiOperation({
         summary: 'Return a list of modules.',
         description: 'Returns modules menu. Only users with the Standard Registry and Installer role are allowed to make the request.'
@@ -257,18 +270,22 @@ export class ModulesApi {
     })
     @Get('/menu')
     @HttpCode(HttpStatus.OK)
-    async getMenu(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getMenu(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
-            const items = await guardians.getMenuModule(req.user.did);
-            return res.json(items);
+            return await guardians.getMenuModule(req.user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @ApiOperation({
         summary: 'Retrieves module configuration.',
         description: 'Retrieves module configuration for the specified module ID. Only users with the Standard Registry role are allowed to make the request.'

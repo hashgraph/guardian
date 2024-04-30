@@ -1,9 +1,9 @@
 import { Logger, MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, SecretManager, Users, } from '@guardian/common';
-import { ExternalMessageEvents, GenerateUUIDv4, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
-import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper';
-import { IpfsClientClass } from './ipfs-client-class';
+import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
+import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
+import { IpfsClientClass } from './ipfs-client-class.js';
 import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId } from '@hashgraph/sdk';
-import { HederaUtils } from './helpers/utils';
+import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';
 
@@ -333,9 +333,10 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.SEND_HEDERA: {
                     const { operatorId, operatorKey, dryRun } = task.data.clientOptions;
+                    const signOptions: ISignOptions = task.data.signOptions;
                     client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     const { topicId, buffer, submitKey, memo } = task.data;
-                    result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
+                    result.data = await client.submitMessage(topicId, buffer, submitKey, memo, signOptions);
                     break;
                 }
 

@@ -1,10 +1,10 @@
 import { GenerateUUIDv4, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
-import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { importTag } from '@api/helpers/tag-import-export-helper';
-import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper';
-import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json';
-import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema';
+import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
+import { importTag } from '../../api/helpers/tag-import-export-helper.js';
+import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper.js';
+import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
+import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';
 
 export class SchemaCache {
     /**
@@ -180,7 +180,8 @@ export async function importSchemaByFiles(
     files: ISchema[],
     topicId: string,
     notifier: INotifier,
-    skipGenerateId = false
+    skipGenerateId = false,
+    outerSchemasMapping?: { name: string, iri: string }[]
 ): Promise<ImportResult> {
     notifier.start('Import schemas');
 
@@ -212,6 +213,19 @@ export async function importSchemaByFiles(
         file.owner = owner;
         file.topicId = topicId || 'draft';
         file.status = SchemaStatus.DRAFT;
+        if (file.document?.$defs && outerSchemasMapping) {
+            for (const def of Object.values(file.document.$defs)) {
+                if (!def || uuidMap.has(def.$id)) {
+                    continue;
+                }
+                const subSchemaMapping = outerSchemasMapping.find(
+                    (item) => item.name === def.title
+                );
+                if (subSchemaMapping) {
+                    uuidMap.set(def.$id, subSchemaMapping.iri);
+                }
+            }
+        }
     }
 
     notifier.info(`Found ${files.length} schemas`);

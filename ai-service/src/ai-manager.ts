@@ -1,12 +1,11 @@
-import { FilesManager } from './helpers/files-manager-helper';
+import { FilesManager } from './helpers/files-manager-helper.js';
 import { FaissStore } from 'langchain/vectorstores/faiss';
 import { RetrievalQAChain } from 'langchain/chains';
 import { OpenAI } from 'langchain/llms/openai';
-import { OpenAIConnect } from './helpers/openai-helper';
-import { VectorStorage } from './helpers/vector-storage-helper';
-import { AISuggestionsDB } from './helpers/ai-suggestions-db';
-import { PolicyDescription } from './models/models';
-
+import { OpenAIConnect } from './helpers/openai-helper.js';
+import { VectorStorage } from './helpers/vector-storage-helper.js';
+import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
+import { PolicyDescription } from './models/models.js';
 import * as dotenv from 'dotenv';
 import { Logger, Policy, PolicyCategory } from '@guardian/common';
 

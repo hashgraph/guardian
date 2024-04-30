@@ -1,4 +1,4 @@
-import { RecordItem } from './record-item';
+import { RecordItem } from './record-item.js';
 
 /**
  * Generate item

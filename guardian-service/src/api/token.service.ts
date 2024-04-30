@@ -1,8 +1,8 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, IToken, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { publishTokenTags } from './tag.service';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+import { publishTokenTags } from './tag.service.js';
 
 /**
  * Create token in Hedera network
@@ -10,7 +10,7 @@ import { publishTokenTags } from './tag.service';
  * @param user
  */
 export async function createHederaToken(token: any, user: IRootConfig) {
-    const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey);
+    const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
     const topic = await topicHelper.create({
         type: TopicType.TokenTopic,
         name: TopicType.TokenTopic,
@@ -601,6 +601,24 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
         });
 
         return new MessageResponse(task);
+    });
+
+    ApiResponse(MessageAPI.UPDATE_TOKEN, async (msg) => {
+        try {
+        const { token } = msg;
+        if (!msg) {
+            throw new Error('Invalid Params');
+        }
+        const item = await tokenRepository.findOne({ tokenId: token.tokenId });
+        if (!item) {
+            throw new Error('Token not found');
+        }
+
+        return new MessageResponse(await updateToken(item, token, tokenRepository, emptyNotifier()));
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
     });
 
     ApiResponse(MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {

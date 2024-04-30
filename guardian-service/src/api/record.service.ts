@@ -1,5 +1,5 @@
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IRefLvl, IPropertiesLvl, RecordComparator } from '@analytics';
-import { ApiResponse } from '@api/helpers/api-response';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IRefLvl, IPropertiesLvl, RecordComparator } from '../analytics/index.js';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     BinaryMessageResponse,
     DatabaseServer,
@@ -11,7 +11,7 @@ import {
     RecordImportExport,
 } from '@guardian/common';
 import { MessageAPI, PolicyEvents, PolicyType } from '@guardian/interfaces';
-import { GuardiansService } from '@helpers/guardians';
+import { GuardiansService } from '../helpers/guardians.js';
 
 /**
  * Compare results

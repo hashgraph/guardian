@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DataBaseHelper,
@@ -31,20 +31,19 @@ import {
     Users,
     VcHelper,
 } from '@guardian/common';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { PolicyConverterUtils } from './policy-converter-utils';
-import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { ISerializedErrors } from './policy-validation-results-container';
-import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { PolicyValidator } from '@policy-engine/block-validators';
-import { publishPolicyTags } from '@api/tag.service';
-import { importTag } from '@api/helpers/tag-import-export-helper';
-import { createHederaToken } from '@api/token.service';
-import { GuardiansService } from '@helpers/guardians';
-import { Inject } from '@helpers/decorators/inject';
-import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '@api/helpers/schema-helper';
-import { AISuggestionsService } from '@helpers/ai-suggestions';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
+import { PolicyConverterUtils } from './policy-converter-utils.js';
+import { emptyNotifier, INotifier } from '../helpers/notifier.js';
+import { ISerializedErrors } from './policy-validation-results-container.js';
+import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js';
+import { publishPolicyTags } from '../api/tag.service.js';
+import { importTag } from '../api/helpers/tag-import-export-helper.js';
+import { createHederaToken } from '../api/token.service.js';
+import { GuardiansService } from '../helpers/guardians.js';
+import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
+import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
+import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 
 /**
  * Result of publishing
@@ -95,8 +94,8 @@ export class PolicyEngine extends NatsService {
      * Users helper
      * @private
      */
-    @Inject()
-    private readonly users: Users;
+    // @Inject()
+    private users: Users;
 
     /**
      * Policy ready callbacks
@@ -115,6 +114,7 @@ export class PolicyEngine extends NatsService {
      */
     public async init(): Promise<void> {
         await super.init();
+        this.users = new Users()
 
         this.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
             PolicyEngine.runReadyEvent(msg.policyId, msg.data, msg.error);
@@ -263,7 +263,7 @@ export class PolicyEngine extends NatsService {
             const parent = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true
             );
-            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: model.name || TopicType.PolicyTopic,
@@ -277,7 +277,7 @@ export class PolicyEngine extends NatsService {
             model.topicId = topic.topicId;
 
             notifier.completedAndStart('Create policy in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
             const messageStatus = await messageServer
@@ -455,7 +455,7 @@ export class PolicyEngine extends NatsService {
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true);
         const users = new Users();
         const root = await users.getHederaAccount(policyToDelete.owner);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);
         await messageServer.setTopicObject(topic)
@@ -549,7 +549,7 @@ export class PolicyEngine extends NatsService {
         model.version = version;
 
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
@@ -587,7 +587,7 @@ export class PolicyEngine extends NatsService {
                 await messageServer
                     .sendMessage(tokenMessage);
             }
-            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
 
             const createInstanceTopic = async () => {
                 notifier.completedAndStart('Create instance topic');
@@ -731,9 +731,9 @@ export class PolicyEngine extends NatsService {
         const root = await this.users.getHederaAccount(owner);
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
         const dryRunId = model.id.toString();
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, dryRunId)
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId)
             .setTopicObject(topic);
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, dryRunId);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
         const databaseServer = new DatabaseServer(dryRunId);
 
         model = await this.dryRunSchemas(model, owner);
@@ -921,7 +921,7 @@ export class PolicyEngine extends NatsService {
 
         const root = await this.users.getHederaAccount(userFull.did);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = await messageServer.getMessage<PolicyMessage>(messageId);
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
@@ -973,7 +973,8 @@ export class PolicyEngine extends NatsService {
         owner: string,
         hederaAccount: IRootConfig,
         versionOfTopicId: string,
-        notifier: INotifier
+        notifier: INotifier,
+        metadata?: PolicyToolMetadata
     ): Promise<{
         /**
          * New Policy
@@ -985,7 +986,7 @@ export class PolicyEngine extends NatsService {
         errors: any[];
     }> {
         notifier.start('Load from IPFS');
-        const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey);
+        const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, hederaAccount.signOptions);
         const message = await messageServer.getMessage<PolicyMessage>(messageId);
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
@@ -1023,7 +1024,14 @@ export class PolicyEngine extends NatsService {
             } as any);
         }
         notifier.completed();
-        return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
+        return await PolicyImportExportHelper.importPolicy(
+            policyToImport,
+            owner,
+            versionOfTopicId,
+            notifier,
+            undefined,
+            metadata
+        );
     }
 
     /**
@@ -1138,7 +1146,7 @@ export class PolicyEngine extends NatsService {
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
         message.setDocument(multipleConfig);
-        const messageServer = new MessageServer(userAccount.hederaAccountId, userAccount.hederaAccountKey);
+        const messageServer = new MessageServer(userAccount.hederaAccountId, userAccount.hederaAccountKey, userAccount.signOptions);
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)

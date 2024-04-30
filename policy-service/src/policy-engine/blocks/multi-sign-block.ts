@@ -1,22 +1,15 @@
-import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { BlockActionError } from '@policy-engine/errors';
-import {
-    PolicyRoles,
-    VcDocument as VcDocumentCollection,
-    MessageAction,
-    MessageServer,
-    VcHelper,
-    VcDocumentDefinition as VcDocument,
-    VPMessage,
-} from '@guardian/common';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { Inject } from '@helpers/decorators/inject';
+import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyUser } from '../policy-user.js';
+import { BlockActionError } from '../errors/index.js';
+import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { Inject } from '../../helpers/decorators/inject.js';
+import { DocumentCategoryType } from '@guardian/interfaces';
 
 /**
  * Sign Status
@@ -65,7 +58,7 @@ export class MultiSignBlock {
      * @private
      */
     @Inject()
-    private readonly vcHelper: VcHelper;
+    declare private vcHelper: VcHelper;
 
     /**
      * Before init callback
@@ -229,6 +222,7 @@ export class MultiSignBlock {
             );
 
             const documentOwnerHederaCred = await documentOwnerCred.loadHederaCredentials(ref);
+            const signOptions = await documentOwnerCred.loadSignOptions(ref);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
@@ -237,6 +231,7 @@ export class MultiSignBlock {
             const messageServer = new MessageServer(
                 documentOwnerHederaCred.hederaAccountId,
                 documentOwnerHederaCred.hederaAccountKey,
+                signOptions,
                 ref.dryRun
             );
 
@@ -245,7 +240,7 @@ export class MultiSignBlock {
                 .sendMessage(vpMessage);
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
-            vpDocument.type = DataTypes.MULTI_SIGN;
+            vpDocument.type = DocumentCategoryType.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
             vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;

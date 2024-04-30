@@ -1,4 +1,4 @@
-import { ConfigType } from '../type';
+import { ConfigType } from '../type/index.js';
 
 /**
  * Suggestions order priority

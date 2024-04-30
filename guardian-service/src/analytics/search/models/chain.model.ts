@@ -1,6 +1,6 @@
-import { SearchUtils } from '../utils/utils';
-import { BlockSearchModel } from './block.model';
-import { PairSearchModel } from './pair.model';
+import { SearchUtils } from '../utils/utils.js';
+import { BlockSearchModel } from './block.model.js';
+import { PairSearchModel } from './pair.model.js';
 
 /**
  * Chain model

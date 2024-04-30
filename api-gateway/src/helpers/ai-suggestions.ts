@@ -1,6 +1,6 @@
 import { NatsService } from '@guardian/common';
 import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
-import { Singleton } from './decorators/singleton';
+import { Singleton } from './decorators/singleton.js';
 
 /**
  * AI Suggestions service

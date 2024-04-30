@@ -1,13 +1,13 @@
-import { EventBlock } from '@policy-engine/helpers/decorators';
-import { GroupRelationshipType, GroupAccessType } from '@guardian/interfaces';
-import { IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { PolicyRoles, MessageServer, MessageStatus } from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { EventBlock } from '../helpers/decorators/index.js';
+import { GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
+import { IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyInputEventType } from '../interfaces/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Document action clock with UI
@@ -113,8 +113,9 @@ export class GroupManagerBlock {
         if (member.messageId) {
             const userCred = await PolicyUtils.getUserCredentials(ref, user.did);
             const userHederaCred = await userCred.loadHederaCredentials(ref);
+            const signOptions = await userCred.loadSignOptions(ref);
             const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, ref.dryRun
+                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
             );
             const message = await messageServer.getMessage(member.messageId);
             const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);

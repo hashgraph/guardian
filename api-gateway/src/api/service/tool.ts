@@ -1,20 +1,24 @@
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Put,
-    Req,
-    Response
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+  Put,
+  Req,
+  Response,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import { TaskAction, UserRole } from '@guardian/interfaces';
 import {
+    ApiBody,
+    ApiConsumes,
     ApiForbiddenResponse,
     ApiInternalServerErrorResponse,
     ApiOkResponse,
@@ -24,11 +28,13 @@ import {
     ApiUnauthorizedResponse,
     getSchemaPath
 } from '@nestjs/swagger';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
-import { InternalServerErrorDTO, TaskDTO, ToolDTO } from '@middlewares/validation/schemas';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
+import { InternalServerErrorDTO, TaskDTO, ToolDTO } from '../../middlewares/validation/schemas/index.js';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -711,6 +717,82 @@ export class ToolsApi {
     }
 
     /**
+     * Import tool from file with metadata
+     */
+    @Post('/import/file-metadata')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new tool from a zip file.',
+        description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(ToolDTO)
+        }
+    })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Form data with tool file and metadata.',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                'file': {
+                    type: 'string',
+                    format: 'binary',
+                },
+                'metadata': {
+                    type: 'string',
+                    format: 'binary',
+                }
+            }
+        }
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @UseInterceptors(AnyFilesInterceptor())
+    @HttpCode(HttpStatus.CREATED)
+    async toolImportFileWithMetadata(
+        @Req() req,
+        @UploadedFiles() files: any
+    ): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const guardian = new Guardians();
+        try {
+            const file = files.find((item) => item.fieldname === 'file');
+            if (!file) {
+                throw new Error('There is no tool file');
+            }
+            const metadata = files.find(
+                (item) => item.fieldname === 'metadata'
+            );
+            const tool = await guardian.importToolFile(
+                file.buffer,
+                req.user.did,
+                metadata?.buffer && JSON.parse(metadata.buffer.toString())
+            );
+            return tool;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    /**
      * Import tool from IPFS (Async)
      */
     @Post('/push/import/file')
@@ -757,6 +839,101 @@ export class ToolsApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Import tool from file with metadata (Async)
+     */
+    @Post('/push/import/file-metadata')
+    @ApiSecurity('bearerAuth')
+    @ApiOperation({
+        summary: 'Imports new tool from a zip file.',
+        description:
+            'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' +
+            ONLY_SR,
+    })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Form data with tool file and metadata.',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                'file': {
+                    type: 'string',
+                    format: 'binary',
+                },
+                'metadata': {
+                    type: 'string',
+                    format: 'binary',
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            $ref: getSchemaPath(TaskDTO),
+        },
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Unauthorized.',
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO),
+        },
+    })
+    @UseInterceptors(AnyFilesInterceptor())
+    @HttpCode(HttpStatus.ACCEPTED)
+    async toolImportFileWithMetadataAsync(
+        @Req() req,
+        @UploadedFiles() files: any
+    ): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        try {
+            const file = files.find(item => item.fieldname === 'file');
+            if (!file) {
+                throw new Error('There is no tool file');
+            }
+            const metadata = files.find(item => item.fieldname === 'metadata');
+            const user = req.user;
+            const owner = req.user.did;
+            const guardian = new Guardians();
+            const taskManager = new TaskManager();
+            const task = taskManager.start(
+                TaskAction.IMPORT_TOOL_FILE,
+                user.id
+            );
+            RunFunctionAsync<ServiceError>(
+                async () => {
+                    await guardian.importToolFileAsync(
+                        file.buffer,
+                        owner,
+                        task,
+                        metadata?.buffer && JSON.parse(metadata.buffer.toString())
+                    );
+                },
+                async (error) => {
+                    new Logger().error(error, ['API_GATEWAY']);
+                    taskManager.addError(task.taskId, {
+                        code: 500,
+                        message: error.message,
+                    });
+                }
+            );
+            return task;
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -837,12 +1014,12 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
-    async getMenu(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getMenu(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
-            const items = await guardians.getMenuTool(req.user.did);
-            return res.json(items);
+            return await guardians.getMenuTool(req.user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

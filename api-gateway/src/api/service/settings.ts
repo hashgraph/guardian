@@ -1,11 +1,11 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { AboutInterface, CommonSettings, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
-import { SettingsDTO } from '@middlewares/validation/schemas/settings';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { SettingsDTO } from '../../middlewares/validation/schemas/settings.js';
 import process from 'process';
 
 @Controller('settings')

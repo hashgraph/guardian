@@ -7,7 +7,8 @@
 * [Policy Workflow](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#policy-workflow)
 * [Policy Guide](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#policy-guide)
 * [Available Roles](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#available-roles)
-* [Important Documents \\& Schemas](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#important-documents--schemas)
+* [Important Documents & Schemas](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#important-documents--schemas)
+* [Tools Referenced](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#tools-referenced)
 * [Token(Carbon Emissions Reduction)](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#tokencarbon-emissions-reduction)
 * [Step By Step](cdm-acm0006-electricity-and-heat-generation-from-biomass.md#step-by-step)
 
@@ -37,33 +38,35 @@ In the modern landscape of emission reduction initiatives, the value of transpar
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
 
-#### Available Roles <a href="#available-roles" id="available-roles"></a>
+### Available Roles <a href="#available-roles" id="available-roles"></a>
 
 * Project participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
 * Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 * Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens
 
-#### Important Documents & Schemas <a href="#important-documents--schemas" id="important-documents--schemas"></a>
+### Important Documents & Schemas <a href="#important-documents--schemas" id="important-documents--schemas"></a>
 
 * Project Description: General information on project, location, technology, equipment, biomass types etc.
 * Emission Reductions Calculation: Calculate and specify baseline emissions, project emissions and leakage as per methodology equations.
 * Monitoring Plan: Description of monitoring approach, parameters, frequency, QA/QC procedures etc. in line with methodology.
 * Monitoring Report: Periodic monitoring reports with data on parameters like biomass use, electricity generation etc.
 
-Tools referenced: -&#x20;
+### Tools referenced
 
-Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality&#x20;
+* Tool 02 - Combined tool to identify the baseline scenario and demonstrate additionality&#x20;
+* Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion&#x20;
+* Tool 04 - Emissions from solid waste disposal sites&#x20;
+* Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation&#x20;
+* Tool 07 - Tool to calculate the emission factor for an electricity system&#x20;
+* Tool 09 - Determining the baseline efficiency of thermal or electric energy generation systems
+* Tool 10 - Tool to determine the remaining lifetime of equipment&#x20;
+* Tool 12 - Project and leakage emissions from transportation of freight&#x20;
+* Tool 16 - Project and leakage emissions from biomass
 
-Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion&#x20;
-
-Tool 04 - Emissions from solid waste disposal sites&#x20;
-
-Tool 05 - Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation&#x20;
-
-Tool 07 - Tool to calculate the emission factor for an electricity system - Tool 09 - Determining the baseline efficiency of thermal or electric energy generation systems - Tool 10 - Tool to determine the remaining lifetime of equipment - Tool 12 - Project and leakage emissions from transportation of freight - Tool 16 - Project and leakage emissions from biomass
-
-#### Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>
+### Token(Carbon Emissions Reduction) <a href="#tokencarbon-emissions-reduction" id="tokencarbon-emissions-reduction"></a>
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
-#### Step By Step <a href="#step-by-step" id="step-by-step"></a>
+### Step By Step <a href="#step-by-step" id="step-by-step"></a>
+
+Coming Soon

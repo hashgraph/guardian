@@ -1,14 +1,15 @@
-import { Guardians } from '@helpers/guardians';
-import { Users } from '@helpers/users';
+import { Guardians } from '../../helpers/guardians.js';
+import { Users } from '../../helpers/users.js';
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
 import { Controller, Get, HttpCode, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { TaskAction, UserRole } from '@guardian/interfaces';
-import { RegisteredUsersDTO } from '@middlewares/validation/schemas';
-import { AuthUser } from '@auth/authorization-helper';
-import { Auth } from '@auth/auth.decorator';
+import { RegisteredUsersDTO } from '../../middlewares/validation/schemas/index.js';
+import { AuthUser } from '../../auth/authorization-helper.js';
+import { Auth } from '../../auth/auth.decorator.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('demo')
 @ApiTags('demo')
@@ -26,6 +27,7 @@ export class DemoApi {
     })
     @Get('/registered-users')
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
         const guardians = new Guardians();

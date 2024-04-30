@@ -29,7 +29,7 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 1.1 Go to ‘Schemas’ tab and create a new schema
 
-![Creating new Schema](<../../../../.gitbook/assets/1 (1) (1) (1) (1).png>)
+![Creating new Schema](<../../../../.gitbook/assets/1 (1) (1) (1) (1) (1).png>)
 
 1.2 To make sure there is some demo/test data content in this schema create 3 fields:
 
@@ -46,19 +46,19 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option enabled. This will allow to return to the initial state after the document was saved.
 
-![InterfaceStepBlock is added as cyclic\_container](<../../../../.gitbook/assets/3 (1) (1) (1) (1) (1).png>)
+![InterfaceStepBlock is added as cyclic\_container](<../../../../.gitbook/assets/3 (1) (1) (1) (1) (1) (1).png>)
 
 2.2 Add ‘**requestVcDocumentBlock**’ into the ‘_cyclic\_container_’
 
-![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (1) (1) (1) (1) (1).png>)
+![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (1) (1) (1) (1) (1) (1).png>)
 
 2.3 Then select the previously created Schema
 
-![Selecting already created Schema](<../../../../.gitbook/assets/5 (1) (1) (1) (1) (1).png>)
+![Selecting already created Schema](<../../../../.gitbook/assets/5 (1) (1) (1) (1) (1) (1).png>)
 
 2.4 Select ‘New UUID’ to configure automatic generation of unique IDs for each document
 
-![Selecting UUID](<../../../../.gitbook/assets/6 (1) (1) (1) (1).png>)
+![Selecting UUID](<../../../../.gitbook/assets/6 (1) (1) (1) (1) (1).png>)
 
 2.5 By default ‘**requestVcDocumentBlock**’ is displayed as a Form covering the entire page. To prevent this choose ‘**DIALOG**’ value for the field ‘Type’.
 

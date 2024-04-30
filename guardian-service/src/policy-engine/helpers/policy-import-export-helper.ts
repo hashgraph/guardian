@@ -1,47 +1,12 @@
-
-import {
-    BlockType,
-    ConfigType,
-    GenerateUUIDv4,
-    ModuleStatus,
-    PolicyType,
-    SchemaCategory,
-    SchemaEntity,
-    TagType,
-    TopicType
-} from '@guardian/interfaces';
-import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { INotifier } from '@helpers/notifier';
-import {
-    DataBaseHelper,
-    DatabaseServer,
-    IPolicyComponents,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    Policy,
-    PolicyMessage,
-    regenerateIds,
-    replaceAllEntities,
-    replaceAllVariables,
-    replaceArtifactProperties,
-    Schema,
-    SchemaFields,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users
-} from '@guardian/common';
-import { importTag } from '@api/helpers/tag-import-export-helper';
-import { SchemaImportResult } from '@api/helpers/schema-helper';
-import { HashComparator } from '@analytics';
-import {
-    importSubTools,
-    importSchemaByFiles,
-    importTokensByFiles,
-    importArtifactsByFiles
-} from '@api/helpers';
+import { BlockType, ConfigType, GenerateUUIDv4, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
+import { publishSystemSchemas } from '../../api/helpers/schema-publish-helper.js';
+import { PolicyConverterUtils } from '../policy-converter-utils.js';
+import { INotifier } from '../../helpers/notifier.js';
+import { DataBaseHelper, DatabaseServer, IPolicyComponents, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { importTag } from '../../api/helpers/tag-import-export-helper.js';
+import { SchemaImportResult } from '../../api/helpers/schema-helper.js';
+import { HashComparator } from '../../analytics/index.js';
+import { importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles } from '../../api/helpers/index.js';
 
 /**
  * Policy import export helper
@@ -89,6 +54,7 @@ export class PolicyImportExportHelper {
         versionOfTopicId: string,
         notifier: INotifier,
         additionalPolicyConfig?: Partial<Policy>,
+        metadata?: PolicyToolMetadata,
     ): Promise<{
         /**
          * New Policy
@@ -108,6 +74,32 @@ export class PolicyImportExportHelper {
             tools
         } = policyToImport;
 
+        const users = new Users();
+        notifier.start('Resolve Hedera account');
+        const root = await users.getHederaAccount(policyOwner);
+
+        const toolsMapping: {
+            oldMessageId: string;
+            messageId: string;
+            oldHash: string;
+            newHash?: string;
+        }[] = [];
+        if (metadata?.tools) {
+            for (const tool of tools) {
+                if (
+                    metadata.tools[tool.messageId] &&
+                    tool.messageId !== metadata.tools[tool.messageId]
+                ) {
+                    toolsMapping.push({
+                        oldMessageId: tool.messageId,
+                        messageId: metadata.tools[tool.messageId],
+                        oldHash: tool.hash,
+                    });
+                    tool.messageId = metadata.tools[tool.messageId];
+                }
+            }
+        }
+
         delete policy._id;
         delete policy.id;
         delete policy.messageId;
@@ -126,14 +118,11 @@ export class PolicyImportExportHelper {
         policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
         policy.description = additionalPolicyConfig?.description || policy.description;
 
-        const users = new Users();
-        notifier.start('Resolve Hedera account');
-        const root = await users.getHederaAccount(policyOwner);
         notifier.completedAndStart('Resolve topic');
         const parent = await TopicConfig.fromObject(
             await DatabaseServer.getTopicByType(policyOwner, TopicType.UserTopic), true
         );
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
 
         let topicRow: TopicConfig;
         if (versionOfTopicId) {
@@ -155,7 +144,7 @@ export class PolicyImportExportHelper {
 
         if (!versionOfTopicId) {
             notifier.completedAndStart('Publish Policy in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(policy);
             const messageStatus = await messageServer
@@ -186,9 +175,27 @@ export class PolicyImportExportHelper {
         const toolsResult = await importSubTools(root, tools, notifier);
         notifier.sub(false);
 
+        for (const toolMapping of toolsMapping) {
+            const toolByMessageId = toolsResult.tools.find(
+                // tslint:disable-next-line:no-shadowed-variable
+                (tool) => tool.messageId === toolMapping.messageId
+            );
+            toolMapping.newHash = toolByMessageId?.hash;
+        }
+
         // Import Tokens
         const tokensResult = await importTokensByFiles(policyOwner, tokens, notifier);
         const tokenMap = tokensResult.tokenMap;
+
+        const toolsSchemas = (await DatabaseServer.getSchemas(
+            {
+                category: SchemaCategory.TOOL,
+                topicId: { $in: toolsResult.tools.map((tool) => tool.topicId) },
+            },
+            {
+                fields: ['name', 'iri'],
+            }
+        )) as { name: string; iri: string }[];
 
         // Import Schemas
         const schemasResult = await importSchemaByFiles(
@@ -196,7 +203,9 @@ export class PolicyImportExportHelper {
             policyOwner,
             schemas,
             topicRow.topicId,
-            notifier
+            notifier,
+            false,
+            toolsSchemas
         );
         const schemasMap = schemasResult.schemasMap;
 
@@ -207,7 +216,13 @@ export class PolicyImportExportHelper {
         notifier.completedAndStart('Saving in DB');
 
         // Replace id
-        await PolicyImportExportHelper.replaceConfig(policy, schemasMap, artifactsMap, tokenMap);
+        await PolicyImportExportHelper.replaceConfig(
+            policy,
+            schemasMap,
+            artifactsMap,
+            tokenMap,
+            toolsMapping
+        );
 
         // Save
         const model = new DataBaseHelper(Policy).create(policy as Policy);
@@ -288,7 +303,8 @@ export class PolicyImportExportHelper {
         policy: Policy,
         schemasMap: SchemaImportResult[],
         artifactsMap: Map<string, string>,
-        tokenMap: any[]
+        tokenMap: any[],
+        tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
     ) {
         if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
@@ -306,6 +322,14 @@ export class PolicyImportExportHelper {
         for (const item of tokenMap) {
             replaceAllEntities(policy.config, ['tokenId'], item.oldTokenID, item.newTokenID);
             replaceAllVariables(policy.config, 'Token', item.oldTokenID, item.newTokenID);
+        }
+
+        for (const item of tools) {
+            if (!item.newHash || !item.messageId) {
+                continue;
+            }
+            replaceAllEntities(policy.config, ['messageId'], item.oldMessageId, item.messageId);
+            replaceAllEntities(policy.config, ['hash'], item.oldHash, item.newHash);
         }
 
         // compatibility with older versions

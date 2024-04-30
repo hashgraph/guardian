@@ -1,5 +1,5 @@
-import { ApiResponse } from '@api/helpers/api-response';
-import { emptyNotifier, initNotifier } from '@helpers/notifier';
+import { ApiResponse } from '../api/helpers/api-response.js';
+import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
@@ -22,8 +22,8 @@ import {
     previewToolByMessage,
     updateSchemaDefs,
     updateToolConfig
-} from './helpers';
-import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
+} from './helpers/index.js';
+import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
@@ -278,6 +278,21 @@ export async function schemaAPI(): Promise<void> {
             }
             if (msg.policyId) {
                 filter.category = SchemaCategory.POLICY;
+                const userPolicy = await DatabaseServer.getPolicyCache({
+                    id: msg.policyId,
+                    userId: msg.owner
+                });
+                if (userPolicy) {
+                    filter.cacheCollection = 'schemas';
+                    filter.cachePolicyId = msg.policyId;
+                    // tslint:disable-next-line:no-shadowed-variable
+                    const [items, count] =
+                        await DatabaseServer.getAndCountPolicyCacheData(
+                            filter,
+                            otherOptions
+                        );
+                    return new MessageResponse({ items, count });
+                }
                 const policy = await DatabaseServer.getPolicyById(msg.policyId);
                 filter.topicId = policy?.topicId;
             } else if (msg.moduleId) {

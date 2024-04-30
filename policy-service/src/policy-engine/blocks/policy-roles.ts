@@ -1,14 +1,14 @@
-import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { BlockActionError } from '@policy-engine/errors';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
+import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { BlockActionError } from '../errors/index.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { VcHelper, MessageAction, MessageServer, RoleMessage, IAuthUser } from '@guardian/common';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * User Group
@@ -318,6 +318,7 @@ export class PolicyRolesBlock {
 
         const userCred = await PolicyUtils.getUserCredentials(ref, group.owner);
         const hederaCred = await userCred.loadHederaCredentials(ref);
+        const signOptions = await userCred.loadSignOptions(ref)
         const didDocument = await userCred.loadDidDocument(ref);
 
         const uuid: string = await ref.components.generateUUID();
@@ -350,7 +351,7 @@ export class PolicyRolesBlock {
         );
 
         const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
-        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
         const vcMessage = new RoleMessage(MessageAction.CreateVC);
         vcMessage.setDocument(userVC);
         vcMessage.setRole(group);
@@ -359,7 +360,7 @@ export class PolicyRolesBlock {
             .sendMessage(vcMessage);
 
         const vcDocument = PolicyUtils.createVC(ref, user, userVC);
-        vcDocument.type = DataTypes.USER_ROLE;
+        vcDocument.type = DocumentCategoryType.USER_ROLE;
         vcDocument.schema = `#${userVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();

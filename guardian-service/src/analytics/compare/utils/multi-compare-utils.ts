@@ -1,5 +1,5 @@
-import { IRateTable } from '../interfaces/rate-table.interface';
-import { IReportTable } from '../interfaces/report-table.interface';
+import { IRateTable } from '../interfaces/rate-table.interface.js';
+import { IReportTable } from '../interfaces/report-table.interface.js';
 
 interface IMergeResult<T> {
     mainIndex: number;

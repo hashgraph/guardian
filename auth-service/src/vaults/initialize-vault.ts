@@ -1,5 +1,5 @@
-import { IVault } from './vault.interface';
-import * as vaultProviders from './vault-providers'
+import { IVault } from './vault.interface.js';
+import * as vaultProviders from './vault-providers/index.js'
 import assert from 'assert';
 
 /**

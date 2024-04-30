@@ -16,11 +16,11 @@
 
 ​ [Key Documents and Schemas](cdm-acm0001-flaring-or-use-of-landfill-gas.md#key-documents-and-schemas)&#x20;
 
+[Tools Referenced](cdm-acm0001-flaring-or-use-of-landfill-gas.md#tools-referenced)
+
 ​ [Token (Carbon Emission Reduction)](cdm-acm0001-flaring-or-use-of-landfill-gas.md#token-carbon-emission-reduction)&#x20;
 
 ​ [Workflow ](cdm-acm0001-flaring-or-use-of-landfill-gas.md#workflow)
-
-​ [IPFS Timestamp](cdm-acm0001-flaring-or-use-of-landfill-gas.md#ipfs-timestamp)
 
 [Step-by-Step](cdm-acm0001-flaring-or-use-of-landfill-gas.md#step-by-step)​​&#x20;
 
@@ -60,29 +60,23 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 ### Key Documents and Schemas&#x20;
 
-Methodological Tool 02 – Combined tool to identify the baseline scenario and demonstrate additionality.&#x20;
-
-Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
-
-Methodological Tool 04 – Emissions from solid waste disposal sites. &#x20;
-
-Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.&#x20;
-
-Methodological Tool 06 – Project emissions from flaring. &#x20;
-
-Methodological Tool 08 – Tool to determine the mass flow of a greenhouse gas in a gaseous stream. &#x20;
-
-Methodological Tool 09 – Determining the baseline efficiency of thermal or electric energy generation systems. &#x20;
-
-Methodological Tool 12 – Project and leakage emissions from transportation of freight. &#x20;
-
-Methodological Tool 32 – Positive lists of technologies.&#x20;
-
 Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc.&#x20;
 
 Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions.&#x20;
 
 Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.&#x20;
+
+### Tools Referenced
+
+* Methodological Tool 02 – Combined tool to identify the baseline scenario and demonstrate additionality.&#x20;
+* Methodological Tool 03 – Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+* Methodological Tool 04 – Emissions from solid waste disposal sites. &#x20;
+* Methodological Tool 05 – Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation.&#x20;
+* Methodological Tool 06 – Project emissions from flaring. &#x20;
+* Methodological Tool 08 – Tool to determine the mass flow of a greenhouse gas in a gaseous stream. &#x20;
+* Methodological Tool 09 – Determining the baseline efficiency of thermal or electric energy generation systems. &#x20;
+* Methodological Tool 12 – Project and leakage emissions from transportation of freight.&#x20;
+* Methodological Tool 32 – Positive lists of technologies.&#x20;
 
 ### Token (Carbon Emission Reduction)&#x20;
 
@@ -92,10 +86,90 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (366).png" alt=""><figcaption></figcaption></figure>
 
-### IPFS Timestamp
-
-Coming Soon
-
 ### Step-by-Step
 
-Coming Soon
+1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
+
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
+2. Once the policy has successfully imported, you will be redirected to the policy configurator. The policy configurator can be used to edit the policy using the workflow blocks. There will also be a tab for the “Tools” used within this policy as illustrated in the image below. To start using the policy you must first change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” or “Go” button. This can be done through the policy configurator page or though the “Policies” page.
+
+<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+
+3. Create a new user by clicking the “Create User” button and assign their role as “Project Participant”.
+
+<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+
+4. The Project Participant can now provide their name or the name they would like to see reflect when registering for this project (i.e. their organization’s name).
+
+<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+
+5. Сreate a new user again and assign their role as “VVB”.
+
+<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+
+6. The VVB can now provide their name or the name they would like users to see when reviewing projects (i.e. their organization’s name).
+
+<figure><img src="../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+
+7. Log in as the SR and select the “Project Participants” or the “VVBs” tab to view the documents submitted by the Project Participant and by the VVB. The SR can approve their requests by clicking on the “Approve" button.
+
+<figure><img src="../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+
+8. Log in as the Project Participant and create a new project by clicking on the "New Project" button. This form is used to collect information about the project, organization, and all the data needed to run the emission reduction calculations. Once all the required fields have been filled the “Create” button will turn dark blue. By selecting the “Create” button all the data will be sent to the SR for review/approval.
+
+<figure><img src="../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+
+9. Log back in as the SR and after reviewing the document located in the “Projects” tab, the SR can validate the project submitted by the Project Participant by clicking the “Validate” button. If the data does not satisfy the rules set by the SR, then the “Reject” button can be used.
+
+<figure><img src="../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+
+10. Log in as the Project Participant and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
+
+<figure><img src="../../../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+
+11. After creating the monitoring report, the project participant assigns the VVB to verify it by navigating to the “Monitoring Reports” tab and selecting the dropdown under “Assign”.
+
+<figure><img src="../../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+
+12. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Participant. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
+
+<figure><img src="../../../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
+
+13. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”. This will also trigger the minting process. You can see the minting status under “Status” change from “Minting” to “Minted”.
+
+<figure><img src="../../../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
+
+14. Once the minting process is completed, you can view the token amount by navigating to the “VPs” tab.
+
+<figure><img src="../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
+
+15. The TrustChain can also be viewed by clicking on the “View TrustChain” button. Please note that the token amount may show “-1/472495” when the tokens are still minting like the example provided below.
+
+<figure><img src="../../../.gitbook/assets/image (26).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (27).png" alt=""><figcaption></figcaption></figure>

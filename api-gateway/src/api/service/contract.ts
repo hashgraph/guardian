@@ -1,18 +1,18 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { ContractType, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Req,
-    Response,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+  Req,
+  Response,
 } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
+import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
@@ -27,7 +27,7 @@ import {
     ApiQuery,
     ApiParam,
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas/errors';
+import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import {
     ContractDTO,
     RetirePoolDTO,
@@ -35,7 +35,8 @@ import {
     RetireRequestDTO,
     RetireRequestTokenDTO,
     WiperRequestDTO,
-} from '@middlewares/validation/schemas/contracts';
+} from '../../middlewares/validation/schemas/contracts.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 /**
  * Contracts api
@@ -229,6 +230,9 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * @param req
+     */
     @Get('/:contractId/permissions')
     @ApiBearerAuth()
     @ApiExtraModels(InternalServerErrorDTO)
@@ -259,6 +263,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async contractPermissions(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -329,6 +334,10 @@ export class ContractsApi {
     //#endregion
     //#region Wipe contract endpoints
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/wipe/requests')
     @ApiBearerAuth()
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
@@ -383,6 +392,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    // @UseCache({ isExpress: true })
     async getWipeRequests(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
@@ -394,6 +404,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
+            res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1048,6 +1059,10 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/retire/requests')
     @ApiBearerAuth()
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
@@ -1101,6 +1116,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    // @UseCache({ isExpress: true })
     async getRetireRequests(@Req() req, @Response() res): Promise<any> {
         await checkPermission(
             UserRole.STANDARD_REGISTRY,
@@ -1115,6 +1131,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
+            res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1125,6 +1142,10 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/retire/pools')
     @ApiBearerAuth()
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
@@ -1185,6 +1206,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    // @UseCache({ isExpress: true })
     async getRetirePools(@Req() req, @Response() res): Promise<any> {
         await checkPermission(
             UserRole.STANDARD_REGISTRY,
@@ -1200,6 +1222,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
+            res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1721,6 +1744,10 @@ export class ContractsApi {
         }
     }
 
+    /**
+     * @param req
+     * @param res
+     */
     @Get('/retire')
     @ApiBearerAuth()
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
@@ -1767,6 +1794,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    // @UseCache({ isExpress: true })
     async getRetireVCs(@Req() req, @Response() res): Promise<any> {
         await checkPermission(
             UserRole.STANDARD_REGISTRY,
@@ -1780,6 +1808,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
+            res.locals.data = vcs
             return res.setHeader('X-Total-Count', count).json(vcs);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

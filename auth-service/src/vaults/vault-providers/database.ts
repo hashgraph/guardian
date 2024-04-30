@@ -1,6 +1,6 @@
-import { IVault } from '../vault.interface';
+import { IVault } from '../vault.interface.js';
 import { DataBaseHelper } from '@guardian/common';
-import { WalletAccount } from '@entity/wallet-account';
+import { WalletAccount } from '../../entity/wallet-account.js';
 
 /**
  * Database vault

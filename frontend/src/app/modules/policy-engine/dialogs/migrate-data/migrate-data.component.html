@@ -7,9 +7,13 @@
                 <div class="context">
                     <div class="policy-dropdown-container">
                         <label class="form-label" htmlFor="firstPolicy">Source policy</label>
-                        <p-dropdown (onChange)="onChange()" [(ngModel)]="migrationConfig.src" [options]="pList1"
-                            [showClear]="true" appendTo="body" id="firstPolicy" optionLabel="name" optionValue="id"
-                            placeholder="Select Policy"></p-dropdown>
+                        <div class="source-policy-selector">
+                            <p-dropdown (onChange)="onChange()" [(ngModel)]="migrationConfig.src" [options]="pList1"
+                                [showClear]="true" appendTo="body" id="firstPolicy" optionLabel="name" optionValue="id"
+                                placeholder="Select Policy" class="source-policy-selector__dropdown"></p-dropdown>
+                            <button pButton pRipple (click)="onUploadData()" icon="pi pi-download"
+                                class="p-button-rounded source-policy-selector__upload-button"></button>
+                        </div>
                     </div>
 
                     <div class="policy-dropdown-container">
@@ -17,6 +21,41 @@
                         <p-dropdown (onChange)="onChange()" [(ngModel)]="migrationConfig.dst" [options]="pList2"
                             [showClear]="true" appendTo="body" id="firstPolicy" optionLabel="name" optionValue="id"
                             placeholder="Select Policy"></p-dropdown>
+                    </div>
+                    <div class="policy-migration-options">
+                        <div class="p-field-checkbox">
+                            <p-checkbox [(ngModel)]="migrationConfig.migrateState" (onChange)="onMigrateState()"
+                                [binary]="true" inputId="state"></p-checkbox>
+                            <label for="state">Migrate policy state</label>
+                        </div>
+                        <div class="p-field-checkbox" *ngIf="migrationConfig.migrateState">
+                            <p-checkbox [binary]="true" [(ngModel)]="migrationConfig.migrateRetirePools"
+                                inputId="pools"></p-checkbox>
+                            <label for="pools">Migrate retire pools</label>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <p-dropdown appendTo="body"
+                            *ngIf="migrationConfig.migrateRetirePools && migrationConfig.migrateState"
+                            [(ngModel)]="migrationConfig.retireContractId" [options]="contracts" [showClear]="true"
+                            optionLabel="description" optionValue="contractId"
+                            placeholder="Select contract"></p-dropdown>
+                        <div class="mapping-content"
+                            *ngIf="getObjectKeys(this.migrationConfig.tokensMap).length > 0 && migrationConfig.migrateRetirePools && migrationConfig.migrateState">
+                            <div *ngFor="let token of getObjectKeys(this.migrationConfig.tokensMap)" class="mapping">
+                                <div class="map-left">
+                                    <span [title]="token">{{token}}</span>
+                                </div>
+                                <span>:</span>
+                                <div class="map-right">
+                                    <div>
+                                        <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.tokensMap[token]"
+                                            [options]="dstTokenMap" [showClear]="true"
+                                            placeholder="Select token"></p-dropdown>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -42,7 +81,7 @@
                                 <td [title]="document.id">{{document.id}}</td>
                                 <td [title]="document.owner">{{document.owner}}</td>
                                 <td style="text-overflow: unset;"><p-button label="View document"
-                                        styleClass="p-button-link" (onClick)="viewVP(document)"></p-button></td>
+                                        styleClass="p-button-link" (onClick)="viewDocument(document)"></p-button></td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
@@ -70,6 +109,7 @@
                                 <th>Owner</th>
                                 <th>Schema</th>
                                 <th>Document</th>
+                                <th>Operation</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-document>
@@ -79,9 +119,12 @@
                                 </td>
                                 <td [title]="document.id">{{document.id}}</td>
                                 <td [title]="document.owner">{{document.owner}}</td>
-                                <td [title]="document.schema">{{getSchemaName(srcSchemas, document.schema)}}</td>
+                                <td [title]="document.schema" [title]="getSchemaName(srcSchemas, document.schema)">
+                                    {{getSchemaName(srcSchemas, document.schema)}}</td>
                                 <td style="text-overflow: unset;"><p-button label="View document"
-                                        styleClass="p-button-link" (onClick)="viewVC(document)"></p-button></td>
+                                        styleClass="p-button-link" (onClick)="viewDocument(document)"></p-button></td>
+                                <td style="text-overflow: unset;"><p-button label="Edit document"
+                                        styleClass="p-button-link" (onClick)="editDocument(document)"></p-button></td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
@@ -99,10 +142,12 @@
             <div *ngSwitchCase="'schemas'" class="step-container">
                 <ng-template [ngTemplateOutlet]="spinner"
                     [ngTemplateOutletContext]="{ loading: loadings.schemas }"></ng-template>
-                <div class="mapping-content" *ngIf="getObjectKeys(this.migrationConfig.schemas).length > 0; else noSchemas">
+                <div class="mapping-content"
+                    *ngIf="getObjectKeys(this.migrationConfig.schemas).length > 0; else noSchemas">
                     <div *ngFor="let schema of getObjectKeys(this.migrationConfig.schemas)" class="mapping">
                         <div class="map-left">
-                            <span>{{getSchemaName(srcSchemas, schema)}}</span>
+                            <span [title]="getSchemaName(srcSchemas, schema)">{{getSchemaName(srcSchemas,
+                                schema)}}</span>
                         </div>
                         <span>:</span>
                         <div class="map-right">
@@ -121,7 +166,7 @@
                 <div class="mapping-content" *ngIf="getObjectKeys(this.migrationConfig.roles).length > 0; else noRoles">
                     <div *ngFor="let role of getObjectKeys(this.migrationConfig.roles)" class="mapping">
                         <div class="map-left">
-                            <span>{{role}}</span>
+                            <span [title]="role">{{role}}</span>
                         </div>
                         <span>:</span>
                         <div class="map-right">
@@ -135,10 +180,11 @@
                 <ng-template #noRoles><span>There are no roles to map</span></ng-template>
             </div>
             <div *ngSwitchCase="'groups'" class="step-container">
-                <div class="mapping-content" *ngIf="getObjectKeys(this.migrationConfig.groups).length > 0; else noGroups">
+                <div class="mapping-content"
+                    *ngIf="getObjectKeys(this.migrationConfig.groups).length > 0; else noGroups">
                     <div *ngFor="let group of getObjectKeys(this.migrationConfig.groups)" class="mapping">
                         <div class="map-left">
-                            <span>{{group}}</span>
+                            <span [title]="group">{{group}}</span>
                         </div>
                         <span>:</span>
                         <div class="map-right">
@@ -150,6 +196,46 @@
                     </div>
                 </div>
                 <ng-template #noGroups><span>There are no groups to map</span></ng-template>
+            </div>
+            <div *ngSwitchCase="'tokens'" class="step-container">
+                <div class="mapping-content"
+                    *ngIf="getObjectKeys(this.migrationConfig.tokens).length > 0; else noTokens">
+                    <div *ngFor="let token of getObjectKeys(this.migrationConfig.tokens)" class="mapping">
+                        <div class="map-left">
+                            <span [title]="token">{{token}}</span>
+                        </div>
+                        <span>:</span>
+                        <div class="map-right">
+                            <div>
+                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.tokens[token]"
+                                    [options]="dstTokens" [showClear]="true" placeholder="Select token"></p-dropdown>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <ng-template #noTokens><span>There are no tokens to map</span></ng-template>
+            </div>
+            <div *ngSwitchCase="'blocks'" class="step-container">
+                <ng-template [ngTemplateOutlet]="spinner"
+                    [ngTemplateOutletContext]="{ loading: loadings.blocks }"></ng-template>
+                <div class="mapping-content"
+                    *ngIf="getObjectKeys(this.migrationConfig.blocks).length > 0; else noBlocks">
+                    <div *ngFor="let block of getObjectKeys(this.migrationConfig.blocks)" class="mapping">
+                        <div class="map-left">
+                            <span>{{getBlockName(srcBlocks, block)}}</span>
+                        </div>
+                        <span>:</span>
+                        <div class="map-right">
+                            <div>
+                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.blocks[block]"
+                                    (onChange)="migrationConfig.updateSchemasValidity()" [options]="dstBlocks"
+                                    [showClear]="true" optionLabel="tag" optionValue="id"
+                                    placeholder="Select block"></p-dropdown>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <ng-template #noBlocks><span>There are no blocks to map</span></ng-template>
             </div>
         </div>
     </div>
@@ -206,10 +292,8 @@
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
-                <p-button label="Next" *ngIf="items.length - 1 > activeIndex"
-                    (onClick)="nextStep()"></p-button>
-                <p-button label="OK" *ngIf="items.length - 1 === activeIndex"
-                    (onClick)="onSubmit()"
+                <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
+                <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
                     styleClass="p-button-success"></p-button>
             </div>
         </div>
@@ -219,10 +303,30 @@
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
-                <p-button label="Next" *ngIf="items.length - 1 > activeIndex"
-                    (onClick)="nextStep()"></p-button>
-                <p-button label="OK" *ngIf="items.length - 1 === activeIndex"
-                    (onClick)="onSubmit()"
+                <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
+                <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
+                    styleClass="p-button-success"></p-button>
+            </div>
+        </div>
+        <div *ngSwitchCase="'blocks'" class="action-buttons">
+            <div>
+                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                    (onClick)="prevStep()"></p-button>
+            </div>
+            <div>
+                <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
+                <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
+                    styleClass="p-button-success"></p-button>
+            </div>
+        </div>
+        <div *ngSwitchCase="'tokens'" class="action-buttons">
+            <div>
+                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                    (onClick)="prevStep()"></p-button>
+            </div>
+            <div>
+                <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
+                <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
                     styleClass="p-button-success"></p-button>
             </div>
         </div>

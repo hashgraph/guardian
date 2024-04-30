@@ -1,10 +1,10 @@
-import { Hashing } from '../hashing';
+import { Hashing } from '../hashing.js';
 import { IVP } from '@guardian/interfaces';
-import { VcDocument } from './vc-document';
-import { Issuer } from './issuer';
-import { TimestampUtils } from '../timestamp-utils';
+import { VcDocument } from './vc-document.js';
+import { Issuer } from './issuer.js';
+import { TimestampUtils } from '../timestamp-utils.js';
 import { Timestamp } from '@hashgraph/sdk';
-import { CommonDidDocument } from './did';
+import { CommonDidDocument } from './did/index.js';
 
 /**
  * VP document

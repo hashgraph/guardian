@@ -1,9 +1,8 @@
-
 import { AuthEvents, GenerateUUIDv4, IRootConfig, UserRole } from '@guardian/interfaces';
-import { Singleton } from '../decorators/singleton';
-import { KeyType, Wallet } from './wallet';
-import { NatsService } from '../mq';
-import { AuthenticatedRequest, IAuthUser } from '../interfaces';
+import { Singleton } from '../decorators/singleton.js';
+import { KeyType, Wallet } from './wallet.js';
+import { NatsService } from '../mq/index.js';
+import { AuthenticatedRequest, IAuthUser } from '../interfaces/index.js';
 
 /**
  * Users service
@@ -209,10 +208,12 @@ export class Users extends NatsService {
             throw new Error('Hedera Account not found');
         }
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
+        const signOptions = await this.wallet.getUserSignOptions(userFull);
         return {
             did: userDID,
             hederaAccountId: userID,
-            hederaAccountKey: userKey
+            hederaAccountKey: userKey,
+            signOptions
         }
     }
 }

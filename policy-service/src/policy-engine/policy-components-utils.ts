@@ -7,7 +7,7 @@ import {
     PolicyLink,
     PolicyOutputEventType,
     PolicyTagMap
-} from '@policy-engine/interfaces';
+} from './interfaces/index.js';
 import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import {
     AnyBlockType,
@@ -19,17 +19,17 @@ import {
     IPolicyNavigationStep,
     ISerializedBlock,
     ISerializedBlockExtend
-} from './policy-engine.interface';
+} from './policy-engine.interface.js';
 import { DatabaseServer, Policy, PolicyTool } from '@guardian/common';
-import { STATE_KEY } from '@policy-engine/helpers/constants';
-import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
-import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
-import { GetBlockAbout } from '@policy-engine/blocks';
-import { IPolicyUser } from './policy-user';
-import { ExternalEvent } from './interfaces/external-event';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
-import { PolicyNavigationMap } from './interfaces/block-state';
-import { ComponentsService } from './helpers/components-service';
+import { STATE_KEY } from './helpers/constants.js';
+import { GetBlockByType } from './blocks/get-block-by-type.js';
+import { GetOtherOptions } from './helpers/get-other-options.js';
+import { GetBlockAbout } from './blocks/index.js';
+import { IPolicyUser } from './policy-user.js';
+import { ExternalEvent } from './interfaces/external-event.js';
+import { BlockTreeGenerator } from './block-tree-generator.js';
+import { PolicyNavigationMap } from './interfaces/block-state.js';
+import { ComponentsService } from './helpers/components-service.js';
 
 /**
  * Policy tag helper
@@ -976,6 +976,15 @@ export class PolicyComponentsUtils {
         const uuid =
             PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
+    }
+
+    /**
+     * Get tag block map
+     * @param policyId Policy identifier
+     * @returns Tag block map
+     */
+    public static GetTagBlockMap(policyId: string) {
+        return PolicyComponentsUtils.TagMapByPolicyId.get(policyId);
     }
 
     /**

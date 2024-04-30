@@ -23,9 +23,9 @@
     "dependencies": {
         "@guardian/common": "^2.13.0",
         "@guardian/interfaces": "^2.13.0",
-        "@mikro-orm/core": "5.7.12",
-        "@mikro-orm/mongodb": "5.7.12",
-        "@mikro-orm/reflection": "5.7.12",
+        "@mikro-orm/core": "^6.1.11",
+        "@mikro-orm/mongodb": "^6.1.11",
+        "@mikro-orm/reflection": "^6.1.11",
         "@types/express": "^4.17.17",
         "@types/mongoose": "^5.11.97",
         "@types/morgan": "^1.9.4",
@@ -34,8 +34,8 @@
         "express": "^4.17.3",
         "http-errors": "^2.0.0",
         "js-yaml": "^4.1.0",
-        "mikro-orm": "^5.6.12",
-        "mongodb": "5.6.0",
+        "mikro-orm": "^6.1.11",
+        "mongodb": "6.5.0",
         "mongoose": "^6.10.0",
         "morgan": "^1.10.0",
         "nats": "^2.12.1",
@@ -60,5 +60,6 @@
         "ts-node": "^10.9.1",
         "tslint": "^5.20.1",
         "tslint-config-standard": "^9.0.0"
-    }
+    },
+    "type": "module"
 }

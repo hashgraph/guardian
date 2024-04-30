@@ -22,6 +22,14 @@ services:
     depends_on:
       - mongo
 
+  cache:
+    image: registry.redict.io/redict
+    restart: always
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+
   ipfs-node:
     image: ipfs/kubo:v0.26.0
     ports:
@@ -61,6 +69,7 @@ services:
     build:
       context: .
       dockerfile: ./notification-service/Dockerfile
+    init: true
     depends_on:
       - message-broker
     environment:
@@ -74,6 +83,7 @@ services:
     build:
       context: .
       dockerfile: ./logger-service/Dockerfile
+    init: true
     depends_on:
       - message-broker
     environment:
@@ -89,6 +99,7 @@ services:
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
+    init: true    
     depends_on:
       ipfs-node:
         condition: service_healthy
@@ -110,6 +121,7 @@ services:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile.demo
+    init: true    
     ports:
       - '5005:5005'
     volumes:
@@ -132,11 +144,13 @@ services:
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile.demo
+    init: true    
     expose:
       - 3002
       - 6555
     depends_on:
       - mongo
+      - cache
       - message-broker
       - guardian-service
       - auth-service
@@ -152,6 +166,7 @@ services:
     build:
       context: .
       dockerfile: ./ai-service/Dockerfile
+    init: true    
     expose:
       - 3013
     depends_on:
@@ -171,6 +186,7 @@ services:
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
+    init: true
     ports:
       - "5006:5006"
     depends_on:
@@ -193,6 +209,7 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
+    init: true    
     ports:
       - "5007:5007"
     volumes:
@@ -215,8 +232,7 @@ services:
     build:
       context: .
       dockerfile: application-events/Dockerfile
-    expose:
-      - 3012
+    init: true
     ports:
       - "3012:3012"
     depends_on:
@@ -225,21 +241,25 @@ services:
       - guardian-service
       - auth-service
       - logger-service
+    expose:
+    - 3012
 
   mrv-sender:
     build:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
+    init: true
+    ports:
+      - "5008:5008"
     expose:
       - 3003
       - 5008
-    ports:
-      - "5008:5008"
 
   topic-viewer:
     build:
       context: .
       dockerfile: ./topic-viewer/Dockerfile
+    init: true
     expose:
       - 3006
       - 5009
@@ -250,6 +270,7 @@ services:
     build:
       context: .
       dockerfile: ./web-proxy/Dockerfile
+    init: true
     ports:
       - "3000:80"
     depends_on:

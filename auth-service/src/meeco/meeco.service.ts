@@ -1,12 +1,12 @@
-import { Cryppo, IKey, IMasterEncryptionKey } from '../meeco/cryppo';
-import { IMeecoConfig, MeecoApi } from './meeco-api';
-import { IPassphraseArtefact } from './models/keys';
-import { IMe } from '../meeco/models/me';
-import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request';
+import { Cryppo, IKey, IMasterEncryptionKey } from '../meeco/cryppo.js';
+import { IMeecoConfig, MeecoApi } from './meeco-api.js';
+import { IPassphraseArtefact } from './models/keys.js';
+import { IMe } from '../meeco/models/me.js';
+import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request.js';
 import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
 import { Vc, VerifiableCredential } from '@guardian/common';
-import { StatusList } from '@helpers/credentials-validation/status-list';
+import { StatusList } from '../helpers/credentials-validation/status-list.js';
 import nacl from 'tweetnacl';
 
 export class MeecoService {

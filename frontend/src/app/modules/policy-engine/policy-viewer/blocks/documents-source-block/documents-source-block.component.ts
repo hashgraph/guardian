@@ -306,25 +306,29 @@ export class DocumentsSourceBlockComponent implements OnInit {
         return null;
     }
 
-    getSerials(row: any, field: any) {
+    getArray(row: any, field: any) {
         try {
             if (field.content) {
                 return field.content;
             }
-            const result = [];
-            if (row.serials) {
-                if (Array.isArray(row.serials)) {
-                    for (const serial of row.serials) {
-                        result.push()
+            if (field.names) {
+                let d = row[field.names[0]];
+                for (let i = 1; i < field.names.length; i++) {
+                    const name = field.names[i];
+                    if (name === 'L' && Array.isArray(d)) {
+                        d = d[d.length - 1];
+                    } else {
+                        d = d[name];
                     }
                 }
+                return d;
+            } else {
+                return row[field.name];
             }
-
         } catch (error) {
             return [];
         }
     }
-
 
     getObjectValue(data: any, value: any) {
         let result: any = null;
@@ -381,8 +385,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         const links = [];
-        if (row.serials) {
-            for (const serial of row.serials) {
+        const serials = this.getArray(row, field);
+        if (serials) {
+            for (const serial of serials) {
                 links.push({
                     type: "tokens",
                     params: serial.tokenId,

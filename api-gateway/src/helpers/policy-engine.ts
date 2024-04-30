@@ -1,7 +1,7 @@
-import { Singleton } from '@helpers/decorators/singleton';
-import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents } from '@guardian/interfaces';
+import { Singleton } from '../helpers/decorators/singleton.js';
+import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
-import { NewTask } from './task-manager';
+import { NewTask } from './task-manager.js';
 
 /**
  * Policy engine service
@@ -269,9 +269,20 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param zip
      * @param versionOfTopicId
+     * @param metadata
      */
-    public async importFile(user: IAuthUser, zip: Buffer, versionOfTopicId?: string) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user, versionOfTopicId });
+    public async importFile(
+        user: IAuthUser,
+        zip: Buffer,
+        versionOfTopicId?: string,
+        metadata?: PolicyToolMetadata
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE, {
+            zip,
+            user,
+            versionOfTopicId,
+            metadata,
+        });
     }
 
     /**
@@ -280,18 +291,38 @@ export class PolicyEngine extends NatsService {
      * @param zip
      * @param versionOfTopicId
      * @param task
+     * @param metadata
      */
-    public async importFileAsync(user: IAuthUser, zip: Buffer, versionOfTopicId: string, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, { zip, user, versionOfTopicId, task });
+    public async importFileAsync(
+        user: IAuthUser,
+        zip: Buffer,
+        versionOfTopicId: string,
+        task: NewTask,
+        metadata?: PolicyToolMetadata
+    ) {
+        return await this.sendMessage(
+            PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
+            { zip, user, versionOfTopicId, task, metadata }
+        );
     }
 
     /**
      * Import policy from message
      * @param user
      * @param messageId
+     * @param versionOfTopicId
+     * @param metadata
      */
-    public async importMessage(user: IAuthUser, messageId: string, versionOfTopicId: string) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId });
+    public async importMessage(
+        user: IAuthUser,
+        messageId: string,
+        versionOfTopicId: string,
+        metadata?: PolicyToolMetadata
+    ) {
+        return await this.sendMessage(
+            PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
+            { messageId, user, versionOfTopicId, metadata }
+        );
     }
 
     /**
@@ -300,9 +331,19 @@ export class PolicyEngine extends NatsService {
      * @param messageId
      * @param versionOfTopicId
      * @param task
+     * @param metadata
      */
-    public async importMessageAsync(user: IAuthUser, messageId: string, versionOfTopicId: string, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, { messageId, user, versionOfTopicId, task });
+    public async importMessageAsync(
+        user: IAuthUser,
+        messageId: string,
+        versionOfTopicId: string,
+        task: NewTask,
+        metadata?: PolicyToolMetadata
+    ) {
+        return await this.sendMessage(
+            PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
+            { messageId, user, versionOfTopicId, task, metadata }
+        );
     }
 
     /**
@@ -540,5 +581,78 @@ export class PolicyEngine extends NatsService {
         task
     ): Promise<void> {
         await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task });
+    }
+
+    /**
+     * Download policy date
+     * @param policyId Policy identifier
+     * @param owner Owner
+     * @returns Data
+     */
+    public async downloadPolicyData(policyId: string, owner: string) {
+        return Buffer.from(
+            (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_POLICY_DATA, {
+                policyId,
+                owner,
+            })) as string,
+            'base64'
+        );
+    }
+
+    /**
+     * Download virtual keys
+     * @param policyId Policy identifier
+     * @param owner Owner
+     * @returns Virtual keys
+     */
+    public async downloadVirtualKeys(policyId: string, owner: string) {
+        return Buffer.from(
+            (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_VIRTUAL_KEYS, {
+                policyId,
+                owner,
+            })) as string,
+            'base64'
+        );
+    }
+
+    /**
+     * Upload policy data
+     * @param user User
+     * @param data Data
+     * @returns Uploaded policy
+     */
+    public async uploadPolicyData(user: string, data: any) {
+        return await this.sendMessage(PolicyEngineEvents.UPLOAD_POLICY_DATA, {
+            user,
+            data,
+        });
+    }
+
+    /**
+     * Upload virtual keys
+     * @param owner Owner
+     * @param data Data
+     * @param policyId Policy identifier
+     * @returns Operation completed
+     */
+    public async uploadVirtualKeys(owner: string, data: any, policyId: string) {
+        return await this.sendMessage(PolicyEngineEvents.UPLOAD_VIRTUAL_KEYS, {
+            owner,
+            data,
+            policyId
+        });
+    }
+
+    /**
+     * Get tag block map
+     * @param policyId Policy identifier
+     * @param owner Owner
+     * @returns Tag block map
+     */
+    public async getTagBlockMap(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_TAG_BLOCK_MAP, {
+            policyId,
+            owner,
+        })
     }
 }

@@ -1,18 +1,20 @@
-import { Guardians } from '@helpers/guardians';
+import { Guardians } from '../../helpers/guardians.js';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
 import process from 'process';
-import { AuthUser, checkPermission } from '@auth/authorization-helper';
+import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
-import { SchemaUtils } from '@helpers/schema-utils';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '@middlewares/validation/schemas';
-import { Auth } from '@auth/auth.decorator';
+import { TaskManager } from '../../helpers/task-manager.js';
+import { ServiceError } from '../../helpers/service-requests-base.js';
+import { SchemaUtils } from '../../helpers/schema-utils.js';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '../../middlewares/validation/schemas/index.js';
+import { Auth } from '../../auth/auth.decorator.js';
+import { CACHE } from '../../constants/index.js';
+import { UseCache } from '../../helpers/decorators/cache.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -125,9 +127,14 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
 @Controller('schema')
 @ApiTags('schema')
 export class SingleSchemaApi {
+    /**
+     * use cache 30s test
+     * @param req
+     */
     @Get('/:schemaId')
     @HttpCode(HttpStatus.OK)
-    async getSchema(@Req() req, @Response() res): Promise<any> {
+    @UseCache({ ttl: CACHE.SHORT_TTL })
+    async getSchema(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)(req.user);
         try {
             const user = req.user;
@@ -150,7 +157,7 @@ export class SingleSchemaApi {
             } else {
                 SchemaHelper.updatePermission([schema], owner);
             }
-            return res.json(SchemaUtils.toOld(schema));
+            return SchemaUtils.toOld(schema);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
@@ -533,16 +540,16 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async getAll(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getAll(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
             if (user.did) {
-                const schemas = await guardians.getListSchemas(user.did);
-                return res.send(schemas);
+                return await guardians.getListSchemas(user.did);
             }
-            res.send([]);
+            return [];
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -588,19 +595,19 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async getSub(@Req() req, @Response() res): Promise<any> {
+    @UseCache()
+    async getSub(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             if (!req.user.did) {
-                return res.send([]);
+                return [];
             }
-            const schemas = await guardians.getSubSchemas(
+            return await guardians.getSubSchemas(
                 req.query.category,
                 req.query.topicId,
                 req.user.did
             );
-            return res.send(schemas);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -2214,6 +2221,7 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @UseCache({ isExpress: true })
     async exportTemplate(
         @AuthUser() user: IAuthUser,
         @Response() res: any
@@ -2225,6 +2233,7 @@ export class SchemaApi {
             const fileBuffer = Buffer.from(file, 'base64');
             res.setHeader('Content-disposition', `attachment; filename=` + filename);
             res.setHeader('Content-type', 'application/zip');
+            res.locals.data = fileBuffer
             return res.send(fileBuffer);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

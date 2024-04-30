@@ -1,4 +1,4 @@
-import { PropertiesModel } from './properties.model';
+import { PropertiesModel } from './properties.model.js';
 
 /**
  * Block Properties Model

@@ -1,5 +1,5 @@
 import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DataBaseHelper, DidDocument, Logger, MessageError, MessageResponse, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument } from '@guardian/common';
 
 /**
