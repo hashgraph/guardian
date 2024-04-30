@@ -39,9 +39,10 @@
 4. Schemas : Map the source policy schemas with the destination policy schemas.
 5. Roles : Map source policy roles with the destination policy roles.
 6. Groups : Map the source policy groups with the destination policy groups.
-7. Clicking OK you will start an asynchronous migration task
+7. Blocks :  Block mapping (while state migrating is enabled)
+8. Clicking OK you will start an asynchronous migration task
 
-<figure><img src="../../../.gitbook/assets/image (420).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (598).png" alt=""><figcaption></figcaption></figure>
 
 ![image9.png](<../../../.gitbook/assets/7 (13).png>)
 
