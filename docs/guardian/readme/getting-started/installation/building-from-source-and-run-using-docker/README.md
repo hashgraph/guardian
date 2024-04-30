@@ -126,12 +126,7 @@ This configuration allows you to leave untouched all the data referring to Mainn
 **Note** for any other GUARDIAN\_ENV name of your choice just copy and paste the file `/configs/.env.template.guardian.system` and rename as `/configs/.env.<choosen name>.guardian.system`
 {% endhint %}
 
-4\. Now, we have range of options to setup IPFS:
-
-1. Local node
-2. IPFS Web3 Storage
-3. Filebase bucket
-4. Custom IPFS Provider
+4\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
 
 #### 4.1 Setting up IPFS Local node:
 
@@ -170,7 +165,7 @@ To know complete process of How to setup IPFS Storage variables, please check [H
 
 #### 4.3 Setting up IPFS Filebase Bucket:
 
-To configure the Filebase IPFS provider, set the following variables in the file `./configs/.env.develop.guardian.system`**:**
+To configure the Filebase IPFS provider, set the following variables in the file `./configs/.env.<environment>.guardian.system`**:**
 
 ```
 IPFS_STORAGE_API_KEY="Generated Firebase Bucket Token"

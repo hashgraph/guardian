@@ -217,8 +217,7 @@ The complete guide to using the new w3up web3.storage API is available at https:
 
 #### 4.3 Setting up IPFS Filebase Bucket:
 
-To configure the Filebase IPFS provider, set the following variables in the file *
-*./configs/.env.develop.guardian.system:**
+To configure the Filebase IPFS provider, set the following variables in the file *`./configs/.env.<environment>.guardian.system`*
 
    ```
    IPFS_STORAGE_API_KEY="Generated Firebase Bucket Token"
