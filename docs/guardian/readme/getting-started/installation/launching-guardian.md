@@ -23,7 +23,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../../../.gitbook/assets/image (23) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (23) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
