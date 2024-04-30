@@ -775,6 +775,253 @@ export class PolicyApi {
     }
 
     @ApiOperation({
+        summary: 'Get policy data.',
+        description: 'Get policy data.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Policy data.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/data')
+    @HttpCode(HttpStatus.OK)
+    async downloadPolicyData(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            const policy = await engineService.getPolicy({
+                userDid: req.user.did,
+                filters: req.params.policyId,
+            });
+            if (!policy) {
+                throw new Error(`Policy doesn't exist`);
+            }
+            const downloadResult = await engineService.downloadPolicyData(
+                req.params.policyId,
+                req.user.did
+            );
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename=${policy.name}.data`
+            );
+            res.setHeader('Content-Type', 'application/policy-data');
+            return res.send(downloadResult);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Upload policy data.',
+        description: 'Upload policy data.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Policy data file',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiOkResponse({
+        description: 'Uploaded policy.',
+        schema: {
+            type: 'object'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Post('/data')
+    @HttpCode(HttpStatus.OK)
+    async uploadPolicyData(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return await engineService.uploadPolicyData(req.user.did, req.body);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Get policy tag block map.',
+        description: 'Get policy tag block map.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Policy tag block map.',
+        schema: {
+            type: 'object'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/tag-block-map')
+    @HttpCode(HttpStatus.OK)
+    async getTagBlockMap(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return await engineService.getTagBlockMap(
+                req.params.policyId,
+                req.user.did
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Get policy virtual keys.',
+        description: 'Get policy virtual keys.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiOkResponse({
+        description: 'Policy virtual keys.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Get('/:policyId/virtual-keys')
+    @HttpCode(HttpStatus.OK)
+    async downloadVirtualKeys(@Req() req, @Response() res): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            const policy = await engineService.getPolicy({
+                userDid: req.user.did,
+                filters: req.params.policyId,
+            });
+            if (!policy) {
+                throw new Error(`Policy doesn't exist`);
+            }
+            const downloadResult = await engineService.downloadVirtualKeys(
+                req.params.policyId,
+                req.user.did
+            );
+            res.setHeader(
+                'Content-Disposition',
+                `attachment; filename=${policy.name}.vk`
+            );
+            res.setHeader('Content-Type', 'application/virtual-keys');
+            return res.send(downloadResult);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
+        summary: 'Upload policy virtual keys.',
+        description: 'Upload policy virtual keys.' + ONLY_SR,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiParam({
+        description: 'Policy identifier.',
+        name: 'policyId',
+        required: true
+    })
+    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Virtual keys file',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiOkResponse({
+        description: 'Operation completed.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        schema: {
+            $ref: getSchemaPath(InternalServerErrorDTO)
+        }
+    })
+    @ApiSecurity('bearerAuth')
+    @Post('/:policyId/virtual-keys')
+    @HttpCode(HttpStatus.OK)
+    async uploadVirtualKeys(@Req() req): Promise<any> {
+        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+        const engineService = new PolicyEngine();
+        try {
+            return await engineService.uploadVirtualKeys(
+                req.user.did,
+                req.body,
+                req.params.policyId
+            );
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(
+                error.message,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    @ApiOperation({
         summary: 'Makes the selected group active.',
         description: 'Makes the selected group active. if UUID is not set then returns the user to the default state.',
     })

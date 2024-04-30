@@ -222,6 +222,10 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse({ id: block.uuid });
         });
 
+        this.getPolicyMessages(PolicyEvents.GET_TAG_BLOCK_MAP, policyId, async () => {
+            return new MessageResponse(Object.fromEntries(PolicyComponentsUtils.GetTagBlockMap(policyId)));
+        });
+
         this.getPolicyMessages(PolicyEvents.GET_POLICY_NAVIGATION, policyId, async (msg: any) => {
             const { user } = msg;
             const userFull = await this.getUser(policyInstance, user);

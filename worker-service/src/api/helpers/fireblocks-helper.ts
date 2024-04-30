@@ -1,7 +1,5 @@
-import { Singleton } from '@guardian/common';
 import { FireblocksSDK, PeerType, TransactionOperation, TransactionResponse, TransactionStatus } from 'fireblocks-sdk'
 
-@Singleton
 export class FireblocksHelper{
 
     private readonly client: FireblocksSDK;

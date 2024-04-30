@@ -1,6 +1,6 @@
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DataTypes, PolicyUtils } from '../helpers/utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -9,6 +9,7 @@ import { BlockActionError } from '../errors/index.js';
 import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
+import { DocumentCategoryType } from '@guardian/interfaces';
 
 /**
  * Sign Status
@@ -239,7 +240,7 @@ export class MultiSignBlock {
                 .sendMessage(vpMessage);
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
-            vpDocument.type = DataTypes.MULTI_SIGN;
+            vpDocument.type = DocumentCategoryType.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
             vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;

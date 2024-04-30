@@ -340,7 +340,7 @@ export class ContractsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @UseCache({ isExpress: true })
+    // @UseCache({ isExpress: true })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getWipeRequests(
@@ -977,7 +977,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
-    @UseCache({ isExpress: true })
+    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetireRequests(
         @AuthUser() user: IAuthUser,
@@ -1054,7 +1054,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    @UseCache({ isExpress: true })
+    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetirePools(
         @AuthUser() user: IAuthUser,

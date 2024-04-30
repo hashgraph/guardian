@@ -4,7 +4,7 @@ import {
     MintTransaction,
     MintRequest,
 } from '@guardian/common';
-import { MintTransactionStatus, WorkerTaskType } from '@guardian/interfaces';
+import { MintTransactionStatus, TokenType, WorkerTaskType } from '@guardian/interfaces';
 import { PolicyUtils } from '../../helpers/utils.js';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TypedMint } from './typed-mint.js';
@@ -63,6 +63,8 @@ export class MintNFT extends TypedMint {
             vpMessageId: string;
             memo: string;
             tokenId: string;
+            tokenType: TokenType;
+            decimals: number;
             metadata?: string;
             secondaryVpIds?: string[];
         },

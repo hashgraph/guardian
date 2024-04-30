@@ -12,6 +12,7 @@ import {
     COMMON_CONNECTION_CONFIG,
     Contract,
     DataBaseHelper,
+    DatabaseServer,
     DidDocument,
     entities,
     Environment,
@@ -97,6 +98,7 @@ Promise.all([
         'v2-17-0',
         'v2-18-0',
         'v2-20-0',
+        'v2-23-1',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -391,6 +393,21 @@ Promise.all([
         channel
     );
     policyDiscontinueTask.start(true);
+    const clearPolicyCache = new SynchronizationTask(
+        'clear-policy-cache-sync',
+        async () => {
+            const policyCaches = await DatabaseServer.getPolicyCaches();
+            const now = Date.now();
+            for (const policyCache of policyCaches) {
+                if (policyCache.createDate.addDays(1).getTime() <= now) {
+                    await DatabaseServer.clearPolicyCaches(policyCache.id);
+                }
+            }
+        },
+        process.env.CLEAR_POLICY_CACHE_INTERVAL || '0 * * * *',
+        channel
+    );
+    clearPolicyCache.start(true);
 
     startMetricsServer();
 }, (reason) => {

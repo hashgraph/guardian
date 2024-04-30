@@ -582,4 +582,77 @@ export class PolicyEngine extends NatsService {
     ): Promise<void> {
         await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task });
     }
+
+    /**
+     * Download policy date
+     * @param policyId Policy identifier
+     * @param owner Owner
+     * @returns Data
+     */
+    public async downloadPolicyData(policyId: string, owner: string) {
+        return Buffer.from(
+            (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_POLICY_DATA, {
+                policyId,
+                owner,
+            })) as string,
+            'base64'
+        );
+    }
+
+    /**
+     * Download virtual keys
+     * @param policyId Policy identifier
+     * @param owner Owner
+     * @returns Virtual keys
+     */
+    public async downloadVirtualKeys(policyId: string, owner: string) {
+        return Buffer.from(
+            (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_VIRTUAL_KEYS, {
+                policyId,
+                owner,
+            })) as string,
+            'base64'
+        );
+    }
+
+    /**
+     * Upload policy data
+     * @param user User
+     * @param data Data
+     * @returns Uploaded policy
+     */
+    public async uploadPolicyData(user: string, data: any) {
+        return await this.sendMessage(PolicyEngineEvents.UPLOAD_POLICY_DATA, {
+            user,
+            data,
+        });
+    }
+
+    /**
+     * Upload virtual keys
+     * @param owner Owner
+     * @param data Data
+     * @param policyId Policy identifier
+     * @returns Operation completed
+     */
+    public async uploadVirtualKeys(owner: string, data: any, policyId: string) {
+        return await this.sendMessage(PolicyEngineEvents.UPLOAD_VIRTUAL_KEYS, {
+            owner,
+            data,
+            policyId
+        });
+    }
+
+    /**
+     * Get tag block map
+     * @param policyId Policy identifier
+     * @param owner Owner
+     * @returns Tag block map
+     */
+    public async getTagBlockMap(policyId: string, owner: string): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_TAG_BLOCK_MAP, {
+            policyId,
+            owner,
+        })
+    }
 }

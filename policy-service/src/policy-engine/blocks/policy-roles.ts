@@ -3,11 +3,11 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { IPolicyUser, PolicyUser } from '../policy-user.js';
-import { GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { DataTypes, PolicyUtils } from '../helpers/utils.js';
-import { IAuthUser, MessageAction, MessageServer, RoleMessage, VcHelper } from '@guardian/common';
+import { PolicyUtils } from '../helpers/utils.js';
+import { VcHelper, MessageAction, MessageServer, RoleMessage, IAuthUser } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -360,7 +360,7 @@ export class PolicyRolesBlock {
             .sendMessage(vcMessage);
 
         const vcDocument = PolicyUtils.createVC(ref, user, userVC);
-        vcDocument.type = DataTypes.USER_ROLE;
+        vcDocument.type = DocumentCategoryType.USER_ROLE;
         vcDocument.schema = `#${userVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();

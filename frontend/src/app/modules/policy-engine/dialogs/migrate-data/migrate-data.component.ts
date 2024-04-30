@@ -6,9 +6,41 @@ import {
     DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { JsonEditorDialogComponent } from '../../helpers/json-editor-dialog/json-editor-dialog.component';
+
+function findAllEntities(
+    obj: { [key: string]: any },
+    names: string[]
+): string[] {
+    const result: any[] = [];
+
+    const finder = (o: { [key: string]: any }): void => {
+        if (!o) {
+            return;
+        }
+
+        for (const name of names) {
+            if (o.hasOwnProperty(name)) {
+                result.push(o[name]);
+            }
+        }
+
+        if (o.hasOwnProperty('children')) {
+            for (const child of o.children) {
+                finder(child);
+            }
+        }
+    };
+    finder(obj);
+
+    const map: any = {};
+    for (const item of result) {
+        map[item] = item;
+    }
+    return Object.values(map);
+}
 
 class MigrationConfig {
     private readonly _systemSchemas = [
@@ -32,6 +64,14 @@ class MigrationConfig {
     private _schemas: { [key: string]: string | undefined } = {};
     private _groups: { [key: string]: string | undefined } = {};
     private _roles: { [key: string]: string | undefined } = {};
+    private _blocks: { [key: string]: string | undefined } = {};
+    private _tokens: { [key: string]: string | undefined } = {};
+    private _tokensMap: { [key: string]: string | undefined } = {};
+    private _editedVCs: { [key: string]: string | undefined } = {};
+
+    public migrateState = false;
+    public migrateRetirePools: boolean = false;
+    public retireContractId: string = '';
 
     private _policiesValidity: boolean = false;
     private _vcsValidity: boolean = false;
@@ -66,12 +106,28 @@ class MigrationConfig {
         this.updateSchemasValidity();
     }
 
+    clearBlocks() {
+        this._blocks = {};
+    }
+
+    clearEditedVCs() {
+        this._editedVCs = {};
+    }
+
     setRole(key: string, value?: string) {
         this._roles[key] = value;
     }
 
     setGroup(key: string, value?: string) {
         this._groups[key] = value;
+    }
+
+    setToken(key: string, value?: string) {
+        this._tokens[key] = value;
+    }
+
+    setTokenMap(key: string, value?: string) {
+        this._tokensMap[key] = value;
     }
 
     clearRoles() {
@@ -82,8 +138,17 @@ class MigrationConfig {
         this._groups = {};
     }
 
+    clearTokens() {
+        this._tokens = {};
+    }
+
+    clearTokensMap() {
+        this._tokensMap = {};
+    }
+
     clearVCs() {
         this._vcs = [];
+        this.clearEditedVCs();
         this.updateVcValidity();
         this.clearSchemas();
     }
@@ -123,12 +188,28 @@ class MigrationConfig {
         return this._schemas;
     }
 
+    get blocks() {
+        return this._blocks;
+    }
+
+    get editedVCs() {
+        return this._editedVCs;
+    }
+
     get roles() {
         return this._roles;
     }
 
     get groups() {
         return this._groups;
+    }
+
+    get tokens() {
+        return this._tokens;
+    }
+
+    get tokensMap() {
+        return this._tokensMap;
     }
 
     get policiesValidity() {
@@ -154,6 +235,13 @@ class MigrationConfig {
             schemas: this._schemas,
             groups: this._groups,
             roles: this._roles,
+            migrateState: this.migrateState,
+            editedVCs: this.editedVCs,
+            blocks: this._blocks,
+            tokens: this._tokens,
+            tokensMap: this._tokensMap,
+            migrateRetirePools: this.migrateRetirePools,
+            retireContractId: this.retireContractId,
         };
     }
 
@@ -207,13 +295,16 @@ export class MigrateData {
         vps: false,
         vcs: false,
         schemas: false,
+        blocks: false,
     };
 
     migrationConfig: MigrationConfig;
 
+    contracts: any[];
     policies: any[];
     pList1: any[];
     pList2: any[];
+    uploadedPolicy: any;
 
     activeIndex: number = 0;
     items: MenuItem[] = [
@@ -241,6 +332,10 @@ export class MigrateData {
             id: 'groups',
             label: 'Groups',
         },
+        {
+            id: 'tokens',
+            label: 'Tokens',
+        },
     ];
 
     vps: any[] = [];
@@ -261,8 +356,16 @@ export class MigrateData {
     srcSchemas: any[] = [];
     dstSchemas: any[] = [];
 
+    srcBlocks: any[] = [];
+    dstBlocks: any[] = [];
+
     srcGroups: string[] = [];
     dstGroups: string[] = [];
+
+    srcTokens: string[] = [];
+    dstTokens: string[] = [];
+
+    dstTokenMap: string[] = [];
 
     constructor(
         public ref: DynamicDialogRef,
@@ -275,7 +378,9 @@ export class MigrateData {
         this.migrationConfig = new MigrationConfig(
             this.config.data?.policy?.id
         );
+        this.contracts = this.config.data.contracts || [];
         this.policies = this.config.data.policies || [];
+        this.policies = JSON.parse(JSON.stringify(this.policies));
         this.pList1 = this.policies;
         this.pList2 = this.policies;
     }
@@ -366,25 +471,61 @@ export class MigrateData {
         });
     }
 
-    onChange() {
+    loadBlocks() {
+        if (!this.migrationConfig.policiesValidity) {
+            return;
+        }
+        forkJoin([
+            this._policyEngineService.getTagBlockMap(this.migrationConfig.src!),
+            this._policyEngineService.getTagBlockMap(this.migrationConfig.dst!),
+        ]).subscribe((blocks) => {
+            const srcBlocks = blocks[0];
+            const dstBlocks = blocks[1];
+            this.migrationConfig.clearBlocks();
+            for (const srcBlockTag of Object.keys(srcBlocks)) {
+                this.migrationConfig.blocks[srcBlocks[srcBlockTag]] =
+                    dstBlocks[srcBlockTag];
+            }
+            this.srcBlocks = Object.entries(srcBlocks).map((item) => ({
+                tag: item[0],
+                id: item[1],
+            }));
+            this.dstBlocks = Object.entries(dstBlocks).map((item) => ({
+                tag: item[0],
+                id: item[1],
+            }));
+        });
+    }
+
+    async onChange() {
+        this.migrationConfig.clearTokensMap();
+        this.migrationConfig.clearTokens();
         this.migrationConfig.clearGroups();
         this.migrationConfig.clearRoles();
         if (this.migrationConfig.dst) {
             this.pList1 = this.policies.filter(
                 (s) => s.id !== this.migrationConfig.dst
             );
-            this.dstRoles =
-                this.policies.find(
-                    (item) => item.id === this.migrationConfig.dst
-                ).policyRoles || [];
+            const dstPolicy = await this._policyEngineService
+                .policy(this.migrationConfig.dst)
+                .toPromise();
+            this.dstRoles = dstPolicy.policyRoles || [];
             this.dstGroups =
-                this.policies
-                    .find((item) => item.id === this.migrationConfig.dst)
-                    .policyGroups?.map(
-                        (group: { name: string }) => group.name
-                    ) || [];
+                dstPolicy.policyGroups?.map(
+                    (group: { name: string }) => group.name
+                ) || [];
+            this.dstTokens = this.dstGroups =
+                dstPolicy.policyTokens?.map(
+                    (token: { templateTokenTag: string }) =>
+                        token.templateTokenTag
+                ) || [];
+            this.dstTokenMap = findAllEntities(dstPolicy.config, ['tokenId']);
         } else {
             this.pList1 = this.policies;
+        }
+
+        if (this.uploadedPolicy) {
+            this.pList1 = [this.uploadedPolicy, ...this.pList1];
         }
 
         if (this.migrationConfig.src) {
@@ -393,10 +534,15 @@ export class MigrateData {
             );
             this.loadVCs();
             this.loadVPs();
-            this.srcRoles =
-                this.policies.find(
-                    (item) => item.id === this.migrationConfig.src
-                ).policyRoles || [];
+
+            const srcPolicy =
+                this.migrationConfig.src === this.uploadedPolicy?.id
+                    ? this.uploadedPolicy
+                    : await this._policyEngineService
+                          .policy(this.migrationConfig.src)
+                          .toPromise();
+
+            this.srcRoles = srcPolicy.policyRoles || [];
             if (this.dstRoles.length > 0) {
                 this.srcRoles?.forEach((role) => {
                     this.migrationConfig.setRole(role);
@@ -404,19 +550,38 @@ export class MigrateData {
             }
 
             this.srcGroups =
-                this.policies
-                    .find((item) => item.id === this.migrationConfig.src)
-                    .policyGroups?.map(
-                        (group: { name: string }) => group.name
-                    ) || [];
+                srcPolicy.policyGroups?.map(
+                    (group: { name: string }) => group.name
+                ) || [];
             if (this.dstGroups.length > 0) {
                 this.srcGroups?.forEach((group) => {
                     this.migrationConfig.setGroup(group);
                 });
             }
+
+            this.srcTokens =
+                srcPolicy.policyTokens?.map(
+                    (token: { templateTokenTag: string }) =>
+                        token.templateTokenTag
+                ) || [];
+            if (this.dstTokens.length > 0) {
+                this.srcTokens?.forEach((token) => {
+                    this.migrationConfig.setToken(token);
+                });
+            }
+
+            const srcTokensMap = findAllEntities(srcPolicy.config, ['tokenId']);
+            if (srcTokensMap.length > 0) {
+                srcTokensMap?.forEach((token) => {
+                    this.migrationConfig.setTokenMap(token);
+                });
+            }
+        } else {
+            this.pList2 = this.policies;
         }
 
         this.loadSchemas();
+        this.loadBlocks();
 
         setTimeout(() => {
             this._changeDetector.detectChanges();
@@ -441,36 +606,19 @@ export class MigrateData {
         this.activeIndex--;
     }
 
-    viewVP(document: any) {
-        this._dialogService.open(VCViewerDialog, {
-            width: '850px',
+    viewDocument(document: any) {
+        if (!document) {
+            return;
+        }
+        this._dialogService.open(JsonEditorDialogComponent, {
             closable: true,
-            header: 'VP',
-            styleClass: 'custom-dialog',
+            modal: true,
+            width: '70vw',
+            styleClass: 'custom-json-dialog',
+            header: 'View document',
             data: {
-                id: document.id,
-                dryRun: false,
-                viewDocument: true,
-                document: document.document,
-                title: 'View VP',
-                type: 'VP',
-            },
-        });
-    }
-
-    viewVC(document: any) {
-        this._dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VC',
-            styleClass: 'custom-dialog',
-            data: {
-                id: document.id,
-                dryRun: false,
-                viewDocument: true,
-                document: document.document,
-                title: 'View VC',
-                type: 'VC',
+                data: JSON.stringify(document, null, 4),
+                readOnly: true,
             },
         });
     }
@@ -561,5 +709,92 @@ export class MigrateData {
 
     getSchemaName(schemas: { iri: string; name: string }[], iri: string) {
         return schemas.find((item) => item.iri === iri)?.name || iri;
+    }
+
+    getBlockName(blocks: { tag: string; id: string }[], id: string) {
+        return blocks.find((item) => item.id === id)?.tag || id;
+    }
+
+    editDocument(doc: any) {
+        if (!doc.id) {
+            return;
+        }
+        const editedDoc = this.migrationConfig.editedVCs[doc.id];
+        if (!editedDoc && !doc?.document?.credentialSubject) {
+            return;
+        }
+        this._dialogService
+            .open(JsonEditorDialogComponent, {
+                closable: true,
+                modal: true,
+                width: '70vw',
+                styleClass: 'custom-json-dialog',
+                header: 'Edit document',
+                data: {
+                    data: JSON.stringify(
+                        editedDoc || doc.document.credentialSubject[0],
+                        null,
+                        4
+                    ),
+                },
+            })
+            .onClose.subscribe((result: any) => {
+                if (!result) {
+                    return;
+                }
+                try {
+                    const editedVC = JSON.parse(result);
+                    if (
+                        JSON.stringify(editedVC) ===
+                        JSON.stringify(doc.document.credentialSubject[0])
+                    ) {
+                        delete this.migrationConfig.editedVCs[doc.id];
+                    } else {
+                        this.migrationConfig.editedVCs[doc.id] = editedVC;
+                    }
+                } catch {}
+            });
+    }
+
+    private _input?: any;
+    onUploadData() {
+        const handler = () => {
+            input.removeEventListener('change', handler);
+            this._input = null;
+            this.loading = true;
+            this._policyEngineService
+                .importData(input.files![0])
+                .subscribe((result: any) => {
+                    this.uploadedPolicy = result;
+                    this.migrationConfig.src = result.id;
+                    this.loading = false;
+                    this.onChange();
+                });
+        };
+        if (this._input) {
+            this._input.removeEventListener('change', handler);
+            this._input = null;
+        }
+        const input = document.createElement('input');
+        this._input = input;
+        input.type = 'file';
+        input.accept = '.data';
+        input.click();
+        input.addEventListener('change', handler);
+    }
+
+    onMigrateState() {
+        const migrateState = this.migrationConfig.migrateState;
+        if (migrateState) {
+            this.items = [
+                ...this.items,
+                {
+                    id: 'blocks',
+                    label: 'Blocks',
+                },
+            ];
+        } else {
+            this.items = this.items.filter((item) => item.id !== 'blocks');
+        }
     }
 }

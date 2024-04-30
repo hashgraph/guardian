@@ -1,11 +1,11 @@
 import { ActionCallback, TokenBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as TokenCollection, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage, } from '@guardian/common';
 
-import { DataTypes, PolicyUtils } from '../helpers/utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
@@ -314,7 +314,7 @@ export class MintBlock {
             .setTopicObject(topic)
             .sendMessage(vcMessage);
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
-        mintVcDocument.type = DataTypes.MINT;
+        mintVcDocument.type = DocumentCategoryType.MINT;
         mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
         mintVcDocument.messageId = vcMessageResult.getId();
         mintVcDocument.topicId = vcMessageResult.getTopicId();
@@ -337,7 +337,7 @@ export class MintBlock {
             .sendMessage(vpMessage);
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
-        vpDocument.type = DataTypes.MINT;
+        vpDocument.type = DocumentCategoryType.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
         vpDocument.documentFields = Array.from(
