@@ -5,6 +5,7 @@
 * [Hedera Testnet Account](https://portal.hedera.com/)
 * [Web3.Storage Account](https://web3.storage/)
 * [Filebase Account](https://filebase.com/)
+* [Redict 7.3.0](https://redict.io/)
 
 When building reference implementation, you can manually build every component or run a single command with Docker.
 
