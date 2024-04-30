@@ -94,21 +94,21 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 1. Create a new user and assign role as Project Proponent.
 
-![](<../../../.gitbook/assets/2 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1) (1) (1).png>)
 
 2. Create a New project by clicking on "New Project" button and enter all the required details.
 
-![](<../../../.gitbook/assets/3 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/3 (1) (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/4 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/4 (1) (1) (1) (1).png>)
 
 3. Once project details are submitted, Verra adds the project to the project pipeline.
 
-![](<../../../.gitbook/assets/5 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/5 (1) (1) (1) (1).png>)
 
 4. Now, we create a new user and assign its role as VVB
 
-![](<../../../.gitbook/assets/6 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/6 (1) (1) (1) (1).png>)
 
 5. We need to set VVB name
 
