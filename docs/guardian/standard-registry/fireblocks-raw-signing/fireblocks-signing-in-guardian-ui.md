@@ -1,4 +1,10 @@
+---
+description: Beta Feature
+---
+
 # Fireblocks signing in Guardian UI
+
+## **Note: Currently, FireBlocks will not work as** Hedera (HBAR\_TEST) support is broken in FireBlocks**. We are working with FireBlocks team (**[**Support Ticket**](https://community.fireblocks.com/t/failed-to-add-asset-wallet-for-hbar-test-all-others-work/936)**) to fix it asap. W**e'll provide an ETA when fixed.
 
 1\. Enabling Fireblocks Remote Signing:
 
