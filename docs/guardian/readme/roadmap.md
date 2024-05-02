@@ -14,6 +14,12 @@ To get more information on Roadmap, please click: [https://app.zenhub.com/worksp
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2850](https://github.com/hashgraph/guardian/issues/2850)
 
+Documentation Link :&#x20;
+
+{% embed url="https://docs.hedera.com/guardian/guardian/users/ai-search" %}
+
+{% embed url="https://docs.hedera.com/guardian/guardian/users/guided-search-of-methodologies" %}
+
 ### Implement discontinuing policy workflow
 
 Implement the policy deprecation workflow which includes:
@@ -25,12 +31,16 @@ Implement the policy deprecation workflow which includes:
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2030](https://github.com/hashgraph/guardian/issues/2030)
 
+Documentation Link : [https://docs.hedera.com/guardian/guardian/standard-registry/discontinuing-policy-workflow](https://docs.hedera.com/guardian/guardian/standard-registry/discontinuing-policy-workflow)
+
 ### Gold Standard’s Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate Webinar
 
 * Design schemas for the Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate methodology, create a PowerPoint presentation, and conduct webinar.
 * Development of the policy using the schemas and workflow designed
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2321](https://github.com/hashgraph/guardian/issues/2321)
+
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate)
 
 ### Business User Policy Development Feature - schemas MVP
 
@@ -41,6 +51,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2321](https://gith
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1885](https://github.com/hashgraph/guardian/issues/1885)
 
+Documentation Link : [https://docs.hedera.com/guardian/guardian/standard-registry/import-export-in-excel](https://docs.hedera.com/guardian/guardian/standard-registry/import-export-in-excel)
+
 ### Geographic raster imagery support in Guardian
 
 Introduce support for geoTIFF and other raster types of data such that:
@@ -50,6 +62,8 @@ Introduce support for geoTIFF and other raster types of data such that:
 * Guardian policy can access and manipulate (use in calculations, etc) data from raster sources.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1930](https://github.com/hashgraph/guardian/issues/1930)
+
+Documentation Link : [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/creating-system-schema-using-ui)
 
 ### Development of ACM0007: Conversion from Single Cycle to Combined Cycle Power Generation
 
@@ -62,6 +76,8 @@ Designing of the Schema and getting it approved. Development of the policy using
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2883](https://github.com/hashgraph/guardian/issues/2883)
 
+Documentation Link :  [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-acm0007-conversion-from-single-cycle-to-combined-cycle-power-generation)
+
 ## ---- February 2024----
 
 ### Support externally controlled DIDs with keys in Guardian
@@ -70,6 +86,8 @@ Introduce a workflow into the Guardian where a DID Controller would introduce a 
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2678](https://github.com/hashgraph/guardian/issues/2678)
 
+Documentation Link : [https://docs.hedera.com/guardian/guardian/standard-registry/bring-your-own-dids](https://docs.hedera.com/guardian/guardian/standard-registry/bring-your-own-dids)
+
 ### Development of AMS-I.D: Grid Connected Renewable Electricity Generation – v.18.0
 
 Designing of the Schema and getting it approved.\
@@ -77,6 +95,8 @@ Development of the policy using Schema\
 Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2919](https://github.com/hashgraph/guardian/issues/2919)
+
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0)
 
 ### Mitigation Credits Research
 
@@ -96,20 +116,23 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/54](https://github
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2885](https://github.com/hashgraph/guardian/issues/2885)
 
+Documentation Link :  [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-ii.j.-demand-side-activities-for-efficient-lighting-technologies)
+
 ### Development of AMS-III.AV.: Low Greenhouse Gas Emitting Safe Drinking Water Production Systems
 
 1. Designing of the Schema and getting it approved.
 2. Development of the policy using Schema
-3.  Development of all the tools involved in the policy:
+3. Development of all the tools involved in the policy:
+   * Tool 01- Tool for the demonstration and assessment of additionality
+   * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 19- Demonstration of additionality of microscale project activities
+   * Tool 21- Demonstration of additionality of small-scale project activities 
+   * Tool 30- Calculation of the fraction of non-renewable biomass
 
-    * Tool 01- Tool for the demonstration and assessment of additionality
-    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-    * Tool 19- Demonstration of additionality of microscale project activities
-    * Tool 21- Demonstration of additionality of small-scale project activities 
-    * Tool 30- Calculation of the fraction of non-renewable biomass
+Referral Link : [https://github.com/hashgraph/guardian/issues/2880](https://github.com/hashgraph/guardian/issues/2880)
 
-    Referral Link : [https://github.com/hashgraph/guardian/issues/2880](https://github.com/hashgraph/guardian/issues/2880)
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.av.-low-greenhouse-gas-emitting-safe-drinking-water-production-systems)
 
 ## ---- March 2024----
 
@@ -125,6 +148,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2885](https://gith
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2881](https://github.com/hashgraph/guardian/issues/2881)
 
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.h.-methane-recovery-in-wastewater-treatment)
+
 ## Development of AMS-III.F.: Avoidance of Methane Emissions Through Composting
 
 1. Designing of the Schema and getting it approved.
@@ -136,6 +161,8 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2881](https://githu
    * Tool 13- Project and leakage emissions from composting
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2876](https://github.com/hashgraph/guardian/issues/2876)
+
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-iii.f.-avoidance-of-methane-emissions-through-composting)
 
 ## Development of ACM0002: Grid-Connected Electricity Generation from Renewable Sources
 
@@ -152,6 +179,8 @@ Tools involved in this policy also needs to be developed. The tools are listed b
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2875](https://github.com/hashgraph/guardian/issues/2875)
 
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-acm0002-grid-connected-electricity-generation-from-renewable-sources)
+
 ### Conforming to Hedera DID, VC, VP, Standards
 
 Update to memo field VP/DID structure to normalize DID spec with the rest of Hedera DID method work (which will also be updated)
@@ -167,6 +196,8 @@ Development of the policy using Schema&#x20;
 Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2920](https://github.com/hashgraph/guardian/issues/2920)
+
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/pwrm0002-plastic-waste-recycling](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/pwrm0002-plastic-waste-recycling)
 
 ## ---- April 2024----
 
@@ -196,13 +227,17 @@ The migration process should be automated, and should result in the 'stopped' pr
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3176](https://github.com/hashgraph/guardian/issues/3176)
 
+Documentation Link : [https://docs.hedera.com/guardian/guardian/standard-registry/live-project-data-migration/live-project-data-migration-ui](https://docs.hedera.com/guardian/guardian/standard-registry/live-project-data-migration/live-project-data-migration-ui)
+
 ### FireBlocks Raw Signing Integration
 
 We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
 
-## Development of ACM0001: Flaring or Use of Landfill Gas
+Documentation Link : [https://docs.hedera.com/guardian/guardian/standard-registry/fireblocks-raw-signing/fireblocks-signing-in-guardian-ui](https://docs.hedera.com/guardian/guardian/standard-registry/fireblocks-raw-signing/fireblocks-signing-in-guardian-ui)
+
+### Development of ACM0001: Flaring or Use of Landfill Gas
 
 1. Designing of the Schema and getting it approved.
 2. Development of the policy using Schema
@@ -219,6 +254,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://gith
    * Tool 32- Positive lists of technologies
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2874](https://github.com/hashgraph/guardian/issues/2874)
+
+Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-acm0001-flaring-or-use-of-landfill-gas](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-acm0001-flaring-or-use-of-landfill-gas)
 
 ## ---- May 2024----
 
