@@ -9,13 +9,15 @@ import { TaskManager } from '../../helpers/task-manager.js';
 import { Users } from '../../helpers/users.js';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { MigrationConfigDTO, PolicyCategoryDTO, } from '../../middlewares/validation/schemas/policies.js';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { MultipartFile } from '../../helpers/interceptors/types/index.js';
+import { UploadedFiles } from '../../helpers/decorators/file.js';
+import { FilesInterceptor } from '../../helpers/interceptors/multipart.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -1687,13 +1689,12 @@ export class PolicyApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
-    @UseInterceptors(AnyFilesInterceptor())
+    @UseInterceptors(FilesInterceptor())
     async importPolicyFromFileWithMetadata(
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any,
         @Query('versionOfTopicId') versionOfTopicId,
     ): Promise<any> {
-      console.log('multipart/form-data');
         try {
             const policyFile = files.find(
                 (item) => item.fieldname === 'policyFile'
@@ -1831,10 +1832,10 @@ export class PolicyApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.ACCEPTED)
-    @UseInterceptors(AnyFilesInterceptor())
+    @UseInterceptors(FilesInterceptor())
     async importPolicyFromFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: any,
+        @UploadedFiles() files: MultipartFile[],
         @Query('versionOfTopicId') versionOfTopicId,
     ): Promise<any> {
         const taskManager = new TaskManager();

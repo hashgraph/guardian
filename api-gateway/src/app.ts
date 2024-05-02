@@ -21,8 +21,8 @@ import { ProjectService } from './helpers/projects.js';
 import { AISuggestions } from './helpers/ai-suggestions.js';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import fastify from 'fastify';
-// import fastifyFormbody from '@fastify/formbody'
-// import fastifyMultipart from '@fastify/multipart';
+import fastifyFormbody from '@fastify/formbody'
+import fastifyMultipart from '@fastify/multipart';
 
 const PORT = process.env.PORT || 3002;
 
@@ -45,10 +45,10 @@ export const fastifyInstance = fastify({});
 //   fastifyInstance.getDefaultJsonParser('ignore', 'ignore'),
 // );
 
-fastifyInstance.addContentTypeParser('multipart/form-data', async function (req) {
-  var res = await new Promise((resolve, reject) => resolve(req))
-  return res
-})
+// fastifyInstance.addContentTypeParser('multipart/form-data', async function (req) {
+//   var res = await new Promise((resolve, reject) => resolve(req))
+//   return res
+// })
 
 // export const rowBodyConfig = {
 //   field: 'rawBody', // change the default request.rawBody property name
@@ -58,7 +58,7 @@ fastifyInstance.addContentTypeParser('multipart/form-data', async function (req)
 // };
 
 Promise.all([
-    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(fastifyInstance), {
+    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
         // bufferLogs: true,
         // logger: ['error', 'warn'],
         rawBody: true,
@@ -82,8 +82,8 @@ Promise.all([
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
 
-        // await app.register(fastifyFormbody);
-        // await app.register(fastifyMultipart);
+        await app.register(fastifyFormbody);
+        await app.register(fastifyMultipart);
 
         const bodyLimit = 10_485_760;
         app.useBodyParser('json', { bodyLimit });
