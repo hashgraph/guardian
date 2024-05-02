@@ -6,9 +6,9 @@ description: This is an Alpha Version
 
 ## Overview <a href="#_xw1hte24c5p" id="_xw1hte24c5p"></a>
 
-By default Guardian publishes project info and MRV data to IPFS in plaintext so that it is viewable by anyone examining the trust chain of an asset. While transparency of the trust chain is critical to establishing confidence in the qualities of an asset, and so its price, complete public transparency creates challenges for certain types of data.
+By default Guardian publishes project info and MRV data to IPFS in plaintext so that it is viewable by anyone examining the trust chain of an asset. While transparency of the trust chain is critical to establishing confidence in the qualities of an asset, and the data implications on its price, complete public transparency creates challenges for certain types of data.
 
-The Guardian Selective Disclosure (SD) mechanism supports a more granular access model in which particular attributes may be protected against viewing by the public and instead will be viewable only by authorized parties like a VVB, ARMM or similar with a justifiable need for that information.
+The Guardian Selective Disclosure (SD) mechanism supports a more granular access model in which particular attributes may be protected against viewing by the public and instead will be viewable only by authorized parties like a VVB, [ARMM](https://medium.com/block-science/introducing-automated-regression-markets-arms-a-new-price-discovery-mechanism-for-semi-fungible-935d31ca457c) or similar with a justifiable need for that information.
 
 This guide provides an overview of the SD Mechanism, how it is configured and used, and consideration for that use
 
