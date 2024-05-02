@@ -4,6 +4,16 @@ To get more information on Roadmap, please click: [https://app.zenhub.com/worksp
 
 ## ---- January 2024----
 
+## UI upgrade, AI search and project comparison
+
+1. Improving Guardian UI by adding more UI elements and also adding more colorful headers which can be customized.
+2. Creating a static landing page which will have capability of performing project comparison within same instance using different parameters such as scale size, sectoral scopes, etc.
+3. Implementing AI search for allowing Project developers to search policies as per the information entered.
+4. Implementing Guider Search for allowing project developers to search policies using different parameters within same instance.
+5. Implementation of property field when schema is created, which will be used for standardizing as per IWA specification.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2850](https://github.com/hashgraph/guardian/issues/2850)
+
 ### Implement discontinuing policy workflow
 
 Implement the policy deprecation workflow which includes:
@@ -101,6 +111,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2885](https://gith
 
     Referral Link : [https://github.com/hashgraph/guardian/issues/2880](https://github.com/hashgraph/guardian/issues/2880)
 
+## ---- March 2024----
+
 ### Development of AMS-III.H.: Methane Recovery in Wastewater Treatment
 
 1. Designing of the Schema and getting it approved. Development of the policy using Schema
@@ -113,7 +125,32 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2885](https://gith
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2881](https://github.com/hashgraph/guardian/issues/2881)
 
-## ---- March 2024----
+## Development of AMS-III.F.: Avoidance of Methane Emissions Through Composting
+
+1. Designing of the Schema and getting it approved.
+2. Development of the policy using Schema
+3. Development of all the tools involved in the policy
+   * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+   * Tool 04- Emissions from solid waste disposal sites
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 13- Project and leakage emissions from composting
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2876](https://github.com/hashgraph/guardian/issues/2876)
+
+## Development of ACM0002: Grid-Connected Electricity Generation from Renewable Sources
+
+Development of the policy with all details mentioned in the design schema.\
+Tools involved in this policy also needs to be developed. The tools are listed below:
+
+1. Tool 01- Tool for the demonstration and assessment of additionality
+2. Tool 02- Combined tool to identify the baseline scenario and demonstrate additionality
+3. Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+4. Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+5. Tool 07- Tool to calculate the emission factor for an electricity system
+6. Tool 10- Tool to determine the remaining lifetime of equipment
+7. Tool 32- Positive lists of technologies
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2875](https://github.com/hashgraph/guardian/issues/2875)
 
 ### Conforming to Hedera DID, VC, VP, Standards
 
@@ -130,6 +167,104 @@ Development of the policy using Schema&#x20;
 Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2920](https://github.com/hashgraph/guardian/issues/2920)
+
+## ---- April 2024----
+
+### DLT to Address Flawed Methodologies Blog
+
+Draft and published a blog post on the topic of DLT as a solution to address poor data quality and flawed emission and carbon credit methodologies.
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2906](https://github.com/hashgraph/guardian/issues/2906)
+
+### Live project (data) migration across Policies, across Guardian instances
+
+Implement User Interface (UI) and tooling allowing users to execute multiple cycles of 'export a live project' from a policy and 'import a live project' into another policy. This migration process should work irrespective of the policy versions, standard registries, and Guardian instances, automatically mapping data/documents to the corresponding policy steps in an intelligent way, referring to the Project Developer in situations needing human input via a convenient UI/UX ('User Experience'):
+
+* Project Developer can preview and assess the compatibility of policies and data, and the result of the migration using something analogous to the 'dry-run' mode.
+* For cases where the 'new' schemas and policy steps match perfectly the 'old' valid data/documents from the 'source', the 'old' ones should be automatically accepted into the 'target' policy flow with no human intervention.
+* Project Developer can review and select/guide the matching and the destination of the 'source' data/documents into the new policy flow with full visibility with regard to:
+  * 'source' and 'target' policy structure (side by side), with details of block parameters etc where required.
+  * content of the original and destination documents with field-level granularity
+* Where data needs to be augmented and thus new signatures are required the corresponding Guardian users (e.g. Standard Registry) get requests to sign the data.
+
+The migration process should be automated, and should result in the 'stopped' project/policy execution on the 'source platform' and 'resumed' from the same point in the policy flow on the 'destination' (other) platform, with full data and tokens visibility and provenance provability in the trust chain. The 'old' data and artifacts produced on the 'source' should be fully useable on the 'target', e.g.
+
+* used in reports
+* viewable in the UI
+* data referencable and useable in calculations and other policy actions (such as minting)
+* operations on 'old' tokens are supported in the new policy smart contracts (retirement, exchanges, etc)
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3176](https://github.com/hashgraph/guardian/issues/3176)
+
+### FireBlocks Raw Signing Integration
+
+We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
+
+## Development of ACM0001: Flaring or Use of Landfill Gas
+
+1. Designing of the Schema and getting it approved.
+2. Development of the policy using Schema
+3. Development of all the tools involved in the policy:
+   * Tool 02- Combined tool to identify the baseline scenario and demonstrate additionality
+   * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+   * Tool 04- Emissions from solid waste disposal sites
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 06- Project emissions from flaring
+   * Tool 08- Tool to determine the mass flow of a greenhouse gas in a gaseous stream
+   * Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems
+   * Tool 10- Tool to determine the remaining lifetime of equipment
+   * Tool 12- Project and leakage emissions from transportation of freight
+   * Tool 32- Positive lists of technologies
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2874](https://github.com/hashgraph/guardian/issues/2874)
+
+## ---- May 2024----
+
+## Development of Gold Standard's Methodology for Methane Emission Reduction by Adjusted Water Management Practice in Rice Cultivation
+
+Designing of the Schema and getting it approved.&#x20;
+
+Development of the policy using Schema&#x20;
+
+Development of all the tool involved in the policy
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://github.com/hashgraph/guardian/issues/2921)
+
+### Full project data comparison as produced/captured by policies
+
+Introduce a comparison functionality where it'd be possible to 'diff' arbitrary sections or the entire trust-chains for different tokens, potentially issued by different policies such that the system would:
+
+* graphically display the differences where a user would then be able to 'scroll' through and review them in the UI
+* get a numerical 'similarity score' indicating how similar the two 'chains' are
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://github.com/hashgraph/guardian/issues/2704)
+
+### Global environmental/Guardian data search (indexer) component for Hedera and IPFS
+
+* Improve the data storage and indexing capabilities of Guardian for the data belonging to the local instance such that complex analytical queries could be run efficiently, such as 'search for data similar to this' and 'what is the possibility of this being a double entry for something submitted elsewhere'.
+* Introduce a global search and indexing capability for data produce by other (all) instances such that queries above could be run on the entire body of Guardian data produced from the beginning of time (in blockchain sense).
+* Extend [Block and policy discoverability/search #2281](https://github.com/hashgraph/guardian/issues/2281) for users to be able to preview the usage of the block without having to import "other SR's" policy into their Guardian instance
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://github.com/hashgraph/guardian/issues/2629)
+
+### Revamp Guardian user/roles and permissions model
+
+* Fundamentally separate the concept of users, roles and permissions in Guardian
+* Introduce granular concept of permissions which could be assigned to users, a user could then perform a specific function within the role if its assigned role 'contains' this permission. These should include (but not limited to):
+  * Policy edit/submit for review
+  * Policy view
+  * Policy approval & publish
+* Introduce a "user admin" role, which allows:
+  * defining new roles from permissions
+  * assigning of roles to users
+* Create a permissioning system which verifies actor role before any action has been taken throughout Guardian
+* Package in suitable most-common role set into Guardian so it can be operated immediately 'out of the box' without the need for additional configuration
+* Create a concept of 'delegation' where a user with a particular role/permission can explicitly 'delegate' this role/permission to another user
+* Introduce the functionality to produce a report (page, download) which lists all users and their roles/permissions mapping in the system
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2844](https://github.com/hashgraph/guardian/issues/2844)
 
 ### Development of AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
 
@@ -181,85 +316,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://githu
 
     Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
 
-## ---- April 2024----
-
-### Full project data comparison as produced/captured by policies
-
-Introduce a comparison functionality where it'd be possible to 'diff' arbitrary sections or the entire trust-chains for different tokens, potentially issued by different policies such that the system would:
-
-* graphically display the differences where a user would then be able to 'scroll' through and review them in the UI
-* get a numerical 'similarity score' indicating how similar the two 'chains' are
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://github.com/hashgraph/guardian/issues/2704)
-
-### Live project (data) migration across Policies, across Guardian instances
-
-Implement User Interface (UI) and tooling allowing users to execute multiple cycles of 'export a live project' from a policy and 'import a live project' into another policy. This migration process should work irrespective of the policy versions, standard registries, and Guardian instances, automatically mapping data/documents to the corresponding policy steps in an intelligent way, referring to the Project Developer in situations needing human input via a convenient UI/UX ('User Experience'):
-
-* Project Developer can preview and assess the compatibility of policies and data, and the result of the migration using something analogous to the 'dry-run' mode.
-* For cases where the 'new' schemas and policy steps match perfectly the 'old' valid data/documents from the 'source', the 'old' ones should be automatically accepted into the 'target' policy flow with no human intervention.
-* Project Developer can review and select/guide the matching and the destination of the 'source' data/documents into the new policy flow with full visibility with regard to:
-  * 'source' and 'target' policy structure (side by side), with details of block parameters etc where required.
-  * content of the original and destination documents with field-level granularity
-* Where data needs to be augmented and thus new signatures are required the corresponding Guardian users (e.g. Standard Registry) get requests to sign the data.
-
-The migration process should be automated, and should result in the 'stopped' project/policy execution on the 'source platform' and 'resumed' from the same point in the policy flow on the 'destination' (other) platform, with full data and tokens visibility and provenance provability in the trust chain. The 'old' data and artifacts produced on the 'source' should be fully useable on the 'target', e.g.
-
-* used in reports
-* viewable in the UI
-* data referencable and useable in calculations and other policy actions (such as minting)
-* operations on 'old' tokens are supported in the new policy smart contracts (retirement, exchanges, etc)
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3176](https://github.com/hashgraph/guardian/issues/3176)
-
-## Development of Gold Standard's Methodology for Methane Emission Reduction by Adjusted Water Management Practice in Rice Cultivation
-
-Designing of the Schema and getting it approved.&#x20;
-
-Development of the policy using Schema&#x20;
-
-Development of all the tool involved in the policy
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://github.com/hashgraph/guardian/issues/2921)
-
-### FireBlocks Integration
-
-We need to integrate FireBlocks , a Key management tool to manage the Keys and secure Guardian. To get complete info on Fireblocks, please look at [https://www.fireblocks.com/](https://www.fireblocks.com/)
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1314](https://github.com/hashgraph/guardian/issues/1314)
-
-### DLT to Address Flawed Methodologies Blog
-
-Draft and published a blog post on the topic of DLT as a solution to address poor data quality and flawed emission and carbon credit methodologies.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2906](https://github.com/hashgraph/guardian/issues/2906)
-
-## ---- May 2024----
-
-### Global environmental/Guardian data search (indexer) component for Hedera and IPFS
-
-* Improve the data storage and indexing capabilities of Guardian for the data belonging to the local instance such that complex analytical queries could be run efficiently, such as 'search for data similar to this' and 'what is the possibility of this being a double entry for something submitted elsewhere'.
-* Introduce a global search and indexing capability for data produce by other (all) instances such that queries above could be run on the entire body of Guardian data produced from the beginning of time (in blockchain sense).
-* Extend [Block and policy discoverability/search #2281](https://github.com/hashgraph/guardian/issues/2281) for users to be able to preview the usage of the block without having to import "other SR's" policy into their Guardian instance
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://github.com/hashgraph/guardian/issues/2629)
-
-### Revamp Guardian user/roles and permissions model
-
-* Fundamentally separate the concept of users, roles and permissions in Guardian
-* Introduce granular concept of permissions which could be assigned to users, a user could then perform a specific function within the role if its assigned role 'contains' this permission. These should include (but not limited to):
-  * Policy edit/submit for review
-  * Policy view
-  * Policy approval & publish
-* Introduce a "user admin" role, which allows:
-  * defining new roles from permissions
-  * assigning of roles to users
-* Create a permissioning system which verifies actor role before any action has been taken throughout Guardian
-* Package in suitable most-common role set into Guardian so it can be operated immediately 'out of the box' without the need for additional configuration
-* Create a concept of 'delegation' where a user with a particular role/permission can explicitly 'delegate' this role/permission to another user
-* Introduce the functionality to produce a report (page, download) which lists all users and their roles/permissions mapping in the system
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2844](https://github.com/hashgraph/guardian/issues/2844)
+## ---- June 2024----
 
 ### Development of VMR0006: Energy Efficiency and Fuel Switch Measures in Thermal Applications, v1.2v
 
@@ -270,8 +327,6 @@ Development of the policy using Schema&#x20;
 Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2922](https://github.com/hashgraph/guardian/issues/2922)
-
-## ---- June 2024----
 
 ### Hedera interactions resilience module
 
@@ -285,21 +340,19 @@ Relying on the work done in the course of [#1793](https://github.com/hashgraph/g
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2706](https://github.com/hashgraph/guardian/issues/2706)
 
+### Correction of all the Methodologies with new DID Spec
+
+1. We need to implement and correct all the methodologies added with new DID specification.
+2. Deploy all the methodologies on testnet and create IPFS timestamps.
+3. Test the methodologies with dummy and real data.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3296](https://github.com/hashgraph/guardian/issues/3296)
+
 ### Guardian Oracle service to verify token trust chain from within Hedera smart contracts
 
 Develop a Guardian 'Oracle' service to produce (at least) a verifiable binary valid/not valid answer for a given token or group of tokens reachable from within the smart contract, which can then form the basis conditional operation inside the smart contract.
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1040](https://github.com/hashgraph/guardian/issues/1040)
-
-### Development of AMS-I.E: Switch from Non-Renewable Biomass for Thermal Applications by the User – v.13.0
-
-Designing of the Schema and getting it approved.&#x20;
-
-Development of the policy using Schema&#x20;
-
-Development of all the tool involved in the policy
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2923](https://github.com/hashgraph/guardian/issues/2923)
 
 ### HBAR GHG Policy Research
 
@@ -310,6 +363,16 @@ Create a Guardian policy that quantifies and reports GHG emissions from HBAR, us
 Referral Link : [https://github.com/hashgraph/guardian/issues/1667](https://github.com/hashgraph/guardian/issues/1667)
 
 ## ---- July 2024----
+
+### Development of AMS-I.E: Switch from Non-Renewable Biomass for Thermal Applications by the User – v.13.0
+
+Designing of the Schema and getting it approved.&#x20;
+
+Development of the policy using Schema&#x20;
+
+Development of all the tool involved in the policy
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2923](https://github.com/hashgraph/guardian/issues/2923)
 
 ### Conform Guardian generated NFTs with HIP412 for better ecosystem-wide compatibility for NFTs and wallets
 
