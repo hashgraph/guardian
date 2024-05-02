@@ -144,7 +144,7 @@ export class TagsApi {
      */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
+    // @UseCache({ isExpress: true })
     async getSchemas(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
