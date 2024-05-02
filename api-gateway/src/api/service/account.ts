@@ -2,7 +2,7 @@ import { IAuthUser, Logger, NotificationHelper } from '@guardian/common';
 import { Permissions, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO, InternalServerErrorDTO } from '../../middlewares/validation/index.js';
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
@@ -42,6 +42,7 @@ export class AccountApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getSession(
@@ -67,7 +68,6 @@ export class AccountApi {
         summary: 'Registers a new user account.',
         description: 'Object that contain username, password and role (optional) fields.',
     })
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
         type: AccountsResponseDTO
@@ -76,6 +76,7 @@ export class AccountApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async register(
         @Body() body: RegisterUserDTO,
@@ -126,7 +127,6 @@ export class AccountApi {
     @ApiOperation({
         summary: 'Logs user into the system.',
     })
-    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
         type: AccountsSessionResponseDTO
@@ -135,6 +135,7 @@ export class AccountApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async login(
         @Body() body: LoginUserDTO
@@ -192,7 +193,6 @@ export class AccountApi {
             'Registry and Auditor. Only users with the Standard ' +
             'Registry role are allowed to make the request.',
     })
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
         type: AccountsResponseDTO
@@ -201,6 +201,7 @@ export class AccountApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAllAccounts(): Promise<AccountsResponseDTO[]> {
@@ -226,7 +227,6 @@ export class AccountApi {
         summary: 'Returns all Standard Registries.',
         description: 'Returns all Standard Registries.'
     })
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
         type: AccountsResponseDTO
@@ -235,6 +235,7 @@ export class AccountApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getStandardRegistries(): Promise<any> {
@@ -260,7 +261,6 @@ export class AccountApi {
         summary: 'Returns all Standard Registries aggregated with polices and vcDocuments.',
         description: 'Returns all Standard Registries aggregated with polices and vcDocuments'
     })
-    @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -270,6 +270,7 @@ export class AccountApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAggregatedStandardRegistries(): Promise<any> {
@@ -322,7 +323,6 @@ export class AccountApi {
         summary: 'Returns user\'s Hedera account balance.',
         description: 'Requests current Hedera account balance.'
     })
-    @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BalanceResponseDTO
@@ -331,6 +331,7 @@ export class AccountApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
     @HttpCode(HttpStatus.OK)
     async getBalance(

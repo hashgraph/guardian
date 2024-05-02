@@ -932,7 +932,7 @@ export class Guardians extends NatsService {
          */
         url
     }> {
-        return await this.sendMessage(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, {buffer, policyId});
+        return await this.sendMessage(MessageAPI.ADD_FILE_DRY_RUN_STORAGE, { buffer, policyId });
     }
 
     /**
@@ -979,7 +979,7 @@ export class Guardians extends NatsService {
         idLvl: any,
         keyLvl: any,
         refLvl: any
-    ) {
+    ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_DOCUMENTS, {
             type,
             user,
@@ -1011,7 +1011,7 @@ export class Guardians extends NatsService {
         propLvl: any,
         childrenLvl: any,
         idLvl: any,
-    ) {
+    ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_TOOLS, {
             type,
             user,
@@ -1041,7 +1041,7 @@ export class Guardians extends NatsService {
         propLvl: any,
         childrenLvl: any,
         idLvl: any,
-    ) {
+    ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_POLICIES, {
             type,
             user,
@@ -1073,7 +1073,7 @@ export class Guardians extends NatsService {
         propLvl: any,
         childrenLvl: any,
         idLvl: any,
-    ) {
+    ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_MODULES, {
             type,
             user,
@@ -1100,7 +1100,7 @@ export class Guardians extends NatsService {
         schemaId1: any,
         schemaId2: any,
         idLvl: any,
-    ) {
+    ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_SCHEMAS, {
             user, type, schemaId1, schemaId2, idLvl
         });
@@ -1109,17 +1109,10 @@ export class Guardians extends NatsService {
     /**
      * Search policies
      * @param user
-     * @param type
      * @param policyId
      */
-    public async searchPolicies(
-        user: any,
-        policyId: string
-    ) {
-        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, {
-            user,
-            policyId
-        });
+    public async searchPolicies(user: any, policyId: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, { user, policyId });
     }
 
     //#region Contracts
@@ -1743,7 +1736,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @returns Operation Success
      */
-    public async getModuleById(uuid: string, owner: string): Promise<boolean> {
+    public async getModuleById(uuid: string, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.GET_MODULE, { uuid, owner });
     }
 
@@ -1762,7 +1755,7 @@ export class Guardians extends NatsService {
      * @param uuid
      * @param owner
      */
-    public async exportModuleMessage(uuid: string, owner: string) {
+    public async exportModuleMessage(uuid: string, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.MODULE_EXPORT_MESSAGE, { uuid, owner });
     }
 
@@ -1771,7 +1764,7 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      */
-    public async importModuleFile(zip: any, owner: string) {
+    public async importModuleFile(zip: any, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.MODULE_IMPORT_FILE, { zip, owner });
     }
 
@@ -1780,7 +1773,7 @@ export class Guardians extends NatsService {
      * @param messageId
      * @param owner
      */
-    public async importModuleMessage(messageId: string, owner: string) {
+    public async importModuleMessage(messageId: string, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.MODULE_IMPORT_MESSAGE, { messageId, owner });
     }
 
@@ -1789,7 +1782,7 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      */
-    public async previewModuleFile(zip: any, owner: string) {
+    public async previewModuleFile(zip: any, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.MODULE_IMPORT_FILE_PREVIEW, { zip, owner });
     }
 
@@ -1798,7 +1791,7 @@ export class Guardians extends NatsService {
      * @param messageId
      * @param owner
      */
-    public async previewModuleMessage(messageId: string, owner: string) {
+    public async previewModuleMessage(messageId: string, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.MODULE_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
     }
 
@@ -1808,7 +1801,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @param module
      */
-    public async publishModule(uuid: string, owner: string, module: any) {
+    public async publishModule(uuid: string, owner: string, module: any): Promise<any> {
         return await this.sendMessage(MessageAPI.PUBLISH_MODULES, { uuid, owner, module });
     }
 
@@ -1817,7 +1810,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @param module
      */
-    public async validateModule(owner: string, module: any) {
+    public async validateModule(owner: string, module: any): Promise<any> {
         return await this.sendMessage(MessageAPI.VALIDATE_MODULES, { owner, module });
     }
 

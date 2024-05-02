@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
-import { ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { Permissions } from '@guardian/interfaces';
 import { UseCache } from '../../helpers/decorators/cache.js';
@@ -39,6 +39,7 @@ export class BrandingApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
     async setBranding(
         @Body() body: BrandingDTO
@@ -85,6 +86,7 @@ export class BrandingApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getBranding(): Promise<any> {

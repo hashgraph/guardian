@@ -1,5 +1,5 @@
 export const pageHeader = {
-    'x-total-count': {
+    'X-Total-Count': {
         schema: {
             type: 'integer',
         },

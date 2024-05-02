@@ -5,9 +5,10 @@ import {
     ApiBody,
     ApiOkResponse,
     ApiOperation,
-    ApiTags
+    ApiTags,
+    ApiExtraModels,
+    ApiQuery
 } from '@nestjs/swagger';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { Permissions } from '@guardian/interfaces';
 import {
     FilterDocumentsDTO,
@@ -23,7 +24,8 @@ import {
     SearchPoliciesDTO,
     FilterToolsDTO,
     CompareToolsDTO,
-    FilterSearchBlocksDTO
+    FilterSearchBlocksDTO,
+    SearchBlocksDTO
 } from '../../middlewares/validation/index.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
@@ -66,11 +68,12 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSearchPoliciesDTO, SearchPoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async searchPolicies(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSearchPoliciesDTO
-    ): Promise<any> {
+    ): Promise<SearchPoliciesDTO> {
         const policyId = filters ? filters.policyId : null;
         if (!policyId) {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -129,11 +132,12 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterPoliciesDTO, ComparePoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async comparePolicies(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterPoliciesDTO
-    ): Promise<any> {
+    ): Promise<ComparePoliciesDTO> {
         const policyId1 = filters ? filters.policyId1 : null;
         const policyId2 = filters ? filters.policyId2 : null;
         const policyIds = filters ? filters.policyIds : null;
@@ -204,11 +208,12 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterModulesDTO, CompareModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareModules(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterModulesDTO
-    ): Promise<any> {
+    ): Promise<CompareModulesDTO> {
         const moduleId1 = filters ? filters.moduleId1 : null;
         const moduleId2 = filters ? filters.moduleId2 : null;
         const eventsLvl = filters ? filters.eventsLvl : null;
@@ -269,11 +274,12 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSchemasDTO, CompareSchemasDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareSchemas(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSchemasDTO
-    ): Promise<any> {
+    ): Promise<CompareSchemasDTO> {
         const schemaId1 = filters ? filters.schemaId1 : null;
         const schemaId2 = filters ? filters.schemaId2 : null;
         const idLvl = filters ? filters.idLvl : null;
@@ -326,11 +332,12 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareDocuments(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterDocumentsDTO
-    ): Promise<any> {
+    ): Promise<CompareDocumentsDTO> {
         const documentId1 = filters ? filters.documentId1 : null;
         const documentId2 = filters ? filters.documentId2 : null;
         const documentIds = filters ? filters.documentIds : null;
@@ -406,11 +413,12 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterToolsDTO, CompareToolsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareTools(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterToolsDTO
-    ): Promise<any> {
+    ): Promise<CompareToolsDTO> {
         const toolId1 = filters ? filters.toolId1 : null;
         const toolId2 = filters ? filters.toolId2 : null;
         const toolIds = filters ? filters.toolIds : null;
@@ -456,7 +464,7 @@ export class AnalyticsApi {
         summary: 'Compare policies.',
         description: 'Compare policies.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'type',
         type: String,
         description: 'File type',
@@ -497,12 +505,13 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterPoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async comparePoliciesExport(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterPoliciesDTO,
         @Query('type') type: string
-    ): Promise<any> {
+    ): Promise<string> {
         const policyId1 = filters ? filters.policyId1 : null;
         const policyId2 = filters ? filters.policyId2 : null;
         const policyIds = filters ? filters.policyIds : null;
@@ -548,7 +557,7 @@ export class AnalyticsApi {
         summary: 'Compare modules.',
         description: 'Compare modules.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'type',
         type: String,
         description: 'File type',
@@ -579,12 +588,13 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareModulesExport(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterModulesDTO,
         @Query('type') type: string
-    ): Promise<any> {
+    ): Promise<string> {
         const moduleId1 = filters ? filters.moduleId1 : null;
         const moduleId2 = filters ? filters.moduleId2 : null;
         const eventsLvl = filters ? filters.eventsLvl : null;
@@ -623,7 +633,7 @@ export class AnalyticsApi {
         summary: 'Compare schemas.',
         description: 'Compare schemas.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'type',
         type: String,
         description: 'File type',
@@ -652,12 +662,13 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSchemasDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareSchemasExport(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSchemasDTO,
         @Query('type') type: string
-    ): Promise<any> {
+    ): Promise<string> {
         const schemaId1 = filters ? filters.schemaId1 : null;
         const schemaId2 = filters ? filters.schemaId2 : null;
         const idLvl = filters ? filters.idLvl : null;
@@ -684,7 +695,7 @@ export class AnalyticsApi {
         summary: 'Compare documents.',
         description: 'Compare documents.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'type',
         type: String,
         description: 'File type',
@@ -717,12 +728,13 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareDocumentsExport(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterDocumentsDTO,
         @Query('type') type: string
-    ): Promise<any> {
+    ): Promise<string> {
         const documentId1 = filters ? filters.documentId1 : null;
         const documentId2 = filters ? filters.documentId2 : null;
         const documentIds = filters ? filters.documentIds : null;
@@ -771,7 +783,7 @@ export class AnalyticsApi {
         summary: 'Compare tools.',
         description: 'Compare tools.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'type',
         type: String,
         description: 'File type',
@@ -804,12 +816,13 @@ export class AnalyticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterToolsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async compareToolsExport(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterToolsDTO,
         @Query('type') type: string
-    ): Promise<any> {
+    ): Promise<string> {
         const toolId1 = filters ? filters.toolId1 : null;
         const toolId2 = filters ? filters.toolId2 : null;
         const toolIds = filters ? filters.toolIds : null;
@@ -869,17 +882,19 @@ export class AnalyticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SearchPoliciesDTO,
+        type: SearchBlocksDTO,
+        isArray: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSearchBlocksDTO, SearchBlocksDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async searchBlocks(
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSearchBlocksDTO
-    ): Promise<any> {
+    ): Promise<SearchBlocksDTO[]> {
         const guardians = new Guardians();
         const id = filters ? filters.id : null;
         const config = filters ? filters.config : null;

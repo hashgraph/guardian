@@ -465,8 +465,8 @@ export class PolicyEngine extends NatsService {
     public async getVirtualDocuments(
         policyId: string,
         type: string,
-        pageIndex?: string,
-        pageSize?: string
+        pageIndex?: number,
+        pageSize?: number
     ): Promise<[any[], number]> {
         return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, {
             policyId,
@@ -550,8 +550,8 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         includeDocument: boolean = false,
         type?: DocumentType,
-        pageIndex?: string,
-        pageSize?: string
+        pageIndex?: number,
+        pageSize?: number
     ): Promise<[any[], number]> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DOCUMENTS, { owner, policyId, includeDocument, type, pageIndex, pageSize });
     }

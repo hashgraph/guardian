@@ -52,6 +52,20 @@ export class SchemaUtils {
     }
 
     /**
+     * Clear ids
+     * @param {ISchema} schema
+     * @returns {ISchema}
+     */
+    public static clearIds(schema: ISchema): ISchema {
+        delete schema.version;
+        delete schema.id;
+        delete schema.status;
+        delete schema.topicId;
+        delete schema._id;
+        return schema;
+    }
+
+    /**
      * Check schema permission
      * @param {ISchema} schema
      * @param {IAuthUser} user

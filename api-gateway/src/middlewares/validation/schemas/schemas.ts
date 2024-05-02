@@ -1,8 +1,8 @@
 import * as yup from 'yup';
 import fieldsValidation from '../fields-validation.js'
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsNotEmpty, IsString } from 'class-validator';
-import { UserRole } from '@guardian/interfaces';
+import { IsIn, IsNotEmpty, IsObject, IsString } from 'class-validator';
+import { SchemaCategory, SchemaEntity, SchemaStatus, UserRole } from '@guardian/interfaces';
 
 export const schemaSchema = () => {
     const { messageId } = fieldsValidation
@@ -40,59 +40,59 @@ export class SystemSchemaDTO {
 export class SchemaDTO {
     @ApiProperty()
     @IsString()
-    @IsNotEmpty()
-    id: string;
+    id?: string;
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty()
-    name: string;
+    name?: string;
 
     @ApiProperty()
     @IsString()
-    description: string;
+    description?: string;
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty()
-    entity: string;
+    entity?: SchemaEntity;
+
+    @ApiProperty()
+    @IsObject()
+    document?: any;
 
     @ApiProperty()
     @IsString()
-    @IsNotEmpty()
-    document: string;
+    uuid?: string;
 
     @ApiProperty()
     @IsString()
-    uuid: string;
+    iri?: string;
 
     @ApiProperty()
     @IsString()
-    iri: string;
+    hash?: string;
 
     @ApiProperty()
     @IsString()
-    hash: string;
+    status?: SchemaStatus;
 
     @ApiProperty()
     @IsString()
-    status: string;
+    topicId?: string;
 
     @ApiProperty()
     @IsString()
-    topicId: string;
+    version?: string;
 
     @ApiProperty()
     @IsString()
-    version: string;
+    owner?: string;
 
     @ApiProperty()
     @IsString()
-    owner: string;
+    messageId?: string;
 
     @ApiProperty()
     @IsString()
-    messageId: string;
+    category?: SchemaCategory;
 }
 
 export class ExportSchemaDTO {

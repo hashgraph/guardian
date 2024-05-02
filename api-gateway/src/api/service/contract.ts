@@ -1,6 +1,6 @@
 import { Guardians } from '../../helpers/guardians.js';
-import { ContractType, Permissions, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/common';
+import { ContractType, Permissions } from '@guardian/interfaces';
+import { Logger, IAuthUser } from '@guardian/common';
 import {
     Body,
     Controller,
@@ -12,7 +12,6 @@ import {
     Param,
     Post,
     Query,
-    Req,
     Response,
 } from '@nestjs/common';
 import {
@@ -39,7 +38,6 @@ import {
 import { UseCache } from '../../helpers/decorators/cache.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
-import { IAuthUser } from '@guardian/common';
 import { pageHeader } from 'middlewares/validation/page-header.js';
 
 /**
@@ -67,21 +65,18 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
-        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
-        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'type',
         enum: ContractType,
         description: 'Contract type',
-        required: false,
         example: ContractType.RETIRE,
     })
     @ApiOkResponse({
@@ -262,8 +257,7 @@ export class ContractsApi {
     )
     @ApiOperation({
         summary: 'Remove contract.',
-        description:
-            'Remove smart-contract. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Remove smart-contract. Only users with the Standard Registry role are allowed to make the request.',
     })
     @ApiParam({
         name: 'contractId',
@@ -313,21 +307,18 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
-        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
-        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
         example: '0.0.1',
     })
     @ApiOkResponse({
@@ -381,8 +372,8 @@ export class ContractsApi {
     @ApiParam({
         name: 'contractId',
         type: String,
+        required: true,
         description: 'Contract identifier',
-        required: false,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -423,8 +414,8 @@ export class ContractsApi {
     @ApiParam({
         name: 'contractId',
         type: String,
+        required: true,
         description: 'Contract identifier',
-        required: false,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -514,8 +505,7 @@ export class ContractsApi {
     @ApiQuery({
         name: 'ban',
         type: Boolean,
-        description: 'Reject and ban',
-        required: false,
+        description: 'Reject and ban'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -905,8 +895,8 @@ export class ContractsApi {
     @ApiParam({
         name: 'contractId',
         type: String,
+        required: true,
         description: 'Contract identifier',
-        required: false,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -949,21 +939,18 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
-        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
-        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
         example: '0.0.1',
     })
     @ApiOkResponse({
@@ -1019,28 +1006,24 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
-        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
-        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
         example: '0.0.1',
     })
     @ApiQuery({
         name: 'tokens',
         type: String,
         description: 'Tokens',
-        required: false,
         example: '0.0.1,0.0.2,0.0.3',
     })
     @ApiOkResponse({
@@ -1096,8 +1079,8 @@ export class ContractsApi {
     @ApiParam({
         name: 'contractId',
         type: String,
+        required: true,
         description: 'Contract identifier',
-        required: false,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1138,8 +1121,8 @@ export class ContractsApi {
     @ApiParam({
         name: 'contractId',
         type: String,
+        required: true,
         description: 'Contract identifier',
-        required: false,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1184,7 +1167,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1227,7 +1210,7 @@ export class ContractsApi {
         name: 'poolId',
         type: String,
         description: 'Pool Identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1269,7 +1252,7 @@ export class ContractsApi {
         name: 'requestId',
         type: String,
         description: 'Request Identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1315,7 +1298,7 @@ export class ContractsApi {
         name: 'poolId',
         type: String,
         description: 'Pool Identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1544,14 +1527,12 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
-        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
-        required: false,
         example: 20,
     })
     @ApiOkResponse({

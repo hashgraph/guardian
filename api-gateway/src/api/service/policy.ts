@@ -1,109 +1,95 @@
 import { Auth } from '../../auth/auth.decorator.js';
-import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
+import { AuthUser } from '../../auth/authorization-helper.js';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { ProjectService } from '../../helpers/projects.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
 import { TaskManager } from '../../helpers/task-manager.js';
-import { Users } from '../../helpers/users.js';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { MigrationConfigDTO, PolicyCategoryDTO, } from '../../middlewares/validation/schemas/policies.js';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { pageHeader } from 'middlewares/validation/page-header.js';
+import { TaskDTO } from 'middlewares/validation/index.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
+
+    /**
+     * Return a list of all policies
+     */
+    @Get('/')
+    @Auth(
+        Permissions.POLICY_POLICY_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR,
+    )
     @ApiOperation({
         summary: 'Return a list of all policies.',
-        description: 'Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request.',
+        description: 'Returns all policies.',
     })
-    @ApiSecurity('bearerAuth')
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set',
-        required: false
+        description: 'The number of pages to skip before starting to collect the result set'
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return',
-        required: false
+        description: 'The numbers of items to return'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        isArray: true,
+        headers: pageHeader,
+        type: PolicyDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/')
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getPolicies(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
-        const users = new Users();
-        const engineService = new PolicyEngine();
+    async getPolicies(
+        @AuthUser() user: IAuthUser,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<any> {
+        if (!user.did && user.role !== UserRole.AUDITOR) {
+            return res.setHeader('X-Total-Count', 0).json([]);
+        }
         try {
-            const user = await users.getUser(req.user.username);
-            if (!user.did && user.role !== UserRole.AUDITOR) {
-                return res.setHeader('X-Total-Count', 0).json([]);
-            }
-            let pageIndex: any;
-            let pageSize: any;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
-            }
-            let result: any;
+            const options: any = {
+                filters: null,
+                userDid: user.did,
+                pageIndex,
+                pageSize
+            };
             if (user.role === UserRole.STANDARD_REGISTRY) {
-                result = await engineService.getPolicies({
-                    filters: {
-                        owner: user.did,
-                    },
-                    userDid: user.did,
-                    pageIndex,
-                    pageSize
-                });
+                options.filters = {
+                    owner: user.did,
+                };
             } else if (user.role === UserRole.AUDITOR) {
-                const filters: any = {
-                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] },
-                }
-                result = await engineService.getPolicies({
-                    filters,
-                    userDid: user.did,
-                    pageIndex,
-                    pageSize
-                });
+                options.filters = {
+                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
+                };
             } else {
-                const filters: any = {
-                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] },
-                }
-                if (user.parent) {
-                    filters.owner = user.parent;
-                }
-                result = await engineService.getPolicies({
-                    filters,
-                    userDid: user.did,
-                    pageIndex,
-                    pageSize
-                });
+                options.filters = {
+                    owner: user.parent,
+                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
+                };
             }
-            const { policies, count } = result;
+            const engineService = new PolicyEngine();
+            const { policies, count } = await engineService.getPolicies(options);
             return res.setHeader('X-Total-Count', count).json(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -111,48 +97,61 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Creates a new policy
+     */
+    @Post('/')
+    @Auth(
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Creates a new policy.',
         description: 'Creates a new policy.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: PolicyDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        isArray: true,
+        type: PolicyDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/')
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async createPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async createPolicy(
+        @AuthUser() user: IAuthUser,
+        @Body() body: PolicyDTO
+    ): Promise<PolicyDTO[]> {
         try {
-            const policies = await engineService.createPolicy(req.body, req.user)
-            return res.status(201).json(policies);
+            const engineService = new PolicyEngine();
+            return await engineService.createPolicy(body, user);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Migrate policy data
+     */
+    @Post('/migrate-data')
+    @Auth(
+        Permissions.POLICY_MIGRATION_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Migrate policy data.',
-        description: 'Migrate policy data. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Migrate policy data.' + ONLY_SR,
     })
-    @ApiExtraModels(MigrationConfigDTO, InternalServerErrorDTO)
     @ApiBody({
         description: 'Migration config.',
-        schema: {
-            $ref: getSchemaPath(MigrationConfigDTO)
-        }
+        type: MigrationConfigDTO,
     })
     @ApiOkResponse({
         description: 'Errors while migration.',
@@ -173,145 +172,190 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/migrate-data')
+    @ApiExtraModels(MigrationConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async migrateData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async migrateData(
+        @AuthUser() user: IAuthUser,
+        @Body() body: MigrationConfigDTO
+    ): Promise<any> {
         const engineService = new PolicyEngine();
         try {
-            return res.send(await engineService.migrateData(
-                req.user.did,
-                req.body
-            ));
+            return await engineService.migrateData(user.did, body);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Migrate policy data
+     */
+    @Post('/push/migrate-data')
+    @Auth(
+        Permissions.POLICY_MIGRATION_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Migrate policy data asynchronous.',
-        description: 'Migrate policy data asynchronous. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Migrate policy data asynchronous.' + ONLY_SR,
     })
-    @ApiExtraModels(MigrationConfigDTO, InternalServerErrorDTO)
     @ApiBody({
-        description: 'Migration config.',
-        schema: {
-            $ref: getSchemaPath(MigrationConfigDTO)
-        }
+        description: 'Migration configuration.',
+        type: MigrationConfigDTO
     })
     @ApiAcceptedResponse({
         description: 'Created task.',
-        schema: {
-            'type': 'object'
-        },
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/push/migrate-data')
+    @ApiExtraModels(TaskDTO, MigrationConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async migrateDataAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
+    async migrateDataAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() body: MigrationConfigDTO
+    ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.migrateDataAsync(req.user.did, req.body, task);
+            await engineService.migrateDataAsync(user.did, body, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Creates a new policy
+     */
+    @Post('/push')
+    @Auth(
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Creates a new policy.',
         description: 'Creates a new policy.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: PolicyDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/push')
+    @ApiExtraModels(TaskDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const model = req.body;
-        const user = req.user;
+    async createPolicyAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() body: PolicyDTO
+    ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.createPolicyAsync(model, user, task);
+            await engineService.createPolicyAsync(body, user, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send(task);
+        return task;
     }
 
-    @ApiOperation({})
-    @ApiSecurity('bearerAuth')
+    /**
+     * Clone policy
+     */
+    @Post('/push/:policyId')
+    @Auth(
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Clones policy.',
+        description: 'Clones policy.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: PolicyDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/push/:policyId')
+    @ApiExtraModels(TaskDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const policyId = req.params.policyId;
-        const model = req.body;
-        const user = req.user;
+    async updatePolicyAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: PolicyDTO
+    ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CLONE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.clonePolicyAsync(policyId, model, user, task);
+            await engineService.clonePolicyAsync(policyId, body, user, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send(task);
+        return task;
     }
 
-    @ApiSecurity('bearerAuth')
+    /**
+     * Delete policy
+     */
     @Delete('/push/:policyId')
+    @Auth(
+        Permissions.POLICY_POLICY_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Remove policy.',
+        description: 'Remove policy.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async deletePolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const policyId = req.params.policyId;
-        const user = req.user;
+    async deletePolicyAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.DELETE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
@@ -321,72 +365,98 @@ export class PolicyApi {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Get policy configuration
+     */
+    @Get('/:policyId')
+    @Auth(
+        Permissions.POLICY_POLICY_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR,
+    )
     @ApiOperation({
         summary: 'Retrieves policy configuration.',
         description: 'Retrieves policy configuration for the specified policy ID.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        description: 'Policy configuration.',
+        type: PolicyDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId')
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
-        const users = new Users();
-        const engineService = new PolicyEngine();
+    async getPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<PolicyDTO> {
         try {
-            const user = await users.getUser(req.user.username);
-            const model = (await engineService.getPolicy({
-                filters: req.params.policyId,
+            const engineService = new PolicyEngine();
+            return await engineService.getPolicy({
+                filters: policyId,
                 userDid: user.did,
-            })) as any;
-            return res.send(model);
+            });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Updates policy
+     */
+    @Put('/:policyId')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Updates policy configuration.',
         description: 'Updates policy configuration for the specified policy ID.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: PolicyDTO,
+    })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        description: 'Policy configuration.',
+        type: PolicyDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Put('/:policyId')
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async updatePolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async updatePolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() policy: PolicyDTO
+    ): Promise<PolicyDTO> {
         let model: any;
+        const engineService = new PolicyEngine();
         try {
-            model = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+            model = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -395,7 +465,6 @@ export class PolicyApi {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
-            const policy = req.body;
             model.config = policy.config;
             model.name = policy.name;
             model.version = policy.version;
@@ -408,123 +477,166 @@ export class PolicyApi {
             model.policyGroups = policy.policyGroups;
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
-            const result = await engineService.savePolicy(model, req.user, req.params.policyId);
-            return res.json(result);
+            return await engineService.savePolicy(model, user, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @ApiOperation({
-        summary: 'Publishes the policy onto IPFS.',
-        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @ApiSecurity('bearerAuth')
+    /**
+     * Publish policy
+     */
     @Put('/:policyId/publish')
+    @Auth(
+        Permissions.POLICY_POLICY_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Publishes the policy onto IPFS.',
+        description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async publishPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async publishPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: PolicyDTO
+    ): Promise<PolicyDTO> {
         try {
-            return res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
+            const engineService = new PolicyEngine();
+            return await engineService.publishPolicy(body, user, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Publish policy
+     */
+    @Put('/push/:policyId/publish')
+    @Auth(
+        Permissions.POLICY_POLICY_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Publishes the policy onto IPFS.',
         description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: PolicyDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Put('/push/:policyId/publish')
+    @ApiExtraModels(TaskDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async publishPolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const model = req.body;
-        const user = req.user;
-        const policyId = req.params.policyId;
+    async publishPolicyAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: PolicyDTO
+    ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PUBLISH_POLICY, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.publishPolicyAsync(model, user, policyId, task);
+            await engineService.publishPolicyAsync(body, user, policyId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Go to dry-run policy
+     */
+    @Put('/:policyId/dry-run')
+    @Auth(
+        Permissions.POLICY_POLICY_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Dry Run policy.',
         description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: PolicyDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Put('/:policyId/dry-run')
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async dryRunPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async dryRunPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<PolicyDTO> {
         try {
-            return res.json(await engineService.dryRunPolicy(req.user, req.params.policyId));
+            const engineService = new PolicyEngine();
+            return await engineService.dryRunPolicy(user, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Discontunue policy
+     */
+    @Put('/:policyId/discontinue')
+    @Auth(
+        Permissions.POLICY_POLICY_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Discontunue policy.',
         description: 'Discontunue policy. Only users with the Standard Registry role are allowed to make the request.',
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
         name: 'policyId',
-        description: 'Policy identifier.',
-        required: true
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
     })
     @ApiBody({
         description: 'Discontinue details.',
@@ -537,92 +649,107 @@ export class PolicyApi {
             }
         }
     })
-    @ApiSecurity('bearerAuth')
-    @ApiOkResponse({
-        description: 'Policies.',
-        schema: {
-            'type': 'array',
-            items: {
-                type: 'object'
-            }
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @ApiSecurity('bearerAuth')
-    @Put('/:policyId/discontinue')
-    @HttpCode(HttpStatus.OK)
-    async discontinuePolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        try {
-            return res.json(await engineService.discontinuePolicy(req.user, req.params.policyId, req.body?.date));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @ApiOperation({
-        summary: 'Dry Run policy.',
-        description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
-    })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        isArray: true,
+        type: PolicyDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Put('/:policyId/draft')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async draftPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async discontinuePolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any
+    ): Promise<PolicyDTO[]> {
         try {
-            return res.json(await engineService.draft(req.user, req.params.policyId));
+            const engineService = new PolicyEngine();
+            return await engineService.discontinuePolicy(user, policyId, body?.date);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Go to dry-run draft
+     */
+    @Put('/:policyId/draft')
+    @Auth(
+        Permissions.POLICY_POLICY_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return policy to editing.',
+        description: 'Return policy to editing.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async draftPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<PolicyDTO> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.draft(user, policyId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Validate
+     */
+    @Post('/validate')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICY_POLICY_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Validates policy.',
         description: 'Validates selected policy.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: PolicyDTO,
+    })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        description: 'Validation result.',
+        type: ValidationResultDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/validate')
+    @ApiExtraModels(PolicyDTO, ValidationResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async validatePolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async validatePolicy(
+        @AuthUser() user: IAuthUser,
+        @Body() body: PolicyDTO
+    ): Promise<ValidationResultDTO> {
         try {
-            return res.send(await engineService.validatePolicy(req.body, req.user));
+            const engineService = new PolicyEngine();
+            return await engineService.validatePolicy(body, user);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -630,14 +757,25 @@ export class PolicyApi {
     }
 
     /**
-     * use cache test dry run
-     * @param req
+     * Policy navigation
      */
+    @Get('/:policyId/navigation')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
     @ApiOperation({
         summary: 'Returns a policy navigation.',
         description: 'Returns a policy navigation.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -646,19 +784,18 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/navigation')
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
-    async getPolicyNavigation(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    @HttpCode(HttpStatus.OK)
+    async getPolicyNavigation(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ): Promise<any> {
         try {
-            return await engineService.getNavigation(req.user, req.params.policyId);
+            const engineService = new PolicyEngine();
+            return await engineService.getNavigation(user, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -666,14 +803,25 @@ export class PolicyApi {
     }
 
     /**
-     * use cache need test
-     * @param req
+     * Policy groups
      */
+    @Get('/:policyId/groups')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
     @ApiOperation({
         summary: 'Returns a list of groups the user is a member of.',
         description: 'Returns a list of groups the user is a member of.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -682,90 +830,94 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/groups')
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(InternalServerErrorDTO)
     // @UseCache()
-    async getPolicyGroups(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    @HttpCode(HttpStatus.OK)
+    async getPolicyGroups(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
         try {
-            return await engineService.getGroups(req.user, req.params.policyId);
+            const engineService = new PolicyEngine();
+            return await engineService.getGroups(user, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Get policy documents
+     */
+    @Get('/:policyId/documents')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get policy documents.',
-        description: 'Get policy documents. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Get policy documents.' + ONLY_SR,
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
-        description: 'Policy identifier.',
         name: 'policyId',
-        required: true
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
     })
     @ApiQuery({
-        description: 'Include document field.',
         name: 'includeDocument',
-        type: 'boolean'
+        type: Boolean,
+        description: 'Include document field.'
     })
     @ApiQuery({
-        description: 'Document type.',
         name: 'type',
-        enum: DocumentType
+        enum: DocumentType,
+        description: 'Document type.'
     })
     @ApiQuery({
-        description: 'Page index.',
         name: 'pageIndex',
-        type: 'number'
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set'
     })
     @ApiQuery({
-        description: 'Page size.',
         name: 'pageSize',
-        type: 'number'
+        type: Number,
+        description: 'The numbers of items to return'
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Documents.',
-        schema: {
-            'type': 'array',
-            items: {
-                type: 'object'
-            }
-        },
-        headers: {
-            'X-Total-Count': {
-                description: 'Total documents count.'
-            }
-        }
+        isArray: true,
+        headers: pageHeader,
+        type: 'object',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/documents')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getPolicyDocuments(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async getPolicyDocuments(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Query('type') type: DocumentType,
+        @Query('includeDocument') includeDocument: boolean,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<any> {
         try {
+            const engineService = new PolicyEngine();
             const [documents, count] = await engineService.getDocuments(
-                req.user.did,
-                req.params.policyId,
-                req.query?.includeDocument?.toLowerCase() === 'true',
-                req.query?.type,
-                req.query?.pageIndex,
-                req.query?.pageSize,
+                user.did,
+                policyId,
+                String(includeDocument)?.toLowerCase() === 'true',
+                type,
+                pageIndex,
+                pageSize,
             );
             return res.setHeader('X-Total-Count', count).json(documents);
         } catch (error) {
@@ -774,17 +926,26 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Get policy data
+     */
+    @Get('/:policyId/data')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get policy data.',
         description: 'Get policy data.' + ONLY_SR,
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
-        description: 'Policy identifier.',
         name: 'policyId',
-        required: true
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Policy data.',
         schema: {
@@ -794,28 +955,25 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/data')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async downloadPolicyData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async downloadPolicyData(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Response() res: any
+    ): Promise<any> {
         try {
+            const engineService = new PolicyEngine();
             const policy = await engineService.getPolicy({
-                userDid: req.user.did,
-                filters: req.params.policyId,
+                userDid: user.did,
+                filters: policyId,
             });
             if (!policy) {
                 throw new Error(`Policy doesn't exist`);
             }
-            const downloadResult = await engineService.downloadPolicyData(
-                req.params.policyId,
-                req.user.did
-            );
+            const downloadResult = await engineService.downloadPolicyData(policyId, user.did);
             res.setHeader(
                 'Content-Disposition',
                 `attachment; filename=${policy.name}.data`
@@ -824,19 +982,22 @@ export class PolicyApi {
             return res.send(downloadResult);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Upload policy data
+     */
+    @Post('/data')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Upload policy data.',
         description: 'Upload policy data.' + ONLY_SR,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @ApiSecurity('bearerAuth')
     @ApiBody({
         description: 'Policy data file',
         schema: {
@@ -852,38 +1013,42 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/data')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async uploadPolicyData(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async uploadPolicyData(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<any> {
         try {
-            return await engineService.uploadPolicyData(req.user.did, req.body);
+            const engineService = new PolicyEngine();
+            return await engineService.uploadPolicyData(user.did, body);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Get policy tag map
+     */
+    @Get('/:policyId/tag-block-map')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get policy tag block map.',
         description: 'Get policy tag block map.' + ONLY_SR,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
-        description: 'Policy identifier.',
         name: 'policyId',
-        required: true
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Policy tag block map.',
         schema: {
@@ -892,41 +1057,42 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/tag-block-map')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getTagBlockMap(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async getTagBlockMap(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
         try {
-            return await engineService.getTagBlockMap(
-                req.params.policyId,
-                req.user.did
-            );
+            const engineService = new PolicyEngine();
+            return await engineService.getTagBlockMap(policyId, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Get policy virtual keys
+     */
+    @Get('/:policyId/virtual-keys')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get policy virtual keys.',
         description: 'Get policy virtual keys.' + ONLY_SR,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
-        description: 'Policy identifier.',
         name: 'policyId',
-        required: true
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Policy virtual keys.',
         schema: {
@@ -936,27 +1102,27 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/virtual-keys')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async downloadVirtualKeys(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async downloadVirtualKeys(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Response() res: any
+    ): Promise<any> {
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({
-                userDid: req.user.did,
-                filters: req.params.policyId,
+                userDid: user.did,
+                filters: policyId,
             });
             if (!policy) {
                 throw new Error(`Policy doesn't exist`);
             }
             const downloadResult = await engineService.downloadVirtualKeys(
-                req.params.policyId,
-                req.user.did
+                policyId,
+                user.did
             );
             res.setHeader(
                 'Content-Disposition',
@@ -973,17 +1139,25 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Upload policy virtual keys.
+     */
+    @Post('/:policyId/virtual-keys')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Upload policy virtual keys.',
         description: 'Upload policy virtual keys.' + ONLY_SR,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
-        description: 'Policy identifier.',
         name: 'policyId',
-        required: true
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
     })
-    @ApiSecurity('bearerAuth')
     @ApiBody({
         description: 'Virtual keys file',
         schema: {
@@ -996,56 +1170,18 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/:policyId/virtual-keys')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async uploadVirtualKeys(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async uploadVirtualKeys(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any
+    ): Promise<any> {
         try {
-            return await engineService.uploadVirtualKeys(
-                req.user.did,
-                req.body,
-                req.params.policyId
-            );
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
-        }
-    }
-
-    @ApiOperation({
-        summary: 'Makes the selected group active.',
-        description: 'Makes the selected group active. if UUID is not set then returns the user to the default state.',
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @ApiSecurity('bearerAuth')
-    @Post('/:policyId/groups')
-    @HttpCode(HttpStatus.OK)
-    async setPolicyGroups(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
-        try {
-            return res.send(await engineService.selectGroup(req.user, req.params.policyId, req.body.uuid));
+            const engineService = new PolicyEngine();
+            return await engineService.uploadVirtualKeys(user.did, body, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1053,204 +1189,407 @@ export class PolicyApi {
     }
 
     /**
-     * @param req
-     * @param res
+     * Makes the selected group active.
      */
+    @Post('/:policyId/groups')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Makes the selected group active.',
+        description: 'Makes the selected group active. if UUID is not set then returns the user to the default state.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Group',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Object
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setPolicyGroups(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any
+    ): Promise<any> {
+        const engineService = new PolicyEngine();
+        try {
+            return await engineService.selectGroup(user, policyId, body?.uuid);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Retrieves data for the policy root block.
+     */
+    @Get('/:policyId/blocks')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
     @ApiOperation({
         summary: 'Retrieves data for the policy root block.',
         description: 'Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: BlockDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/blocks')
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getPolicyBlocks(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    async getPolicyBlocks(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ): Promise<BlockDTO> {
         try {
-            return res.send(await engineService.getPolicyBlocks(req.user, req.params.policyId));
+            const engineService = new PolicyEngine();
+            return await engineService.getPolicyBlocks(user, policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Requests block data.
+     */
+    @Get('/:policyId/blocks/:uuid')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
     @ApiOperation({
         summary: 'Requests block data.',
         description: 'Requests block data. Only users with a role that described in block are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Block Identifier',
+        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: BlockDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/blocks/:uuid')
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getBlockData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    async getBlockData(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('uuid') uuid: string
+    ): Promise<any> {
         try {
-            return res.send(await engineService.getBlockData(req.user, req.params.policyId, req.params.uuid));
+            const engineService = new PolicyEngine();
+            return await engineService.getBlockData(user, policyId, uuid);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @ApiOperation({
-        summary: 'Sends data to the specified block.',
-        description: 'Sends data to the specified block.',
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @ApiSecurity('bearerAuth')
+    /**
+     * Sends data to the specified block
+     */
     @Post('/:policyId/blocks/:uuid')
-    @HttpCode(HttpStatus.OK)
-    async setBlockData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
-        try {
-            return res.send(
-                await engineService.setBlockData(req.user, req.params.policyId, req.params.uuid, req.body)
-            );
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
     @ApiOperation({
         summary: 'Sends data to the specified block.',
         description: 'Sends data to the specified block.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Block Identifier',
+        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: BlockDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setBlockData(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('uuid') uuid: string,
+        @Body() body: any
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.setBlockData(user, policyId, uuid, body);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Sends data to the specified block
+     */
     @Post('/:policyId/tag/:tagName/blocks')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Sends data to the specified block.',
+        description: 'Sends data to the specified block.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: 'string',
+        required: true,
+        description: 'Block name (Tag)',
+        example: 'block-tag',
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: BlockDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async setBlocksByTagName(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    async setBlocksByTagName(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('tagName') tagName: string,
+        @Body() body: any
+    ): Promise<any> {
         try {
-            return res.send(await engineService.setBlockDataByTag(req.user, req.params.policyId, req.params.tagName, req.body));
+            const engineService = new PolicyEngine();
+            return await engineService.setBlockDataByTag(user, policyId, tagName, body);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @ApiOperation({
-        summary: 'Requests block data.',
-        description: 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
-    })
-    @ApiSecurity('bearerAuth')
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @ApiSecurity('bearerAuth')
+    /**
+     * Requests block
+     */
     @Get('/:policyId/tag/:tagName')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Requests block config.',
+        description: 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: 'string',
+        required: true,
+        description: 'Block name (Tag)',
+        example: 'block-tag',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: BlockDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getBlockByTagName(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    async getBlockByTagName(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('tagName') tagName: string
+    ): Promise<any> {
         try {
-            return res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
+            const engineService = new PolicyEngine();
+            return await engineService.getBlockByTagName(user, policyId, tagName);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Requests block data
+     */
+    @Get('/:policyId/tag/:tagName/blocks')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
     @ApiOperation({
         summary: 'Requests block data.',
         description: 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: 'string',
+        required: true,
+        description: 'Block name (Tag)',
+        example: 'block-tag',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: BlockDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/:policyId/tag/:tagName/blocks')
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getBlocksByTagName(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    async getBlocksByTagName(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('tagName') tagName: string,
+    ): Promise<any> {
         try {
-            return res.send(await engineService.getBlockDataByTag(req.user, req.params.policyId, req.params.tagName));
+            const engineService = new PolicyEngine();
+            return await engineService.getBlockDataByTag(user, policyId, tagName);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Sends data to the specified block
+     */
     @Get('/:policyId/blocks/:uuid/parents')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Requests block\'s parents.',
+        description: 'Requests block\'s parents. Only users with a role that described in block are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Block Identifier',
+        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: BlockDTO,
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getBlockParents(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
+    async getBlockParents(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('uuid') uuid: string,
+    ): Promise<BlockDTO[]> {
         try {
-            return res.send(await engineService.getBlockParents(req.user, req.params.policyId, req.params.uuid));
+            const engineService = new PolicyEngine();
+            return await engineService.getBlockParents(user, policyId, uuid);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1262,14 +1601,14 @@ export class PolicyApi {
      */
     @Get('/:policyId/export/file')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_VIEW,
+        // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Return policy and its artifacts in a zip file format for the specified policy.',
         description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
@@ -1283,16 +1622,11 @@ export class PolicyApi {
             format: 'binary'
         },
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyExportFile(
         @AuthUser() user: IAuthUser,
@@ -1317,37 +1651,29 @@ export class PolicyApi {
      */
     @Get('/:policyId/export/message')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_VIEW,
+        // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Return Heder message ID for the specified published policy.',
         description: 'Returns the Hedera message ID for the specified policy published onto IPFS.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
         example: '000000000000000000000001'
     })
-
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Message.',
+        type: ExportMessageDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyExportMessage(
         @AuthUser() user: IAuthUser,
@@ -1367,14 +1693,14 @@ export class PolicyApi {
      */
     @Get('/:policyId/export/xlsx')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_VIEW,
+        // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Return policy and its artifacts in a xlsx file format for the specified policy.',
         description: 'Returns a xlsx file containing the published policy and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
@@ -1388,16 +1714,11 @@ export class PolicyApi {
             format: 'binary'
         },
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicyExportXlsx(
         @AuthUser() user: IAuthUser,
@@ -1417,86 +1738,106 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Imports policy
+     */
+    @Post('/import/message')
+    @Auth(
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new policy from IPFS.',
         description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'The topic ID of policy version.',
+        example: '0.0.00000001'
+    })
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        description: 'Created policy.',
+        type: PolicyDTO,
+        isArray: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/import/message')
+    @ApiExtraModels(ImportMessageDTO, PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async importPolicyFromMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async importPolicyFromMessage(
+        @AuthUser() user: IAuthUser,
+        @Query('versionOfTopicId') versionOfTopicId: string,
+        @Body() body: ImportMessageDTO
+    ): Promise<PolicyDTO[]> {
         const engineService = new PolicyEngine();
-        const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         try {
-            const policies = await engineService.importMessage(
-                req.user,
-                req.body.messageId,
+            return await engineService.importMessage(
+                user,
+                body.messageId,
                 versionOfTopicId,
-                req.body.metadata
+                body.metadata
             );
-            return res.status(201).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Imports policy
+     */
+    @Post('/push/import/message')
+    @Auth(
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new policy from IPFS.',
         description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiQuery({
+        name: 'versionOfTopicId',
+        type: String,
+        description: 'The topic ID of policy version.',
+        example: '0.0.00000001'
+    })
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/push/import/message')
+    @ApiExtraModels(ImportMessageDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async importPolicyFromMessageAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
-        const messageId = req.body.messageId;
-        const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+    async importPolicyFromMessageAsync(
+        @AuthUser() user: IAuthUser,
+        @Query('versionOfTopicId') versionOfTopicId: string,
+        @Body() body: ImportMessageDTO
+    ): Promise<any> {
         const taskManager = new TaskManager();
-        const task = taskManager.start(
-            TaskAction.IMPORT_POLICY_MESSAGE,
-            user.id
-        );
+        const task = taskManager.start(TaskAction.IMPORT_POLICY_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(
             async () => {
                 const engineService = new PolicyEngine();
                 await engineService.importMessageAsync(
                     user,
-                    messageId,
+                    body.messageId,
                     versionOfTopicId,
                     task,
-                    req.body.metadata
+                    body.metadata
                 );
             },
             async (error) => {
@@ -1507,75 +1848,88 @@ export class PolicyApi {
                 });
             }
         );
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Import preview
+     */
+    @Post('/import/message/preview')
+    @Auth(
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
         description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        description: 'Policy preview.',
+        type: PolicyPreviewDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/import/message/preview')
+    @ApiExtraModels(ImportMessageDTO, PolicyPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async importMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    async importMessage(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ImportMessageDTO
+    ): Promise<any> {
         try {
-            return res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
+            const engineService = new PolicyEngine();
+            return await engineService.importMessagePreview(user, body.messageId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Import preview
+     */
+    @Post('/push/import/message/preview')
+    @Auth(
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Policy preview from IPFS.',
         description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiSecurity('bearerAuth')
-    @Post('/push/import/message/preview')
+    @ApiExtraModels(ImportMessageDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async importFromMessagePreview(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
-        const messageId = req.body.messageId;
+    async importFromMessagePreview(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ImportMessageDTO
+    ) {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PREVIEW_POLICY_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importMessagePreviewAsync(user, messageId, task);
+            await engineService.importMessagePreviewAsync(user, body.messageId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
     /**
@@ -1583,18 +1937,18 @@ export class PolicyApi {
      */
     @Post('/import/file')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new policy from a zip file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'versionOfTopicId',
         type: String,
-        description: 'Topic Id',
-        required: false
+        description: 'The topic ID of policy version.',
+        example: '0.0.00000001'
     })
     @ApiBody({
         description: 'A zip file containing policy config.',
@@ -1602,32 +1956,24 @@ export class PolicyApi {
         type: String
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Created policy.',
+        type: PolicyDTO,
+        isArray: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromFile(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId,
-        @Response() res: any
-    ): Promise<any> {
-        const engineService = new PolicyEngine();
+        @Query('versionOfTopicId') versionOfTopicId: string,
+    ): Promise<PolicyDTO[]> {
         try {
-            const policies = await engineService.importFile(user, file, versionOfTopicId);
-            return res.status(201).send(policies);
+            const engineService = new PolicyEngine();
+            return await engineService.importFile(user, file, versionOfTopicId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -1639,18 +1985,18 @@ export class PolicyApi {
      */
     @Post('/import/file-metadata')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        //UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new policy from a zip file with metadata.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'versionOfTopicId',
         type: String,
-        description: 'Topic Id',
-        required: false
+        description: 'The topic ID of policy version.',
+        example: '0.0.00000001'
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -1676,22 +2022,17 @@ export class PolicyApi {
             'type': 'object'
         },
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @HttpCode(HttpStatus.CREATED)
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor())
+    @HttpCode(HttpStatus.CREATED)
     async importPolicyFromFileWithMetadata(
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId,
+        @Query('versionOfTopicId') versionOfTopicId: string,
     ): Promise<any> {
         try {
             const policyFile = files.find(
@@ -1712,10 +2053,7 @@ export class PolicyApi {
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -1724,18 +2062,18 @@ export class PolicyApi {
      */
     @Post('/push/import/file')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new policy from a zip file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'versionOfTopicId',
         type: String,
-        description: 'Topic Id',
-        required: false
+        description: 'The topic ID of policy version.',
+        example: '0.0.00000001'
     })
     @ApiBody({
         description: 'A zip file containing policy config.',
@@ -1744,26 +2082,18 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromFileAsync(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId,
-        @Response() res: any
+        @Query('versionOfTopicId') versionOfTopicId: string
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -1774,7 +2104,7 @@ export class PolicyApi {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-        return res.status(202).send(task);
+        return task;
     }
 
     /**
@@ -1782,18 +2112,18 @@ export class PolicyApi {
      */
     @Post('/push/import/file-metadata')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new policy from a zip file with metadata.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'versionOfTopicId',
         type: String,
-        description: 'Topic Id',
-        required: false
+        description: 'The topic ID of policy version.',
+        example: '0.0.00000001'
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -1815,27 +2145,20 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @UseInterceptors(AnyFilesInterceptor())
+    @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId,
-    ): Promise<any> {
+        @Query('versionOfTopicId') versionOfTopicId: string,
+    ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(
@@ -1874,9 +2197,9 @@ export class PolicyApi {
      */
     @Post('/import/file/preview')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Policy preview from a zip file.',
         description: 'Previews the policy from a zip file without loading it into the local DB.' + ONLY_SR,
@@ -1887,21 +2210,14 @@ export class PolicyApi {
         type: String
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Policy preview.',
+        type: PolicyPreviewDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(PolicyPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importPolicyFromFilePreview(
         @AuthUser() user: IAuthUser,
@@ -1924,14 +2240,14 @@ export class PolicyApi {
      */
     @Post('/import/xlsx')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new policy from a xlsx file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
@@ -1949,16 +2265,11 @@ export class PolicyApi {
             'type': 'object'
         },
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromXlsx(
         @AuthUser() user: IAuthUser,
@@ -1982,14 +2293,14 @@ export class PolicyApi {
      */
     @Post('/push/import/xlsx')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Imports new policy from a xlsx file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
@@ -2003,26 +2314,19 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId: string,
         @Body() file: ArrayBuffer
-    ): Promise<any> {
+    ): Promise<TaskDTO> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
@@ -2043,9 +2347,9 @@ export class PolicyApi {
      */
     @Post('/import/xlsx/preview')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.POLICY_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Policy preview from a xlsx file.',
         description: 'Previews the policy from a xlsx file without loading it into the local DB.' + ONLY_SR,
@@ -2061,16 +2365,11 @@ export class PolicyApi {
             'type': 'object'
         },
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
@@ -2089,15 +2388,30 @@ export class PolicyApi {
     }
 
     /**
-     * @param req
+     * About
      */
     @Get('/blocks/about')
-    @HttpCode(HttpStatus.OK)
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns block descriptions.',
+        description: 'Returns block descriptions.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Block descriptions.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
-    async getBlockAbout(@Req() req) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
+    @HttpCode(HttpStatus.OK)
+    async getBlockAbout() {
         try {
+            const engineService = new PolicyEngine();
             return await engineService.blockAbout();
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -2105,14 +2419,42 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Get virtual users
+     */
     @Get('/:policyId/dry-run/users')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns virtual users.',
+        description: 'Returns virtual users.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Virtual users.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getDryRunUsers(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getDryRunUsers(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
         const engineService = new PolicyEngine();
-        let policy;
+        let policy: any;
         try {
-            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+            policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2120,227 +2462,14 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== req.user.did) {
+        if (policy.owner !== user.did) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         if (policy.status !== PolicyType.DRY_RUN) {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {
-            return res.send(await engineService.getVirtualUsers(req.params.policyId));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Post('/:policyId/dry-run/user')
-    @HttpCode(HttpStatus.CREATED)
-    async setDryRunUser(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        let policy;
-        try {
-            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (!policy) {
-            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-        }
-        if (policy.owner !== req.user.did) {
-            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-        }
-        if (policy.status !== PolicyType.DRY_RUN) {
-            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
-        }
-        try {
-            return res.status(201).send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Post('/:policyId/dry-run/login')
-    @HttpCode(HttpStatus.OK)
-    async loginDryRunUser(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        let policy;
-        try {
-            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (!policy) {
-            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-        }
-        if (policy.owner !== req.user.did) {
-            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-        }
-        if (policy.status !== PolicyType.DRY_RUN) {
-            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
-        }
-        try {
-            return res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Post('/:policyId/dry-run/restart')
-    @HttpCode(HttpStatus.OK)
-    async restartDryRun(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        let policy;
-        try {
-            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (!policy) {
-            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-        }
-        if (policy.owner !== req.user.did) {
-            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-        }
-        if (policy.status !== PolicyType.DRY_RUN) {
-            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
-        }
-        try {
-            return res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Get('/:policyId/dry-run/transactions')
-    @HttpCode(HttpStatus.OK)
-    async getDryRunTransactions(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        let policy;
-        try {
-            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (!policy) {
-            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-        }
-        if (policy.owner !== req.user.did) {
-            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-        }
-        try {
-            let pageIndex: any;
-            let pageSize: any;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
-            }
-            const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'transactions', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).json(data);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Get('/:policyId/dry-run/artifacts')
-    @HttpCode(HttpStatus.OK)
-    async getDryRunArtifacts(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        let policy;
-        try {
-            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (!policy) {
-            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-        }
-        if (policy.owner !== req.user.did) {
-            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-        }
-
-        try {
-            let pageIndex: any;
-            let pageSize: any;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
-            }
-            const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'artifacts', pageIndex, pageSize);
-            return res.setHeader('X-Total-Count', count).json(data);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Get('/:policyId/dry-run/ipfs')
-    @HttpCode(HttpStatus.OK)
-    async getDryRunIpfs(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const engineService = new PolicyEngine();
-        let policy;
-        try {
-            policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        if (!policy) {
-            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-        }
-        if (policy.owner !== req.user.did) {
-            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-        }
-        try {
-            let pageIndex: any;
-            let pageSize: any;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
-            }
-            const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'ipfs', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).json(data);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Get('/:policyId/multiple')
-    @HttpCode(HttpStatus.OK)
-    async getMultiplePolicies(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
-        try {
-            return res.send(await engineService.getMultiPolicy(req.user, req.params.policyId));
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Post('/:policyId/multiple/')
-    @HttpCode(HttpStatus.OK)
-    async setMultiplePolicies(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        const engineService = new PolicyEngine();
-        try {
-            return res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
+            return await engineService.getVirtualUsers(policyId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2348,6 +2477,495 @@ export class PolicyApi {
     }
 
     /**
+     * Create virtual user
+     */
+    @Post('/:policyId/dry-run/user')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Creates virtual users.',
+        description: 'Creates virtual users.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Virtual users.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async setDryRunUser(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: policyId });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            return await engineService.createVirtualUser(policyId, user.did);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Change virtual user
+     */
+    @Post('/:policyId/dry-run/login')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Change active virtual user.',
+        description: 'Change active virtual user.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: 'Credentials.',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Virtual users.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async loginDryRunUser(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any
+    ) {
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: policyId });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            return await engineService.loginVirtualUser(policyId, body.did);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Clear dry-run state.
+     */
+    @Post('/:policyId/dry-run/restart')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Clear dry-run state.',
+        description: 'Clear dry-run state.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: '.',
+    })
+    @ApiOkResponse({
+        description: '.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async restartDryRun(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any
+    ) {
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: policyId });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        if (policy.status !== PolicyType.DRY_RUN) {
+            throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            return await engineService.restartDryRun(body, user, policyId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get dry-run details
+     */
+    @Get('/:policyId/dry-run/transactions')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Get dry-run details (Transactions).',
+        description: 'Get dry-run details (Transactions).' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set'
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return'
+    })
+    @ApiOkResponse({
+        description: 'Transactions.',
+        isArray: true,
+        headers: pageHeader,
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getDryRunTransactions(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ) {
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: policyId });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const [data, count] = await engineService.getVirtualDocuments(policyId, 'transactions', pageIndex, pageSize)
+            return res.setHeader('X-Total-Count', count).json(data);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get dry-run details
+     */
+    @Get('/:policyId/dry-run/artifacts')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Get dry-run details (Artifacts).',
+        description: 'Get dry-run details (Artifacts).' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set'
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return'
+    })
+    @ApiOkResponse({
+        description: 'Artifacts.',
+        isArray: true,
+        headers: pageHeader,
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getDryRunArtifacts(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ) {
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: policyId });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const [data, count] = await engineService.getVirtualDocuments(policyId, 'artifacts', pageIndex, pageSize);
+            return res.setHeader('X-Total-Count', count).json(data);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get dry-run details
+     */
+    @Get('/:policyId/dry-run/ipfs')
+    @Auth(
+        Permissions.POLICY_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Get dry-run details (Files).',
+        description: 'Get dry-run details (Files).' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set'
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return'
+    })
+    @ApiOkResponse({
+        description: 'Files.',
+        isArray: true,
+        headers: pageHeader,
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getDryRunIpfs(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ) {
+        const engineService = new PolicyEngine();
+        let policy: any;
+        try {
+            policy = await engineService.getPolicy({ filters: policyId });
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (!policy) {
+            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+        }
+        if (policy.owner !== user.did) {
+            throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+        }
+        try {
+            const [data, count] = await engineService.getVirtualDocuments(policyId, 'ipfs', pageIndex, pageSize)
+            return res.setHeader('X-Total-Count', count).json(data);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /**
+     * Get policy links
+     */
+    @Get('/:policyId/multiple')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Requests policy links.',
+        description: 'Requests policy links. Only users with a role that described in block are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMultiplePolicies(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ) {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getMultiPolicy(user, policyId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Set policy links
+     */
+    @Post('/:policyId/multiple/')
+    @Auth(
+        Permissions.POLICY_POLICY_RUN,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Creates policy link.',
+        description: 'Creates policy link. Only users with a role that described in block are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: '000000000000000000000001'
+    })
+    @ApiBody({
+        description: '',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setMultiplePolicies(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: any
+    ) {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.setMultiPolicy(user, policyId, body);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+
+    /**
+     * Get all categories
      */
     @Get('/methodologies/categories')
     @ApiOperation({
@@ -2361,12 +2979,11 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
+    @HttpCode(HttpStatus.ACCEPTED)
     async getPolicyCategoriesAsync(): Promise<any> {
         try {
             const projectService = new ProjectService();
@@ -2377,6 +2994,9 @@ export class PolicyApi {
         }
     }
 
+    /**
+     * Get filtered policies
+     */
     @Post('/methodologies/search')
     @ApiOperation({
         summary: 'Get filtered policies',
@@ -2402,20 +3022,16 @@ export class PolicyApi {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async getPoliciesByCategory(@Req() req, @Response() res): Promise<any> {
-        const engineService = new PolicyEngine();
-
-        const categoryIds = req.body.categoryIds;
-        const text = req.body.text;
-
+    async getPoliciesByCategory(
+        @Body() body: any
+    ): Promise<any> {
         try {
-            const policies = await engineService.getPoliciesByCategoriesAndText(categoryIds, text);
-            return res.send(policies);
+            const engineService = new PolicyEngine();
+            return engineService.getPoliciesByCategoriesAndText(body.categoryIds, body.text);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

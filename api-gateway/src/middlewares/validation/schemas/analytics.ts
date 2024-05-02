@@ -12,6 +12,41 @@ export class SearchPoliciesDTO {
     result: any;
 }
 
+export class SearchBlocksDTO {
+    @ApiProperty()
+    @IsString()
+    name: string;
+
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty()
+    @IsString()
+    version: string;
+
+    @ApiProperty()
+    @IsString()
+    owner: string;
+
+    @ApiProperty()
+    @IsString()
+    topicId: string;
+
+    @ApiProperty()
+    @IsString()
+    messageId: string;
+
+    @ApiProperty()
+    @IsString()
+    hash: string;
+
+    @ApiProperty({ type: () => Object })
+    @IsArray()
+    @Type(() => Object)
+    chains: any[];
+}
+
 export class ComparePoliciesDTO {
     @ApiProperty()
     @IsObject()

@@ -21,14 +21,13 @@ import {
     ApiOkResponse,
     ApiOperation,
     ApiTags,
-    getSchemaPath,
     ApiBody,
-    ApiConsumes
+    ApiConsumes,
+    ApiQuery,
+    ApiParam
 } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
@@ -50,35 +49,30 @@ export class ArtifactApi {
         summary: 'Returns all artifacts.',
         description: 'Returns all artifacts.',
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'type',
         enum: ['tool', 'policy'],
         description: 'Tool|Policy',
-        required: false
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'policyId',
         type: String,
         description: 'Policy identifier',
-        required: false
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'toolId',
         type: String,
         description: 'Tool identifier',
-        required: false
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
-        required: false
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
-        required: false
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -101,7 +95,7 @@ export class ArtifactApi {
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
         @Response() res: any
-    ): Promise<any> {
+    ): Promise<ArtifactDTOItem> {
         try {
             const options: any = { owner: user.did };
             if (type) {
@@ -141,7 +135,7 @@ export class ArtifactApi {
         summary: 'Upload artifact.',
         description: 'Upload artifact. For users with the Standard Registry role only.',
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'parentId',
         type: String,
         description: 'Parent ID',
@@ -214,7 +208,7 @@ export class ArtifactApi {
         summary: 'Delete artifact.',
         description: 'Delete artifact.',
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'artifactId',
         type: String,
         description: 'Artifact ID',
@@ -223,20 +217,21 @@ export class ArtifactApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @HttpCode(HttpStatus.OK)
     async deleteArtifact(
         @AuthUser() user: IAuthUser,
         @Param('artifactId') artifactId: string,
-    ): Promise<any> {
+    ): Promise<boolean> {
         try {
             const guardian = new Guardians();
-            await guardian.deleteArtifact(artifactId, user.did);
+            return await guardian.deleteArtifact(artifactId, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

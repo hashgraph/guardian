@@ -1,11 +1,12 @@
-import { IPageParameters, MessageAPI, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Req, Response } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
+import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { checkPermission } from '../../auth/authorization-helper.js';
-import { ApiTags } from '@nestjs/swagger';
 import axios from 'axios';
+import { Auth } from '../../auth/auth.decorator.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from 'middlewares/validation/index.js';
 
 @Injectable()
 export class LoggerService {
@@ -33,46 +34,72 @@ export class LoggerApi {
     constructor(private readonly loggerService: LoggerService) {
     }
 
+    /**
+     * Get logs
+     */
     @Post('/')
+    @Auth(
+        Permissions.LOG_LOG_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all logs.',
+        description: 'Return a list of all logs. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: LogFilterDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: LogResultDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(LogFilterDTO, LogResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getLogs(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getLogs(
+        @Body() body: LogFilterDTO
+    ): Promise<LogResultDTO> {
         try {
             const filters: any = {};
             const pageParameters: IPageParameters = {};
-            if (req.body.type) {
-                filters.type = req.body.type;
+            if (body.type) {
+                filters.type = body.type;
             }
-            if (req.body.startDate && req.body.endDate) {
-                const sDate = new Date(req.body.startDate);
+            if (body.startDate && body.endDate) {
+                const sDate = new Date(body.startDate);
                 sDate.setHours(0, 0, 0, 0);
-                const eDate = new Date(req.body.endDate);
+                const eDate = new Date(body.endDate);
                 eDate.setHours(23, 59, 59, 999);
                 filters.datetime = {
                     $gte: sDate,
                     $lt: eDate
                 };
             }
-            if (req.body.attributes && req.body.attributes.length !== 0) {
-                filters.attributes = { $in: req.body.attributes };
+            if (body.attributes && body.attributes.length !== 0) {
+                filters.attributes = { $in: body.attributes };
             }
-            if (req.body.message) {
+            if (body.message) {
                 filters.message = {
-                    $regex: `.*${escapeRegExp(req.body.message)}.*`,
+                    $regex: `.*${escapeRegExp(body.message)}.*`,
                     $options: 'i'
                 }
             }
-            if (req.body.pageSize) {
-                pageParameters.offset = (req.body.pageIndex || 0) * req.body.pageSize;
-                pageParameters.limit = req.body.pageSize;
+            if (body.pageSize) {
+                pageParameters.offset = (body.pageIndex || 0) * body.pageSize;
+                pageParameters.limit = body.pageSize;
             }
-            const logsObj = await this.loggerService.getLogs(filters, pageParameters, req.body.sortDirection);
+            const logsObj = await this.loggerService.getLogs(filters, pageParameters, body.sortDirection);
             const logs = await axios.get(logsObj.directLink);
 
-            return res.send({
+            return {
                 totalCount: logsObj.totalCount,
                 logs: logs.data
-            });
+            };
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -80,18 +107,52 @@ export class LoggerApi {
     }
 
     /**
-     * @param req
+     * Get attributes
      */
     @Get('attributes')
-    @HttpCode(HttpStatus.OK)
+    @Auth(
+        Permissions.LOG_LOG_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of attributes.',
+        description: 'Return a list of attributes. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiQuery({
+        name: 'name',
+        type: Number,
+        description: 'Name',
+    })
+    @ApiQuery({
+        name: 'existingAttributes',
+        type: String,
+        isArray: true,
+        description: 'Existing attributes',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache()
-    async getAttributes(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    @HttpCode(HttpStatus.OK)
+    async getAttributes(
+        @Query('name') name: string,
+        @Query('existingAttributes') existingAttributes: string | string[],
+    ): Promise<any> {
         try {
-            if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {
-                req.query.existingAttributes = [req.query.existingAttributes as string];
+            let attributes: string[];
+            if (existingAttributes) {
+                if (!Array.isArray(existingAttributes)) {
+                    attributes = [existingAttributes as string];
+                } else {
+                    attributes = existingAttributes
+                }
             }
-            return await this.loggerService.getAttributes(escapeRegExp(req.query.name as string), req.query.existingAttributes as string[]);
+            return await this.loggerService.getAttributes(escapeRegExp(name), attributes);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -113,6 +174,5 @@ function escapeRegExp(text: string): string {
     if (!text) {
         return '';
     }
-
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }

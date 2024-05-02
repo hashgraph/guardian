@@ -3,14 +3,14 @@
  * @param obj
  * @param name
  */
-export function findAllEntities(obj: {[key:string]: any}, name: string): string[] {
+export function findAllEntities(obj: { [key: string]: any }, name: string): string[] {
     const result = [];
 
-    const finder = (o: {[key:string]: any}): void => {
-        if(!o) {
+    const finder = (o: { [key: string]: any }): void => {
+        if (!o) {
             return;
         }
-        if(o.hasOwnProperty(name)) {
+        if (o.hasOwnProperty(name)) {
             result.push(o[name]);
         }
 
@@ -37,13 +37,13 @@ export function findAllEntities(obj: {[key:string]: any}, name: string): string[
  * @param newValue
  */
 export function replaceAllEntities(
-    obj: {[key:string]: any},
+    obj: { [key: string]: any },
     name: string,
     oldValue: string,
     newValue: string
 ): void {
-    const finder = (o: {[key:string]: any}): void => {
-        if(o.hasOwnProperty(name) && o[name] === oldValue) {
+    const finder = (o: { [key: string]: any }): void => {
+        if (o.hasOwnProperty(name) && o[name] === oldValue) {
             o[name] = newValue;
         }
 
@@ -54,4 +54,27 @@ export function replaceAllEntities(
         }
     }
     finder(obj);
+}
+
+/**
+ * Pars int
+ * @param value
+ */
+export function parseInteger(value: any): number | undefined {
+    if (typeof value === 'string') {
+        const result = Number.parseInt(value, 10);
+        if (Number.isFinite(result)) {
+            return result;
+        } else {
+            return undefined;
+        }
+    }
+    if (typeof value === 'number') {
+        if (Number.isFinite(value)) {
+            return Math.floor(value);
+        } else {
+            return undefined;
+        }
+    }
+    return undefined;
 }

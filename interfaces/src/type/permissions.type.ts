@@ -11,7 +11,11 @@ export enum Category {
     ARTIFACT = 'ARTIFACT',
     POLICY = 'POLICY',
     BRANDING = 'BRANDING',
-    CONTRACT = 'CONTRACT'
+    CONTRACT = 'CONTRACT',
+    DEMO = 'DEMO',
+    IPFS = 'IPFS',
+    LOG = 'LOG',
+    MODULE = 'MODULE',
 }
 
 /**
@@ -40,6 +44,8 @@ export enum Entity {
     RETIRE_REQUEST = 'RETIRE_REQUEST',
     RETIRE_ADMIN = 'RETIRE_ADMIN',
     PERMISSIONS = 'PERMISSIONS',
+    KEY = 'KEY',
+    LOG = 'LOG',
 }
 
 /**
@@ -100,6 +106,23 @@ export enum Permissions {
     CONTRACT_RETIRE_ADMIN_DELETE = 'CONTRACT_RETIRE_ADMIN_DELETE',
     CONTRACT_PERMISSIONS_VIEW = 'CONTRACT_PERMISSIONS_VIEW',
     CONTRACT_DOCUMENT_VIEW = 'CONTRACT_DOCUMENT_VIEW',
+    //DEMO
+    DEMO_KEY_CREATE = 'DEMO_KEY_CREATE',
+    //IPFS
+    IPFS_FILE_VIEW = 'IPFS_FILE_VIEW',
+    IPFS_FILE_CREATE = 'IPFS_FILE_CREATE',
+    //LOG
+    LOG_LOG_VIEW = 'LOG_LOG_VIEW',
+    //MODULE
+    MODULE_MODULE_VIEW = 'MODULE_MODULE_VIEW',
+    MODULE_MODULE_CREATE = 'MODULE_MODULE_CREATE',
+    MODULE_MODULE_UPDATE = 'MODULE_MODULE_UPDATE',
+    MODULE_MODULE_DELETE = 'MODULE_MODULE_DELETE',
+    MODULE_MODULE_PUBLISH = 'MODULE_MODULE_PUBLISH',
+
+
+
+
     //PROFILE
     PROFILE_USER_VIEW = 'PROFILE_USER_VIEW',
     PROFILE_USER_UPDATE = 'PROFILE_USER_UPDATE',
@@ -517,6 +540,115 @@ export const PermissionsArray: {
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.USER,
+            ]
+        },
+        //DEMO
+        {
+            name: Permissions.DEMO_KEY_CREATE,
+            category: Category.DEMO,
+            entity: Entity.KEY,
+            action: Action.CREATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER,
+                UserRole.AUDITOR
+            ]
+        },
+        //IPFS
+        {
+            name: Permissions.IPFS_FILE_VIEW,
+            category: Category.IPFS,
+            entity: Entity.FILE,
+            action: Action.VIEW,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER,
+                UserRole.AUDITOR
+            ]
+        },
+        {
+            name: Permissions.IPFS_FILE_CREATE,
+            category: Category.IPFS,
+            entity: Entity.FILE,
+            action: Action.CREATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER,
+                UserRole.AUDITOR
+            ]
+        },
+        //LOG
+        {
+            name: Permissions.LOG_LOG_VIEW,
+            category: Category.LOG,
+            entity: Entity.LOG,
+            action: Action.VIEW,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        //MODULE
+        {
+            name: Permissions.MODULE_MODULE_VIEW,
+            category: Category.MODULE,
+            entity: Entity.MODULE,
+            action: Action.VIEW,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.MODULE_MODULE_CREATE,
+            category: Category.MODULE,
+            entity: Entity.MODULE,
+            action: Action.CREATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.MODULE_MODULE_UPDATE,
+            category: Category.MODULE,
+            entity: Entity.MODULE,
+            action: Action.UPDATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.MODULE_MODULE_DELETE,
+            category: Category.MODULE,
+            entity: Entity.MODULE,
+            action: Action.DELETE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.MODULE_MODULE_PUBLISH,
+            category: Category.MODULE,
+            entity: Entity.MODULE,
+            action: Action.PUBLISH,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
             ]
         },
         //PROFILE

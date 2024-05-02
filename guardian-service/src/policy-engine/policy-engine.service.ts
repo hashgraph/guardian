@@ -792,10 +792,7 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg) => {
             try {
                 const { blockId, policyId } = msg;
-
-                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_PARENTS, policyId, {
-                    blockId
-                }) as any;
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_PARENTS, policyId, { blockId });
                 return new MessageResponse(blockData);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
