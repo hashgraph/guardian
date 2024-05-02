@@ -5,7 +5,6 @@ import { SchemaUtils } from '../../helpers/schema-utils.js';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
 import { checkPermission } from '../../auth/authorization-helper.js';
 import { ApiTags } from '@nestjs/swagger';
-import { UseCache } from '../../helpers/decorators/cache.js';
 
 @Controller('tags')
 @ApiTags('tags')
@@ -144,7 +143,7 @@ export class TagsApi {
      */
     @Get('/schemas')
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
+    // @UseCache({ isExpress: true })
     async getSchemas(@Req() req, @Response() res): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
