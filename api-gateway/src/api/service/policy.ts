@@ -653,7 +653,7 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/navigation')
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    // @UseCache()
     async getPolicyNavigation(@Req() req): Promise<any> {
         await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
