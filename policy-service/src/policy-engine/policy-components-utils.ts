@@ -294,6 +294,7 @@ export class PolicyComponentsUtils {
         if (!cache) {
             cache = new Set<string>();
             cache.add('id');
+            cache.add('credentialSubject.id');
             PolicyComponentsUtils.DocumentCacheFieldsMap.set(policyId, cache);
         }
         return cache;
