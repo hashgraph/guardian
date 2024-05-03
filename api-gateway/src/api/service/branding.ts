@@ -1,13 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { Logger } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
 import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { Permissions } from '@guardian/interfaces';
-import { UseCache } from '../../helpers/decorators/cache.js';
 import { BrandingDTO, InternalServerErrorDTO } from 'middlewares/validation/index.js';
-
-const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
+import { ONLY_SR, Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 /**
  * Branding route
@@ -69,8 +65,7 @@ export class BrandingApi {
             const guardians = new Guardians();
             await guardians.setBranding(JSON.stringify(data));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -95,8 +90,7 @@ export class BrandingApi {
             const brandingDataString = await guardians.getBranding();
             return JSON.parse(brandingDataString.config);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

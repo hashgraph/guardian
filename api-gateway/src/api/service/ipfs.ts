@@ -2,11 +2,10 @@ import { Logger } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOperation, ApiSecurity, ApiTags, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
-import { Guardians } from '../../helpers/guardians.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
 import { InternalServerErrorDTO } from 'middlewares/validation/index.js';
+import { Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
@@ -55,8 +54,7 @@ export class IpfsApi {
 
             return JSON.stringify(cid);
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -109,8 +107,7 @@ export class IpfsApi {
 
             return JSON.stringify(cid);
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -163,8 +160,7 @@ export class IpfsApi {
             });
             return res.end(resultBuffer, 'binary');
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -219,8 +215,7 @@ export class IpfsApi {
             });
             return res.end(resultBuffer, 'binary');
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

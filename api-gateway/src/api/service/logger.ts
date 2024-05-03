@@ -5,8 +5,8 @@ import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import axios from 'axios';
 import { Auth } from '../../auth/auth.decorator.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
 import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from 'middlewares/validation/index.js';
+import { UseCache, InternalException } from '../../helpers/index.js';
 
 @Injectable()
 export class LoggerService {
@@ -101,8 +101,7 @@ export class LoggerApi {
                 logs: logs.data
             };
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -154,8 +153,7 @@ export class LoggerApi {
             }
             return await this.loggerService.getAttributes(escapeRegExp(name), attributes);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

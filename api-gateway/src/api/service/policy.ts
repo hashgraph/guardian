@@ -2,32 +2,26 @@ import { Auth } from '../../auth/auth.decorator.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '../../helpers/policy-engine.js';
-import { ProjectService } from '../../helpers/projects.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
-import { TaskManager } from '../../helpers/task-manager.js';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { MigrationConfigDTO, PolicyCategoryDTO, } from '../../middlewares/validation/schemas/policies.js';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
 import { pageHeader } from 'middlewares/validation/page-header.js';
-import { TaskDTO } from 'middlewares/validation/index.js';
-
-const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
+import { InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO } from 'middlewares/validation/index.js';
+import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR } from '../../helpers/index.js';
 
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
-
     /**
      * Return a list of all policies
      */
     @Get('/')
     @Auth(
         Permissions.POLICY_POLICY_VIEW,
+        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICY_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR,
@@ -92,8 +86,7 @@ export class PolicyApi {
             const { policies, count } = await engineService.getPolicies(options);
             return res.setHeader('X-Total-Count', count).json(policies);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -132,8 +125,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.createPolicy(body, user);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -182,10 +174,9 @@ export class PolicyApi {
     ): Promise<any> {
         const engineService = new PolicyEngine();
         try {
-            return await engineService.migrateData(user.did, body);
+            return await engineService.migrateData(user.did, body as any);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -223,7 +214,7 @@ export class PolicyApi {
         const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.migrateDataAsync(user.did, body, task);
+            await engineService.migrateDataAsync(user.did, body as any, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -374,6 +365,8 @@ export class PolicyApi {
     @Get('/:policyId')
     @Auth(
         Permissions.POLICY_POLICY_VIEW,
+        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICY_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR,
@@ -410,8 +403,7 @@ export class PolicyApi {
                 userDid: user.did,
             });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -479,8 +471,7 @@ export class PolicyApi {
             model.projectSchema = policy.projectSchema;
             return await engineService.savePolicy(model, user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -522,8 +513,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.publishPolicy(body, user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -582,7 +572,7 @@ export class PolicyApi {
      */
     @Put('/:policyId/dry-run')
     @Auth(
-        Permissions.POLICY_POLICY_PUBLISH,
+        Permissions.POLICY_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -614,8 +604,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.dryRunPolicy(user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -669,8 +658,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.discontinuePolicy(user, policyId, body?.date);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -679,7 +667,7 @@ export class PolicyApi {
      */
     @Put('/:policyId/draft')
     @Auth(
-        Permissions.POLICY_POLICY_PUBLISH,
+        Permissions.POLICY_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -711,8 +699,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.draft(user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -735,24 +722,23 @@ export class PolicyApi {
     })
     @ApiOkResponse({
         description: 'Validation result.',
-        type: ValidationResultDTO,
+        type: PolicyValidationDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(PolicyDTO, ValidationResultDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyDTO, PolicyValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validatePolicy(
         @AuthUser() user: IAuthUser,
         @Body() body: PolicyDTO
-    ): Promise<ValidationResultDTO> {
+    ): Promise<PolicyValidationDTO> {
         try {
             const engineService = new PolicyEngine();
             return await engineService.validatePolicy(body, user);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -797,8 +783,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getNavigation(user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -843,8 +828,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getGroups(user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -921,8 +905,7 @@ export class PolicyApi {
             );
             return res.setHeader('X-Total-Count', count).json(documents);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -981,8 +964,7 @@ export class PolicyApi {
             res.setHeader('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1025,8 +1007,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.uploadPolicyData(user.did, body);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1069,8 +1050,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getTagBlockMap(policyId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1131,11 +1111,7 @@ export class PolicyApi {
             res.setHeader('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            await InternalException(error);
         }
     }
 
@@ -1183,8 +1159,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.uploadVirtualKeys(user.did, body, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1231,8 +1206,7 @@ export class PolicyApi {
         try {
             return await engineService.selectGroup(user, policyId, body?.uuid);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1274,8 +1248,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getPolicyBlocks(user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1304,7 +1277,7 @@ export class PolicyApi {
         type: 'string',
         required: true,
         description: 'Block Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1325,8 +1298,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockData(user, policyId, uuid);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1355,7 +1327,7 @@ export class PolicyApi {
         type: 'string',
         required: true,
         description: 'Block Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiBody({
         description: 'Data',
@@ -1381,8 +1353,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.setBlockData(user, policyId, uuid, body);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1437,8 +1408,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.setBlockDataByTag(user, policyId, tagName, body);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1488,8 +1458,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockByTagName(user, policyId, tagName);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1539,8 +1508,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockDataByTag(user, policyId, tagName);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1569,7 +1537,7 @@ export class PolicyApi {
         type: 'string',
         required: true,
         description: 'Block Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1591,8 +1559,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockParents(user, policyId, uuid);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1641,8 +1608,7 @@ export class PolicyApi {
             res.setHeader('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 
@@ -1683,8 +1649,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.exportMessage(user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 
@@ -1733,8 +1698,7 @@ export class PolicyApi {
             res.setHeader('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 
@@ -1785,8 +1749,7 @@ export class PolicyApi {
                 body.metadata
             );
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1885,8 +1848,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importMessagePreview(user, body.messageId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1975,8 +1937,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importFile(user, file, versionOfTopicId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1985,7 +1946,7 @@ export class PolicyApi {
      */
     @Post('/import/file-metadata')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICY_MIGRATION_CREATE,
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -2052,8 +2013,7 @@ export class PolicyApi {
                 metadata?.buffer && JSON.parse(metadata.buffer.toString())
             );
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2112,7 +2072,7 @@ export class PolicyApi {
      */
     @Post('/push/import/file-metadata')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICY_MIGRATION_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2230,8 +2190,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importFilePreview(user, file);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2283,8 +2242,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importXlsx(user, file, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2382,8 +2340,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.importXlsxPreview(user, file);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2414,8 +2371,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.blockAbout();
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2456,8 +2412,7 @@ export class PolicyApi {
         try {
             policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
@@ -2471,8 +2426,7 @@ export class PolicyApi {
         try {
             return await engineService.getVirtualUsers(policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2513,8 +2467,7 @@ export class PolicyApi {
         try {
             policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
@@ -2528,8 +2481,7 @@ export class PolicyApi {
         try {
             return await engineService.createVirtualUser(policyId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2575,8 +2527,7 @@ export class PolicyApi {
         try {
             policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
@@ -2590,8 +2541,7 @@ export class PolicyApi {
         try {
             return await engineService.loginVirtualUser(policyId, body.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2636,8 +2586,7 @@ export class PolicyApi {
         try {
             policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
@@ -2651,8 +2600,7 @@ export class PolicyApi {
         try {
             return await engineService.restartDryRun(body, user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2709,8 +2657,7 @@ export class PolicyApi {
         try {
             policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
@@ -2722,8 +2669,7 @@ export class PolicyApi {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'transactions', pageIndex, pageSize)
             return res.setHeader('X-Total-Count', count).json(data);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2780,8 +2726,7 @@ export class PolicyApi {
         try {
             policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
@@ -2793,8 +2738,7 @@ export class PolicyApi {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'artifacts', pageIndex, pageSize);
             return res.setHeader('X-Total-Count', count).json(data);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2851,8 +2795,7 @@ export class PolicyApi {
         try {
             policy = await engineService.getPolicy({ filters: policyId });
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
@@ -2864,8 +2807,7 @@ export class PolicyApi {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'ipfs', pageIndex, pageSize)
             return res.setHeader('X-Total-Count', count).json(data);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2908,8 +2850,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getMultiPolicy(user, policyId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -2956,13 +2897,9 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.setMultiPolicy(user, policyId, body);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
-
-
-
 
     /**
      * Get all categories
@@ -2989,8 +2926,7 @@ export class PolicyApi {
             const projectService = new ProjectService();
             return await projectService.getPolicyCategories();
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -3033,8 +2969,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return engineService.getPoliciesByCategoriesAndText(body.categoryIds, body.text);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

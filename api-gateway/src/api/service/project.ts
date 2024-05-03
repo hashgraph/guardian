@@ -1,13 +1,11 @@
 import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Req, Response } from '@nestjs/common';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { ProjectService } from '../../helpers/projects.js';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { ProjectDTO, PropertiesDTO } from '../../middlewares/validation/schemas/projects.js';
 import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
-import { Guardians } from '../../helpers/guardians.js';
 import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
+import { UseCache, Guardians, InternalException, ProjectService } from '../../helpers/index.js';
 
 /**
  * Projects route
@@ -26,11 +24,6 @@ export class ProjectsAPI {
         summary: 'Search projects',
         description: 'Search projects by filters',
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        isArray: true,
-        type: ProjectDTO,
-    })
     @ApiBody({
         description: 'The question of choosing a methodology',
         required: true,
@@ -41,25 +34,27 @@ export class ProjectsAPI {
             }
         }
     })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: ProjectDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ProjectDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async projectSearch(@Req() req, @Response() res): Promise<ProjectDTO[]> {
-        const projectService = new ProjectService();
-
-        const categoryIds = req.body.categoryIds;
-        const policyIds = req.body.policyIds;
-
+    async projectSearch(
+        @Body() body: any
+    ): Promise<ProjectDTO[]> {
+        const categoryIds = body?.categoryIds;
+        const policyIds = body?.policyIds;
         try {
-            const projects = await projectService.search(categoryIds, policyIds);
-            return res.send(projects);
+            const projectService = new ProjectService();
+            return await projectService.search(categoryIds, policyIds);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -97,8 +92,11 @@ export class ProjectsAPI {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareDocuments(@Body() body, @Req() req): Promise<any> {
+    async compareDocuments(
+        @Body() body: FilterDocumentsDTO
+    ): Promise<any> {
         const guardians = new Guardians();
         const documentId1 = body ? body.documentId1 : null;
         const documentId2 = body ? body.documentId2 : null;
@@ -143,7 +141,7 @@ export class ProjectsAPI {
                 refLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -165,15 +163,15 @@ export class ProjectsAPI {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiExtraModels(PropertiesDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })
+    @HttpCode(HttpStatus.ACCEPTED)
     async getPolicyProperties(): Promise<any> {
         try {
             const projectService = new ProjectService();
             return await projectService.getPolicyProperties();
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

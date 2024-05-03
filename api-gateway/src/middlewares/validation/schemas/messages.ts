@@ -20,4 +20,7 @@ export class ExportMessageDTO {
 export class ImportMessageDTO {
     @ApiProperty({ type: 'string' })
     messageId: string;
+
+    @ApiProperty({ type: 'object', nullable: true })
+    metadata?: any
 }

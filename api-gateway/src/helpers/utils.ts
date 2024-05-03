@@ -1,3 +1,8 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { Logger } from '@guardian/common';
+import { PolicyEngine } from './policy-engine';
+import { PolicyType } from '@guardian/interfaces';
+
 /**
  * Find all field values in object by field name
  * @param obj
@@ -77,4 +82,47 @@ export function parseInteger(value: any): number | undefined {
         }
     }
     return undefined;
+}
+
+export const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.';
+
+/**
+ * Generate HttpException
+ * @param error
+ */
+export async function InternalException(error: HttpException | Error | string) {
+    await (new Logger()).error(error, ['API_GATEWAY']);
+    if (error instanceof HttpException) {
+        throw error;
+    } else if (typeof error === 'string') {
+        throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    } else {
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    };
+}
+
+/**
+ * Check policy
+ * @param policyId
+ * @param owner
+ */
+export async function checkPolicy(policyId: string, owner: string): Promise<any> {
+    let policy: any;
+    try {
+        const engineService = new PolicyEngine();
+        policy = await engineService.getPolicy({ filters: policyId });
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    if (!policy) {
+        throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+    }
+    if (policy.owner !== owner) {
+        throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
+    }
+    if (policy.status !== PolicyType.DRY_RUN) {
+        throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
+    }
+    return policy;
 }

@@ -6,13 +6,10 @@ import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkRes
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO, InternalServerErrorDTO } from '../../middlewares/validation/index.js';
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
-import { Users } from '../../helpers/users.js';
-import { Guardians } from '../../helpers/guardians.js';
-import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { AuthUser, checkPermission, Auth } from '../../auth/index.js';
 import { ApplicationEnvironment } from '../../environment.js';
 import { CACHE } from '../../constants/index.js';
+import { Users, PolicyEngine, Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 /**
  * User account route
@@ -98,8 +95,7 @@ export class AccountApi {
             try {
                 await checkPermission(UserRole.STANDARD_REGISTRY)(user);
             } catch (error) {
-                new Logger().error(error.message, ['API_GATEWAY']);
-                throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+                await InternalException(error);
             }
         }
         try {
@@ -208,8 +204,7 @@ export class AccountApi {
         try {
             return await (new Users()).getAllUserAccounts();
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -242,8 +237,7 @@ export class AccountApi {
         try {
             return await (new Users()).getAllStandardRegistryAccounts();
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -304,8 +298,7 @@ export class AccountApi {
                 });
             return await Promise.all(promises);
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -340,8 +333,7 @@ export class AccountApi {
         try {
             return await (new Guardians()).getBalance(user.username);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

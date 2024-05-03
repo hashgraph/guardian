@@ -1,22 +1,19 @@
 import { Logger, IAuthUser } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { SchemaUtils } from '../../helpers/schema-utils.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { pageHeader } from 'middlewares/validation/page-header.js';
-import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ValidationResultDTO } from 'middlewares/validation/index.js';
+import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO } from 'middlewares/validation/index.js';
+import { Guardians, SchemaUtils, UseCache, InternalException } from '../../helpers/index.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('modules')
 @ApiTags('modules')
 export class ModulesApi {
-
     /**
      * Creates a new module
      */
@@ -55,8 +52,7 @@ export class ModulesApi {
             }
             return await guardian.createModule(module, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -105,8 +101,7 @@ export class ModulesApi {
             const { items, count } = await guardians.getModule({ owner: user.did, pageIndex, pageSize });
             return res.setHeader('X-Total-Count', count).json(items);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -115,7 +110,7 @@ export class ModulesApi {
      */
     @Get('/schemas')
     @Auth(
-        Permissions.SCHEMA_MODULE_SCHEMA_VIEW,
+        Permissions.SCHEMAS_MODULE_SCHEMA_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -177,17 +172,16 @@ export class ModulesApi {
                 .json(SchemaUtils.toOld(items));
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
     /**
      * Create schema
      */
     @Post('/schemas')
     @Auth(
-        Permissions.SCHEMA_MODULE_SCHEMA_CREATE,
+        Permissions.SCHEMAS_MODULE_SCHEMA_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -231,7 +225,7 @@ export class ModulesApi {
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -244,15 +238,15 @@ export class ModulesApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Deletes the module with the provided module ID.' + ONLY_SR,
-        description: 'Deletes the module.'
+        summary: 'Deletes the module.',
+        description: 'Deletes the module with the provided module ID.' + ONLY_SR
     })
     @ApiParam({
         name: 'uuid',
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -275,8 +269,7 @@ export class ModulesApi {
             }
             return await guardian.deleteModule(uuid, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -287,7 +280,7 @@ export class ModulesApi {
     @Auth(
         Permissions.POLICY_POLICY_UPDATE,
         Permissions.MODULE_MODULE_UPDATE,
-        Permissions.TOOL_TOOL_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -313,8 +306,7 @@ export class ModulesApi {
             const guardians = new Guardians();
             return await guardians.getMenuModule(user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -335,7 +327,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -358,8 +350,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.getModuleById(uuid, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -380,7 +371,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiBody({
         description: 'Module config.',
@@ -411,8 +402,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.updateModule(uuid, module, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -433,7 +423,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiOkResponse({
         description: 'File.',
@@ -456,8 +446,7 @@ export class ModulesApi {
             res.setHeader('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -478,7 +467,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiOkResponse({
         description: 'Message.',
@@ -498,8 +487,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.exportModuleMessage(uuid, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -537,8 +525,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.importModuleMessage(body.messageId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -575,8 +562,7 @@ export class ModulesApi {
         try {
             return await guardian.importModuleFile(body, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -614,8 +600,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.previewModuleMessage(body.messageId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -652,8 +637,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.previewModuleFile(body, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -674,7 +658,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369',
+        example: '00000000-0000-0000-0000-000000000000',
     })
     @ApiBody({
         description: 'Module.',
@@ -699,8 +683,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.publishModule(uuid, user.did, module);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -722,24 +705,23 @@ export class ModulesApi {
     })
     @ApiOkResponse({
         description: 'Validation result.',
-        type: ValidationResultDTO,
+        type: ModuleValidationDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(ModuleDTO, ValidationResultDTO, InternalServerErrorDTO)
+    @ApiExtraModels(ModuleDTO, ModuleValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validateModule(
         @AuthUser() user: IAuthUser,
         @Body() module: ModuleDTO
-    ): Promise<ValidationResultDTO> {
+    ): Promise<ModuleValidationDTO> {
         try {
             const guardian = new Guardians();
             return await guardian.validateModule(user.did, module);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 }

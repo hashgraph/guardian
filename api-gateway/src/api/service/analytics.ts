@@ -1,4 +1,3 @@
-import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
 import {
     ApiInternalServerErrorResponse,
@@ -30,8 +29,7 @@ import {
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { IAuthUser } from '@guardian/common';
-
-const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
+import { Guardians, ONLY_SR, InternalException } from '../../helpers/index.js';
 
 @Controller('analytics')
 @ApiTags('analytics')
@@ -82,7 +80,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.searchPolicies(user, policyId);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -168,7 +166,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -236,7 +234,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -290,7 +288,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.compareSchemas(user, null, schemaId1, schemaId2, idLvl);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -371,7 +369,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -448,7 +446,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -541,7 +539,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -617,7 +615,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -679,7 +677,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.compareSchemas(user, type, schemaId1, schemaId2, idLvl);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -767,7 +765,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -851,7 +849,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -904,7 +902,7 @@ export class AnalyticsApi {
         try {
             return await guardians.searchBlocks(config, id, user);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

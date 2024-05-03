@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class BlockDTO {
+    @ApiProperty({ type: 'string' })
+    id: string;
+
+    @ApiProperty({ type: 'string' })
+    blockType: string;
+
+    @ApiProperty({ type: () => BlockDTO, isArray: true })
+    blocks: BlockDTO[];
+}
+
 export class BlockErrorsDTO {
     @ApiProperty({ type: 'string' })
     id: string;

@@ -1,12 +1,12 @@
-import { IAuthUser, Logger, NotificationService } from '@guardian/common';
+import { IAuthUser, NotificationService } from '@guardian/common';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { NotificationDTO, ProgressDTO, } from '../../middlewares/validation/schemas/notifications.js';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { pageHeader } from 'middlewares/validation/page-header.js';
-import { parseInteger } from 'helpers/utils.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
+import { InternalException, parseInteger } from '../../helpers/index.js';
 
 @Controller('notifications')
 @ApiTags('notifications')
@@ -58,8 +58,7 @@ export class NotificationsApi {
             );
             return res.setHeader('X-Total-Count', count).json(notifications);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -92,8 +91,7 @@ export class NotificationsApi {
             }
             return await this.notifier.getNewNotifications(user.id);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -126,8 +124,7 @@ export class NotificationsApi {
             }
             return await this.notifier.getProgresses(user.id);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -160,8 +157,7 @@ export class NotificationsApi {
             }
             return await this.notifier.readAll(user.id);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -179,7 +175,7 @@ export class NotificationsApi {
         type: 'string',
         required: true,
         description: 'Notification Identifier',
-        example: '771c6ae5-f8a4-4749-b970-70790afd2369'
+        example: '00000000-0000-0000-0000-000000000000'
     })
     @ApiOkResponse({
         description: 'Successful operation. Returns deleted notifications count.',
@@ -198,8 +194,7 @@ export class NotificationsApi {
         try {
             return await this.notifier.deleteUpTo(user.id, notificationId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

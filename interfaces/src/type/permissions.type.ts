@@ -16,6 +16,10 @@ export enum Category {
     IPFS = 'IPFS',
     LOG = 'LOG',
     MODULE = 'MODULE',
+    SETTINGS = 'SETTINGS',
+    SUGGESTIONS = 'SUGGESTIONS',
+    TAGS = 'TAGS',
+    SCHEMAS = 'SCHEMAS',
 }
 
 /**
@@ -46,6 +50,11 @@ export enum Entity {
     PERMISSIONS = 'PERMISSIONS',
     KEY = 'KEY',
     LOG = 'LOG',
+    MIGRATION = 'MIGRATION',
+    SETTINGS = 'SETTINGS',
+    SUGGESTIONS = 'SUGGESTIONS',
+    TAG = 'TAG',
+    MODULE_SCHEMA = 'MODULE_SCHEMA',
 }
 
 /**
@@ -59,6 +68,8 @@ export enum Action {
     REVIEW = 'REVIEW',
     PUBLISH = 'PUBLISH',
     ALL = 'ALL',
+    RUN = 'RUN',
+    AUDIT = 'AUDIT',
 }
 
 /**
@@ -119,17 +130,45 @@ export enum Permissions {
     MODULE_MODULE_UPDATE = 'MODULE_MODULE_UPDATE',
     MODULE_MODULE_DELETE = 'MODULE_MODULE_DELETE',
     MODULE_MODULE_PUBLISH = 'MODULE_MODULE_PUBLISH',
+    //POLICY
+    POLICY_POLICY_VIEW = 'POLICY_POLICY_VIEW',
+    POLICY_POLICY_CREATE = 'POLICY_POLICY_CREATE',
+    POLICY_POLICY_UPDATE = 'POLICY_POLICY_UPDATE',
+    POLICY_POLICY_DELETE = 'POLICY_POLICY_DELETE',
+    POLICY_POLICY_PUBLISH = 'POLICY_POLICY_PUBLISH',
+    POLICY_POLICY_RUN = 'POLICY_POLICY_RUN',
+    POLICY_POLICY_AUDIT = 'POLICY_POLICY_RUN', //only UserRole.AUDITOR
+    POLICY_MIGRATION_CREATE = 'POLICY_MIGRATION_CREATE',
+    POLICY_RECORD_ALL = 'POLICY_RECORD_ALL',
+
+    //SCHEMAS
+    SCHEMAS_MODULE_SCHEMA_VIEW = 'SCHEMAS_MODULE_SCHEMA_VIEW',
+    SCHEMAS_MODULE_SCHEMA_CREATE = 'SCHEMAS_MODULE_SCHEMA_CREATE',
+    SCHEMAS_TAG_SCHEMA_VIEW = 'SCHEMAS_TAG_SCHEMA_VIEW',
+    SCHEMAS_TAG_SCHEMA_CREATE = 'SCHEMAS_TAG_SCHEMA_CREATE',
+    SCHEMAS_TAG_SCHEMA_UPDATE = 'SCHEMAS_TAG_SCHEMA_UPDATE',
+    SCHEMAS_TAG_SCHEMA_DELETE = 'SCHEMAS_TAG_SCHEMA_DELETE',
+    SCHEMAS_TAG_SCHEMA_PUBLISH = 'SCHEMAS_TAG_SCHEMA_PUBLISH',
+    SCHEMAS_TAG_SCHEMA_RUN = 'SCHEMAS_TAG_SCHEMA_RUN',
+    //TOOLS
+    TOOLS_TOOL_UPDATE= 'TOOLS_TOOL_UPDATE',
 
 
-
-
+    //TAGS
+    TAGS_TAG_VIEW = 'TAGS_TAG_VIEW',
+    TAGS_TAG_CREATE = 'TAGS_TAG_CREATE',
+    TAGS_TAG_DELETE = 'TAGS_TAG_DELETE',
     //PROFILE
     PROFILE_USER_VIEW = 'PROFILE_USER_VIEW',
     PROFILE_USER_UPDATE = 'PROFILE_USER_UPDATE',
     PROFILE_BALANCE_VIEW = 'PROFILE_BALANCE_VIEW',
     PROFILE_RESTORE_ALL = 'PROFILE_RESTORE_ALL',
-    //POLICY
-    POLICY_RECORD_ALL = 'POLICY_RECORD_ALL',
+    //SUGGESTIONS
+    SUGGESTIONS_SUGGESTIONS_VIEW = 'SUGGESTIONS_SUGGESTIONS_VIEW',
+    SUGGESTIONS_SUGGESTIONS_UPDATE = 'SUGGESTIONS_SUGGESTIONS_UPDATE',
+    //SETTINGS
+    SETTINGS_SETTINGS_VIEW = 'SETTINGS_SETTINGS_VIEW',
+    SETTINGS_SETTINGS_UPDATE = 'SETTINGS_SETTINGS_UPDATE',
 }
 
 /**
@@ -651,6 +690,153 @@ export const PermissionsArray: {
                 UserRole.STANDARD_REGISTRY
             ]
         },
+        //POLICY
+        {
+            name: Permissions.POLICY_POLICY_VIEW,
+            category: Category.POLICY,
+            entity: Entity.POLICY,
+            action: Action.VIEW,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.POLICY_POLICY_CREATE,
+            category: Category.POLICY,
+            entity: Entity.POLICY,
+            action: Action.CREATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.POLICY_POLICY_UPDATE,
+            category: Category.POLICY,
+            entity: Entity.POLICY,
+            action: Action.UPDATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.POLICY_POLICY_DELETE,
+            category: Category.POLICY,
+            entity: Entity.POLICY,
+            action: Action.DELETE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.POLICY_POLICY_PUBLISH,
+            category: Category.POLICY,
+            entity: Entity.POLICY,
+            action: Action.PUBLISH,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.POLICY_POLICY_RUN,
+            category: Category.POLICY,
+            entity: Entity.POLICY,
+            action: Action.RUN,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER,
+            ]
+        },
+        {
+            name: Permissions.POLICY_POLICY_AUDIT,
+            category: Category.POLICY,
+            entity: Entity.POLICY,
+            action: Action.AUDIT,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.AUDITOR
+            ]
+        },
+        {
+            name: Permissions.POLICY_MIGRATION_CREATE,
+            category: Category.POLICY,
+            entity: Entity.MIGRATION,
+            action: Action.CREATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.POLICY_RECORD_ALL,
+            category: Category.POLICY,
+            entity: Entity.RECORD,
+            action: Action.ALL,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+
+
+
+
+
+
+
+
+
+        //TAGS
+        {
+            name: Permissions.TAGS_TAG_VIEW,
+            category: Category.TAGS,
+            entity: Entity.TAG,
+            action: Action.VIEW,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER,
+            ]
+        },
+        {
+            name: Permissions.TAGS_TAG_CREATE,
+            category: Category.TAGS,
+            entity: Entity.TAG,
+            action: Action.CREATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER,
+            ]
+        },
+        {
+            name: Permissions.TAGS_TAG_DELETE,
+            category: Category.TAGS,
+            entity: Entity.TAG,
+            action: Action.DELETE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER,
+            ]
+        },
         //PROFILE
         {
             name: Permissions.PROFILE_USER_VIEW,
@@ -705,11 +891,46 @@ export const PermissionsArray: {
                 UserRole.STANDARD_REGISTRY
             ]
         },
+        //SUGGESTIONS
         {
-            name: Permissions.POLICY_RECORD_ALL,
-            category: Category.POLICY,
-            entity: Entity.RECORD,
-            action: Action.ALL,
+            name: Permissions.SUGGESTIONS_SUGGESTIONS_VIEW,
+            category: Category.SUGGESTIONS,
+            entity: Entity.SUGGESTIONS,
+            action: Action.VIEW,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.SUGGESTIONS_SUGGESTIONS_UPDATE,
+            category: Category.SUGGESTIONS,
+            entity: Entity.SUGGESTIONS,
+            action: Action.UPDATE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        //SETTINGS
+        {
+            name: Permissions.SETTINGS_SETTINGS_VIEW,
+            category: Category.SETTINGS,
+            entity: Entity.SETTINGS,
+            action: Action.VIEW,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
+            ]
+        },
+        {
+            name: Permissions.SETTINGS_SETTINGS_UPDATE,
+            category: Category.SETTINGS,
+            entity: Entity.SETTINGS,
+            action: Action.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [

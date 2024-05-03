@@ -1,4 +1,3 @@
-import { Guardians } from '../../helpers/guardians.js';
 import { ContractType, Permissions } from '@guardian/interfaces';
 import { Logger, IAuthUser } from '@guardian/common';
 import {
@@ -35,10 +34,10 @@ import {
     RetireRequestTokenDTO,
     WiperRequestDTO,
 } from '../../middlewares/validation/schemas/contracts.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { pageHeader } from 'middlewares/validation/page-header.js';
+import { Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 /**
  * Contracts api
@@ -108,8 +107,7 @@ export class ContractsApi {
             );
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -147,8 +145,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.createContract(user.did, description, type);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -199,8 +196,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.importContract(user.did, contractId, description);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -242,8 +238,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.checkContractPermissions(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -284,8 +279,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeContract(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
     //#endregion
@@ -352,8 +346,7 @@ export class ContractsApi {
             res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -394,8 +387,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.enableWipeRequests(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -436,8 +428,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.disableWipeRequests(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -478,8 +469,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.approveWipeRequest(user.did, requestId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -530,8 +520,7 @@ export class ContractsApi {
                 String(ban).toLowerCase() === 'true'
             );
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -572,8 +561,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.clearWipeRequests(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -622,8 +610,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeAdmin(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -672,8 +659,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeAdmin(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -722,8 +708,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeManager(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -772,8 +757,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeManager(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -822,8 +806,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeWiper(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -872,8 +855,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeWiper(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -917,8 +899,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.syncRetirePools(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -984,8 +965,7 @@ export class ContractsApi {
             res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1059,8 +1039,7 @@ export class ContractsApi {
             res.locals.data = contracts
             return res.setHeader('X-Total-Count', count).json(contracts);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1101,8 +1080,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.clearRetireRequests(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1143,8 +1121,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.clearRetirePools(user.did, contractId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1189,8 +1166,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.setRetirePool(user.did, contractId, body);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1231,8 +1207,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.unsetRetirePool(user.did, poolId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1273,8 +1248,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.unsetRetireRequest(user.did, requestId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1320,8 +1294,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.retire(user.did, poolId, body);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1362,8 +1335,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.approveRetire(user.did, requestId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1405,8 +1377,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.cancelRetire(user.did, requestId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1455,8 +1426,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addRetireAdmin(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1505,8 +1475,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeRetireAdmin(user.did, contractId, hederaId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -1560,11 +1529,7 @@ export class ContractsApi {
             res.locals.data = vcs
             return res.setHeader('X-Total-Count', count).json(vcs);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            await InternalException(error);
         }
     }
     //#endregion

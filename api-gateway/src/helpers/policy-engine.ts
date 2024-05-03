@@ -58,7 +58,7 @@ export class PolicyEngine extends NatsService {
      * @param model
      * @param user
      */
-    public async createPolicy(model: any, user: IAuthUser) {
+    public async createPolicy(model: any, user: IAuthUser): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES, { model, user });
     }
 
@@ -152,7 +152,7 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      */
-    public async validatePolicy(model: any, user: IAuthUser, policyId?: string) {
+    public async validatePolicy(model: any, user: IAuthUser, policyId?: string): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.VALIDATE_POLICIES, { model, user, policyId });
     }
 
@@ -161,7 +161,7 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      */
-    public async getPolicyBlocks(user: IAuthUser, policyId: string) {
+    public async getPolicyBlocks(user: IAuthUser, policyId: string): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.POLICY_BLOCKS, { user, policyId });
     }
 
@@ -231,7 +231,7 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param blockId
      */
-    public async getBlockParents(user: IAuthUser, policyId: string, blockId: string) {
+    public async getBlockParents(user: IAuthUser, policyId: string, blockId: string): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_PARENTS, { user, blockId, policyId });
     }
 
@@ -276,7 +276,7 @@ export class PolicyEngine extends NatsService {
         zip: Buffer,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata
-    ) {
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE, {
             zip,
             user,
@@ -318,7 +318,7 @@ export class PolicyEngine extends NatsService {
         messageId: string,
         versionOfTopicId: string,
         metadata?: PolicyToolMetadata
-    ) {
+    ): Promise<any> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
             { messageId, user, versionOfTopicId, metadata }
@@ -531,7 +531,7 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      */
-    public async discontinuePolicy(user: any, policyId: string, date?: string) {
+    public async discontinuePolicy(user: any, policyId: string, date?: string): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.DISCONTINUE_POLICY, { user, policyId, date });
     }
 

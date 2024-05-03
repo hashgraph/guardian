@@ -1,15 +1,11 @@
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
-import { Guardians } from '../../helpers/guardians.js';
-import { Users } from '../../helpers/users.js';
-import { NewTask, TaskManager } from '../../helpers/task-manager.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
 import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '../../middlewares/validation/index.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
+import { ServiceError, NewTask, TaskManager, Users, Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 @Controller('demo')
 @ApiTags('demo')
@@ -49,8 +45,7 @@ export class DemoApi {
 
             return demoUsers
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -86,7 +81,7 @@ export class DemoApi {
 
             return await guardians.generateDemoKey(role);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+            await InternalException(error);
         }
         // try {
         //     const guardians = new Guardians();

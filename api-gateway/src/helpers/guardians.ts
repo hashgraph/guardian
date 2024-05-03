@@ -2120,7 +2120,7 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - schemas
      */
-    public async getPublishedTagSchemas(): Promise<ISchema> {
+    public async getPublishedTagSchemas(): Promise<ISchema[]> {
         return await this.sendMessage(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS);
     }
 

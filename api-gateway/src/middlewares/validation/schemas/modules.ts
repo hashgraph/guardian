@@ -59,7 +59,7 @@ export class ModulePreviewDTO {
     moduleTopicId?: string;
 }
 
-export class ValidationResultDTO {
+export class ModuleValidationDTO {
     @ApiProperty({ nullable: false, required: true, type: () => ModuleDTO })
     module: ModuleDTO;
 

@@ -1,6 +1,4 @@
 import { Permissions } from '@guardian/interfaces';
-import { Logger } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
 import {
     Controller,
     Delete,
@@ -33,6 +31,7 @@ import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { IAuthUser } from '@guardian/common';
 import { pageHeader } from 'middlewares/validation/page-header.js';
+import { Guardians, InternalException } from '../../helpers/index.js';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -118,8 +117,7 @@ export class ArtifactApi {
             const { artifacts, count } = await guardians.getArtifacts(options);
             return res.setHeader('X-Total-Count', count).json(artifacts);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -191,8 +189,7 @@ export class ArtifactApi {
             }
             return uploadedArtifacts;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
@@ -233,8 +230,7 @@ export class ArtifactApi {
             const guardian = new Guardians();
             return await guardian.deleteArtifact(artifactId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

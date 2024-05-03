@@ -1013,7 +1013,7 @@ export async function schemaAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS, async (msg) => {
         try {
-            const schema = await DatabaseServer.getSchemas({
+            const schemas = await DatabaseServer.getSchemas({
                 system: false,
                 readonly: false,
                 category: SchemaCategory.TAG,
@@ -1030,7 +1030,7 @@ export async function schemaAPI(): Promise<void> {
                     'documentFileId'
                 ]
             });
-            return new MessageResponse(schema);
+            return new MessageResponse(schemas);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

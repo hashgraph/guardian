@@ -1,42 +1,14 @@
-import { Permissions, PolicyType, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '../../helpers/policy-engine.js';
-import { IAuthUser, Logger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
-import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Permissions } from '@guardian/interfaces';
+import { InternalException, ONLY_SR, checkPolicy } from '../../helpers/index.js';
+import { IAuthUser } from '@guardian/common';
+import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { Guardians } from '../../helpers/guardians.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO } from '../../middlewares/validation/schemas/record.js';
-
-/**
- * Check policy
- * @param policyId
- * @param owner
- */
-export async function checkPolicy(policyId: string, owner: string): Promise<any> {
-    let policy: any;
-    try {
-        const engineService = new PolicyEngine();
-        policy = await engineService.getPolicy({ filters: policyId });
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    if (!policy) {
-        throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-    }
-    if (policy.owner !== owner) {
-        throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-    }
-    if (policy.status !== PolicyType.DRY_RUN) {
-        throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
-    }
-    return policy;
-}
-
-const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('record')
 @ApiTags('record')
@@ -65,16 +37,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: RecordStatusDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(RecordStatusDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRecordStatus(
         @AuthUser() user: IAuthUser,
@@ -85,8 +52,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordStatus(policyId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -119,16 +85,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: Boolean
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async startRecord(
         @AuthUser() user: IAuthUser,
@@ -140,8 +101,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.startRecording(policyId, user.did, options);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -177,16 +137,11 @@ export class RecordApi {
             format: 'binary'
         },
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async stopRecord(
         @AuthUser() user: IAuthUser,
@@ -202,8 +157,7 @@ export class RecordApi {
             res.setHeader('Content-type', 'application/zip');
             return res.send(result);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -232,16 +186,11 @@ export class RecordApi {
         isArray: true,
         type: RecordActionDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(RecordActionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRecordActions(
         @AuthUser() user: IAuthUser,
@@ -252,8 +201,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordedActions(policyId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -286,16 +234,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: Boolean
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async runRecord(
         @AuthUser() user: IAuthUser,
@@ -308,8 +251,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.runRecord(policyId, user.did, options);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -342,16 +284,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: Boolean
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(RecordActionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async stopRunning(
         @AuthUser() user: IAuthUser,
@@ -363,8 +300,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.stopRunning(policyId, user.did, options);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -392,16 +328,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: RunningResultDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(RunningResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRecordResults(
         @AuthUser() user: IAuthUser,
@@ -412,8 +343,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordResults(policyId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -441,16 +371,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: RunningDetailsDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(RunningDetailsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getRecordDetails(
         @AuthUser() user: IAuthUser,
@@ -461,8 +386,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordDetails(policyId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -495,16 +419,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: Boolean
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async fastForward(
         @AuthUser() user: IAuthUser,
@@ -516,8 +435,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.fastForward(policyId, user.did, options);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -550,16 +468,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: Boolean
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async retryStep(
         @AuthUser() user: IAuthUser,
@@ -571,8 +484,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.retryStep(policyId, user.did, options);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -605,16 +517,11 @@ export class RecordApi {
         description: 'Successful operation.',
         type: Boolean
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async skipStep(
         @AuthUser() user: IAuthUser,
@@ -626,8 +533,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.skipStep(policyId, user.did, options);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

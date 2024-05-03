@@ -1,15 +1,12 @@
 import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '../../middlewares/validation/schemas/index.js';
-import { Guardians } from '../../helpers/guardians.js';
-import { TaskManager } from '../../helpers/task-manager.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
+import { UseCache, InternalException, Guardians, TaskManager, ServiceError } from '../../helpers/index.js';
 
 @Controller('profiles')
 @ApiTags('profiles')
@@ -43,6 +40,7 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(ProfileDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getProfile(
         @AuthUser() user: IAuthUser
@@ -104,8 +102,7 @@ export class ProfileApi {
                 vcDocument
             };
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);
+            await InternalException(error);
         }
     }
 
@@ -142,6 +139,7 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
     async setUserProfile(
         @AuthUser() user: IAuthUser,
@@ -186,6 +184,7 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async setUserProfileAsync(
         @AuthUser() user: IAuthUser,
@@ -233,8 +232,9 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
+    @HttpCode(HttpStatus.OK)
     async getUserBalance(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string
@@ -283,6 +283,7 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async restoreUserProfile(
         @AuthUser() user: IAuthUser,
@@ -333,6 +334,7 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async restoreTopic(
         @AuthUser() user: IAuthUser,
@@ -377,6 +379,7 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(DidDocumentDTO, DidDocumentStatusDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validateDidDocument(
         @AuthUser() user: IAuthUser,
@@ -389,8 +392,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidDocument(document);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -420,6 +422,7 @@ export class ProfileApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(DidKeyStatusDTO, DidDocumentWithKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validateDidKeys(
         @AuthUser() user: IAuthUser,
@@ -439,8 +442,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidKeys(document, keys);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }
