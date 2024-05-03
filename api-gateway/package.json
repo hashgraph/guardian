@@ -26,7 +26,6 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
     "express-fileupload": "^1.4.0",
-    "fastify-raw-body": "4.0.0",
     "gulp": "^4.0.2",
     "gulp-copy": "^4.0.1",
     "gulp-rename": "^2.0.0",

@@ -7,10 +7,10 @@ import { UserRole } from '@guardian/interfaces';
 
 @Controller('themes')
 @ApiTags('themes')
-@Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
 export class ThemesApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async setThemes(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();

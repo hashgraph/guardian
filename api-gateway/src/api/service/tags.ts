@@ -8,7 +8,6 @@ import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('tags')
 @ApiTags('tags')
-@Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
 export class TagsApi {
     @Post('/')
     @HttpCode(HttpStatus.CREATED)

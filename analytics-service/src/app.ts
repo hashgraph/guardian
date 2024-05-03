@@ -18,7 +18,6 @@ import { AppModule } from './app.module.js';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
 import { AnalyticsUtils } from './helpers/utils.js';
-import { FastifyAdapter } from '@nestjs/platform-fastify';
 
 const PORT = process.env.PORT || 3020;
 Promise.all([
@@ -35,7 +34,7 @@ Promise.all([
     }, [
         'v2-21-0'
     ]),
-    NestFactory.create(AppModule, new FastifyAdapter(), {
+    NestFactory.create(AppModule, {
         rawBody: true,
         bodyParser: false
     }),

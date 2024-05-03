@@ -10,7 +10,7 @@ import { getFileFromPart } from './utils/index.js';
 import { FastifyRequest, MultipartFile, MultipartOptions } from './types/index.js';
 
 
-export function FilesInterceptor(options: MultipartOptions = {}): Type<NestInterceptor> {
+export function AnyFilesInterceptor(options: MultipartOptions = {}): Type<NestInterceptor> {
   class MixinInterceptor implements NestInterceptor {
     async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
       const req = context.switchToHttp().getRequest() as FastifyRequest;
