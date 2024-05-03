@@ -773,7 +773,7 @@ export class PolicyApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @UseCache()
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async getPolicyNavigation(
         @AuthUser() user: IAuthUser,

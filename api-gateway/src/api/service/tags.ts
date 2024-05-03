@@ -287,7 +287,7 @@ export class TagsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
-    @UseCache({ isExpress: true })
+    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getSchemas(
         @AuthUser() user: IAuthUser,
