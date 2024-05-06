@@ -1579,17 +1579,17 @@
     node-forge "0.10.0"
     yaml "^1.6.0"
 
-"@mikro-orm/core@^6.1.11":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-6.2.1.tgz#5ad75bb9ec7a955355396cbb44633d93aa092a93"
-  integrity sha512-qx7Tqm95Mmni/9Rfe7rNttHPkTLPltDQzAFGsd6V3R1HVlnwDsBKkNT0mChZ6nSgJvtwDLH0C0YUttn+IRrhPA==
+"@mikro-orm/core@^6.2.5":
+  version "6.2.5"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-6.2.5.tgz#b59b8645bd0766237154463a4639f0ce629ce6d4"
+  integrity sha512-KZvirbAoFNjR/Sx30Jr7j6y5oEofNr13llPvCPUQlWQzHrFXedU1Td5AtVeBkOzp7f5FDBSv/a/wMRXqyqkrcA==
   dependencies:
     dataloader "2.2.2"
     dotenv "16.4.5"
     esprima "4.0.1"
     fs-extra "11.2.0"
     globby "11.1.0"
-    mikro-orm "6.2.1"
+    mikro-orm "6.2.5"
     reflect-metadata "0.2.2"
 
 "@mikro-orm/migrations-mongodb@^6.1.11":
@@ -9741,10 +9741,10 @@ micromatch@^4.0.4:
     braces "^3.0.2"
     picomatch "^2.3.1"
 
-mikro-orm@6.2.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/mikro-orm/-/mikro-orm-6.2.1.tgz#14088a75edaed1dd11042ed5cca9505ddb8aa27e"
-  integrity sha512-px/9uOzKoRmxDO150WOFndV1m6chjRc1UahM8Zhq8f/DnJ80qbVIhH9BKICu04A9l96SxVIL7AG94plFr8ZByg==
+mikro-orm@6.2.5:
+  version "6.2.5"
+  resolved "https://registry.yarnpkg.com/mikro-orm/-/mikro-orm-6.2.5.tgz#68db34378997098e2b41d15f5f9ce8d9ce962adb"
+  integrity sha512-8GJulcYlawnMbXHch4/HTKDg8u0Q6p4l1Jfyn0WmaN4lMz/XXTuLQTZMSdHhISXUjf9/aQdVkmRPxvKog47pVA==
 
 mime-db@1.52.0:
   version "1.52.0"
