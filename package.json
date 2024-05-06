@@ -19,7 +19,7 @@
     "ai-service",
     "notification-service"
   ],
-  "version": "2.24.0",
+  "version": "2.24.1",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },
