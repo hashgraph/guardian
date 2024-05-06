@@ -401,11 +401,8 @@ export class Guardians extends NatsService {
      * @param did DID
      * @returns Serials
      */
-    public async getTokenSerials(tokenId: string, did: string): Promise<ITokenInfo> {
-        return await this.sendMessage(MessageAPI.GET_SERIALS, {
-            tokenId,
-            did
-        });
+    public async getTokenSerials(tokenId: string, did: string): Promise<number[]> {
+        return await this.sendMessage(MessageAPI.GET_SERIALS, { tokenId, did });
     }
 
     /**
@@ -1862,7 +1859,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @returns Operation Success
      */
-    public async getToolById(id: string, owner: string): Promise<boolean> {
+    public async getToolById(id: string, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.GET_TOOL, { id, owner });
     }
 
@@ -1887,7 +1884,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @param tool
      */
-    public async publishTool(id: string, owner: string, tool: any) {
+    public async publishTool(id: string, owner: string, tool: any): Promise<any> {
         return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
     }
 
@@ -1945,7 +1942,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @param metadata
      */
-    public async importToolFile(zip: any, owner: string, metadata?: PolicyToolMetadata) {
+    public async importToolFile(zip: any, owner: string, metadata?: PolicyToolMetadata): Promise<any> {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_FILE, { zip, owner, metadata });
     }
 
@@ -1954,7 +1951,7 @@ export class Guardians extends NatsService {
      * @param messageId
      * @param owner
      */
-    public async importToolMessage(messageId: string, owner: string) {
+    public async importToolMessage(messageId: string, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE, { messageId, owner });
     }
 
@@ -1972,7 +1969,7 @@ export class Guardians extends NatsService {
      * @param messageId
      * @param owner
      */
-    public async previewToolMessage(messageId: string, owner: string) {
+    public async previewToolMessage(messageId: string, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
     }
 
@@ -2182,7 +2179,7 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      */
-    public async importThemeFile(zip: any, owner: string) {
+    public async importThemeFile(zip: any, owner: string): Promise<any> {
         return await this.sendMessage(MessageAPI.THEME_IMPORT_FILE, { zip, owner });
     }
 

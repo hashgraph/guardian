@@ -1,7 +1,9 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { Logger } from '@guardian/common';
+import { IAuthUser, Logger } from '@guardian/common';
 import { PolicyEngine } from './policy-engine';
-import { PolicyType } from '@guardian/interfaces';
+import { ISchema, PolicyType, SchemaCategory, SchemaHelper, StatusType, UserRole } from '@guardian/interfaces';
+import { Guardians } from './guardians';
+import { TaskManager } from './task-manager';
 
 /**
  * Find all field values in object by field name
@@ -125,4 +127,17 @@ export async function checkPolicy(policyId: string, owner: string): Promise<any>
         throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
     }
     return policy;
+}
+
+/**
+ * Check policy
+ * @param policyId
+ * @param owner
+ */
+export function getParentUser(user: IAuthUser): string {
+    if (user.role === UserRole.STANDARD_REGISTRY) {
+        return user.did;
+    } else {
+        return user.parent;
+    }
 }

@@ -1,12 +1,11 @@
-import { Logger } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
 import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import axios from 'axios';
 import { Auth } from '../../auth/auth.decorator.js';
-import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from 'middlewares/validation/index.js';
+import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '../../middlewares/validation/index.js';
 import { UseCache, InternalException } from '../../helpers/index.js';
+import axios from 'axios';
 
 @Injectable()
 export class LoggerService {

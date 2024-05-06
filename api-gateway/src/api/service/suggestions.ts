@@ -1,14 +1,13 @@
 import { Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthUser } from '../../auth/authorization-helper.js';
-import { Guardians } from '../../helpers/guardians.js';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, } from '../../middlewares/validation/schemas/suggestions.js';
 import { IAuthUser } from '@guardian/common';
 import { Auth } from '../../auth/auth.decorator.js';
+import { Guardians, ONLY_SR } from '../../helpers/index.js';
 
-const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('suggestions')
 @ApiTags('suggestions')

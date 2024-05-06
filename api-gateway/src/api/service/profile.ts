@@ -16,7 +16,7 @@ export class ProfileApi {
      */
     @Get('/:username/')
     @Auth(
-        Permissions.PROFILE_USER_VIEW
+        Permissions.PROFILES_USER_VIEW
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR
@@ -111,7 +111,7 @@ export class ProfileApi {
      */
     @Put('/:username')
     @Auth(
-        Permissions.PROFILE_USER_UPDATE,
+        Permissions.PROFILES_USER_UPDATE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR
@@ -155,7 +155,7 @@ export class ProfileApi {
      */
     @Put('/push/:username')
     @Auth(
-        Permissions.PROFILE_USER_UPDATE,
+        Permissions.PROFILES_USER_UPDATE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR
@@ -208,7 +208,7 @@ export class ProfileApi {
      */
     @Get('/:username/balance')
     @Auth(
-        Permissions.PROFILE_BALANCE_VIEW,
+        Permissions.PROFILES_BALANCE_VIEW,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR
@@ -256,7 +256,7 @@ export class ProfileApi {
      */
     @Put('/restore/:username')
     @Auth(
-        Permissions.PROFILE_RESTORE_ALL,
+        Permissions.PROFILES_RESTORE_ALL,
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -307,7 +307,7 @@ export class ProfileApi {
      */
     @Put('/restore/topics/:username')
     @Auth(
-        Permissions.PROFILE_RESTORE_ALL,
+        Permissions.PROFILES_RESTORE_ALL,
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -358,7 +358,7 @@ export class ProfileApi {
      */
     @Post('/did-document/validate')
     @Auth(
-        Permissions.PROFILE_USER_UPDATE,
+        Permissions.PROFILES_USER_UPDATE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -401,7 +401,7 @@ export class ProfileApi {
      */
     @Post('/did-keys/validate')
     @Auth(
-        Permissions.PROFILE_USER_UPDATE,
+        Permissions.PROFILES_USER_UPDATE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )

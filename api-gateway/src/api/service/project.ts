@@ -6,6 +6,7 @@ import { ProjectDTO, PropertiesDTO } from '../../middlewares/validation/schemas/
 import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
 import { CACHE } from '../../constants/index.js';
 import { UseCache, Guardians, InternalException, ProjectService } from '../../helpers/index.js';
+import { Examples } from '../../middlewares/validation/examples.js';
 
 /**
  * Projects route
@@ -73,13 +74,13 @@ export class ProjectsAPI {
         examples: {
             Filter1: {
                 value: {
-                    documentId1: '000000000000000000000001',
-                    documentId2: '000000000000000000000002'
+                    documentId1: Examples.DB_ID,
+                    documentId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                    documentIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }

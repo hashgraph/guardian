@@ -3,7 +3,7 @@ import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
-import { InternalServerErrorDTO } from 'middlewares/validation/index.js';
+import { InternalServerErrorDTO } from '../../middlewares/validation/index.js';
 
 @Controller('map')
 @ApiTags('map')

@@ -1,10 +1,10 @@
-import { IAuthUser, Logger } from '@guardian/common';
+import { IAuthUser } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from 'middlewares/validation/index.js';
+import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '../../middlewares/validation/index.js';
 import { Auth, AuthUser } from '../../auth/index.js';
-import { ONLY_SR, UseCache, SchemaUtils, Guardians, InternalException } from '../../helpers/index.js';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException } from '../../helpers/index.js';
 
 @Controller('tags')
 @ApiTags('tags')
@@ -259,7 +259,7 @@ export class TagsApi {
      */
     @Get('/schemas')
     @Auth(
-        Permissions.SCHEMAS_TAG_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -314,7 +314,7 @@ export class TagsApi {
      */
     @Post('/schemas')
     @Auth(
-        Permissions.SCHEMAS_TAG_SCHEMA_CREATE,
+        Permissions.SCHEMAS_SCHEMA_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -363,7 +363,7 @@ export class TagsApi {
      */
     @Delete('/schemas/:schemaId')
     @Auth(
-        Permissions.SCHEMAS_TAG_SCHEMA_DELETE,
+        Permissions.SCHEMAS_SCHEMA_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -410,7 +410,7 @@ export class TagsApi {
      */
     @Put('/schemas/:schemaId')
     @Auth(
-        Permissions.SCHEMAS_TAG_SCHEMA_UPDATE,
+        Permissions.SCHEMAS_SCHEMA_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -466,7 +466,7 @@ export class TagsApi {
      */
     @Put('/schemas/:schemaId/publish')
     @Auth(
-        Permissions.SCHEMAS_TAG_SCHEMA_PUBLISH,
+        Permissions.SCHEMAS_SCHEMA_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -513,11 +513,7 @@ export class TagsApi {
      * Get published schema
      */
     @Get('/schemas/published')
-    @Auth(
-        Permissions.SCHEMAS_TAG_SCHEMA_RUN,
-        // UserRole.STANDARD_REGISTRY,
-        // UserRole.USER,
-    )
+    @Auth()
     @ApiOperation({
         summary: 'Return a list of all published schemas.',
         description: 'Return a list of all published schemas.' + ONLY_SR,

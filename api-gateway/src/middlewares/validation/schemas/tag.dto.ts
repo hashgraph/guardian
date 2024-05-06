@@ -1,9 +1,10 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import { Examples } from '../examples';
 
 export class TagDTO {
     @ApiProperty({
         type: 'string',
-        example: '00000000-0000-0000-0000-000000000000'
+        example: Examples.UUID
     })
     uuid?: string;
 
@@ -28,7 +29,7 @@ export class TagDTO {
 
     @ApiProperty({
         type: 'string',
-        example: '1900-01-01T00:00:00.000Z'
+        example: Examples.DATE
     })
     date?: string;
 
@@ -70,38 +71,38 @@ export class TagDTO {
 
     @ApiProperty({
         type: 'string',
-        example: '0.0.0000000'
+        example: Examples.ACCOUNT_ID
     })
     topicId?: string;
 
     @ApiProperty({
         type: 'string',
-        example: '0000000000.000000000'
+        example: Examples.MESSAGE_ID
     })
     messageId?: string;
 
     @ApiProperty({
         type: 'string',
-        example: 'DB ID'
+        example: Examples.DB_ID
     })
     policyId?: string;
 
     @ApiProperty({
         type: 'string',
-        example: 'Document URI'
+        example: Examples.IPFS
     })
     uri?: string;
 
     @ApiProperty({
         type: 'string',
-        example: '0000000000.000000000'
+        example: Examples.MESSAGE_ID
     })
     target?: string;
 
     @ApiProperty({
         type: 'string',
         required: true,
-        example: 'DB ID'
+        example: Examples.DB_ID
     })
     localTarget: string;
 
@@ -131,14 +132,14 @@ export class TagMapDTO {
     @ApiProperty({
         type: 'string',
         required: true,
-        example: '0000000000.000000000'
+        example: Examples.MESSAGE_ID
     })
     target: string;
 
     @ApiProperty({
         type: 'string',
         required: true,
-        example: '1900-01-01T00:00:00.000Z'
+        example: Examples.DATE
     })
     refreshDate: string;
 
@@ -168,14 +169,14 @@ export class TagFilterDTO {
 
     @ApiProperty({
         type: 'string',
-        example: '0000000000.000000000'
+        example: Examples.MESSAGE_ID
     })
     target?: string;
 
     @ApiProperty({
         type: 'string',
         isArray: true,
-        example: '0000000000.000000000'
+        example: Examples.MESSAGE_ID
     })
     targets?: string[];
 }

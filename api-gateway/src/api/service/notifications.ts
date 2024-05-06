@@ -3,7 +3,7 @@ import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/err
 import { NotificationDTO, ProgressDTO, } from '../../middlewares/validation/schemas/notifications.js';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { pageHeader } from 'middlewares/validation/page-header.js';
+import { pageHeader } from '../../middlewares/validation/page-header.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { InternalException, parseInteger } from '../../helpers/index.js';

@@ -7,8 +7,8 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';
-import { pageHeader } from 'middlewares/validation/page-header.js';
-import { InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO } from 'middlewares/validation/index.js';
+import { pageHeader } from '../../middlewares/validation/page-header.js';
+import { InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples } from '../../middlewares/validation/index.js';
 import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR } from '../../helpers/index.js';
 
 @Controller('policies')
@@ -19,9 +19,9 @@ export class PolicyApi {
      */
     @Get('/')
     @Auth(
-        Permissions.POLICY_POLICY_VIEW,
-        Permissions.POLICY_POLICY_RUN,
-        Permissions.POLICY_POLICY_AUDIT,
+        Permissions.POLICIES_POLICY_VIEW,
+        Permissions.POLICIES_POLICY_RUN,
+        Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR,
@@ -95,7 +95,7 @@ export class PolicyApi {
      */
     @Post('/')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -134,7 +134,7 @@ export class PolicyApi {
      */
     @Post('/migrate-data')
     @Auth(
-        Permissions.POLICY_MIGRATION_CREATE,
+        Permissions.POLICIES_MIGRATION_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -185,7 +185,7 @@ export class PolicyApi {
      */
     @Post('/push/migrate-data')
     @Auth(
-        Permissions.POLICY_MIGRATION_CREATE,
+        Permissions.POLICIES_MIGRATION_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -227,7 +227,7 @@ export class PolicyApi {
      */
     @Post('/push')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -269,7 +269,7 @@ export class PolicyApi {
      */
     @Post('/push/:policyId')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -281,7 +281,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Policy configuration.',
@@ -319,7 +319,7 @@ export class PolicyApi {
      */
     @Delete('/push/:policyId')
     @Auth(
-        Permissions.POLICY_POLICY_DELETE,
+        Permissions.POLICIES_POLICY_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -364,9 +364,9 @@ export class PolicyApi {
      */
     @Get('/:policyId')
     @Auth(
-        Permissions.POLICY_POLICY_VIEW,
-        Permissions.POLICY_POLICY_RUN,
-        Permissions.POLICY_POLICY_AUDIT,
+        Permissions.POLICIES_POLICY_VIEW,
+        Permissions.POLICIES_POLICY_RUN,
+        Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR,
@@ -412,7 +412,7 @@ export class PolicyApi {
      */
     @Put('/:policyId')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -480,7 +480,7 @@ export class PolicyApi {
      */
     @Put('/:policyId/publish')
     @Auth(
-        Permissions.POLICY_POLICY_PUBLISH,
+        Permissions.POLICIES_POLICY_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -522,7 +522,7 @@ export class PolicyApi {
      */
     @Put('/push/:policyId/publish')
     @Auth(
-        Permissions.POLICY_POLICY_PUBLISH,
+        Permissions.POLICIES_POLICY_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -572,7 +572,7 @@ export class PolicyApi {
      */
     @Put('/:policyId/dry-run')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -613,7 +613,7 @@ export class PolicyApi {
      */
     @Put('/:policyId/discontinue')
     @Auth(
-        Permissions.POLICY_POLICY_PUBLISH,
+        Permissions.POLICIES_POLICY_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -667,7 +667,7 @@ export class PolicyApi {
      */
     @Put('/:policyId/draft')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -708,8 +708,8 @@ export class PolicyApi {
      */
     @Post('/validate')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
-        Permissions.POLICY_POLICY_PUBLISH,
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -747,7 +747,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/navigation')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -792,7 +792,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/groups')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -837,7 +837,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/documents')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -914,7 +914,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/data')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -973,7 +973,7 @@ export class PolicyApi {
      */
     @Post('/data')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1016,7 +1016,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/tag-block-map')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1059,7 +1059,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/virtual-keys')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1120,7 +1120,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/virtual-keys')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1168,7 +1168,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/groups')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1215,7 +1215,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/blocks')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1257,7 +1257,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/blocks/:uuid')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1307,7 +1307,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/blocks/:uuid')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1362,7 +1362,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/tag/:tagName/blocks')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1417,7 +1417,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/tag/:tagName')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1467,7 +1467,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/tag/:tagName/blocks')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1517,7 +1517,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/blocks/:uuid/parents')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1568,7 +1568,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/export/file')
     @Auth(
-        Permissions.POLICY_POLICY_VIEW,
+        Permissions.POLICIES_POLICY_VIEW,
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -1617,7 +1617,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/export/message')
     @Auth(
-        Permissions.POLICY_POLICY_VIEW,
+        Permissions.POLICIES_POLICY_VIEW,
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -1658,7 +1658,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/export/xlsx')
     @Auth(
-        Permissions.POLICY_POLICY_VIEW,
+        Permissions.POLICIES_POLICY_VIEW,
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -1707,7 +1707,7 @@ export class PolicyApi {
      */
     @Post('/import/message')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1758,7 +1758,7 @@ export class PolicyApi {
      */
     @Post('/push/import/message')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1819,7 +1819,7 @@ export class PolicyApi {
      */
     @Post('/import/message/preview')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1857,7 +1857,7 @@ export class PolicyApi {
      */
     @Post('/push/import/message/preview')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1899,7 +1899,7 @@ export class PolicyApi {
      */
     @Post('/import/file')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -1946,7 +1946,7 @@ export class PolicyApi {
      */
     @Post('/import/file-metadata')
     @Auth(
-        Permissions.POLICY_MIGRATION_CREATE,
+        Permissions.POLICIES_MIGRATION_CREATE,
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -2022,7 +2022,7 @@ export class PolicyApi {
      */
     @Post('/push/import/file')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2072,7 +2072,7 @@ export class PolicyApi {
      */
     @Post('/push/import/file-metadata')
     @Auth(
-        Permissions.POLICY_MIGRATION_CREATE,
+        Permissions.POLICIES_MIGRATION_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2157,7 +2157,7 @@ export class PolicyApi {
      */
     @Post('/import/file/preview')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2199,7 +2199,7 @@ export class PolicyApi {
      */
     @Post('/import/xlsx')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2251,7 +2251,7 @@ export class PolicyApi {
      */
     @Post('/push/import/xlsx')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2305,7 +2305,7 @@ export class PolicyApi {
      */
     @Post('/import/xlsx/preview')
     @Auth(
-        Permissions.POLICY_POLICY_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2349,7 +2349,7 @@ export class PolicyApi {
      */
     @Get('/blocks/about')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2380,7 +2380,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/dry-run/users')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2435,7 +2435,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/dry-run/user')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2490,7 +2490,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/dry-run/login')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2550,7 +2550,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/dry-run/restart')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2609,7 +2609,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/dry-run/transactions')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2678,7 +2678,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/dry-run/artifacts')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2747,7 +2747,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/dry-run/ipfs')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2817,7 +2817,7 @@ export class PolicyApi {
      */
     @Get('/:policyId/multiple')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -2859,7 +2859,7 @@ export class PolicyApi {
      */
     @Post('/:policyId/multiple/')
     @Auth(
-        Permissions.POLICY_POLICY_RUN,
+        Permissions.POLICIES_POLICY_RUN,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )

@@ -180,7 +180,7 @@ export class AccountApi {
      */
     @Get('/')
     @Auth(
-        Permissions.ACCOUNT_ACCOUNT_VIEW
+        Permissions.ACCOUNTS_ACCOUNT_VIEW
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -213,7 +213,7 @@ export class AccountApi {
      */
     @Get('/standard-registries')
     @Auth(
-        Permissions.ACCOUNT_STANDARD_REGISTRY_VIEW
+        Permissions.ACCOUNTS_STANDARD_REGISTRY_VIEW
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR
@@ -246,7 +246,7 @@ export class AccountApi {
      */
     @Get('/standard-registries/aggregated')
     @Auth(
-        Permissions.ACCOUNT_STANDARD_REGISTRY_VIEW
+        Permissions.ACCOUNTS_STANDARD_REGISTRY_VIEW
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR
@@ -307,7 +307,7 @@ export class AccountApi {
      */
     @Get('/balance')
     @Auth(
-        Permissions.PROFILE_BALANCE_VIEW,
+        Permissions.PROFILES_BALANCE_VIEW,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR

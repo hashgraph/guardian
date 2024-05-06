@@ -24,7 +24,6 @@ import {
     ApiQuery,
     ApiParam,
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import {
     ContractConfigDTO,
     ContractDTO,
@@ -33,10 +32,11 @@ import {
     RetireRequestDTO,
     RetireRequestTokenDTO,
     WiperRequestDTO,
-} from '../../middlewares/validation/schemas/contracts.js';
+    InternalServerErrorDTO,
+    pageHeader
+} from '../../middlewares/validation/index.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
-import { pageHeader } from 'middlewares/validation/page-header.js';
 import { Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 /**
@@ -52,7 +52,7 @@ export class ContractsApi {
      */
     @Get()
     @Auth(
-        Permissions.CONTRACT_CONTRACT_VIEW,
+        Permissions.CONTRACTS_CONTRACT_VIEW,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -116,7 +116,7 @@ export class ContractsApi {
      */
     @Post('/')
     @Auth(
-        Permissions.CONTRACT_CONTRACT_CREATE,
+        Permissions.CONTRACTS_CONTRACT_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -154,7 +154,7 @@ export class ContractsApi {
      */
     @Post('/import')
     @Auth(
-        Permissions.CONTRACT_CONTRACT_CREATE,
+        Permissions.CONTRACTS_CONTRACT_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -205,7 +205,7 @@ export class ContractsApi {
      */
     @Get('/:contractId/permissions')
     @Auth(
-        Permissions.CONTRACT_PERMISSIONS_VIEW,
+        Permissions.CONTRACTS_PERMISSIONS_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -247,7 +247,7 @@ export class ContractsApi {
      */
     @Delete('/:contractId')
     @Auth(
-        Permissions.CONTRACT_CONTRACT_DELETE,
+        Permissions.CONTRACTS_CONTRACT_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -290,7 +290,7 @@ export class ContractsApi {
      */
     @Get('/wipe/requests')
     @Auth(
-        Permissions.CONTRACT_WIPE_REQUEST_VIEW,
+        Permissions.CONTRACTS_WIPE_REQUEST_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -355,7 +355,7 @@ export class ContractsApi {
      */
     @Post('/wipe/:contractId/requests/enable')
     @Auth(
-        Permissions.CONTRACT_WIPE_REQUEST_UPDATE,
+        Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -396,7 +396,7 @@ export class ContractsApi {
      */
     @Post('/wipe/:contractId/requests/disable')
     @Auth(
-        Permissions.CONTRACT_WIPE_REQUEST_UPDATE,
+        Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -437,7 +437,7 @@ export class ContractsApi {
      */
     @Post('/wipe/requests/:requestId/approve')
     @Auth(
-        Permissions.CONTRACT_WIPE_REQUEST_PUBLISH,
+        Permissions.CONTRACTS_WIPE_REQUEST_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -478,7 +478,7 @@ export class ContractsApi {
      */
     @Delete('/wipe/requests/:requestId/reject')
     @Auth(
-        Permissions.CONTRACT_WIPE_REQUEST_PUBLISH,
+        Permissions.CONTRACTS_WIPE_REQUEST_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -529,7 +529,7 @@ export class ContractsApi {
      */
     @Delete('/wipe/:contractId/requests')
     @Auth(
-        Permissions.CONTRACT_WIPE_REQUEST_DELETE,
+        Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -570,7 +570,7 @@ export class ContractsApi {
      */
     @Post('/wipe/:contractId/admin/:hederaId')
     @Auth(
-        Permissions.CONTRACT_WIPE_ADMIN_CREATE,
+        Permissions.CONTRACTS_WIPE_ADMIN_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -619,7 +619,7 @@ export class ContractsApi {
      */
     @Delete('/wipe/:contractId/admin/:hederaId')
     @Auth(
-        Permissions.CONTRACT_WIPE_ADMIN_DELETE,
+        Permissions.CONTRACTS_WIPE_ADMIN_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -668,7 +668,7 @@ export class ContractsApi {
      */
     @Post('/wipe/:contractId/manager/:hederaId')
     @Auth(
-        Permissions.CONTRACT_WIPE_MANAGER_CREATE,
+        Permissions.CONTRACTS_WIPE_MANAGER_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -717,7 +717,7 @@ export class ContractsApi {
      */
     @Delete('/wipe/:contractId/manager/:hederaId')
     @Auth(
-        Permissions.CONTRACT_WIPE_MANAGER_DELETE,
+        Permissions.CONTRACTS_WIPE_MANAGER_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -766,7 +766,7 @@ export class ContractsApi {
      */
     @Post('/wipe/:contractId/wiper/:hederaId')
     @Auth(
-        Permissions.CONTRACT_WIPER_CREATE,
+        Permissions.CONTRACTS_WIPER_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -815,7 +815,7 @@ export class ContractsApi {
      */
     @Delete('/wipe/:contractId/wiper/:hederaId')
     @Auth(
-        Permissions.CONTRACT_WIPER_DELETE,
+        Permissions.CONTRACTS_WIPER_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -867,7 +867,7 @@ export class ContractsApi {
      */
     @Post('/retire/:contractId/pools/sync')
     @Auth(
-        Permissions.CONTRACT_POOL_UPDATE,
+        Permissions.CONTRACTS_POOL_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -908,7 +908,7 @@ export class ContractsApi {
      */
     @Get('/retire/requests')
     @Auth(
-        Permissions.CONTRACT_RETIRE_REQUEST_VIEW,
+        Permissions.CONTRACTS_RETIRE_REQUEST_VIEW,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -974,7 +974,7 @@ export class ContractsApi {
      */
     @Get('/retire/pools')
     @Auth(
-        Permissions.CONTRACT_POOL_VIEW,
+        Permissions.CONTRACTS_POOL_VIEW,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -1048,7 +1048,7 @@ export class ContractsApi {
      */
     @Delete('/retire/:contractId/requests')
     @Auth(
-        Permissions.CONTRACT_RETIRE_REQUEST_DELETE,
+        Permissions.CONTRACTS_RETIRE_REQUEST_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1089,7 +1089,7 @@ export class ContractsApi {
      */
     @Delete('/retire/:contractId/pools')
     @Auth(
-        Permissions.CONTRACT_POOL_DELETE,
+        Permissions.CONTRACTS_POOL_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1130,7 +1130,7 @@ export class ContractsApi {
      */
     @Post('/retire/:contractId/pools')
     @Auth(
-        Permissions.CONTRACT_POOL_UPDATE,
+        Permissions.CONTRACTS_POOL_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1175,7 +1175,7 @@ export class ContractsApi {
      */
     @Delete('/retire/pools/:poolId')
     @Auth(
-        Permissions.CONTRACT_POOL_DELETE,
+        Permissions.CONTRACTS_POOL_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1216,7 +1216,7 @@ export class ContractsApi {
      */
     @Delete('/retire/requests/:requestId')
     @Auth(
-        Permissions.CONTRACT_RETIRE_REQUEST_DELETE,
+        Permissions.CONTRACTS_RETIRE_REQUEST_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1257,7 +1257,7 @@ export class ContractsApi {
      */
     @Post('/retire/pools/:poolId/retire')
     @Auth(
-        Permissions.CONTRACT_RETIRE_REQUEST_CREATE,
+        Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
         //???? UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -1303,7 +1303,7 @@ export class ContractsApi {
      */
     @Post('/retire/requests/:requestId/approve')
     @Auth(
-        Permissions.CONTRACT_RETIRE_REQUEST_PUBLISH,
+        Permissions.CONTRACTS_RETIRE_REQUEST_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1344,7 +1344,7 @@ export class ContractsApi {
      */
     @Delete('/retire/requests/:requestId/cancel')
     @Auth(
-        Permissions.CONTRACT_RETIRE_REQUEST_CREATE,
+        Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
         //???? UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -1386,7 +1386,7 @@ export class ContractsApi {
      */
     @Post('/retire/:contractId/admin/:hederaId')
     @Auth(
-        Permissions.CONTRACT_RETIRE_ADMIN_CREATE,
+        Permissions.CONTRACTS_RETIRE_ADMIN_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1435,7 +1435,7 @@ export class ContractsApi {
      */
     @Delete('/retire/:contractId/admin/:hederaId')
     @Auth(
-        Permissions.CONTRACT_RETIRE_ADMIN_DELETE,
+        Permissions.CONTRACTS_RETIRE_ADMIN_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1484,7 +1484,7 @@ export class ContractsApi {
      */
     @Get('/retire')
     @Auth(
-        Permissions.CONTRACT_DOCUMENT_VIEW,
+        Permissions.CONTRACTS_DOCUMENT_VIEW,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )

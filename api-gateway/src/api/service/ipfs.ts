@@ -1,10 +1,9 @@
-import { Logger } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOperation, ApiSecurity, ApiTags, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth } from '../../auth/auth.decorator.js';
 import { CACHE } from '../../constants/index.js';
-import { InternalServerErrorDTO } from 'middlewares/validation/index.js';
+import { InternalServerErrorDTO } from '../../middlewares/validation/index.js';
 import { Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 @Controller('ipfs')

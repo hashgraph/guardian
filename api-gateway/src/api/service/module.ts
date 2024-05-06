@@ -2,11 +2,9 @@ import { Logger, IAuthUser } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
-import { pageHeader } from 'middlewares/validation/page-header.js';
-import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO } from 'middlewares/validation/index.js';
+import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '../../middlewares/validation/index.js';
 import { Guardians, SchemaUtils, UseCache, InternalException } from '../../helpers/index.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
@@ -19,7 +17,7 @@ export class ModulesApi {
      */
     @Post('/')
     @Auth(
-        Permissions.MODULE_MODULE_CREATE,
+        Permissions.MODULES_MODULE_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -61,7 +59,7 @@ export class ModulesApi {
      */
     @Get('/')
     @Auth(
-        Permissions.MODULE_MODULE_VIEW,
+        Permissions.MODULES_MODULE_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -110,7 +108,7 @@ export class ModulesApi {
      */
     @Get('/schemas')
     @Auth(
-        Permissions.SCHEMAS_MODULE_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -121,7 +119,7 @@ export class ModulesApi {
         name: 'topicId',
         type: String,
         description: 'Topic id',
-        example: '0.0.1'
+        example: Examples.ACCOUNT_ID
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -181,7 +179,7 @@ export class ModulesApi {
      */
     @Post('/schemas')
     @Auth(
-        Permissions.SCHEMAS_MODULE_SCHEMA_CREATE,
+        Permissions.SCHEMAS_SCHEMA_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -234,7 +232,7 @@ export class ModulesApi {
      */
     @Delete('/:uuid')
     @Auth(
-        Permissions.MODULE_MODULE_DELETE,
+        Permissions.MODULES_MODULE_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -278,8 +276,8 @@ export class ModulesApi {
      */
     @Get('/menu')
     @Auth(
-        Permissions.POLICY_POLICY_UPDATE,
-        Permissions.MODULE_MODULE_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
         Permissions.TOOLS_TOOL_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
@@ -315,7 +313,7 @@ export class ModulesApi {
      */
     @Get('/:uuid')
     @Auth(
-        Permissions.MODULE_MODULE_VIEW,
+        Permissions.MODULES_MODULE_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -359,7 +357,7 @@ export class ModulesApi {
      */
     @Put('/:uuid')
     @Auth(
-        Permissions.MODULE_MODULE_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -411,7 +409,7 @@ export class ModulesApi {
      */
     @Get('/:uuid/export/file')
     @Auth(
-        Permissions.MODULE_MODULE_VIEW,
+        Permissions.MODULES_MODULE_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -455,7 +453,7 @@ export class ModulesApi {
      */
     @Get('/:uuid/export/message')
     @Auth(
-        Permissions.MODULE_MODULE_VIEW,
+        Permissions.MODULES_MODULE_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -467,7 +465,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID,
     })
     @ApiOkResponse({
         description: 'Message.',
@@ -496,7 +494,7 @@ export class ModulesApi {
      */
     @Post('/import/message')
     @Auth(
-        Permissions.MODULE_MODULE_CREATE,
+        Permissions.MODULES_MODULE_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -534,7 +532,7 @@ export class ModulesApi {
      */
     @Post('/import/file')
     @Auth(
-        Permissions.MODULE_MODULE_CREATE,
+        Permissions.MODULES_MODULE_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -571,7 +569,7 @@ export class ModulesApi {
      */
     @Post('/import/message/preview')
     @Auth(
-        Permissions.MODULE_MODULE_CREATE,
+        Permissions.MODULES_MODULE_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -609,7 +607,7 @@ export class ModulesApi {
      */
     @Post('/import/file/preview')
     @Auth(
-        Permissions.MODULE_MODULE_CREATE,
+        Permissions.MODULES_MODULE_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -646,7 +644,7 @@ export class ModulesApi {
      */
     @Put('/:uuid/publish')
     @Auth(
-        Permissions.MODULE_MODULE_PUBLISH,
+        Permissions.MODULES_MODULE_PUBLISH,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -692,7 +690,7 @@ export class ModulesApi {
      */
     @Post('/validate')
     @Auth(
-        Permissions.MODULE_MODULE_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

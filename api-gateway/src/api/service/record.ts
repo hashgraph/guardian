@@ -2,13 +2,11 @@ import { Permissions } from '@guardian/interfaces';
 import { InternalException, ONLY_SR, checkPolicy } from '../../helpers/index.js';
 import { IAuthUser } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Guardians } from '../../helpers/guardians.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
-import { RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO } from '../../middlewares/validation/schemas/record.js';
+import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO, Examples } from '../../middlewares/validation/index.js';
 
 @Controller('record')
 @ApiTags('record')
@@ -18,20 +16,19 @@ export class RecordApi {
      */
     @Get('/:policyId/status')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get recording or running status.',
         description: 'Get recording or running status.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -61,20 +58,19 @@ export class RecordApi {
      */
     @Post('/:policyId/recording/start')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Start recording.',
         description: 'Start recording.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Object that contains options',
@@ -110,20 +106,19 @@ export class RecordApi {
      */
     @Post('/:policyId/recording/stop')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Stop recording.',
         description: 'Stop recording.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Object that contains options',
@@ -166,20 +161,19 @@ export class RecordApi {
      */
     @Get('/:policyId/recording/actions')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get recorded actions.',
         description: 'Get recorded actions.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -210,20 +204,19 @@ export class RecordApi {
      */
     @Post('/:policyId/running/start')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Run record from a zip file.',
         description: 'Run record from a zip file.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'A zip file containing record to be run.',
@@ -260,20 +253,19 @@ export class RecordApi {
      */
     @Post('/:policyId/running/stop')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Stop running.',
         description: 'Stop running.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Object that contains options',
@@ -309,20 +301,19 @@ export class RecordApi {
      */
     @Get('/:policyId/running/results')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get running results.',
         description: 'Get running results.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -352,20 +343,19 @@ export class RecordApi {
      */
     @Get('/:policyId/running/details')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Get running details.',
         description: 'Get running details.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -395,20 +385,19 @@ export class RecordApi {
      */
     @Post('/:policyId/running/fast-forward')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Fast Forward.',
         description: 'Fast Forward.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Object that contains options',
@@ -444,20 +433,19 @@ export class RecordApi {
      */
     @Post('/:policyId/running/retry')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Retry step.',
         description: 'Retry step.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Object that contains options',
@@ -493,20 +481,19 @@ export class RecordApi {
      */
     @Post('/:policyId/running/skip')
     @Auth(
-        Permissions.POLICY_RECORD_ALL
+        Permissions.POLICIES_RECORD_ALL
         // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Skip step.',
         description: 'Skip step.' + ONLY_SR,
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Object that contains options',

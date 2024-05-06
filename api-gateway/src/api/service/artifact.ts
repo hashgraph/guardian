@@ -24,14 +24,13 @@ import {
     ApiQuery,
     ApiParam
 } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
+
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { IAuthUser } from '@guardian/common';
-import { pageHeader } from 'middlewares/validation/page-header.js';
 import { Guardians, InternalException } from '../../helpers/index.js';
+import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '../../middlewares/validation/index.js';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -41,7 +40,7 @@ export class ArtifactApi {
      */
     @Get('/')
     @Auth(
-        Permissions.ARTIFACT_FILE_VIEW,
+        Permissions.ARTIFACTS_FILE_VIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -126,7 +125,7 @@ export class ArtifactApi {
      */
     @Post('/:parentId')
     @Auth(
-        Permissions.ARTIFACT_FILE_CREATE,
+        Permissions.ARTIFACTS_FILE_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -138,7 +137,7 @@ export class ArtifactApi {
         type: String,
         description: 'Parent ID',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -198,7 +197,7 @@ export class ArtifactApi {
      */
     @Delete('/:artifactId')
     @Auth(
-        Permissions.ARTIFACT_FILE_DELETE,
+        Permissions.ARTIFACTS_FILE_DELETE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -210,7 +209,7 @@ export class ArtifactApi {
         type: String,
         description: 'Artifact ID',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',

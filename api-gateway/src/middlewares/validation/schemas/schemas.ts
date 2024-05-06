@@ -59,6 +59,10 @@ export class SchemaDTO {
     document?: any;
 
     @ApiProperty()
+    @IsObject()
+    context?: any;
+
+    @ApiProperty()
     @IsString()
     uuid?: string;
 
@@ -93,6 +97,14 @@ export class SchemaDTO {
     @ApiProperty()
     @IsString()
     category?: SchemaCategory;
+
+    @ApiProperty()
+    @IsString()
+    documentURL?: string;
+
+    @ApiProperty()
+    @IsString()
+    contextURL?: string;
 }
 
 export class ExportSchemaDTO {

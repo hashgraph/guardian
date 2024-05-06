@@ -3,7 +3,7 @@ import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { ApiTags, ApiParam, ApiOperation, ApiExtraModels, ApiOkResponse, ApiInternalServerErrorResponse } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { AuthUser } from '../../auth/authorization-helper.js';
-import { InternalServerErrorDTO, TaskStatusDTO } from 'middlewares/validation/index.js';
+import { Examples, InternalServerErrorDTO, TaskStatusDTO } from '../../middlewares/validation/index.js';
 import { InternalException, TaskManager } from '../../helpers/index.js';
 
 @Controller('tasks')
@@ -23,7 +23,7 @@ export class TaskApi {
         type: String,
         description: 'Task Id',
         required: true,
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',

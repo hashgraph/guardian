@@ -1,81 +1,86 @@
-import { Logger, RunFunctionAsync } from '@guardian/common';
+import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import {
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Post,
-  Put,
-  Req,
-  Response,
-  UploadedFiles,
-  UseInterceptors,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    Response,
+    UploadedFiles,
+    UseInterceptors,
 } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
-import { TaskAction, UserRole } from '@guardian/interfaces';
+import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
+import { Permissions, TaskAction, UserRole } from '@guardian/interfaces';
 import {
     ApiBody,
     ApiConsumes,
-    ApiForbiddenResponse,
     ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiOperation,
     ApiSecurity,
     ApiTags,
-    ApiUnauthorizedResponse,
-    getSchemaPath
+    ApiQuery,
+    ApiExtraModels,
+    ApiParam
 } from '@nestjs/swagger';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
-import { InternalServerErrorDTO, TaskDTO, ToolDTO } from '../../middlewares/validation/schemas/index.js';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
+import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO } from '../../middlewares/validation/schemas/index.js';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UseCache } from '../../helpers/decorators/cache.js';
-
-const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
+import { Examples, pageHeader } from 'middlewares/validation/index.js';
+import { InternalException, ONLY_SR } from 'helpers/index.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('tools')
 @ApiTags('tools')
 export class ToolsApi {
     /**
-     * Create new tool
+     * Creates a new tool
      */
     @Post('/')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Creates a new tool.',
         description: 'Creates a new tool.' + ONLY_SR,
     })
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: ToolDTO,
+        required: true
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        },
+        type: ToolDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async createNewTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async createNewTool(
+        @AuthUser() user: IAuthUser,
+        @Body() tool: ToolDTO
+    ): Promise<ToolDTO> {
         try {
-            const tool = req.body;
             if (!tool.config || tool.config.blockType !== 'tool') {
                 throw new HttpException('Invalid tool config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const guardian = new Guardians();
-            const item = await guardian.createTool(tool, req.user.did);
-            return res.status(201).json(item);
+            return await guardian.createTool(tool, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 
@@ -83,29 +88,33 @@ export class ToolsApi {
      * Create new tool (Async)
      */
     @Post('/push')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Creates a new tool.',
         description: 'Creates a new tool.' + ONLY_SR,
     })
+    @ApiBody({
+        description: 'Policy configuration.',
+        type: ToolDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        }
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(TaskDTO, ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async createNewToolAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async createNewToolAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() tool: ToolDTO
+    ): Promise<TaskDTO> {
         try {
-            const tool = req.body;
-            const user = req.user;
             if (!tool.config || tool.config.blockType !== 'tool') {
                 throw new HttpException('Invalid tool config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -118,10 +127,9 @@ export class ToolsApi {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
-            return res.status(202).send(task);
+            return task;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 
@@ -129,19 +137,22 @@ export class ToolsApi {
      * Get page
      */
     @Get('/')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return a list of all tools.',
         description: 'Returns all tools.' + ONLY_SR,
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
         required: false,
         example: 0
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
@@ -151,36 +162,27 @@ export class ToolsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        },
+        headers: pageHeader,
+        type: ToolDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getTools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getTools(
+        @AuthUser() user: IAuthUser,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<ToolDTO[]> {
         try {
             const guardians = new Guardians();
-            let pageIndex: any;
-            let pageSize: any;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
-            }
-            const { items, count } = await guardians.getTools({
-                owner: req.user.did,
-                pageIndex,
-                pageSize
-            });
+            const { items, count } = await guardians.getTools({ owner: user.did, pageIndex, pageSize });
             return res.setHeader('X-Total-Count', count).json(items);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -188,40 +190,43 @@ export class ToolsApi {
      * Delete tool
      */
     @Delete('/:id')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Deletes the tool with the provided tool ID.' + ONLY_SR,
         description: 'Deletes the tool.'
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'id',
         type: String,
         description: 'Tool ID',
         required: true,
-        example: '000000000000000000000000'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
-        description: 'Successful operation.'
+        description: 'Successful operation.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async deleteTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async deleteTool(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string
+    ): Promise<boolean> {
         try {
-            const guardian = new Guardians();
-            if (!req.params.id) {
-                throw new Error('Invalid id')
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const result = await guardian.deleteTool(req.params.id, req.user.did);
-            return res.status(200).json(result);
+            const guardian = new Guardians();
+            return await guardian.deleteTool(id, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -229,49 +234,43 @@ export class ToolsApi {
      * Get tool by id
      */
     @Get('/:id')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_VIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Retrieves tool configuration.',
         description: 'Retrieves tool configuration for the specified tool ID.' + ONLY_SR
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'id',
         type: String,
         description: 'Tool ID',
         required: true,
-        example: '000000000000000000000000'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: ToolDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getToolById(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getToolById(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string
+    ): Promise<ToolDTO> {
         try {
-            const guardian = new Guardians();
-            if (!req.params.id) {
-                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY)
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const item = await guardian.getToolById(req.params.id, req.user.did);
-            return res.json(item);
+            const guardian = new Guardians();
+            return await guardian.getToolById(id, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -279,53 +278,52 @@ export class ToolsApi {
      * Update tool
      */
     @Put('/:id')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Updates tool configuration.',
         description: 'Updates tool configuration for the specified tool ID.' + ONLY_SR
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'id',
         type: String,
         description: 'Tool ID',
         required: true,
-        example: '000000000000000000000000'
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Tool configuration.',
+        type: ToolDTO,
+        required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: ToolDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async updateTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        if (!req.params.id) {
+    async updateTool(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Body() tool: ToolDTO
+    ): Promise<any> {
+        if (!id) {
             throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
         }
-        const guardian = new Guardians();
-        const tool = req.body;
         if (!tool.config || tool.config.blockType !== 'tool') {
             throw new HttpException('Invalid tool config', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
-            const result = await guardian.updateTool(req.params.id, tool, req.user.did);
-            return res.status(201).json(result);
+            const guardian = new Guardians();
+            return await guardian.updateTool(id, tool, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -333,46 +331,49 @@ export class ToolsApi {
      * Publish tool
      */
     @Put('/:id/publish')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Publishes the tool onto IPFS.',
         description: 'Publishes the tool with the specified (internal) tool ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'id',
         type: String,
         description: 'Tool ID',
         required: true,
-        example: '000000000000000000000000'
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Tool configuration.',
+        type: ToolDTO,
+        required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: ToolValidationDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolValidationDTO, ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async publishTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    async publishTool(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Body() tool: ToolDTO
+    ): Promise<ToolValidationDTO> {
         try {
-            const tool = await guardian.publishTool(req.params.id, req.user.did, req.body);
-            return res.json(tool);
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const guardian = new Guardians();
+            return await guardian.publishTool(id, user.did, tool);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -380,87 +381,93 @@ export class ToolsApi {
      * Publish tool (Async)
      */
     @Put('/:id/push/publish')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Publishes the tool onto IPFS.',
         description: 'Publishes the tool with the specified (internal) tool ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'id',
         type: String,
         description: 'Tool ID',
         required: true,
-        example: '000000000000000000000000'
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Tool configuration.',
+        type: ToolDTO,
+        required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async publishToolAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
+    async publishToolAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Body() tool: ToolDTO
+    ): Promise<TaskDTO> {
+        if (!id) {
+            throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PUBLISH_TOOL, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardian = new Guardians();
-            await guardian.publishToolAsync(req.params.id, user.did, req.body, task);
+            await guardian.publishToolAsync(id, user.did, tool, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
-        return res.status(202).send(task);
+        return task;
     }
 
     /**
      * Validate tool
      */
     @Post('/validate')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_UPDATE,
+        Permissions.TOOLS_TOOL_PUBLISH,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Validates selected tool.',
         description: 'Validates selected tool.' + ONLY_SR
     })
+    @ApiBody({
+        description: 'Tool configuration.',
+        type: ToolDTO,
+        required: true
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Validation result.',
+        type: ToolValidationDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolDTO, ToolValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async validateTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    async validateTool(
+        @AuthUser() user: IAuthUser,
+        @Body() tool: ToolDTO
+    ): Promise<any> {
         try {
-            return res.send(await guardian.validateTool(req.user.did, req.body));
+            const guardian = new Guardians();
+            return await guardian.validateTool(user.did, tool);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 
@@ -468,45 +475,45 @@ export class ToolsApi {
      * Export tool in file
      */
     @Get('/:id/export/file')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return tool and its artifacts in a zip file format for the specified tool.',
         description: 'Returns a zip file containing the published tool and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'id',
         type: String,
         description: 'Tool ID',
         required: true,
-        example: '000000000000000000000000'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation. Response zip file.'
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
-    async toolExportFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    async toolExportFile(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Response() res: any
+    ): Promise<any> {
         try {
-            const file: any = await guardian.exportToolFile(req.params.id, req.user.did);
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const guardian = new Guardians();
+            const file: any = await guardian.exportToolFile(id, user.did);
             res.setHeader('Content-disposition', `attachment; filename=tool_${Date.now()}`);
             res.setHeader('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -514,45 +521,43 @@ export class ToolsApi {
      * Export tool in message
      */
     @Get('/:id/export/message')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return Heder message ID for the specified published tool.',
         description: 'Returns the Hedera message ID for the specified tool published onto IPFS.' + ONLY_SR
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'id',
         type: String,
         description: 'Tool ID',
         required: true,
-        example: '000000000000000000000000'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: ExportMessageDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async toolExportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    async toolExportMessage(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+    ): Promise<any> {
         try {
-            return res.send(await guardian.exportToolMessage(req.params.id, req.user.did));
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const guardian = new Guardians();
+            return await guardian.exportToolMessage(id, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -560,39 +565,37 @@ export class ToolsApi {
      * Preview tool from IPFS
      */
     @Post('/import/message/preview')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new tool from IPFS.',
         description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
     })
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Tool preview.',
+        type: ToolPreviewDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ImportMessageDTO, ToolPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async toolImportMessagePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    async toolImportMessagePreview(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ImportMessageDTO
+    ): Promise<ToolPreviewDTO> {
         try {
-            const tool = await guardian.previewToolMessage(req.body.messageId, req.user.did);
-            return res.send(tool);
+            const guardian = new Guardians();
+            return await guardian.previewToolMessage(body.messageId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -600,39 +603,37 @@ export class ToolsApi {
      * Import tool from IPFS
      */
     @Post('/import/message')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new tool from IPFS.',
         description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
     })
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: ToolDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ImportMessageDTO, ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async toolImportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async toolImportMessage(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ImportMessageDTO
+    ): Promise<ToolDTO> {
         const guardian = new Guardians();
         try {
-            const tool = await guardian.importToolMessage(req.body.messageId, req.user.did);
-            return res.status(201).send(tool);
+            return await guardian.importToolMessage(body.messageId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -640,39 +641,36 @@ export class ToolsApi {
      * Preview tool from file
      */
     @Post('/import/file/preview')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
     })
+    @ApiBody({
+        description: 'File.',
+    })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Module preview.',
+        type: ToolPreviewDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async toolImportFilePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    async toolImportFilePreview(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<any> {
         try {
-            const tool = await guardian.previewToolFile(req.body, req.user.did);
-            return res.send(tool);
+            const guardian = new Guardians();
+            return await guardian.previewToolFile(body, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -680,39 +678,36 @@ export class ToolsApi {
      * Import tool from IPFS
      */
     @Post('/import/file')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
     })
+    @ApiBody({
+        description: 'File.',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: ToolDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async toolImportFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    async toolImportFile(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<ToolDTO> {
         try {
-            const tool = await guardian.importToolFile(req.body, req.user.did);
-            return res.status(201).send(tool);
+            const guardian = new Guardians();
+            return await guardian.importToolFile(body, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -720,16 +715,17 @@ export class ToolsApi {
      * Import tool from file with metadata
      */
     @Post('/import/file-metadata')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOL_MIGRATION_CREATE,
+        //UserRole.STANDARD_REGISTRY
+    )
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(ToolDTO)
-        }
+        type: ToolDTO
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -749,26 +745,16 @@ export class ToolsApi {
             }
         }
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
     async toolImportFileWithMetadata(
-        @Req() req,
+        @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any
-    ): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardian = new Guardians();
+    ): Promise<ToolDTO> {
         try {
             const file = files.find((item) => item.fieldname === 'file');
             if (!file) {
@@ -777,18 +763,15 @@ export class ToolsApi {
             const metadata = files.find(
                 (item) => item.fieldname === 'metadata'
             );
+            const guardian = new Guardians();
             const tool = await guardian.importToolFile(
                 file.buffer,
-                req.user.did,
+                user.did,
                 metadata?.buffer && JSON.parse(metadata.buffer.toString())
             );
             return tool;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            await InternalException(error);
         }
     }
 
@@ -796,49 +779,46 @@ export class ToolsApi {
      * Import tool from IPFS (Async)
      */
     @Post('/push/import/file')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
     })
+    @ApiBody({
+        description: 'A zip file containing tool config.',
+        required: true,
+        type: String
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async toolImportFileAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async toolImportFileAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() zip: any
+    ): Promise<TaskDTO> {
         try {
-            const user = req.user;
-            const owner = req.user.did;
-            const zip = req.body;
             const guardian = new Guardians();
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_TOOL_FILE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolFileAsync(zip, owner, task);
+                await guardian.importToolFileAsync(zip, user.did, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
-            return res.status(202).send(task);
+            return task;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -846,7 +826,10 @@ export class ToolsApi {
      * Import tool from file with metadata (Async)
      */
     @Post('/push/import/file-metadata')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOL_MIGRATION_CREATE,
+        //UserRole.STANDARD_REGISTRY
+    )
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description:
@@ -873,37 +856,24 @@ export class ToolsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO,
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.ACCEPTED)
     async toolImportFileWithMetadataAsync(
-        @Req() req,
+        @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any
-    ): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    ): Promise<TaskDTO> {
         try {
             const file = files.find(item => item.fieldname === 'file');
             if (!file) {
                 throw new Error('There is no tool file');
             }
             const metadata = files.find(item => item.fieldname === 'metadata');
-            const user = req.user;
-            const owner = req.user.did;
             const guardian = new Guardians();
             const taskManager = new TaskManager();
             const task = taskManager.start(
@@ -914,7 +884,7 @@ export class ToolsApi {
                 async () => {
                     await guardian.importToolFileAsync(
                         file.buffer,
-                        owner,
+                        user.did,
                         task,
                         metadata?.buffer && JSON.parse(metadata.buffer.toString())
                     );
@@ -929,11 +899,7 @@ export class ToolsApi {
             );
             return task;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(
-                error.message,
-                HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            await InternalException(error);
         }
     }
 
@@ -941,49 +907,45 @@ export class ToolsApi {
      * Import tool from IPFS (Async)
      */
     @Post('/push/import/message')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.TOOLS_TOOL_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new tool from IPFS.',
         description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
     })
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(TaskDTO)
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ImportMessageDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async toolImportMessageAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async toolImportMessageAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ImportMessageDTO
+    ): Promise<TaskDTO> {
         try {
-            const user = req.user;
-            const owner = req.user.did;
-            const messageId = req.body.messageId;
             const guardian = new Guardians();
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_TOOL_MESSAGE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolMessageAsync(messageId, owner, task);
+                await guardian.importToolMessageAsync(body.messageId, user.did, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
-            return res.status(202).send(task);
+            return task;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -991,38 +953,36 @@ export class ToolsApi {
      * Policy config menu
      */
     @Get('/menu/all')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return a list of tools.',
         description: 'Returns tools menu.' + ONLY_SR
     })
     @ApiOkResponse({
-        schema: {
-            type: 'array'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Modules.',
+        isArray: true,
+        type: ToolDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @UseCache()
-    async getMenu(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    @HttpCode(HttpStatus.OK)
+    async getMenu(
+        @AuthUser() user: IAuthUser
+    ): Promise<ToolDTO[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getMenuTool(req.user.did);
+            return await guardians.getMenuTool(user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }
