@@ -292,7 +292,7 @@ export class PolicyComponentsUtils {
     public static getDocumentCacheFields(policyId: string) {
         let cache = PolicyComponentsUtils.DocumentCacheFieldsMap.get(policyId);
         if (!cache) {
-            cache = new Set<string>();
+            cache = new Set<string>(['id', 'credentialSubject.id', 'credentialSubject.0.id']);
             PolicyComponentsUtils.DocumentCacheFieldsMap.set(policyId, cache);
         }
         return cache;
