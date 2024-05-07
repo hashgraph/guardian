@@ -84,13 +84,3 @@ To get complete information about tools, please refer to [Tools](https://github.
 ### 3. Filtering Policies
 
 On the Policy page, it is now possible to filter the policies list by policy name and tags. All available tags are presented in the dropdown list, which you can create using "Create Tag" for each policy, which makes it easier using the filter.
-
-<figure><img src="https://lh5.googleusercontent.com/niLoA-E6sdH74IXdUX514BCi3jhVaVyAWSL8Wv2R6Q4Q7bByIjJ0pz_Excj03G8IinI0andv7_ofcOTfQsa7qA0iLvut7aBJKRc-OCYN-wDuXpDW-qStQDCeArB4L-kLn6ML4u2fvlLsh3uFnezbOdw" alt=""><figcaption></figcaption></figure>
-
-Here is an example of the iRec 5 policy being filtered by the policy name and the tag
-
-<figure><img src="https://lh3.googleusercontent.com/JES1SjPxRpRV67BdDjLjyHSkMc1lruWnT7gHsgRH-o1vudbC1zIU6ePqwFZn-LAwBfiDInEgmLinYLvCG7Zk3zO-VILjiJc6q1annSJXma7Exzfoffi_oXSYrBF_oCwzFTjwGCvGvNKLAYpved-_Kj8" alt=""><figcaption></figcaption></figure>
-
-Below is an example of the iRec 7 policy being filtered by the policy name
-
-<figure><img src="https://lh6.googleusercontent.com/YqP8nZcyRLqZd1b2VihDJjR28ggY2l7peWtkxXiecjsrL-zL9V0jnsg0_zrlaI81zqxgizVDoFJy9vZIAud7sZmrLI1djegv-MsT6GSrbdlKZaTZ7OqdJvwrg6WVSanovRq0xBhmVVZjy3fx8NdrEns" alt=""><figcaption></figcaption></figure>

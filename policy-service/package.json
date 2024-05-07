@@ -15,8 +15,8 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "2.24.0",
-        "@guardian/interfaces": "2.24.0",
+        "@guardian/common": "2.24.1",
+        "@guardian/interfaces": "2.24.1",
         "@hashgraph/sdk": "2.34.1",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "2.0.2",
@@ -97,5 +97,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "2.24.0"
+    "version": "2.24.1"
 }

@@ -5,7 +5,7 @@
     "@azure/identity": "^3.2.2",
     "@azure/keyvault-secrets": "^4.7.0",
     "@google-cloud/secret-manager": "^4.2.2",
-    "@guardian/interfaces": "^2.24.0",
+    "@guardian/interfaces": "^2.24.1",
     "@hashgraph/sdk": "2.34.1",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
@@ -87,5 +87,5 @@
     "test:stability": "mocha tests/stability.test.js"
   },
   "type": "module",
-  "version": "2.24.0"
+  "version": "2.24.1"
 }
