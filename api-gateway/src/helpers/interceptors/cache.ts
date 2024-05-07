@@ -1,4 +1,4 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus } from '@nestjs/common';
 
 import crypto from 'crypto';
 
@@ -29,7 +29,11 @@ export class CacheInterceptor implements NestInterceptor {
 
     if(token) {
       const users: Users = new Users();
-      user = await users.getUserByToken(token);
+      try {
+        user = await users.getUserByToken(token);
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
+      }
     }
 
     const hashUser: string = crypto.createHash('md5').update(JSON.stringify(user)).digest('hex');

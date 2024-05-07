@@ -152,7 +152,7 @@
         * [historyAddon](guardian/standard-registry/policies/policy-creation/introduction/historyaddon.md)
         * [selectiveAttributes Block](guardian/standard-registry/policies/policy-creation/introduction/selectiveattributes-block.md)
         * [tagsManagerBlock](guardian/standard-registry/policies/policy-creation/introduction/tagsmanagerblock.md)
-        * [externalDataBlock](guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
+        * [extractDataBlock](guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
         * [externalTopicBlock](guardian/standard-registry/policies/policy-creation/introduction/externaltopicblock.md)
         * [messagesReportBlock](guardian/standard-registry/policies/policy-creation/introduction/messagesreportblock.md)
         * [notificationBlock](guardian/standard-registry/policies/policy-creation/introduction/notificationblock.md)

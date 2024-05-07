@@ -1,11 +1,11 @@
 {
   "name": "ai-service",
-  "version": "2.24.0",
+    "version": "2.24.1",
   "main": "dist/app.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "@guardian/common": "^2.24.0",
-    "@guardian/interfaces": "^2.24.0",
+      "@guardian/common": "^2.24.1",
+      "@guardian/interfaces": "^2.24.1",
     "@mikro-orm/core": "^6.1.11",
     "@mikro-orm/mongodb": "^6.1.11",
     "@nestjs/common": "^9.4.1",
