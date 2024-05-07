@@ -1,36 +1,11 @@
 import { Permissions } from '@guardian/interfaces';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Query,
-    Param,
-    Response,
-    UploadedFiles,
-    UseInterceptors,
-} from '@nestjs/common';
-import {
-    ApiExtraModels,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiTags,
-    ApiBody,
-    ApiConsumes,
-    ApiQuery,
-    ApiParam
-} from '@nestjs/swagger';
-
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
+import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException } from '../../helpers/index.js';
-import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '../../middlewares/validation/index.js';
+import { Guardians, InternalException } from '#helpers';
+import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 
 @Controller('artifacts')
 @ApiTags('artifacts')

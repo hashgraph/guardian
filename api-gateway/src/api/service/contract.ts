@@ -1,43 +1,10 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
-import { Logger, IAuthUser } from '@guardian/common';
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Param,
-    Post,
-    Query,
-    Response,
-} from '@nestjs/common';
-import {
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiCreatedResponse,
-    ApiOperation,
-    ApiExtraModels,
-    ApiTags,
-    ApiBody,
-    ApiQuery,
-    ApiParam,
-} from '@nestjs/swagger';
-import {
-    ContractConfigDTO,
-    ContractDTO,
-    RetirePoolDTO,
-    RetirePoolTokenDTO,
-    RetireRequestDTO,
-    RetireRequestTokenDTO,
-    WiperRequestDTO,
-    InternalServerErrorDTO,
-    pageHeader
-} from '../../middlewares/validation/index.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { Guardians, UseCache, InternalException } from '../../helpers/index.js';
+import { IAuthUser } from '@guardian/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
+import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
+import { Guardians, UseCache, InternalException } from '#helpers';
 
 /**
  * Contracts api

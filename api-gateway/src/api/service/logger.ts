@@ -2,9 +2,9 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Injectable, Post, 
 import { ApiTags, ApiBody, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
 import { IPageParameters, MessageAPI, Permissions } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
-import { Auth } from '../../auth/auth.decorator.js';
-import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '../../middlewares/validation/index.js';
-import { UseCache, InternalException } from '../../helpers/index.js';
+import { Auth } from '#auth';
+import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares';
+import { UseCache, InternalException } from '#helpers';
 import axios from 'axios';
 
 @Injectable()

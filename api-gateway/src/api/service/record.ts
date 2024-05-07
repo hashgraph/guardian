@@ -1,12 +1,10 @@
 import { Permissions } from '@guardian/interfaces';
-import { InternalException, ONLY_SR, checkPolicy } from '../../helpers/index.js';
+import { Guardians, InternalException, ONLY_SR, checkPolicy } from '#helpers';
 import { IAuthUser } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { Guardians } from '../../helpers/guardians.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO, Examples } from '../../middlewares/validation/index.js';
+import { AuthUser, Auth } from '#auth';
+import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetailsDTO, RunningResultDTO, Examples } from '#middlewares';
 
 @Controller('record')
 @ApiTags('record')

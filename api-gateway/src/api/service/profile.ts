@@ -2,11 +2,10 @@ import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType } f
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '../../middlewares/validation/schemas/index.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
+import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
 import { CACHE } from '../../constants/index.js';
-import { UseCache, InternalException, Guardians, TaskManager, ServiceError } from '../../helpers/index.js';
+import { UseCache, InternalException, Guardians, TaskManager, ServiceError } from '#helpers';
 
 @Controller('profiles')
 @ApiTags('profiles')

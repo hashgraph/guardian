@@ -1,9 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { IAuthUser, Logger } from '@guardian/common';
-import { PolicyEngine } from './policy-engine';
-import { ISchema, PolicyType, SchemaCategory, SchemaHelper, StatusType, UserRole } from '@guardian/interfaces';
-import { Guardians } from './guardians';
-import { TaskManager } from './task-manager';
+import { PolicyType, UserRole } from '@guardian/interfaces';
+import { PolicyEngine } from './policy-engine.js';
 
 /**
  * Find all field values in object by field name

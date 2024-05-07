@@ -1,4 +1,4 @@
-import { UserRole } from './user-role.type';
+import { UserRole } from './user-role.type.js';
 
 /**
  * Category
@@ -826,6 +826,7 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
+                //UserRole.USER ???
             ]
         },
         {

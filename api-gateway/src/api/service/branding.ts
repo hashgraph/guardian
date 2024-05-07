@@ -1,9 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
-import { Auth } from '../../auth/auth.decorator.js';
+import { Auth } from '#auth';
 import { Permissions } from '@guardian/interfaces';
-import { BrandingDTO, InternalServerErrorDTO } from '../../middlewares/validation/index.js';
-import { ONLY_SR, Guardians, UseCache, InternalException } from '../../helpers/index.js';
+import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
+import { ONLY_SR, Guardians, UseCache, InternalException } from '#helpers';
 
 /**
  * Branding route

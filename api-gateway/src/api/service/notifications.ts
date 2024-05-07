@@ -1,12 +1,9 @@
 import { IAuthUser, NotificationService } from '@guardian/common';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { NotificationDTO, ProgressDTO, } from '../../middlewares/validation/schemas/notifications.js';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { pageHeader } from '../../middlewares/validation/page-header.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { InternalException, parseInteger } from '../../helpers/index.js';
+import { Examples, InternalServerErrorDTO, NotificationDTO, ProgressDTO, pageHeader } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
+import { InternalException, parseInteger } from '#helpers';
 
 @Controller('notifications')
 @ApiTags('notifications')
@@ -175,7 +172,7 @@ export class NotificationsApi {
         type: 'string',
         required: true,
         description: 'Notification Identifier',
-        example: '00000000-0000-0000-0000-000000000000'
+        example: Examples.UUID
     })
     @ApiOkResponse({
         description: 'Successful operation. Returns deleted notifications count.',

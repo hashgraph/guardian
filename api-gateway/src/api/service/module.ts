@@ -2,10 +2,9 @@ import { Logger, IAuthUser } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '../../middlewares/validation/index.js';
-import { Guardians, SchemaUtils, UseCache, InternalException } from '../../helpers/index.js';
+import { AuthUser, Auth } from '#auth';
+import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
+import { Guardians, SchemaUtils, UseCache, InternalException } from '#helpers';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -325,7 +324,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -369,7 +368,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID
     })
     @ApiBody({
         description: 'Module config.',
@@ -421,7 +420,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID
     })
     @ApiOkResponse({
         description: 'File.',
@@ -656,7 +655,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID
     })
     @ApiBody({
         description: 'Module.',

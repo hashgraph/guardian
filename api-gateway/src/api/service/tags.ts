@@ -2,9 +2,9 @@ import { IAuthUser } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '../../middlewares/validation/index.js';
-import { Auth, AuthUser } from '../../auth/index.js';
-import { ONLY_SR, SchemaUtils, Guardians, InternalException } from '../../helpers/index.js';
+import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException } from '#helpers';
 
 @Controller('tags')
 @ApiTags('tags')

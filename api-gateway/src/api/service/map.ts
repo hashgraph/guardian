@@ -1,9 +1,8 @@
-import { Guardians } from '../../helpers/guardians.js';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
-import { InternalServerErrorDTO } from '../../middlewares/validation/index.js';
+import { UseCache, Guardians } from '#helpers';
+import { InternalServerErrorDTO } from '#middlewares';
 
 @Controller('map')
 @ApiTags('map')

@@ -2,10 +2,9 @@ import { Logger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
-import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '../../middlewares/validation/index.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { ServiceError, NewTask, TaskManager, Users, Guardians, UseCache, InternalException } from '../../helpers/index.js';
+import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
+import { ServiceError, NewTask, TaskManager, Users, Guardians, UseCache, InternalException } from '#helpers';
 
 @Controller('demo')
 @ApiTags('demo')

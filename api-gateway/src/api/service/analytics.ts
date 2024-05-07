@@ -1,35 +1,10 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
-import {
-    ApiInternalServerErrorResponse,
-    ApiBody,
-    ApiOkResponse,
-    ApiOperation,
-    ApiTags,
-    ApiExtraModels,
-    ApiQuery
-} from '@nestjs/swagger';
+import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
-import {
-    FilterDocumentsDTO,
-    FilterModulesDTO,
-    FilterPoliciesDTO,
-    FilterSchemasDTO,
-    FilterSearchPoliciesDTO,
-    InternalServerErrorDTO,
-    CompareDocumentsDTO,
-    CompareModulesDTO,
-    ComparePoliciesDTO,
-    CompareSchemasDTO,
-    SearchPoliciesDTO,
-    FilterToolsDTO,
-    CompareToolsDTO,
-    FilterSearchBlocksDTO,
-    SearchBlocksDTO
-} from '../../middlewares/validation/index.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
+import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
-import { Guardians, ONLY_SR, InternalException } from '../../helpers/index.js';
+import { Guardians, ONLY_SR, InternalException } from '#helpers';
 
 @Controller('analytics')
 @ApiTags('analytics')
@@ -53,7 +28,7 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    policyId: '000000000000000000000000'
+                    policyId: Examples.DB_ID
                 }
             }
         }
@@ -103,8 +78,8 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    policyId1: '000000000000000000000001',
-                    policyId2: '000000000000000000000002',
+                    policyId1: Examples.DB_ID,
+                    policyId2: Examples.DB_ID,
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -113,7 +88,7 @@ export class AnalyticsApi {
             },
             Filter2: {
                 value: {
-                    policyIds: ['000000000000000000000001', '000000000000000000000002'],
+                    policyIds: [Examples.DB_ID, Examples.DB_ID],
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -189,8 +164,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    moduleId1: '000000000000000000000001',
-                    moduleId2: '000000000000000000000002',
+                    moduleId1: Examples.DB_ID,
+                    moduleId2: Examples.DB_ID,
                     propLvl: '0',
                     childrenLvl: '0',
                     idLvl: '0'
@@ -257,8 +232,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    schemaId1: '000000000000000000000001',
-                    schemaId2: '000000000000000000000002',
+                    schemaId1: Examples.DB_ID,
+                    schemaId2: Examples.DB_ID,
                     idLvl: '0'
                 }
             }
@@ -311,13 +286,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    documentId1: '000000000000000000000001',
-                    documentId2: '000000000000000000000002'
+                    documentId1: Examples.DB_ID,
+                    documentId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                    documentIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -392,13 +367,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    toolId1: '000000000000000000000001',
-                    toolId2: '000000000000000000000002'
+                    toolId1: Examples.DB_ID,
+                    toolId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    toolIds: ['000000000000000000000001', '000000000000000000000002'],
+                    toolIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -476,8 +451,8 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    policyId1: '000000000000000000000001',
-                    policyId2: '000000000000000000000002',
+                    policyId1: Examples.DB_ID,
+                    policyId2: Examples.DB_ID,
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -486,7 +461,7 @@ export class AnalyticsApi {
             },
             Filter2: {
                 value: {
-                    policyIds: ['000000000000000000000001', '000000000000000000000002'],
+                    policyIds: [Examples.DB_ID, Examples.DB_ID],
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -569,8 +544,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    moduleId1: '000000000000000000000001',
-                    moduleId2: '000000000000000000000002',
+                    moduleId1: Examples.DB_ID,
+                    moduleId2: Examples.DB_ID,
                     propLvl: '0',
                     childrenLvl: '0',
                     idLvl: '0'
@@ -645,8 +620,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    schemaId1: '000000000000000000000001',
-                    schemaId2: '000000000000000000000002',
+                    schemaId1: Examples.DB_ID,
+                    schemaId2: Examples.DB_ID,
                     idLvl: '0'
                 }
             }
@@ -707,13 +682,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    documentId1: '000000000000000000000001',
-                    documentId2: '000000000000000000000002'
+                    documentId1: Examples.DB_ID,
+                    documentId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                    documentIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -795,13 +770,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    toolId1: '000000000000000000000001',
-                    toolId2: '000000000000000000000002'
+                    toolId1: Examples.DB_ID,
+                    toolId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    toolIds: ['000000000000000000000001', '000000000000000000000002'],
+                    toolIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }

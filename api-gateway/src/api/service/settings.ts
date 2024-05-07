@@ -1,10 +1,9 @@
 import { AboutInterface, CommonSettings, Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { SettingsDTO } from '../../middlewares/validation/schemas/settings.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { Guardians, InternalException } from '../../helpers/index.js';
+import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
+import { Auth } from '#auth';
+import { Guardians, InternalException } from '#helpers';
 import process from 'process';
 
 @Controller('settings')

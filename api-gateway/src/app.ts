@@ -16,7 +16,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
 import { SwaggerModels, SwaggerPaths } from './old-descriptions.js';
 import { MeecoAuth } from './helpers/meeco.js';
-import * as extraModels from './middlewares/validation/schemas/index.js'
+import * as extraModels from './middlewares/index.js'
 import { ProjectService } from './helpers/projects.js';
 import { AISuggestions } from './helpers/ai-suggestions.js';
 
@@ -79,7 +79,7 @@ Promise.all([
                 } catch {
                     return false;
                 }
-            })
+            }) as any
         });
         Object.assign(document.paths, SwaggerPaths)
         Object.assign(document.components.schemas, SwaggerModels.schemas);

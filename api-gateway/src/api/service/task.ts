@@ -1,10 +1,9 @@
 import { IAuthUser } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { ApiTags, ApiParam, ApiOperation, ApiExtraModels, ApiOkResponse, ApiInternalServerErrorResponse } from '@nestjs/swagger';
-import { Auth } from '../../auth/auth.decorator.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Examples, InternalServerErrorDTO, TaskStatusDTO } from '../../middlewares/validation/index.js';
-import { InternalException, TaskManager } from '../../helpers/index.js';
+import { AuthUser, Auth } from '#auth';
+import { Examples, InternalServerErrorDTO, TaskStatusDTO } from '#middlewares';
+import { InternalException, TaskManager } from '#helpers';
 
 @Controller('tasks')
 @ApiTags('tasks')

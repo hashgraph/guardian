@@ -2,9 +2,9 @@ import { IAuthUser } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Param, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { Guardians, Users, UseCache, ONLY_SR, InternalException } from '../../helpers/index.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { Examples, InternalServerErrorDTO, VpDocumentDTO, pageHeader } from '../../middlewares/validation/index.js';
+import { Guardians, Users, UseCache, ONLY_SR, InternalException } from '#helpers';
+import { Auth } from '#auth';
+import { Examples, InternalServerErrorDTO, VpDocumentDTO, pageHeader } from '#middlewares';
 
 
 @Controller('trust-chains')

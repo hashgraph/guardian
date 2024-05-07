@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ValidationErrorsDTO } from './blocks';
+import { ValidationErrorsDTO } from './blocks.js';
 
 export class ModuleDTO {
     @ApiProperty({ type: 'string', nullable: false })

@@ -1,15 +1,12 @@
-import { Auth } from '../../auth/auth.decorator.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
+import { AuthUser, Auth } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { MigrationConfigDTO, PolicyCategoryDTO, } from '../../middlewares/validation/schemas/policies.js';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';
-import { pageHeader } from '../../middlewares/validation/page-header.js';
-import { InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples } from '../../middlewares/validation/index.js';
-import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR } from '../../helpers/index.js';
+import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader } from '#middlewares';
+import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR } from '#helpers';
 
 @Controller('policies')
 @ApiTags('policies')
@@ -331,7 +328,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -380,7 +377,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Policy configuration.',
@@ -424,7 +421,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Policy configuration.',
@@ -492,7 +489,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -534,7 +531,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Policy configuration.',
@@ -584,7 +581,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -625,7 +622,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Discontinue details.',
@@ -679,7 +676,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -760,7 +757,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -805,7 +802,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -850,7 +847,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'includeDocument',
@@ -927,7 +924,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Policy data.',
@@ -1028,7 +1025,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Policy tag block map.',
@@ -1071,7 +1068,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Policy virtual keys.',
@@ -1132,7 +1129,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Virtual keys file',
@@ -1181,7 +1178,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Group',
@@ -1228,7 +1225,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1270,14 +1267,14 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiParam({
         name: 'uuid',
         type: 'string',
         required: true,
         description: 'Block Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1320,14 +1317,14 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiParam({
         name: 'uuid',
         type: 'string',
         required: true,
         description: 'Block Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID
     })
     @ApiBody({
         description: 'Data',
@@ -1375,7 +1372,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiParam({
         name: 'tagName',
@@ -1430,7 +1427,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiParam({
         name: 'tagName',
@@ -1480,7 +1477,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiParam({
         name: 'tagName',
@@ -1530,14 +1527,14 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiParam({
         name: 'uuid',
         type: 'string',
         required: true,
         description: 'Block Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1580,7 +1577,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1629,7 +1626,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Message.',
@@ -1670,7 +1667,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -2211,7 +2208,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'A xlsx file containing policy config.',
@@ -2263,7 +2260,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'A xlsx file containing policy config.',
@@ -2392,7 +2389,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Virtual users.',
@@ -2447,7 +2444,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Virtual users.',
@@ -2502,7 +2499,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Credentials.',
@@ -2562,7 +2559,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: '.',
@@ -2621,7 +2618,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -2690,7 +2687,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -2759,7 +2756,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -2830,7 +2827,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -2872,7 +2869,7 @@ export class PolicyApi {
         type: String,
         description: 'Policy Id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: '',
@@ -2944,7 +2941,7 @@ export class PolicyApi {
         examples: {
             Filter1: {
                 value: {
-                    categoryIds: ['000000000000000000000001', '000000000000000000000002'],
+                    categoryIds: [Examples.DB_ID, '000000000000000000000002'],
                     text: 'abc'
                 }
             }

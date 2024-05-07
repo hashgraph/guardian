@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Examples } from '../examples';
+import { Examples } from '../examples.js';
 
 export class TokenDTO {
     @ApiProperty({

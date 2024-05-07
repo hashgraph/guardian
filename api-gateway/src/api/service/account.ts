@@ -3,13 +3,13 @@ import { Permissions, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO, InternalServerErrorDTO } from '../../middlewares/validation/index.js';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO, InternalServerErrorDTO } from '#middlewares';
+import { AuthUser, checkPermission, Auth } from '#auth';
+import { Users, PolicyEngine, Guardians, UseCache, InternalException } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
-import { AuthUser, checkPermission, Auth } from '../../auth/index.js';
 import { ApplicationEnvironment } from '../../environment.js';
 import { CACHE } from '../../constants/index.js';
-import { Users, PolicyEngine, Guardians, UseCache, InternalException } from '../../helpers/index.js';
 
 /**
  * User account route

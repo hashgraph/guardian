@@ -1,11 +1,10 @@
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException, ONLY_SR } from '../../helpers/index.js';
+import { Guardians, InternalException, ONLY_SR } from '#helpers';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Response } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
-import { Auth } from '../../auth/auth.decorator.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Examples, InternalServerErrorDTO, ThemeDTO } from '../../middlewares/validation/index.js';
+import { AuthUser, Auth } from '#auth';
+import { Examples, InternalServerErrorDTO, ThemeDTO } from '#middlewares';
 
 @Controller('themes')
 @ApiTags('themes')

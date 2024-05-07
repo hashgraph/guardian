@@ -1,43 +1,11 @@
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Param,
-    Post,
-    Put,
-    Query,
-    Response,
-    UploadedFiles,
-    UseInterceptors,
-} from '@nestjs/common';
-import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
-import { Permissions, TaskAction, UserRole } from '@guardian/interfaces';
-import {
-    ApiBody,
-    ApiConsumes,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiTags,
-    ApiQuery,
-    ApiExtraModels,
-    ApiParam
-} from '@nestjs/swagger';
-import { TaskManager } from '../../helpers/task-manager.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
-import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO } from '../../middlewares/validation/schemas/index.js';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Permissions, TaskAction } from '@guardian/interfaces';
+import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
+import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { UseCache } from '../../helpers/decorators/cache.js';
-import { Examples, pageHeader } from 'middlewares/validation/index.js';
-import { InternalException, ONLY_SR } from 'helpers/index.js';
-import { Auth } from '../../auth/auth.decorator.js';
+import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR } from '#helpers';
+import { AuthUser, Auth } from '#auth';
 
 @Controller('tools')
 @ApiTags('tools')

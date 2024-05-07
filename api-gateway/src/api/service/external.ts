@@ -1,8 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiExtraModels, ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { ExternalDocumentDTO } from '../../middlewares/validation/index.js';
-import { PolicyEngine, InternalException } from '../../helpers/index.js';
+import { InternalServerErrorDTO, ExternalDocumentDTO } from '#middlewares';
+import { PolicyEngine, InternalException } from '#helpers';
 
 @Controller('external')
 @ApiTags('external')

@@ -1,37 +1,10 @@
-import { Guardians } from '../../helpers/guardians.js';
+import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger } from '#helpers';
 import { Permissions, TaskAction, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { PolicyEngine } from '../../helpers/policy-engine.js';
-import { TaskManager } from '../../helpers/task-manager.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Param,
-    Post,
-    Put,
-    Query,
-    Response,
-} from '@nestjs/common';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import {
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiExtraModels,
-    ApiTags,
-    ApiParam,
-    ApiBody,
-    ApiQuery,
-} from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '../../middlewares/validation/index.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { InternalException, ONLY_SR, parseInteger } from '../../helpers/index.js';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { AuthUser, Auth } from '#auth';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
 
 /**
  * Token route

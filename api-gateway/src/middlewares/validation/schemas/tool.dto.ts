@@ -1,6 +1,6 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import { Examples } from '../examples';
-import { BlockDTO, ValidationErrorsDTO } from './blocks';
+import { Examples } from '../examples.js';
+import { BlockDTO, ValidationErrorsDTO } from './blocks.js';
 
 @ApiExtraModels(BlockDTO)
 export class ToolDTO {
