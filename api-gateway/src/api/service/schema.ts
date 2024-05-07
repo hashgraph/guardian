@@ -1,4 +1,3 @@
-
 import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiParam, ApiQuery, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -9,8 +8,9 @@ import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, S
 import { CACHE } from '../../constants/index.js';
 import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, getParentUser } from '#helpers';
 import process from 'process';
+import { CacheService } from '../../helpers/cache-service.js';
+import { getCacheKey } from '../../helpers/interceptors/utils/index.js';
 
-@Controller('schema')
 @ApiTags('schema')
 export class SingleSchemaApi {
     /**
@@ -169,6 +169,9 @@ export class SingleSchemaApi {
 @Controller('schemas')
 @ApiTags('schemas')
 export class SchemaApi {
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     @Client({
         transport: Transport.NATS,
         options: {
@@ -255,6 +258,8 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
+    @UseCache()
     async getSchemasPage(
         @AuthUser() user: IAuthUser,
 
@@ -268,6 +273,9 @@ export class SchemaApi {
 
         @Response() res: any
     ): Promise<SchemaDTO[]> {
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
+    @UseCache()
+    async getSchemasPage(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
             const options: any = {};
@@ -727,6 +735,12 @@ export class SchemaApi {
         @Body() newSchema: SchemaDTO
     ): Promise<SchemaDTO[]> {
         try {
+<<<<<<< HEAD
+=======
+            const user = req.user;
+            await this.cacheService.invalidate(getCacheKey(req.url, user))
+            const newSchema = req.body;
+>>>>>>> 52506a978 (feat: base vertion invalidation cache)
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(newSchema.id);
             if (!schema) {

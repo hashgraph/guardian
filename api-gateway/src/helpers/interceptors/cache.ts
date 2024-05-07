@@ -1,12 +1,13 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus } from '@nestjs/common';
 
-import crypto from 'crypto';
-
 import { Observable, of, switchMap, tap } from 'rxjs';
 
 //services
 import { CacheService } from '../cache-service.js';
 import { Users } from '../users.js';
+
+//utils
+import { getCacheKey } from './utils/index.js';
 
 //constants
 import { CACHE, META_DATA } from '../../constants/index.js';
