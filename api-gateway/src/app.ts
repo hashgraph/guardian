@@ -49,7 +49,7 @@ Promise.all([
         await app.register(fastifyMultipart);
 
         const bodyLimit = 10_485_760;
-        app.useBodyParser('json', { bodyLimit });
+        app.useBodyParser('json', { bodyLimit: 1024 * 1024 * 1024 });
         app.useBodyParser('binary/octet-stream', { bodyLimit: 1024 * 1024 * 1024 });
         // app.useBodyParser('multipart/form-data', { bodyLimit: 1024 * 1024 * 1024 });
         // app.use(json({ limit: '10mb' }));
