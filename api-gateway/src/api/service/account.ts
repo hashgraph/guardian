@@ -14,6 +14,7 @@ import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/err
 import { ApplicationEnvironment } from '../../environment.js';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 /**
  * User account route
@@ -225,6 +226,7 @@ export class AccountApi {
     @HttpCode(HttpStatus.OK)
     @Get()
     @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
         const authHeader = req.headers.authorization;
         const token = authHeader?.split(' ')[1];
@@ -240,7 +242,6 @@ export class AccountApi {
             throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
         }
         try {
-            await checkPermission(UserRole.STANDARD_REGISTRY)(user);
             return await users.getAllUserAccounts() as any[];
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
