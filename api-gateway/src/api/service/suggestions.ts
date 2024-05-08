@@ -15,7 +15,7 @@ export class SuggestionsApi {
      */
     @Post('/')
     @Auth(
-        Permissions.SUGGESTIONS_SUGGESTIONS_VIEW,
+        Permissions.SUGGESTIONS_SUGGESTIONS_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -83,7 +83,7 @@ export class SuggestionsApi {
      */
     @Get('/config')
     @Auth(
-        Permissions.SUGGESTIONS_SUGGESTIONS_VIEW,
+        Permissions.SUGGESTIONS_SUGGESTIONS_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

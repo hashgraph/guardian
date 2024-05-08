@@ -1,0 +1,53 @@
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>
+
+<div class="container">
+
+    <div class="page-title">Users</div>
+
+    <div class="actions">
+        <div class="actions-controls-container">
+            <div class="filters-container">
+
+
+            </div>
+            <div class="actions-container">
+            </div>
+        </div>
+    </div>
+
+    <ng-container *ngIf="page && page.length > 0; else noData">
+        <div class="table-container">
+            <p-table [value]="page">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="header-cell-text cell-size-id">Name</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template let-row pTemplate="body">
+                    <tr class="table-row">
+                        <td class="cell-size-id">{{ row.name }}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <app-paginator 
+            [pageIndex]="pageIndex" 
+            [pageSize]="pageSize" 
+            [length]="count"
+            (page)="onPage($event)"
+        ></app-paginator>
+    </ng-container>
+</div>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">There were no Roles created yet</span>
+        <span class="info-text">Please create new role to see the data</span>
+    </div>
+</ng-template>

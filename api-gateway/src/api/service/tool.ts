@@ -106,7 +106,7 @@ export class ToolsApi {
      */
     @Get('/')
     @Auth(
-        Permissions.TOOLS_TOOL_VIEW,
+        Permissions.TOOLS_TOOL_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -203,7 +203,7 @@ export class ToolsApi {
      */
     @Get('/:id')
     @Auth(
-        Permissions.TOOLS_TOOL_VIEW,
+        Permissions.TOOLS_TOOL_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -300,7 +300,7 @@ export class ToolsApi {
      */
     @Put('/:id/publish')
     @Auth(
-        Permissions.TOOLS_TOOL_PUBLISH,
+        Permissions.TOOLS_TOOL_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -350,7 +350,7 @@ export class ToolsApi {
      */
     @Put('/:id/push/publish')
     @Auth(
-        Permissions.TOOLS_TOOL_PUBLISH,
+        Permissions.TOOLS_TOOL_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -405,7 +405,7 @@ export class ToolsApi {
     @Post('/validate')
     @Auth(
         Permissions.TOOLS_TOOL_UPDATE,
-        Permissions.TOOLS_TOOL_PUBLISH,
+        Permissions.TOOLS_TOOL_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

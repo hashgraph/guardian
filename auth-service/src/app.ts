@@ -12,6 +12,7 @@ import { AppModule } from './app.module.js';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
+import { RoleService } from './api/role-service.js';
 
 Promise.all([
     Migration({
@@ -68,6 +69,9 @@ Promise.all([
         new WalletService().registerVault(vault);
         new WalletService().registerListeners();
 
+        await new RoleService().setConnection(cn).init();
+        new RoleService().registerListeners();
+        
         if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
             await new MeecoAuthService().setConnection(cn).init();
             new MeecoAuthService().registerListeners();

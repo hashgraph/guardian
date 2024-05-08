@@ -58,7 +58,7 @@ export class ModulesApi {
      */
     @Get('/')
     @Auth(
-        Permissions.MODULES_MODULE_VIEW,
+        Permissions.MODULES_MODULE_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -107,7 +107,7 @@ export class ModulesApi {
      */
     @Get('/schemas')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -243,7 +243,7 @@ export class ModulesApi {
         type: 'string',
         required: true,
         description: 'Module Identifier',
-        example: '00000000-0000-0000-0000-000000000000',
+        example: Examples.UUID,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -312,7 +312,7 @@ export class ModulesApi {
      */
     @Get('/:uuid')
     @Auth(
-        Permissions.MODULES_MODULE_VIEW,
+        Permissions.MODULES_MODULE_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -408,7 +408,7 @@ export class ModulesApi {
      */
     @Get('/:uuid/export/file')
     @Auth(
-        Permissions.MODULES_MODULE_VIEW,
+        Permissions.MODULES_MODULE_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -452,7 +452,7 @@ export class ModulesApi {
      */
     @Get('/:uuid/export/message')
     @Auth(
-        Permissions.MODULES_MODULE_VIEW,
+        Permissions.MODULES_MODULE_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -643,7 +643,7 @@ export class ModulesApi {
      */
     @Put('/:uuid/publish')
     @Auth(
-        Permissions.MODULES_MODULE_PUBLISH,
+        Permissions.MODULES_MODULE_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

@@ -54,7 +54,7 @@ export class TagsApi {
      */
     @Post('/search')
     @Auth(
-        Permissions.TAGS_TAG_VIEW,
+        Permissions.TAGS_TAG_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -198,7 +198,7 @@ export class TagsApi {
      */
     @Post('/synchronization')
     @Auth(
-        Permissions.TAGS_TAG_VIEW,
+        Permissions.TAGS_TAG_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -259,7 +259,7 @@ export class TagsApi {
      */
     @Get('/schemas')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -466,7 +466,7 @@ export class TagsApi {
      */
     @Put('/schemas/:schemaId/publish')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_PUBLISH,
+        Permissions.SCHEMAS_SCHEMA_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

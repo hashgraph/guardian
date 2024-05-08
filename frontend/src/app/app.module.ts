@@ -33,6 +33,7 @@ import { TagsService } from './services/tag.service';
 import { MapService } from './services/map.service';
 import { WizardService } from './modules/policy-engine/services/wizard.service';
 import { NotificationService } from './services/notify.service';
+import { PermissionsService } from './services/permissions.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -51,6 +52,8 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
+import { RolesViewComponent } from './views/roles/roles-view.component';
+import { UsersViewComponent } from './views/users/users-view.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { BrandingComponent } from './views/branding/branding.component';
@@ -160,6 +163,8 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         OnlyForDemoDirective,
         TokenDialogComponent,
         UseWithServiceDirective,
+        RolesViewComponent,
+        UsersViewComponent,
     ],
     imports: [
         BrowserModule,
@@ -237,6 +242,7 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         RecordService,
         CompareStorage,
         ProjectComparisonService,
+        PermissionsService,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

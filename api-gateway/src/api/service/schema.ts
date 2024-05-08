@@ -68,7 +68,7 @@ export class SingleSchemaApi {
      */
     @Get('/:schemaId/parents')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY, 
         // UserRole.AUDITOR ?, 
         // UserRole.USER ?
@@ -112,7 +112,7 @@ export class SingleSchemaApi {
      */
     @Get('/:schemaId/tree')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY, 
         // UserRole.AUDITOR ?, 
         // UserRole.USER ?
@@ -185,7 +185,7 @@ export class SchemaApi {
      */
     @Get('/')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY, 
         // UserRole.AUDITOR ?, 
         // UserRole.USER ?
@@ -304,7 +304,7 @@ export class SchemaApi {
      */
     @Get('/:topicId')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY, 
         // UserRole.AUDITOR ?, 
         // UserRole.USER ?
@@ -815,7 +815,7 @@ export class SchemaApi {
      */
     @Put('/:schemaId/publish')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_PUBLISH,
+        Permissions.SCHEMAS_SCHEMA_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -904,7 +904,7 @@ export class SchemaApi {
      */
     @Put('/push/:schemaId/publish')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_PUBLISH,
+        Permissions.SCHEMAS_SCHEMA_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1536,7 +1536,7 @@ export class SchemaApi {
      */
     @Get('/system/:username')
     @Auth(
-        Permissions.SCHEMAS_SYSTEM_SCHEMA_VIEW,
+        Permissions.SCHEMAS_SYSTEM_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1713,7 +1713,7 @@ export class SchemaApi {
      */
     @Put('/system/:schemaId/active')
     @Auth(
-        Permissions.SCHEMAS_SYSTEM_SCHEMA_PUBLISH,
+        Permissions.SCHEMAS_SYSTEM_SCHEMA_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

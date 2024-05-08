@@ -19,7 +19,7 @@ export class ContractsApi {
      */
     @Get()
     @Auth(
-        Permissions.CONTRACTS_CONTRACT_VIEW,
+        Permissions.CONTRACTS_CONTRACT_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -172,7 +172,7 @@ export class ContractsApi {
      */
     @Get('/:contractId/permissions')
     @Auth(
-        Permissions.CONTRACTS_PERMISSIONS_VIEW,
+        Permissions.CONTRACTS_PERMISSIONS_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -257,7 +257,7 @@ export class ContractsApi {
      */
     @Get('/wipe/requests')
     @Auth(
-        Permissions.CONTRACTS_WIPE_REQUEST_VIEW,
+        Permissions.CONTRACTS_WIPE_REQUEST_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -404,7 +404,7 @@ export class ContractsApi {
      */
     @Post('/wipe/requests/:requestId/approve')
     @Auth(
-        Permissions.CONTRACTS_WIPE_REQUEST_PUBLISH,
+        Permissions.CONTRACTS_WIPE_REQUEST_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -445,7 +445,7 @@ export class ContractsApi {
      */
     @Delete('/wipe/requests/:requestId/reject')
     @Auth(
-        Permissions.CONTRACTS_WIPE_REQUEST_PUBLISH,
+        Permissions.CONTRACTS_WIPE_REQUEST_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -875,7 +875,7 @@ export class ContractsApi {
      */
     @Get('/retire/requests')
     @Auth(
-        Permissions.CONTRACTS_RETIRE_REQUEST_VIEW,
+        Permissions.CONTRACTS_RETIRE_REQUEST_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -941,7 +941,7 @@ export class ContractsApi {
      */
     @Get('/retire/pools')
     @Auth(
-        Permissions.CONTRACTS_POOL_VIEW,
+        Permissions.CONTRACTS_POOL_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )
@@ -1270,7 +1270,7 @@ export class ContractsApi {
      */
     @Post('/retire/requests/:requestId/approve')
     @Auth(
-        Permissions.CONTRACTS_RETIRE_REQUEST_PUBLISH,
+        Permissions.CONTRACTS_RETIRE_REQUEST_REVIEW,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1451,7 +1451,7 @@ export class ContractsApi {
      */
     @Get('/retire')
     @Auth(
-        Permissions.CONTRACTS_DOCUMENT_VIEW,
+        Permissions.CONTRACTS_DOCUMENT_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER
     )

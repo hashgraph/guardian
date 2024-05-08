@@ -15,7 +15,7 @@ export class ArtifactApi {
      */
     @Get('/')
     @Auth(
-        Permissions.ARTIFACTS_FILE_VIEW,
+        Permissions.ARTIFACTS_FILE_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

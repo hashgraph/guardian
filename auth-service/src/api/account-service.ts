@@ -49,7 +49,12 @@ export const DefaultPermissions = PermissionsArray.reduce((group, product) => {
 
 function setDefaultPermissions(user: User): User {
     if (user && DefaultPermissions.has(user.role)) {
-        user.permissions = DefaultPermissions.get(user.role);
+        const permissions = DefaultPermissions.get(user.role);
+        if (user.permissions) {
+            user.permissions = [...user.permissions, ...permissions];
+        } else {
+            user.permissions = permissions;
+        }
     }
     return user;
 }
@@ -104,7 +109,8 @@ export class AccountService extends NatsService {
         this.getMessages<IGetUserByIdMessage, IUser>(AuthEvents.GET_USER_BY_ID, async (msg: any) => {
             const { did } = msg;
             try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ did }));
+                const user = await new DataBaseHelper(User).findOne({ did })
+                return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -118,7 +124,8 @@ export class AccountService extends NatsService {
         this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER, async (msg: any) => {
             const { username } = msg;
             try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ username }));
+                const user = await new DataBaseHelper(User).findOne({ username })
+                return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -132,7 +139,8 @@ export class AccountService extends NatsService {
         this.getMessages<IGetUsersByAccountMessage, IUser>(AuthEvents.GET_USER_BY_ACCOUNT, async (msg: any) => {
             const { account } = msg;
             try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ hederaAccountId: account }));
+                const user = await new DataBaseHelper(User).findOne({ hederaAccountId: account })
+                return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -147,7 +155,8 @@ export class AccountService extends NatsService {
         this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER_BY_PROVIDER_USER_DATA, async (msg: any) => {
             const { providerId, provider } = msg;
             try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ providerId, provider }));
+                const user = await new DataBaseHelper(User).findOne({ providerId, provider })
+                return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);

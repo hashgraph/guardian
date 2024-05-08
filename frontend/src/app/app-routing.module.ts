@@ -40,24 +40,26 @@ import { ContractConfigComponent } from './modules/contract-engine/configs/contr
 import { UserContractConfigComponent } from './modules/contract-engine/configs/user-contract-config/user-contract-config.component';
 import { AnnotationBlockComponent } from './modules/project-comparison/component/annotation-block/annotation-block.component';
 import { ProjectsComparisonTableComponent } from './modules/project-comparison/component/projects-comparison-table/projects-comparison-table.component';
+import { RolesViewComponent } from './views/roles/roles-view.component';
+import { UsersViewComponent } from './views/users/users-view.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
 class Guard {
     private router: Router;
     private auth: AuthService;
-    private role: UserRole;
+    private roles: UserRole[];
     private defaultPage: string;
 
     constructor(
         router: Router,
         auth: AuthService,
-        role: UserRole,
+        roles: UserRole | UserRole[],
         defaultPage: string
     ) {
         this.router = router;
         this.auth = auth
-        this.role = role;
+        this.roles = Array.isArray(roles) ? roles : [roles];
         this.defaultPage = defaultPage
     }
 
@@ -65,7 +67,7 @@ class Guard {
         return this.auth.sessions().pipe(
             map((res: IUser | null) => {
                 if (res) {
-                    if (res.role != this.role) {
+                    if (!res.role || this.roles.indexOf(res.role) === -1) {
                         this.router.navigate(['/info'],
                             {
                                 skipLocationChange: true,
@@ -91,7 +93,7 @@ class Guard {
         return this.auth.sessions().pipe(
             map((res: IUser | null) => {
                 if (res) {
-                    if (res.role != this.role) {
+                    if (!res.role || this.roles.indexOf(res.role) === -1) {
                         this.router.navigate(['/info'],
                             {
                                 skipLocationChange: true,
@@ -128,7 +130,7 @@ export class UserGuard extends Guard implements CanActivate {
 })
 export class StandardRegistryGuard extends Guard implements CanActivate {
     constructor(router: Router, auth: AuthService) {
-        super(router, auth, UserRole.STANDARD_REGISTRY, '/login');
+        super(router, auth, [UserRole.STANDARD_REGISTRY, UserRole.WORKER], '/login');
     }
 }
 
@@ -200,8 +202,11 @@ const routes: Routes = [
 
     { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
-    {path: 'projects', component: AnnotationBlockComponent, data: {title: 'GUARDIAN / Project Overview'}},
-    {path: 'projects/comparison', component: ProjectsComparisonTableComponent, data: {title: 'GUARDIAN / Project Comparison'}},
+    { path: 'projects', component: AnnotationBlockComponent, data: { title: 'GUARDIAN / Project Overview' } },
+    { path: 'projects/comparison', component: ProjectsComparisonTableComponent, data: { title: 'GUARDIAN / Project Comparison' } },
+
+    { path: 'roles', component: RolesViewComponent },
+    { path: 'users', component: UsersViewComponent },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

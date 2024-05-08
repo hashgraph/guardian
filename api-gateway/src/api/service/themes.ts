@@ -151,7 +151,7 @@ export class ThemesApi {
      */
     @Get('/')
     @Auth(
-        Permissions.SETTINGS_THEME_VIEW,
+        Permissions.SETTINGS_THEME_READ,
         // UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({

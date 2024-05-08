@@ -76,7 +76,7 @@ export class TokensApi {
      */
     @Get('/')
     @Auth(
-        Permissions.TOKENS_TOKEN_VIEW
+        Permissions.TOKENS_TOKEN_READ
         // UserRole.STANDARD_REGISTRY
         // UserRole.USER
     )
@@ -1164,7 +1164,7 @@ export class TokensApi {
      */
     @Get('/:tokenId/serials')
     @Auth(
-        Permissions.TOKENS_TOKEN_VIEW
+        Permissions.TOKENS_TOKEN_READ
         // UserRole.STANDARD_REGISTRY
         // UserRole.USER
     )

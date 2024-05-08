@@ -1,7 +1,6 @@
 <ng-container *ngIf="isLogin">
     <ng-container [ngTemplateOutlet]="remoteButton"></ng-container>
-    <div (mouseleave)="menuCollapsed = smallMenuMode" (mousemove)="menuCollapsed = false" [class.collapse]="menuCollapsed"
-         id="navbar">
+    <div (mouseleave)="menuCollapsed = smallMenuMode" (mousemove)="menuCollapsed = false" [class.collapse]="menuCollapsed" id="navbar">
         <ng-container [ngTemplateOutlet]="logotype"></ng-container>
         <ng-container *ngIf="menuItems">
             <ng-container [ngTemplateOutlet]="menuBar"></ng-container>
@@ -59,7 +58,7 @@
 
 <ng-template #footerBar>
     <div id="footerBar">
-        <div *ngIf="role !== 'AUDITOR'" [class.hidden-logotype]="menuCollapsed"
+        <div *ngIf="user.AUDITOR" [class.hidden-logotype]="menuCollapsed"
              class="item background-light border-item">
             <img alt="" src="assets/images/icons/money.svg">
             <span>
@@ -94,7 +93,7 @@
         <div class="boundary-box">
             <div 
                 (click)="goToHomePage()"
-                [class.clickable]="role !== 'AUDITOR'" 
+                [class.clickable]="!user.AUDITOR" 
                 [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')" 
                 class="item"
             >
@@ -103,7 +102,7 @@
                     <span matTooltip="Open Profile" matTooltipPosition="after">{{ username }}</span>
                     <div class="flex-column-gap-10">
                         <i (click)="goToBrandingPage($event)"
-                           *ngIf="role === 'STANDARD_REGISTRY'"
+                           *ngIf="user.BRANDING_CONFIG_UPDATE"
                            class="pi pi-cog icon-color-grey"
                            matTooltip="Branding Settings"
                            matTooltipPosition="after"

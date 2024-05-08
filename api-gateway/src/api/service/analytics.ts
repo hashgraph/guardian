@@ -14,7 +14,7 @@ export class AnalyticsApi {
      */
     @Post('/search/policies')
     @Auth(
-        Permissions.ANALYTIC_POLICY_VIEW,
+        Permissions.ANALYTIC_POLICY_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -64,7 +64,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/policies')
     @Auth(
-        Permissions.ANALYTIC_POLICY_VIEW,
+        Permissions.ANALYTIC_POLICY_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -150,7 +150,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/modules')
     @Auth(
-        Permissions.ANALYTIC_MODULE_VIEW,
+        Permissions.ANALYTIC_MODULE_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -218,7 +218,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/schemas')
     @Auth(
-        Permissions.ANALYTIC_SCHEMA_VIEW,
+        Permissions.ANALYTIC_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -272,7 +272,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/documents')
     @Auth(
-        Permissions.ANALYTIC_DOCUMENT_VIEW,
+        Permissions.ANALYTIC_DOCUMENT_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -353,7 +353,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/tools')
     @Auth(
-        Permissions.ANALYTIC_TOOL_VIEW,
+        Permissions.ANALYTIC_TOOL_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -430,7 +430,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/policies/export')
     @Auth(
-        Permissions.ANALYTIC_POLICY_VIEW,
+        Permissions.ANALYTIC_POLICY_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -523,7 +523,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/modules/export')
     @Auth(
-        Permissions.ANALYTIC_MODULE_VIEW,
+        Permissions.ANALYTIC_MODULE_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -599,7 +599,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/schemas/export')
     @Auth(
-        Permissions.ANALYTIC_SCHEMA_VIEW,
+        Permissions.ANALYTIC_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -661,7 +661,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/documents/export')
     @Auth(
-        Permissions.ANALYTIC_DOCUMENT_VIEW,
+        Permissions.ANALYTIC_DOCUMENT_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -749,7 +749,7 @@ export class AnalyticsApi {
      */
     @Post('/compare/tools/export')
     @Auth(
-        Permissions.ANALYTIC_TOOL_VIEW,
+        Permissions.ANALYTIC_TOOL_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -833,7 +833,7 @@ export class AnalyticsApi {
      */
     @Post('/search/blocks')
     @Auth(
-        Permissions.ANALYTIC_POLICY_VIEW,
+        Permissions.ANALYTIC_POLICY_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

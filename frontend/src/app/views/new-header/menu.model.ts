@@ -1,4 +1,4 @@
-import { UserRole } from '@guardian/interfaces';
+import { UserPermissions, UserRole } from '@guardian/interfaces';
 
 export interface NavbarMenuItem {
     title: string;
@@ -60,6 +60,14 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         active: false,
         iconUrl: 'stars',
         childItems: [
+            {
+                title: 'Roles',
+                routerLink: '/roles'
+            },
+            {
+                title: 'Users',
+                routerLink: '/users'
+            },
             {
                 title: 'Settings',
                 routerLink: '/admin/settings'
@@ -132,17 +140,121 @@ const NAVBAR_MENU_AUDITOR: NavbarMenuItem[] = [
     },
 ];
 
-export function getMenuItems(userRole: UserRole): NavbarMenuItem[] {
-    switch (userRole) {
-        case UserRole.STANDARD_REGISTRY:
-        default: {
-            return NAVBAR_MENU_STANDARD_REGISTRY;
+function customMenu(user: UserPermissions): NavbarMenuItem[] {
+    const menu: NavbarMenuItem[] = [];
+
+    if (user.SCHEMAS_SCHEMA_READ || user.SCHEMAS_SYSTEM_SCHEMA_READ) {
+        const childItems: any = [];
+        if (user.LOG_LOG_READ) {
+            childItems.push({
+                title: 'Schemas',
+                routerLink: '/schemas'
+            });
         }
-        case UserRole.USER: {
-            return NAVBAR_MENU_USER;
+        if (user.ARTIFACTS_FILE_READ) {
+            childItems.push({
+                title: 'Artifacts',
+                routerLink: '/artifacts'
+            });
         }
-        case UserRole.AUDITOR: {
-            return NAVBAR_MENU_AUDITOR;
+        if (user.MODULES_MODULE_READ) {
+            childItems.push({
+                title: 'Modules',
+                routerLink: '/modules'
+            });
         }
+        if (user.POLICIES_POLICY_READ) {
+            childItems.push({
+                title: 'Policies',
+                routerLink: '/policy-viewer'
+            });
+        }
+        if (user.TOOLS_TOOL_READ) {
+            childItems.push({
+                title: 'Tools',
+                routerLink: '/tools'
+            });
+        }
+        menu.push({
+            title: 'Policies',
+            allowedUserRoles: [UserRole.STANDARD_REGISTRY],
+            iconUrl: 'table',
+            active: false,
+            childItems
+        });
     }
+
+    if (
+        user.TOKENS_TOKEN_READ ||
+        user.CONTRACTS_CONTRACT_READ
+    ) {
+        const childItems: any = [];
+        if (user.TOKENS_TOKEN_READ) {
+            childItems.push({
+                title: 'Tokens',
+                routerLink: '/tokens'
+            });
+        }
+        if (user.CONTRACTS_CONTRACT_READ) {
+            childItems.push({
+                title: 'Retirement',
+                routerLink: '/contracts'
+            });
+        }
+        menu.push({
+            title: 'Tokens',
+            iconUrl: 'twoRings',
+            allowedUserRoles: [UserRole.STANDARD_REGISTRY],
+            active: false,
+            childItems
+        });
+    }
+
+    if (
+        user.SETTINGS_SETTINGS_READ ||
+        user.LOG_LOG_READ
+    ) {
+        const childItems: any = [];
+        if (user.SETTINGS_SETTINGS_READ) {
+            childItems.push({
+                title: 'Settings',
+                routerLink: '/admin/settings'
+            });
+        }
+        if (user.LOG_LOG_READ) {
+            childItems.push({
+                title: 'Logs',
+                routerLink: '/admin/logs'
+            });
+        }
+        menu.push({
+            title: 'Administration',
+            allowedUserRoles: [UserRole.STANDARD_REGISTRY],
+            active: false,
+            iconUrl: 'stars',
+            childItems
+        });
+    }
+
+    return menu;
+}
+
+export function getMenuItems(user: UserPermissions): NavbarMenuItem[] {
+    if (!user) {
+        return [];
+    }
+
+    if (user.AUDITOR) {
+        return NAVBAR_MENU_AUDITOR;
+    }
+
+    if (user.USER) {
+        return NAVBAR_MENU_USER;
+    }
+
+    if (user.STANDARD_REGISTRY) {
+        return NAVBAR_MENU_STANDARD_REGISTRY;
+    }
+
+    return customMenu(user);
 }

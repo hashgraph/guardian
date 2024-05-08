@@ -15,7 +15,7 @@ export class TrustChainsApi {
      */
     @Get('/')
     @Auth(
-        Permissions.AUDIT_TRUST_CHAIN_VIEW,
+        Permissions.AUDIT_TRUST_CHAIN_READ,
         // UserRole.AUDITOR,
     )
     @ApiOperation({
@@ -85,7 +85,7 @@ export class TrustChainsApi {
      */
     @Get('/:hash')
     @Auth(
-        Permissions.AUDIT_TRUST_CHAIN_VIEW,
+        Permissions.AUDIT_TRUST_CHAIN_READ,
         // UserRole.AUDITOR,
     )
     @ApiOperation({

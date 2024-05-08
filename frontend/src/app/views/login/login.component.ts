@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { UserRole } from '@guardian/interfaces';
+import { UserCategory, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
@@ -108,12 +108,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     async redirect() {
         this.auth.sessions().subscribe((user: any | null) => {
             if (user) {
-                if (user.role === UserRole.STANDARD_REGISTRY) {
+                if (UserCategory.isAdministrator(user.role)) {
                     this.router.navigate(['/config']);
-                } else if (user.role === UserRole.AUDITOR) {
+                } else if (UserCategory.isAudit(user.role)) {
                     this.router.navigate(['/audit']);
-                } else {
+                } else if (UserCategory.isUser(user.role)) {
                     this.router.navigate(['/user-profile']);
+                } else {
+                    this.router.navigate(['/']);
                 }
             }
         });
@@ -149,8 +151,12 @@ export class LoginComponent implements OnInit, OnDestroy {
                 this.auth.setUsername(login);
                 this.auth.updateAccessToken().subscribe(_result => {
                     this.authState.updateState(true);
-                    if (result.role == UserRole.STANDARD_REGISTRY) {
+                    if (UserCategory.isAdministrator(result.role)) {
                         this.router.navigate(['/config']);
+                    } else if (UserCategory.isAudit(result.role)) {
+                        this.router.navigate(['/audit']);
+                    } else if (UserCategory.isUser(result.role)) {
+                        this.router.navigate(['/user-profile']);
                     } else {
                         this.router.navigate(['/']);
                     }
@@ -236,8 +242,12 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.auth.setAccessToken(event.accessToken);
             this.auth.setUsername(event.username);
             this.authState.updateState(true);
-            if (event.role == UserRole.STANDARD_REGISTRY) {
+            if (UserCategory.isAdministrator(event.role)) {
                 this.router.navigate(['/config']);
+            } else if (UserCategory.isAudit(event.role)) {
+                this.router.navigate(['/audit']);
+            } else if (UserCategory.isUser(event.role)) {
+                this.router.navigate(['/user-profile']);
             } else {
                 this.router.navigate(['/']);
             }
@@ -297,18 +307,6 @@ export class LoginComponent implements OnInit, OnDestroy {
                     return;
                 }
                 this.login(userData.username, userData.password);
-                // this.auth.login(userData.username, userData.password).subscribe((result) => {
-                //     this.auth.setAccessToken(result.accessToken);
-                //     this.auth.setUsername(userData.username);
-                //     this.authState.updateState(true);
-                //     if (result.role === UserRole.STANDARD_REGISTRY) {
-                //         this.router.navigate(['/config']);
-                //     } else {
-                //         this.router.navigate(['/']);
-                //     }
-                // }, () => {
-                //     this.loading = false;
-                // })
             }, ({ error }) => {
                 this.error = error.message;
                 this.loading = false;

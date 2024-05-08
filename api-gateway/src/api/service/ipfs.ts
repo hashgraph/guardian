@@ -168,7 +168,7 @@ export class IpfsApi {
      */
     @Get('/file/:cid/dry-run')
     @Auth(
-        Permissions.IPFS_FILE_VIEW,
+        Permissions.IPFS_FILE_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR

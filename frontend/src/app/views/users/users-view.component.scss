@@ -1,0 +1,138 @@
+.container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+    margin: 56px 48px 0 48px;
+}
+
+.page-title {
+    font-family: Poppins, serif;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.loading {
+    background: #f9fafc;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: -15px;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.table-container {
+    margin-top: 20px;
+    overflow-x: auto;
+
+    .header-cell-text {
+        color: #848fa9 !important;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        text-transform: uppercase;
+        font-weight: 400 !important;
+        border: none !important;
+    }
+
+    .table-row {
+
+    }
+
+    .cell-size-id {
+        min-width: 140px;
+        max-width: 150px;
+    }
+
+    .cell-size-1 {
+        min-width: 140px;
+    }
+}
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 8px;
+    justify-content: center;
+}
+
+.info-text {
+    color: var(--color-grey-5, #848FA9);
+    text-align: center;
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.info-text-strong {
+    color: var(--color-grey-5, #848FA9);
+    text-align: center;
+    font-family: Inter, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+
+    .actions-controls-container {
+        display: flex;
+    }
+
+    .actions-container {
+        margin-left: auto;
+    }
+
+    .toolbar-btn-primary {
+        ::ng-deep .p-button {
+            background: var(--color-primary);
+            border: 1px solid var(--color-primary);
+            font-family: Inter, sans-serif;
+            font-size: 1px;
+            font-style: normal;
+            font-weight: 500;
+            margin-left: 10px;
+            height: 40px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+    }
+}
+
+.primary-color {
+    fill: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.color-white {
+    fill: white;
+    color: white;
+}
+
+.disabled-color {
+    fill: var(--color-grey-5, #848FA9) !important;
+    color: var(--color-grey-5, #848FA9) !important;
+    cursor: not-allowed !important;
+}

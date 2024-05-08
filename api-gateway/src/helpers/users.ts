@@ -4,6 +4,20 @@ import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '
 import { Injectable } from '@nestjs/common';
 
 /**
+ * Items and count
+ */
+interface ResponseAndCount<U> {
+    /**
+     * Return count
+     */
+    count: number;
+    /**
+     * Schemas array
+     */
+    items: U[];
+}
+
+/**
  * Users service
  */
 @Singleton
@@ -191,6 +205,57 @@ export class Users extends NatsService {
     public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser): Promise<any> {
         return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER, userProvider);
     }
+
+    /**
+     * Get roles
+     * @param options
+     * @returns Operation Success
+     */
+    public async getRoles(options: any): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_ROLES, options);
+    }
+
+    /**
+     * Get role
+     * @param id
+     * @returns Operation Success
+     */
+    public async getRoleById(id: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_ROLE, { id });
+    }
+
+    /**
+     * Create role
+     * @param id
+     * @param role
+     * @param owner
+     * @returns Operation Success
+     */
+    public async createRole(role: any, owner: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner });
+    }
+
+    /**
+     * Update role
+     * @param id
+     * @param role
+     * @param owner
+     * @returns Operation Success
+     */
+    public async updateRole(id: string, role: any, owner: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_ROLE, { id, role, owner });
+    }
+
+    /**
+     * Delete role
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteRole(id: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner });
+    }
+
 }
 
 @Injectable()

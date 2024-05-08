@@ -53,7 +53,7 @@ export class SettingsApi {
      */
     @Get('/')
     @Auth(
-        Permissions.SETTINGS_SETTINGS_VIEW,
+        Permissions.SETTINGS_SETTINGS_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -113,7 +113,7 @@ export class SettingsApi {
      */
     @Get('/about')
     @Auth(
-        Permissions.SETTINGS_SETTINGS_VIEW,
+        Permissions.SETTINGS_SETTINGS_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

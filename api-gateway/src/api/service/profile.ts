@@ -15,7 +15,7 @@ export class ProfileApi {
      */
     @Get('/:username/')
     @Auth(
-        Permissions.PROFILES_USER_VIEW
+        Permissions.PROFILES_USER_READ
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR
@@ -90,6 +90,8 @@ export class ProfileApi {
             return {
                 username: user.username,
                 role: user.role,
+                permissionsGroupName: user.permissionsGroupName,
+                permissions: user.permissions,
                 did: user.did,
                 parent: user.parent,
                 hederaAccountId: user.hederaAccountId,
@@ -207,7 +209,7 @@ export class ProfileApi {
      */
     @Get('/:username/balance')
     @Auth(
-        Permissions.PROFILES_BALANCE_VIEW,
+        Permissions.PROFILES_BALANCE_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
         // UserRole.AUDITOR

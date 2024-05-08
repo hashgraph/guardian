@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
+import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -30,6 +30,29 @@ import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-pol
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
 
+const adminColumns = [
+    'name',
+    'description',
+    // 'roles',
+    'topic',
+    'version',
+    'tags',
+    'tokens',
+    'schemas',
+    'status',
+    'instance',
+    'operations',
+];
+const userColumns = [
+    'name',
+    'description',
+    'roles',
+    'version',
+    'tags',
+    'status',
+    'instance',
+];
+
 /**
  * Component for choosing a policy and
  * display blocks of the selected policy
@@ -40,8 +63,8 @@ import { ContractService } from 'src/app/services/contract.service';
     styleUrls: ['./policies.component.scss'],
 })
 export class PoliciesComponent implements OnInit {
+    public user: UserPermissions = new UserPermissions();
     public policies: any[] | null;
-    public role!: any;
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public pageIndex: number;
@@ -54,7 +77,6 @@ export class PoliciesComponent implements OnInit {
     public publishMenuSelector: any = null;
     public noFilterResults: boolean = false;
     private columns: string[] = [];
-    private columnsRole: any = {};
     private publishMenuOption = [
         {
             id: 'Publish',
@@ -142,7 +164,6 @@ export class PoliciesComponent implements OnInit {
         private wizardService: WizardService,
         private tokenService: TokenService,
         private analyticsService: AnalyticsService,
-        private changeDetector: ChangeDetectorRef,
         private contractSerivce: ContractService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
@@ -151,29 +172,6 @@ export class PoliciesComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.policiesCount = 0;
-        this.columnsRole = {};
-        this.columnsRole[UserRole.STANDARD_REGISTRY] = [
-            'name',
-            'description',
-            // 'roles',
-            'topic',
-            'version',
-            'tags',
-            'tokens',
-            'schemas',
-            'status',
-            'instance',
-            'operations',
-        ];
-        this.columnsRole[UserRole.USER] = [
-            'name',
-            'description',
-            'roles',
-            'version',
-            'tags',
-            'status',
-            'instance',
-        ];
     }
 
     ngOnInit() {
@@ -193,17 +191,17 @@ export class PoliciesComponent implements OnInit {
             (value) => {
                 const profile: IUser | null = value[0];
                 const tagSchemas: any[] = value[1] || [];
-
                 this.isConfirmed = !!(profile && profile.confirmed);
-                this.role = profile ? profile.role : null;
-                this.owner = profile?.did;
+                this.user = new UserPermissions(profile);
+                this.owner = this.user.did;
                 this.tagSchemas = SchemaHelper.map(tagSchemas);
 
-                if (this.role == UserRole.STANDARD_REGISTRY) {
-                    this.columns = this.columnsRole[UserRole.STANDARD_REGISTRY];
+                if (this.user.ADMINISTRATOR) {
+                    this.columns = adminColumns;
                 } else {
-                    this.columns = this.columnsRole[UserRole.USER];
+                    this.columns = userColumns;
                 }
+
                 if (this.isConfirmed) {
                     this.loadAllPolicy();
                 } else {
@@ -1106,7 +1104,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public onChangeStatus(event: any, policy: any): void {
-        switch(policy.status) {
+        switch (policy.status) {
             case 'DRAFT':
                 this.onPublishAction(event, policy);
                 break;

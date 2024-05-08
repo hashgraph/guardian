@@ -38,7 +38,7 @@ export class LoggerApi {
      */
     @Post('/')
     @Auth(
-        Permissions.LOG_LOG_VIEW,
+        Permissions.LOG_LOG_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -109,7 +109,7 @@ export class LoggerApi {
      */
     @Get('attributes')
     @Auth(
-        Permissions.LOG_LOG_VIEW,
+        Permissions.LOG_LOG_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
