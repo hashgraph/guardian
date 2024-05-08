@@ -40,6 +40,11 @@ export class LoggerApi {
         try {
             const filters: any = {};
             const pageParameters: IPageParameters = {};
+
+            if(!req.body) {
+              req.body = {}
+            }
+
             if (req.body.type) {
                 filters.type = req.body.type;
             }
