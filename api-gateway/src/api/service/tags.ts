@@ -160,7 +160,6 @@ export class TagsApi {
             }
             const { items, count } = await guardians.getTagSchemas(owner, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
-            res.locals.data = SchemaUtils.toOld(items)
             return res
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
