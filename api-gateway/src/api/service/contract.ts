@@ -401,7 +401,6 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = contracts
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1125,7 +1124,6 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = contracts
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1213,7 +1211,6 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = contracts
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1790,7 +1787,6 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = vcs
             return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
