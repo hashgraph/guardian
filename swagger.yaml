@@ -10538,6 +10538,205 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_16
+  /permissions/roles:
+    get:
+      operationId: PermissionsApi_getRoles
+      summary: Return a list of all roles.
+      description: Returns all roles.
+      parameters:
+        - name: pageIndex
+          required: true
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            type: number
+        - name: pageSize
+          required: true
+          in: query
+          description: The numbers of items to return
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_17
+        - permissions
+      security:
+        - bearer: []
+    post:
+      operationId: PermissionsApi_createRole
+      summary: Creates new role.
+      description: Creates new role.
+      parameters: []
+      requestBody:
+        required: true
+        description: Object that contains role information.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleDTO'
+      responses:
+        '200':
+          description: Created role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_17
+      security:
+        - bearer: []
+  /permissions/roles/{id}:
+    put:
+      operationId: PermissionsApi_updatePolicy
+      summary: Updates policy configuration.
+      description: Updates policy configuration for the specified policy ID.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Role Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Policy configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleDTO'
+      responses:
+        '200':
+          description: Policy configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_17
+      security:
+        - bearer: []
+    delete:
+      operationId: PermissionsApi_deleteModule
+      summary: Deletes the role.
+      description: Deletes the role with the provided role ID.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Role Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_17
+      security:
+        - bearer: []
+  /permissions/users:
+    get:
+      operationId: PermissionsApi_getUsers
+      summary: Return a list of all users.
+      description: Returns all users.
+      parameters:
+        - name: pageIndex
+          required: true
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            type: number
+        - name: pageSize
+          required: true
+          in: query
+          description: The numbers of items to return
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRolesDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_17
+      security:
+        - bearer: []
   /schemas/type/{type}:
     get:
       tags:
@@ -12216,6 +12415,14 @@ components:
         role:
           type: string
           nullable: false
+        permissionsGroupName:
+          type: string
+          nullable: false
+        permissions:
+          nullable: false
+          type: array
+          items:
+            type: string
         did:
           type: string
           nullable: true
@@ -12246,6 +12453,8 @@ components:
       required:
         - username
         - role
+        - permissionsGroupName
+        - permissions
     SubjectDTO:
       type: object
       properties:
@@ -13458,6 +13667,15 @@ components:
         - right
         - total
         - documents
+    RoleDTO:
+      type: object
+      properties: {}
+    UserRolesDTO:
+      type: object
+      properties: {}
+    PermissionsDTO:
+      type: object
+      properties: {}
     Credentials:
       type: object
       required:
