@@ -12,6 +12,10 @@ jobs:
                 ports:
                     - 8080:8080
                     - 5001:5001
+            cache:
+                image: registry.redict.io/redict
+                ports:
+                    - 6379:6379
         strategy:
             matrix:
                 node-version: [ 20.x ]
