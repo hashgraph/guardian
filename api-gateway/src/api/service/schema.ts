@@ -1588,8 +1588,7 @@ export class SchemaApi {
             });
             res.header('Content-disposition', `attachment; filename=${name}`);
             res.header('Content-type', 'application/zip');
-            arcStream.pipe(res);
-            return res;
+            return res.send(arcStream);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
