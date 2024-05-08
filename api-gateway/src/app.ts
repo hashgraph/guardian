@@ -24,6 +24,8 @@ import fastifyMultipart from '@fastify/multipart';
 
 const PORT = process.env.PORT || 3002;
 
+const BODY_LIMIT = 1024 * 1024 * 1024
+
 Promise.all([
     NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ ignoreTrailingSlash: true }), {
         rawBody: true,
@@ -48,12 +50,8 @@ Promise.all([
         await app.register(fastifyFormbody);
         await app.register(fastifyMultipart);
 
-        const bodyLimit = 10_485_760;
-        app.useBodyParser('json', { bodyLimit: 1024 * 1024 * 1024 });
-        app.useBodyParser('binary/octet-stream', { bodyLimit: 1024 * 1024 * 1024 });
-        // app.useBodyParser('multipart/form-data', { bodyLimit: 1024 * 1024 * 1024 });
-        // app.use(json({ limit: '10mb' }));
-
+        app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
+        app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
 
         new Logger().setConnection(cn);
         await new Guardians().setConnection(cn).init();

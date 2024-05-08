@@ -818,11 +818,11 @@ export class PolicyApi {
                 req.params.policyId,
                 req.user.did
             );
-            res.setHeader(
+            res.header(
                 'Content-Disposition',
                 `attachment; filename=${policy.name}.data`
             );
-            res.setHeader('Content-Type', 'application/policy-data');
+            res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -960,11 +960,11 @@ export class PolicyApi {
                 req.params.policyId,
                 req.user.did
             );
-            res.setHeader(
+            res.header(
                 'Content-Disposition',
                 `attachment; filename=${policy.name}.vk`
             );
-            res.setHeader('Content-Type', 'application/virtual-keys');
+            res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -2249,7 +2249,7 @@ export class PolicyApi {
                 pageSize = req.query.pageSize;
             }
             const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'transactions', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).send(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2283,7 +2283,7 @@ export class PolicyApi {
                 pageSize = req.query.pageSize;
             }
             const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'artifacts', pageIndex, pageSize);
-            return res.setHeader('X-Total-Count', count).send(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2316,7 +2316,7 @@ export class PolicyApi {
                 pageSize = req.query.pageSize;
             }
             const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'ipfs', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).send(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
