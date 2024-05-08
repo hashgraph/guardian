@@ -6,7 +6,6 @@ import { MultipartFile as MultipartFileFastify} from '@fastify/multipart';
 //types and interfaces
 import { MultipartFile, MultipartOptions } from '../types/index.js';
 
-
 export const getFileFromPart = async (part: MultipartFileFastify): Promise<MultipartFile> => {
   const buffer: Buffer = await part.toBuffer()
   return {
@@ -30,7 +29,9 @@ export const validateFile = (file: MultipartFile, options: MultipartOptions): st
   }
 
   for (const validator of validators) {
-    if (validator.isValid(file)) continue;
+    if (validator.isValid(file)) {
+      continue
+    }
 
     return validator.buildErrorMessage(file);
   }
