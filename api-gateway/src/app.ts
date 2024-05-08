@@ -25,7 +25,7 @@ import fastifyMultipart from '@fastify/multipart';
 const PORT = process.env.PORT || 3002;
 
 Promise.all([
-    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
+    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ ignoreTrailingSlash: true }), {
         rawBody: true,
         bodyParser: false,
     }),
