@@ -11,6 +11,8 @@ export interface MultipartFile {
   size: number;
   mimetype: string;
   fieldname: string;
+  encoding: string;
+  originalname: string;
 }
 
 export class MultipartOptions {

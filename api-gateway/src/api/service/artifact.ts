@@ -11,7 +11,6 @@ import {
     Post,
     Req,
     Response,
-    UploadedFiles,
     UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -31,8 +30,9 @@ import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/err
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { Auth } from '../../auth/auth.decorator.js';
+import { AnyFilesInterceptor } from '../../helpers/interceptors/multipart.js';
+import { UploadedFiles } from '../../helpers/decorators/file.js';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -181,7 +181,7 @@ export class ArtifactApi {
         }
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
-    @UseInterceptors(FilesInterceptor('artifacts'))
+    @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
     @Auth(UserRole.STANDARD_REGISTRY)
     async uploadArtifacts(@Req() req, @UploadedFiles() files): Promise<any> {
