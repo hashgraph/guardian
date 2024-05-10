@@ -15,24 +15,32 @@ export function AnyFilesInterceptor(options: MultipartOptions = {}): Type<NestIn
       const req = context.switchToHttp().getRequest() as FastifyRequest;
 
       if (!req.isMultipart()) {
-        throw new HttpException('The request should be a form-data', HttpStatus.BAD_REQUEST)
+        throw new HttpException('The request should be a form-data', HttpStatus.BAD_REQUEST);
       }
 
       const files: MultipartFile[] = [];
       const body = {};
 
-      for await (const part of req.parts()) {
-        if (part.type !== 'file') {
-          body[part.fieldname] = (part as MultipartValue).value;
-          continue;
+      try {
+        for await (const part of req.parts()) {
+          const { type, fieldname } = part;
+
+          if (type !== 'file') {
+            body[fieldname] = (part as MultipartValue).value;
+            continue;
+          }
+
+          const file: MultipartFile | null = await getFileFromPart(part);
+
+          if (file) {
+            files.push(file);
+          }
         }
-
-        const file: MultipartFile = await getFileFromPart(part);
-
-        files.push(file);
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
       }
 
-      if(files.length) {
+      if (files.length) {
         req.storedFiles = files;
       }
 

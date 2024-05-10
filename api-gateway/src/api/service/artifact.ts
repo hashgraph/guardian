@@ -187,7 +187,7 @@ export class ArtifactApi {
     async uploadArtifacts(@Req() req, @UploadedFiles() files): Promise<any> {
         try {
             if (!files) {
-                throw new HttpException('There are no files to upload', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('There are no files to upload', HttpStatus.BAD_REQUEST)
             }
             const owner = req.user.did;
             const parentId = req.params.parentId;
