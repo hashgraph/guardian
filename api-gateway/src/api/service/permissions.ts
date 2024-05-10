@@ -1,14 +1,44 @@
 import { IAuthUser } from '@guardian/common';
-import { Permissions } from '@guardian/interfaces';
+import { Permissions, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, PermissionsDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, InternalException, Users } from '#helpers';
 
 @Controller('permissions')
 @ApiTags('permissions')
 export class PermissionsApi {
+    /**
+     * Return a list of all permissions
+     */
+    @Get('/')
+    @Auth(
+        Permissions.PERMISSIONS_ROLE_READ
+    )
+    @ApiOperation({
+        summary: 'Return a list of all permissions.',
+        description: 'Returns all permissions.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: PermissionsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPermissions(): Promise<PermissionsDTO[]> {
+        try {
+            return await (new Users()).getPermissions();
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
     /**
      * Return a list of all roles
      */
@@ -108,8 +138,8 @@ export class PermissionsApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Updates policy configuration.',
-        description: 'Updates policy configuration for the specified policy ID.'
+        summary: 'Updates role configuration.',
+        description: 'Updates role configuration for the specified role ID.'
     })
     @ApiParam({
         name: 'id',
@@ -119,11 +149,11 @@ export class PermissionsApi {
         example: Examples.DB_ID,
     })
     @ApiBody({
-        description: 'Policy configuration.',
+        description: 'Role configuration.',
         type: RoleDTO,
     })
     @ApiOkResponse({
-        description: 'Policy configuration.',
+        description: 'Role configuration.',
         type: RoleDTO
     })
     @ApiInternalServerErrorResponse({
@@ -132,7 +162,7 @@ export class PermissionsApi {
     })
     @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async updatePolicy(
+    async updateRole(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
         @Body() role: RoleDTO
@@ -145,7 +175,7 @@ export class PermissionsApi {
             await InternalException(error);
         }
         if (!row) {
-            throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
+            throw new HttpException('Role does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
             return await users.updateRole(id, role, user.did);
@@ -238,11 +268,13 @@ export class PermissionsApi {
         try {
             const options: any = {
                 filters: null,
-                owner: user.did,
+                // parent: user.did,
+                parent: null,
+                role: UserRole.WORKER,
                 pageIndex,
                 pageSize
             };
-            const { items, count } = { items: [], count: 0 };
+            const { items, count } = await (new Users()).getWorkers(options);
             return res.setHeader('X-Total-Count', count).json(items);
         } catch (error) {
             await InternalException(error);

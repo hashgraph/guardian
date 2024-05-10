@@ -207,6 +207,15 @@ export class Users extends NatsService {
     }
 
     /**
+     * Get permissions
+     * @param options
+     * @returns Operation Success
+     */
+    public async getPermissions(): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_PERMISSIONS, {});
+    }
+
+    /**
      * Get roles
      * @param options
      * @returns Operation Success
@@ -256,6 +265,14 @@ export class Users extends NatsService {
         return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner });
     }
 
+    /**
+     * Get roles
+     * @param options
+     * @returns Operation Success
+     */
+    public async getWorkers(options: any): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_USER_ACCOUNTS, options);
+    }
 }
 
 @Injectable()

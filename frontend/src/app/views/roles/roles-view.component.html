@@ -31,12 +31,29 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th class="header-cell-text cell-size-id">Name</th>
+                        <th class="header-cell-text cell-size-operations">OPERATIONS</th>
                     </tr>
                 </ng-template>
 
                 <ng-template let-row pTemplate="body">
                     <tr class="table-row">
                         <td class="cell-size-id">{{ row.name }}</td>
+                        <td class="cell-size-operations">
+                            <div class="flex flex-column-gap-20">
+                                <svg-icon (click)="goToUsers(row)"
+                                    class="opacity-icon"
+                                    src="/assets/images/icons/group.svg"
+                                    [svgClass]="'primary-color'"></svg-icon>
+                                <svg-icon (click)="onEdit(row)"
+                                    class="opacity-icon"
+                                    src="/assets/images/icons/edit.svg"
+                                    [svgClass]="'primary-color'"></svg-icon>
+                                <svg-icon (click)="onDelete(row)"
+                                    class="opacity-icon"
+                                    src="/assets/images/icons/delete.svg"
+                                    [svgClass]="'delete-color'"></svg-icon>
+                            </div>
+                        </td>
                     </tr>
                 </ng-template>
             </p-table>

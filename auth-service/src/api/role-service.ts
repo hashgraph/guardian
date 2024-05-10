@@ -1,6 +1,17 @@
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
-import { AuthEvents, GenerateUUIDv4, } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4, PermissionsArray, } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
+
+const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => {
+    return {
+        name: p.name,
+        category: p.category,
+        entity: p.entity,
+        action: p.action,
+        disabled: p.disabled,
+        default: p.default
+    }
+})
 
 /**
  * Role service
@@ -22,6 +33,20 @@ export class RoleService extends NatsService {
      * Register listeners
      */
     registerListeners(): void {
+        /**
+          * Get permissions
+          *
+          * @returns {any[]} permissions
+          */
+        this.getMessages(AuthEvents.GET_PERMISSIONS, async (msg: any) => {
+            try {
+                return new MessageResponse(permissions);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
         /**
           * Get roles
           *

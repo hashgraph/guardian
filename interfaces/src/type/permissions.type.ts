@@ -3,7 +3,7 @@ import { UserRole } from './user-role.type.js';
 /**
  * Category
  */
-export enum Category {
+export enum PermissionCategories {
     ACCOUNTS = 'ACCOUNTS',
     SESSION = 'SESSION',
     PROFILES = 'PROFILES',
@@ -29,7 +29,7 @@ export enum Category {
 /**
  * Entity
  */
-export enum Entity {
+export enum PermissionEntities {
     ACCOUNT = 'ACCOUNT',
     STANDARD_REGISTRY = 'STANDARD_REGISTRY',
     USER = 'USER',
@@ -68,7 +68,7 @@ export enum Entity {
 /**
  * Entity
  */
-export enum Action {
+export enum PermissionActions {
     READ = 'READ',
     CREATE = 'CREATE',
     UPDATE = 'UPDATE',
@@ -209,9 +209,9 @@ export enum Permissions {
  */
 export const PermissionsArray: {
     name: Permissions,
-    category: Category,
-    entity: Entity,
-    action: Action,
+    category: PermissionCategories,
+    entity: PermissionEntities,
+    action: PermissionActions,
     disabled: boolean,
     default: boolean,
     defaultRoles?: UserRole[]
@@ -219,9 +219,9 @@ export const PermissionsArray: {
         //ACCOUNT
         {
             name: Permissions.ACCOUNTS_ACCOUNT_READ,
-            category: Category.ACCOUNTS,
-            entity: Entity.ACCOUNT,
-            action: Action.READ,
+            category: PermissionCategories.ACCOUNTS,
+            entity: PermissionEntities.ACCOUNT,
+            action: PermissionActions.READ,
             disabled: true,
             default: false,
             defaultRoles: [
@@ -230,9 +230,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.ACCOUNTS_STANDARD_REGISTRY_READ,
-            category: Category.ACCOUNTS,
-            entity: Entity.STANDARD_REGISTRY,
-            action: Action.READ,
+            category: PermissionCategories.ACCOUNTS,
+            entity: PermissionEntities.STANDARD_REGISTRY,
+            action: PermissionActions.READ,
             disabled: true,
             default: true,
             defaultRoles: [
@@ -245,9 +245,9 @@ export const PermissionsArray: {
         //ANALYTIC
         {
             name: Permissions.ANALYTIC_POLICY_READ,
-            category: Category.ANALYTIC,
-            entity: Entity.POLICY,
-            action: Action.READ,
+            category: PermissionCategories.ANALYTIC,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -256,9 +256,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.ANALYTIC_MODULE_READ,
-            category: Category.ANALYTIC,
-            entity: Entity.MODULE,
-            action: Action.READ,
+            category: PermissionCategories.ANALYTIC,
+            entity: PermissionEntities.MODULE,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -267,9 +267,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.ANALYTIC_TOOL_READ,
-            category: Category.ANALYTIC,
-            entity: Entity.TOOL,
-            action: Action.READ,
+            category: PermissionCategories.ANALYTIC,
+            entity: PermissionEntities.TOOL,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -278,9 +278,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.ANALYTIC_SCHEMA_READ,
-            category: Category.ANALYTIC,
-            entity: Entity.SCHEMA,
-            action: Action.READ,
+            category: PermissionCategories.ANALYTIC,
+            entity: PermissionEntities.SCHEMA,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -289,9 +289,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.ANALYTIC_DOCUMENT_READ,
-            category: Category.ANALYTIC,
-            entity: Entity.DOCUMENT,
-            action: Action.READ,
+            category: PermissionCategories.ANALYTIC,
+            entity: PermissionEntities.DOCUMENT,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -301,9 +301,9 @@ export const PermissionsArray: {
         //ARTIFACT
         {
             name: Permissions.ARTIFACTS_FILE_READ,
-            category: Category.ARTIFACTS,
-            entity: Entity.FILE,
-            action: Action.READ,
+            category: PermissionCategories.ARTIFACTS,
+            entity: PermissionEntities.FILE,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -312,9 +312,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.ARTIFACTS_FILE_CREATE,
-            category: Category.ARTIFACTS,
-            entity: Entity.FILE,
-            action: Action.CREATE,
+            category: PermissionCategories.ARTIFACTS,
+            entity: PermissionEntities.FILE,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -323,9 +323,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.ARTIFACTS_FILE_DELETE,
-            category: Category.ARTIFACTS,
-            entity: Entity.FILE,
-            action: Action.DELETE,
+            category: PermissionCategories.ARTIFACTS,
+            entity: PermissionEntities.FILE,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -335,10 +335,10 @@ export const PermissionsArray: {
         //BRANDING
         {
             name: Permissions.BRANDING_CONFIG_UPDATE,
-            category: Category.BRANDING,
-            entity: Entity.CONFIG,
-            action: Action.UPDATE,
-            disabled: false,
+            category: PermissionCategories.BRANDING,
+            entity: PermissionEntities.CONFIG,
+            action: PermissionActions.UPDATE,
+            disabled: true,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -347,9 +347,9 @@ export const PermissionsArray: {
         //CONTRACT
         {
             name: Permissions.CONTRACTS_CONTRACT_READ,
-            category: Category.CONTRACTS,
-            entity: Entity.CONTRACT,
-            action: Action.READ,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.CONTRACT,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -359,9 +359,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_CONTRACT_CREATE,
-            category: Category.CONTRACTS,
-            entity: Entity.CONTRACT,
-            action: Action.CREATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.CONTRACT,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -370,9 +370,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_CONTRACT_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.CONTRACT,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.CONTRACT,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -381,9 +381,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_READ,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_REQUEST,
-            action: Action.READ,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_REQUEST,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -392,9 +392,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_REQUEST,
-            action: Action.UPDATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_REQUEST,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -403,9 +403,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_REQUEST,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_REQUEST,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -414,9 +414,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_REVIEW,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_REQUEST,
-            action: Action.REVIEW,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_REQUEST,
+            action: PermissionActions.REVIEW,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -425,9 +425,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_ADMIN_CREATE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_ADMIN,
-            action: Action.CREATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_ADMIN,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -436,9 +436,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_ADMIN_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_ADMIN,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_ADMIN,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -447,9 +447,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_MANAGER_CREATE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_MANAGER,
-            action: Action.CREATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_MANAGER,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -458,9 +458,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPE_MANAGER_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPE_MANAGER,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPE_MANAGER,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -469,9 +469,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPER_CREATE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPER,
-            action: Action.CREATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPER,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -480,9 +480,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_WIPER_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.WIPER,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.WIPER,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -491,9 +491,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_POOL_READ,
-            category: Category.CONTRACTS,
-            entity: Entity.POOL,
-            action: Action.READ,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.POOL,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -503,9 +503,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_POOL_UPDATE,
-            category: Category.CONTRACTS,
-            entity: Entity.POOL,
-            action: Action.UPDATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.POOL,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -514,9 +514,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_POOL_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.POOL,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.POOL,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -525,9 +525,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_READ,
-            category: Category.CONTRACTS,
-            entity: Entity.RETIRE_REQUEST,
-            action: Action.READ,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.RETIRE_REQUEST,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -537,9 +537,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
-            category: Category.CONTRACTS,
-            entity: Entity.RETIRE_REQUEST,
-            action: Action.CREATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.RETIRE_REQUEST,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -549,9 +549,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.RETIRE_REQUEST,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.RETIRE_REQUEST,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -560,9 +560,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_REVIEW,
-            category: Category.CONTRACTS,
-            entity: Entity.RETIRE_REQUEST,
-            action: Action.REVIEW,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.RETIRE_REQUEST,
+            action: PermissionActions.REVIEW,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -571,9 +571,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_RETIRE_ADMIN_CREATE,
-            category: Category.CONTRACTS,
-            entity: Entity.RETIRE_ADMIN,
-            action: Action.CREATE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.RETIRE_ADMIN,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -582,9 +582,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_RETIRE_ADMIN_DELETE,
-            category: Category.CONTRACTS,
-            entity: Entity.RETIRE_ADMIN,
-            action: Action.DELETE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.RETIRE_ADMIN,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -593,9 +593,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_PERMISSIONS_READ,
-            category: Category.CONTRACTS,
-            entity: Entity.PERMISSIONS,
-            action: Action.READ,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.PERMISSIONS,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -604,9 +604,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.CONTRACTS_DOCUMENT_READ,
-            category: Category.CONTRACTS,
-            entity: Entity.DOCUMENT,
-            action: Action.READ,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.DOCUMENT,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -617,10 +617,10 @@ export const PermissionsArray: {
         //DEMO
         {
             name: Permissions.DEMO_KEY_CREATE,
-            category: Category.DEMO,
-            entity: Entity.KEY,
-            action: Action.CREATE,
-            disabled: false,
+            category: PermissionCategories.DEMO,
+            entity: PermissionEntities.KEY,
+            action: PermissionActions.CREATE,
+            disabled: true,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
@@ -632,11 +632,11 @@ export const PermissionsArray: {
         //IPFS
         {
             name: Permissions.IPFS_FILE_READ,
-            category: Category.IPFS,
-            entity: Entity.FILE,
-            action: Action.READ,
-            disabled: false,
-            default: false,
+            category: PermissionCategories.IPFS,
+            entity: PermissionEntities.FILE,
+            action: PermissionActions.READ,
+            disabled: true,
+            default: true,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.WORKER,
@@ -646,11 +646,11 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.IPFS_FILE_CREATE,
-            category: Category.IPFS,
-            entity: Entity.FILE,
-            action: Action.CREATE,
-            disabled: false,
-            default: false,
+            category: PermissionCategories.IPFS,
+            entity: PermissionEntities.FILE,
+            action: PermissionActions.CREATE,
+            disabled: true,
+            default: true,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.WORKER,
@@ -661,10 +661,10 @@ export const PermissionsArray: {
         //LOG
         {
             name: Permissions.LOG_LOG_READ,
-            category: Category.LOG,
-            entity: Entity.LOG,
-            action: Action.READ,
-            disabled: false,
+            category: PermissionCategories.LOG,
+            entity: PermissionEntities.LOG,
+            action: PermissionActions.READ,
+            disabled: true,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -673,9 +673,9 @@ export const PermissionsArray: {
         //MODULE
         {
             name: Permissions.MODULES_MODULE_READ,
-            category: Category.MODULES,
-            entity: Entity.MODULE,
-            action: Action.READ,
+            category: PermissionCategories.MODULES,
+            entity: PermissionEntities.MODULE,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -684,9 +684,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.MODULES_MODULE_CREATE,
-            category: Category.MODULES,
-            entity: Entity.MODULE,
-            action: Action.CREATE,
+            category: PermissionCategories.MODULES,
+            entity: PermissionEntities.MODULE,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -695,9 +695,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.MODULES_MODULE_UPDATE,
-            category: Category.MODULES,
-            entity: Entity.MODULE,
-            action: Action.UPDATE,
+            category: PermissionCategories.MODULES,
+            entity: PermissionEntities.MODULE,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -706,9 +706,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.MODULES_MODULE_DELETE,
-            category: Category.MODULES,
-            entity: Entity.MODULE,
-            action: Action.DELETE,
+            category: PermissionCategories.MODULES,
+            entity: PermissionEntities.MODULE,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -717,9 +717,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.MODULES_MODULE_REVIEW,
-            category: Category.MODULES,
-            entity: Entity.MODULE,
-            action: Action.REVIEW,
+            category: PermissionCategories.MODULES,
+            entity: PermissionEntities.MODULE,
+            action: PermissionActions.REVIEW,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -729,9 +729,9 @@ export const PermissionsArray: {
         //POLICY
         {
             name: Permissions.POLICIES_POLICY_READ,
-            category: Category.POLICIES,
-            entity: Entity.POLICY,
-            action: Action.READ,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -740,9 +740,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_POLICY_CREATE,
-            category: Category.POLICIES,
-            entity: Entity.POLICY,
-            action: Action.CREATE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -751,9 +751,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_POLICY_UPDATE,
-            category: Category.POLICIES,
-            entity: Entity.POLICY,
-            action: Action.UPDATE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -762,9 +762,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_POLICY_DELETE,
-            category: Category.POLICIES,
-            entity: Entity.POLICY,
-            action: Action.DELETE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -773,9 +773,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_POLICY_REVIEW,
-            category: Category.POLICIES,
-            entity: Entity.POLICY,
-            action: Action.REVIEW,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.REVIEW,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -784,9 +784,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_POLICY_EXECUTE,
-            category: Category.POLICIES,
-            entity: Entity.POLICY,
-            action: Action.EXECUTE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.EXECUTE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -796,9 +796,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_POLICY_AUDIT,
-            category: Category.POLICIES,
-            entity: Entity.POLICY,
-            action: Action.AUDIT,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.AUDIT,
             disabled: true,
             default: false,
             defaultRoles: [
@@ -807,9 +807,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_MIGRATION_CREATE,
-            category: Category.POLICIES,
-            entity: Entity.MIGRATION,
-            action: Action.CREATE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.MIGRATION,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -818,9 +818,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.POLICIES_RECORD_ALL,
-            category: Category.POLICIES,
-            entity: Entity.RECORD,
-            action: Action.ALL,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.RECORD,
+            action: PermissionActions.ALL,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -830,9 +830,9 @@ export const PermissionsArray: {
         //SCHEMAS
         {
             name: Permissions.SCHEMAS_SCHEMA_READ,
-            category: Category.SCHEMAS,
-            entity: Entity.SCHEMA,
-            action: Action.READ,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SCHEMA,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -842,9 +842,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_CREATE,
-            category: Category.SCHEMAS,
-            entity: Entity.SCHEMA,
-            action: Action.CREATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SCHEMA,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -853,9 +853,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_UPDATE,
-            category: Category.SCHEMAS,
-            entity: Entity.SCHEMA,
-            action: Action.UPDATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SCHEMA,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -864,9 +864,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_DELETE,
-            category: Category.SCHEMAS,
-            entity: Entity.SCHEMA,
-            action: Action.DELETE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SCHEMA,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -875,9 +875,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_REVIEW,
-            category: Category.SCHEMAS,
-            entity: Entity.SCHEMA,
-            action: Action.REVIEW,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SCHEMA,
+            action: PermissionActions.REVIEW,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -886,9 +886,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_READ,
-            category: Category.SCHEMAS,
-            entity: Entity.SYSTEM_SCHEMA,
-            action: Action.READ,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SYSTEM_SCHEMA,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -897,9 +897,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_CREATE,
-            category: Category.SCHEMAS,
-            entity: Entity.SYSTEM_SCHEMA,
-            action: Action.CREATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SYSTEM_SCHEMA,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -908,9 +908,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_UPDATE,
-            category: Category.SCHEMAS,
-            entity: Entity.SYSTEM_SCHEMA,
-            action: Action.UPDATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SYSTEM_SCHEMA,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -919,9 +919,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_DELETE,
-            category: Category.SCHEMAS,
-            entity: Entity.SYSTEM_SCHEMA,
-            action: Action.DELETE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SYSTEM_SCHEMA,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -930,9 +930,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_REVIEW,
-            category: Category.SCHEMAS,
-            entity: Entity.SYSTEM_SCHEMA,
-            action: Action.REVIEW,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.SYSTEM_SCHEMA,
+            action: PermissionActions.REVIEW,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -942,9 +942,9 @@ export const PermissionsArray: {
         //TOOLS
         {
             name: Permissions.TOOLS_TOOL_READ,
-            category: Category.TOOLS,
-            entity: Entity.TOOL,
-            action: Action.READ,
+            category: PermissionCategories.TOOLS,
+            entity: PermissionEntities.TOOL,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -953,9 +953,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOOLS_TOOL_CREATE,
-            category: Category.TOOLS,
-            entity: Entity.TOOL,
-            action: Action.CREATE,
+            category: PermissionCategories.TOOLS,
+            entity: PermissionEntities.TOOL,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -964,9 +964,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOOLS_TOOL_UPDATE,
-            category: Category.TOOLS,
-            entity: Entity.TOOL,
-            action: Action.UPDATE,
+            category: PermissionCategories.TOOLS,
+            entity: PermissionEntities.TOOL,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -975,9 +975,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOOLS_TOOL_DELETE,
-            category: Category.TOOLS,
-            entity: Entity.TOOL,
-            action: Action.DELETE,
+            category: PermissionCategories.TOOLS,
+            entity: PermissionEntities.TOOL,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -986,9 +986,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOOLS_TOOL_REVIEW,
-            category: Category.TOOLS,
-            entity: Entity.TOOL,
-            action: Action.REVIEW,
+            category: PermissionCategories.TOOLS,
+            entity: PermissionEntities.TOOL,
+            action: PermissionActions.REVIEW,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -997,9 +997,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOOL_MIGRATION_CREATE,
-            category: Category.TOOLS,
-            entity: Entity.MIGRATION,
-            action: Action.CREATE,
+            category: PermissionCategories.TOOLS,
+            entity: PermissionEntities.MIGRATION,
+            action: PermissionActions.CREATE,
             disabled: true,
             default: false,
             defaultRoles: [
@@ -1009,9 +1009,9 @@ export const PermissionsArray: {
         //TOKENS
         {
             name: Permissions.TOKENS_TOKEN_READ,
-            category: Category.TOKENS,
-            entity: Entity.TOKEN,
-            action: Action.READ,
+            category: PermissionCategories.TOKENS,
+            entity: PermissionEntities.TOKEN,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1021,9 +1021,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOKENS_TOKEN_CREATE,
-            category: Category.TOKENS,
-            entity: Entity.TOKEN,
-            action: Action.CREATE,
+            category: PermissionCategories.TOKENS,
+            entity: PermissionEntities.TOKEN,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1032,9 +1032,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOKENS_TOKEN_UPDATE,
-            category: Category.TOKENS,
-            entity: Entity.TOKEN,
-            action: Action.UPDATE,
+            category: PermissionCategories.TOKENS,
+            entity: PermissionEntities.TOKEN,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1043,9 +1043,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOKENS_TOKEN_DELETE,
-            category: Category.TOKENS,
-            entity: Entity.TOKEN,
-            action: Action.DELETE,
+            category: PermissionCategories.TOKENS,
+            entity: PermissionEntities.TOKEN,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1054,9 +1054,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOKENS_TOKEN_ASSOCIATE,
-            category: Category.TOKENS,
-            entity: Entity.TOKEN,
-            action: Action.ASSOCIATE,
+            category: PermissionCategories.TOKENS,
+            entity: PermissionEntities.TOKEN,
+            action: PermissionActions.ASSOCIATE,
             disabled: true,
             default: false,
             defaultRoles: [
@@ -1065,9 +1065,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TOKENS_TOKEN_MANAGE,
-            category: Category.TOKENS,
-            entity: Entity.TOKEN,
-            action: Action.MANAGE,
+            category: PermissionCategories.TOKENS,
+            entity: PermissionEntities.TOKEN,
+            action: PermissionActions.MANAGE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1077,9 +1077,9 @@ export const PermissionsArray: {
         //TAGS
         {
             name: Permissions.TAGS_TAG_READ,
-            category: Category.TAGS,
-            entity: Entity.TAG,
-            action: Action.READ,
+            category: PermissionCategories.TAGS,
+            entity: PermissionEntities.TAG,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1089,9 +1089,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TAGS_TAG_CREATE,
-            category: Category.TAGS,
-            entity: Entity.TAG,
-            action: Action.CREATE,
+            category: PermissionCategories.TAGS,
+            entity: PermissionEntities.TAG,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1101,9 +1101,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TAGS_TAG_DELETE,
-            category: Category.TAGS,
-            entity: Entity.TAG,
-            action: Action.DELETE,
+            category: PermissionCategories.TAGS,
+            entity: PermissionEntities.TAG,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1114,9 +1114,9 @@ export const PermissionsArray: {
         //PROFILE
         {
             name: Permissions.PROFILES_USER_READ,
-            category: Category.PROFILES,
-            entity: Entity.USER,
-            action: Action.READ,
+            category: PermissionCategories.PROFILES,
+            entity: PermissionEntities.USER,
+            action: PermissionActions.READ,
             disabled: true,
             default: true,
             defaultRoles: [
@@ -1128,9 +1128,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.PROFILES_USER_UPDATE,
-            category: Category.PROFILES,
-            entity: Entity.USER,
-            action: Action.UPDATE,
+            category: PermissionCategories.PROFILES,
+            entity: PermissionEntities.USER,
+            action: PermissionActions.UPDATE,
             disabled: true,
             default: true,
             defaultRoles: [
@@ -1142,9 +1142,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.PROFILES_BALANCE_READ,
-            category: Category.PROFILES,
-            entity: Entity.BALANCE,
-            action: Action.READ,
+            category: PermissionCategories.PROFILES,
+            entity: PermissionEntities.BALANCE,
+            action: PermissionActions.READ,
             disabled: true,
             default: true,
             defaultRoles: [
@@ -1156,9 +1156,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.PROFILES_RESTORE_ALL,
-            category: Category.PROFILES,
-            entity: Entity.RESTORE,
-            action: Action.ALL,
+            category: PermissionCategories.PROFILES,
+            entity: PermissionEntities.RESTORE,
+            action: PermissionActions.ALL,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1168,10 +1168,10 @@ export const PermissionsArray: {
         //SUGGESTIONS
         {
             name: Permissions.SUGGESTIONS_SUGGESTIONS_READ,
-            category: Category.SUGGESTIONS,
-            entity: Entity.SUGGESTIONS,
-            action: Action.READ,
-            disabled: false,
+            category: PermissionCategories.SUGGESTIONS,
+            entity: PermissionEntities.SUGGESTIONS,
+            action: PermissionActions.READ,
+            disabled: true,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -1179,10 +1179,10 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SUGGESTIONS_SUGGESTIONS_UPDATE,
-            category: Category.SUGGESTIONS,
-            entity: Entity.SUGGESTIONS,
-            action: Action.UPDATE,
-            disabled: false,
+            category: PermissionCategories.SUGGESTIONS,
+            entity: PermissionEntities.SUGGESTIONS,
+            action: PermissionActions.UPDATE,
+            disabled: true,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -1191,10 +1191,10 @@ export const PermissionsArray: {
         //SETTINGS
         {
             name: Permissions.SETTINGS_SETTINGS_READ,
-            category: Category.SETTINGS,
-            entity: Entity.SETTINGS,
-            action: Action.READ,
-            disabled: false,
+            category: PermissionCategories.SETTINGS,
+            entity: PermissionEntities.SETTINGS,
+            action: PermissionActions.READ,
+            disabled: true,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -1202,10 +1202,10 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SETTINGS_SETTINGS_UPDATE,
-            category: Category.SETTINGS,
-            entity: Entity.SETTINGS,
-            action: Action.UPDATE,
-            disabled: false,
+            category: PermissionCategories.SETTINGS,
+            entity: PermissionEntities.SETTINGS,
+            action: PermissionActions.UPDATE,
+            disabled: true,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -1213,9 +1213,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SETTINGS_THEME_READ,
-            category: Category.SETTINGS,
-            entity: Entity.THEME,
-            action: Action.READ,
+            category: PermissionCategories.SETTINGS,
+            entity: PermissionEntities.THEME,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1224,9 +1224,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SETTINGS_THEME_CREATE,
-            category: Category.SETTINGS,
-            entity: Entity.THEME,
-            action: Action.CREATE,
+            category: PermissionCategories.SETTINGS,
+            entity: PermissionEntities.THEME,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1235,9 +1235,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SETTINGS_THEME_UPDATE,
-            category: Category.SETTINGS,
-            entity: Entity.THEME,
-            action: Action.UPDATE,
+            category: PermissionCategories.SETTINGS,
+            entity: PermissionEntities.THEME,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1246,9 +1246,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.SETTINGS_THEME_DELETE,
-            category: Category.SETTINGS,
-            entity: Entity.THEME,
-            action: Action.DELETE,
+            category: PermissionCategories.SETTINGS,
+            entity: PermissionEntities.THEME,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1258,9 +1258,9 @@ export const PermissionsArray: {
         //AUDIT
         {
             name: Permissions.AUDIT_TRUST_CHAIN_READ,
-            category: Category.AUDIT,
-            entity: Entity.TRUST_CHAIN,
-            action: Action.DELETE,
+            category: PermissionCategories.AUDIT,
+            entity: PermissionEntities.TRUST_CHAIN,
+            action: PermissionActions.DELETE,
             disabled: true,
             default: false,
             defaultRoles: [
@@ -1270,9 +1270,9 @@ export const PermissionsArray: {
         //PERMISSIONS
         {
             name: Permissions.PERMISSIONS_ROLE_READ,
-            category: Category.PERMISSIONS,
-            entity: Entity.ROLE,
-            action: Action.READ,
+            category: PermissionCategories.PERMISSIONS,
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1281,9 +1281,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.PERMISSIONS_ROLE_CREATE,
-            category: Category.PERMISSIONS,
-            entity: Entity.ROLE,
-            action: Action.CREATE,
+            category: PermissionCategories.PERMISSIONS,
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.CREATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1292,9 +1292,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.PERMISSIONS_ROLE_UPDATE,
-            category: Category.PERMISSIONS,
-            entity: Entity.ROLE,
-            action: Action.UPDATE,
+            category: PermissionCategories.PERMISSIONS,
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.UPDATE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1303,9 +1303,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.PERMISSIONS_ROLE_DELETE,
-            category: Category.PERMISSIONS,
-            entity: Entity.ROLE,
-            action: Action.DELETE,
+            category: PermissionCategories.PERMISSIONS,
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.DELETE,
             disabled: false,
             default: false,
             defaultRoles: [
@@ -1314,9 +1314,9 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.PERMISSIONS_USER_READ,
-            category: Category.PERMISSIONS,
-            entity: Entity.USER,
-            action: Action.READ,
+            category: PermissionCategories.PERMISSIONS,
+            entity: PermissionEntities.USER,
+            action: PermissionActions.READ,
             disabled: false,
             default: false,
             defaultRoles: [

@@ -50,11 +50,24 @@
 
     .cell-size-id {
         min-width: 140px;
-        max-width: 150px;
+    }
+
+    .cell-size-operations {
+        min-width: 180px;
+        width: 180px;
+        max-width: 180px;
     }
 
     .cell-size-1 {
         min-width: 140px;
+    }
+
+    .flex {
+        display: flex;
+    }
+    
+    .flex-column-gap-20 {
+        column-gap: 20px;
     }
 }
 
@@ -135,4 +148,9 @@
     fill: var(--color-grey-5, #848FA9) !important;
     color: var(--color-grey-5, #848FA9) !important;
     cursor: not-allowed !important;
+}
+
+.delete-color {
+    fill: var(--color-accent-red-1, #FF432A);
+    color: var(--color-accent-red-1, #FF432A);
 }

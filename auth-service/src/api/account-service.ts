@@ -29,7 +29,6 @@ import {
 
 const { sign, verify } = pkg;
 
-
 /**
  * List of Permissions
  */
@@ -409,6 +408,50 @@ export class AccountService extends NatsService {
                 return new MessageResponse(await new DataBaseHelper(User).save(user));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        /**
+         * Get users
+          *
+          * @param payload - filters
+          *
+          * @returns {any[]} users
+          */
+        this.getMessages(AuthEvents.GET_USER_ACCOUNTS, async (msg: any) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load users parameter');
+                }
+
+                const { pageIndex, pageSize, parent, role } = msg;
+                const otherOptions: any = {
+                    fields: [
+                        'username',
+                        'did',
+                        'hederaAccountId',
+                        'role',
+                        'permissionsGroupName',
+                        'permissions',
+                    ]
+                };
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+
+                const [items, count] = await new DataBaseHelper(User).findAndCount({ parent, role }, otherOptions);
+
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
