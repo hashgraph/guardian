@@ -33,7 +33,7 @@
         "@types/gulp": "^4",
         "@types/gulp-rename": "^2",
         "@types/node": "^18.16.0",
-        "chai": "4.3.4",
+        "chai": "5.1.1",
         "concurrently": "^8.2.2",
         "gulp": "^4.0.2",
         "gulp-copy": "^4.0.1",
