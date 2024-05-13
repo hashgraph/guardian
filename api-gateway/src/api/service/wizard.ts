@@ -3,10 +3,10 @@ import { Logger, RunFunctionAsync, } from '@guardian/common';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
 import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import { TaskAction, UserRole } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 @Controller('wizard')
 @ApiTags('wizard')
@@ -156,13 +156,13 @@ export class WizardApi {
     })
     @Post('/policy')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const wizardConfig = req.body;
             const user = req.user;
             const guardians = new Guardians();
-            return res.status(201).json(
+            return res.status(201).send(
                 await guardians.wizardPolicyCreate(wizardConfig, user.did)
             );
         } catch (error) {
@@ -319,8 +319,8 @@ export class WizardApi {
     })
     @Post('/push/policy')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setPolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const { wizardConfig, saveState } = req.body;
         const user = req.user;
         const taskManager = new TaskManager();
@@ -491,14 +491,14 @@ export class WizardApi {
     })
     @Post('/:policyId/config')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setPolicyConfig(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const wizardConfig = req.body;
             const user = req.user;
             const {policyId} = req.params;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.wizardGetPolicyConfig(
                     policyId,
                     wizardConfig,

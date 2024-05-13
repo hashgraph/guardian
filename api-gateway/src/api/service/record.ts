@@ -195,8 +195,8 @@ export class RecordApi {
         try {
             const guardians = new Guardians();
             const result = await guardians.stopRecording(policyId, user.did, options);
-            res.setHeader('Content-disposition', `attachment; filename=${Date.now()}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${Date.now()}`);
+            res.header('Content-type', 'application/zip');
             return res.send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);

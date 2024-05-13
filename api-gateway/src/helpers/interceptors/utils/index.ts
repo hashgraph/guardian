@@ -1,0 +1,1 @@
+export { getFileFromPart } from './multipart.js';

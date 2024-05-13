@@ -12,7 +12,6 @@ import {
   Req,
   Response,
 } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
@@ -37,6 +36,7 @@ import {
     WiperRequestDTO,
 } from '../../middlewares/validation/schemas/contracts.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 /**
  * Contracts api
@@ -98,11 +98,8 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getContracts(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -112,7 +109,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(
@@ -155,8 +152,8 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async createContract(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const { description, type } = req.body;
@@ -210,8 +207,8 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importContract(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const { contractId, description } = req.body;
@@ -264,8 +261,8 @@ export class ContractsApi {
     })
     @HttpCode(HttpStatus.OK)
     @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY)
     async contractPermissions(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -312,12 +309,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async removeContract(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.removeContract(
                     user?.did,
                     req.params?.contractId as string
@@ -393,8 +390,8 @@ export class ContractsApi {
     })
     @HttpCode(HttpStatus.OK)
     // @UseCache({ isExpress: true })
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -404,8 +401,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = contracts
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(
@@ -444,12 +440,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async enableWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.enableWipeRequests(
                     user.did,
                     req.params.contractId
@@ -493,12 +489,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async disableWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.disableWipeRequests(
                     user.did,
                     req.params.contractId
@@ -542,12 +538,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async approveWipeRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.approveWipeRequest(
                     user.did,
                     req.params.requestId
@@ -597,12 +593,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async rejectWipeRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.rejectWipeRequest(
                     user.did,
                     req.params.requestId,
@@ -647,12 +643,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async clearWipeRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.clearWipeRequests(
                     user.did,
                     req.params.contractId
@@ -703,12 +699,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async wipeAddAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.addWipeAdmin(
                     user.did,
                     req.params.contractId,
@@ -760,12 +756,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async wipeRemoveAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.removeWipeAdmin(
                     user.did,
                     req.params.contractId,
@@ -817,12 +813,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async wipeAddManager(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.addWipeManager(
                     user.did,
                     req.params.contractId,
@@ -874,12 +870,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async wipeRemoveManager(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.removeWipeManager(
                     user.did,
                     req.params.contractId,
@@ -931,12 +927,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async wipeAddWiper(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.addWipeWiper(
                     user.did,
                     req.params.contractId,
@@ -988,12 +984,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async wipeRemoveWiper(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.removeWipeWiper(
                     user.did,
                     req.params.contractId,
@@ -1042,12 +1038,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async retireSyncPools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.syncRetirePools(user.did, req.params.contractId)
             );
         } catch (error) {
@@ -1117,11 +1113,8 @@ export class ContractsApi {
     })
     @HttpCode(HttpStatus.OK)
     // @UseCache({ isExpress: true })
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getRetireRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -1131,8 +1124,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = contracts
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(
@@ -1207,11 +1199,8 @@ export class ContractsApi {
     })
     @HttpCode(HttpStatus.OK)
     // @UseCache({ isExpress: true })
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getRetirePools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -1222,8 +1211,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = contracts
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(
@@ -1263,12 +1251,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async clearRetireRequests(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.clearRetireRequests(
                     user.did,
                     req.params.contractId
@@ -1313,12 +1301,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async clearRetirePools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.clearRetirePools(
                     user.did,
                     req.params.contractId
@@ -1366,12 +1354,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setRetirePool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.setRetirePool(
                     user.did,
                     req.params.contractId,
@@ -1417,12 +1405,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async unsetRetirePool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.unsetRetirePool(user.did, req.params.poolId)
             );
         } catch (error) {
@@ -1464,12 +1452,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async unsetRetireRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.unsetRetireRequest(
                     user.did,
                     req.params.requestId
@@ -1516,15 +1504,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async retire(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.retire(user.did, req.params.poolId, req.body)
             );
         } catch (error) {
@@ -1565,12 +1550,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async approveRetire(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.approveRetire(user.did, req.params.requestId)
             );
         } catch (error) {
@@ -1610,15 +1595,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async cancelRetireRequest(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.cancelRetire(user.did, req.params.requestId)
             );
         } catch (error) {
@@ -1666,12 +1648,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async retireAddAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.addRetireAdmin(
                     user.did,
                     req.params.contractId,
@@ -1723,12 +1705,12 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async retireRemoveAdmin(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
-            return res.json(
+            return res.send(
                 await guardians.removeRetireAdmin(
                     user.did,
                     req.params.contractId,
@@ -1795,11 +1777,8 @@ export class ContractsApi {
     })
     @HttpCode(HttpStatus.OK)
     // @UseCache({ isExpress: true })
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getRetireVCs(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(
-            UserRole.STANDARD_REGISTRY,
-            UserRole.USER
-        )(req.user);
         try {
             const user = req.user;
             const guardians = new Guardians();
@@ -1808,8 +1787,7 @@ export class ContractsApi {
                 req.query.pageIndex as any,
                 req.query.pageSize as any
             );
-            res.locals.data = vcs
-            return res.setHeader('X-Total-Count', count).json(vcs);
+            return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(
