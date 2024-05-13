@@ -10207,12 +10207,12 @@ native-fetch@^4.0.2:
   resolved "https://registry.yarnpkg.com/native-fetch/-/native-fetch-4.0.2.tgz#75c8a44c5f3bb021713e5e24f2846750883e49af"
   integrity sha512-4QcVlKFtv2EYVS5MBgsGX5+NWKtbDbIECdUXDBGDMAZXq3Jkv9zf+y8iS7Ub8fEdga3GpYeazp9gauNqXHJOCg==
 
-nats@^2.6.1:
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/nats/-/nats-2.19.0.tgz#3772b5bc4ae9506f4c686d4b86e413a6ceeb967c"
-  integrity sha512-TuOAqPljCRpfHPo2o3midezchqYJUOOnK/YLmYf9rdoshzlYN1xvCd9dAKveVB6Bfubp/m63eN3l3ukfn43JOg==
+nats@^2.25.0:
+  version "2.25.0"
+  resolved "https://registry.yarnpkg.com/nats/-/nats-2.25.0.tgz#b041e44c3ef14907150a0aa267e6eb2c0b4b87c2"
+  integrity sha512-ta37lmNNKigW7mkh6SsZdJpkgnLhEUOI8jLiIvVDR9pxyDEac4wFwtqifQs762UgMgFk1q45DyjfMgFk6S2aaw==
   dependencies:
-    nkeys.js "1.0.5"
+    nkeys.js "1.1.0"
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -10265,10 +10265,10 @@ nise@^5.1.4:
     just-extend "^6.2.0"
     path-to-regexp "^6.2.1"
 
-nkeys.js@1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/nkeys.js/-/nkeys.js-1.0.5.tgz#3024bde671eb33be0316ff2d5abe8b8cec960158"
-  integrity sha512-u25YnRPHiGVsNzwyHnn+PT90sgAhnS8jUJ1nxmkHMFYCJ6+Ic0lv291w7uhRBpJVJ3PH2GWbYqA151lGCRrB5g==
+nkeys.js@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/nkeys.js/-/nkeys.js-1.1.0.tgz#de83a9a13f396c5b6d7c412788f4b9f7f35d4c18"
+  integrity sha512-tB/a0shZL5UZWSwsoeyqfTszONTt4k2YS0tuQioMOD180+MbombYVgzDUYHlx+gejYK6rgf08n/2Df99WY0Sxg==
   dependencies:
     tweetnacl "1.0.3"
 
