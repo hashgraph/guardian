@@ -572,7 +572,7 @@
     * [🏭 CDM ACM0018: Electricity Generation from Biomass in Power-Only Plants](guardian/demo-guide/carbon-offsets/cdm-acm0018-electricity-generation-from-biomass-in-power-only-plants.md)
     * [⬇️ Verra PWRM0001: Plastic Waste Reduction Methodology](guardian/demo-guide/carbon-offsets/verra-pwrm0001-plastic-waste-reduction-methodology.md)
     * [🏭 Verra VM0041](guardian/demo-guide/carbon-offsets/verra-vm0041.md)
-    * [🥇 Gold Standard Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate](guardian/demo-guide/carbon-offsets/gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate.md)
+    * [🥇 Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate](guardian/demo-guide/carbon-offsets/gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate.md)
     * [🏭 AMS-I.D: Grid Connected Renewable Electricity Generation – v.18.0](guardian/demo-guide/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md)
     * [🏭 PWRM0002 : Plastic Waste Recycling](guardian/demo-guide/carbon-offsets/pwrm0002-plastic-waste-recycling.md)
   * [🏭 Carbon Emissions](guardian/demo-guide/carbon-emissions/README.md)
