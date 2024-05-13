@@ -50,6 +50,7 @@ interface IFieldContext {
     styleUrls: ['./compare-document.component.scss']
 })
 export class CompareDocumentComponent implements OnInit {
+    @Input('disableHeader') disableHeader: boolean = false;
     @Input('value') value!: any;
     @Input() type: string = 'tree';
     @Input() eventsLvl: string = '1';
@@ -89,7 +90,6 @@ export class CompareDocumentComponent implements OnInit {
     }
 
     ngOnInit() {
-
     }
 
     ngOnChanges(changes: SimpleChanges): void {
