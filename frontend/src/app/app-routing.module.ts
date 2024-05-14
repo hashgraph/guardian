@@ -1,14 +1,14 @@
 import { Injectable, NgModule } from '@angular/core';
-import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
-import { IUser, UserRole } from '@guardian/interfaces';
-import { of } from 'rxjs';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterModule, RouterStateSnapshot, Routes, UrlTree } from '@angular/router';
+import { IUser, Permissions, UserRole } from '@guardian/interfaces';
+import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuditComponent } from './views/audit/audit.component';
 import { HomeComponent } from './views/home/home.component';
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
 import { RegisterComponent } from './views/register/register.component';
-import { RootConfigComponent } from './views/root-config/root-config.component';
+import { RootProfileComponent } from './views/root-profile/root-profile.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -43,119 +43,66 @@ import { ProjectsComparisonTableComponent } from './modules/project-comparison/c
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersViewComponent } from './views/users/users-view.component';
 
-const USER_IS_NOT_RA = "Page is avaliable for admin only";
-
-class Guard {
-    private router: Router;
-    private auth: AuthService;
-    private roles: UserRole[];
-    private defaultPage: string;
-
+@Injectable({
+    providedIn: 'root'
+})
+export class PermissionsGuard {
     constructor(
-        router: Router,
-        auth: AuthService,
-        roles: UserRole | UserRole[],
-        defaultPage: string
+        private readonly router: Router,
+        private readonly auth: AuthService
     ) {
-        this.router = router;
-        this.auth = auth
-        this.roles = Array.isArray(roles) ? roles : [roles];
-        this.defaultPage = defaultPage
     }
 
-    canActivate() {
+    private goToInfo(): boolean {
+        this.router.navigate(['/info'], {
+            skipLocationChange: true,
+            queryParams: {
+                title: 'Access Restricted',
+                message: 'You don\'t have permission to view this page.'
+            }
+        });
+        return false;
+    }
+
+    private goToDefault(defaultPage: string | undefined): UrlTree {
+        return this.router.parseUrl(defaultPage || '/login');
+    }
+
+    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+        const roles: string[] | undefined = route.data.roles;
+        const permissions: string[] | undefined = route.data.permissions;
+        const defaultPage: string | undefined = route.data.defaultPage;
         return this.auth.sessions().pipe(
-            map((res: IUser | null) => {
-                if (res) {
-                    if (!res.role || this.roles.indexOf(res.role) === -1) {
-                        this.router.navigate(['/info'],
-                            {
-                                skipLocationChange: true,
-                                queryParams: {
-                                    message: USER_IS_NOT_RA
+            map((user: IUser | null) => {
+                if (user) {
+                    if (roles) {
+                        if (!user.role || roles.indexOf(user.role) === -1) {
+                            return this.goToInfo();
+                        }
+                    }
+                    if (permissions) {
+                        if (user.permissions) {
+                            for (const permission of user.permissions) {
+                                if (permissions.indexOf(permission) !== -1) {
+                                    return true;
                                 }
                             }
-                        );
-                        return false;
+                        }
+                        return this.goToInfo();
                     }
                     return true;
                 } else {
-                    return this.router.parseUrl(this.defaultPage);
+                    return this.goToDefault(defaultPage);
                 }
             }),
             catchError(() => {
-                return of(this.router.parseUrl(this.defaultPage));
+                return of(this.goToDefault(defaultPage));
             })
         )
     }
 
-    canActivateChild() {
-        return this.auth.sessions().pipe(
-            map((res: IUser | null) => {
-                if (res) {
-                    if (!res.role || this.roles.indexOf(res.role) === -1) {
-                        this.router.navigate(['/info'],
-                            {
-                                skipLocationChange: true,
-                                queryParams: {
-                                    message: USER_IS_NOT_RA
-                                }
-                            }
-                        );
-                        return false;
-                    }
-                    return true;
-                } else {
-                    return this.router.parseUrl(this.defaultPage);
-                }
-            }),
-            catchError(() => {
-                return of(this.router.parseUrl(this.defaultPage));
-            })
-        )
-    }
-}
-
-@Injectable({
-    providedIn: 'root'
-})
-export class UserGuard extends Guard implements CanActivate {
-    constructor(router: Router, auth: AuthService) {
-        super(router, auth, UserRole.USER, '/login');
-    }
-}
-
-@Injectable({
-    providedIn: 'root'
-})
-export class StandardRegistryGuard extends Guard implements CanActivate {
-    constructor(router: Router, auth: AuthService) {
-        super(router, auth, [UserRole.STANDARD_REGISTRY, UserRole.WORKER], '/login');
-    }
-}
-
-@Injectable({
-    providedIn: 'root'
-})
-export class AuditorGuard extends Guard implements CanActivate {
-    constructor(router: Router, auth: AuthService) {
-        super(router, auth, UserRole.AUDITOR, '/login');
-    }
-}
-
-@Injectable({
-    providedIn: 'root'
-})
-export class ServicesStatusGuard implements CanActivate {
-    constructor(
-        private router: Router,
-        private status: WebSocketService
-    ) {
-    }
-
-    canActivate() {
-        return true;
-        // return this.status.IsServicesReady();
+    canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+        return this.canActivate(route, state);
     }
 }
 
@@ -165,48 +112,254 @@ const routes: Routes = [
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
 
-    { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
-    { path: 'policy-search', component: PolicySearchComponent, canActivate: [UserGuard, ServicesStatusGuard] },
-    { path: 'tokens-user', component: ListOfTokensUserComponent, canActivate: [UserGuard, ServicesStatusGuard] },
-    { path: 'retirement-user', component: UserContractConfigComponent, canActivate: [UserGuard, ServicesStatusGuard] },
-
-    { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'contracts', component: ContractConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'schemas', component: SchemaConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'artifacts', component: ArtifactConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     {
-        path: 'admin', component: AdminHeaderComponent, canActivate: [StandardRegistryGuard], canActivateChild: [StandardRegistryGuard],
+        path: 'user-profile',
+        component: UserProfileComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER, UserRole.WORKER]
+        }
+    },
+
+    {
+        path: 'policy-search',
+        component: PolicySearchComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+    {
+        path: 'tokens-user',
+        component: ListOfTokensUserComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+    {
+        path: 'retirement-user',
+        component: UserContractConfigComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+
+    {
+        path: 'config',
+        component: RootProfileComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY]
+        }
+    },
+    {
+        path: 'tokens',
+        component: TokenConfigComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.TOKENS_TOKEN_READ]
+        }
+    },
+    {
+        path: 'contracts',
+        component: ContractConfigComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.CONTRACTS_CONTRACT_READ]
+        }
+    },
+    {
+        path: 'schemas',
+        component: SchemaConfigComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.SCHEMAS_SCHEMA_READ, Permissions.SCHEMAS_SYSTEM_SCHEMA_READ]
+        }
+    },
+    {
+        path: 'artifacts',
+        component: ArtifactConfigComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.ARTIFACTS_FILE_READ, Permissions.ARTIFACTS_FILE_READ]
+        }
+
+    },
+    {
+        path: 'admin', component: AdminHeaderComponent,
+        canActivate: [PermissionsGuard],
+        canActivateChild: [PermissionsGuard],
         children: [
             { path: 'status', component: ServiceStatusComponent },
             { path: 'settings', component: SettingsViewComponent },
             { path: 'logs', component: LogsViewComponent },
             { path: 'about', component: AboutViewComponent }
-        ]
+        ],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [
+                Permissions.SETTINGS_SETTINGS_READ,
+                Permissions.LOG_LOG_READ
+            ]
+        }
     },
-    { path: 'status', component: ServiceStatusComponent },
-    { path: 'settings', component: SettingsViewComponent },
-    { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
-    { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
+    {
+        path: 'status',
+        component: ServiceStatusComponent
+    },
+    {
+        path: 'settings',
+        component: SettingsViewComponent
+    },
+    {
+        path: 'audit',
+        component: AuditComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.AUDITOR]
+        }
+    },
+    {
+        path: 'trust-chain',
+        component: TrustChainComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.AUDITOR]
+        }
+    },
 
-    { path: 'policy-viewer', component: PoliciesComponent, canActivate: [ServicesStatusGuard] },
-    { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
-    { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'modules', component: ModulesListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'tools', component: ToolsListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'suggestions', component: SuggestionsConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    {
+        path: 'policy-viewer',
+        component: PoliciesComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER, UserRole.USER],
+            permissions: [
+                Permissions.POLICIES_POLICY_READ,
+                Permissions.POLICIES_POLICY_EXECUTE
+            ]
+        }
+    },
+    {
+        path: 'policy-viewer/:id',
+        component: PolicyViewerComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER, UserRole.USER],
+            permissions: [
+                Permissions.POLICIES_POLICY_EXECUTE
+            ]
+        }
+    },
+    {
+        path: 'policy-configuration',
+        component: PolicyConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.POLICIES_POLICY_UPDATE]
+        }
+    },
+    {
+        path: 'modules',
+        component: ModulesListComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.MODULES_MODULE_UPDATE]
+        }
+    },
+    {
+        path: 'tools',
+        component: ToolsListComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.TOOLS_TOOL_UPDATE]
+        }
+    },
+    {
+        path: 'suggestions',
+        component: SuggestionsConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.SUGGESTIONS_SUGGESTIONS_READ]
+        }
+    },
 
-    { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
-    { path: 'search', component: SearchPoliciesComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
-    { path: 'record-results', component: RecordResultsComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    {
+        path: 'compare',
+        component: CompareComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER, UserRole.USER]
+        }
+    },
+    {
+        path: 'search',
+        component: SearchPoliciesComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.POLICIES_POLICY_READ]
+        }
+    },
+    {
+        path: 'record-results',
+        component: RecordResultsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.POLICIES_RECORD_ALL]
+        }
+    },
 
-    { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    {
+        path: 'branding',
+        component: BrandingComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.BRANDING_CONFIG_UPDATE]
+        }
+    },
 
-    { path: 'projects', component: AnnotationBlockComponent, data: { title: 'GUARDIAN / Project Overview' } },
-    { path: 'projects/comparison', component: ProjectsComparisonTableComponent, data: { title: 'GUARDIAN / Project Comparison' } },
+    {
+        path: 'projects',
+        component: AnnotationBlockComponent,
+        data: { title: 'GUARDIAN / Project Overview' }
+    },
+    {
+        path: 'projects/comparison',
+        component: ProjectsComparisonTableComponent,
+        data: { title: 'GUARDIAN / Project Comparison' }
+    },
 
-    { path: 'roles', component: RolesViewComponent },
-    { path: 'users', component: UsersViewComponent },
+    {
+        path: 'roles',
+        component: RolesViewComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.PERMISSIONS_ROLE_READ]
+        }
+    },
+    {
+        path: 'users',
+        component: UsersViewComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            permissions: [Permissions.PERMISSIONS_ROLE_READ]
+        }
+    },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

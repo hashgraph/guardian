@@ -90,7 +90,7 @@ export class ProfileApi {
             return {
                 username: user.username,
                 role: user.role,
-                permissionsGroupName: user.permissionsGroupName,
+                permissionsGroup: user.permissionsGroup,
                 permissions: user.permissions,
                 did: user.did,
                 parent: user.parent,

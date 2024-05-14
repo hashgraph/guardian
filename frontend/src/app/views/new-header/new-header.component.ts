@@ -194,15 +194,8 @@ export class NewHeaderComponent implements OnInit {
     }
 
     public goToHomePage() {
-        if (this.user.ADMINISTRATOR) {
-            this.router.navigate(['/config']);
-        } else if (this.user.AUDITOR) {
-            this.router.navigate(['/audit']);
-        } else if (this.user.USER) {
-            this.router.navigate(['/user-profile']);
-        } else {
-            this.router.navigate(['/']);
-        }
+        const home = this.auth.home(this.user.role);
+        this.router.navigate([home]);
     }
 
     public goToBrandingPage(event: MouseEvent) {

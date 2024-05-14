@@ -215,6 +215,9 @@ export class WebSocketService {
             const { type, data } = event;
 
             switch (type || event.event) {
+                case 'UPDATE_PERMISSIONS':
+                    window.location.reload();
+                    break;
                 case MessageAPI.PROFILE_BALANCE:
                     this.profileSubject.next(event);
                     break;

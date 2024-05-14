@@ -85,7 +85,7 @@ export class User extends BaseEntity implements IUser {
      * Group name
      */
     @Property({ nullable: true })
-    permissionsGroupName?: string;
+    permissionsGroup?: string[];
 
     /**
      * Permissions

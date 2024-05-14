@@ -72,4 +72,13 @@ export interface IUser {
      * VC document instance
      */
     vcDocument?: IVCDocument;
+    /**
+     * Group name
+     */
+    permissionsGroup?: string[];
+
+    /**
+     * Permissions
+     */
+    permissions?: string[];
 }

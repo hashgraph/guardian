@@ -154,3 +154,11 @@
     fill: var(--color-accent-red-1, #FF432A);
     color: var(--color-accent-red-1, #FF432A);
 }
+
+.opacity-icon {
+    cursor: pointer;
+    border-radius: 4px;
+    &:hover {
+        box-shadow: 0px 0px 0px 1px #2196F3;
+    }
+}

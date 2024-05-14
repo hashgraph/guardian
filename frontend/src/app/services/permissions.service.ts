@@ -18,11 +18,15 @@ export class PermissionsService {
         return this.http.get<any>(`${this.url}`);
     }
 
-    public users(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
+    public getUsers(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
             return this.http.get<any>(`${this.url}/users?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
         }
         return this.http.get<any>(`${this.url}/users`, { observe: 'response' });
+    }
+
+    public updateUser(username: string, user: any): Observable<any> {
+        return this.http.put<any>(`${this.url}/users/${username}`, user);
     }
 
     public getRoles(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {

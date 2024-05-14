@@ -214,7 +214,8 @@ export const PermissionsArray: {
     action: PermissionActions,
     disabled: boolean,
     default: boolean,
-    defaultRoles?: UserRole[]
+    defaultRoles?: UserRole[],
+    dependOn?: Permissions[]
 }[] = [
         //ACCOUNT
         {
@@ -226,7 +227,7 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
-            ]
+            ],
         },
         {
             name: Permissions.ACCOUNTS_STANDARD_REGISTRY_READ,
@@ -252,6 +253,9 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
+            ],
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ
             ]
         },
         {
@@ -747,7 +751,11 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
+            ],
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ
             ]
+            
         },
         {
             name: Permissions.POLICIES_POLICY_UPDATE,
@@ -758,6 +766,14 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
+            ],
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ,
+                Permissions.SCHEMAS_SCHEMA_READ,
+                Permissions.MODULES_MODULE_READ,
+                Permissions.TOOLS_TOOL_READ,
+                Permissions.TOKENS_TOKEN_READ,
+                Permissions.ARTIFACTS_FILE_READ
             ]
         },
         {
@@ -769,6 +785,9 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
+            ],
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ
             ]
         },
         {
@@ -780,6 +799,14 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
+            ],
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ,
+                Permissions.SCHEMAS_SCHEMA_READ,
+                Permissions.MODULES_MODULE_READ,
+                Permissions.TOOLS_TOOL_READ,
+                Permissions.TOKENS_TOKEN_READ,
+                Permissions.ARTIFACTS_FILE_READ
             ]
         },
         {
@@ -792,6 +819,9 @@ export const PermissionsArray: {
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.USER,
+            ],
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ
             ]
         },
         {
@@ -1171,7 +1201,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SUGGESTIONS,
             entity: PermissionEntities.SUGGESTIONS,
             action: PermissionActions.READ,
-            disabled: true,
+            disabled: false,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -1182,7 +1212,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SUGGESTIONS,
             entity: PermissionEntities.SUGGESTIONS,
             action: PermissionActions.UPDATE,
-            disabled: true,
+            disabled: false,
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY
@@ -1216,10 +1246,11 @@ export const PermissionsArray: {
             category: PermissionCategories.SETTINGS,
             entity: PermissionEntities.THEME,
             action: PermissionActions.READ,
-            disabled: false,
-            default: false,
+            disabled: true,
+            default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY
+                UserRole.STANDARD_REGISTRY,
+                UserRole.WORKER
             ]
         },
         {
@@ -1227,10 +1258,11 @@ export const PermissionsArray: {
             category: PermissionCategories.SETTINGS,
             entity: PermissionEntities.THEME,
             action: PermissionActions.CREATE,
-            disabled: false,
-            default: false,
+            disabled: true,
+            default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY
+                UserRole.STANDARD_REGISTRY,
+                UserRole.WORKER
             ]
         },
         {
@@ -1238,10 +1270,11 @@ export const PermissionsArray: {
             category: PermissionCategories.SETTINGS,
             entity: PermissionEntities.THEME,
             action: PermissionActions.UPDATE,
-            disabled: false,
-            default: false,
+            disabled: true,
+            default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY
+                UserRole.STANDARD_REGISTRY,
+                UserRole.WORKER
             ]
         },
         {
@@ -1249,10 +1282,11 @@ export const PermissionsArray: {
             category: PermissionCategories.SETTINGS,
             entity: PermissionEntities.THEME,
             action: PermissionActions.DELETE,
-            disabled: false,
-            default: false,
+            disabled: true,
+            default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY
+                UserRole.STANDARD_REGISTRY,
+                UserRole.WORKER
             ]
         },
         //AUDIT

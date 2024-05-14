@@ -1,4 +1,4 @@
-<div class="content" [attr.role]="user.role">
+<div class="{{user.USER ? 'min-content': 'content'}}">
     <div class="page-title">
         {{ user.USER ? "List of Policies" : "Manage Policies" }}
     </div>
@@ -11,7 +11,7 @@
     </ng-container>
 
     <ng-container *ngIf="isConfirmed && policies">
-        <div class="actions-container" [attr.role]="user.role">
+        <div class="actions-container" *ngIf="user.POLICIES_POLICY_READ">
             <form *ngIf="hasPolicies" [formGroup]="filtersForm" class="policy-filters">
                 <span class="p-input-icon-right">
                     <input
@@ -29,9 +29,9 @@
                     formControlName="tag"
                     placeholder="Tags"></p-dropdown>
                 <button (click)="applyFilters()"
-			class="button ml-8"
-			label="Apply Filters"
-			pButton></button>
+                    class="button ml-8"
+                    label="Apply Filters"
+                    pButton></button>
                 <button (click)="clearFilters()"
                     [disabled]="!filtersForm.dirty"
                     class="button secondary ml-8"
@@ -41,6 +41,7 @@
 
             <div style="margin-left: auto;">
                 <p-button
+                    *ngIf="user.POLICIES_POLICY_CREATE"
                     (click)="openPolicyWizardDialog()"
                     class="toolbar-btn-primary"
                     [pTooltip]="'Policy Wizard'"
@@ -48,6 +49,7 @@
                     <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
                 </p-button>
                 <p-button
+                    *ngIf="user.POLICIES_POLICY_CREATE"
                     (click)="createNewPolicy()"
                     class="toolbar-btn-primary"
                     [pTooltip]="'Create a Policy'"
@@ -55,6 +57,7 @@
                     <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
                 </p-button>
                 <p-button
+                    *ngIf="user.POLICIES_POLICY_CREATE"
                     (click)="importPolicy()"
                     class="toolbar-btn-primary"
                     [pTooltip]="'Import'"
@@ -62,6 +65,7 @@
                     <svg-icon src="/assets/images/icons/import.svg" svgClass="color-white"></svg-icon>
                 </p-button>
                 <p-button
+                    *ngIf="user.ANALYTIC_POLICY_READ"
                     (click)="comparePolicy()"
                     [pTooltip]="'Compare'"
                     class="toolbar-btn-secondary"
@@ -70,6 +74,7 @@
                     <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
                 <p-button
+                    *ngIf="user.POLICIES_MIGRATION_CREATE"
                     (click)="migrateData()"
                     [pTooltip]="'Migrate data'"
                     class="toolbar-btn-secondary"
@@ -78,6 +83,7 @@
                     <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
                 <p-button
+                    *ngIf="user.SUGGESTIONS_SUGGESTIONS_READ"
                     (click)="openSuggestionsDialog()"
                     [pTooltip]="'Suggestions'"
                     class="toolbar-btn-secondary"
@@ -175,6 +181,7 @@
                                 </td>
                                 <td *ngIf="canDisplayColumn('tags')" style="min-width: 185px;">
                                     <tags-explorer
+                                        *ngIf="user.TAGS_TAG_READ"
                                         [data]="policy._tags"
                                         [entity]="tagEntity"
                                         [owner]="owner"
@@ -200,7 +207,7 @@
                                     </a>
                                 </td>
                                 <td *ngIf="canDisplayColumn('status')" style="min-width: 140px;">
-                                    <div *ngIf="user.USER"
+                                    <div *ngIf="!user.POLICIES_POLICY_REVIEW"
                                         [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" 
                                         tooltipPosition="bottom"
                                         [tooltipDisabled]="!policy.discontinuedDate"
@@ -345,27 +352,41 @@
             <svg-icon src="/assets/images/icons/export.svg" svgClass="primary-color"></svg-icon>
         </p-button>
 
-        <p-button (click)="['PUBLISH', 'DRY-RUN', 'DISCONTINUED'].includes(status) && exportPolicyData(id)"
-            [disabled]="!['PUBLISH', 'DRY-RUN', 'DISCONTINUED'].includes(status)" label="Export policy data"
-            class="policy-menu-btn" styleClass="p-button-outlined" [pTooltip]="'Export policy data'" tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg"
-                [svgClass]="['PUBLISH', 'DRY-RUN', 'DISCONTINUED'].includes(status) ? 'primary-color' : 'disabled-color'"></svg-icon>
+        <p-button 
+            *ngIf="user.POLICIES_MIGRATION_CREATE"
+            (click)="checkMigrationStatus(status) && exportPolicyData(id)"
+            [disabled]="!checkMigrationStatus(status)" 
+            label="Export policy data"
+            class="policy-menu-btn" 
+            styleClass="p-button-outlined" 
+            [pTooltip]="'Export policy data'" 
+            tooltipPosition="bottom">
+            <svg-icon src="/assets/images/icons/export.svg" [svgClass]="checkMigrationStatus(status) ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button>
 
-        <p-button (click)="exportVirtualKeys(id)"
-            *ngIf="'DRY-RUN' === status" label="Export virtual keys"
-            class="policy-menu-btn" styleClass="p-button-outlined" [pTooltip]="'Export virtual keys'" tooltipPosition="bottom">
+        <p-button 
+            (click)="exportVirtualKeys(id)"
+            *ngIf="'DRY-RUN' === status && user.POLICIES_MIGRATION_CREATE"
+            label="Export virtual keys"
+            class="policy-menu-btn" 
+            styleClass="p-button-outlined" 
+            [pTooltip]="'Export virtual keys'" 
+            tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/export.svg"
                 [svgClass]="'primary-color'"></svg-icon>
         </p-button>
 
-        <p-button (click)="importVirtualKeys(id)"
-            *ngIf="'DRY-RUN' === status" label="Import virtual keys"
-            class="policy-menu-btn" styleClass="p-button-outlined" [pTooltip]="'Import virtual keys'" tooltipPosition="bottom">
+        <p-button 
+            (click)="importVirtualKeys(id)"
+            *ngIf="'DRY-RUN' === status && user.POLICIES_MIGRATION_CREATE" 
+            label="Import virtual keys"
+            class="policy-menu-btn" 
+            styleClass="p-button-outlined" 
+            [pTooltip]="'Import virtual keys'" 
+            tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/export.svg"
                 [svgClass]="'primary-color'"></svg-icon>
         </p-button>
-
 
         <p-button
             (click)="exportToExcel(id)"
@@ -378,6 +399,7 @@
         </p-button>
 
         <p-button
+            *ngIf="user.POLICIES_POLICY_UPDATE && user.SCHEMAS_SCHEMA_UPDATE"
             (click)="status === 'DRAFT' ? importFromExcel(id) : null"
             [disabled]="status !=='DRAFT'"
             label="Import schemas from Excel"
@@ -389,10 +411,10 @@
                 [svgClass]="status === 'DRAFT' ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button>
 
-
         <div class="policy-menu-delimiter"></div>
 
         <p-button
+            *ngIf="user.ANALYTIC_POLICY_READ"
             (click)="searchPolicy(id)"
             label="Search policies"
             class="policy-menu-btn"
@@ -411,6 +433,7 @@
         </p-button>
 
         <p-button
+            *ngIf="user.ANALYTIC_POLICY_READ"
             (click)="comparePolicy(id)"
             label="Compare policies"
             class="policy-menu-btn"
@@ -421,6 +444,7 @@
         </p-button>
 
         <p-button
+            *ngIf="user.POLICIES_MIGRATION_CREATE"
             (click)="migrateData(id)"
             label="Migrate data"
             class="policy-menu-btn"
@@ -433,6 +457,7 @@
         <div class="policy-menu-delimiter"></div>
 
         <p-button
+            *ngIf="user.POLICIES_POLICY_DELETE"
             (click)="status === 'DRAFT' ? deletePolicy(id, version) : null"
             [disabled]="status !=='DRAFT'"
             label="Delete Policy"

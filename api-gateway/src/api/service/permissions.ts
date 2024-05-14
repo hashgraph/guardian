@@ -5,6 +5,7 @@ import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, 
 import { Examples, InternalServerErrorDTO, PermissionsDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, InternalException, Users } from '#helpers';
+import { WebSocketsService } from './websockets.js';
 
 @Controller('permissions')
 @ApiTags('permissions')
@@ -168,9 +169,9 @@ export class PermissionsApi {
         @Body() role: RoleDTO
     ): Promise<RoleDTO> {
         let row: any;
-        const users = new Users();
+        const userService = new Users();
         try {
-            row = await users.getRoleById(id);
+            row = await userService.getRoleById(id);
         } catch (error) {
             await InternalException(error);
         }
@@ -178,7 +179,11 @@ export class PermissionsApi {
             throw new HttpException('Role does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
-            return await users.updateRole(id, role, user.did);
+            const result = await userService.updateRole(id, role, user.did);
+            const users = await userService.refreshUserPermissions(id, user.did);
+            const wsService = new WebSocketsService();
+            wsService.updatePermissions(users);
+            return result;
         } catch (error) {
             await InternalException(error);
         }
@@ -220,7 +225,12 @@ export class PermissionsApi {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            return await (new Users()).deleteRole(id, user.did);
+            const userService = new Users();
+            const result = await userService.deleteRole(id, user.did);
+            const users = await userService.refreshUserPermissions(id, user.did);
+            const wsService = new WebSocketsService();
+            wsService.updatePermissions(users);
+            return result;
         } catch (error) {
             await InternalException(error);
         }
@@ -268,14 +278,71 @@ export class PermissionsApi {
         try {
             const options: any = {
                 filters: null,
-                // parent: user.did,
-                parent: null,
+                parent: user.did,
                 role: UserRole.WORKER,
                 pageIndex,
                 pageSize
             };
             const { items, count } = await (new Users()).getWorkers(options);
             return res.setHeader('X-Total-Count', count).json(items);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Updates user
+     */
+    @Put('/users/:username')
+    @Auth(
+        Permissions.PERMISSIONS_ROLE_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Updates user permissions.',
+        description: 'Updates user permissions for the specified username.'
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'User Identifier',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: 'User permissions.',
+        type: UserRolesDTO,
+    })
+    @ApiOkResponse({
+        description: 'User permissions.',
+        type: UserRolesDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(UserRolesDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async updateUser(
+        @AuthUser() user: IAuthUser,
+        @Param('username') username: string,
+        @Body() body: UserRolesDTO
+    ): Promise<UserRolesDTO> {
+        let row: any;
+        const users = new Users();
+        try {
+            row = await users.getUser(username);
+        } catch (error) {
+            await InternalException(error);
+        }
+        if (!row || row.parent !== user.did || row.role !== UserRole.WORKER) {
+            throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
+        }
+        try {
+            const result = await users.updateUserRole(username, body, user.did);
+            const wsService = new WebSocketsService();
+            wsService.updatePermissions(result);
+            return result;
         } catch (error) {
             await InternalException(error);
         }

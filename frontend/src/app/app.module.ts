@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
-import { AppRoutingModule, AuditorGuard, StandardRegistryGuard, UserGuard } from './app-routing.module';
+import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -40,7 +40,7 @@ import { LoginComponent } from './views/login/login.component';
 import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
-import { RootConfigComponent } from './views/root-config/root-config.component';
+import { RootProfileComponent } from './views/root-profile/root-profile.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -131,7 +131,7 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         HomeComponent,
         HeaderComponent,
         RegisterComponent,
-        RootConfigComponent,
+        RootProfileComponent,
         TokenConfigComponent,
         AuditComponent,
         TrustChainComponent,
@@ -213,9 +213,6 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
     exports: [],
     providers: [
         WebSocketService,
-        UserGuard,
-        StandardRegistryGuard,
-        AuditorGuard,
         AuthService,
         ProfileService,
         TokenService,
@@ -245,6 +242,7 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         CompareStorage,
         ProjectComparisonService,
         PermissionsService,
+        PermissionsGuard,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

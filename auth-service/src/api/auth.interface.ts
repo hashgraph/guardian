@@ -35,7 +35,7 @@ export interface IAuthUser {
     /**
      * Group name
      */
-    permissionsGroupName?: string;
+    permissionsGroup?: string[];
     /**
      * Permissions
      */

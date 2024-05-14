@@ -49,7 +49,7 @@ export class Users extends NatsService {
             if (!(target as AuthenticatedRequest).user || !(target as AuthenticatedRequest).user.username) {
                 return null;
             }
-            user = await this.sendMessage(AuthEvents.GET_USER, {username: (target as AuthenticatedRequest).user.username});
+            user = await this.sendMessage(AuthEvents.GET_USER, { username: (target as AuthenticatedRequest).user.username });
         }
         return user;
     }
@@ -84,7 +84,7 @@ export class Users extends NatsService {
      * @param username
      */
     public async getUser(username: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER, {username});
+        return await this.sendMessage(AuthEvents.GET_USER, { username });
     }
 
     /**
@@ -92,7 +92,7 @@ export class Users extends NatsService {
      * @param did
      */
     public async getUserById(did: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, {did});
+        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, { did });
     }
 
     /**
@@ -108,7 +108,7 @@ export class Users extends NatsService {
      * @param dids
      */
     public async getUsersByIds(dids: string[]): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, {dids});
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, { dids });
     }
 
     /**
@@ -116,7 +116,7 @@ export class Users extends NatsService {
      * @param role
      */
     public async getUsersByRole(role: UserRole): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, {role});
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, { role });
     }
 
     /**
@@ -141,7 +141,7 @@ export class Users extends NatsService {
      * @param token
      */
     public async getUserByToken(token: string) {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_TOKEN, {token});
+        return await this.sendMessage(AuthEvents.GET_USER_BY_TOKEN, { token });
     }
 
     /**
@@ -150,7 +150,7 @@ export class Users extends NatsService {
      * @param password
      * @param role
      */
-    public async registerNewUser(username: string, password: string, role: string): Promise<IAuthUser>  {
+    public async registerNewUser(username: string, password: string, role: string): Promise<IAuthUser> {
         return await this.sendMessage(AuthEvents.REGISTER_NEW_USER, { username, password, role });
     }
 
@@ -164,7 +164,7 @@ export class Users extends NatsService {
     }
 
     public async generateNewAccessToken(refreshToken: string): Promise<any> {
-        return await this.sendMessage(AuthEvents.GENERATE_NEW_ACCESS_TOKEN, {refreshToken});
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_ACCESS_TOKEN, { refreshToken });
     }
 
     /**
@@ -272,6 +272,27 @@ export class Users extends NatsService {
      */
     public async getWorkers(options: any): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(AuthEvents.GET_USER_ACCOUNTS, options);
+    }
+
+    /**
+     * Update user role
+     * @param username
+     * @param user
+     * @param owner
+     * @returns Operation Success
+     */
+    public async updateUserRole(username: string, user: any, owner: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, user, owner });
+    }
+
+    /**
+     * Refresh user permissions
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async refreshUserPermissions(id: string, owner: string): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.REFRESH_USER_PERMISSIONS, { id, owner });
     }
 }
 

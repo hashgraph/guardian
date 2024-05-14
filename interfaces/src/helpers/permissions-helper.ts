@@ -34,7 +34,7 @@ export class UserPermissions {
     public readonly parent: string;
     public readonly role: string;
     public readonly permissions: string[];
-    public readonly permissionsGroupName: string;
+    public readonly permissionsGroup: string[];
 
     constructor(user?: any) {
         if (user) {
@@ -43,7 +43,7 @@ export class UserPermissions {
             this.parent = user.parent;
             this.role = user.role;
             this.permissions = user.permissions || [];
-            this.permissionsGroupName = user.permissionsGroupName;
+            this.permissionsGroup = user.permissionsGroup;
         } else {
             this.permissions = [];
         }

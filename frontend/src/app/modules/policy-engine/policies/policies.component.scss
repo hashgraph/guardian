@@ -1,4 +1,5 @@
-.content {
+.content,
+.min-content {
     position: absolute;
     left: 0;
     right: 0;
@@ -8,8 +9,16 @@
     margin: 56px 48px 0 48px;
 }
 
-.content[role="USER"] {
+.min-content {
     min-width: 1200px;
+}
+
+.actions-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    z-index: 2;
+    margin-top: 24px;
 }
 
 .loading {
@@ -101,22 +110,8 @@
     color: darkgrey;
 }
 
-.actions-container {
-    display: none;
-    z-index: 2;
-    margin-top: 24px;
-}
-
 .ml-8 {
     margin-left: 8px;
-}
-
-.actions-container[role="WORKER"],
-.actions-container[role="STANDARD_REGISTRY"],
-.actions-container[role="ROOT_AUTHORITY"] {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: nowrap;
 }
 
 .policy-filters {
@@ -374,6 +369,8 @@
 .commands-line {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+    padding-right: 12px;
 }
 
 

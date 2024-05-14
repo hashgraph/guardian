@@ -25,15 +25,8 @@ export class HomeComponent implements OnInit {
     async redirect() {
         this.auth.sessions().subscribe((user: any | null) => {
             if (user) {
-                if (UserCategory.isAdministrator(user.role)) {
-                    this.router.navigate(['/config']);
-                } else if (UserCategory.isAudit(user.role)) {
-                    this.router.navigate(['/audit']);
-                } else if (UserCategory.isUser(user.role)) {
-                    this.router.navigate(['/user-profile']);
-                } else {
-                    this.router.navigate(['/']);
-                }
+                const home = this.auth.home(user.role);
+                this.router.navigate([home]);
             } else {
                 this.router.navigate(['/login']);
             }

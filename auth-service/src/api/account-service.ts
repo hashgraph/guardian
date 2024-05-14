@@ -32,8 +32,8 @@ const { sign, verify } = pkg;
 /**
  * List of Permissions
  */
-export const DefaultPermissions = PermissionsArray.reduce((group, product) => {
-    const { name, defaultRoles } = product;
+export const DefaultPermissions = PermissionsArray.reduce((group, item) => {
+    const { name, defaultRoles } = item;
     if (Array.isArray(defaultRoles)) {
         for (const defaultRole of defaultRoles) {
             if (group.has(defaultRole)) {
@@ -432,7 +432,7 @@ export class AccountService extends NatsService {
                         'did',
                         'hederaAccountId',
                         'role',
-                        'permissionsGroupName',
+                        'permissionsGroup',
                         'permissions',
                     ]
                 };

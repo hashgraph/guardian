@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions, UserRole } from '@guardian/interfaces';
+import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -151,6 +151,14 @@ export class PoliciesComponent implements OnInit {
         };
     });
 
+    public checkMigrationStatus(status: string): boolean {
+        return (
+            status === 'PUBLISH' ||
+            status === 'DRY-RUN' ||
+            status === 'DISCONTINUED'
+        )
+    }
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -187,8 +195,7 @@ export class PoliciesComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.tagsService.getPublishedSchemas(),
-        ]).subscribe(
-            (value) => {
+        ]).subscribe((value) => {
                 const profile: IUser | null = value[0];
                 const tagSchemas: any[] = value[1] || [];
                 this.isConfirmed = !!(profile && profile.confirmed);
@@ -219,48 +226,51 @@ export class PoliciesComponent implements OnInit {
     private loadAllPolicy() {
         this.loading = true;
         this.tagOptions = [];
-        this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe(
-            (policiesResponse) => {
-                this.policies = policiesResponse.body?.map(policy => {
-                    if (policy.discontinuedDate) {
-                        policy.discontinuedDate = new Date(policy.discontinuedDate);
-                    }
-                    return policy;
-                }) || [];
-                this.policiesCount =
-                    policiesResponse.headers.get('X-Total-Count') ||
-                    this.policies.length;
-                const ids = this.policies.map((e) => e.id);
-                this.tagsService.search(this.tagEntity, ids).subscribe(
-                    (data) => {
-                        if (this.policies) {
-                            for (const policy of this.policies) {
-                                (policy as any)._tags = data[policy.id];
-                                data[policy.id]?.tags.forEach((tag: any) => {
-                                    const totalTagOptions = [
-                                        ...this.tagOptions,
-                                        tag.name,
-                                    ];
-                                    this.tagOptions = [
-                                        ...new Set(totalTagOptions),
-                                    ];
-                                });
-                            }
-                        }
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
-            },
-            (e) => {
+        this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
+            this.policies = policiesResponse.body?.map(policy => {
+                if (policy.discontinuedDate) {
+                    policy.discontinuedDate = new Date(policy.discontinuedDate);
+                }
+                return policy;
+            }) || [];
+            this.policiesCount =
+                policiesResponse.headers.get('X-Total-Count') ||
+                this.policies.length;
+
+            this.loadPolicyTags(this.policies);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    private loadPolicyTags(policies: any[]) {
+        if (!this.user.TAGS_TAG_READ || !policies || !policies.length) {
+            setTimeout(() => {
                 this.loading = false;
-            }
-        );
+            }, 500);
+        } else {
+            const ids = policies.map((e) => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                for (const policy of policies) {
+                    (policy as any)._tags = data[policy.id];
+                    data[policy.id]?.tags.forEach((tag: any) => {
+                        const totalTagOptions = [
+                            ...this.tagOptions,
+                            tag.name,
+                        ];
+                        this.tagOptions = [
+                            ...new Set(totalTagOptions),
+                        ];
+                    });
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+        }
     }
 
     public onPage(event: any): void {

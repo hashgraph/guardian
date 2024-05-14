@@ -73,6 +73,10 @@ export class PolicyApi {
                 options.filters = {
                     status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
                 };
+            } else if (user.role === UserRole.WORKER) {
+                options.filters = {
+                    owner: user.parent
+                };
             } else {
                 options.filters = {
                     owner: user.parent,

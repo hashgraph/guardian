@@ -93,8 +93,8 @@ export class ProfileDTO {
     @ApiProperty({ type: 'string', nullable: false, required: true })
     role: string;
 
-    @ApiProperty({ type: 'string', nullable: false, required: true })
-    permissionsGroupName: string;
+    @ApiProperty({ type: 'string', nullable: false, required: true, isArray: true })
+    permissionsGroup: string[];
 
     @ApiProperty({ type: 'string', nullable: false, required: true, isArray: true })
     permissions: string[];

@@ -1,0 +1,20 @@
+
+
+.info-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    .info-title {
+        font-size: 24px;
+        color: rgb(53, 53, 53);
+        text-align: center;
+        margin-bottom: 18px;
+    }
+    
+    .info-message {
+        font-size: 20px;
+        color: darkgrey;
+    }
+}

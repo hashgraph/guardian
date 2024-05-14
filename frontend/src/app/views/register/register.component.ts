@@ -66,15 +66,8 @@ export class RegisterComponent implements OnInit {
                         this.auth.setAccessToken(_result);
                         this.auth.setUsername(d.login);
                         this.authState.updateState(true);
-                        if (UserCategory.isAdministrator(result.role)) {
-                            this.router.navigate(['/config']);
-                        } else if (UserCategory.isAudit(result.role)) {
-                            this.router.navigate(['/audit']);
-                        } else if (UserCategory.isUser(result.role)) {
-                            this.router.navigate(['/user-profile']);
-                        } else {
-                            this.router.navigate(['/']);
-                        }
+                        const home = this.auth.home(result.role);
+                        this.router.navigate([home]);
                     }, () => {
                         this.loading = false;
                     })

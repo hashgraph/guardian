@@ -22,13 +22,24 @@
             <p-table [value]="page">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th class="header-cell-text cell-size-id">Name</th>
+                        <th class="header-cell-text cell-size-id">NAME</th>
+                        <th class="header-cell-text cell-size-operations">ROLES</th>
                     </tr>
                 </ng-template>
 
                 <ng-template let-row pTemplate="body">
                     <tr class="table-row">
                         <td class="cell-size-id">{{ row.username }}</td>
+                        <td class="cell-size-operations">
+                            <mat-select 
+                                multiple
+                                [(value)]="row.permissionsGroup" 
+                                (closed)="onChangeRole(row, $event)">
+                                <mat-option *ngFor="let item of roles" [value]="item.id">
+                                    {{item.name}}
+                                </mat-option>
+                            </mat-select>
+                        </td>
                     </tr>
                 </ng-template>
             </p-table>
@@ -47,7 +58,6 @@
     <div class="not-exist">
         <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
         </svg-icon>
-        <span class="info-text-strong">There were no Roles created yet</span>
-        <span class="info-text">Please create new role to see the data</span>
+        <span class="info-text-strong">There were no Users created yet</span>
     </div>
 </ng-template>

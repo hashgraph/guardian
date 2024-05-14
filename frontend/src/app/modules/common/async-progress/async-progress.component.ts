@@ -159,9 +159,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
                 this.wsService.updateProfile();
-                this.router.navigate([
-                    this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ], {
+                const home = this.auth.home(this.userRole);
+                this.router.navigate([home], {
                     replaceUrl: true,
                 });
                 return;
@@ -328,9 +327,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
-                this.router.navigate([
-                    this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ], {
+                const home = this.auth.home(this.userRole);
+                this.router.navigate([home], {
                     replaceUrl: true,
                 });
                 break;

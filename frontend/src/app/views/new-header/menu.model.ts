@@ -143,9 +143,19 @@ const NAVBAR_MENU_AUDITOR: NavbarMenuItem[] = [
 function customMenu(user: UserPermissions): NavbarMenuItem[] {
     const menu: NavbarMenuItem[] = [];
 
-    if (user.SCHEMAS_SCHEMA_READ || user.SCHEMAS_SYSTEM_SCHEMA_READ) {
+    if (
+        user.SCHEMAS_SCHEMA_READ ||
+        user.SCHEMAS_SYSTEM_SCHEMA_READ ||
+        user.ARTIFACTS_FILE_READ ||
+        user.MODULES_MODULE_READ ||
+        user.POLICIES_POLICY_READ ||
+        user.TOOLS_TOOL_READ
+    ) {
         const childItems: any = [];
-        if (user.LOG_LOG_READ) {
+        if (
+            user.SCHEMAS_SCHEMA_READ ||
+            user.SCHEMAS_SYSTEM_SCHEMA_READ
+        ) {
             childItems.push({
                 title: 'Schemas',
                 routerLink: '/schemas'

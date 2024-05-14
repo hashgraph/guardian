@@ -89,7 +89,7 @@ export class TaskManager {
      * @param wsService
      * @param cn
      */
-    public setDependecies(wsService: WebSocketsService, cn: NatsConnection) {
+    public setDependencies(wsService: WebSocketsService, cn: NatsConnection) {
         this.wsService = wsService;
         this.channel = new TaskManagerChannel();
         this.channel.setConnection(cn);

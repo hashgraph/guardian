@@ -65,10 +65,10 @@ Promise.all([
         await new MeecoAuth().registerListeners();
 
         const server = app.getHttpServer();
-        const wsService = new WebSocketsService(server, cn);
-        wsService.init();
+        const wsService = new WebSocketsService();
+        wsService.setConnection(server, cn).init();
 
-        new TaskManager().setDependecies(wsService, cn);
+        new TaskManager().setDependencies(wsService, cn);
 
         const document = SwaggerModule.createDocument(app, SwaggerConfig, {
             extraModels: Object.values(extraModels).filter((constructor: new (...args: any[]) => any) => {

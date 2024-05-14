@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
 import { IUser, UserPermissions } from '@guardian/interfaces';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'app-users-view',
@@ -15,6 +16,7 @@ export class UsersViewComponent implements OnInit, OnDestroy {
     public pageIndex: number = 0;
     public pageSize: number = 25;
     public count: number = 0;
+    public roles: any[] = [];
 
     constructor(
         private permissionsService: PermissionsService,
@@ -31,8 +33,12 @@ export class UsersViewComponent implements OnInit, OnDestroy {
 
     private loadProfile() {
         this.loading = true;
-        this.profileService.getProfile().subscribe((profile: IUser | null) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.permissionsService.getRoles()
+        ]).subscribe(([profile, roles]) => {
             this.user = new UserPermissions(profile);
+            this.roles = roles.body || [];
             this.loadData();
         }, (e) => {
             this.loadError(e);
@@ -41,7 +47,7 @@ export class UsersViewComponent implements OnInit, OnDestroy {
 
     private loadData() {
         this.loading = true;
-        this.permissionsService.users(this.pageIndex, this.pageSize).subscribe((response) => {
+        this.permissionsService.getUsers(this.pageIndex, this.pageSize).subscribe((response) => {
             this.page = response.body?.map((user: any) => {
                 return user;
             }) || [];
@@ -63,12 +69,21 @@ export class UsersViewComponent implements OnInit, OnDestroy {
 
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
-            this.pageIndex = 0;
             this.pageSize = event.pageSize;
         } else {
             this.pageIndex = event.pageIndex;
             this.pageSize = event.pageSize;
         }
         this.loadData();
+    }
+
+    public onChangeRole(row: any, $event: any) {
+        this.loading = true;
+        this.permissionsService.updateUser(row.username, row).subscribe((response) => {
+            this.loadData();
+        }, (e) => {
+            this.loading = false;
+            console.error(e);
+        });
     }
 }
