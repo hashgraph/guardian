@@ -48,7 +48,7 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             new Logger().warn(error.message, ['API_GATEWAY']);
         }
     }
-    res.sendStatus(401);
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
 }
 
 /**
@@ -83,9 +83,9 @@ export function permissionHelper(...roles: string[]) {
                     return;
                 }
             }
-            res.sendStatus(403);
+            throw new HttpException('Forbidden', HttpStatus.FORBIDDEN)
         } else {
-            res.sendStatus(401);
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
     }
 }

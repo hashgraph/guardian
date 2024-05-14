@@ -66,6 +66,9 @@ export class LoggerApi {
         try {
             const filters: any = {};
             const pageParameters: IPageParameters = {};
+            if (!body) {
+                body = {};
+            }
             if (body.type) {
                 filters.type = body.type;
             }

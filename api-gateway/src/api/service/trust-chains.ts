@@ -74,7 +74,7 @@ export class TrustChainsApi {
                 filters = { policyOwner }
             }
             const { items, count } = await guardians.getVpDocuments({ filters, pageIndex, pageSize });
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
         }

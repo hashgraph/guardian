@@ -302,8 +302,8 @@ export class TagsApi {
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
             res.locals.data = SchemaUtils.toOld(items)
             return res
-                .setHeader('X-Total-Count', count)
-                .json(SchemaUtils.toOld(items));
+                .header('X-Total-Count', count)
+                .send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }

@@ -56,7 +56,7 @@ export class PolicyApi {
         @Response() res: any
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
-            return res.setHeader('X-Total-Count', 0).json([]);
+            return res.header('X-Total-Count', 0).send([]);
         }
         try {
             const options: any = {
@@ -85,7 +85,7 @@ export class PolicyApi {
             }
             const engineService = new PolicyEngine();
             const { policies, count } = await engineService.getPolicies(options);
-            return res.setHeader('X-Total-Count', count).json(policies);
+            return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
             await InternalException(error);
         }
@@ -904,7 +904,7 @@ export class PolicyApi {
                 pageIndex,
                 pageSize,
             );
-            return res.setHeader('X-Total-Count', count).json(documents);
+            return res.header('X-Total-Count', count).send(documents);
         } catch (error) {
             await InternalException(error);
         }
@@ -958,11 +958,11 @@ export class PolicyApi {
                 throw new Error(`Policy doesn't exist`);
             }
             const downloadResult = await engineService.downloadPolicyData(policyId, user.did);
-            res.setHeader(
+            res.header(
                 'Content-Disposition',
                 `attachment; filename=${policy.name}.data`
             );
-            res.setHeader('Content-Type', 'application/policy-data');
+            res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
         } catch (error) {
             await InternalException(error);
@@ -1105,11 +1105,11 @@ export class PolicyApi {
                 policyId,
                 user.did
             );
-            res.setHeader(
+            res.header(
                 'Content-Disposition',
                 `attachment; filename=${policy.name}.vk`
             );
-            res.setHeader('Content-Type', 'application/virtual-keys');
+            res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
         } catch (error) {
             await InternalException(error);
@@ -1605,8 +1605,8 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             const policyFile: any = await engineService.exportFile(user, policyId);
             const policy: any = await engineService.getPolicy({ filters: policyId });
-            res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${policy.name}`);
+            res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
             await InternalException(error);
@@ -1695,8 +1695,8 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             const policyFile: any = await engineService.exportXlsx(user, policyId);
             const policy: any = await engineService.getPolicy({ filters: policyId });
-            res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${policy.name}`);
+            res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
             await InternalException(error);
@@ -2668,7 +2668,7 @@ export class PolicyApi {
         }
         try {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'transactions', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).json(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             await InternalException(error);
         }
@@ -2737,7 +2737,7 @@ export class PolicyApi {
         }
         try {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'artifacts', pageIndex, pageSize);
-            return res.setHeader('X-Total-Count', count).json(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             await InternalException(error);
         }
@@ -2806,7 +2806,7 @@ export class PolicyApi {
         }
         try {
             const [data, count] = await engineService.getVirtualDocuments(policyId, 'ipfs', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).json(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             await InternalException(error);
         }

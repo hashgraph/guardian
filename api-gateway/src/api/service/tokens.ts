@@ -139,8 +139,8 @@ export class TokensApi {
             }
 
             return res
-                .setHeader('X-Total-Count', tokensAndCount.count)
-                .json(tokensAndCount.items);
+                .header('X-Total-Count', tokensAndCount.count)
+                .send(tokensAndCount.items);
         } catch (error) {
             await InternalException(error);
         }

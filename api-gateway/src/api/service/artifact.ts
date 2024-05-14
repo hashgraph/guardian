@@ -1,10 +1,9 @@
 import { Permissions } from '@guardian/interfaces';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException } from '#helpers';
+import { Guardians, InternalException, AnyFilesInterceptor } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 
 @Controller('artifacts')
@@ -89,7 +88,7 @@ export class ArtifactApi {
             }
             const guardians = new Guardians();
             const { artifacts, count } = await guardians.getArtifacts(options);
-            return res.setHeader('X-Total-Count', count).json(artifacts);
+            return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
             await InternalException(error);
         }
@@ -141,7 +140,7 @@ export class ArtifactApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
-    @UseInterceptors(FilesInterceptor('artifacts'))
+    @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
     async uploadArtifacts(
         @AuthUser() user: IAuthUser,
@@ -150,7 +149,7 @@ export class ArtifactApi {
     ): Promise<any> {
         try {
             if (!files) {
-                throw new HttpException('There are no files to upload', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('There are no files to upload', HttpStatus.BAD_REQUEST)
             }
             const owner = user.did;
             const uploadedArtifacts = [];

@@ -96,7 +96,7 @@ export class ModulesApi {
         try {
             const guardians = new Guardians();
             const { items, count } = await guardians.getModule({ owner: user.did, pageIndex, pageSize });
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
         }
@@ -165,8 +165,8 @@ export class ModulesApi {
             });
             res.locals.data = SchemaUtils.toOld(items)
             return res
-                .setHeader('X-Total-Count', count)
-                .json(SchemaUtils.toOld(items));
+                .header('X-Total-Count', count)
+                .send(SchemaUtils.toOld(items));
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -439,8 +439,8 @@ export class ModulesApi {
         try {
             const guardian = new Guardians();
             const file: any = await guardian.exportModuleFile(uuid, user.did);
-            res.setHeader('Content-disposition', `attachment; filename=module_${Date.now()}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=module_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             await InternalException(error);

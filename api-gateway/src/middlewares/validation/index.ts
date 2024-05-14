@@ -34,7 +34,7 @@ const validate = (schema) => async (req, res, next) => {
         }, { abortEarly: false });
         return next();
     } catch (err) {
-        return res.status(422).json(prepareValidationResponse(err, err.name));
+        return res.status(422).send(prepareValidationResponse(err, err.name));
     }
 };
 

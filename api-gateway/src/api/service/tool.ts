@@ -4,7 +4,7 @@ import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR } from '#helpers';
+import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
 @Controller('tools')
@@ -148,7 +148,7 @@ export class ToolsApi {
         try {
             const guardians = new Guardians();
             const { items, count } = await guardians.getTools({ owner: user.did, pageIndex, pageSize });
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
         }
@@ -477,8 +477,8 @@ export class ToolsApi {
             }
             const guardian = new Guardians();
             const file: any = await guardian.exportToolFile(id, user.did);
-            res.setHeader('Content-disposition', `attachment; filename=tool_${Date.now()}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=tool_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             await InternalException(error);
@@ -834,7 +834,7 @@ export class ToolsApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async toolImportFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: any
+        @UploadedFiles() files: MultipartFile[]
     ): Promise<TaskDTO> {
         try {
             const file = files.find(item => item.fieldname === 'file');

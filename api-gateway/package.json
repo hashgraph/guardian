@@ -1,16 +1,9 @@
 {
-    "packageManager": "yarn@1.22.21",
-    "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2"
-    },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
-    "imports": {
-        "#middlewares": "./dist/middlewares/index.js",
-        "#helpers": "./dist/helpers/index.js",
-        "#auth": "./dist/auth/index.js"
-    },
     "dependencies": {
+        "@fastify/formbody": "^7.4.0",
+        "@fastify/multipart": "^8.2.0",
+        "@fastify/static": "^7.0.0",
         "@guardian/common": "^2.24.1",
         "@guardian/interfaces": "^2.24.1",
         "@nestjs/common": "^9.4.1",
@@ -18,6 +11,7 @@
         "@nestjs/jwt": "^10.0.3",
         "@nestjs/microservices": "^9.4.1",
         "@nestjs/platform-express": "^9.4.2",
+        "@nestjs/platform-fastify": "^9.4.2",
         "@nestjs/swagger": "^6.3.0",
         "@types/express-fileupload": "^1.4.1",
         "async-mutex": "^0.4.0",
@@ -67,17 +61,27 @@
     "files": [
         "dist"
     ],
+    "imports": {
+        "#auth": "./dist/auth/index.js",
+        "#helpers": "./dist/helpers/index.js",
+        "#middlewares": "./dist/middlewares/index.js"
+    },
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "name": "api-gateway",
+    "packageManager": "yarn@1.22.21",
+    "resolutions": {
+        "@azure/core-rest-pipeline": "1.12.1",
+        "image-size": "1.0.2"
+    },
     "scripts": {
         "build": "gulp build:demo",
-        "build:prod": "gulp build:prod",
         "build:demo": "gulp build:demo",
+        "build:prod": "gulp build:prod",
         "debug": "nodemon dist/index.js",
-        "dev:docker": "npm run build && nodemon .",
         "dev": "gulp watch",
+        "dev:docker": "npm run build && nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"

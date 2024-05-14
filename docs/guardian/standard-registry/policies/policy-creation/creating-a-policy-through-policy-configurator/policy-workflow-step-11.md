@@ -1,6 +1,6 @@
 # Policy Workflow Step 11
 
-After the sensor gird information is captured, we need to do something with it. Therefore, we add an action step from the “sensors\_page” policy action step by clicking on the Action button in the top navigation bar.
+After the sensor grid information is captured, we need to do something with it. Therefore, we add an action step from the “sensors\_page” policy action step by clicking on the Action button in the top navigation bar.
 
 As before, we set the tag, the permissions, and stop advancing the process until the download is complete via the “stop propagation” flag, and since this will be a download action, the action type is selected to be “download”.
 

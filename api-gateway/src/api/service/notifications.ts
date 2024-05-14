@@ -53,7 +53,7 @@ export class NotificationsApi {
                 parseInteger(pageIndex),
                 parseInteger(pageSize)
             );
-            return res.setHeader('X-Total-Count', count).json(notifications);
+            return res.header('X-Total-Count', count).send(notifications);
         } catch (error) {
             await InternalException(error);
         }

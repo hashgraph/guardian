@@ -72,7 +72,7 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error);
         }
@@ -310,8 +310,7 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
-            res.locals.data = contracts
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error);
         }
@@ -929,8 +928,7 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
-            res.locals.data = contracts
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error);
         }
@@ -1003,8 +1001,7 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
-            res.locals.data = contracts
-            return res.setHeader('X-Total-Count', count).json(contracts);
+            return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error);
         }
@@ -1493,8 +1490,7 @@ export class ContractsApi {
         try {
             const guardians = new Guardians();
             const [vcs, count] = await guardians.getRetireVCs(user.did, pageIndex, pageSize);
-            res.locals.data = vcs
-            return res.setHeader('X-Total-Count', count).json(vcs);
+            return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
             await InternalException(error);
         }

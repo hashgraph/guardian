@@ -293,7 +293,7 @@ export class SchemaApi {
             options.owner = getParentUser(user);
             const { items, count } = await guardians.getSchemasByOwner(options);
             SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
@@ -377,7 +377,7 @@ export class SchemaApi {
             options.owner = getParentUser(user);
             const { items, count } = await guardians.getSchemasByOwner(options);
             SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
@@ -893,7 +893,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
@@ -1179,7 +1179,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
@@ -1300,7 +1300,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
@@ -1461,10 +1461,9 @@ export class SchemaApi {
                     level: 3
                 }
             });
-            res.setHeader('Content-disposition', `attachment; filename=${name}`);
-            res.setHeader('Content-type', 'application/zip');
-            arcStream.pipe(res);
-            return res;
+            res.header('Content-disposition', `attachment; filename=${name}`);
+            res.header('Content-type', 'application/zip');
+            return res.send(arcStream);
         } catch (error) {
             await InternalException(error);
         }
@@ -1587,7 +1586,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             const { items, count } = await guardians.getSystemSchemas(owner, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
-            return res.setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
@@ -1849,8 +1848,8 @@ export class SchemaApi {
             const guardians = new Guardians();
             const file: any = await guardians.exportSchemasXlsx(user, [schemaId]);
             const schema: any = await guardians.getSchemaById(schemaId);
-            res.setHeader('Content-disposition', `attachment; filename=${schema.name}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${schema.name}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             await InternalException(error);
@@ -1910,7 +1909,7 @@ export class SchemaApi {
                 owner: user.did
             });
             SchemaHelper.updatePermission(items, user.did);
-            return res.status(201).setHeader('X-Total-Count', count).json(SchemaUtils.toOld(items));
+            return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
@@ -2052,8 +2051,8 @@ export class SchemaApi {
             const guardians = new Guardians();
             const file = await guardians.getFileTemplate(filename);
             const fileBuffer = Buffer.from(file, 'base64');
-            res.setHeader('Content-disposition', `attachment; filename=` + filename);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=` + filename);
+            res.header('Content-type', 'application/zip');
             res.locals.data = fileBuffer
             return res.send(fileBuffer);
         } catch (error) {

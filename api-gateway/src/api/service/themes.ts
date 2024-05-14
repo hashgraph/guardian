@@ -258,8 +258,8 @@ export class ThemesApi {
         const guardian = new Guardians();
         try {
             const file: any = await guardian.exportThemeFile(themeId, user.did);
-            res.setHeader('Content-disposition', `attachment; filename=theme_${Date.now()}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=theme_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             await InternalException(error);
