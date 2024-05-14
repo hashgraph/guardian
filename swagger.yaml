@@ -10765,6 +10765,46 @@ paths:
       tags: *ref_17
       security:
         - bearer: []
+  /permissions/users/{username}:
+    put:
+      operationId: PermissionsApi_updateUser
+      summary: Updates user permissions.
+      description: Updates user permissions for the specified username.
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: User Identifier
+          example: username
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: User permissions.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRolesDTO'
+      responses:
+        '200':
+          description: User permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRolesDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_17
+      security:
+        - bearer: []
   /schemas/type/{type}:
     get:
       tags:
@@ -12443,9 +12483,11 @@ components:
         role:
           type: string
           nullable: false
-        permissionsGroupName:
-          type: string
+        permissionsGroup:
           nullable: false
+          type: array
+          items:
+            type: string
         permissions:
           nullable: false
           type: array
@@ -12481,7 +12523,7 @@ components:
       required:
         - username
         - role
-        - permissionsGroupName
+        - permissionsGroup
         - permissions
     SubjectDTO:
       type: object
@@ -13783,10 +13825,8 @@ components:
             - TAGS_TAG_CREATE
             - TAGS_TAG_DELETE
             - PROFILES_RESTORE_ALL
-            - SETTINGS_THEME_READ
-            - SETTINGS_THEME_CREATE
-            - SETTINGS_THEME_UPDATE
-            - SETTINGS_THEME_DELETE
+            - SUGGESTIONS_SUGGESTIONS_READ
+            - SUGGESTIONS_SUGGESTIONS_UPDATE
             - PERMISSIONS_ROLE_READ
             - PERMISSIONS_ROLE_CREATE
             - PERMISSIONS_ROLE_UPDATE
@@ -13897,7 +13937,46 @@ components:
         - default
     UserRolesDTO:
       type: object
-      properties: {}
+      properties:
+        username:
+          type: string
+          example: username
+        did:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parent:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        role:
+          type: string
+          enum:
+            - STANDARD_REGISTRY
+            - WORKER
+            - USER
+            - AUDITOR
+          example: USER
+        permissionsGroup:
+          type: string
+          enum:
+            - STANDARD_REGISTRY
+            - WORKER
+            - USER
+            - AUDITOR
+          example: Dynamic role name
+        permissions:
+          type: string
+          enum: *ref_18
+          example:
+            - POLICIES_POLICY_READ
+      required:
+        - username
+        - did
+        - parent
+        - role
+        - permissionsGroup
+        - permissions
     Credentials:
       type: object
       required:
