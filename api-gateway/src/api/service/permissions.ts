@@ -87,7 +87,7 @@ export class PermissionsApi {
                 pageSize
             };
             const { items, count } = await (new Users()).getRoles(options);
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
         }
@@ -284,7 +284,7 @@ export class PermissionsApi {
                 pageSize
             };
             const { items, count } = await (new Users()).getWorkers(options);
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
         }
