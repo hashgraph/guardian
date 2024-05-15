@@ -6518,7 +6518,7 @@ paths:
                 value:
                   categoryIds:
                     - '000000000000000000000001'
-                    - '000000000000000000000002'
+                    - '000000000000000000000001'
                   text: abc
       responses:
         '200':
@@ -10738,6 +10738,30 @@ paths:
           description: The numbers of items to return
           schema:
             type: number
+        - name: role
+          required: true
+          in: query
+          description: Filter by role
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: status
+          required: true
+          in: query
+          description: Filter by status
+          example: Active
+          schema:
+            enum:
+              - Active
+              - Inactive
+            type: string
+        - name: username
+          required: true
+          in: query
+          description: Filter by username
+          example: username
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation.
@@ -13799,6 +13823,7 @@ components:
             - POLICIES_POLICY_DELETE
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
+            - POLICIES_POLICY_MANAGE
             - POLICIES_MIGRATION_CREATE
             - POLICIES_RECORD_ALL
             - SCHEMAS_SCHEMA_READ
@@ -13953,7 +13978,6 @@ components:
           type: string
           enum:
             - STANDARD_REGISTRY
-            - WORKER
             - USER
             - AUDITOR
           example: USER
@@ -13961,7 +13985,6 @@ components:
           type: string
           enum:
             - STANDARD_REGISTRY
-            - WORKER
             - USER
             - AUDITOR
           example: Dynamic role name
