@@ -74,7 +74,9 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 ### Tools Referenced
 
-* Tool 33 - Tool 33 is included as a module within the policy. This module is used to calculate default values for common parameters like fNRB (Fraction of non-renewable biomass).
+* Methodological Tool 19- Demonstration of additionality of microscale project activities
+* Methodological Tool 21- Demonstration of additionality of small-scale project activities
+* Methodological Tool 30- Calculation of the fraction of non-renewable biomass
 
 ### Token (Carbon Emission Reduction) <a href="#toc360615091" id="toc360615091"></a>
 
