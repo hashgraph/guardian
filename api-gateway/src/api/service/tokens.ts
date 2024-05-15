@@ -1,5 +1,5 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger } from '#helpers';
-import { Permissions, TaskAction, UserRole } from '@guardian/interfaces';
+import { Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
@@ -126,18 +126,24 @@ export class TokensApi {
             const engineService = new PolicyEngine();
 
             let tokensAndCount = { items: [], count: 0 };
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                tokensAndCount = await guardians.getTokensPage(user.did, parseInteger(pageIndex), parseInteger(pageSize));
-                const map = await engineService.getTokensMap(user.did);
-                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
-                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, false);
-            } else if (user.did) {
-                tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
-                const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
-                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
-                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, true);
+            if (user.did) {
+                if(UserPermissions.has(user, [
+                    Permissions.TOKENS_TOKEN_CREATE,
+                    Permissions.TOKENS_TOKEN_UPDATE,
+                    Permissions.TOKENS_TOKEN_DELETE,
+                    Permissions.TOKENS_TOKEN_MANAGE
+                ])) {
+                    tokensAndCount = await guardians.getTokensPage(user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(user.did);
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, false);
+                } else {
+                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, true);
+                }
             }
-
             return res
                 .header('X-Total-Count', tokensAndCount.count)
                 .send(tokensAndCount.items);

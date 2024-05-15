@@ -150,6 +150,7 @@ export enum Permissions {
     POLICIES_MIGRATION_CREATE = 'POLICIES_MIGRATION_CREATE',
     POLICIES_RECORD_ALL = 'POLICIES_RECORD_ALL',
     POLICIES_POLICY_AUDIT = 'POLICIES_POLICY_AUDIT', //only UserRole.AUDITOR
+    POLICIES_POLICY_MANAGE = 'POLICIES_POLICY_MANAGE', //Policy Owner
     //SCHEMAS
     SCHEMAS_SCHEMA_READ = 'SCHEMAS_SCHEMA_READ',
     SCHEMAS_SCHEMA_CREATE = 'SCHEMAS_SCHEMA_CREATE',
@@ -239,8 +240,7 @@ export const PermissionsArray: {
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.USER,
-                UserRole.AUDITOR,
-                UserRole.WORKER
+                UserRole.AUDITOR
             ]
         },
         //ANALYTIC
@@ -628,7 +628,6 @@ export const PermissionsArray: {
             default: false,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
-                UserRole.WORKER,
                 UserRole.USER,
                 UserRole.AUDITOR
             ]
@@ -643,7 +642,6 @@ export const PermissionsArray: {
             default: true,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
-                UserRole.WORKER,
                 UserRole.USER,
                 UserRole.AUDITOR
             ]
@@ -657,7 +655,6 @@ export const PermissionsArray: {
             default: true,
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
-                UserRole.WORKER,
                 UserRole.USER,
                 UserRole.AUDITOR
             ]
@@ -819,6 +816,20 @@ export const PermissionsArray: {
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.USER,
+            ],
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ
+            ]
+        },
+        {
+            name: Permissions.POLICIES_POLICY_MANAGE,
+            category: PermissionCategories.POLICIES,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            default: false,
+            defaultRoles: [
+                UserRole.STANDARD_REGISTRY
             ],
             dependOn: [
                 Permissions.POLICIES_POLICY_READ
@@ -1152,8 +1163,7 @@ export const PermissionsArray: {
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.USER,
-                UserRole.AUDITOR,
-                UserRole.WORKER
+                UserRole.AUDITOR
             ]
         },
         {
@@ -1166,8 +1176,7 @@ export const PermissionsArray: {
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.USER,
-                UserRole.AUDITOR,
-                UserRole.WORKER
+                UserRole.AUDITOR
             ]
         },
         {
@@ -1180,8 +1189,7 @@ export const PermissionsArray: {
             defaultRoles: [
                 UserRole.STANDARD_REGISTRY,
                 UserRole.USER,
-                UserRole.AUDITOR,
-                UserRole.WORKER
+                UserRole.AUDITOR
             ]
         },
         {
@@ -1249,8 +1257,7 @@ export const PermissionsArray: {
             disabled: true,
             default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY,
-                UserRole.WORKER
+                UserRole.STANDARD_REGISTRY
             ]
         },
         {
@@ -1261,8 +1268,7 @@ export const PermissionsArray: {
             disabled: true,
             default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY,
-                UserRole.WORKER
+                UserRole.STANDARD_REGISTRY
             ]
         },
         {
@@ -1273,8 +1279,7 @@ export const PermissionsArray: {
             disabled: true,
             default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY,
-                UserRole.WORKER
+                UserRole.STANDARD_REGISTRY
             ]
         },
         {
@@ -1285,8 +1290,7 @@ export const PermissionsArray: {
             disabled: true,
             default: true,
             defaultRoles: [
-                UserRole.STANDARD_REGISTRY,
-                UserRole.WORKER
+                UserRole.STANDARD_REGISTRY
             ]
         },
         //AUDIT

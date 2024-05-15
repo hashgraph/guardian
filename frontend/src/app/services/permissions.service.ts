@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient, HttpResponse } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { API_BASE_URL } from "./api";
 
@@ -14,15 +14,35 @@ export class PermissionsService {
 
     }
 
+    public static getOptions(
+        filters: any,
+        pageIndex?: number, 
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                params = params.set(key, filters[key]);
+            }
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
+    }
+
     public permissions(): Observable<any[]> {
         return this.http.get<any>(`${this.url}`);
     }
 
-    public getUsers(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}/users?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
-        }
-        return this.http.get<any>(`${this.url}/users`, { observe: 'response' });
+    public getUsers(
+        filters?: any, 
+        pageIndex?: number, 
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = PermissionsService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/users`, { observe: 'response', params });
     }
 
     public updateUser(username: string, user: any): Observable<any> {
@@ -30,10 +50,8 @@ export class PermissionsService {
     }
 
     public getRoles(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}/roles?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
-        }
-        return this.http.get<any>(`${this.url}/roles`, { observe: 'response' });
+        const params = PermissionsService.getOptions(null, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/roles`, { observe: 'response', params });
     }
 
     public createRole(role: any): Observable<any> {

@@ -112,10 +112,7 @@ export class AuthService {
             return '/config';
         } else if (UserCategory.isAudit(role as UserRole)) {
             return '/audit';
-        } else if (
-            UserCategory.isUser(role as UserRole) ||
-            UserCategory.isWorker(role as UserRole)
-        ) {
+        } else if (UserCategory.isUser(role as UserRole)) {
             return '/user-profile';
         } else {
             return '/';

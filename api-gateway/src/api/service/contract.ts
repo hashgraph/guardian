@@ -1479,7 +1479,7 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    @UseCache({ isExpress: true })
+    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetireVCs(
         @AuthUser() user: IAuthUser,

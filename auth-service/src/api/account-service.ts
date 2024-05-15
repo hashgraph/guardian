@@ -425,7 +425,7 @@ export class AccountService extends NatsService {
                     return new MessageError('Invalid load users parameter');
                 }
 
-                const { pageIndex, pageSize, parent, role } = msg;
+                const { filters, pageIndex, pageSize, parent } = msg;
                 const otherOptions: any = {
                     fields: [
                         'username',
@@ -446,8 +446,20 @@ export class AccountService extends NatsService {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = 100;
                 }
+                const options: any = { parent };
+                if (filters) {
+                    if (filters.role) {
+                        options.permissionsGroup = filters.role;
+                    }
+                    if (filters.status) {
 
-                const [items, count] = await new DataBaseHelper(User).findAndCount({ parent, role }, otherOptions);
+                    }
+                    if (filters.username) {
+                        options.username = { $regex: '.*' + filters.username + '.*' };
+                    }
+                }
+
+                const [items, count] = await new DataBaseHelper(User).findAndCount(options, otherOptions);
 
                 return new MessageResponse({ items, count });
             } catch (error) {

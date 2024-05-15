@@ -5,7 +5,6 @@ import { Permissions } from "./permissions.type";
  */
 export enum UserRole {
     STANDARD_REGISTRY = 'STANDARD_REGISTRY',
-    WORKER = 'WORKER',
     USER = 'USER',
     AUDITOR = 'AUDITOR'
 }

@@ -112,9 +112,6 @@ async function setupUserProfile(
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
         did = await createUserProfile(profile, notifier, user);
-    } else if (user.role === UserRole.WORKER) {
-        profile.entity = SchemaEntity.WORKER;
-        did = await createUserProfile(profile, notifier, user);
     } else {
         throw new Error('Unknown user role.');
     }

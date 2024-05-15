@@ -73,11 +73,8 @@ export class PolicyApi {
                 options.filters = {
                     status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
                 };
-            } else if (user.role === UserRole.WORKER) {
-                options.filters = {
-                    owner: user.parent
-                };
             } else {
+                // debugger
                 options.filters = {
                     owner: user.parent,
                     status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
@@ -2945,7 +2942,7 @@ export class PolicyApi {
         examples: {
             Filter1: {
                 value: {
-                    categoryIds: [Examples.DB_ID, '000000000000000000000002'],
+                    categoryIds: [Examples.DB_ID, Examples.DB_ID],
                     text: 'abc'
                 }
             }

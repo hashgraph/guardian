@@ -1,0 +1,126 @@
+::ng-deep {
+    .custom-permissions-dialog {
+        .p-dialog-title {
+            font-family: Poppins, sans-serif;
+            font-size: 24px;
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        &.p-dialog {
+            box-shadow: none;
+        }
+
+        .p-dialog-header {
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+        }
+
+        .p-dialog-content {
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+    }
+}
+
+.dialog-footer {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.dialog-content {
+    display: flex;
+    max-height: 100%;
+    flex-direction: column;
+}
+
+.dialog-content {
+    .user-header {
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 14px;
+        text-align: left;
+        color: #181818;
+        margin-bottom: 18px;
+    }
+
+    .user-name {
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        text-align: left;
+        color: #181818;
+        margin-bottom: 18px;
+    }
+
+    .user-content {
+        margin-bottom: 18px;
+    }
+
+    .role-header {
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 14px;
+        text-align: left;
+        color: #181818;
+        margin-bottom: 18px;
+    }
+
+    .roles-content {
+        display: flex;
+    }
+
+    .role-content {
+        display: flex;
+        height: 28px;
+        margin-right: 8px;
+        border: 1px solid #848FA9;
+        background: #EFF3F7;
+        border-radius: 6px;
+        padding: 3px 6px 3px 12px;
+    }
+
+    .role-name {
+        min-width: 50px;
+        max-width: 150px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .role-icon {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        padding: 1px 3px;
+    }
+
+    .roles {
+        padding: 30px 0px 40px 0px;
+        border-bottom: 1px solid #E1E7EF;
+    }
+}
+
+.close-icon-color {
+    fill: #848FA9;
+    color: #848FA9;
+}
+
+.dialog-content ::ng-deep .p-multiselect {
+    width: 653px;
+    border-radius: 8px;
+    background: #FFF;
+
+    .p-multiselect-close {
+        display: none;
+    }
+
+    .p-checkbox {
+        display: none;
+    }
+}

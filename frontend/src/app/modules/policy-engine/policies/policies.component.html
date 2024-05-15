@@ -1,6 +1,6 @@
-<div class="{{user.USER ? 'min-content': 'content'}}">
+<div class="{{ user.POLICIES_POLICY_MANAGE ? 'content' : 'min-content' }}">
     <div class="page-title">
-        {{ user.USER ? "List of Policies" : "Manage Policies" }}
+        {{ user.POLICIES_POLICY_MANAGE ? "Manage Policies" : "List of Policies" }}
     </div>
 
     <ng-container *ngIf="!isConfirmed">
@@ -257,8 +257,8 @@
                                     </div>
                                 </td>
                                 <td *ngIf="canDisplayColumn('instance')" style="min-width: 140px;">
-                                    <div *ngIf="policy.status != 'DRAFT'" class="commands-line">
-                                        <ng-container *ngIf="user.POLICIES_POLICY_EXECUTE">
+                                    <div *ngIf="policy.status != 'DRAFT' && user.POLICIES_POLICY_EXECUTE" class="commands-line">
+                                        <ng-container *ngIf="user.POLICIES_POLICY_MANAGE">
                                             <div>
                                                 <a [routerLink]="['/policy-viewer', policy.id]" class="grid-link-block">
                                                     <button
@@ -270,7 +270,7 @@
                                                 </a>
                                             </div>
                                         </ng-container>
-                                        <ng-container *ngIf="user.USER">
+                                        <ng-container *ngIf="!user.POLICIES_POLICY_MANAGE">
                                             <div style="width: 85px;">
                                                 <button
                                                     [label]="['PUBLISH', 'DISCONTINUED'].includes(policy.status)  ? 'Open' : 'Dry run'"

@@ -4,16 +4,8 @@ import { Permissions, UserRole } from '../type/index.js';
  * Permissions helper
  */
 export class UserCategory {
-    public static isAdministrator(role: UserRole): boolean {
-        return role === UserRole.STANDARD_REGISTRY || role === UserRole.WORKER;
-    }
-
     public static isStandardRegistry(role: UserRole): boolean {
         return role === UserRole.STANDARD_REGISTRY;
-    }
-
-    public static isWorker(role: UserRole): boolean {
-        return role === UserRole.WORKER;
     }
 
     public static isUser(role: UserRole): boolean {
@@ -68,16 +60,8 @@ export class UserPermissions {
         return false;
     }
 
-    public get ADMINISTRATOR(): boolean {
-        return this.role === UserRole.STANDARD_REGISTRY || this.role === UserRole.WORKER;
-    }
-
     public get STANDARD_REGISTRY(): boolean {
         return this.role === UserRole.STANDARD_REGISTRY;
-    }
-
-    public get WORKER(): boolean {
-        return this.role === UserRole.WORKER;
     }
 
     public get USER(): boolean {
@@ -299,6 +283,10 @@ export class UserPermissions {
 
     public get POLICIES_RECORD_ALL(): boolean {
         return this.check(Permissions.POLICIES_RECORD_ALL);
+    }
+
+    public get POLICIES_POLICY_MANAGE(): boolean {
+        return this.check(Permissions.POLICIES_POLICY_MANAGE);
     }
 
     //SCHEMAS

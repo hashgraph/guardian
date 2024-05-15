@@ -117,7 +117,7 @@ const routes: Routes = [
         component: UserProfileComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER, UserRole.WORKER]
+            roles: [UserRole.USER]
         }
     },
 
@@ -142,7 +142,8 @@ const routes: Routes = [
         component: UserContractConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER]
+            roles: [UserRole.USER],
+            permissions: [Permissions.CONTRACTS_CONTRACT_READ]
         }
     },
 
@@ -159,7 +160,7 @@ const routes: Routes = [
         component: TokenConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.TOKENS_TOKEN_READ]
         }
     },
@@ -168,8 +169,24 @@ const routes: Routes = [
         component: ContractConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
-            permissions: [Permissions.CONTRACTS_CONTRACT_READ]
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
+            permissions: [
+                Permissions.CONTRACTS_CONTRACT_READ,
+                Permissions.CONTRACTS_CONTRACT_CREATE,
+                Permissions.CONTRACTS_CONTRACT_DELETE,
+                Permissions.CONTRACTS_WIPE_REQUEST_READ,
+                Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
+                Permissions.CONTRACTS_WIPE_REQUEST_REVIEW,
+                Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
+                Permissions.CONTRACTS_WIPE_ADMIN_CREATE,
+                Permissions.CONTRACTS_WIPE_ADMIN_DELETE,
+                Permissions.CONTRACTS_WIPE_MANAGER_CREATE,
+                Permissions.CONTRACTS_WIPE_MANAGER_DELETE,
+                Permissions.CONTRACTS_WIPER_CREATE,
+                Permissions.CONTRACTS_WIPER_DELETE,
+                Permissions.CONTRACTS_POOL_UPDATE,
+                Permissions.CONTRACTS_POOL_DELETE
+            ]
         }
     },
     {
@@ -177,7 +194,7 @@ const routes: Routes = [
         component: SchemaConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.SCHEMAS_SCHEMA_READ, Permissions.SCHEMAS_SYSTEM_SCHEMA_READ]
         }
     },
@@ -186,7 +203,7 @@ const routes: Routes = [
         component: ArtifactConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.ARTIFACTS_FILE_READ, Permissions.ARTIFACTS_FILE_READ]
         }
 
@@ -202,7 +219,7 @@ const routes: Routes = [
             { path: 'about', component: AboutViewComponent }
         ],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [
                 Permissions.SETTINGS_SETTINGS_READ,
                 Permissions.LOG_LOG_READ
@@ -239,7 +256,7 @@ const routes: Routes = [
         component: PoliciesComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER, UserRole.USER],
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
             permissions: [
                 Permissions.POLICIES_POLICY_READ,
                 Permissions.POLICIES_POLICY_EXECUTE
@@ -251,7 +268,7 @@ const routes: Routes = [
         component: PolicyViewerComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER, UserRole.USER],
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
             permissions: [
                 Permissions.POLICIES_POLICY_EXECUTE
             ]
@@ -262,7 +279,7 @@ const routes: Routes = [
         component: PolicyConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.POLICIES_POLICY_UPDATE]
         }
     },
@@ -271,7 +288,7 @@ const routes: Routes = [
         component: ModulesListComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.MODULES_MODULE_UPDATE]
         }
     },
@@ -280,7 +297,7 @@ const routes: Routes = [
         component: ToolsListComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.TOOLS_TOOL_UPDATE]
         }
     },
@@ -289,7 +306,7 @@ const routes: Routes = [
         component: SuggestionsConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.SUGGESTIONS_SUGGESTIONS_READ]
         }
     },
@@ -299,7 +316,7 @@ const routes: Routes = [
         component: CompareComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER, UserRole.USER]
+            roles: [UserRole.STANDARD_REGISTRY, UserRole.USER]
         }
     },
     {
@@ -307,7 +324,7 @@ const routes: Routes = [
         component: SearchPoliciesComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.POLICIES_POLICY_READ]
         }
     },
@@ -316,7 +333,7 @@ const routes: Routes = [
         component: RecordResultsComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.POLICIES_RECORD_ALL]
         }
     },
@@ -326,7 +343,7 @@ const routes: Routes = [
         component: BrandingComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.BRANDING_CONFIG_UPDATE]
         }
     },
@@ -347,7 +364,7 @@ const routes: Routes = [
         component: RolesViewComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.PERMISSIONS_ROLE_READ]
         }
     },
@@ -356,7 +373,7 @@ const routes: Routes = [
         component: UsersViewComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY, UserRole.WORKER],
+            roles: [UserRole.STANDARD_REGISTRY],
             permissions: [Permissions.PERMISSIONS_ROLE_READ]
         }
     },

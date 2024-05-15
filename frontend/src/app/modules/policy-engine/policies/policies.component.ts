@@ -30,28 +30,77 @@ import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-pol
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
 
-const adminColumns = [
-    'name',
-    'description',
-    // 'roles',
-    'topic',
-    'version',
-    'tags',
-    'tokens',
-    'schemas',
-    'status',
-    'instance',
-    'operations',
-];
-const userColumns = [
-    'name',
-    'description',
-    'roles',
-    'version',
-    'tags',
-    'status',
-    'instance',
-];
+const columns = [{
+    id: 'name',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'description',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'topic',
+    permissions: (user: UserPermissions) => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
+    id: 'roles',
+    permissions: (user: UserPermissions) => {
+        return !(
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
+    id: 'version',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'tags',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'tokens',
+    permissions: (user: UserPermissions) => {
+        return user.TOKENS_TOKEN_READ;
+    }
+}, {
+    id: 'schemas',
+    permissions: (user: UserPermissions) => {
+        return user.SCHEMAS_SCHEMA_READ;
+    }
+}, {
+    id: 'status',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'instance',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'operations',
+    permissions: (user: UserPermissions) => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}];
 
 /**
  * Component for choosing a policy and
@@ -196,27 +245,25 @@ export class PoliciesComponent implements OnInit {
             this.profileService.getProfile(),
             this.tagsService.getPublishedSchemas(),
         ]).subscribe((value) => {
-                const profile: IUser | null = value[0];
-                const tagSchemas: any[] = value[1] || [];
-                this.isConfirmed = !!(profile && profile.confirmed);
-                this.user = new UserPermissions(profile);
-                this.owner = this.user.did;
-                this.tagSchemas = SchemaHelper.map(tagSchemas);
+            const profile: IUser | null = value[0];
+            const tagSchemas: any[] = value[1] || [];
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.user = new UserPermissions(profile);
+            this.owner = this.user.did;
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
 
-                if (this.user.ADMINISTRATOR) {
-                    this.columns = adminColumns;
-                } else {
-                    this.columns = userColumns;
-                }
+            this.columns = columns
+                .filter((c) => c.permissions(this.user))
+                .map((c) => c.id);
 
-                if (this.isConfirmed) {
-                    this.loadAllPolicy();
-                } else {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }
-            },
+            if (this.isConfirmed) {
+                this.loadAllPolicy();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }
+        },
             (e) => {
                 this.loading = false;
             }

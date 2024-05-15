@@ -228,8 +228,7 @@ export class RoleService extends NatsService {
 
                 const target = await new DataBaseHelper(User).findOne({
                     username,
-                    parent: owner,
-                    role: UserRole.WORKER
+                    parent: owner
                 })
                 if (!target) {
                     return new MessageError('User does not exist');
@@ -275,7 +274,6 @@ export class RoleService extends NatsService {
                 const { id, owner } = msg; 
                 const users = await new DataBaseHelper(User).find({
                     parent: owner,
-                    role: UserRole.WORKER,
                     permissionsGroup: id
                 })
                 for (const user of users) {

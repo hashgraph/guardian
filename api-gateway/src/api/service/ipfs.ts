@@ -3,7 +3,7 @@ import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOperation, ApiSecuri
 import { Permissions } from '@guardian/interfaces';
 import { Auth } from '#auth';
 import { CACHE } from '../../constants/index.js';
-import { InternalServerErrorDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO } from '#middlewares';
 import { Guardians, UseCache, InternalException } from '#helpers';
 
 @Controller('ipfs')
@@ -76,7 +76,7 @@ export class IpfsApi {
         type: String,
         description: 'Policy id',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiBody({
         description: 'Binary data.',

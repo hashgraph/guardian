@@ -17,23 +17,23 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         active: false,
         childItems: [
             {
-                title: 'Schemas',
+                title: 'Manage Schemas',
                 routerLink: '/schemas'
             },
             {
-                title: 'Artifacts',
+                title: 'Manage Artifacts',
                 routerLink: '/artifacts'
             },
             {
-                title: 'Modules',
+                title: 'Manage Modules',
                 routerLink: '/modules'
             },
             {
-                title: 'Policies',
+                title: 'Manage Policies',
                 routerLink: '/policy-viewer'
             },
             {
-                title: 'Tools',
+                title: 'Manage Tools',
                 routerLink: '/tools'
             },
         ],
@@ -45,11 +45,11 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         active: false,
         childItems: [
             {
-                title: 'Tokens',
+                title: 'Manage Tokens',
                 routerLink: '/tokens'
             },
             {
-                title: 'Retirement',
+                title: 'Manage Contracts',
                 routerLink: '/contracts'
             },
         ],
@@ -61,11 +61,11 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         iconUrl: 'stars',
         childItems: [
             {
-                title: 'Roles',
+                title: 'Manage Roles',
                 routerLink: '/roles'
             },
             {
-                title: 'Users',
+                title: 'User Management',
                 routerLink: '/users'
             },
             {
@@ -88,41 +88,6 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
     },
 ];
 
-const NAVBAR_MENU_USER: NavbarMenuItem[] = [
-    {
-        title: 'Policies',
-        allowedUserRoles: [UserRole.USER],
-        active: false,
-        iconUrl: 'table',
-        childItems: [
-            {
-                title: 'Search for Policies',
-                routerLink: '/policy-search'
-            },
-            {
-                title: 'List of Policies',
-                routerLink: '/policy-viewer'
-            },
-        ],
-    },
-    {
-        title: 'Tokens',
-        iconUrl: 'twoRings',
-        allowedUserRoles: [UserRole.USER],
-        active: false,
-        childItems: [
-            {
-                title: 'List of Tokens',
-                routerLink: '/tokens-user'
-            },
-            {
-                title: 'Retirement',
-                routerLink: '/retirement-user'
-            },
-        ]
-    },
-];
-
 const NAVBAR_MENU_AUDITOR: NavbarMenuItem[] = [
     {
         title: 'Audit',
@@ -142,46 +107,67 @@ const NAVBAR_MENU_AUDITOR: NavbarMenuItem[] = [
 
 function customMenu(user: UserPermissions): NavbarMenuItem[] {
     const menu: NavbarMenuItem[] = [];
-
     if (
         user.SCHEMAS_SCHEMA_READ ||
         user.SCHEMAS_SYSTEM_SCHEMA_READ ||
         user.ARTIFACTS_FILE_READ ||
         user.MODULES_MODULE_READ ||
         user.POLICIES_POLICY_READ ||
+        user.POLICIES_POLICY_EXECUTE ||
+        user.POLICIES_POLICY_MANAGE ||
         user.TOOLS_TOOL_READ
     ) {
         const childItems: any = [];
+        if (user.POLICIES_POLICY_READ ||
+            user.POLICIES_POLICY_EXECUTE ||
+            user.POLICIES_POLICY_MANAGE
+        ) {
+            if (
+                user.POLICIES_POLICY_CREATE ||
+                user.POLICIES_POLICY_UPDATE ||
+                user.POLICIES_POLICY_DELETE ||
+                user.POLICIES_POLICY_REVIEW ||
+                user.POLICIES_POLICY_MANAGE
+            ) {
+                childItems.push({
+                    title: 'Manage Policies',
+                    routerLink: '/policy-viewer'
+                });
+            } else {
+                childItems.push({
+                    title: 'Search for Policies',
+                    routerLink: '/policy-search'
+                });
+                childItems.push({
+                    title: 'List of Policies',
+                    routerLink: '/policy-viewer'
+                });
+            }
+        }
         if (
             user.SCHEMAS_SCHEMA_READ ||
             user.SCHEMAS_SYSTEM_SCHEMA_READ
         ) {
             childItems.push({
-                title: 'Schemas',
+                title: 'Manage Schemas',
                 routerLink: '/schemas'
             });
         }
         if (user.ARTIFACTS_FILE_READ) {
             childItems.push({
-                title: 'Artifacts',
+                title: 'Manage Artifacts',
                 routerLink: '/artifacts'
             });
         }
         if (user.MODULES_MODULE_READ) {
             childItems.push({
-                title: 'Modules',
+                title: 'Manage Modules',
                 routerLink: '/modules'
-            });
-        }
-        if (user.POLICIES_POLICY_READ) {
-            childItems.push({
-                title: 'Policies',
-                routerLink: '/policy-viewer'
             });
         }
         if (user.TOOLS_TOOL_READ) {
             childItems.push({
-                title: 'Tools',
+                title: 'Manage Tools',
                 routerLink: '/tools'
             });
         }
@@ -200,16 +186,58 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
     ) {
         const childItems: any = [];
         if (user.TOKENS_TOKEN_READ) {
-            childItems.push({
-                title: 'Tokens',
-                routerLink: '/tokens'
-            });
+            if (
+                user.TOKENS_TOKEN_CREATE ||
+                user.TOKENS_TOKEN_UPDATE ||
+                user.TOKENS_TOKEN_DELETE ||
+                user.TOKENS_TOKEN_MANAGE
+            ) {
+                childItems.push({
+                    title: 'Manage Tokens',
+                    routerLink: '/tokens'
+                });
+            }
+            if (user.TOKENS_TOKEN_ASSOCIATE) {
+                childItems.push({
+                    title: 'List of Tokens',
+                    routerLink: '/tokens-user'
+                });
+            }
         }
         if (user.CONTRACTS_CONTRACT_READ) {
-            childItems.push({
-                title: 'Retirement',
-                routerLink: '/contracts'
-            });
+            if (
+                user.CONTRACTS_RETIRE_REQUEST_READ ||
+                user.CONTRACTS_RETIRE_REQUEST_CREATE ||
+                user.CONTRACTS_RETIRE_REQUEST_DELETE ||
+                user.CONTRACTS_RETIRE_REQUEST_REVIEW ||
+                user.CONTRACTS_DOCUMENT_READ
+            ) {
+                childItems.push({
+                    title: 'Retirement',
+                    routerLink: '/retirement-user'
+                });
+            }
+            if (
+                user.CONTRACTS_CONTRACT_CREATE ||
+                user.CONTRACTS_CONTRACT_DELETE ||
+                user.CONTRACTS_WIPE_REQUEST_READ ||
+                user.CONTRACTS_WIPE_REQUEST_UPDATE ||
+                user.CONTRACTS_WIPE_REQUEST_REVIEW ||
+                user.CONTRACTS_WIPE_REQUEST_DELETE ||
+                user.CONTRACTS_WIPE_ADMIN_CREATE ||
+                user.CONTRACTS_WIPE_ADMIN_DELETE ||
+                user.CONTRACTS_WIPE_MANAGER_CREATE ||
+                user.CONTRACTS_WIPE_MANAGER_DELETE ||
+                user.CONTRACTS_WIPER_CREATE ||
+                user.CONTRACTS_WIPER_DELETE ||
+                user.CONTRACTS_POOL_UPDATE ||
+                user.CONTRACTS_POOL_DELETE
+            ) {
+                childItems.push({
+                    title: 'Manage Contracts',
+                    routerLink: '/contracts'
+                });
+            }
         }
         menu.push({
             title: 'Tokens',
@@ -256,10 +284,6 @@ export function getMenuItems(user: UserPermissions): NavbarMenuItem[] {
 
     if (user.AUDITOR) {
         return NAVBAR_MENU_AUDITOR;
-    }
-
-    if (user.USER) {
-        return NAVBAR_MENU_USER;
     }
 
     if (user.STANDARD_REGISTRY) {

@@ -247,6 +247,26 @@ export class PermissionsApi {
         summary: 'Return a list of all users.',
         description: 'Returns all users.',
     })
+
+    @ApiQuery({
+        name: 'role',
+        type: String,
+        description: 'Filter by role',
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        enum: ['Active', 'Inactive'],
+        description: 'Filter by status',
+        example: 'Active'
+    })
+    @ApiQuery({
+        name: 'username',
+        type: String,
+        description: 'Filter by username',
+        example: 'username'
+    })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
@@ -273,13 +293,19 @@ export class PermissionsApi {
         @AuthUser() user: IAuthUser,
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
+        @Query('role') role: string,
+        @Query('status') status: string,
+        @Query('username') username: string,
         @Response() res: any
     ): Promise<UserRolesDTO[]> {
         try {
             const options: any = {
-                filters: null,
+                filters: {
+                    role,
+                    status,
+                    username
+                },
                 parent: user.did,
-                role: UserRole.WORKER,
                 pageIndex,
                 pageSize
             };
@@ -335,7 +361,7 @@ export class PermissionsApi {
         } catch (error) {
             await InternalException(error);
         }
-        if (!row || row.parent !== user.did || row.role !== UserRole.WORKER) {
+        if (!row || row.parent !== user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
