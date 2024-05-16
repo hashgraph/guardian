@@ -15,3 +15,4 @@ export * from './utils.js';
 export * from './wallet.js';
 export * from './decorators/index.js';
 export * from './interceptors/index.js';
+export * from './interceptors/utils/index.js';

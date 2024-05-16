@@ -1,14 +1,16 @@
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
-import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor } from '#helpers';
+import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, CacheService, getCacheKey } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
 @Controller('tools')
 @ApiTags('tools')
 export class ToolsApi {
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Creates a new tool
      */
@@ -38,13 +40,17 @@ export class ToolsApi {
     @HttpCode(HttpStatus.CREATED)
     async createNewTool(
         @AuthUser() user: IAuthUser,
-        @Body() tool: ToolDTO
+        @Body() tool: ToolDTO,
+        @Req() req
     ): Promise<ToolDTO> {
         try {
             if (!tool.config || tool.config.blockType !== 'tool') {
                 throw new HttpException('Invalid tool config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const guardian = new Guardians();
+
+            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
+
             return await guardian.createTool(tool, user.did);
         } catch (error) {
             await InternalException(error);
@@ -138,6 +144,7 @@ export class ToolsApi {
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getTools(
         @AuthUser() user: IAuthUser,
         @Query('pageIndex') pageIndex: number,
@@ -184,13 +191,17 @@ export class ToolsApi {
     @HttpCode(HttpStatus.OK)
     async deleteTool(
         @AuthUser() user: IAuthUser,
-        @Param('id') id: string
+        @Param('id') id: string,
+        @Req() req
     ): Promise<boolean> {
         try {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const guardian = new Guardians();
+
+            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
+
             return await guardian.deleteTool(id, user.did);
         } catch (error) {
             await InternalException(error);
@@ -226,6 +237,7 @@ export class ToolsApi {
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getToolById(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string
@@ -278,7 +290,8 @@ export class ToolsApi {
     async updateTool(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() tool: ToolDTO
+        @Body() tool: ToolDTO,
+        @Req() req
     ): Promise<any> {
         if (!id) {
             throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -288,6 +301,9 @@ export class ToolsApi {
         }
         try {
             const guardian = new Guardians();
+
+            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
+
             return await guardian.updateTool(id, tool, user.did);
         } catch (error) {
             await InternalException(error);

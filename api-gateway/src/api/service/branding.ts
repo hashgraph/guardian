@@ -1,9 +1,9 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { Auth } from '#auth';
 import { Permissions } from '@guardian/interfaces';
 import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
-import { ONLY_SR, Guardians, UseCache, InternalException } from '#helpers';
+import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheService } from '#helpers';
 
 /**
  * Branding route
@@ -11,6 +11,9 @@ import { ONLY_SR, Guardians, UseCache, InternalException } from '#helpers';
 @Controller('branding')
 @ApiTags('branding')
 export class BrandingApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Set branding
      */
@@ -38,7 +41,8 @@ export class BrandingApi {
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
     async setBranding(
-        @Body() body: BrandingDTO
+        @Body() body: BrandingDTO,
+        @Req() req,
     ): Promise<any> {
         try {
             const {
@@ -64,6 +68,8 @@ export class BrandingApi {
             };
             const guardians = new Guardians();
             await guardians.setBranding(JSON.stringify(data));
+
+            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
         } catch (error) {
             await InternalException(error);
         }

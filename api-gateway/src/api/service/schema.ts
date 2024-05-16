@@ -1,15 +1,13 @@
-import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
+import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiParam, ApiQuery, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO, Examples, pageHeader } from '#middlewares';
-import { CACHE } from '../../constants/index.js';
-import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, getParentUser } from '#helpers';
+import { CACHE } from '#constants';
+import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, getParentUser, CacheService, getCacheKey } from '#helpers';
 import process from 'process';
-import { CacheService } from '../../helpers/cache-service.js';
-import { getCacheKey } from '../../helpers/interceptors/utils/index.js';
 
 @ApiTags('schema')
 export class SingleSchemaApi {
@@ -273,9 +271,6 @@ export class SchemaApi {
 
         @Response() res: any
     ): Promise<SchemaDTO[]> {
-    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
-    @UseCache()
-    async getSchemasPage(@Req() req, @Response() res): Promise<any> {
         try {
             const guardians = new Guardians();
             const options: any = {};
@@ -361,13 +356,14 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getSchemasPageByTopicId(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
         @Query('category') category: string,
-        @Response() res: any
+        @Response() res: any,
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -585,7 +581,8 @@ export class SchemaApi {
     async createNewSchema(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Body() newSchema: SchemaDTO
+        @Body() newSchema: SchemaDTO,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         try {
             SchemaUtils.fromOld(newSchema);
@@ -596,6 +593,9 @@ export class SchemaApi {
             SchemaHelper.updateOwner(newSchema, user.did);
             const schemas = await guardians.createSchema(newSchema);
             SchemaHelper.updatePermission(schemas, user.did);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
+
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await InternalException(error);
@@ -732,15 +732,10 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async setSchema(
         @AuthUser() user: IAuthUser,
-        @Body() newSchema: SchemaDTO
+        @Body() newSchema: SchemaDTO,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         try {
-<<<<<<< HEAD
-=======
-            const user = req.user;
-            await this.cacheService.invalidate(getCacheKey(req.url, user))
-            const newSchema = req.body;
->>>>>>> 52506a978 (feat: base vertion invalidation cache)
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(newSchema.id);
             if (!schema) {
@@ -758,6 +753,9 @@ export class SchemaApi {
             SchemaHelper.updateOwner(newSchema, user.did);
             const schemas = await guardians.updateSchema(newSchema);
             SchemaHelper.updatePermission(schemas, user.did);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
+
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await InternalException(error);
@@ -796,7 +794,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async deleteSchema(
         @AuthUser() user: IAuthUser,
-        @Param('schemaId') schemaId: string
+        @Param('schemaId') schemaId: string,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
         let schema: ISchema;
@@ -818,6 +817,9 @@ export class SchemaApi {
         try {
             const schemas = (await guardians.deleteSchema(schemaId, user?.did, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, user.did);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
+
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await InternalException(error);
@@ -1518,7 +1520,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.CREATED)
     async postSystemSchema(
         @Param('username') owner: string,
-        @Body() body: SystemSchemaDTO
+        @Body() body: SystemSchemaDTO,
+        @Req() req
     ): Promise<SchemaDTO> {
         try {
             const newSchema = body as any;
@@ -1541,6 +1544,8 @@ export class SchemaApi {
 
             SchemaHelper.updateOwner(newSchema, owner);
             const schema = await guardians.createSystemSchema(newSchema);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
 
             return SchemaUtils.toOld(schema);
         } catch (error) {
@@ -1593,6 +1598,7 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getSystemSchema(
         @AuthUser() user: IAuthUser,
         @Param('username') owner: string,

@@ -1,16 +1,20 @@
 import { Logger, IAuthUser } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
-import { Guardians, SchemaUtils, UseCache, InternalException } from '#helpers';
+import { Guardians, SchemaUtils, UseCache, InternalException, CacheService, getCacheKey } from '#helpers';
+import { PREFIXES } from '#constants';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('modules')
 @ApiTags('modules')
 export class ModulesApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Creates a new module
      */
@@ -47,6 +51,7 @@ export class ModulesApi {
             if (!module.config || module.config.blockType !== 'module') {
                 throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+
             return await guardian.createModule(module, user.did);
         } catch (error) {
             await InternalException(error);
@@ -222,6 +227,7 @@ export class ModulesApi {
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
+
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -294,7 +300,7 @@ export class ModulesApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
-    @UseCache()
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async getMenu(
         @AuthUser() user: IAuthUser,
@@ -336,6 +342,7 @@ export class ModulesApi {
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getModule(
         @AuthUser() user: IAuthUser,
         @Param('uuid') uuid: string,
@@ -387,7 +394,8 @@ export class ModulesApi {
     async putModule(
         @AuthUser() user: IAuthUser,
         @Param('uuid') uuid: string,
-        @Body() module: ModuleDTO
+        @Body() module: ModuleDTO,
+        @Req() req
     ): Promise<ModuleDTO> {
         if (!uuid) {
             throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -397,6 +405,14 @@ export class ModulesApi {
         }
         try {
             const guardian = new Guardians();
+
+            const invalidedCacheKeys = [
+              `${PREFIXES.MODULES}${req.params.uuid}/export/file`,
+              `${PREFIXES.MODULES}${req.params.uuid}/export/message`
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user))
+
             return await guardian.updateModule(uuid, module, user.did);
         } catch (error) {
             await InternalException(error);
@@ -524,6 +540,7 @@ export class ModulesApi {
         }
         try {
             const guardian = new Guardians();
+
             return await guardian.importModuleMessage(messageId, user.did);
         } catch (error) {
             await InternalException(error);
@@ -682,10 +699,19 @@ export class ModulesApi {
     async publishModule(
         @AuthUser() user: IAuthUser,
         @Param('uuid') uuid: string,
-        @Body() module: ModuleDTO
+        @Body() module: ModuleDTO,
+        @Req() req
     ): Promise<ModuleDTO> {
         try {
             const guardian = new Guardians();
+
+            const invalidedCacheKeys = [
+              `${PREFIXES.MODULES}${req.params.uuid}/export/file`,
+              `${PREFIXES.MODULES}${req.params.uuid}/export/message`
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user))
+
             return await guardian.publishModule(uuid, user.did, module);
         } catch (error) {
             await InternalException(error);

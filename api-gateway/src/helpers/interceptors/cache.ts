@@ -10,66 +10,71 @@ import { Users } from '../users.js';
 import { getCacheKey } from './utils/index.js';
 
 //constants
-import { CACHE, META_DATA } from '../../constants/index.js';
+import { CACHE, CACHE_PREFIXES, META_DATA } from '#constants';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-    constructor(private readonly cacheService: CacheService) {
+  constructor(private readonly cacheService: CacheService) {
+  }
+
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
+    const httpContext = context.switchToHttp();
+    const request = httpContext.getRequest();
+    const responseContext = httpContext.getResponse();
+
+    const ttl = Reflect.getMetadata(META_DATA.TTL, context.getHandler()) ?? CACHE.DEFAULT_TTL;
+    const isExpress = Reflect.getMetadata(META_DATA.EXPRESS, context.getHandler());
+    const isFastify = Reflect.getMetadata(META_DATA.FASTIFY, context.getHandler());
+
+    const token = request.headers.authorization?.split(' ')[1];
+    let user = {};
+
+    if (token) {
+      const users: Users = new Users();
+      try {
+        user = await users.getUserByToken(token);
+      } catch (error) {
+        throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+      }
     }
 
-    async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
-        const httpContext = context.switchToHttp();
-        const request = httpContext.getRequest();
-        const responseContext = httpContext.getResponse();
+    const { url: route } = request;
+    const [cacheKey] = getCacheKey([route], user, CACHE_PREFIXES.CACHE);
+    const [cacheTag] = getCacheKey([route.split('?')[0]], user);
 
-        const ttl = Reflect.getMetadata(META_DATA.TTL, context.getHandler()) ?? CACHE.DEFAULT_TTL;
-        const isExpress = Reflect.getMetadata(META_DATA.EXPRESS, context.getHandler());
+    return of(null).pipe(
+      switchMap(async () => {
+        const cachedResponse: string = await this.cacheService.get(cacheKey);
 
-        const token = request.headers.authorization?.split(' ')[1];
-        let user = {}
+        if (cachedResponse) {
+          return JSON.parse(cachedResponse);
+        }
+      }),
+      switchMap(resultResponse => {
+        if (resultResponse) {
+          if (isFastify || isExpress) {
+            return of(responseContext.send(resultResponse));
+          }
 
-        if (token) {
-            const users: Users = new Users();
-            try {
-                user = await users.getUserByToken(token);
-            } catch (error) {
-                throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
-            }
+          return of(resultResponse);
         }
 
-        const hashUser: string = crypto.createHash('md5').update(JSON.stringify(user)).digest('hex');
-        const { url: route } = request;
-        const cacheKey = `cache/${route}:${hashUser}`;
+        return next.handle().pipe(
+          tap(async response => {
+            let result = response;
 
-        return of(null).pipe(
-            switchMap(async () => {
-                const cachedResponse: string = await this.cacheService.get(cacheKey);
+            if (isFastify) {
+              result = request.locals;
+            }
 
-                if (cachedResponse) {
-                    return JSON.parse(cachedResponse);
-                }
-            }),
-            switchMap(resultResponse => {
-                if (resultResponse) {
-                    if (isExpress) {
-                        return of(responseContext.send(resultResponse));
-                    }
+            if (isExpress) {
+              result = response.locals.data;
+            }
 
-                    return of(resultResponse);
-                }
-
-                return next.handle().pipe(
-                    tap(async response => {
-                        let result = response;
-
-                        if (isExpress) {
-                            result = response.locals.data;
-                        }
-
-                        await this.cacheService.set(cacheKey, JSON.stringify(result), ttl);
-                    }),
-                );
-            }),
+            await this.cacheService.set(cacheKey, JSON.stringify(result), ttl, cacheTag);
+          }),
         );
-    }
+      }),
+    );
+  }
 }

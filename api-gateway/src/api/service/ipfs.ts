@@ -137,7 +137,7 @@ export class IpfsApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
+    @UseCache({ ttl: CACHE.LONG_TTL, isFastify: true })
     @HttpCode(HttpStatus.OK)
     async getFile(
         @Req() req: any,

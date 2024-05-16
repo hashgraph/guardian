@@ -1,14 +1,19 @@
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException, ONLY_SR } from '#helpers';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Response } from '@nestjs/common';
+import { CacheService, getCacheKey, Guardians, InternalException, ONLY_SR, UseCache } from '#helpers';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { AuthUser, Auth } from '#auth';
 import { Examples, InternalServerErrorDTO, ThemeDTO } from '#middlewares';
+import { PREFIXES } from '#constants';
 
 @Controller('themes')
 @ApiTags('themes')
 export class ThemesApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     /**
      * Create theme
      */
@@ -38,10 +43,14 @@ export class ThemesApi {
     @HttpCode(HttpStatus.CREATED)
     async setThemes(
         @AuthUser() user: IAuthUser,
-        @Body() theme: ThemeDTO
+        @Body() theme: ThemeDTO,
+        @Req() req
     ): Promise<ThemeDTO> {
         try {
             const guardians = new Guardians();
+
+            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
+
             return await guardians.createTheme(theme, user.did);
         } catch (error) {
             await InternalException(error);
@@ -85,7 +94,8 @@ export class ThemesApi {
     async updateTheme(
         @AuthUser() user: IAuthUser,
         @Param('themeId') themeId: string,
-        @Body() theme: ThemeDTO
+        @Body() theme: ThemeDTO,
+        @Req() req
     ): Promise<ThemeDTO> {
         try {
             if (!themeId) {
@@ -96,6 +106,13 @@ export class ThemesApi {
             if (!oldTheme) {
                 throw new HttpException('Theme not found.', HttpStatus.NOT_FOUND);
             }
+
+            const invalidedCacheKeys = [
+              `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, invalidedCacheKeys], user))
+
             return await guardians.updateTheme(themeId, theme, user.did);
         } catch (error) {
             await InternalException(error);
@@ -133,13 +150,21 @@ export class ThemesApi {
     @HttpCode(HttpStatus.OK)
     async deleteTheme(
         @AuthUser() user: IAuthUser,
-        @Param('themeId') themeId: string
+        @Param('themeId') themeId: string,
+        @Req() req
     ): Promise<boolean> {
         try {
             if (!themeId) {
                 throw new HttpException('Invalid theme id', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const guardians = new Guardians();
+
+            const invalidedCacheKeys = [
+              `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, invalidedCacheKeys], req.user))
+
             return await guardians.deleteTheme(themeId, user.did);
         } catch (error) {
             await InternalException(error);
@@ -169,6 +194,7 @@ export class ThemesApi {
     })
     @ApiExtraModels(ThemeDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getThemes(
         @AuthUser() user: IAuthUser
     ): Promise<ThemeDTO[]> {
@@ -250,6 +276,7 @@ export class ThemesApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async exportTheme(
         @AuthUser() user: IAuthUser,
         @Param('themeId') themeId: string,

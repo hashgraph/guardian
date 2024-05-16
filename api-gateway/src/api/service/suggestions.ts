@@ -1,14 +1,18 @@
+// <<<<<<< HEAD
 import { Permissions } from '@guardian/interfaces';
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO } from '#middlewares';
 import { IAuthUser } from '@guardian/common';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, ONLY_SR } from '#helpers';
+import { Guardians, ONLY_SR, getCacheKey, CacheService, UseCache } from '#helpers';
 
 @Controller('suggestions')
 @ApiTags('suggestions')
 export class SuggestionsApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Get next and nested suggested block types
      */
@@ -71,9 +75,13 @@ export class SuggestionsApi {
     @HttpCode(HttpStatus.CREATED)
     async setPolicySuggestionsConfig(
         @AuthUser() user: IAuthUser,
-        @Body() body: SuggestionsConfigDTO
+        @Body() body: SuggestionsConfigDTO,
+        @Req() req
     ): Promise<SuggestionsConfigDTO> {
         const guardians = new Guardians();
+
+        await this.cacheService.invalidate(getCacheKey([req.url], user))
+
         return { items: await guardians.setPolicySuggestionsConfig(body.items, user) };
     }
 
@@ -99,6 +107,7 @@ export class SuggestionsApi {
     })
     @ApiExtraModels(SuggestionsConfigItemDTO, SuggestionsConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getPolicySuggestionsConfig(
         @AuthUser() user: IAuthUser
     ): Promise<SuggestionsConfigDTO> {

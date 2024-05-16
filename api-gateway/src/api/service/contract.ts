@@ -1,10 +1,10 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
 import { IAuthUser } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Response } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, UseCache, InternalException } from '#helpers';
+import { Guardians, UseCache, InternalException, CacheService, getCacheKey } from '#helpers';
 
 /**
  * Contracts api
@@ -12,6 +12,9 @@ import { Guardians, UseCache, InternalException } from '#helpers';
 @Controller('contracts')
 @ApiTags('contracts')
 export class ContractsApi {
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     //#region Common contract endpoints
 
     /**
@@ -57,6 +60,7 @@ export class ContractsApi {
     })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getContracts(
         @AuthUser() user: IAuthUser,
         @Query('type') type: ContractType,
@@ -105,11 +109,13 @@ export class ContractsApi {
     @HttpCode(HttpStatus.CREATED)
     async createContract(
         @AuthUser() user: IAuthUser,
-        @Body() body: ContractConfigDTO
+        @Body() body: ContractConfigDTO,
+        @Req() req: any
     ): Promise<ContractDTO> {
         try {
             const { description, type } = body;
             const guardians = new Guardians();
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
             return await guardians.createContract(user.did, description, type);
         } catch (error) {
             await InternalException(error);

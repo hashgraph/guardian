@@ -3,13 +3,16 @@ import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CACHE } from '../../constants/index.js';
 import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader } from '#middlewares';
-import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles } from '#helpers';
+import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, CacheService, getCacheKey } from '#helpers';
+import { CACHE, PREFIXES } from '#constants';
 
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Return a list of all policies
      */
@@ -1950,6 +1953,10 @@ export class PolicyApi {
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [PREFIXES.ARTIFACTS]
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user))
+
             return await engineService.importFile(user, file, versionOfTopicId);
         } catch (error) {
             await InternalException(error);

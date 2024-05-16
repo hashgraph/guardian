@@ -1,4 +1,4 @@
-import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger } from '#helpers';
+import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, CacheService, getCacheKey } from '#helpers';
 import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
@@ -71,6 +71,10 @@ async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine
 @Controller('tokens')
 @ApiTags('tokens')
 export class TokensApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     /**
      * Return a list of tokens
      */
@@ -114,6 +118,7 @@ export class TokensApi {
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    // @UseCache()
     async getTokens(
         @AuthUser() user: IAuthUser,
         @Query('policy') policy: string,
@@ -182,7 +187,8 @@ export class TokensApi {
     @HttpCode(HttpStatus.CREATED)
     async newToken(
         @AuthUser() user: IAuthUser,
-        @Body() token: TokenDTO
+        @Body() token: TokenDTO,
+        @Req() req
     ): Promise<TokenDTO[]> {
         try {
             const guardians = new Guardians();
@@ -196,6 +202,8 @@ export class TokensApi {
             tokens = await guardians.getTokens({ did: user.did });
             const map = await engineService.getTokensMap(user.did);
             tokens = setTokensPolicies(tokens, map);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
 
             return tokens;
         } catch (error) {
@@ -280,7 +288,8 @@ export class TokensApi {
     @HttpCode(HttpStatus.CREATED)
     async updateToken(
         @AuthUser() user: IAuthUser,
-        @Body() token: TokenDTO
+        @Body() token: TokenDTO,
+        @Req req
     ): Promise<TokenDTO> {
         try {
             if (!user.did) {
@@ -301,6 +310,8 @@ export class TokensApi {
             if (tokenObject.owner !== user.did) {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
             }
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
 
             return await guardians.updateToken(token);
         } catch (error) {

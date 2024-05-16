@@ -1,14 +1,18 @@
-import { Permissions } from '@guardian/interfaces';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, } from '@nestjs/common';
+import { Permissions, UserRole } from '@guardian/interfaces';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, Req } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles } from '#helpers';
+import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, CacheService, UseCache, getCacheKey } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
+import { PREFIXES } from '#constants';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
 export class ArtifactApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Get artifacts
      */
@@ -58,6 +62,8 @@ export class ArtifactApi {
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
+    @UseCache({isFastify: true})
     async getArtifacts(
         @AuthUser() user: IAuthUser,
         @Query('type') type: string,
@@ -66,6 +72,7 @@ export class ArtifactApi {
         @Query('id') id: string,
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
+        @Req() req,
         @Response() res: any
     ): Promise<ArtifactDTOItem> {
         try {
@@ -88,6 +95,9 @@ export class ArtifactApi {
             }
             const guardians = new Guardians();
             const { artifacts, count } = await guardians.getArtifacts(options);
+
+            req.locals = artifacts
+
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
             await InternalException(error);
@@ -145,7 +155,8 @@ export class ArtifactApi {
     async uploadArtifacts(
         @AuthUser() user: IAuthUser,
         @Param('parentId') parentId: string,
-        @UploadedFiles() files: any
+        @UploadedFiles() files: any,
+        @Req() req,
     ): Promise<any> {
         try {
             if (!files) {
@@ -160,6 +171,9 @@ export class ArtifactApi {
                     uploadedArtifacts.push(result);
                 }
             }
+            const invalidedCacheKeys = [`/${PREFIXES.ARTIFACTS}`]
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return uploadedArtifacts;
         } catch (error) {
             await InternalException(error);
@@ -198,9 +212,15 @@ export class ArtifactApi {
     async deleteArtifact(
         @AuthUser() user: IAuthUser,
         @Param('artifactId') artifactId: string,
+        @Req() req,
+        @Response() res
     ): Promise<boolean> {
         try {
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [PREFIXES.ARTIFACTS]
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+
             return await guardian.deleteArtifact(artifactId, user.did);
         } catch (error) {
             await InternalException(error);

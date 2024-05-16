@@ -1,14 +1,17 @@
 import { IAuthUser } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { ONLY_SR, SchemaUtils, Guardians, InternalException } from '#helpers';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException, getCacheKey, CacheService, UseCache } from '#helpers';
 
 @Controller('tags')
 @ApiTags('tags')
 export class TagsApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Create tag
      */
@@ -337,7 +340,8 @@ export class TagsApi {
     @HttpCode(HttpStatus.CREATED)
     async postSchemas(
         @AuthUser() user: IAuthUser,
-        @Body() newSchema: SchemaDTO
+        @Body() newSchema: SchemaDTO,
+        @Req() req
     ): Promise<SchemaDTO> {
         try {
             if (!newSchema) {
@@ -350,8 +354,10 @@ export class TagsApi {
             SchemaUtils.fromOld(newSchema);
             SchemaUtils.clearIds(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-
             const schemas = await guardians.createTagSchema(newSchema);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
+
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await InternalException(error);
