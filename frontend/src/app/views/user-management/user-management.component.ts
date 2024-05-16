@@ -1,18 +1,17 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
-import { IUser, UserPermissions } from '@guardian/interfaces';
+import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { FormControl } from '@angular/forms';
-import { DialogService } from 'primeng/dynamicdialog';
-import { SelectRoleDialogComponent } from 'src/app/components/select-role-dialog/select-role-dialog.component';
+import { Router } from '@angular/router';
 
 @Component({
-    selector: 'app-users-view',
-    templateUrl: './users-view.component.html',
-    styleUrls: ['./users-view.component.scss']
+    selector: 'app-user-management',
+    templateUrl: './user-management.component.html',
+    styleUrls: ['./user-management.component.scss']
 })
-export class UsersViewComponent implements OnInit, OnDestroy {
+export class UsersManagementComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
     public user: UserPermissions = new UserPermissions();
     public page: any[] = [];
@@ -39,7 +38,7 @@ export class UsersViewComponent implements OnInit, OnDestroy {
     constructor(
         private permissionsService: PermissionsService,
         private profileService: ProfileService,
-        private dialog: DialogService
+        private router: Router
     ) {
     }
 
@@ -80,7 +79,7 @@ export class UsersViewComponent implements OnInit, OnDestroy {
             }) || [];
             for (const user of this.page) {
                 const permissionsGroup = [];
-                if(Array.isArray(user.permissionsGroup)) {
+                if (Array.isArray(user.permissionsGroup)) {
                     for (const roleId of user.permissionsGroup) {
                         const name = this.roleMap.get(roleId) || roleId;
                         permissionsGroup.push(name);
@@ -142,26 +141,7 @@ export class UsersViewComponent implements OnInit, OnDestroy {
         return options;
     }
 
-    public onChangeRoles(user: any) {
-        this.dialog.open(SelectRoleDialogComponent, {
-            closable: true,
-            modal: true,
-            width: '700px',
-            styleClass: 'custom-permissions-dialog',
-            header: 'Change Roles',
-            data: {
-                user: user,
-                roles: this.roles
-            }
-        }).onClose.subscribe((result: any) => {
-            if (!result) {
-                return;
-            }
-            this.onChangeRole(result);
-        });
-    }
-
-    public onAssignPolicy(user: any) {
-
+    public onChangeRoles(row:any) {
+        this.router.navigate(['user-management', row.username]);
     }
 }

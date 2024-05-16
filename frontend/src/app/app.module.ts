@@ -53,7 +53,8 @@ import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
-import { UsersViewComponent } from './views/users/users-view.component';
+import { UsersManagementComponent } from './views/user-management/user-management.component';
+import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { BrandingComponent } from './views/branding/branding.component';
@@ -167,7 +168,8 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         PermissionsDialogComponent,
         UseWithServiceDirective,
         RolesViewComponent,
-        UsersViewComponent,
+        UsersManagementComponent,
+        UsersManagementDetailComponent,
         SelectRoleDialogComponent
     ],
     imports: [

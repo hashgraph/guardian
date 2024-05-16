@@ -2,7 +2,7 @@ import { BasicBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { ISignOptions, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, TopicConfig, VcHelper, } from '@guardian/common';
@@ -32,11 +32,11 @@ export class TagsManagerBlock {
     /**
      * Join GET Data
      * @param {IPolicyDocument | IPolicyDocument[]} documents
-     * @param {IPolicyUser} user
+     * @param {PolicyUser} user
      * @param {AnyBlockType} parent
      */
     public async joinData<T extends IPolicyDocument | IPolicyDocument[]>(
-        documents: T, user: IPolicyUser, parent: AnyBlockType
+        documents: T, user: PolicyUser, parent: AnyBlockType
     ): Promise<T> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const getData = await this.getData(user);
@@ -61,9 +61,9 @@ export class TagsManagerBlock {
     /**
      * Get Document Tags
      * @param {IPolicyDocument} document
-     * @param {IPolicyUser} user
+     * @param {PolicyUser} user
      */
-    private async getDocumentTags(documentId: string, user: IPolicyUser) {
+    private async getDocumentTags(documentId: string, user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const filter: any = {
             localTarget: documentId,
@@ -84,7 +84,7 @@ export class TagsManagerBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const schema = await DatabaseServer.getSchemas({
             system: false,
@@ -115,7 +115,7 @@ export class TagsManagerBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: IPolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (!blockData) {
             throw new BlockActionError(`Operation is unknown`, ref.blockType, ref.uuid);

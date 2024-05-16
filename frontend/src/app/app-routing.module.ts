@@ -41,7 +41,9 @@ import { UserContractConfigComponent } from './modules/contract-engine/configs/u
 import { AnnotationBlockComponent } from './modules/project-comparison/component/annotation-block/annotation-block.component';
 import { ProjectsComparisonTableComponent } from './modules/project-comparison/component/projects-comparison-table/projects-comparison-table.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
-import { UsersViewComponent } from './views/users/users-view.component';
+import { UsersManagementComponent } from './views/user-management/user-management.component';
+import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
+
 
 @Injectable({
     providedIn: 'root'
@@ -369,8 +371,17 @@ const routes: Routes = [
         }
     },
     {
-        path: 'users',
-        component: UsersViewComponent,
+        path: 'user-management',
+        component: UsersManagementComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY],
+            permissions: [Permissions.PERMISSIONS_ROLE_READ]
+        }
+    },
+    {
+        path: 'user-management/:id',
+        component: UsersManagementDetailComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [UserRole.STANDARD_REGISTRY],

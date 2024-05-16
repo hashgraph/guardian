@@ -1,7 +1,7 @@
 import { BasicBlock } from '../../helpers/decorators/basic-block.js';
 import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { IPolicyBlock } from '../../policy-engine.interface.js';
-import { IPolicyUser } from '../../policy-user.js';
+import { PolicyUser } from '../../policy-user.js';
 
 /**
  * Datasource block decorator
@@ -68,7 +68,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param countResult
              * @protected
              */
-            protected async getGlobalSources(user: IPolicyUser, paginationData: any, countResult?: boolean) {
+            protected async getGlobalSources(user: PolicyUser, paginationData: any, countResult?: boolean) {
                 const dynFilters = {};
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
@@ -87,7 +87,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param countResult
              * @protected
              */
-            protected async getGlobalSourcesFilters(user: IPolicyUser) {
+            protected async getGlobalSourcesFilters(user: PolicyUser) {
                 const dynFilters = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
@@ -105,7 +105,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters
              * @returns Sources filters
              */
-            protected async getSourcesFilters(user: IPolicyUser, globalFilters: any): Promise<{
+            protected async getSourcesFilters(user: PolicyUser, globalFilters: any): Promise<{
                 /**
                  * Filters
                  */
@@ -135,7 +135,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param countResult
              * @protected
              */
-            protected async getSources(user: IPolicyUser, globalFilters: any, paginationData: any, countResult: boolean = false): Promise<any[] | number> {
+            protected async getSources(user: PolicyUser, globalFilters: any, paginationData: any, countResult: boolean = false): Promise<any[] | number> {
                 const data = [];
                 let totalCount = 0;
                 let currentPosition = 0;

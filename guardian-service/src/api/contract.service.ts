@@ -109,7 +109,7 @@ async function setPool(
                     contractId
                 );
                 // tslint:disable-next-line:no-empty
-            } catch {}
+            } catch { }
             await setContractWiperPermissions(
                 contractRepository,
                 retirePoolRepository,
@@ -777,8 +777,7 @@ export async function syncRetireContract(
                         contractOwnerIds.map((user) =>
                             NotificationHelper.info(
                                 `Pools cleared in contract: ${contractId}`,
-                                `All ${
-                                    count === 1 ? 'single' : 'double'
+                                `All ${count === 1 ? 'single' : 'double'
                                 } pools cleared`,
                                 user
                             )
@@ -798,8 +797,7 @@ export async function syncRetireContract(
                         contractOwnerIds.map((user) =>
                             NotificationHelper.info(
                                 `Requests cleared in contract: ${contractId}`,
-                                `All ${
-                                    count === 1 ? 'single' : 'double'
+                                `All ${count === 1 ? 'single' : 'double'
                                 } requests cleared`,
                                 user
                             )
@@ -2139,7 +2137,7 @@ export async function contractAPI(
             const { pageIndex, pageSize, did, contractId } = msg;
 
             if (!did) {
-                return new MessageError('User is requred');
+                return new MessageError('User is required');
             }
 
             const otherOptions: any = {};
@@ -2162,6 +2160,7 @@ export async function contractAPI(
                 filters.contractId = contractId;
             }
 
+            let result: any;
             if (user.role === UserRole.STANDARD_REGISTRY) {
                 if (!filters.contractId) {
                     const contracts = await contractRepository.find({
@@ -2171,21 +2170,12 @@ export async function contractAPI(
                         $in: contracts.map((item) => item.id),
                     };
                 }
-                return new MessageResponse(
-                    await retireRequestRepository.findAndCount(
-                        filters,
-                        otherOptions
-                    )
-                );
+                result = await retireRequestRepository.findAndCount(filters, otherOptions);
             } else if (user.role === UserRole.USER) {
                 filters.user = user.hederaAccountId;
-                return new MessageResponse(
-                    await retireRequestRepository.findAndCount(
-                        filters,
-                        otherOptions
-                    )
-                );
+                result = await retireRequestRepository.findAndCount(filters, otherOptions);
             }
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

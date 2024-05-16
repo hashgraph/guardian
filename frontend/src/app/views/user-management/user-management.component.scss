@@ -244,27 +244,27 @@
     line-height: 16px;
 }
 
+.user-role-label {
+    max-width: 250px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    height: 26px;
+    padding: 3px 8px 3px 0px;
+}
+
+.user-role-default-label {
+    max-width: 250px;
+    height: 26px;
+    padding: 3px 8px 3px 0px;
+    color: #AAB7C4;
+}
+
 .user-role-btn {
-    width: 300px;
     display: flex;
     cursor: pointer;
+    width: 30px;
 
-    .user-role-label {
-        max-width: 250px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        height: 26px;
-        padding: 3px 8px 3px 0px;
-    }
-
-    .user-role-default-label {
-        max-width: 250px;
-        height: 26px;
-        padding: 3px 8px 3px 0px;
-        color: #AAB7C4;
-    }
-    
     .user-role-icon {
         width: 26px;
         height: 26px;
@@ -272,8 +272,14 @@
     }
 }
 
-.cell-size-operations {
+.cell-size-role {
     min-width: 350px;
     width: 300px;
     max-width: 350px;
+}
+
+.cell-size-operations {
+    min-width: 100px;
+    width: 100px;
+    max-width: 100px;
 }

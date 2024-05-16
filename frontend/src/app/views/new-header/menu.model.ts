@@ -66,7 +66,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
             },
             {
                 title: 'User Management',
-                routerLink: '/users'
+                routerLink: '/user-management'
             },
             {
                 title: 'Settings',

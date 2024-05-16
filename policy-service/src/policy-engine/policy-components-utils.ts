@@ -20,12 +20,12 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, Policy, PolicyTool } from '@guardian/common';
+import { DatabaseServer, Policy, PolicyRoles, PolicyTool, Users } from '@guardian/common';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
 import { GetBlockAbout } from './blocks/index.js';
-import { IPolicyUser } from './policy-user.js';
+import { PolicyUser, VirtualUser } from './policy-user.js';
 import { ExternalEvent } from './interfaces/external-event.js';
 import { BlockTreeGenerator } from './block-tree-generator.js';
 import { PolicyNavigationMap } from './interfaces/block-state.js';
@@ -133,7 +133,7 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn = (block: IPolicyBlock, user: IPolicyUser) => {
+    public static BlockUpdateFn = (block: IPolicyBlock, user: PolicyUser) => {
         const did = user?.did;
         if (!did || !block?.uuid) {
             return;
@@ -194,7 +194,7 @@ export class PolicyComponentsUtils {
     public static BlockErrorFn: (
         blockType: string,
         message: any,
-        user: IPolicyUser
+        user: PolicyUser
     ) => Promise<void> = async (...args) => {
         blockUpdate('error', ...args);
     };
@@ -202,7 +202,7 @@ export class PolicyComponentsUtils {
      * Update user info function
      */
     public static UpdateUserInfoFn: (
-        user: IPolicyUser,
+        user: PolicyUser,
         policy: Policy
     ) => Promise<void> = async (...args) => {
         blockUpdate('update-user', ...args);
@@ -750,6 +750,7 @@ export class PolicyComponentsUtils {
             instanceTopicId: policy.instanceTopicId,
             synchronizationTopicId: policy.synchronizationTopicId,
             owner: policy.owner,
+            policyOwner: policy.owner,
         };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -994,7 +995,7 @@ export class PolicyComponentsUtils {
      */
     public static GetNavigation<T extends IPolicyNavigationStep[]>(
         policyId: string,
-        user: IPolicyUser
+        user: PolicyUser
     ): T {
         if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
             throw new Error('The policy does not exist');
@@ -1066,7 +1067,7 @@ export class PolicyComponentsUtils {
      */
     public static async GetGroups(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
-        user: IPolicyUser
+        user: PolicyUser
     ): Promise<any[]> {
         return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
@@ -1268,6 +1269,130 @@ export class PolicyComponentsUtils {
     public static GetPolicyComponents(policyId: string): ComponentsService | null {
         if (PolicyComponentsUtils.PolicyById.has(policyId)) {
             return PolicyComponentsUtils.PolicyById.get(policyId).components;
+        }
+        return null;
+    }
+
+    /**
+     * Get user by name
+     * @param username
+     * @param instance
+     */
+    public static async GetPolicyUserByName(
+        username: string,
+        instance: IPolicyInstance | AnyBlockType
+    ): Promise<PolicyUser> {
+        if (!username) {
+            return null;
+        }
+
+        const regUser = await (new Users()).getUser(username);
+        if (!regUser || !regUser.did) {
+            return null;
+        }
+
+        let userFull: PolicyUser;
+        const virtual = !!instance.dryRun;
+        if (virtual) {
+            const virtualUser = await DatabaseServer.getVirtualUser(instance.policyId);
+            userFull = new VirtualUser(virtualUser || regUser, instance);
+        } else {
+            userFull = new PolicyUser(regUser, instance);
+        }
+
+        const groups = await instance
+            .components
+            .databaseServer
+            .getGroupsByUser(instance.policyId, userFull.did);
+        for (const group of groups) {
+            if (group.active !== false) {
+                return userFull.setCurrentGroup(group);
+            }
+        }
+        return userFull;
+    }
+
+    public static async GetPolicyUserByDID(
+        did: string,
+        groupUUID: string,
+        instance: IPolicyInstance | AnyBlockType
+    ): Promise<PolicyUser> {
+        const virtual = !!instance.dryRun;
+        const regUser = await (new Users()).getUserById(did);
+        if (!regUser || !regUser.did) {
+            return null;
+        }
+
+        let userFull: PolicyUser;
+        if (virtual) {
+            userFull = new VirtualUser({ did }, instance);
+        } else {
+            userFull = new PolicyUser(regUser, instance);
+        }
+
+        if (groupUUID) {
+            const group = await instance
+                .components
+                .databaseServer
+                .getUserInGroup(instance.policyId, did, groupUUID);
+            return userFull.setCurrentGroup(group);
+        } else if (!userFull.isAdmin) {
+            const group = await instance
+                .components
+                .databaseServer
+                .getActiveGroupByUser(instance.policyId, did);
+            return userFull.setCurrentGroup(group);
+        } else {
+            return userFull;
+        }
+    }
+
+    public static async GetPolicyUserByGroup(
+        group: PolicyRoles,
+        instance: IPolicyInstance | AnyBlockType
+    ): Promise<PolicyUser> {
+        const virtual = !!instance.dryRun;
+        let userFull: PolicyUser;
+        if (virtual) {
+            userFull = new VirtualUser(group, instance);
+        } else {
+            const regUser = await (new Users()).getUserById(group.did);
+            if (!regUser || !regUser.did) {
+                return null;
+            }
+            userFull = new PolicyUser(regUser, instance);
+        }
+        return userFull.setCurrentGroup(group);
+    }
+
+    public static async GetVirtualUser(
+        did: string,
+        instance: IPolicyInstance | AnyBlockType
+    ): Promise<PolicyUser> {
+        const userFull = new VirtualUser({ did }, instance);
+        const groups = await instance
+            .components
+            .databaseServer
+            .getGroupsByUser(instance.policyId, userFull.did);
+        for (const group of groups) {
+            if (group.active !== false) {
+                return userFull.setCurrentGroup(group);
+            }
+        }
+        return userFull;
+    }
+
+    public static async GetActiveVirtualUser(
+        instance: IPolicyInstance | AnyBlockType
+    ): Promise<PolicyUser> {
+        const virtualUser = await DatabaseServer.getVirtualUser(instance.policyId);
+        if (virtualUser) {
+            const userFull = new VirtualUser(virtualUser, instance);
+            const group = await instance
+                .components
+                .databaseServer
+                .getActiveGroupByUser(instance.policyId, userFull.did);
+            return userFull.setCurrentGroup(group);
         }
         return null;
     }

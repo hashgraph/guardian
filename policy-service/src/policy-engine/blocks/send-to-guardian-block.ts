@@ -8,7 +8,6 @@ import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, Mes
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { IPolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { DocumentType } from '../interfaces/document.type.js';
 
@@ -445,9 +444,8 @@ export class SendToGuardianBlock {
     /**
      * Document sender
      * @param document
-     * @param user
      */
-    private async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<IPolicyDocument> {
+    private async documentSender(document: IPolicyDocument): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
 
@@ -555,12 +553,12 @@ export class SendToGuardianBlock {
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
-                const newDoc = await this.documentSender(doc, event.user);
+                const newDoc = await this.documentSender(doc);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
-            event.data.data = await this.documentSender(docs, event.user);
+            event.data.data = await this.documentSender(docs);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

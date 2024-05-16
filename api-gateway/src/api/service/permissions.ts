@@ -317,6 +317,55 @@ export class PermissionsApi {
     }
 
     /**
+     * Get user
+     */
+    @Get('/users/:username')
+    @Auth(
+        Permissions.PERMISSIONS_ROLE_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Updates user permissions.',
+        description: 'Updates user permissions for the specified username.'
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'User Identifier',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: 'User permissions.',
+        type: UserRolesDTO,
+    })
+    @ApiOkResponse({
+        description: 'User permissions.',
+        type: UserRolesDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(UserRolesDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getUser(
+        @AuthUser() user: IAuthUser,
+        @Param('username') username: string
+    ): Promise<UserRolesDTO> {
+        try {        
+            const users = new Users();
+            const row = await users.getUser(username);
+            if (!row || row.parent !== user.did) {
+                throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND);
+            }
+            return row as any;
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
      * Updates user
      */
     @Put('/users/:username')

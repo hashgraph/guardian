@@ -1,6 +1,6 @@
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyType, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -74,11 +74,16 @@ export class PolicyApi {
                     status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
                 };
             } else {
-                // debugger
-                options.filters = {
-                    owner: user.parent,
-                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
-                };
+                if(UserPermissions.isPolicyAdmin(user)) {
+                    options.filters = {
+                        owner: user.parent,
+                        status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
+                    };
+                } else {
+                    options.filters = {
+                        owner: user.parent
+                    };
+                }
             }
             const engineService = new PolicyEngine();
             const { policies, count } = await engineService.getPolicies(options);

@@ -7,7 +7,7 @@ import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { Token as TokenCollection } from '@guardian/common';
 import { BlockActionError } from '../errors/index.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -56,7 +56,7 @@ export class TokenConfirmationBlock {
             /**
              * Event user
              */
-            user: IPolicyUser,
+            user: PolicyUser,
             /**
              * Token id
              */
@@ -85,7 +85,7 @@ export class TokenConfirmationBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser) {
+    async getData(user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         const blockState: any = this.state[user?.id] || {};
         const token = await this.getToken();
@@ -106,7 +106,7 @@ export class TokenConfirmationBlock {
      * @param user
      * @param data
      */
-    async setData(user: IPolicyUser, data: any) {
+    async setData(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`setData`);
 

@@ -16,7 +16,7 @@ export class PermissionsService {
 
     public static getOptions(
         filters: any,
-        pageIndex?: number, 
+        pageIndex?: number,
         pageSize?: number
     ): HttpParams {
         let params = new HttpParams();
@@ -37,12 +37,16 @@ export class PermissionsService {
     }
 
     public getUsers(
-        filters?: any, 
-        pageIndex?: number, 
+        filters?: any,
+        pageIndex?: number,
         pageSize?: number
     ): Observable<HttpResponse<any[]>> {
         const params = PermissionsService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/users`, { observe: 'response', params });
+    }
+
+    public getUser(username: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/users/${username}`);
     }
 
     public updateUser(username: string, user: any): Observable<any> {

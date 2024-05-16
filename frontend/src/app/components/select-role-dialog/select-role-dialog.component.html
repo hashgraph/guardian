@@ -3,6 +3,9 @@
         <div class="user-header">User Name</div>
         <div class="user-name">{{user.username}}</div>
     </div>
+
+
+
     <div class="selected-roles">
         <div class="role-header">Selected Roles</div>
         <div *ngIf="permissionsGroup?.length" class="roles-content">
@@ -34,8 +37,10 @@
                 <div class="dropdown-item">{{ option.name }}</div>
             </ng-template>
         </p-multiSelect>
-
     </div>
+
+
+
     <div class="dialog-footer">
         <button (click)="onClose()" 
                 class="button secondary" 

@@ -464,4 +464,14 @@ export class UserPermissions {
     public get PERMISSIONS_USER_READ(): boolean {
         return this.check(Permissions.PERMISSIONS_USER_READ);
     }
+
+    public static isPolicyAdmin(user: any): boolean {
+        return (
+            UserPermissions.has(user, Permissions.POLICIES_MIGRATION_CREATE) ||
+            UserPermissions.has(user, Permissions.POLICIES_POLICY_CREATE) ||
+            UserPermissions.has(user, Permissions.POLICIES_POLICY_UPDATE) ||
+            UserPermissions.has(user, Permissions.POLICIES_POLICY_DELETE) ||
+            UserPermissions.has(user, Permissions.POLICIES_POLICY_REVIEW)
+        )
+    }
 }
