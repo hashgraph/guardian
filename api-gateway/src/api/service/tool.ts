@@ -11,10 +11,8 @@ import {
   Put,
   Req,
   Response,
-  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import { TaskAction, UserRole } from '@guardian/interfaces';
 import {
     ApiBody,
@@ -33,8 +31,11 @@ import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
 import { InternalServerErrorDTO, TaskDTO, ToolDTO } from '../../middlewares/validation/schemas/index.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { Auth } from '../../auth/auth.decorator.js';
+import { AnyFilesInterceptor } from '../../helpers/interceptors/multipart.js';
+import { UploadedFiles } from '../../helpers/decorators/file.js';
+import { MultipartFile } from '../../helpers/interceptors/types/index.js';;
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -63,8 +64,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async createNewTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const tool = req.body;
             if (!tool.config || tool.config.blockType !== 'tool') {
@@ -72,7 +73,7 @@ export class ToolsApi {
             }
             const guardian = new Guardians();
             const item = await guardian.createTool(tool, req.user.did);
-            return res.status(201).json(item);
+            return res.status(201).send(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error
@@ -101,8 +102,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async createNewToolAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const tool = req.body;
             const user = req.user;
@@ -162,8 +163,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getTools(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             let pageIndex: any;
@@ -177,7 +178,7 @@ export class ToolsApi {
                 pageIndex,
                 pageSize
             });
-            return res.setHeader('X-Total-Count', count).json(items);
+            return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -210,15 +211,15 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async deleteTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             if (!req.params.id) {
                 throw new Error('Invalid id')
             }
             const result = await guardian.deleteTool(req.params.id, req.user.did);
-            return res.status(200).json(result);
+            return res.status(200).send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -260,15 +261,15 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getToolById(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardian = new Guardians();
             if (!req.params.id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const item = await guardian.getToolById(req.params.id, req.user.did);
-            return res.json(item);
+            return res.send(item);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -310,8 +311,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async updateTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         if (!req.params.id) {
             throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
         }
@@ -322,7 +323,7 @@ export class ToolsApi {
         }
         try {
             const result = await guardian.updateTool(req.params.id, tool, req.user.did);
-            return res.status(201).json(result);
+            return res.status(201).send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -364,12 +365,12 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async publishTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const tool = await guardian.publishTool(req.params.id, req.user.did, req.body);
-            return res.json(tool);
+            return res.send(tool);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -411,8 +412,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async publishToolAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PUBLISH_TOOL, user.id);
@@ -453,8 +454,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async validateTool(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             return res.send(await guardian.validateTool(req.user.did, req.body));
@@ -496,13 +497,13 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolExportFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const file: any = await guardian.exportToolFile(req.params.id, req.user.did);
-            res.setHeader('Content-disposition', `attachment; filename=tool_${Date.now()}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=tool_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -545,8 +546,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolExportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             return res.send(await guardian.exportToolMessage(req.params.id, req.user.did));
@@ -584,8 +585,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportMessagePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const tool = await guardian.previewToolMessage(req.body.messageId, req.user.did);
@@ -624,8 +625,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const tool = await guardian.importToolMessage(req.body.messageId, req.user.did);
@@ -664,8 +665,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportFilePreview(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const tool = await guardian.previewToolFile(req.body, req.user.did);
@@ -704,8 +705,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportFile(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const tool = await guardian.importToolFile(req.body, req.user.did);
@@ -763,11 +764,11 @@ export class ToolsApi {
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportFileWithMetadata(
         @Req() req,
-        @UploadedFiles() files: any
+        @UploadedFiles() files: MultipartFile[]
     ): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardian = new Guardians();
         try {
             const file = files.find((item) => item.fieldname === 'file');
@@ -820,8 +821,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportFileAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const owner = req.user.did;
@@ -891,11 +892,11 @@ export class ToolsApi {
     })
     @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportFileWithMetadataAsync(
         @Req() req,
-        @UploadedFiles() files: any
+        @UploadedFiles() files: MultipartFile[]
     ): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const file = files.find(item => item.fieldname === 'file');
             if (!file) {
@@ -965,8 +966,8 @@ export class ToolsApi {
         }
     })
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async toolImportMessageAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const owner = req.user.did;
@@ -1015,8 +1016,8 @@ export class ToolsApi {
     })
     @HttpCode(HttpStatus.OK)
     @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getMenu(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             return await guardians.getMenuTool(req.user.did);

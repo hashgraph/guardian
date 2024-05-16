@@ -17,7 +17,6 @@ import {
     Req,
     Response,
 } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
 import {
     ApiInternalServerErrorResponse,
     ApiOkResponse,
@@ -102,8 +101,8 @@ async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine
 export class TokensApi {
     @Get('/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getTokens(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
@@ -135,8 +134,8 @@ export class TokensApi {
                 tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
             }
             return res
-                .setHeader('X-Total-Count', tokensAndCount.count)
-                .json(tokensAndCount.items);
+                .header('X-Total-Count', tokensAndCount.count)
+                .send(tokensAndCount.items);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -145,15 +144,15 @@ export class TokensApi {
 
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async newToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
             const user = req.user;
 
             if (!user.did) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
 
             let tokens = await guardians.setToken({
@@ -165,7 +164,7 @@ export class TokensApi {
             const map = await engineService.getTokensMap(user.did);
             tokens = setTokensPolicies(tokens, map);
 
-            return res.status(201).json(tokens);
+            return res.status(201).send(tokens);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -174,11 +173,11 @@ export class TokensApi {
 
     @Post('/push')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async pushTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            return res.status(422).send(prepareValidationResponse('User not registered'));
         }
         const token = req.body;
         const taskManager = new TaskManager();
@@ -227,8 +226,8 @@ export class TokensApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async updateToken(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const token = req.body;
 
@@ -256,18 +255,18 @@ export class TokensApi {
 
     @Put('/push')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async updateTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const token = req.body;
 
             if (!user.did) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
 
             if (!token.tokenId) {
-                return res.status(422).json(prepareValidationResponse('The field tokenId is required'));
+                return res.status(422).send(prepareValidationResponse('The field tokenId is required'));
             }
 
             const guardians = new Guardians();
@@ -299,14 +298,14 @@ export class TokensApi {
 
     @Delete('/push/:tokenId')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async deleteTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const user = req.user;
             const tokenId = req.params.tokenId;
 
             if (!user.did) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
 
             const guardians = new Guardians();
@@ -346,17 +345,17 @@ export class TokensApi {
 
     @Put('/:tokenId/associate')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.USER)
     async associateToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const userDid = req.user.did;
             if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
             const status = await guardians.associateToken(tokenId, userDid);
-            return res.json(status);
+            return res.send(status);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -371,12 +370,12 @@ export class TokensApi {
 
     @Put('/push/:tokenId/associate')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.USER)
     async associateTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
         const tokenId = req.params.tokenId;
         const user = req.user;
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            return res.status(422).send(prepareValidationResponse('User not registered'));
         }
 
         const taskManager = new TaskManager();
@@ -394,17 +393,17 @@ export class TokensApi {
 
     @Put('/:tokenId/dissociate')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.USER)
     async dissociateToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const userDid = req.user.did;
             if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
             const status = await guardians.dissociateToken(tokenId, userDid);
-            return res.json(status);
+            return res.send(status);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -419,12 +418,12 @@ export class TokensApi {
 
     @Put('/push/:tokenId/dissociate')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.USER)
     async dissociateTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
         const tokenId = req.params.tokenId;
         const user = req.user;
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            return res.status(422).send(prepareValidationResponse('User not registered'));
         }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.DISSOCIATE_TOKEN, user.id);
@@ -441,17 +440,17 @@ export class TokensApi {
 
     @Put('/:tokenId/:username/grant-kyc')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async grantKyc(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const username = req.params.username;
             const userDid = req.user.did;
             if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
-            return res.json(await guardians.grantKycToken(tokenId, username, userDid));
+            return res.send(await guardians.grantKycToken(tokenId, username, userDid));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -466,13 +465,13 @@ export class TokensApi {
 
     @Put('/push/:tokenId/:username/grant-kyc')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async grantKycAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const user = req.user;
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            return res.status(422).send(prepareValidationResponse('User not registered'));
         }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.GRANT_KYC, user.id);
@@ -489,18 +488,18 @@ export class TokensApi {
 
     @Put('/:tokenId/:username/revoke-kyc')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async revokeKyc(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const username = req.params.username;
             const userDid = req.user.did;
             if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
             const result = await guardians.revokeKycToken(tokenId, username, userDid);
-            return res.json(result);
+            return res.send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -515,8 +514,8 @@ export class TokensApi {
 
     @Put('/push/:tokenId/:username/revoke-kyc')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async revokeKycAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const user = req.user;
@@ -538,18 +537,18 @@ export class TokensApi {
 
     @Put('/:tokenId/:username/freeze')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async freezeToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const username = req.params.username;
             const userDid = req.user.did;
             if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
             const result = await guardians.freezeToken(tokenId, username, userDid);
-            return res.json(result);
+            return res.send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -564,18 +563,18 @@ export class TokensApi {
 
     @Put('/:tokenId/:username/unfreeze')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async unfreezeToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const username = req.params.username;
             const userDid = req.user.did;
             if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
             const result = await guardians.unfreezeToken(tokenId, username, userDid);
-            return res.json(result);
+            return res.send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -590,13 +589,13 @@ export class TokensApi {
 
     @Put('/push/:tokenId/:username/freeze')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async freezeTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const user = req.user;
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            return res.status(422).send(prepareValidationResponse('User not registered'));
         }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.FREEZE_TOKEN, user.id);
@@ -613,13 +612,13 @@ export class TokensApi {
 
     @Put('/push/:tokenId/:username/unfreeze')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async unfreezeTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const tokenId = req.params.tokenId;
         const username = req.params.username;
         const user = req.user;
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            return res.status(422).send(prepareValidationResponse('User not registered'));
         }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.UNFREEZE_TOKEN, user.id);
@@ -640,18 +639,18 @@ export class TokensApi {
      */
     @Get('/:tokenId/:username/info')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getTokenInfo(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const username = req.params.username;
             const userDid = req.user.did;
             if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                return res.status(422).send(prepareValidationResponse('User not registered'));
             }
             const result = await guardians.getInfoToken(tokenId, username, userDid);
-            return res.json(result as ITokenInfo);
+            return res.send(result as ITokenInfo);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -698,14 +697,14 @@ export class TokensApi {
         type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getTokenSerials(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         try {
             const guardians = new Guardians();
             const tokenId = req.params.tokenId;
             const userDid = req.user.did;
             const result = await guardians.getTokenSerials(tokenId, userDid);
-            return res.json(result);
+            return res.send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {

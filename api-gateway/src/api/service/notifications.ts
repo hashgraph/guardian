@@ -4,6 +4,8 @@ import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/err
 import { NotificationDTO, ProgressDTO, } from '../../middlewares/validation/schemas/notifications.js';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Response, UseGuards, } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
+import { Auth } from '../../auth/auth.decorator.js';
+import { UserRole } from '@guardian/interfaces';
 
 @Controller('notifications')
 @ApiTags('notifications')
@@ -44,6 +46,7 @@ export class NotificationsApi {
     @UseGuards(AuthGuard)
     @Get('/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getAllNotifications(@Req() req, @Response() res) {
         try {
             let pageIndex: number;
@@ -57,7 +60,7 @@ export class NotificationsApi {
                 pageIndex,
                 pageSize
             );
-            return res.setHeader('X-Total-Count', count).json(notifications);
+            return res.header('X-Total-Count', count).send(notifications);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -93,12 +96,13 @@ export class NotificationsApi {
     @UseGuards(AuthGuard)
     @Get('/new')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getNewNotifications(@Req() req, @Response() res): Promise<any> {
         try {
             if (!req.user.id) {
                 throw Error('User is not registered');
             }
-            return res.json(
+            return res.send(
                 await this.notifier.getNewNotifications(req.user.id)
             );
         } catch (error) {
@@ -136,12 +140,13 @@ export class NotificationsApi {
     @UseGuards(AuthGuard)
     @Get('/progresses')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async getProgresses(@Req() req, @Response() res): Promise<any> {
         try {
             if (!req.user.id) {
                 throw Error('User is not registered');
             }
-            return res.json(await this.notifier.getProgresses(req.user.id));
+            return res.send(await this.notifier.getProgresses(req.user.id));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -177,12 +182,13 @@ export class NotificationsApi {
     @UseGuards(AuthGuard)
     @Post('/read/all')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async readAll(@Req() req, @Response() res): Promise<any> {
         try {
             if (!req.user.id) {
                 throw Error('User is not registered');
             }
-            return res.json(await this.notifier.readAll(req.user.id));
+            return res.send(await this.notifier.readAll(req.user.id));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw error;
@@ -219,9 +225,10 @@ export class NotificationsApi {
     @UseGuards(AuthGuard)
     @Delete('/delete/:notificationId')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async delete(@Req() req, @Response() res) {
         try {
-            return res.json(
+            return res.send(
                 await this.notifier.deleteUpTo(
                     req.user.id,
                     req.params.notificationId

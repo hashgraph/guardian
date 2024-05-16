@@ -1,9 +1,32 @@
 import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
-import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { checkPermission } from '../../auth/authorization-helper.js';
+import {
+    ApiInternalServerErrorResponse,
+    ApiUnauthorizedResponse,
+    ApiForbiddenResponse,
+    ApiBody,
+    ApiOkResponse,
+    ApiOperation,
+    ApiSecurity,
+    ApiTags
+} from '@nestjs/swagger';
 import { UserRole } from '@guardian/interfaces';
-import { CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, CompareToolsDTO, FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, FilterToolsDTO, InternalServerErrorDTO, SearchPoliciesDTO } from '../../middlewares/validation/schemas/index.js';
+import {
+    FilterDocumentsDTO,
+    FilterModulesDTO,
+    FilterPoliciesDTO,
+    FilterSchemasDTO,
+    FilterSearchPoliciesDTO,
+    InternalServerErrorDTO,
+    CompareDocumentsDTO,
+    CompareModulesDTO,
+    ComparePoliciesDTO,
+    CompareSchemasDTO,
+    SearchPoliciesDTO,
+    FilterToolsDTO,
+    CompareToolsDTO
+} from '../../middlewares/validation/schemas/index.js';
+import { Auth } from '../../auth/auth.decorator.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -46,8 +69,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async searchPolicies(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const policyId = body ? body.policyId : null;
         const user = req.user;
@@ -117,8 +140,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async comparePolicies(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const policyId1 = body ? body.policyId1 : null;
         const policyId2 = body ? body.policyId2 : null;
@@ -197,8 +220,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async compareModules(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const moduleId1 = body ? body.moduleId1 : null;
         const moduleId2 = body ? body.moduleId2 : null;
@@ -267,8 +290,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async compareSchemas(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const schemaId1 = body ? body.schemaId1 : null;
         const schemaId2 = body ? body.schemaId2 : null;
@@ -329,6 +352,7 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async compareDocuments(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const documentId1 = body ? body.documentId1 : null;
@@ -413,6 +437,7 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async compareTools(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const toolId1 = body ? body.toolId1 : null;
@@ -501,8 +526,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async comparePoliciesExport(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const type = req.query ? req.query.type : null;
         const policyId1 = body ? body.policyId1 : null;
@@ -580,8 +605,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async compareModulesExport(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const type = req.query ? req.query.type : null;
         const moduleId1 = body ? body.moduleId1 : null;
@@ -651,8 +676,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async compareSchemasExport(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const type = req.query ? req.query.type : null;
         const schemaId1 = body ? body.schemaId1 : null;
@@ -714,6 +739,7 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async compareDocumentsExport(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const type = req.query ? req.query.type : null;
@@ -798,6 +824,7 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     async compareToolsExport(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const type = req.query ? req.query.type : null;
@@ -873,8 +900,8 @@ export class AnalyticsApi {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async searchBlocks(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
         const id = body ? body.id : null;
         const config = body ? body.config : null;

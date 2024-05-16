@@ -1,5 +1,5 @@
 import { Auth } from '../../auth/auth.decorator.js';
-import { AuthUser, checkPermission } from '../../auth/authorization-helper.js';
+import { AuthUser } from '../../auth/authorization-helper.js';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '../../helpers/policy-engine.js';
@@ -9,13 +9,15 @@ import { TaskManager } from '../../helpers/task-manager.js';
 import { Users } from '../../helpers/users.js';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { MigrationConfigDTO, PolicyCategoryDTO, } from '../../middlewares/validation/schemas/policies.js';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
+import { AnyFilesInterceptor } from '../../helpers/interceptors/multipart.js';
+import { UploadedFiles } from '../../helpers/decorators/file.js';
+import { MultipartFile } from '../../helpers/interceptors/types/index.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -54,14 +56,14 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)
     async getPolicies(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         const users = new Users();
         const engineService = new PolicyEngine();
         try {
             const user = await users.getUser(req.user.username);
             if (!user.did && user.role !== UserRole.AUDITOR) {
-                return res.setHeader('X-Total-Count', 0).json([]);
+                return res.header('X-Total-Count', 0).send([]);
             }
             let pageIndex: any;
             let pageSize: any;
@@ -104,7 +106,7 @@ export class PolicyApi {
                 });
             }
             const { policies, count } = result;
-            return res.setHeader('X-Total-Count', count).json(policies);
+            return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -131,12 +133,12 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async createPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policies = await engineService.createPolicy(req.body, req.user)
-            return res.status(201).json(policies);
+            return res.status(201).send(policies);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -180,8 +182,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/migrate-data')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async migrateData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.migrateData(
@@ -220,8 +222,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/push/migrate-data')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async migrateDataAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.MIGRATE_DATA, user.id);
@@ -255,8 +257,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/push')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async createPolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const model = req.body;
         const user = req.user;
         const taskManager = new TaskManager();
@@ -288,8 +290,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async updatePolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const policyId = req.params.policyId;
         const model = req.body;
         const user = req.user;
@@ -308,8 +310,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Delete('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async deletePolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const policyId = req.params.policyId;
         const user = req.user;
         const taskManager = new TaskManager();
@@ -344,8 +346,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)
     async getPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
         const users = new Users();
         const engineService = new PolicyEngine();
         try {
@@ -381,8 +383,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Put('/:policyId')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async updatePolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let model: any;
         try {
@@ -409,7 +411,7 @@ export class PolicyApi {
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
             const result = await engineService.savePolicy(model, req.user, req.params.policyId);
-            return res.json(result);
+            return res.send(result);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -436,11 +438,11 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Put('/:policyId/publish')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async publishPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
+            return res.send(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -467,8 +469,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Put('/push/:policyId/publish')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async publishPolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const model = req.body;
         const user = req.user;
         const policyId = req.params.policyId;
@@ -505,11 +507,11 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Put('/:policyId/dry-run')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async dryRunPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.json(await engineService.dryRunPolicy(req.user, req.params.policyId));
+            return res.send(await engineService.dryRunPolicy(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -556,11 +558,11 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Put('/:policyId/discontinue')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async discontinuePolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.json(await engineService.discontinuePolicy(req.user, req.params.policyId, req.body?.date));
+            return res.send(await engineService.discontinuePolicy(req.user, req.params.policyId, req.body?.date));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -587,11 +589,11 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Put('/:policyId/draft')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async draftPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
-            return res.json(await engineService.draft(req.user, req.params.policyId));
+            return res.send(await engineService.draft(req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -618,8 +620,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/validate')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async validatePolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.validatePolicy(req.body, req.user));
@@ -654,8 +656,8 @@ export class PolicyApi {
     @Get('/:policyId/navigation')
     @HttpCode(HttpStatus.OK)
     // @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getPolicyNavigation(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return await engineService.getNavigation(req.user, req.params.policyId);
@@ -690,8 +692,8 @@ export class PolicyApi {
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
     // @UseCache()
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getPolicyGroups(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return await engineService.getGroups(req.user, req.params.policyId);
@@ -755,8 +757,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/documents')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getPolicyDocuments(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const [documents, count] = await engineService.getDocuments(
@@ -767,7 +769,7 @@ export class PolicyApi {
                 req.query?.pageIndex,
                 req.query?.pageSize,
             );
-            return res.setHeader('X-Total-Count', count).json(documents);
+            return res.header('X-Total-Count', count).send(documents);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -801,8 +803,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/data')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async downloadPolicyData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({
@@ -816,11 +818,11 @@ export class PolicyApi {
                 req.params.policyId,
                 req.user.did
             );
-            res.setHeader(
+            res.header(
                 'Content-Disposition',
                 `attachment; filename=${policy.name}.data`
             );
-            res.setHeader('Content-Type', 'application/policy-data');
+            res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -859,8 +861,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/data')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async uploadPolicyData(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return await engineService.uploadPolicyData(req.user.did, req.body);
@@ -899,8 +901,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/tag-block-map')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getTagBlockMap(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return await engineService.getTagBlockMap(
@@ -943,8 +945,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/virtual-keys')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async downloadVirtualKeys(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             const policy = await engineService.getPolicy({
@@ -958,11 +960,11 @@ export class PolicyApi {
                 req.params.policyId,
                 req.user.did
             );
-            res.setHeader(
+            res.header(
                 'Content-Disposition',
                 `attachment; filename=${policy.name}.vk`
             );
-            res.setHeader('Content-Type', 'application/virtual-keys');
+            res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1003,8 +1005,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/:policyId/virtual-keys')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async uploadVirtualKeys(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return await engineService.uploadVirtualKeys(
@@ -1041,8 +1043,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async setPolicyGroups(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.selectGroup(req.user, req.params.policyId, req.body.uuid));
@@ -1076,8 +1078,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/blocks')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getPolicyBlocks(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getPolicyBlocks(req.user, req.params.policyId));
@@ -1107,8 +1109,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getBlockData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockData(req.user, req.params.policyId, req.params.uuid));
@@ -1138,8 +1140,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async setBlockData(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(
@@ -1171,8 +1173,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async setBlocksByTagName(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.setBlockDataByTag(req.user, req.params.policyId, req.params.tagName, req.body));
@@ -1202,8 +1204,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/tag/:tagName')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getBlockByTagName(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockByTagName(req.user, req.params.policyId, req.params.tagName));
@@ -1233,8 +1235,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Get('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getBlocksByTagName(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockDataByTag(req.user, req.params.policyId, req.params.tagName));
@@ -1246,8 +1248,8 @@ export class PolicyApi {
 
     @Get('/:policyId/blocks/:uuid/parents')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getBlockParents(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getBlockParents(req.user, req.params.policyId, req.params.uuid));
@@ -1303,8 +1305,8 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             const policyFile: any = await engineService.exportFile(user, policyId);
             const policy: any = await engineService.getPolicy({ filters: policyId });
-            res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${policy.name}`);
+            res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1408,8 +1410,8 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             const policyFile: any = await engineService.exportXlsx(user, policyId);
             const policy: any = await engineService.getPolicy({ filters: policyId });
-            res.setHeader('Content-disposition', `attachment; filename=${policy.name}`);
-            res.setHeader('Content-type', 'application/zip');
+            res.header('Content-disposition', `attachment; filename=${policy.name}`);
+            res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -1437,8 +1439,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/import/message')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importPolicyFromMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
         try {
@@ -1478,8 +1480,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/push/import/message')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importPolicyFromMessageAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const messageId = req.body.messageId;
         const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
@@ -1530,8 +1532,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/import/message/preview')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importMessage(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
@@ -1561,8 +1563,8 @@ export class PolicyApi {
     @ApiSecurity('bearerAuth')
     @Post('/push/import/message/preview')
     @HttpCode(HttpStatus.ACCEPTED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async importFromMessagePreview(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const user = req.user;
         const messageId = req.body.messageId;
         const taskManager = new TaskManager();
@@ -1690,7 +1692,7 @@ export class PolicyApi {
     @UseInterceptors(AnyFilesInterceptor())
     async importPolicyFromFileWithMetadata(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: any,
+        @UploadedFiles() files: MultipartFile[],
         @Query('versionOfTopicId') versionOfTopicId,
     ): Promise<any> {
         try {
@@ -1833,7 +1835,7 @@ export class PolicyApi {
     @UseInterceptors(AnyFilesInterceptor())
     async importPolicyFromFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: any,
+        @UploadedFiles() files: MultipartFile[],
         @Query('versionOfTopicId') versionOfTopicId,
     ): Promise<any> {
         const taskManager = new TaskManager();
@@ -2094,8 +2096,8 @@ export class PolicyApi {
     @Get('/blocks/about')
     @HttpCode(HttpStatus.OK)
     @UseCache({ ttl: CACHE.LONG_TTL })
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getBlockAbout(@Req() req) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         try {
             return await engineService.blockAbout();
@@ -2107,8 +2109,8 @@ export class PolicyApi {
 
     @Get('/:policyId/dry-run/users')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getDryRunUsers(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let policy;
         try {
@@ -2136,8 +2138,8 @@ export class PolicyApi {
 
     @Post('/:policyId/dry-run/user')
     @HttpCode(HttpStatus.CREATED)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async setDryRunUser(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let policy;
         try {
@@ -2165,8 +2167,8 @@ export class PolicyApi {
 
     @Post('/:policyId/dry-run/login')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async loginDryRunUser(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let policy;
         try {
@@ -2194,8 +2196,8 @@ export class PolicyApi {
 
     @Post('/:policyId/dry-run/restart')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async restartDryRun(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let policy;
         try {
@@ -2214,7 +2216,7 @@ export class PolicyApi {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {
-            return res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
+            return res.send(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2223,8 +2225,8 @@ export class PolicyApi {
 
     @Get('/:policyId/dry-run/transactions')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getDryRunTransactions(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let policy;
         try {
@@ -2247,7 +2249,7 @@ export class PolicyApi {
                 pageSize = req.query.pageSize;
             }
             const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'transactions', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).json(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2256,8 +2258,8 @@ export class PolicyApi {
 
     @Get('/:policyId/dry-run/artifacts')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getDryRunArtifacts(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let policy;
         try {
@@ -2281,7 +2283,7 @@ export class PolicyApi {
                 pageSize = req.query.pageSize;
             }
             const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'artifacts', pageIndex, pageSize);
-            return res.setHeader('X-Total-Count', count).json(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2290,8 +2292,8 @@ export class PolicyApi {
 
     @Get('/:policyId/dry-run/ipfs')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY)
     async getDryRunIpfs(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const engineService = new PolicyEngine();
         let policy;
         try {
@@ -2314,7 +2316,7 @@ export class PolicyApi {
                 pageSize = req.query.pageSize;
             }
             const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'ipfs', pageIndex, pageSize)
-            return res.setHeader('X-Total-Count', count).json(data);
+            return res.header('X-Total-Count', count).send(data);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -2323,8 +2325,8 @@ export class PolicyApi {
 
     @Get('/:policyId/multiple')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getMultiplePolicies(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.getMultiPolicy(req.user, req.params.policyId));
@@ -2336,8 +2338,8 @@ export class PolicyApi {
 
     @Post('/:policyId/multiple/')
     @HttpCode(HttpStatus.OK)
+    @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async setMultiplePolicies(@Req() req, @Response() res) {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
         const engineService = new PolicyEngine();
         try {
             return res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
