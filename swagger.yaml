@@ -10790,6 +10790,45 @@ paths:
       security:
         - bearer: []
   /permissions/users/{username}:
+    get:
+      operationId: PermissionsApi_getUser
+      summary: Updates user permissions.
+      description: Updates user permissions for the specified username.
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: User Identifier
+          example: username
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: User permissions.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRolesDTO'
+      responses:
+        '200':
+          description: User permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRolesDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_17
+      security:
+        - bearer: []
     put:
       operationId: PermissionsApi_updateUser
       summary: Updates user permissions.
