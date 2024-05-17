@@ -25,6 +25,7 @@ import {
     IUser,
     UserRole
 } from '@guardian/interfaces';
+import { USER_REQUIRED_PROPS } from '../constants/index.js';
 
 const { sign, verify } = pkg;
 
@@ -60,8 +61,16 @@ export class AccountService extends NatsService {
                 if (Date.now() > decryptedToken.expireAt) {
                     throw new Error('Token expired');
                 }
+
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
-                return new MessageResponse(user);
+
+                const userRequiredProps = {}
+
+                for(const prop of Object.values(USER_REQUIRED_PROPS)) {
+                    userRequiredProps[prop] = user[prop];
+                }
+
+                return new MessageResponse(userRequiredProps);
             } catch (error) {
                 return new MessageError(error);
             }

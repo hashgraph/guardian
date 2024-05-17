@@ -129,7 +129,7 @@ export class AccountApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error.message.includes('already exists')) {
-                throw new HttpException('An account with the same name already exists.', HttpStatus.CONFLICT);
+                throw new HttpException(error.message, HttpStatus.CONFLICT);
             }
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
