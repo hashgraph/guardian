@@ -53,8 +53,12 @@ export class PermissionsService {
         return this.http.put<any>(`${this.url}/users/${username}`, user);
     }
 
-    public getRoles(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
-        const params = PermissionsService.getOptions(null, pageIndex, pageSize);
+    public getRoles(
+        filters?: any,
+        pageIndex?: number, 
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = PermissionsService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/roles`, { observe: 'response', params });
     }
 
@@ -68,5 +72,14 @@ export class PermissionsService {
 
     public updateRole(id: string, role: any): Observable<any> {
         return this.http.put<any>(`${this.url}/roles/${id}`, role);
+    }
+
+    public getPolicies(
+        username: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params = PermissionsService.getOptions({}, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/users/${username}/policies`, { observe: 'response', params });
     }
 }

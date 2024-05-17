@@ -3,8 +3,9 @@ import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
-import { PermissionsDialogComponent } from 'src/app/components/permissions-dialog/permissions-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { PermissionsUtils } from 'src/app/utils/permissions';
 
 @Component({
     selector: 'app-roles-view',
@@ -19,11 +20,19 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     public pageSize: number = 25;
     public count: number = 0;
     public permissions: any[] = [];
+    public searchFilter = new FormControl('');
+    public newRole: FormGroup | null = null;
+    public controls: Map<string, any>;
+    public categories: any[];
+    public selectedCategory: any = null;
+    public lastCategory: boolean = false;
 
     constructor(
         private permissionsService: PermissionsService,
         private profileService: ProfileService,
-        private dialog: DialogService
+        private route: ActivatedRoute,
+        private router: Router,
+        private fb: FormBuilder
     ) {
     }
 
@@ -50,7 +59,12 @@ export class RolesViewComponent implements OnInit, OnDestroy {
 
     private loadData() {
         this.loading = true;
-        this.permissionsService.getRoles(this.pageIndex, this.pageSize).subscribe((response) => {
+        const options = this.getFilters();
+        this.permissionsService.getRoles(
+            options,
+            this.pageIndex,
+            this.pageSize
+        ).subscribe((response) => {
             this.page = response.body?.map((user: any) => {
                 return user;
             }) || [];
@@ -82,21 +96,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     }
 
     public onCreate() {
-        this.dialog.open(PermissionsDialogComponent, {
-            closable: true,
-            modal: true,
-            width: '850px',
-            styleClass: 'custom-permissions-dialog',
-            header: 'New Role',
-            data: {
-                permissions: this.permissions
-            }
-        }).onClose.subscribe((result: any) => {
-            if (!result) {
-                return;
-            }
-            this.saveRole(result)
-        });
+        this.openEditView();
     }
 
     public saveRole(result: any) {
@@ -128,26 +128,152 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         });
     }
 
+    public onSave() {
+        if (this.newRole?.valid) {
+            const role = this.newRole.value;
+            const permissions: string[] = [];
+            for (const [key, value] of Object.entries(role.permissions)) {
+                if (value === true) {
+                    permissions.push(key)
+                }
+            }
+            role.permissions = permissions;
+            if (role.id) {
+                this.updateRole(role.id, role);
+            } else {
+                this.saveRole(role);
+            }
+            this.newRole = null;
+        }
+    }
+
     public onEdit(row: any) {
-        this.dialog.open(PermissionsDialogComponent, {
-            closable: true,
-            modal: true,
-            width: '850px',
-            styleClass: 'custom-permissions-dialog',
-            header: 'New Role',
-            data: {
-                permissions: this.permissions,
-                role: row
-            }
-        }).onClose.subscribe((result: any) => {
-            if (!result) {
-                return;
-            }
-            this.updateRole(row.id, result)
-        });
+        this.openEditView(row);
     }
 
     public goToUsers(row: any) {
-        throw new Error('Method not implemented.');
+        this.router.navigate(['user-management'], {
+            queryParams: {
+                role: row.id
+            },
+        });
+    }
+
+    public onFilter() {
+        const filters = this.getFilters();
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: filters
+        });
+        this.loadData();
+    }
+
+    private getFilters() {
+        const options: any = {};
+        if (this.searchFilter && this.searchFilter.value) {
+            options.name = this.searchFilter.value
+        }
+        return options;
+    }
+
+    public goToPage() {
+        this.newRole = null;
+    }
+
+    private openEditView(row?: any) {
+        const { controls, categories } = PermissionsUtils.parsePermissions(this.permissions);
+        this.controls = controls;
+        this.categories = categories;
+        for (const control of controls.values()) {
+            control.formControl = new FormControl(false);
+        }
+        this.categories.unshift({
+            name: 'Role Details',
+        })
+
+        const permissions = new FormGroup({});
+        this.newRole = this.fb.group({
+            id: [row?.id],
+            name: [row?.name || 'Role name', Validators.required],
+            description: [row?.description || 'Role name'],
+            permissions
+        });
+        for (const [name, control] of controls) {
+            permissions.addControl(name, control.formControl);
+        }
+        if (row?.permissions) {
+            for (const permission of row.permissions) {
+                this.controls.get(permission)?.formControl?.setValue(true);
+            }
+        }
+        for (const category of this.categories) {
+            this.checkCount(category);
+        }
+        this.selectedCategory = this.categories[0];
+        this.lastCategory = false;
+    }
+
+    private checkCount(category: any) {
+        let count = 0;
+        if (category.entities) {
+            for (const entity of category.entities) {
+                for (const action of entity.actions) {
+                    if (action && action.formControl && action.formControl.value) {
+                        count++;
+                    }
+                }
+            }
+        }
+        category.count = count;
+    }
+
+    public onSelectCategory(category: any) {
+        this.selectedCategory = category;
+        this.lastCategory = this.categories[this.categories.length - 1] === category;
+    }
+
+    public onAll(entity: any) {
+        let _all = true;
+        for (const action of entity.actions) {
+            if (action && action.formControl) {
+                _all = _all && action.formControl.value;
+            }
+        }
+        _all = !_all;
+        for (const action of entity.actions) {
+            if (action && action.formControl) {
+                action.formControl.setValue(_all);
+            }
+        }
+        entity.all = _all;
+        this.checkCount(this.selectedCategory);
+    }
+
+    public onCheckAll(entity: any) {
+        let _all = true;
+        for (const action of entity.actions) {
+            if (action && action.formControl) {
+                _all = _all && action.formControl.value;
+            }
+        }
+        entity.all = _all;
+        this.checkCount(this.selectedCategory);
+    }
+
+    public onNextLabel(): string {
+        if (!this.lastCategory) {
+            return 'Next';
+        }
+        return this.newRole?.value.id ? 'Save' : 'Create';
+    }
+
+    public onNext() {
+        if (this.lastCategory) {
+            this.onSave()
+        } else {
+            const index = this.categories.findIndex((e) => e === this.selectedCategory);
+            this.selectedCategory = this.categories[index + 1];
+            this.lastCategory = this.categories[this.categories.length - 1] === this.selectedCategory;
+        }
     }
 }

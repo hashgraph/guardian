@@ -351,6 +351,44 @@ export class PolicyEngineService {
             }
         });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_ASSIGNED_POLICIES, async (msg) => {
+            try {
+                const { filters, userDid, pageIndex, pageSize } = msg;
+                const otherOptions: any = {
+                    fields: [
+                        'id',
+                        'uuid',
+                        'name',
+                        'version',
+                        'description',
+                        'status',
+                        'owner',
+                        'topicId',
+                        'messageId',
+                        'instanceTopicId',
+                        'discontinuedDate'
+                    ]
+                };
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                const [policies, count] = await DatabaseServer.getPoliciesAndCount(filters, otherOptions);
+                for (const policy of policies) {
+                    (policy as any).assigned = false;
+                }
+                return new MessageResponse({ policies, count });
+            } catch (error) {
+                return new MessageError(error);
+            }
+        });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES, async (msg) => {
             try {
                 const user = msg.user;

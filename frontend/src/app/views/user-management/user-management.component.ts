@@ -2,9 +2,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 
 @Component({
     selector: 'app-user-management',
@@ -35,18 +35,26 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
     public searchFilter = new FormControl('');
     public roleMap = new Map<string, string>();
 
+    private _queryObserver?: Subscription;
+    private _queryParams: Params;
+
     constructor(
         private permissionsService: PermissionsService,
         private profileService: ProfileService,
+        private route: ActivatedRoute,
         private router: Router
     ) {
     }
 
     ngOnInit() {
+        this._queryObserver = this.route.queryParams.subscribe(params => {
+            this._queryParams = params;
+        });
         this.loadProfile();
     }
 
     ngOnDestroy() {
+        this._queryObserver?.unsubscribe();
     }
 
     private loadProfile() {
@@ -60,6 +68,7 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
             this.roleFilterOption = [{ name: 'All' }, ...this.roles];
             this.roleMap = this.roles
                 .reduce((map, role) => map.set(role.id, role.name), new Map<string, string>());
+            this.updateFilters();
             this.loadData();
         }, (e) => {
             this.loadError(e);
@@ -124,6 +133,11 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
     }
 
     public onFilter() {
+        const filters = this.getFilters();
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: filters
+        });
         this.loadData();
     }
 
@@ -141,7 +155,15 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
         return options;
     }
 
-    public onChangeRoles(row:any) {
+    private updateFilters() {
+        if (this._queryParams) {
+            this.roleFilterValue = this.roleFilterOption.find((o) => o.id === this._queryParams.role) || this.roleFilterOption[0];
+            this.statusFilterValue = this.statusFilterOption.find((o) => o.name === this._queryParams.status) || this.statusFilterOption[0];
+            this.searchFilter.setValue(this._queryParams.username);
+        }
+    }
+
+    public onChangeRoles(row: any) {
         this.router.navigate(['user-management', row.username]);
     }
 }

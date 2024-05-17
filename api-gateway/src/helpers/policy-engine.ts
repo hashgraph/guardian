@@ -23,7 +23,7 @@ export class PolicyEngine extends NatsService {
      * Get policy
      * @param filters
      */
-    public async getPolicy(filters): Promise<any> {
+    public async getPolicy(filters: any): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY, filters);
     }
 
@@ -654,5 +654,13 @@ export class PolicyEngine extends NatsService {
             policyId,
             owner,
         })
+    }
+
+    /**
+     * Get policy
+     * @param filters
+     */
+    public async getAssignedPolicies(filters: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_ASSIGNED_POLICIES, filters);
     }
 }

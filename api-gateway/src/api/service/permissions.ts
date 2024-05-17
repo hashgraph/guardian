@@ -4,7 +4,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, PermissionsDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, InternalException, Users } from '#helpers';
+import { Guardians, InternalException, PolicyEngine, Users } from '#helpers';
 import { WebSocketsService } from './websockets.js';
 
 @Controller('permissions')
@@ -52,6 +52,12 @@ export class PermissionsApi {
         description: 'Returns all roles.',
     })
     @ApiQuery({
+        name: 'name',
+        type: String,
+        description: 'Filter by role name',
+        example: 'name'
+    })
+    @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set'
@@ -75,13 +81,16 @@ export class PermissionsApi {
     @HttpCode(HttpStatus.OK)
     async getRoles(
         @AuthUser() user: IAuthUser,
+        @Query('name') name: string,
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
         @Response() res: any
     ): Promise<RoleDTO[]> {
         try {
             const options: any = {
-                filters: null,
+                filters: {
+                    name
+                },
                 owner: user.did,
                 pageIndex,
                 pageSize
@@ -418,6 +427,81 @@ export class PermissionsApi {
             const wsService = new WebSocketsService();
             wsService.updatePermissions(result);
             return result;
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+
+    /**
+     * Get policies
+     */
+    @Get('/users/:username/policies')
+    @Auth(
+        Permissions.PERMISSIONS_ROLE_READ
+    )
+    @ApiOperation({
+        summary: 'Return a list of all roles.',
+        description: 'Returns all roles.',
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'User Identifier',
+        required: true,
+        example: 'username'
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set'
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: RoleDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getAssignedPolicies(
+        @AuthUser() user: IAuthUser,
+        @Param('username') username: string,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Response() res: any
+    ): Promise<RoleDTO[]> {
+        let row: any;
+        const users = new Users();
+        try {
+            row = await users.getUser(username);
+        } catch (error) {
+            await InternalException(error);
+        }
+        if (!row || row.parent !== user.did) {
+            throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
+        }
+        try {
+            const options: any = {
+                filters: {
+                    owner: user.did
+                },
+                userDid: row.did,
+                pageIndex,
+                pageSize
+            };
+            const engineService = new PolicyEngine();
+            const { policies, count } = await engineService.getAssignedPolicies(options);
+            return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
             await InternalException(error);
         }

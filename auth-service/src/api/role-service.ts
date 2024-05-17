@@ -83,7 +83,7 @@ export class RoleService extends NatsService {
                     return new MessageError('Invalid load roles parameter');
                 }
 
-                const { pageIndex, pageSize, owner } = msg;
+                const { filters, pageIndex, pageSize, owner } = msg;
                 const otherOptions: any = {};
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
@@ -95,8 +95,14 @@ export class RoleService extends NatsService {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = 100;
                 }
+                const options: any = { owner };
+                if (filters) {
+                    if (filters.name) {
+                        options.name = { $regex: '.*' + filters.name + '.*' };
+                    }
+                }
 
-                const [items, count] = await new DataBaseHelper(DynamicRole).findAndCount({ owner }, otherOptions);
+                const [items, count] = await new DataBaseHelper(DynamicRole).findAndCount(options, otherOptions);
 
                 return new MessageResponse({ items, count });
             } catch (error) {

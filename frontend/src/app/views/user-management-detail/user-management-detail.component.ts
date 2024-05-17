@@ -24,6 +24,12 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     public categories: any[];
     public permissions: any[] = [];
 
+    public policyPage: any[] = [];
+    public pageIndex: number = 0;
+    public pageSize: number = 25;
+    public policyCount: number = 0;
+    public selectedIndex: number = 0;
+
     private subscription = new Subscription();
 
     constructor(
@@ -77,6 +83,14 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     private loadData() {
+        if (this.selectedIndex === 0) {
+            this.loadUser();
+        } else {
+            this.loadPolicies();
+        }
+    }
+
+    private loadUser() {
         this.loading = true;
         this.permissionsService.getUser(this.username).subscribe((user) => {
             this.target = user;
@@ -86,6 +100,23 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
                 this.permissionsGroup = []
             }
             this.updateControls();
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            this.loadError(e);
+        });
+    }
+
+    private loadPolicies() {
+        this.loading = true;
+        this.permissionsService.getPolicies(
+            this.username,
+            this.pageIndex,
+            this.pageSize
+        ).subscribe((response) => {
+            this.policyPage = response.body || [];
+            this.policyCount = parseInt(response.headers.get('X-Total-Count') as any, 10) || this.policyPage.length;
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -123,6 +154,13 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public onChangeRole() {
         this.updateControls();
+        this.onSave();
+    }
+
+    public onDeleteRole(roleId: string) {
+        this.permissionsGroup = this.permissionsGroup.filter((id) => id !== roleId);
+        this.updateControls();
+        this.onSave();
     }
 
     public goToPage() {
@@ -144,8 +182,22 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         });
     }
 
-    public onDeleteRole(roleId: string) {
-        this.permissionsGroup = this.permissionsGroup.filter((id) => id !== roleId);
-        this.updateControls();
+    public onChange(event: any) {
+        this.selectedIndex = event;
+        this.loadData();
+    }
+
+    public onPolicyPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+        this.loadData();
+    }
+
+    public assignPolicy(policy: any) {
+
     }
 }

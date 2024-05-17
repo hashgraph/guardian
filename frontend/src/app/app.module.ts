@@ -62,8 +62,6 @@ import { StandardRegistryCardComponent } from './components/standard-registry-ca
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { TokenDialogComponent } from './components/token-dialog/token-dialog.component';
-import { PermissionsDialogComponent } from './components/permissions-dialog/permissions-dialog.component';
-import { SelectRoleDialogComponent } from './components/select-role-dialog/select-role-dialog.component';
 //Modules
 import { MaterialModule } from './modules/common/material.module';
 import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module';
@@ -165,12 +163,10 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         ForgotPasswordDialogComponent,
         OnlyForDemoDirective,
         TokenDialogComponent,
-        PermissionsDialogComponent,
         UseWithServiceDirective,
         RolesViewComponent,
         UsersManagementComponent,
-        UsersManagementDetailComponent,
-        SelectRoleDialogComponent
+        UsersManagementDetailComponent
     ],
     imports: [
         BrowserModule,
