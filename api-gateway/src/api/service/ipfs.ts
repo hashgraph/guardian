@@ -1,7 +1,7 @@
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response } from '@nestjs/common';
-import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../../auth/auth.decorator.js';
 import { UserRole } from '@guardian/interfaces';
 import { CACHE } from '../../constants/index.js';
@@ -53,6 +53,13 @@ export class IpfsApi {
         UserRole.USER,
         UserRole.AUDITOR
     )
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @Post('/file/dry-run/:policyId')
     @HttpCode(HttpStatus.CREATED)
     async postFileDryRun(@Body() body: any, @Param('policyId') policyId: any): Promise<string> {
@@ -79,7 +86,7 @@ export class IpfsApi {
         summary: 'Get file from ipfs.',
         description: 'Get file from ipfs.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Get('/file/:cid')
     @HttpCode(HttpStatus.OK)
     @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })

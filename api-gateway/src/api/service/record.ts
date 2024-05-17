@@ -1,7 +1,7 @@
 import { PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { IAuthUser, Logger } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Response } from '@nestjs/common';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
@@ -48,7 +48,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Get recording or running status.',
         description: 'Get recording or running status.' + ONLY_SR,
@@ -96,7 +96,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Start recording.',
         description: 'Start recording.' + ONLY_SR,
@@ -150,7 +150,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Stop recording.',
         description: 'Stop recording.' + ONLY_SR,
@@ -211,7 +211,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Get recorded actions.',
         description: 'Get recorded actions.' + ONLY_SR,
@@ -260,7 +260,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Run record from a zip file.',
         description: 'Run record from a zip file.' + ONLY_SR,
@@ -315,7 +315,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Stop running.',
         description: 'Stop running.' + ONLY_SR,
@@ -369,7 +369,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Get running results.',
         description: 'Get running results.' + ONLY_SR,
@@ -417,7 +417,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Get running details.',
         description: 'Get running details.' + ONLY_SR,
@@ -465,7 +465,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Fast Forward.',
         description: 'Fast Forward.' + ONLY_SR,
@@ -519,7 +519,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Retry step.',
         description: 'Retry step.' + ONLY_SR,
@@ -573,7 +573,7 @@ export class RecordApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Skip step.',
         description: 'Skip step.' + ONLY_SR,

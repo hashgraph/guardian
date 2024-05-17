@@ -3,12 +3,12 @@ import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { AuthUser } from '../../auth/authorization-helper.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '../../middlewares/validation/schemas/index.js';
+import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO } from '../../middlewares/validation/schemas/index.js';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
 
@@ -24,7 +24,7 @@ export class ProfileApi {
         UserRole.USER,
         UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns user account info.',
         description: 'Returns user account information. For users with the Standard Registry role it also returns address book and VC document information.',
@@ -126,7 +126,7 @@ export class ProfileApi {
         UserRole.USER,
         UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Sets Hedera credentials for the user.',
         description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
@@ -176,7 +176,7 @@ export class ProfileApi {
         UserRole.USER,
         UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Sets Hedera credentials for the user.',
         description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
@@ -234,7 +234,7 @@ export class ProfileApi {
         UserRole.USER,
         UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns user\'s Hedera account balance.',
         description: 'Requests Hedera account balance. Only users with the Installer role are allowed to make the request.'
@@ -285,7 +285,7 @@ export class ProfileApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Restore user data (policy, DID documents, VC documents).',
         description: 'Restore user data (policy, DID documents, VC documents).'
@@ -341,7 +341,7 @@ export class ProfileApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'List of available recovery topics.',
         description: 'List of available recovery topics.'
@@ -398,7 +398,7 @@ export class ProfileApi {
         UserRole.STANDARD_REGISTRY,
         UserRole.USER
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Validate DID document format.',
         description: 'Validate DID document format.',
@@ -447,7 +447,7 @@ export class ProfileApi {
         UserRole.STANDARD_REGISTRY,
         UserRole.USER
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Validate DID document keys.',
         description: 'Validate DID document keys.',

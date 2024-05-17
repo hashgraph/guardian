@@ -1,31 +1,8 @@
 import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Req,
-    Response,
-    UseInterceptors,
-} from '@nestjs/common';
-import {
-    ApiExtraModels,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiTags,
-    ApiUnauthorizedResponse,
-    ApiForbiddenResponse,
-    getSchemaPath,
-    ApiBody,
-    ApiConsumes
-} from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response, UseInterceptors, } from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
@@ -43,7 +20,7 @@ export class ArtifactApi {
      * @param res
      */
     @Get('/')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns all artifacts.',
         description: 'Returns all artifacts.',
@@ -130,7 +107,7 @@ export class ArtifactApi {
      * Upload artifact
      */
     @Post('/:parentId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Upload artifact.',
         description: 'Upload artifact. For users with the Standard Registry role only.',
@@ -210,7 +187,7 @@ export class ArtifactApi {
      * Delete artifact
      */
     @Delete('/:artifactId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Delete artifact.',
         description: 'Delete artifact.',
