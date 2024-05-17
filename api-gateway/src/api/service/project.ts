@@ -4,7 +4,7 @@ import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Pos
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { ProjectService } from '../../helpers/projects.js';
 import { ProjectDTO, PropertiesDTO } from '../../middlewares/validation/schemas/projects.js';
-import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
+import { CompareDocumentsDTO, CompareDocumentsDTOV2, FilterDocumentsDTO, InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
 import { Guardians } from '../../helpers/guardians.js';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
@@ -175,7 +175,7 @@ export class ProjectsAPI {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: CompareDocumentsDTO
+        type: CompareDocumentsDTOV2
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
