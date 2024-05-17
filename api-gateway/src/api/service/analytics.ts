@@ -1,31 +1,8 @@
 import { Guardians } from '../../helpers/guardians.js';
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
-import {
-    ApiInternalServerErrorResponse,
-    ApiUnauthorizedResponse,
-    ApiForbiddenResponse,
-    ApiBody,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiTags
-} from '@nestjs/swagger';
+import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { UserRole } from '@guardian/interfaces';
-import {
-    FilterDocumentsDTO,
-    FilterModulesDTO,
-    FilterPoliciesDTO,
-    FilterSchemasDTO,
-    FilterSearchPoliciesDTO,
-    InternalServerErrorDTO,
-    CompareDocumentsDTO,
-    CompareModulesDTO,
-    ComparePoliciesDTO,
-    CompareSchemasDTO,
-    SearchPoliciesDTO,
-    FilterToolsDTO,
-    CompareToolsDTO
-} from '../../middlewares/validation/schemas/index.js';
+import { CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, CompareToolsDTO, FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, FilterToolsDTO, InternalServerErrorDTO, SearchPoliciesDTO } from '../../middlewares/validation/schemas/index.js';
 import { Auth } from '../../auth/auth.decorator.js';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
@@ -37,7 +14,7 @@ export class AnalyticsApi {
      * Search policies
      */
     @Post('/search/policies')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Search policies.',
         description: 'Search policies.' + ONLY_SR,
@@ -94,7 +71,7 @@ export class AnalyticsApi {
      * Compare policies
      */
     @Post('/compare/policies')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare policies.',
         description: 'Compare policies.' + ONLY_SR,
@@ -184,7 +161,7 @@ export class AnalyticsApi {
      * Compare modules
      */
     @Post('/compare/modules')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare modules.',
         description: 'Compare modules.' + ONLY_SR,
@@ -256,7 +233,7 @@ export class AnalyticsApi {
      * Compare schemas
      */
     @Post('/compare/schemas')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare schemas.',
         description: 'Compare schemas.' + ONLY_SR,
@@ -314,7 +291,7 @@ export class AnalyticsApi {
      * Compare documents
      */
     @Post('/compare/documents')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare documents.',
         description: 'Compare documents.' + ONLY_SR,
@@ -399,7 +376,7 @@ export class AnalyticsApi {
      * Compare tools
      */
     @Post('/compare/tools')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare tools.',
         description: 'Compare tools.' + ONLY_SR,
@@ -480,7 +457,7 @@ export class AnalyticsApi {
      * Compare policies (CSV)
      */
     @Post('/compare/policies/export')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare policies.',
         description: 'Compare policies.' + ONLY_SR,
@@ -569,7 +546,7 @@ export class AnalyticsApi {
      * Compare modules (CSV)
      */
     @Post('/compare/modules/export')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare modules.',
         description: 'Compare modules.' + ONLY_SR,
@@ -642,7 +619,7 @@ export class AnalyticsApi {
      * Compare schemas (CSV)
      */
     @Post('/compare/schemas/export')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare schemas.',
         description: 'Compare schemas.' + ONLY_SR,
@@ -701,7 +678,7 @@ export class AnalyticsApi {
      * Compare documents (CSV)
      */
     @Post('/compare/documents/export')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare documents.',
         description: 'Compare documents.' + ONLY_SR,
@@ -786,7 +763,7 @@ export class AnalyticsApi {
      * Compare tools (CSV)
      */
     @Post('/compare/tools/export')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Compare tools.',
         description: 'Compare tools.' + ONLY_SR,
@@ -867,7 +844,7 @@ export class AnalyticsApi {
      * Search same blocks
      */
     @Post('/search/blocks')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Search same blocks.',
         description: 'Search same blocks.' + ONLY_SR,

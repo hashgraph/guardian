@@ -16,7 +16,7 @@ export class ModulesApi {
         summary: 'Creates a new module.',
         description: 'Creates a new module. Only users with the Standard Registry role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.'
     })
@@ -48,7 +48,7 @@ export class ModulesApi {
         summary: 'Return a list of all modules.',
         description: 'Returns all modules. Only users with the Standard Registry and Installer role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiImplicitQuery({
         name: 'policyId',
         type: String,
@@ -225,7 +225,7 @@ export class ModulesApi {
         summary: 'Deletes the module with the provided module ID. Only users with the Standard Registry role are allowed to make the request.',
         description: 'Deletes the module.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Delete('/:uuid')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -250,7 +250,7 @@ export class ModulesApi {
         summary: 'Return a list of modules.',
         description: 'Returns modules menu. Only users with the Standard Registry and Installer role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'array'
@@ -290,7 +290,7 @@ export class ModulesApi {
         summary: 'Retrieves module configuration.',
         description: 'Retrieves module configuration for the specified module ID. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -334,7 +334,7 @@ export class ModulesApi {
             type: 'object'
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',
     })
@@ -372,7 +372,7 @@ export class ModulesApi {
         summary: 'Return module and its artifacts in a zip file format for the specified module.',
         description: 'Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -410,7 +410,7 @@ export class ModulesApi {
         summary: 'Return Heder message ID for the specified published module.',
         description: 'Returns the Hedera message ID for the specified module published onto IPFS. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -445,7 +445,7 @@ export class ModulesApi {
         summary: 'Imports new module from IPFS.',
         description: 'Imports new module and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -481,7 +481,7 @@ export class ModulesApi {
         summary: 'Imports new module from a zip file.',
         description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -517,7 +517,7 @@ export class ModulesApi {
         summary: 'Imports new module from IPFS.',
         description: 'Imports new module and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -553,7 +553,7 @@ export class ModulesApi {
         summary: 'Imports new module from a zip file.',
         description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -589,7 +589,7 @@ export class ModulesApi {
         summary: 'Publishes the module onto IPFS.',
         description: 'Publishes the module with the specified (internal) module ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'
@@ -625,7 +625,7 @@ export class ModulesApi {
         summary: 'Validates selected module.',
         description: 'Validates selected module. Only users with the Standard Registry role are allowed to make the request.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         schema: {
             type: 'object'

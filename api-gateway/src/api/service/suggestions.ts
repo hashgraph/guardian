@@ -15,7 +15,7 @@ export class SuggestionsApi {
         description:
             'Get next and nested suggested block types. Only users with the Standard Registry role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(
         SuggestionsInputDTO,
         SuggestionsOutputDTO,
@@ -59,7 +59,7 @@ export class SuggestionsApi {
         description:
             'Set suggestions config. Only users with the Standard Registry role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(
         SuggestionsConfigItemDTO,
         SuggestionsConfigDTO,
@@ -102,7 +102,7 @@ export class SuggestionsApi {
         description:
             'Get suggestions config. Only users with the Standard Registry role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(
         SuggestionsConfigItemDTO,
         SuggestionsConfigDTO,

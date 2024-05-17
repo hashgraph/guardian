@@ -1,40 +1,10 @@
 import { Guardians } from '../../helpers/guardians.js';
 import { ContractType, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import {
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Post,
-  Req,
-  Response,
-} from '@nestjs/common';
-import {
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiCreatedResponse,
-    ApiOperation,
-    ApiUnauthorizedResponse,
-    ApiExtraModels,
-    ApiForbiddenResponse,
-    ApiTags,
-    ApiBody,
-    ApiBearerAuth,
-    ApiQuery,
-    ApiParam,
-} from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response, } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnauthorizedResponse, } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import {
-    ContractDTO,
-    RetirePoolDTO,
-    RetirePoolTokenDTO,
-    RetireRequestDTO,
-    RetireRequestTokenDTO,
-    WiperRequestDTO,
-} from '../../middlewares/validation/schemas/contracts.js';
+import { ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, } from '../../middlewares/validation/schemas/contracts.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
 import { Auth } from '../../auth/auth.decorator.js';
 
@@ -423,7 +393,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -472,7 +442,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1020,7 +990,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1233,7 +1203,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1283,7 +1253,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1336,7 +1306,7 @@ export class ContractsApi {
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1387,7 +1357,7 @@ export class ContractsApi {
         name: 'poolId',
         type: String,
         description: 'Pool Identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1434,7 +1404,7 @@ export class ContractsApi {
         name: 'requestId',
         type: String,
         description: 'Request Identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1486,7 +1456,7 @@ export class ContractsApi {
         name: 'poolId',
         type: String,
         description: 'Pool Identifier',
-        required: false,
+        required: true,
         example: '652745597a7b53526de37c05',
     })
     @ApiOkResponse({
@@ -1763,7 +1733,9 @@ export class ContractsApi {
                 description: 'Total items in the collection.',
             },
         },
-        type: 'object',
+        schema: {
+            type: 'object'
+        },
     })
     @ApiUnauthorizedResponse({
         description: 'Unauthorized.',

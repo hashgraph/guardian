@@ -167,7 +167,7 @@ export class SingleSchemaApi {
     @Get('/:schemaId/parents')
     @HttpCode(HttpStatus.OK)
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns all parent schemas.',
         description: 'Returns all parent schemas.',
@@ -210,7 +210,7 @@ export class SingleSchemaApi {
     @Get('/:schemaId/tree')
     @HttpCode(HttpStatus.OK)
     @ApiExtraModels(InternalServerErrorDTO)
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns schema tree.',
         description: 'Returns schema tree.',
@@ -285,7 +285,7 @@ export class SchemaApi {
      * Get page
      */
     @Get('/')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return a list of all schemas.',
         description: 'Returns all schemas.',
@@ -382,7 +382,7 @@ export class SchemaApi {
      * Get page
      */
     @Get('/:topicId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return a list of all schemas.',
         description: 'Returns all schemas.',
@@ -459,7 +459,7 @@ export class SchemaApi {
      * Get schema by type
      */
     @Get('/type/:schemaType')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Finds the schema using the json document type.',
         description: 'Finds the schema using the json document type.',
@@ -519,7 +519,7 @@ export class SchemaApi {
      * Get all schemas
      */
     @Get('/list/all')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns a list of schemas.',
         description: 'Returns a list of schemas.' + ONLY_SR,
@@ -560,7 +560,7 @@ export class SchemaApi {
      * Get sub schemas
      */
     @Get('/list/sub')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns a list of schemas.',
         description: 'Returns a list of schemas.' + ONLY_SR,
@@ -618,7 +618,7 @@ export class SchemaApi {
      * Create Schema
      */
     @Post('/:topicId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Creates a new schema.',
         description: 'Creates a new schema.' + ONLY_SR,
@@ -674,7 +674,7 @@ export class SchemaApi {
      * Create Schema (Async)
      */
     @Post('/push/copy')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Copy schema.',
         description: 'Copy schema.' + ONLY_SR,
@@ -717,7 +717,7 @@ export class SchemaApi {
      * Create Schema (Async)
      */
     @Post('/push/:topicId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Creates a new schema.',
         description: 'Creates a new schema.' + ONLY_SR,
@@ -776,7 +776,7 @@ export class SchemaApi {
      * Update Schema
      */
     @Put('/')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Updates the schema.',
         description: 'Updates the schema.' + ONLY_SR,
@@ -832,7 +832,7 @@ export class SchemaApi {
      * Delete Schema
      */
     @Delete('/:schemaId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Deletes the schema with the provided schema ID.',
         description: 'Deletes the schema with the provided schema ID.' + ONLY_SR,
@@ -896,7 +896,7 @@ export class SchemaApi {
      * Publish Schema
      */
     @Put('/:schemaId/publish')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Publishes the schema with the provided schema ID.',
         description: 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
@@ -995,7 +995,7 @@ export class SchemaApi {
      * Publish Schema (Async)
      */
     @Put('/push/:schemaId/publish')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Publishes the schema with the provided schema ID.',
         description: 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
@@ -1073,7 +1073,7 @@ export class SchemaApi {
      * Preview Schema from IPFS
      */
     @Post('/import/message/preview')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Previews the schema from IPFS without loading it into the local DB.',
         description: 'Previews the schema from IPFS without loading it into the local DB.' + ONLY_SR,
@@ -1124,7 +1124,7 @@ export class SchemaApi {
      * Preview Schema from IPFS (Async)
      */
     @Post('/push/import/message/preview')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Previews the schema from IPFS without loading it into the local DB.',
         description: 'Previews the schema from IPFS without loading it into the local DB.' + ONLY_SR,
@@ -1180,7 +1180,7 @@ export class SchemaApi {
      * Preview Schema from a zip file
      */
     @Post('/import/file/preview')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Previews the schema from a zip file.',
         description: 'Previews the schema from a zip file.' + ONLY_SR,
@@ -1227,7 +1227,7 @@ export class SchemaApi {
      * Import Schema from IPFS
      */
     @Post('/:topicId/import/message')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new schema from IPFS into the local DB.',
         description: 'Imports new schema from IPFS into the local DB.' + ONLY_SR,
@@ -1302,7 +1302,7 @@ export class SchemaApi {
      * Import Schema from IPFS (Async)
      */
     @Post('/push/:topicId/import/message')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new schema from IPFS into the local DB.',
         description: 'Imports new schema from IPFS into the local DB.' + ONLY_SR,
@@ -1366,7 +1366,7 @@ export class SchemaApi {
      * Import Schema from a zip file
      */
     @Post('/:topicId/import/file')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new schema from a zip file into the local DB.',
         description: 'Imports new schema from a zip file into the local DB.' + ONLY_SR,
@@ -1434,7 +1434,7 @@ export class SchemaApi {
      * Import Schema from a zip file (Async)
      */
     @Post('/push/:topicId/import/file')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new schema from a zip file into the local DB.',
         description: 'Imports new schema from a zip file into the local DB.' + ONLY_SR,
@@ -1488,7 +1488,7 @@ export class SchemaApi {
     }
 
     @Get('/:schemaId/export/message')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns Hedera message IDs of the published schemas.',
         description: 'Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files.' + ONLY_SR,
@@ -1540,7 +1540,7 @@ export class SchemaApi {
     }
 
     @Get('/:schemaId/export/file')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns schema files for the schema.',
         description: 'Returns schema files for the schema.' + ONLY_SR,
@@ -1599,7 +1599,7 @@ export class SchemaApi {
      * Create system schema
      */
     @Post('/system/:username')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Creates a new system schema.',
         description: 'Creates a new system schema.' + ONLY_SR
@@ -1661,7 +1661,7 @@ export class SchemaApi {
      * Get system schemas page
      */
     @Get('/system/:username')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return a list of all system schemas.',
         description: 'Returns all system schemas.' + ONLY_SR
@@ -1736,7 +1736,7 @@ export class SchemaApi {
      * Delete system schema
      */
     @Delete('/system/:schemaId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Deletes the system schema with the provided schema ID.',
         description: 'Deletes the system schema with the provided schema ID.' + ONLY_SR,
@@ -1791,7 +1791,7 @@ export class SchemaApi {
      * Update system schema
      */
     @Put('/system/:schemaId')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Updates the system schema.',
         description: 'Updates the system schema.' + ONLY_SR,
@@ -1854,7 +1854,7 @@ export class SchemaApi {
      * Makes the selected scheme active.
      */
     @Put('/system/:schemaId/active')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Makes the selected scheme active. Other schemes of the same type become inactive',
         description: 'Makes the selected scheme active. Other schemes of the same type become inactive' + ONLY_SR,
@@ -1907,7 +1907,7 @@ export class SchemaApi {
      * Finds the schema by entity.
      */
     @Get('/system/entity/:schemaEntity')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Finds the schema using the schema type.',
         description: 'Finds the schema using the schema type.',
@@ -1965,7 +1965,7 @@ export class SchemaApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return schemas in a xlsx file format for the specified policy.',
         description: 'Returns a xlsx file containing schemas.' + ONLY_SR,
@@ -2020,7 +2020,7 @@ export class SchemaApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new schema from a xlsx file into the local DB.',
         description: 'Imports new schema from a xlsx file into the local DB.' + ONLY_SR,
@@ -2085,7 +2085,7 @@ export class SchemaApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new schema from a xlsx file into the local DB.',
         description: 'Imports new schema from a xlsx file into the local DB.' + ONLY_SR,
@@ -2147,7 +2147,7 @@ export class SchemaApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Previews the schema from a xlsx file.',
         description: 'Previews the schema from a xlsx file.' + ONLY_SR,
@@ -2197,7 +2197,7 @@ export class SchemaApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Returns a list of schemas.',
         description: 'Returns a list of schemas.' + ONLY_SR,

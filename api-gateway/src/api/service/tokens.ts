@@ -5,32 +5,8 @@ import { PolicyEngine } from '../../helpers/policy-engine.js';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
 import { prepareValidationResponse } from '../../middlewares/validation/index.js';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Put,
-    Req,
-    Response,
-} from '@nestjs/common';
-import {
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiUnauthorizedResponse,
-    ApiExtraModels,
-    ApiForbiddenResponse,
-    ApiTags,
-    ApiBearerAuth,
-    ApiParam,
-    ApiBody,
-    ApiSecurity,
-    ApiUnprocessableEntityResponse,
-} from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiSecurity, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse, } from '@nestjs/swagger';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
 import { Auth } from '../../auth/auth.decorator.js';
 
@@ -197,7 +173,7 @@ export class TokensApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Update token.',
         description: 'Update token. Only users with the Standard Registry role are allowed to make the request.',
@@ -297,6 +273,13 @@ export class TokensApi {
     }
 
     @Delete('/push/:tokenId')
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
     async deleteTokenAsync(@Req() req, @Response() res): Promise<any> {

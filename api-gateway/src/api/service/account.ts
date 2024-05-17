@@ -203,7 +203,7 @@ export class AccountApi {
             'Registry and Auditor. Only users with the Standard ' +
             'Registry role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -256,7 +256,7 @@ export class AccountApi {
         summary: 'Returns all Standard Registries.',
         description: 'Returns all Standard Registries.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -312,7 +312,7 @@ export class AccountApi {
         summary: 'Returns all Standard Registries aggregated with polices and vcDocuments.',
         description: 'Returns all Standard Registries aggregated with polices and vcDocuments'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -380,7 +380,7 @@ export class AccountApi {
         summary: 'Returns user\'s Hedera account balance.',
         description: 'Requests current Hedera account balance.'
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',

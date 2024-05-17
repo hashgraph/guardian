@@ -28,7 +28,7 @@ export class PolicyApi {
         summary: 'Return a list of all policies.',
         description: 'Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiImplicitQuery({
         name: 'pageIndex',
         type: Number,
@@ -53,7 +53,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Get('/')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)
@@ -117,7 +117,7 @@ export class PolicyApi {
         summary: 'Creates a new policy.',
         description: 'Creates a new policy.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -130,7 +130,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/')
     @HttpCode(HttpStatus.CREATED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -179,7 +179,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/migrate-data')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -219,7 +219,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/push/migrate-data')
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -241,7 +241,7 @@ export class PolicyApi {
         summary: 'Creates a new policy.',
         description: 'Creates a new policy.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -254,7 +254,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/push')
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -274,7 +274,7 @@ export class PolicyApi {
     }
 
     @ApiOperation({})
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -287,7 +287,13 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @Post('/push/:policyId')
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -307,8 +313,14 @@ export class PolicyApi {
         return res.status(202).send(task);
     }
 
-    @ApiSecurity('bearerAuth')
     @Delete('/push/:policyId')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
     async deletePolicyAsync(@Req() req, @Response() res): Promise<any> {
@@ -330,7 +342,7 @@ export class PolicyApi {
         summary: 'Retrieves policy configuration.',
         description: 'Retrieves policy configuration for the specified policy ID.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -343,7 +355,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Get('/:policyId')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)
@@ -367,7 +379,7 @@ export class PolicyApi {
         summary: 'Updates policy configuration.',
         description: 'Updates policy configuration for the specified policy ID.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -380,7 +392,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Put('/:policyId')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -422,7 +434,7 @@ export class PolicyApi {
         summary: 'Publishes the policy onto IPFS.',
         description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -435,7 +447,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Put('/:policyId/publish')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -453,7 +465,7 @@ export class PolicyApi {
         summary: 'Publishes the policy onto IPFS.',
         description: 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -466,7 +478,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Put('/push/:policyId/publish')
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -491,7 +503,7 @@ export class PolicyApi {
         summary: 'Dry Run policy.',
         description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -504,7 +516,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Put('/:policyId/dry-run')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -534,12 +546,12 @@ export class PolicyApi {
             type: 'object',
             properties: {
                 'date': {
-                    type: 'date'
+                    type: 'object'
                 }
             }
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Policies.',
         schema: {
@@ -555,7 +567,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Put('/:policyId/discontinue')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -573,7 +585,7 @@ export class PolicyApi {
         summary: 'Dry Run policy.',
         description: 'Run policy without making any persistent changes or executing transaction.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -586,7 +598,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Put('/:policyId/draft')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -604,7 +616,7 @@ export class PolicyApi {
         summary: 'Validates policy.',
         description: 'Validates selected policy.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -617,7 +629,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/validate')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -639,7 +651,7 @@ export class PolicyApi {
         summary: 'Returns a policy navigation.',
         description: 'Returns a policy navigation.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -652,7 +664,13 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @Get('/:policyId/navigation')
     @HttpCode(HttpStatus.OK)
     // @UseCache()
@@ -675,7 +693,7 @@ export class PolicyApi {
         summary: 'Returns a list of groups the user is a member of.',
         description: 'Returns a list of groups the user is a member of.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -688,7 +706,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Get('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
     // @UseCache()
@@ -733,7 +751,6 @@ export class PolicyApi {
         name: 'pageSize',
         type: 'number'
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Documents.',
         schema: {
@@ -744,7 +761,10 @@ export class PolicyApi {
         },
         headers: {
             'X-Total-Count': {
-                description: 'Total documents count.'
+                description: 'Total documents count.',
+                schema: {
+                    type: 'integer'
+                }
             }
         }
     })
@@ -754,7 +774,6 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
     @Get('/:policyId/documents')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -786,7 +805,7 @@ export class PolicyApi {
         name: 'policyId',
         required: true
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Policy data.',
         schema: {
@@ -800,7 +819,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Get('/:policyId/data')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -838,7 +857,7 @@ export class PolicyApi {
         description: 'Upload policy data.' + ONLY_SR,
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiBody({
         description: 'Policy data file',
         schema: {
@@ -858,7 +877,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/data')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -885,7 +904,7 @@ export class PolicyApi {
         name: 'policyId',
         required: true
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Policy tag block map.',
         schema: {
@@ -898,7 +917,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Get('/:policyId/tag-block-map')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -928,7 +947,7 @@ export class PolicyApi {
         name: 'policyId',
         required: true
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Policy virtual keys.',
         schema: {
@@ -942,7 +961,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Get('/:policyId/virtual-keys')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -985,7 +1004,7 @@ export class PolicyApi {
         name: 'policyId',
         required: true
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiBody({
         description: 'Virtual keys file',
         schema: {
@@ -1002,7 +1021,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/:policyId/virtual-keys')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -1027,7 +1046,7 @@ export class PolicyApi {
         summary: 'Makes the selected group active.',
         description: 'Makes the selected group active. if UUID is not set then returns the user to the default state.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1040,7 +1059,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/:policyId/groups')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
@@ -1062,7 +1081,7 @@ export class PolicyApi {
         summary: 'Retrieves data for the policy root block.',
         description: 'Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1075,7 +1094,13 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @Get('/:policyId/blocks')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
@@ -1093,7 +1118,6 @@ export class PolicyApi {
         summary: 'Requests block data.',
         description: 'Requests block data. Only users with a role that described in block are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1106,7 +1130,20 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: String,
+        description: 'Block identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @Get('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
@@ -1124,7 +1161,6 @@ export class PolicyApi {
         summary: 'Sends data to the specified block.',
         description: 'Sends data to the specified block.',
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1137,7 +1173,20 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: String,
+        description: 'Block identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @Post('/:policyId/blocks/:uuid')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
@@ -1157,7 +1206,6 @@ export class PolicyApi {
         summary: 'Sends data to the specified block.',
         description: 'Sends data to the specified block.',
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1170,7 +1218,20 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: String,
+        description: 'Policy block tag',
+        required: true,
+        example: 'someTag',
+    })
     @Post('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
@@ -1188,7 +1249,6 @@ export class PolicyApi {
         summary: 'Requests block data.',
         description: 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1201,7 +1261,20 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: String,
+        description: 'Policy block tag',
+        required: true,
+        example: 'someTag',
+    })
     @Get('/:policyId/tag/:tagName')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
@@ -1219,7 +1292,6 @@ export class PolicyApi {
         summary: 'Requests block data.',
         description: 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1232,7 +1304,20 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'tagName',
+        type: String,
+        description: 'Policy block tag',
+        required: true,
+        example: 'someTag',
+    })
     @Get('/:policyId/tag/:tagName/blocks')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
@@ -1247,6 +1332,20 @@ export class PolicyApi {
     }
 
     @Get('/:policyId/blocks/:uuid/parents')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: String,
+        description: 'Block identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY, UserRole.USER)
     async getBlockParents(@Req() req, @Response() res): Promise<any> {
@@ -1266,7 +1365,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return policy and its artifacts in a zip file format for the specified policy.',
         description: 'Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
@@ -1321,7 +1420,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return Heder message ID for the specified published policy.',
         description: 'Returns the Hedera message ID for the specified policy published onto IPFS.' + ONLY_SR,
@@ -1371,7 +1470,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return policy and its artifacts in a xlsx file format for the specified policy.',
         description: 'Returns a xlsx file containing the published policy and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
@@ -1423,7 +1522,7 @@ export class PolicyApi {
         summary: 'Imports new policy from IPFS.',
         description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1436,7 +1535,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/import/message')
     @HttpCode(HttpStatus.CREATED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -1464,7 +1563,7 @@ export class PolicyApi {
         summary: 'Imports new policy from IPFS.',
         description: 'Imports new policy and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1477,7 +1576,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/push/import/message')
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -1516,7 +1615,7 @@ export class PolicyApi {
         summary: 'Policy preview from IPFS.',
         description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1529,7 +1628,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/import/message/preview')
     @HttpCode(HttpStatus.OK)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -1547,7 +1646,7 @@ export class PolicyApi {
         summary: 'Policy preview from IPFS.',
         description: 'Previews the policy from IPFS without loading it into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
@@ -1560,7 +1659,7 @@ export class PolicyApi {
             $ref: getSchemaPath(InternalServerErrorDTO)
         }
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @Post('/push/import/message/preview')
     @HttpCode(HttpStatus.ACCEPTED)
     @Auth(UserRole.STANDARD_REGISTRY)
@@ -1587,7 +1686,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new policy from a zip file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
@@ -1643,7 +1742,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new policy from a zip file with metadata.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
@@ -1728,7 +1827,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new policy from a zip file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
@@ -1786,7 +1885,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new policy from a zip file with metadata.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
@@ -1878,7 +1977,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Policy preview from a zip file.',
         description: 'Previews the policy from a zip file without loading it into the local DB.' + ONLY_SR,
@@ -1928,7 +2027,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new policy from a xlsx file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB.' + ONLY_SR,
@@ -1986,7 +2085,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new policy from a xlsx file.',
         description: 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided xlsx file into the local DB.' + ONLY_SR,
@@ -2047,7 +2146,7 @@ export class PolicyApi {
     @Auth(
         UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Policy preview from a xlsx file.',
         description: 'Previews the policy from a xlsx file without loading it into the local DB.' + ONLY_SR,

@@ -16,7 +16,7 @@ export class NotificationsApi {
         summary: 'Get all notifications',
         description: 'Returns all notifications.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
@@ -30,6 +30,9 @@ export class NotificationsApi {
         headers: {
             'X-Total-Count': {
                 description: 'Count of notifications',
+                schema: {
+                    type: 'integer'
+                }
             },
         },
     })
@@ -42,7 +45,6 @@ export class NotificationsApi {
             $ref: getSchemaPath(InternalServerErrorDTO),
         },
     })
-    @ApiBearerAuth()
     @UseGuards(AuthGuard)
     @Get('/')
     @HttpCode(HttpStatus.OK)
@@ -71,7 +73,7 @@ export class NotificationsApi {
         summary: 'Get new notifications',
         description: 'Returns new notifications.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
@@ -115,7 +117,7 @@ export class NotificationsApi {
         summary: 'Get progresses',
         description: 'Returns progresses.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(ProgressDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
@@ -157,7 +159,7 @@ export class NotificationsApi {
         summary: 'Read all notifications',
         description: 'Returns new notifications.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description:
@@ -199,7 +201,7 @@ export class NotificationsApi {
         summary: 'Delete notifications up to this point',
         description: 'Returns deleted notifications count.',
     })
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
         name: 'notificationId',

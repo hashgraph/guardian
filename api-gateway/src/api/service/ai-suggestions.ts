@@ -1,9 +1,8 @@
 import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Req } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { AISuggestions } from '../../helpers/ai-suggestions.js';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
 
 /**
@@ -30,7 +29,7 @@ export class AISuggestionsAPI {
             example: 'ACM0001, ACM0002, ACM0006, ACM0007, ACM0018'
         },
     })
-    @ApiImplicitParam({
+    @ApiQuery({
         name: 'q',
         type: String,
         description: 'The question of choosing a methodology',

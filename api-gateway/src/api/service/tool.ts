@@ -1,31 +1,8 @@
 import { Logger, RunFunctionAsync } from '@guardian/common';
 import { Guardians } from '../../helpers/guardians.js';
-import {
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-  Post,
-  Put,
-  Req,
-  Response,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response, UseInterceptors, } from '@nestjs/common';
 import { TaskAction, UserRole } from '@guardian/interfaces';
-import {
-    ApiBody,
-    ApiConsumes,
-    ApiForbiddenResponse,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiTags,
-    ApiUnauthorizedResponse,
-    getSchemaPath
-} from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
 import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
 import { TaskManager } from '../../helpers/task-manager.js';
 import { ServiceError } from '../../helpers/service-requests-base.js';
@@ -35,7 +12,9 @@ import { UseCache } from '../../helpers/decorators/cache.js';
 import { Auth } from '../../auth/auth.decorator.js';
 import { AnyFilesInterceptor } from '../../helpers/interceptors/multipart.js';
 import { UploadedFiles } from '../../helpers/decorators/file.js';
-import { MultipartFile } from '../../helpers/interceptors/types/index.js';;
+import { MultipartFile } from '../../helpers/interceptors/types/index.js';
+
+;
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -46,7 +25,7 @@ export class ToolsApi {
      * Create new tool
      */
     @Post('/')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Creates a new tool.',
         description: 'Creates a new tool.' + ONLY_SR,
@@ -84,7 +63,7 @@ export class ToolsApi {
      * Create new tool (Async)
      */
     @Post('/push')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Creates a new tool.',
         description: 'Creates a new tool.' + ONLY_SR,
@@ -130,7 +109,7 @@ export class ToolsApi {
      * Get page
      */
     @Get('/')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return a list of all tools.',
         description: 'Returns all tools.' + ONLY_SR,
@@ -189,7 +168,7 @@ export class ToolsApi {
      * Delete tool
      */
     @Delete('/:id')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Deletes the tool with the provided tool ID.' + ONLY_SR,
         description: 'Deletes the tool.'
@@ -230,7 +209,7 @@ export class ToolsApi {
      * Get tool by id
      */
     @Get('/:id')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Retrieves tool configuration.',
         description: 'Retrieves tool configuration for the specified tool ID.' + ONLY_SR
@@ -280,7 +259,7 @@ export class ToolsApi {
      * Update tool
      */
     @Put('/:id')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Updates tool configuration.',
         description: 'Updates tool configuration for the specified tool ID.' + ONLY_SR
@@ -334,7 +313,7 @@ export class ToolsApi {
      * Publish tool
      */
     @Put('/:id/publish')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Publishes the tool onto IPFS.',
         description: 'Publishes the tool with the specified (internal) tool ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR
@@ -381,7 +360,7 @@ export class ToolsApi {
      * Publish tool (Async)
      */
     @Put('/:id/push/publish')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Publishes the tool onto IPFS.',
         description: 'Publishes the tool with the specified (internal) tool ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR
@@ -431,7 +410,7 @@ export class ToolsApi {
      * Validate tool
      */
     @Post('/validate')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Validates selected tool.',
         description: 'Validates selected tool.' + ONLY_SR
@@ -469,7 +448,7 @@ export class ToolsApi {
      * Export tool in file
      */
     @Get('/:id/export/file')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return tool and its artifacts in a zip file format for the specified tool.',
         description: 'Returns a zip file containing the published tool and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR
@@ -515,7 +494,7 @@ export class ToolsApi {
      * Export tool in message
      */
     @Get('/:id/export/message')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return Heder message ID for the specified published tool.',
         description: 'Returns the Hedera message ID for the specified tool published onto IPFS.' + ONLY_SR
@@ -561,7 +540,7 @@ export class ToolsApi {
      * Preview tool from IPFS
      */
     @Post('/import/message/preview')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from IPFS.',
         description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
@@ -601,7 +580,7 @@ export class ToolsApi {
      * Import tool from IPFS
      */
     @Post('/import/message')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from IPFS.',
         description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
@@ -641,7 +620,7 @@ export class ToolsApi {
      * Preview tool from file
      */
     @Post('/import/file/preview')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
@@ -681,7 +660,7 @@ export class ToolsApi {
      * Import tool from IPFS
      */
     @Post('/import/file')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
@@ -721,7 +700,7 @@ export class ToolsApi {
      * Import tool from file with metadata
      */
     @Post('/import/file-metadata')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
@@ -797,7 +776,7 @@ export class ToolsApi {
      * Import tool from IPFS (Async)
      */
     @Post('/push/import/file')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description: 'Imports new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR
@@ -847,7 +826,7 @@ export class ToolsApi {
      * Import tool from file with metadata (Async)
      */
     @Post('/push/import/file-metadata')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from a zip file.',
         description:
@@ -942,7 +921,7 @@ export class ToolsApi {
      * Import tool from IPFS (Async)
      */
     @Post('/push/import/message')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Imports new tool from IPFS.',
         description: 'Imports new tool and all associated artifacts from IPFS into the local DB.' + ONLY_SR
@@ -992,14 +971,17 @@ export class ToolsApi {
      * Policy config menu
      */
     @Get('/menu/all')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Return a list of tools.',
         description: 'Returns tools menu.' + ONLY_SR
     })
     @ApiOkResponse({
         schema: {
-            type: 'array'
+            type: 'array',
+            items: {
+                type: 'object'
+            }
         }
     })
     @ApiUnauthorizedResponse({
