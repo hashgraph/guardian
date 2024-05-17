@@ -1,9 +1,9 @@
 import { Permissions } from '@guardian/interfaces';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException, AnyFilesInterceptor } from '#helpers';
+import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 
 @Controller('artifacts')

@@ -1,10 +1,9 @@
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile } from '#helpers';
+import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
 @Controller('tools')

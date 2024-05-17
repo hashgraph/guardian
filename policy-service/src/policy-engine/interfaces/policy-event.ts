@@ -1,4 +1,4 @@
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';

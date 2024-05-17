@@ -5,7 +5,7 @@ import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as Sc
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 import { DocumentType } from '../interfaces/document.type.js';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 
 /**
  * Policy engine utils

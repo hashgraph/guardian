@@ -1,12 +1,11 @@
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UploadedFiles, UseInterceptors, } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';
 import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader } from '#middlewares';
-import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR } from '#helpers';
+import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles } from '#helpers';
 
 @Controller('policies')
 @ApiTags('policies')
@@ -1949,7 +1948,7 @@ export class PolicyApi {
      */
     @Post('/import/file-metadata')
     @Auth(
-        Permissions.POLICIES_MIGRATION_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -2075,7 +2074,7 @@ export class PolicyApi {
      */
     @Post('/push/import/file-metadata')
     @Auth(
-        Permissions.POLICIES_MIGRATION_CREATE,
+        Permissions.POLICIES_POLICY_CREATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
