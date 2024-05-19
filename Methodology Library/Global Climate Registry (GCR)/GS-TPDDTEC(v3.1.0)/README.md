@@ -32,22 +32,21 @@ Global Climate Registry (GCR) has built this Guardian Policy that tokenizes the 
 [Youtube](https://youtu.be/nOQpLmbW0hA)
 
 ## Policy Workflow Through GCR Platform
-  
- <img width="1128" alt="image" src="https://user-images.githubusercontent.com/9518151/229273768-9fdd71c9-8bf6-41e8-b6ee-f494145fe0e5.png">
+
+![TPDDTEC guardian policy workflow on GCR platform](https://github.com/saharshkhicha18/guardian/assets/71884962/5ded013e-23ac-4e38-8a6a-7637252d8f24)
+
 
 ## Policy Guide
 
 This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
 
-Latest Version - 0.0.3
-Hedera Topic - [0.0.3972127](https://explore.lworks.io/testnet/topics/0.0.3972127)
-
+Hedera Topic (testnet) - [0.0.4234489](https://explore.lworks.io/testnet/topics/0.0.4234489)
 
 ### Available Roles 
  
-  - Project Developer - Project developer who proposes and executes cookstove project and receives credits
-  - VVB(Validation & Verification Body) - Independent third party who audits project's critical documentation and monitoring reports and submits validation and verification reports before issuance of the credits
-  - Global Climate Registry(GCR) - GCR is the trusted registry overseeing the entire project cycle and issuing the credits.
+  - Project Developer - Project developer who proposes and executes carbon offset project relevent to the methodology and receives credits
+  - Validation & Verification Body(VVB) - Independent third party who audits project's critical documentation and monitoring reports and submits validation and verification reports before issuance of the credits
+  - Global Climate Registry(GCR) - GCR is the trusted registry overseeing the entire project design, development and execution cycle and issuing the credits.
   
 ### Important Documents & Schemas 
   
