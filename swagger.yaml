@@ -10573,6 +10573,13 @@ paths:
       summary: Return a list of all roles.
       description: Returns all roles.
       parameters:
+        - name: name
+          required: true
+          in: query
+          description: Filter by role name
+          example: name
+          schema:
+            type: string
         - name: pageIndex
           required: true
           in: query
@@ -10855,6 +10862,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserRolesDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_17
+      security:
+        - bearer: []
+  /permissions/users/{username}/policies:
+    get:
+      operationId: PermissionsApi_getAssignedPolicies
+      summary: Return a list of all roles.
+      description: Returns all roles.
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: User Identifier
+          example: username
+          schema:
+            type: string
+        - name: pageIndex
+          required: true
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            type: number
+        - name: pageSize
+          required: true
+          in: query
+          description: The numbers of items to return
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleDTO'
         '401':
           description: Unauthorized
         '403':
