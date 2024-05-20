@@ -105,15 +105,8 @@ Formulas have been incorporated in the methodology in order to calculate baselin
     <img width="1598" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/53b77da1-d12d-48d8-aa78-230681b8c9f2">
 
 
-5. Once a monitoring report is approved by VVB, project proponent can request corresponding carbon credits(VER in this case) to be credited in their account. It would need a VC document ID for both monitoring report and it's approved review by VVB.
+5. After VVB has approved the PDD and submitted a Validation Report. The credit minting request will be sent to the registry admin. Registry will review the Verification report and choose to mint the amount of credits suggested by the VVB or adjust the amount. Registry admin can also reject the request. Once approved by the registry, minted status will be shown and credits will be issued in the hedera account of the project developer
 
-    <img width="1391" alt="image" src="https://user-images.githubusercontent.com/9518151/229290181-ba076abf-7e34-4eb5-aca3-f748f6b4b427.png">
-
-    <img width="582" alt="image" src="https://user-images.githubusercontent.com/9518151/229290262-c8087ed3-263b-4adc-b12f-9e06d2527a23.png">
-
-6. Once registry reviews and approves the credit request, they'll be credited into the hedera account provided by project proponent. This is represented by successful minted status.
-
-    <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229290452-b6346557-4cb6-44dc-a653-43a6b8a0786a.png">
 
 
 #### VVB Flow 
@@ -136,7 +129,7 @@ VVB is the external independent third party responsible for reviewing Project De
     <img width="1551" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/7a961093-7a80-4010-9f32-c4fc8ee87bd6">
 
 
-3. After PDD has been approved and  validation report has been sent by the VVB, project developer will submit monitoring reports and assign to the VVB for review. VVB can review and submit the Verification report in response of MR if approved
+3. After PDD has been approved and  validation report has been sent by the VVB, project developer will submit monitoring reports and assign to the VVB for review. VVB can review and submit the Verification report in response of MR if approved. Verification Report will be sent to the project developer as well as the registry admin for review
 
     <img width="1598" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/03994271-eafd-4174-b2b1-bf2cf5d30f58">
 
