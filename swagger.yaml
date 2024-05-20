@@ -9598,7 +9598,7 @@ paths:
         - projects
   /projects/compare/documents:
     post:
-      operationId: ProjectsAPI_compareDocuments
+      operationId: ProjectsAPI_compareDocumentsV2
       summary: Compare documents.
       description: Compare documents.
       parameters: []
@@ -9625,7 +9625,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompareDocumentsDTO'
+                $ref: '#/components/schemas/CompareDocumentsDTOV2'
         '500':
           description: Internal server error.
           content:
@@ -11724,6 +11724,16 @@ components:
         - title
         - companyName
         - sectoralScope
+    CompareDocumentsDTOV2:
+      type: object
+      properties:
+        projects:
+          $ref: '#/components/schemas/CompareDocumentsDTO'
+        presentations:
+          $ref: '#/components/schemas/CompareDocumentsDTO'
+      required:
+        - projects
+        - presentations
     PropertiesDTO:
       type: object
       properties:

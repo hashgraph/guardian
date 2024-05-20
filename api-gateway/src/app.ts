@@ -10,7 +10,7 @@ import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { HttpStatus, ValidationPipe } from '@nestjs/common';
+import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
 import { SwaggerModels, SwaggerPaths } from './old-descriptions.js';
@@ -42,6 +42,10 @@ Promise.all([
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ]
             },
+        });
+        app.enableVersioning({
+            type: VersioningType.HEADER,
+            header: 'Api-Version',
         });
         app.useGlobalPipes(new ValidationPipe({
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY

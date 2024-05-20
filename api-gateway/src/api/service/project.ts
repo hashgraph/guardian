@@ -1,10 +1,10 @@
 import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Req, Response } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Req, Response, Version } from '@nestjs/common';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { ProjectService } from '../../helpers/projects.js';
 import { ProjectDTO, PropertiesDTO } from '../../middlewares/validation/schemas/projects.js';
-import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
+import { CompareDocumentsDTO, CompareDocumentsDTOV2, FilterDocumentsDTO, InternalServerErrorDTO } from '../../middlewares/validation/schemas/index.js';
 import { Guardians } from '../../helpers/guardians.js';
 import { CACHE } from '../../constants/index.js';
 import { UseCache } from '../../helpers/decorators/cache.js';
@@ -98,7 +98,92 @@ export class ProjectsAPI {
         type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
-    async compareDocuments(@Body() body, @Req() req): Promise<any> {
+    async compareDocumentsV1(@Body() body, @Req() req): Promise<any> {
+        const guardians = new Guardians();
+        const documentId1 = body ? body.documentId1 : null;
+        const documentId2 = body ? body.documentId2 : null;
+        const documentIds = body ? body.documentIds : null;
+        let ids: string[];
+        if (documentId1 && documentId2) {
+            ids = [documentId1, documentId2];
+        } else if (Array.isArray(documentIds) && documentIds.length > 1) {
+            ids = documentIds;
+        }
+        if (!ids) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        const idLvl = 0;
+        const eventsLvl = 0;
+        const propLvl = 2;
+        const childrenLvl = 0;
+        const user = null;
+
+        let samePolicy: boolean = true;
+        const _data = await guardians.getVcDocuments({id: ids});
+        for (let index = 1; index < _data.length; index++) {
+            if (_data[index - 1].policyId !== _data[index].policyId) {
+                samePolicy = false;
+                break;
+            }
+        }
+
+        const refLvl = samePolicy ? 'Revert' : 'Merge';
+        const keyLvl = samePolicy ? 'Default' : 'Property';
+        try {
+            return await guardians.compareDocuments(
+                user,
+                null,
+                ids,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl,
+                keyLvl,
+                refLvl
+            );
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Compare documents
+     */
+    @Post('/compare/documents')
+    @ApiOperation({
+        summary: 'Compare documents.',
+        description: 'Compare documents.',
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterDocumentsDTO,
+        examples: {
+            Filter1: {
+                value: {
+                    documentId1: '000000000000000000000001',
+                    documentId2: '000000000000000000000002'
+                }
+            },
+            Filter2: {
+                value: {
+                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: CompareDocumentsDTOV2
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @Version('2')
+    @HttpCode(HttpStatus.OK)
+    async compareDocumentsV2(@Body() body, @Req() req): Promise<any> {
         const guardians = new Guardians();
         const documentId1 = body ? body.documentId1 : null;
         const documentId2 = body ? body.documentId2 : null;
@@ -128,10 +213,37 @@ export class ProjectsAPI {
             }
         }
 
+        const policyIds = _data.map((p: any) => p.policyId);
+        const vpDocuments = await Promise.all(policyIds.map(async (id) => {
+            const documents = await guardians.getVpDocuments({
+                filters: {policyId: id}
+            });
+            return documents.items
+        }))
+
+        const minLength = Math.min.apply(null, vpDocuments.map(d => d.length));
+
         const refLvl = samePolicy ? 'Revert' : 'Merge';
         const keyLvl = samePolicy ? 'Default' : 'Property';
+
         try {
-            return await guardians.compareDocuments(
+            const comparationVpArray = [];
+
+            for (let index = 0; index < minLength; index++) {
+                comparationVpArray.push(await guardians.compareDocuments(
+                    user,
+                    null,
+                    vpDocuments.map(d => d[index].id),
+                    '1',
+                    '2',
+                    '2',
+                    '0',
+                    0,
+                    'Direct'
+                ))
+            }
+
+            const comparationVc = await guardians.compareDocuments(
                 user,
                 null,
                 ids,
@@ -142,6 +254,12 @@ export class ProjectsAPI {
                 keyLvl,
                 refLvl
             );
+
+            return {
+                projects: comparationVc,
+                presentations: comparationVpArray
+            }
+
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
