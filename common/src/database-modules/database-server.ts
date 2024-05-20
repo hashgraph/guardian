@@ -35,9 +35,11 @@ import {
     PolicyCache,
     PolicyCacheData,
     RetirePool,
+    AssignEntity,
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
+    AssignedEntityType,
     GenerateUUIDv4,
     IVC,
     MintTransactionStatus,
@@ -133,7 +135,7 @@ export class DatabaseServer {
         console.log(this);
         await DatabaseServer.clearDryRun(this.dryRun);
         // Clear files
-        const files = await new DataBaseHelper(DryRunFiles).find({policyId: this.dryRun});
+        const files = await new DataBaseHelper(DryRunFiles).find({ policyId: this.dryRun });
         await Promise.all(files.map(file => new DataBaseHelper(DryRunFiles).remove(file)));
     }
 
@@ -1890,18 +1892,18 @@ export class DatabaseServer {
         });
         const serials = vpDocument.serials
             ? vpDocument.serials.map((serial) => ({
-                  serial,
-                  tokenId: vpDocument.tokenId,
-              }))
+                serial,
+                tokenId: vpDocument.tokenId,
+            }))
             : [];
         let amount = Number.isFinite(Number(vpDocument.amount))
             ? Number(vpDocument.amount)
             : serials.length;
         const transferSerials = vpDocument.serials
             ? vpDocument.serials.map((serial) => ({
-                  serial,
-                  tokenId: vpDocument.tokenId,
-              }))
+                serial,
+                tokenId: vpDocument.tokenId,
+            }))
             : [];
         let transferAmount = amount;
         const errors = [];
@@ -3389,5 +3391,54 @@ export class DatabaseServer {
      */
     public static async getDidDocument(did: string): Promise<DidDocumentCollection | null> {
         return await (new DataBaseHelper(DidDocumentCollection)).findOne({ did });
+    }
+
+    /**
+     * Assign entity
+     * @param type
+     * @param entityId
+     * @param assigned
+     * @param did
+     */
+    public static async assignEntity(type: AssignedEntityType, entityId: string, assigned: boolean, did: string): Promise<AssignEntity> {
+        const item = new DataBaseHelper(AssignEntity).create({ type, entityId, assigned, did });
+        return await new DataBaseHelper(AssignEntity).save(item);
+    }
+
+    /**
+     * Check entity
+     * @param type
+     * @param entityId
+     * @param did
+     */
+    public static async getAssignedEntity(type: AssignedEntityType, entityId: string, did: string): Promise<AssignEntity | null> {
+        return await (new DataBaseHelper(AssignEntity)).findOne({ type, entityId, did });
+    }
+
+    /**
+     * Get assigned entities
+     * @param did
+     * @param type
+     */
+    public static async getAssignedEntities(did: string, type?: AssignedEntityType): Promise<AssignEntity[]> {
+        if (type) {
+            return await (new DataBaseHelper(AssignEntity)).find({ type, did });
+        } else {
+            return await (new DataBaseHelper(AssignEntity)).find({ did });
+        }
+    }
+
+    /**
+     * Remove assign entity
+     * @param type
+     * @param entityId
+     * @param did
+     */
+    public static async removeAssignEntity(type: AssignedEntityType, entityId: string, did: string): Promise<boolean> {
+        const item = await (new DataBaseHelper(AssignEntity)).findOne({ type, entityId, did });
+        if (item) {
+            await (new DataBaseHelper(AssignEntity)).remove(item);
+        }
+        return true;
     }
 }

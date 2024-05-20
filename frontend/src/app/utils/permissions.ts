@@ -21,7 +21,8 @@ export class PermissionsUtils {
         ['TOKENS', 'Tokens'],
         ['AUDIT', 'Audit'],
         ['TOOLS', 'Tools'],
-        ['PERMISSIONS', 'Permissions']
+        ['PERMISSIONS', 'Permissions'],
+        ['ACCESS', 'Access']
     ])
 
     public static entityNames = new Map<string, string>([
@@ -67,10 +68,11 @@ export class PermissionsUtils {
         ['DELETE', 3],
         ['REVIEW', 4],
         ['EXECUTE', 5],
+        ['MANAGE', 6],
+        ['ASSOCIATE', 7],
+
         ['ALL', -1],
         ['AUDIT', -1],
-        ['ASSOCIATE', 7],
-        ['MANAGE', 6]
     ])
 
     public static parsePermissions(permissions: {
@@ -87,6 +89,7 @@ export class PermissionsUtils {
         for (const permission of permissions) {
             if (!categories.has(permission.category)) {
                 categories.set(permission.category, {
+                    id: permission.category,
                     name: PermissionsUtils.categoryNames.get(permission.category),
                     entities: new Map<string, any>()
                 })
@@ -98,10 +101,23 @@ export class PermissionsUtils {
                     actions: new Array(7)
                 })
             }
+
+
             const actions = entities.get(permission.entity).actions;
             const index = PermissionsUtils.actionIndexes.get(permission.action) as number;
             const formControl = {};
-            if (index === -1) {
+            if (permission.category === PermissionCategories.ACCESS) {
+                actions.length = 3;
+                if (permission.action === PermissionActions.ASSIGNED) {
+                    actions[0] = formControl;
+                }
+                if (permission.action === PermissionActions.PUBLISHED) {
+                    actions[1] = formControl;
+                }
+                if (permission.action === PermissionActions.ALL) {
+                    actions[2] = formControl;
+                }
+            } else if (index === -1) {
                 actions.length = 1;
                 actions[0] = formControl
             } else if (Number.isFinite(index)) {
@@ -119,8 +135,22 @@ export class PermissionsUtils {
                     actions: entity.actions,
                 })
             }
+            let actions = (category.id === PermissionCategories.ACCESS) ? [
+                'Assigned',
+                'Published',
+                'All',
+            ] : [
+                'Read',
+                'Create',
+                'Update',
+                'Delete',
+                'Review',
+                'Execute',
+                'Manage'
+            ]
             _categories.push({
                 name: category.name,
+                actions,
                 entities
             });
         }

@@ -42,7 +42,7 @@
                             emptyMessage="Search by Role name"
                             placeholder="Search by Role name"
                             appendTo="body"
-                            (onChange)="onChangeRole()">
+                            (onPanelHide)="onChangeRole()">
                         <ng-template let-option pTemplate="selectedItem">
                             <div class="dropdown-item">{{ option.name }}</div>
                         </ng-template>

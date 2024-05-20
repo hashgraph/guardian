@@ -464,6 +464,16 @@ export class UserPermissions {
     public get PERMISSIONS_USER_READ(): boolean {
         return this.check(Permissions.PERMISSIONS_USER_READ);
     }
+    //ACCESS
+    public get ACCESS_POLICY_ASSIGNED(): boolean {
+        return this.check(Permissions.PERMISSIONS_USER_READ);
+    }
+    public get ACCESS_POLICY_PUBLISHED(): boolean {
+        return this.check(Permissions.PERMISSIONS_USER_READ);
+    }
+    public get ACCESS_POLICY_ALL(): boolean {
+        return this.check(Permissions.PERMISSIONS_USER_READ);
+    }
 
     public static isPolicyAdmin(user: any): boolean {
         return (

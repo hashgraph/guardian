@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString, Validate, IsOptional } from 'class-validator';
+import { IsArray, IsString, Validate, IsOptional, IsObject } from 'class-validator';
 import { Examples } from '../examples.js';
 import { IsNumberOrString } from '../string-or-number.js';
 
@@ -199,4 +199,14 @@ export class FilterSearchPoliciesDTO {
     })
     @IsString()
     policyId: string;
+}
+
+export class FilterSearchBlocksDTO {
+    @ApiProperty()
+    @IsString()
+    id: string;
+
+    @ApiProperty()
+    @IsObject()
+    config: string;
 }

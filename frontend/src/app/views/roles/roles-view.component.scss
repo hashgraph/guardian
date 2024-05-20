@@ -18,7 +18,7 @@
 
 .loading {
     background: #f9fafc;
-    position: absolute;
+    position: fixed;
     z-index: 99;
     top: 0;
     left: -15px;
@@ -355,6 +355,12 @@
                     align-items: center;
                     justify-content: center;
                 }
+
+                .permission-background {
+                    width: 16px;
+                    height: 16px;
+                    background: #eee;
+                }
             }
 
             .category-permission {
@@ -399,6 +405,7 @@
                         width: 700px;
                         min-width: 700px;
                         overflow: hidden;
+                        justify-content: flex-end;
 
                         .permission {
                             height: 64px;
@@ -415,6 +422,12 @@
                             display: flex;
                             align-items: center;
                             justify-content: center;
+                        }
+
+                        .permission-background {
+                            width: 16px;
+                            height: 16px;
+                            background: #eee;
                         }
                     }
                 }

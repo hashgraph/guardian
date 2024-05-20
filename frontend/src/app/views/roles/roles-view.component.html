@@ -143,13 +143,7 @@
             <div *ngIf="selectedCategory.entities" class="category-body">
                 <div class="category-actions">
                     <div class="category-actions-header">ACTIONS</div>
-                    <div class="permission perm-0">Read</div>
-                    <div class="permission perm-1">Create</div>
-                    <div class="permission perm-2">Update</div>
-                    <div class="permission perm-3">Delete</div>
-                    <div class="permission perm-4">Review</div>
-                    <div class="permission perm-5">Execute</div>
-                    <div class="permission perm-6">Manage</div>
+                    <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission perm-{{i}}">{{action}}</div>
                 </div>
                 <div class="category-permission">
                     <div *ngFor="let entity of selectedCategory.entities" class="entity">
@@ -178,6 +172,7 @@
                                         color="primary" 
                                         (change)="onCheckAll(entity)"
                                         [formControl]="control.formControl"></mat-checkbox>
+                                    <div *ngIf="!control?.formControl" class="permission-background"></div>
                                 </div>
                             </ng-container>
                         </div>

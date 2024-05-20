@@ -41,3 +41,4 @@ export * from './document.type.js';
 export * from './mint-transaction-status.type.js';
 export * from './permissions.type.js';
 export * from './document-category.type.js';
+export * from './assigned-entity.type.js';

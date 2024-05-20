@@ -1,5 +1,5 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
-import { ApplicationStates, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, PolicyToolMetadata, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
+import { ApplicationStates, AssignedEntityType, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, PolicyToolMetadata, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
 
@@ -2507,5 +2507,42 @@ export class Guardians extends NatsService {
      */
     public async validateDidKeys(document: any, keys: any): Promise<any> {
         return await this.sendMessage(MessageAPI.VALIDATE_DID_KEY, { document, keys });
+    }
+
+    /**
+     * Assign entity
+     * @param type
+     * @param entityId
+     * @param assign
+     * @param did
+     */
+    public async assignEntity(
+        type: string,
+        entityId: string,
+        assign: boolean,
+        did: string,
+        owner: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.ASSIGN_ENTITY, { type, entityId, assign, did, owner });
+    }
+
+    /**
+     * Check entity
+     * @param type
+     * @param entityId
+     * @param checkAssign
+     * @param did
+     */
+    public async checkEntity(type: string, entityId: string, checkAssign: boolean, did: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.CHECK_ENTITY, { type, entityId, checkAssign, did });
+    }
+
+    /**
+     * Get assigned entities
+     * @param type
+     * @param did
+     */
+    public async assignedEntities(did: string, type?: AssignedEntityType): Promise<any[]> {
+        return await this.sendMessage(MessageAPI.ASSIGNED_ENTITIES, { type, did });
     }
 }

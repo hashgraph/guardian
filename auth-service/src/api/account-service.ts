@@ -6,7 +6,9 @@ import * as util from 'util';
 import crypto from 'crypto';
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
 import {
+    AuditDefaultPermission,
     AuthEvents,
+    DefaultRoles,
     GenerateUUIDv4,
     IGenerateTokenMessage,
     IGenerateTokenResponse,
@@ -23,36 +25,30 @@ import {
     IStandardRegistryUserResponse,
     IUpdateUserMessage,
     IUser,
-    PermissionsArray,
+    SRDefaultPermission,
+    UserDefaultPermission,
     UserRole
 } from '@guardian/interfaces';
 
 const { sign, verify } = pkg;
 
-/**
- * List of Permissions
- */
-export const DefaultPermissions = PermissionsArray.reduce((group, item) => {
-    const { name, defaultRoles } = item;
-    if (Array.isArray(defaultRoles)) {
-        for (const defaultRole of defaultRoles) {
-            if (group.has(defaultRole)) {
-                group.get(defaultRole).push(name);
-            } else {
-                group.set(defaultRole, [name]);
-            }
-        }
-    }
-    return group;
-}, new Map<UserRole, string[]>());
-
 function setDefaultPermissions(user: User): User {
-    if (user && DefaultPermissions.has(user.role)) {
-        const permissions = DefaultPermissions.get(user.role);
-        if (user.permissions) {
-            user.permissions = [...user.permissions, ...permissions];
+    if (user) {
+        if(user.role === UserRole.STANDARD_REGISTRY) {
+            user.permissions = SRDefaultPermission;
+        } else if(user.role === UserRole.AUDITOR) {
+            user.permissions = AuditDefaultPermission;
+        } else if(user.role === UserRole.USER) {
+            if(user.permissionsGroup && user.permissionsGroup.length) {
+                user.permissions = [
+                    ...UserDefaultPermission,
+                    ...user.permissions
+                ];
+            } else {
+                user.permissions = DefaultRoles;
+            }
         } else {
-            user.permissions = permissions;
+            user.permissions = UserDefaultPermission;
         }
     }
     return user;

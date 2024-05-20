@@ -55,7 +55,7 @@ export class PermissionsService {
 
     public getRoles(
         filters?: any,
-        pageIndex?: number, 
+        pageIndex?: number,
         pageSize?: number
     ): Observable<HttpResponse<any[]>> {
         const params = PermissionsService.getOptions(filters, pageIndex, pageSize);
@@ -81,5 +81,9 @@ export class PermissionsService {
     ): Observable<HttpResponse<any[]>> {
         const params = PermissionsService.getOptions({}, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/users/${username}/policies`, { observe: 'response', params });
+    }
+
+    public assignPolicy(username: string, policyId: any, assign: boolean) {
+        return this.http.post<any>(`${this.url}/users/${username}/policies/assign`, { policyId, assign });
     }
 }

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
-import { IUser, PermissionActions, PermissionCategories, PermissionEntities, UserPermissions } from '@guardian/interfaces';
+import { UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
@@ -198,6 +198,15 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     public assignPolicy(policy: any) {
-
+        this.loading = true;
+        this.permissionsService.assignPolicy(
+            this.username,
+            policy.id,
+            !policy.assigned
+        ).subscribe((response) => {
+            this.loadData();
+        }, (e) => {
+            this.loadError(e);
+        });
     }
 }

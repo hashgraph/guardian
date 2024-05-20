@@ -10,7 +10,6 @@ const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => {
         entity: p.entity,
         action: p.action,
         disabled: p.disabled,
-        default: p.default,
         dependOn: p.dependOn
     }
 })

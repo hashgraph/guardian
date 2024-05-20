@@ -1,8 +1,8 @@
 import { IAuthUser } from '@guardian/common';
-import { Permissions, UserRole } from '@guardian/interfaces';
+import { AssignedEntityType, Permissions, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PermissionsDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
+import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, InternalException, PolicyEngine, Users } from '#helpers';
 import { WebSocketsService } from './websockets.js';
@@ -319,6 +319,10 @@ export class PermissionsApi {
                 pageSize
             };
             const { items, count } = await (new Users()).getWorkers(options);
+            const guardians = new Guardians();
+            for (const item of items) {
+                item.assignedEntities = await guardians.assignedEntities(item.did);
+            }
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
@@ -362,7 +366,7 @@ export class PermissionsApi {
         @AuthUser() user: IAuthUser,
         @Param('username') username: string
     ): Promise<UserRolesDTO> {
-        try {        
+        try {
             const users = new Users();
             const row = await users.getUser(username);
             if (!row || row.parent !== user.did) {
@@ -432,7 +436,6 @@ export class PermissionsApi {
         }
     }
 
-
     /**
      * Get policies
      */
@@ -465,13 +468,13 @@ export class PermissionsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: RoleDTO,
+        type: PolicyDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAssignedPolicies(
         @AuthUser() user: IAuthUser,
@@ -479,7 +482,7 @@ export class PermissionsApi {
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
         @Response() res: any
-    ): Promise<RoleDTO[]> {
+    ): Promise<PolicyDTO[]> {
         let row: any;
         const users = new Users();
         try {
@@ -502,6 +505,68 @@ export class PermissionsApi {
             const engineService = new PolicyEngine();
             const { policies, count } = await engineService.getAssignedPolicies(options);
             return res.header('X-Total-Count', count).send(policies);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Assign policy
+     */
+    @Post('/users/:username/policies/assign')
+    @Auth(
+        Permissions.PERMISSIONS_ROLE_CREATE
+    )
+    @ApiOperation({
+        summary: 'Assign policy.',
+        description: 'Assign policy.',
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'User Identifier',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: 'Options.',
+        required: true,
+        type: AssignPolicyDTO,
+    })
+    @ApiOkResponse({
+        description: 'Assigned policy.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async assignPolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('username') username: string,
+        @Body() body: AssignPolicyDTO
+    ): Promise<PolicyDTO> {
+        let row: any;
+        const users = new Users();
+        try {
+            row = await users.getUser(username);
+        } catch (error) {
+            await InternalException(error);
+        }
+        if (!row || row.parent !== user.did) {
+            throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
+        }
+        try {
+            const { policyId, assign } = body;
+            return await (new Guardians()).assignEntity(
+                AssignedEntityType.Policy,
+                policyId,
+                assign,
+                row.did,
+                user.did
+            );
         } catch (error) {
             await InternalException(error);
         }

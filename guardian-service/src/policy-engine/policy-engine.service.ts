@@ -1,4 +1,5 @@
 import {
+    AssignedEntityType,
     DocumentCategoryType,
     DocumentType,
     ExternalMessageEvents,
@@ -339,6 +340,12 @@ export class PolicyEngineService {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = 100;
                 }
+                if(filter && filter.assigned) {
+                    delete filter.assigned;
+                    const assigned = await DatabaseServer.getAssignedEntities(userDid, AssignedEntityType.Policy);
+                    const assignedMap = assigned.map((e) => e.entityId);
+                    filter.id =  { $in: assignedMap };
+                }
                 const [policies, count] = await DatabaseServer.getPoliciesAndCount(filter, otherOptions);
 
                 for (const policy of policies) {
@@ -380,8 +387,10 @@ export class PolicyEngineService {
                     otherOptions.limit = 100;
                 }
                 const [policies, count] = await DatabaseServer.getPoliciesAndCount(filters, otherOptions);
+                const assigned = await DatabaseServer.getAssignedEntities(userDid, AssignedEntityType.Policy);
+                const assignedMap = new Set(assigned.map((e) => e.entityId));
                 for (const policy of policies) {
-                    (policy as any).assigned = false;
+                    (policy as any).assigned = assignedMap.has(policy.id);
                 }
                 return new MessageResponse({ policies, count });
             } catch (error) {

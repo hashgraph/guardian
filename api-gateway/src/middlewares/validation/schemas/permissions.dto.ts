@@ -1,6 +1,7 @@
 import { Examples } from "#middlewares";
 import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities, PermissionActions, UserRole } from "@guardian/interfaces";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsBoolean, IsString } from "class-validator";
 
 const permission = PermissionsArray.filter((p) => !p.disabled)[0];
 const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => p.name);
@@ -46,11 +47,11 @@ export class PermissionsDTO {
     disabled: boolean;
 
     @ApiProperty({
-        type: 'boolean',
-        required: true,
-        example: permission.default
+        type: 'string',
+        isArray: true,
+        example: [Permissions.POLICIES_POLICY_READ]
     })
-    default: boolean;
+    dependOn?: string[];
 }
 
 export class RoleDTO {
@@ -118,7 +119,7 @@ export class UserRolesDTO {
         enum: UserRole,
         example: UserRole.USER
     })
-    role: UserRole; 
+    role: UserRole;
 
     @ApiProperty({
         type: 'string',
@@ -135,4 +136,22 @@ export class UserRolesDTO {
         example: [Permissions.POLICIES_POLICY_READ]
     })
     permissions: string[];
+}
+
+export class AssignPolicyDTO {
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @IsString()
+    policyId: string;
+
+    @ApiProperty({
+        type: 'boolean',
+        required: true,
+        example: true
+    })
+    @IsBoolean()
+    assign: boolean;
 }

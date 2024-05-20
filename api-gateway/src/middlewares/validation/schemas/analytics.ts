@@ -176,13 +176,3 @@ export class CompareToolsDTO {
     @IsObject()
     total: any;
 }
-
-export class FilterSearchBlocksDTO {
-    @ApiProperty()
-    @IsString()
-    id: string;
-
-    @ApiProperty()
-    @IsString()
-    config: string;
-}

@@ -59,29 +59,26 @@ export class PolicyApi {
         }
         try {
             const options: any = {
-                filters: null,
+                filters: {
+                    owner: user.did,
+                },
                 userDid: user.did,
                 pageIndex,
                 pageSize
             };
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                options.filters = {
-                    owner: user.did,
-                };
-            } else if (user.role === UserRole.AUDITOR) {
-                options.filters = {
-                    status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
-                };
-            } else {
-                if(UserPermissions.isPolicyAdmin(user)) {
-                    options.filters = {
-                        owner: user.parent,
-                        status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
-                    };
-                } else {
-                    options.filters = {
-                        owner: user.parent
-                    };
+            if (user.role === UserRole.USER) {
+                if (UserPermissions.has(user, Permissions.ACCESS_POLICY_ALL)) {
+                    options.filters.owner = user.parent;
+                }
+                if (
+                    UserPermissions.has(user, Permissions.ACCESS_POLICY_PUBLISHED)
+                ) {
+                    options.filters.owner = user.parent;
+                    options.filters.status = { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] };
+                }
+                if (UserPermissions.has(user, Permissions.ACCESS_POLICY_ASSIGNED)) {
+                    options.filters.owner = user.parent;
+                    options.filters.assigned = true
                 }
             }
             const engineService = new PolicyEngine();
