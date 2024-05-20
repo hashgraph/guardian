@@ -29,7 +29,9 @@ Global Climate Registry (GCR) has built this Guardian Policy that tokenizes the 
 
 ## Demo Video
 
-[Youtube](https://youtu.be/nOQpLmbW0hA)
+[Policy worklow demo on GCR](https://youtu.be/nOQpLmbW0hA)
+
+[Policy worflow on guardian]()
 
 ## Policy Workflow Through GCR Platform
 
