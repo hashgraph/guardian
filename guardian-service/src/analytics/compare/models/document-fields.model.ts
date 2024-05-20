@@ -17,7 +17,7 @@ export class DocumentFieldsModel {
      * All fields
      * @private
      */
-    private readonly fields: PropertyModel<any>[];
+    private fields: PropertyModel<any>[];
 
     /**
      * Document schemas
@@ -123,13 +123,11 @@ export class DocumentFieldsModel {
 
     /**
      * Merge fields
-     * @param fields - models
      * @public
+     * @param doc
      */
     public merge(doc: DocumentFieldsModel): void {
-        for (const field of doc.fields) {
-            this.fields.push(field);
-        }
+        this.fields = [].concat(this.fields, doc.fields);
     }
 
     /**

@@ -239,7 +239,7 @@ export class ProjectsAPI {
                     '2',
                     '0',
                     0,
-                    0
+                    'Direct'
                 ))
             }
 
