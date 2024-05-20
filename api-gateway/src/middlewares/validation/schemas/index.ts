@@ -22,6 +22,7 @@ export * from './record.js'
 export * from './projects.js'
 
 
+export * from './analytics.dto.js'
 export * from './tag.dto.js'
 export * from './theme.dto.js'
 export * from './token.dto.js'
