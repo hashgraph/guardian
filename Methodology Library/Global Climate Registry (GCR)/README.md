@@ -8,13 +8,13 @@ GCR has created a [Middleware API](https://documenter.getpostman.com/view/230578
 
 GCR platform is a one stop solution for carbon offset project creation. It has a step by step process to create a project and onboard different players/users involved in the project's development. Please view our policies subdirectory to get details on specific methodologies.
 
-Every policy requires three user roles and one optional user role: 
+### Every policy requires three user roles and one optional user role: 
 - Standard Registry (Global Climate Regitry)
 - Project Developer/Project Proponent
 - Validation and Verification Body (VVB)/auditor
 - Credit Buyer (Optional)
 
-Policy Schemas:
+### Policy Schemas:
 - Project Developer Application
 - VVB Application
 - Project Listing Application
@@ -25,7 +25,7 @@ Policy Schemas:
 - Registry Final Mint
 
 
-Policy workflow performed through GCR Guardian Middleware API ([API documentation](https://documenter.getpostman.com/view/23057894/2sA3Bj8ZD8)): 
+### Policy workflow performed through GCR Guardian Middleware API ([API documentation](https://documenter.getpostman.com/view/23057894/2sA3Bj8ZD8)): 
 
 - Project Developer application (PDA) submission by the project developer user role 
 - VVB application (VVBA) submission by the VVB user role
