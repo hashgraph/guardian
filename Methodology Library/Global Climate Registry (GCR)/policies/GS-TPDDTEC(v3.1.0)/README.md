@@ -10,9 +10,9 @@
   - [Important Documents \& Schemas](#important-documents--schemas)
   - [Carbon credit](#tokencarbon-credit)
   - [Step By Step](#step-by-step)
-    - [Registry(Gold Standard) Flow](#registrygold-standard-flow)
     - [Project Proponent Flow](#project-proponent-flow)
     - [VVB Flow](#vvb-flow)
+    - [Registry(GCR) Flow](#registrygold-standard-flow)
 - [TODO](#todo)
 
 <!-- /TOC -->
@@ -33,8 +33,7 @@ Global Climate Registry (GCR) has built this Guardian Policy that tokenizes the 
 
 ## Policy Workflow Through GCR Platform
 
-![TPDDTEC guardian policy workflow on GCR platform](https://github.com/saharshkhicha18/guardian/assets/71884962/5ded013e-23ac-4e38-8a6a-7637252d8f24)
-
+<img width="1232" alt="TPDDTEC guardian policy workflow on GCR platform" src="https://github.com/saharshkhicha18/guardian/assets/71884962/aeb7e479-a5a2-4d1c-9f61-9d64cedd89d5">
 
 ## Policy Guide
 
@@ -58,46 +57,23 @@ Hedera Topic (testnet) - [0.0.4234489](https://explore.lworks.io/testnet/topics/
   6. Monitoring Report (MR) - Monitoring report contains analysis on usages on the sample group and estimates carbon avoided/reduced
   7. Verification Report - Report submitted by the VVB after the review of the MR submitted by the project developer.
   8. Submit Mint - Requesting specified number of credits into Hedera account of the project developer. This step is done by the registry
+
+### Policy Calculations
+
+Formulas have been incorporated in the methodology in order to calculate baseline emissions, project emissions, leakages and total emission reduction of the project in tons. The calculations are to calculate the estimated emission reductions for Project Design Document and actual emission reductions of the project for Monitoring report. (In order for the calculations to be done automatically, the formulas have been incorporated on Global Climate Registry platform)
+  
+  <img width="1583" alt="calculations" src="https://github.com/saharshkhicha18/guardian/assets/71884962/44f44deb-5563-45a1-8ee2-98aa39e569ea">
+
   
 ### Carbon credit
   Carbon credits issued will be a Non-fungible token with 1 NFT equivalent to 1 ton of CO2 offset
 
+  [Example of a minted 1 ton credit NFT](https://explore.lworks.io/testnet/tokens/0.0.4318457/nfts/1)
+
 ### Step By Step 
 
-#### Registry(Global Climate Registry) Flow 
 
-Registry is allowed to publish and edit policy config, schemas, tokens and all the workflow logic associated with it. They are responsible for approving projects, project proponents, VVBs, and credit issue requests. 
-
-1. Login into the service using registry credentials
-    
-    <img width="283" alt="image" src="https://user-images.githubusercontent.com/9518151/229285668-64f001c6-ded7-44f1-a55f-6a7b12a4e03f.png">
- 
-2. Feel free to play around with policy config by clicking on edit icon and understanding the differnt schemas used by policy
-    
-    <img width="1496" alt="edit policy" src="https://user-images.githubusercontent.com/9518151/229285942-edf2c3da-9d9e-44f4-a5d1-afeb326f3439.png">
-
-    <img width="1496" alt="Schemas" src="https://user-images.githubusercontent.com/9518151/229286563-538144a0-bceb-47a1-994c-ee982ff1b394.png">
-
-    <img width="1496" alt="Policy edit shot" src="https://user-images.githubusercontent.com/9518151/229285908-9f93f896-cb7f-4030-bdb5-deac5c018a3c.png">
-
-3. Registry can review account applications by clicking manage accounts
-
-    <img width="1496" alt="Screenshot 2023-04-01 at 5 04 16 PM" src="https://user-images.githubusercontent.com/9518151/229286362-522dc0f2-bc9b-44b7-83b6-f139c5857936.png">
-
-4. Registry can review project inception documents allowing the listing of projects on standard website and trigger project execution on ground.
-
-    <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229287139-4717b23f-7c46-408e-8ed6-7af4405046f8.png">
-
-5. Once PDD and MR are approved by VVB, project proponents can submit credit issue requests(VER) which registries have to take decisions on.
-
-    <img width="1493" alt="Screenshot 2023-04-01 at 6 29 07 PM" src="https://user-images.githubusercontent.com/9518151/229294747-90409e66-2f9a-442d-a29d-3b49213e12d7.png">
-    
-6. Once VER issue request is approved, an end-to-end trust chain can be viewed by administrator. Since everything is happening transparently on public ledger(Hedera), anyone can trace the source of credits and each step that happened in the process.
-
-    ![trustchain](https://user-images.githubusercontent.com/9518151/229289672-6e33a6b4-af1d-427a-b742-ba68a6a9e162.png)
-
-
-#### Project Proponent Flow 
+#### Project Developer Flow 
 
 1. Complete the sign up form(RAA) to become a project proponent
 
@@ -148,8 +124,46 @@ VVB is the external independent third party responsible for reviewing Project De
 
     <img width="1496" alt="Screenshot 2023-04-01 at 6 24 00 PM" src="https://user-images.githubusercontent.com/9518151/229294542-6359707e-b6aa-4c4c-b5b5-c5a71ae14b88.png">
 
+
+#### Registry(Global Climate Registry) Flow 
+
+Registry is allowed to publish and edit policy config, schemas, tokens and all the workflow logic associated with it. They are responsible for approving projects, project proponents, VVBs, and credit issue requests. 
+
+1. Login into the service using registry credentials.
+    
+    <img width="259" alt="Registry Account" src="https://github.com/saharshkhicha18/guardian/assets/71884962/5f9d4ac8-8bd6-4f9b-aa30-407182b906a1">
+
+ 
+2. Policy Configuration, Schemas and Token
+    
+    <img width="1908" alt="edit policy" src="https://github.com/saharshkhicha18/guardian/assets/71884962/245dd2df-0e9e-42be-a30f-4b8860b45267">
+
+    <img width="1581" alt="Schemas" src="https://github.com/saharshkhicha18/guardian/assets/71884962/70f16a12-d888-4371-b0a9-546cae716e32">
+
+    <img width="697" alt="token" src="https://github.com/saharshkhicha18/guardian/assets/71884962/038b7261-3463-409e-ac60-849309bb03b2">
+
+
+5. Once PDD and MR are approved by VVB and VVB has submitted Validation report and Verification report, Registry can review the documents and decide on the amount of credits to be issued/minted to project developer account
+
+   Review Verification Report
+   
+   <img width="819" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/5ba29a06-f341-4570-b9df-a819e08afed5">
+
+   Minting carbon credits
+   
+    <img width="1508" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/e49a9de7-fdfd-43aa-9fbd-aeacccf54be2">
+
+    
+7. Once carbon credits are minted to project developer account, an end-to-end trust chain can be viewed by the admin. Since everything is happening transparently on public ledger(Hedera), anyone can trace the source of credits and each step that happened in the process.
+
+   Trust Chain
+
+    <img width="1619" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/feb4d35f-abb3-4d01-9972-38ffdb34dda6">
+
+    
+
 ## TODO
-This policy was created during a hackathon so there may be couple of bugs here and there and it may not be foolproof. Here are some todos to make it production ready. You can reach out to the policy [author/contributor](https://github.com/gautamp8) for reviewing or reporting issues relevant to this specific policy.
+This policy was created during a hackathon so there may be couple of bugs here and there and it may not be foolproof. Here are some todos to make it production ready. You can reach out to the policy [author/contributor](https://github.com/saharshkhicha18) for reviewing or reporting issues relevant to this specific policy.
 
 [ ] Improve and document list column names for each of the roles, some review IDs are coming as null
 [ ] Improve all the schemas(especially PID, PDD). Add support for dynamically selecting fields on basis of fossil fuel or electric device
