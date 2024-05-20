@@ -87,6 +87,7 @@
         <div *ngFor="let doc of vpDocuments" class="container">
             <div class="table">
                 <app-compare-document
+                        comparationType="documents"
                         [childrenLvl]="'2'"
                         [disableHeader]="true"
                         [eventsLvl]="'1'"

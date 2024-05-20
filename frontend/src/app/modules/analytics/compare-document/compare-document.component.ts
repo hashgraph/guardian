@@ -51,6 +51,7 @@ interface IFieldContext {
 })
 export class CompareDocumentComponent implements OnInit {
     @Input('disableHeader') disableHeader: boolean = false;
+    @Input('comparationType') comparationType = 'policy'
     @Input('value') value!: any;
     @Input() type: string = 'tree';
     @Input() eventsLvl: string = '1';
@@ -79,6 +80,36 @@ export class CompareDocumentComponent implements OnInit {
     public _gridStyle = '';
     public _systemProp = true;
     private _pOffset = 30;
+
+    get comparationLabels(): any {
+        switch (this.comparationType) {
+            case 'policy': {
+                return {
+                    equalFullLabel: 'Blocks are equal, including their child blocks',
+                    equalNotFullLabel: 'Blocks are equal, but their child blocks are different',
+                    sameTypeLabel: 'Blocks are of the same type and are partially equal.',
+                    differentLabel: 'Blocks are absent in the other Policy.',
+                    documentsLabel: 'Policy Documents'
+                }
+                break;
+            }
+
+            case 'documents': {
+                return {
+                    equalFullLabel: 'Documents/fields are equal, including nested elements',
+                    equalNotFullLabel: 'Documents/fields are equal, but some nested elements are different',
+                    sameTypeLabel: 'Documents/fields are of the same type, but contain different values',
+                    differentLabel: 'Documents/fields are absent from one of the documents',
+                    documentsLabel: 'Project documents'
+                }
+                break;
+            }
+
+            default: {
+                return {}
+            }
+        }
+    }
 
     constructor() {
         this.minWidth = 1600;
