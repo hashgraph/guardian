@@ -60,5 +60,6 @@ GCR's policies will continue to evolve and new policies are being developed by u
 
 ## GCR Project Workflow Architecture
 
-![Global Climate Registry Project Workflow](https://github.com/saharshkhicha18/guardian/assets/71884962/f4c70059-b240-472d-9111-c840d386ddeb)
+<img width="1232" alt="Global Climate Registry Project Workflow" src="https://github.com/saharshkhicha18/guardian/assets/71884962/255ad96f-4005-42d5-93e4-f37ff30c87d4">
+
 
