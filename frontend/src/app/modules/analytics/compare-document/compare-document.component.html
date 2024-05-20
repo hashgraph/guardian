@@ -41,7 +41,7 @@
 
             <mat-expansion-panel expanded *ngIf="treeContext">
                 <mat-expansion-panel-header>
-                    <div class="header">Policy Documents</div>
+                    <div class="header">Project Documents</div>
                 </mat-expansion-panel-header>
 
                 <div class="merge-container">
@@ -53,25 +53,25 @@
                         <div class="legend-item" (click)="_type1=!_type1">
                             <div class="legend-icon legend-l1"></div>
                             <div class="legend-text">
-                                Blocks are equal, including their child blocks.
+                                Fields are equal, including their child fields.
                             </div>
                         </div>
                         <div class="legend-item" (click)="_type2=!_type2">
                             <div class="legend-icon legend-l2"></div>
                             <div class="legend-text">
-                                blocks are equal, but their child blocks are different.
+                                Fields are equal, but their child fields are different.
                             </div>
                         </div>
                         <div class="legend-item" (click)="_type3=!_type3">
                             <div class="legend-icon legend-l3"></div>
                             <div class="legend-text">
-                                blocks are of the same type and are partially equal.
+                                Fields are of the same type and are partially equal.
                             </div>
                         </div>
                         <div class="legend-item" (click)="_type4=!_type4">
                             <div class="legend-icon legend-l4"></div>
                             <div class="legend-text">
-                                Blocks are absent in the other Policy.
+                                Fields are absent in the other document.
                             </div>
                         </div>
                     </div>
