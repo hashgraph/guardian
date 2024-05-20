@@ -32,7 +32,7 @@
     "dotenv": "^16.0.0",
     "exceljs": "^4.4.0",
     "express": "^4.17.1",
-    "fast-xml-parser": "^4.2.6",
+    "fast-xml-parser": "^4.4.0",
     "gulp": "^4.0.2",
     "gulp-copy": "^4.0.1",
     "gulp-rename": "^2.0.0",
