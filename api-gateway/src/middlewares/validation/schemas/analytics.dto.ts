@@ -202,11 +202,18 @@ export class FilterSearchPoliciesDTO {
 }
 
 export class FilterSearchBlocksDTO {
-    @ApiProperty()
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: Examples.UUID
+    })
     @IsString()
     id: string;
 
-    @ApiProperty()
+    @ApiProperty({
+        type: 'object',
+        required: true
+    })
     @IsObject()
-    config: string;
+    config: any;
 }
