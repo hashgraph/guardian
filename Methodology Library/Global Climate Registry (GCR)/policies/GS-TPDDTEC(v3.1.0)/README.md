@@ -4,15 +4,15 @@
 - [Table of content](#table-of-content)
 - [Introduction](#introduction)
 - [Demo Video](#demo-video)
-- [Policy Workflow](#policy-workflow)
+- [Policy Workflow Through GCR platform](#policy-workflow-through-gcr-platform)
 - [Policy Guide](#policy-guide)
   - [Available Roles](#available-roles)
   - [Important Documents \& Schemas](#important-documents--schemas)
-  - [Carbon credit](#tokencarbon-credit)
+  - [Carbon credit](#carbon-credit)
   - [Step By Step](#step-by-step)
-    - [Project Proponent Flow](#project-proponent-flow)
+    - [Project Proponent Flow](#project-developer-flow)
     - [VVB Flow](#vvb-flow)
-    - [Registry(GCR) Flow](#registrygold-standard-flow)
+    - [Registry(Global Climate Registry) Flow](#registryglobal-climate-registry-flow)
 - [TODO](#todo)
 
 <!-- /TOC -->
@@ -75,27 +75,35 @@ Formulas have been incorporated in the methodology in order to calculate baselin
 
 #### Project Developer Flow 
 
-1. Complete the sign up form(RAA) to become a project proponent
+1. Select the project developer role and submit the project developer application
 
-    <img width="1496" alt="Screenshot 2023-04-01 at 5 03 05 PM" src="https://user-images.githubusercontent.com/9518151/229286448-be20689e-d66a-4adb-ad1f-c92e3fdeb16b.png">
+    <img width="1583" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/3c5a4291-dcf4-4fda-9f92-e17f25ef5cc3">
 
-    <img width="1496" alt="Screenshot 2023-03-26 at 9 04 01 PM" src="https://user-images.githubusercontent.com/9518151/229286617-7bffb63d-7b2b-4cba-8eb8-f5f0ae45da07.png">
+    <img width="1559" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/1cf94a20-e813-4148-923f-c207c956f741">
 
-2. Wait till the application is approved by the registry admin. Once approved, proponents will be able to submit project inception documents. This includes stakeholder consultation report as well.
 
-    <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229286814-f3b4ef4c-5948-476a-b792-4d31a828c893.png">
+2. The project developer can now submit a Project listing Application which is initial details about the project developer entity and the carbon offset project
 
-    <img width="663" alt="image" src="https://user-images.githubusercontent.com/9518151/229286942-5caf58f7-6331-453a-828e-257ee26f3961.png">
+    <img width="1459" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/bd9b082c-16a8-409a-98a3-fe752245fe02">
 
-3. Once project is approved by registry, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions. 
+    <img width="827" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/f1f96a06-3ab6-44b4-bb44-eac3c8f1b16a">
 
-    <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229287218-9bd53183-29c1-4ea9-9491-2db549f85eb3.png">
+
+3. Once project is listed, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions. After submitting the PDD, project developer will assign desired VVB for review of this PDD who will then submit a Validation Report in response.
+
+    <img width="1539" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/d32380e4-a40e-41af-b77f-a1b366e689b0">
     
-    <img width="710" alt="image" src="https://user-images.githubusercontent.com/9518151/229289284-3da025d3-16c0-4bce-b2c8-24e2dae472e3.png">
+    <img width="827" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/fecfff47-331f-41fd-b569-0018ddc0ebc4">
 
-4. After PDD approval, project proponent will execute the project on ground and submit regular monitoring reports(MR)
 
-    <img width="1387" alt="image" src="https://user-images.githubusercontent.com/9518151/229289434-f0181be6-b718-4e76-9d70-509074df547c.png">
+4. After VVB has approved the PDD and submitted a Validation Report, project developer will execute the project on ground and submit regular monitoring reports(MR)
+
+    <img width="1573" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/0a4ab0c4-3cb9-4458-a1aa-1b4903a928d8">
+    
+    <img width="835" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/943cc5a9-c990-4475-bad1-716e2cde8396">
+
+    <img width="1598" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/53b77da1-d12d-48d8-aa78-230681b8c9f2">
+
 
 5. Once a monitoring report is approved by VVB, project proponent can request corresponding carbon credits(VER in this case) to be credited in their account. It would need a VC document ID for both monitoring report and it's approved review by VVB.
 
@@ -112,17 +120,30 @@ Formulas have been incorporated in the methodology in order to calculate baselin
 
 VVB is the external independent third party responsible for reviewing Project Design Documents and Monitoring reports submitted by proponents. They can comment and reject/request changes as well.
 
-1. After logging in as VVB, they can view review requests related to project documents. First step is to review PDDs submitted by project proponents.
+1. Select the VVB role and submit the Validator and Verification Body application
 
-    <img width="1496" alt="Screenshot 2023-04-01 at 6 20 50 PM" src="https://user-images.githubusercontent.com/9518151/229294451-cbaa1e7a-9796-410f-9a1f-9e6ec002e8e9.png">
+   <img width="672" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/1df2d7c5-b464-4d94-b996-6a51f46b2e96">
+   
+   <img width="1215" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/01c8903d-08b6-4a0f-93d9-98be6fdadad7">
+   
 
-    <img width="575" alt="Screenshot 2023-04-01 at 6 21 49 PM" src="https://user-images.githubusercontent.com/9518151/229294461-25425f99-a316-4e8e-bcaa-1630f7c57120.png">
+2. Once VVB is created and project developer has assign VVB for PDD review, VVB can review and submit the Validation Report in response if PDD is approved
 
-    <img width="578" alt="Screenshot 2023-04-01 at 6 22 34 PM" src="https://user-images.githubusercontent.com/9518151/229294467-1e9b061d-6a22-4007-bf76-2bc80b962c29.png">
+    <img width="1530" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/d2a3d039-4f94-4e90-8a0f-3068f65d7eca">
 
-2. After PDD approval, proponents will be able to send monitoring reports for review. Once approved, project proponents will be able to claim corresponding VERs.
+    <img width="836" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/3054107c-5511-42e3-a9e4-cf8ead0b5dc3">
 
-    <img width="1496" alt="Screenshot 2023-04-01 at 6 24 00 PM" src="https://user-images.githubusercontent.com/9518151/229294542-6359707e-b6aa-4c4c-b5b5-c5a71ae14b88.png">
+    <img width="1551" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/7a961093-7a80-4010-9f32-c4fc8ee87bd6">
+
+
+3. After PDD has been approved and  validation report has been sent by the VVB, project developer will submit monitoring reports and assign to the VVB for review. VVB can review and submit the Verification report in response of MR if approved
+
+    <img width="1598" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/03994271-eafd-4174-b2b1-bf2cf5d30f58">
+
+    <img width="831" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/3490d8c2-0410-4f46-abb5-bcd3ff0967c1">
+
+    <img width="1566" alt="image" src="https://github.com/saharshkhicha18/guardian/assets/71884962/6a222184-23cf-4454-ad3c-23a9e3c34f31">
+
 
 
 #### Registry(Global Climate Registry) Flow 
@@ -162,11 +183,5 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
     
 
-## TODO
-This policy was created during a hackathon so there may be couple of bugs here and there and it may not be foolproof. Here are some todos to make it production ready. You can reach out to the policy [author/contributor](https://github.com/saharshkhicha18) for reviewing or reporting issues relevant to this specific policy.
-
-[ ] Improve and document list column names for each of the roles, some review IDs are coming as null
-[ ] Improve all the schemas(especially PID, PDD). Add support for dynamically selecting fields on basis of fossil fuel or electric device
-[ ] Automate emissions calculations on basis of incoming parameters of equations from schemas
-[ ] Add Guardian support for list data type in schemas. Helpful for usecases where we're sending device usage data regularly via an API   
-[ ] Thoroughly test and improve the futureproofing IOT device workflow, there are dummy checks and thresholds currently. Schemas need to be updated to accept list of usage parameters.
+## Note
+You can reach out to the policy [author/contributor](https://github.com/saharshkhicha18) for reviewing or reporting issues relevant to this specific policy.
