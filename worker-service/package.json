@@ -17,7 +17,7 @@
         "@transmute/vc.js": "0.7.0-unstable.80",
         "@web3-storage/access": "^18.1.0",
         "@web3-storage/w3up-client": "^12.0.0",
-        "axios": "^1.3.6",
+        "axios": "^1.7.0",
         "axios-retry": "^3.2.4",
         "cross-blob": "^2.0.1",
         "dotenv": "^16.0.0",
