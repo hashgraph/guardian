@@ -11028,7 +11028,47 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RoleDTO'
+                  $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_26
+      security:
+        - bearer: []
+  /permissions/users/{username}/policies/assign:
+    post:
+      operationId: PermissionsApi_assignPolicy
+      summary: Assign policy.
+      description: Assign policy.
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: User Identifier
+          example: username
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Options.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignPolicyDTO'
+      responses:
+        '200':
+          description: Assigned policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
         '401':
           description: Unauthorized
         '403':
@@ -11703,8 +11743,9 @@ components:
       properties:
         id:
           type: string
+          example: 00000000-0000-0000-0000-000000000000
         config:
-          type: string
+          type: object
       required:
         - id
         - config
@@ -13740,6 +13781,9 @@ components:
             - PERMISSIONS_ROLE_UPDATE
             - PERMISSIONS_ROLE_DELETE
             - PERMISSIONS_USER_READ
+            - ACCESS_POLICY_ASSIGNED
+            - ACCESS_POLICY_PUBLISHED
+            - ACCESS_POLICY_ALL
           example:
             - POLICIES_POLICY_READ
       required:
@@ -13778,6 +13822,7 @@ components:
             - AUDIT
             - TOOLS
             - PERMISSIONS
+            - ACCESS
           example: ANALYTIC
         entity:
           type: string
@@ -13829,20 +13874,25 @@ components:
             - AUDIT
             - ASSOCIATE
             - MANAGE
+            - ASSIGNED
+            - PUBLISHED
           example: READ
         disabled:
           type: boolean
           example: false
-        default:
-          type: boolean
-          example: false
+        dependOn:
+          example:
+            - POLICIES_POLICY_READ
+          type: array
+          items:
+            type: string
       required:
         - name
         - category
         - entity
         - action
         - disabled
-        - default
+        - dependOn
     UserRolesDTO:
       type: object
       properties:
@@ -13883,3 +13933,15 @@ components:
         - role
         - permissionsGroup
         - permissions
+    AssignPolicyDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        assign:
+          type: boolean
+          example: true
+      required:
+        - policyId
+        - assign
