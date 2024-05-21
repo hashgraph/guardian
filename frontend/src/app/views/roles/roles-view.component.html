@@ -105,7 +105,7 @@
     <div class="role-content" [formGroup]="newRole">
         <div class="role-nav">
             <div class="categories">
-                <div *ngFor="let category of categories" 
+                <div *ngFor="let category of group.categories" 
                     class="category" 
                     [attr.selected]="category === selectedCategory"
                     (click)="onSelectCategory(category)">
@@ -126,7 +126,8 @@
             <div class="category-header">
                 <div class="category-name">{{selectedCategory.name}}</div>
             </div>
-            <div *ngIf="!selectedCategory.entities" class="category-body">
+
+            <div *ngIf="selectedCategory.type === 'Role'" class="category-body">
                 <div class="category-details">
                     <div class="p-field">
                         <label class="p-field-label" for="name">* Role Name</label>
@@ -140,7 +141,8 @@
                     </div>
                 </div>
             </div>
-            <div *ngIf="selectedCategory.entities" class="category-body">
+
+            <div *ngIf="selectedCategory.type === 'Permissions'" class="category-body">
                 <div class="category-actions">
                     <div class="category-actions-header">ACTIONS</div>
                     <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission perm-{{i}}">{{action}}</div>
@@ -156,29 +158,52 @@
                             {{entity.name}}
                         </div>
                         <div class="permissions">
-                            <ng-container *ngIf="entity.actions.length === 1">
-                                <div class="all-permission">
+                            <ng-container *ngIf="entity.type ==='all'">
+                                <div *ngFor="let action of entity.actions;" class="all-permission">
                                     <mat-checkbox 
-                                        *ngIf="entity.actions[0]?.formControl"
+                                        *ngIf="action"
                                         color="primary" 
                                         (change)="onCheckAll(entity)"
-                                        [formControl]="entity.actions[0].formControl"></mat-checkbox>
+                                        [formControl]="action.control"></mat-checkbox>
                                 </div>
                             </ng-container>
-                            <ng-container *ngIf="entity.actions.length > 1">
-                                <div *ngFor="let control of entity.actions; let i=index" class="permission perm-{{i}}">
+                            <ng-container *ngIf="entity.type ==='checkbox'">
+                                <div *ngFor="let action of entity.actions; let i=index" class="permission perm-{{i}}">
                                     <mat-checkbox 
-                                        *ngIf="control?.formControl"
+                                        *ngIf="action"
                                         color="primary" 
                                         (change)="onCheckAll(entity)"
-                                        [formControl]="control.formControl"></mat-checkbox>
-                                    <div *ngIf="!control?.formControl" class="permission-background"></div>
+                                        [formControl]="action.control"></mat-checkbox>
+                                    <div *ngIf="!action" class="permission-background"></div>
                                 </div>
                             </ng-container>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div *ngIf="selectedCategory.type === 'Access'" class="category-body">
+                <div class="category-actions">
+                    <div class="category-actions-header">ACTIONS</div>
+                    <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission big perm-{{i}}">{{action}}</div>
+                </div>
+                <div class="category-permission">
+                    <div *ngFor="let entity of selectedCategory.entities" class="entity">
+                        <div class="entity-name" (click)="onAll(entity)">
+                            {{entity.name}}
+                        </div>
+                        <div class="permissions">
+                            <mat-radio-group  [formControl]="entity.control">
+                                <div *ngFor="let action of entity.actions; let i=index" class="permission big perm-{{i}}">
+                                    <mat-radio-button color="primary" [value]="action.id"></mat-radio-button>
+                                </div>
+                            </mat-radio-group>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
     </div>
     <div class="role-footer">

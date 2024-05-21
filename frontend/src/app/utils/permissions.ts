@@ -1,162 +1,122 @@
-import { PermissionActions, PermissionCategories, PermissionEntities } from "@guardian/interfaces";
+import { FormControl, FormGroup } from "@angular/forms";
+import { Permissions, PermissionActions, PermissionCategories, PermissionEntities } from "@guardian/interfaces";
+import { CategoryAccess, CategoryDetails, CategoryGroup } from "./permissions-category";
+import { ActionGroup } from "./permissions-action";
 
-export class PermissionsUtils {
-    public static categoryNames = new Map<string, string>([
-        ['ACCOUNTS', 'Accounts'],
-        ['SESSION', 'Session'],
-        ['PROFILES', 'Profiles'],
-        ['ANALYTIC', 'Analytic'],
-        ['ARTIFACTS', 'Artifacts'],
-        ['POLICIES', 'Policies'],
-        ['BRANDING', 'Branding'],
-        ['CONTRACTS', 'Contracts'],
-        ['DEMO', 'Demo'],
-        ['IPFS', 'IPFS'],
-        ['LOG', 'Logs'],
-        ['MODULES', 'Modules'],
-        ['SETTINGS', 'Settings'],
-        ['SUGGESTIONS', 'Suggestions'],
-        ['TAGS', 'Tags'],
-        ['SCHEMAS', 'Schemas'],
-        ['TOKENS', 'Tokens'],
-        ['AUDIT', 'Audit'],
-        ['TOOLS', 'Tools'],
-        ['PERMISSIONS', 'Permissions'],
-        ['ACCESS', 'Access']
-    ])
+export interface IPermission {
+    name: Permissions;
+    category: PermissionCategories;
+    entity: PermissionEntities;
+    action: PermissionActions;
+    disabled: boolean;
+    default: boolean;
+}
 
-    public static entityNames = new Map<string, string>([
-        ['ACCOUNT', 'Account'],
-        ['STANDARD_REGISTRY', 'Standard Registry'],
-        ['USER', 'User'],
-        ['BALANCE', 'Balance'],
-        ['RESTORE', 'Restore'],
-        ['RECORD', 'Record'],
-        ['POLICY', 'Policy'],
-        ['TOOL', 'Tool'],
-        ['DOCUMENT', 'Document'],
-        ['SCHEMA', 'Schema'],
-        ['MODULE', 'Module'],
-        ['FILE', 'File'],
-        ['CONFIG', 'Config'],
-        ['CONTRACT', 'Contract'],
-        ['WIPE_REQUEST', 'Wipe Request'],
-        ['WIPE_ADMIN', 'Wipe Admin'],
-        ['WIPE_MANAGER', 'Wipe Manager'],
-        ['WIPER', 'Wiper'],
-        ['POOL', 'Pool'],
-        ['RETIRE_REQUEST', 'Retire Request'],
-        ['RETIRE_ADMIN', 'Retire Admin'],
-        ['PERMISSIONS', 'Permissions'],
-        ['KEY', 'Key'],
-        ['LOG', 'Log'],
-        ['MIGRATION', 'Migration'],
-        ['SETTINGS', 'Settings'],
-        ['SUGGESTIONS', 'Suggestions'],
-        ['TAG', 'Tag'],
-        ['SYSTEM_SCHEMA', 'System Schema'],
-        ['THEME', 'Theme'],
-        ['TOKEN', 'Token'],
-        ['TRUST_CHAIN', 'Trust Chain'],
-        ['ROLE', 'Role']
-    ])
+export class PermissionsGroup {
+    public readonly form = new FormGroup({});
+    public readonly controls = new Map<Permissions, FormControl>();
+    public readonly actions = new Map<Permissions, ActionGroup>();
+    public readonly map = new Map<PermissionCategories, CategoryGroup>();
+    public readonly categories: CategoryGroup[] = [];
 
-    public static actionIndexes = new Map<string, number>([
-        ['READ', 0],
-        ['CREATE', 1],
-        ['UPDATE', 2],
-        ['DELETE', 3],
-        ['REVIEW', 4],
-        ['EXECUTE', 5],
-        ['MANAGE', 6],
-        ['ASSOCIATE', 7],
+    public get first(): CategoryGroup {
+        return this.categories[0];
+    }
 
-        ['ALL', -1],
-        ['AUDIT', -1],
-    ])
+    public get last(): CategoryGroup {
+        return this.categories[this.categories.length - 1];
+    }
 
-    public static parsePermissions(permissions: {
-        name: Permissions;
-        category: PermissionCategories;
-        entity: PermissionEntities;
-        action: PermissionActions;
-        disabled: boolean;
-        default: boolean;
-    }[]) {
-        const _controls = new Map<string, any>();
+    public next(current: CategoryGroup | null): CategoryGroup {
+        const index = this.categories.findIndex((e) => e === current);
+        return this.categories[index + 1];
+    }
 
-        const categories = new Map<string, any>();
+    public addCategory(permission: IPermission): CategoryGroup {
+        if (this.map.has(permission.category)) {
+            return this.map.get(permission.category) as any;
+        } else {
+            const category = new CategoryGroup(permission);
+            this.map.set(permission.category, category);
+            this.categories.push(category);
+            return category;
+        }
+    }
+
+    public addRole(): void {
+        const category = new CategoryDetails('Role Details')
+        this.categories.unshift(category as any);
+    }
+
+    public addAccess(permissions: IPermission[]): void {
+        const category = new CategoryAccess();
+        this.categories.push(category as any);
         for (const permission of permissions) {
-            if (!categories.has(permission.category)) {
-                categories.set(permission.category, {
-                    id: permission.category,
-                    name: PermissionsUtils.categoryNames.get(permission.category),
-                    entities: new Map<string, any>()
-                })
-            }
-            const entities = categories.get(permission.category).entities;
-            if (!entities.has(permission.entity)) {
-                entities.set(permission.entity, {
-                    name: PermissionsUtils.entityNames.get(permission.entity),
-                    actions: new Array(7)
-                })
-            }
-
-
-            const actions = entities.get(permission.entity).actions;
-            const index = PermissionsUtils.actionIndexes.get(permission.action) as number;
-            const formControl = {};
             if (permission.category === PermissionCategories.ACCESS) {
-                actions.length = 3;
-                if (permission.action === PermissionActions.ASSIGNED) {
-                    actions[0] = formControl;
-                }
-                if (permission.action === PermissionActions.PUBLISHED) {
-                    actions[1] = formControl;
-                }
-                if (permission.action === PermissionActions.ALL) {
-                    actions[2] = formControl;
-                }
-            } else if (index === -1) {
-                actions.length = 1;
-                actions[0] = formControl
-            } else if (Number.isFinite(index)) {
-                actions[index] = formControl;
+                const entity = category.addEntity(permission);
+                const action = entity.addAction(permission);
+                this.actions.set(permission.name, action);
+                this.controls.set(permission.name, action.control);
+                this.form.addControl(permission.name, action.control);
             }
-            _controls.set(String(permission.name), formControl);
         }
+    }
 
-        const _categories = [];
-        for (const category of categories.values()) {
-            const entities: any[] = [];
-            for (const entity of category.entities.values()) {
-                entities.push({
-                    name: entity.name,
-                    actions: entity.actions,
-                })
+    public disable(): void {
+        for (const category of this.categories) {
+            category.disable();
+        }
+    }
+
+    public clearValue(): void {
+        for (const category of this.categories) {
+            category.clearValue();
+        }
+    }
+
+    public addValue(permissions: Permissions[]): void {
+        for (const category of this.categories) {
+            category.addValue(permissions);
+        }
+    }
+
+    public setValue(permissions: Permissions[]): void {
+        this.clearValue();
+        this.addValue(permissions);
+    }
+
+    public getValue(): Permissions[] {
+        const permissions: Permissions[] = [];
+        for (const [name, control] of this.controls) {
+            if (control.value) {
+                permissions.push(name);
             }
-            let actions = (category.id === PermissionCategories.ACCESS) ? [
-                'Assigned',
-                'Published',
-                'All',
-            ] : [
-                'Read',
-                'Create',
-                'Update',
-                'Delete',
-                'Review',
-                'Execute',
-                'Manage'
-            ]
-            _categories.push({
-                name: category.name,
-                actions,
-                entities
-            });
         }
-        return {
-            controls: _controls,
-            categories: _categories
+        return permissions;
+    }
+
+    public checkCount() {
+        for (const category of this.map.values()) {
+            category.checkCount();
         }
+    }
+
+    public getAction(permissions: Permissions): ActionGroup | undefined {
+        return this.actions.get(permissions);
+    }
+
+    public static from(permissions: IPermission[]): PermissionsGroup {
+        const group = new PermissionsGroup();
+        for (const permission of permissions) {
+            if (permission.category !== PermissionCategories.ACCESS) {
+                const category = group.addCategory(permission);
+                const entity = category.addEntity(permission);
+                const action = entity.addAction(permission);
+                group.actions.set(permission.name, action);
+                group.controls.set(permission.name, action.control);
+                group.form.addControl(permission.name, action.control);
+            }
+        }
+        return group;
     }
 }

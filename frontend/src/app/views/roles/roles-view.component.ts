@@ -5,7 +5,7 @@ import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { PermissionsUtils } from 'src/app/utils/permissions';
+import { CategoryGroup, EntityGroup, PermissionsGroup } from 'src/app/utils/index';
 
 @Component({
     selector: 'app-roles-view',
@@ -23,8 +23,8 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     public searchFilter = new FormControl('');
     public newRole: FormGroup | null = null;
     public controls: Map<string, any>;
-    public categories: any[];
-    public selectedCategory: any = null;
+    public group: PermissionsGroup;
+    public selectedCategory: CategoryGroup | null = null;
     public lastCategory: boolean = false;
 
     constructor(
@@ -181,35 +181,18 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     }
 
     private openEditView(row?: any) {
-        const { controls, categories } = PermissionsUtils.parsePermissions(this.permissions);
-        this.controls = controls;
-        this.categories = categories;
-        for (const control of controls.values()) {
-            control.formControl = new FormControl(false);
-        }
-        this.categories.unshift({
-            name: 'Role Details',
-        })
-
-        const permissions = new FormGroup({});
+        this.group = PermissionsGroup.from(this.permissions);
         this.newRole = this.fb.group({
             id: [row?.id],
             name: [row?.name || 'Role name', Validators.required],
             description: [row?.description || 'Role name'],
-            permissions
+            permissions: this.group.form
         });
-        for (const [name, control] of controls) {
-            permissions.addControl(name, control.formControl);
-        }
-        if (row?.permissions) {
-            for (const permission of row.permissions) {
-                this.controls.get(permission)?.formControl?.setValue(true);
-            }
-        }
-        for (const category of this.categories) {
-            this.checkCount(category);
-        }
-        this.selectedCategory = this.categories[0];
+        this.group.addRole();
+        this.group.addAccess(this.permissions);
+        this.group.setValue(row?.permissions);
+        this.group.checkCount();
+        this.selectedCategory = this.group.first;
         this.lastCategory = false;
     }
 
@@ -227,37 +210,19 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         category.count = count;
     }
 
-    public onSelectCategory(category: any) {
+    public onSelectCategory(category: CategoryGroup) {
         this.selectedCategory = category;
-        this.lastCategory = this.categories[this.categories.length - 1] === category;
+        this.lastCategory = this.group.last === category;
     }
 
-    public onAll(entity: any) {
-        let _all = true;
-        for (const action of entity.actions) {
-            if (action && action.formControl) {
-                _all = _all && action.formControl.value;
-            }
-        }
-        _all = !_all;
-        for (const action of entity.actions) {
-            if (action && action.formControl) {
-                action.formControl.setValue(_all);
-            }
-        }
-        entity.all = _all;
-        this.checkCount(this.selectedCategory);
+    public onAll(entity: EntityGroup) {
+        entity.selectAll();
+        this.selectedCategory?.checkCount();
     }
 
-    public onCheckAll(entity: any) {
-        let _all = true;
-        for (const action of entity.actions) {
-            if (action && action.formControl) {
-                _all = _all && action.formControl.value;
-            }
-        }
-        entity.all = _all;
-        this.checkCount(this.selectedCategory);
+    public onCheckAll(entity: EntityGroup) {
+        entity.checkAll();
+        this.selectedCategory?.checkCount();
     }
 
     public onNextLabel(): string {
@@ -271,9 +236,8 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         if (this.lastCategory) {
             this.onSave()
         } else {
-            const index = this.categories.findIndex((e) => e === this.selectedCategory);
-            this.selectedCategory = this.categories[index + 1];
-            this.lastCategory = this.categories[this.categories.length - 1] === this.selectedCategory;
+            this.selectedCategory = this.group.next(this.selectedCategory);
+            this.lastCategory = this.group.last === this.selectedCategory;
         }
     }
 }

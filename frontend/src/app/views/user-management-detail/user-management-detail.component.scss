@@ -207,6 +207,11 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+
+                &.big {
+                    width: 170px;
+                    min-width: 170px;
+                }
             }
         }
 
@@ -231,9 +236,10 @@
 
                 .permissions {
                     display: flex;
-                    width: 700px;
-                    min-width: 700px;
-                    overflow: hidden;
+
+                    mat-radio-group {
+                        display: flex;
+                    }
 
                     .permission {
                         height: 64px;
@@ -242,6 +248,11 @@
                         display: flex;
                         align-items: center;
                         justify-content: center;
+
+                        &.big {
+                            width: 170px;
+                            min-width: 170px;
+                        }
                     }
 
                     .all-permission {
@@ -250,6 +261,33 @@
                         display: flex;
                         align-items: center;
                         justify-content: center;
+                        position: relative;
+
+                        &::after {
+                            content: "";
+                            position: absolute;
+                            width: 280px;
+                            height: 3px;
+                            border-bottom: 2px solid #eeeeee;
+                            left: 43px;
+                            top: 28px;
+                        }
+
+                        &::before {
+                            content: "";
+                            position: absolute;
+                            width: 280px;
+                            height: 3px;
+                            border-bottom: 2px solid #eeeeee;
+                            right: 43px;
+                            top: 28px;
+                        }
+                    }
+
+                    .permission-background {
+                        width: 16px;
+                        height: 16px;
+                        background: #eee;
                     }
                 }
             }
@@ -317,7 +355,92 @@
     }
 }
 
+.filters-container {
+    padding: 24px 0 2px 0;
+}
+
+.filters-container {
+    & ::ng-deep .p-dropdown {
+        width: 200px;
+        border-radius: 8px;
+        border: 1px solid var(--color-grey-3);
+        background: #FFF;
+    }
+
+    & ::ng-deep .p-dropdown-panel,
+    .p-dropdown-items-wrapper {
+        border-radius: 8px;
+        border: 1px solid var(--color-grey-3);
+        background: #FFF;
+        margin-top: 4px;
+        box-shadow: 0 0 1px 0 #000;
+    }
+
+    .dropdown-label {
+        color: var(--color-grey-5);
+        font-family: Inter, serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 16px;
+        margin-right: 10px;
+    }
+    
+    .dropdown-item {
+        color: var(--color-grey-black-2);
+        font-family: Inter, serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 16px;
+    }
+}
+
 .container::ng-deep .mat-tab-label-active {
     color: #0681EE !important;
     opacity: 1 !important;
+}
+
+.cell-size-assigned {
+    min-width: 200px;
+    width: 200px;
+    max-width: 200px;
+}
+
+.chip {
+    display: inline;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--color-grey-6, #848fa9);
+    background: var(--color-grey-3, #e1e7ef);
+}
+
+.chip-color-grey {
+    color: var(--color-grey-6, #848fa9);
+    background: var(--color-grey-3, #e1e7ef);
+}
+
+.chip-color-blue {
+    color: var(--color-primary, #0681ee);
+    background: rgba(6, 129, 238, 0.16);
+}
+
+.chip-color-green {
+    color: #19be47;
+    background: #cafdd9;
+}
+
+.chip-color-red {
+    color: var(--color-accent-red-1);
+    background: var(--color-accent-red-2);
+}
+
+.chip-color-yellow {
+    color: var(--color-accent-yellow-1);
+    background: var(--color-accent-yellow-2);
 }

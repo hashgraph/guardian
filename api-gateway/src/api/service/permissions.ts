@@ -464,6 +464,13 @@ export class PermissionsApi {
         type: Number,
         description: 'The numbers of items to return'
     })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        enum: ['ALL', 'DRAFT', 'DRY-RUN', 'PUBLISH_ERROR', 'DISCONTINUED', 'PUBLISH'],
+        description: 'Filter by status',
+        example: 'Active'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -481,6 +488,7 @@ export class PermissionsApi {
         @Param('username') username: string,
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
+        @Query('status') status: string,
         @Response() res: any
     ): Promise<PolicyDTO[]> {
         let row: any;
@@ -502,6 +510,9 @@ export class PermissionsApi {
                 pageIndex,
                 pageSize
             };
+            if (status && status !== 'ALL') {
+                options.filters.status = status;
+            }
             const engineService = new PolicyEngine();
             const { policies, count } = await engineService.getAssignedPolicies(options);
             return res.header('X-Total-Count', count).send(policies);

@@ -4,8 +4,7 @@ import { ProfileService } from '../../services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl } from '@angular/forms';
-import { PermissionsUtils } from 'src/app/utils/permissions';
+import { PermissionsGroup } from 'src/app/utils/index';
 
 @Component({
     selector: 'app-user-management-detail',
@@ -20,8 +19,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     public target: any | null = null;
     public username: string = '';
     public permissionsGroup: string[];
-    public controls: Map<string, any>;
-    public categories: any[];
+    public group: PermissionsGroup;
     public permissions: any[] = [];
 
     public policyPage: any[] = [];
@@ -29,6 +27,36 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     public pageSize: number = 25;
     public policyCount: number = 0;
     public selectedIndex: number = 0;
+
+    public statusFilterValue: any = 'ALL';
+    public statusFilterOption = [{
+        name: 'All',
+        value: 'ALL',
+    }, {
+        name: 'Draft',
+        value: 'DRAFT',
+        color: 'grey'
+    },
+    {
+        name: 'Dry Run',
+        value: 'DRY-RUN',
+        color: 'grey'
+    },
+    {
+        name: 'Publish Error',
+        value: 'PUBLISH_ERROR',
+        color: 'red'
+    },
+    {
+        name: 'Discontinued',
+        value: 'DISCONTINUED',
+        color: 'red'
+    },
+    {
+        name: 'Published',
+        value: 'PUBLISH',
+        color: 'green'
+    }]
 
     private subscription = new Subscription();
 
@@ -68,14 +96,9 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.roleMap = this.roles
                 .reduce((map, role) => map.set(role.id, role), new Map<string, any>());
             this.permissions = permissions || [];
-            const { controls, categories } = PermissionsUtils.parsePermissions(this.permissions);
-            this.controls = controls;
-            this.categories = categories;
-            for (const control of controls.values()) {
-                control.tooltip = ''
-                control.formControl = new FormControl(false);
-                control.formControl.disable();
-            }
+            this.group = PermissionsGroup.from(this.permissions);
+            this.group.addAccess(this.permissions);
+            this.group.disable();
             this.loadData();
         }, (e) => {
             this.loadError(e);
@@ -110,10 +133,12 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     private loadPolicies() {
         this.loading = true;
+        const status = this.statusFilterValue;
         this.permissionsService.getPolicies(
             this.username,
             this.pageIndex,
-            this.pageSize
+            this.pageSize,
+            status
         ).subscribe((response) => {
             this.policyPage = response.body || [];
             this.policyCount = parseInt(response.headers.get('X-Total-Count') as any, 10) || this.policyPage.length;
@@ -132,20 +157,17 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     private updateControls() {
-        for (const control of this.controls.values()) {
-            control.tooltip = ''
-            control.formControl.setValue(false);
-        }
+        this.group.clearValue();
         for (const id of this.permissionsGroup) {
             const role = this.roleMap.get(id);
             if (role && role.permissions) {
+                this.group.addValue(role.permissions);
                 for (const permission of role.permissions) {
-                    const control = this.controls.get(permission);
-                    if (control) {
-                        control.tooltip = control.tooltip ?
-                            `${control.tooltip}, ${role.name}` :
-                            `${role.name}`
-                        control.formControl.setValue(true);
+                    const action = this.group.getAction(permission);
+                    if (action) {
+                        action.tooltip = action.tooltip ?
+                            `${action.tooltip}, ${role.name}` :
+                            `${role.name}`;
                     }
                 }
             }
@@ -208,5 +230,42 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         }, (e) => {
             this.loadError(e);
         });
+    }
+
+    public getColor(status: string, expired: boolean = false) {
+        switch (status) {
+            case 'DRAFT':
+                return 'grey';
+            case 'DRY-RUN':
+                return 'grey';
+            case 'DISCONTINUED':
+            case 'PUBLISH_ERROR':
+                return 'red';
+            case 'PUBLISH':
+                return expired ? 'yellow' : 'green';
+            default:
+                return 'grey';
+        }
+    }
+
+    public getLabelStatus(status: string, expired: boolean = false) {
+        switch (status) {
+            case 'DRAFT':
+                return 'Draft';
+            case 'DRY-RUN':
+                return 'Dry Run';
+            case 'PUBLISH_ERROR':
+                return 'Publish Error';
+            case 'PUBLISH':
+                return `Published${expired ? '*' : ''}`;
+            case 'DISCONTINUED':
+                return `Discontinued`;
+            default:
+                return 'Incorrect status';
+        }
+    }
+
+    public onFilter() {
+        this.loadPolicies();
     }
 }

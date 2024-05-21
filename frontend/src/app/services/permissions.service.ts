@@ -22,7 +22,9 @@ export class PermissionsService {
         let params = new HttpParams();
         if (filters && typeof filters === 'object') {
             for (const key of Object.keys(filters)) {
-                params = params.set(key, filters[key]);
+                if(filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
             }
         }
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
@@ -77,9 +79,10 @@ export class PermissionsService {
     public getPolicies(
         username: string,
         pageIndex?: number,
-        pageSize?: number
+        pageSize?: number,
+        status?: string
     ): Observable<HttpResponse<any[]>> {
-        const params = PermissionsService.getOptions({}, pageIndex, pageSize);
+        const params = PermissionsService.getOptions({ status }, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/users/${username}/policies`, { observe: 'response', params });
     }
 
