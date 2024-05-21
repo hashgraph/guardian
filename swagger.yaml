@@ -11015,6 +11015,20 @@ paths:
           description: The numbers of items to return
           schema:
             type: number
+        - name: status
+          required: true
+          in: query
+          description: Filter by status
+          example: Active
+          schema:
+            enum:
+              - ALL
+              - DRAFT
+              - DRY-RUN
+              - PUBLISH_ERROR
+              - DISCONTINUED
+              - PUBLISH
+            type: string
       responses:
         '200':
           description: Successful operation.
