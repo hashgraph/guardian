@@ -51,6 +51,7 @@ interface IFieldContext {
 })
 export class CompareDocumentComponent implements OnInit {
     @Input('disableHeader') disableHeader: boolean = false;
+    @Input('customColumnSize') customColumnSize: string | null = null;
     @Input('comparationType') comparationType = 'policy'
     @Input('value') value!: any;
     @Input() type: string = 'tree';
@@ -134,7 +135,7 @@ export class CompareDocumentComponent implements OnInit {
         this.totals = this.value.totals;
         this.minWidth = 770 * this.size;
 
-        const k = Math.round(100 / this.size);
+        const k = (this.customColumnSize) ? this.customColumnSize : Math.round(100 / this.size);
         this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
         for (let i = 1; i < this.size; i++) {
             this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;

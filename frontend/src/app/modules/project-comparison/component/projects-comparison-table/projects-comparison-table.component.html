@@ -85,8 +85,9 @@
             <h1>VP Comparison</h1>
         </div>
         <div *ngFor="let doc of vpDocuments" class="container">
-            <div class="table">
+            <div class="vp-documents">
                 <app-compare-document
+                        customColumnSize="42"
                         comparationType="documents"
                         [childrenLvl]="'2'"
                         [disableHeader]="true"
