@@ -1,5 +1,5 @@
 import { CompareOptions, DocumentComparator, DocumentModel, HashComparator, IChildrenLvl, IEventsLvl, IPropertiesLvl, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, PolicySearchModel, RootSearchModel, SchemaComparator, SchemaModel, ToolComparator, ToolModel } from '../analytics/index.js';
-import { DatabaseServer, Logger, MessageError, MessageResponse } from '@guardian/common';
+import { DatabaseServer, Logger, MessageError, MessageResponse, VpDocument } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { MessageAPI, PolicyType, UserRole } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
@@ -293,6 +293,66 @@ export async function analyticsAPI(): Promise<void> {
             } else {
                 return new MessageError('Invalid size');
             }
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse<any>(MessageAPI.COMPARE_VP_DOCUMENTS, async (msg) => {
+        try {
+            const {
+                user,
+                type,
+                ids,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl,
+                keyLvl,
+                refLvl
+            } = msg;
+            const options = new CompareOptions(
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl,
+                keyLvl,
+                refLvl,
+                user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
+            );
+
+            const vpDocuments: VpDocument[][] = await Promise.all(ids.map(async (id) => {
+                return await DatabaseServer.getVPs({policyId: id});
+            }))
+            // const minLength = Math.min.apply(null, vpDocuments.map(d => d.length));
+
+            const comparationVpArray = []
+
+            const preComparator = new DocumentComparator(options);
+            for (const vp1 of vpDocuments[0]) {
+                let r;
+                let lastRate = 0;
+                for (const vp2 of vpDocuments[1]) {
+                    const _r = preComparator.compare([
+                        await DocumentComparator.createModelById(vp1.id, options),
+                        await DocumentComparator.createModelById(vp2.id, options)
+                    ])
+                    if (!r) {
+                        lastRate = _r[0].total;
+                        r = _r
+                    } else {
+                        if (_r[0].total > lastRate) {
+                            lastRate = _r[0].total;
+                            r = _r
+                        }
+                    }
+                }
+                comparationVpArray.push(r[0]);
+                console.log(r);
+            }
+            return new MessageResponse(comparationVpArray);
+
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
