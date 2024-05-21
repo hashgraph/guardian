@@ -327,7 +327,7 @@ export async function analyticsAPI(): Promise<void> {
             }))
             // const minLength = Math.min.apply(null, vpDocuments.map(d => d.length));
 
-            const comparationVpArray = []
+            const comparisonVpArray = []
 
             const preComparator = new DocumentComparator(options);
             for (const vp1 of vpDocuments[0]) {
@@ -338,20 +338,23 @@ export async function analyticsAPI(): Promise<void> {
                         await DocumentComparator.createModelById(vp1.id, options),
                         await DocumentComparator.createModelById(vp2.id, options)
                     ])
-                    if (!r) {
-                        lastRate = _r[0].total;
-                        r = _r
-                    } else {
-                        if (_r[0].total > lastRate) {
+                    if (Array.isArray(_r) && _r[0]) {
+                        if (!r) {
                             lastRate = _r[0].total;
                             r = _r
+                        } else {
+                            if (_r[0].total > lastRate) {
+                                lastRate = _r[0].total;
+                                r = _r
+                            }
                         }
                     }
                 }
-                comparationVpArray.push(r[0]);
-                console.log(r);
+                if (Array.isArray(r) && r[0]) {
+                    comparisonVpArray.push(r[0]);
+                }
             }
-            return new MessageResponse(comparationVpArray);
+            return new MessageResponse(comparisonVpArray);
 
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
