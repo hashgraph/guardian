@@ -1014,9 +1014,13 @@ export class SchemaApi {
     async importFromMessagePreview(
         @Body() body: MessageSchemaDTO
     ): Promise<SchemaDTO[]> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const guardians = new Guardians();
-            return await guardians.previewSchemasByMessages([body.messageId]);
+            return await guardians.previewSchemasByMessages([messageId]);
         } catch (error) {
             await InternalException(error);
         }
@@ -1060,9 +1064,9 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Body() body: MessageSchemaDTO
     ): Promise<TaskDTO> {
-        const messageId = body.messageId;
+        const messageId = body?.messageId;
         if (!messageId) {
-            throw new HttpException('Schema ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PREVIEW_SCHEMA_MESSAGE, user.id);
@@ -1168,9 +1172,9 @@ export class SchemaApi {
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
-        const messageId = body.messageId;
+        const messageId = body?.messageId;
         if (!messageId) {
-            throw new HttpException('message ID in body is required', HttpStatus.UNPROCESSABLE_ENTITY)
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
             await guardians.importSchemasByMessages([messageId], user.did, topicId);
@@ -1231,9 +1235,9 @@ export class SchemaApi {
         @Param('topicId') topicId: string,
         @Body() body: MessageSchemaDTO,
     ): Promise<any> {
-        const messageId = body.messageId;
+        const messageId = body?.messageId;
         if (!messageId) {
-            throw new HttpException('Schema ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_SCHEMA_MESSAGE, user.id);

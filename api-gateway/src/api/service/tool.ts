@@ -558,9 +558,13 @@ export class ToolsApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO
     ): Promise<ToolPreviewDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const guardian = new Guardians();
-            return await guardian.previewToolMessage(body.messageId, user.did);
+            return await guardian.previewToolMessage(messageId, user.did);
         } catch (error) {
             await InternalException(error);
         }
@@ -596,9 +600,13 @@ export class ToolsApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO
     ): Promise<ToolDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         const guardian = new Guardians();
         try {
-            return await guardian.importToolMessage(body.messageId, user.did);
+            return await guardian.importToolMessage(messageId, user.did);
         } catch (error) {
             await InternalException(error);
         }
@@ -900,12 +908,16 @@ export class ToolsApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO
     ): Promise<TaskDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const guardian = new Guardians();
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_TOOL_MESSAGE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolMessageAsync(body.messageId, user.did, task);
+                await guardian.importToolMessageAsync(messageId, user.did, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });

@@ -163,7 +163,7 @@ export class ModulesApi {
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner
             });
-            res.locals.data = SchemaUtils.toOld(items)
+            // res.locals.data = SchemaUtils.toOld(items)
             return res
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
@@ -518,9 +518,13 @@ export class ModulesApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO
     ): Promise<ModuleDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const guardian = new Guardians();
-            return await guardian.importModuleMessage(body.messageId, user.did);
+            return await guardian.importModuleMessage(messageId, user.did);
         } catch (error) {
             await InternalException(error);
         }
@@ -593,9 +597,13 @@ export class ModulesApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO
     ): Promise<ModulePreviewDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const guardian = new Guardians();
-            return await guardian.previewModuleMessage(body.messageId, user.did);
+            return await guardian.previewModuleMessage(messageId, user.did);
         } catch (error) {
             await InternalException(error);
         }

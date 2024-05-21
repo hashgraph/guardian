@@ -1739,11 +1739,15 @@ export class PolicyApi {
         @Query('versionOfTopicId') versionOfTopicId: string,
         @Body() body: ImportMessageDTO
     ): Promise<PolicyDTO[]> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         const engineService = new PolicyEngine();
         try {
             return await engineService.importMessage(
                 user,
-                body.messageId,
+                messageId,
                 versionOfTopicId,
                 body.metadata
             );
@@ -1789,6 +1793,10 @@ export class PolicyApi {
         @Query('versionOfTopicId') versionOfTopicId: string,
         @Body() body: ImportMessageDTO
     ): Promise<any> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(
@@ -1796,7 +1804,7 @@ export class PolicyApi {
                 const engineService = new PolicyEngine();
                 await engineService.importMessageAsync(
                     user,
-                    body.messageId,
+                    messageId,
                     versionOfTopicId,
                     task,
                     body.metadata
@@ -1843,9 +1851,13 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO
     ): Promise<any> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
             const engineService = new PolicyEngine();
-            return await engineService.importMessagePreview(user, body.messageId);
+            return await engineService.importMessagePreview(user, messageId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1881,11 +1893,15 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO
     ) {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PREVIEW_POLICY_MESSAGE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importMessagePreviewAsync(user, body.messageId, task);
+            await engineService.importMessagePreviewAsync(user, messageId, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
