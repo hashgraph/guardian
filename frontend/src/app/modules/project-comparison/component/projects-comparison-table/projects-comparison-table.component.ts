@@ -163,7 +163,11 @@ export class ProjectsComparisonTableComponent implements OnInit {
             const [properties, data] = result;
             this.properties = properties;
             this.setData(data.projects);
-            this.vpDocuments = data.presentations
+            this.vpDocuments = data.presentations.map((vp: any) => {
+                console.log(vp);
+                vp.size = 2;
+                return vp;
+            })
             this.loading = false;
         })
     }
