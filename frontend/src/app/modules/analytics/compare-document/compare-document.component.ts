@@ -62,7 +62,7 @@ export class CompareDocumentComponent implements OnInit {
 
     @Output() change = new EventEmitter<any>();
 
-    public minWidth: number;
+    public minWidth: number | string;
     public headers: any[];
 
     public size: number;
@@ -133,12 +133,14 @@ export class CompareDocumentComponent implements OnInit {
     onInit() {
         this.size = this.value.size || 2;
         this.totals = this.value.totals;
-        this.minWidth = 770 * this.size;
+        this.minWidth = (!this.customColumnSize) ? this.size * 770 : 'unset';
 
-        const k = (this.customColumnSize) ? this.customColumnSize : Math.round(100 / this.size);
-        this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
-        for (let i = 1; i < this.size; i++) {
-            this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
+        if (!this.customColumnSize) {
+            const k = (this.customColumnSize) ? this.customColumnSize : Math.round(100 / this.size);
+            this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
+            for (let i = 1; i < this.size; i++) {
+                this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
+            }
         }
 
         this.createHeaders(this.value);
