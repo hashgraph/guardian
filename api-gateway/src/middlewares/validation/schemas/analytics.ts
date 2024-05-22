@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsObject, IsString, IsNumber } from 'class-validator';
+import { IsArray, IsObject, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SearchPoliciesDTO {
@@ -145,6 +145,16 @@ export class CompareDocumentsDTO {
     @ApiProperty()
     @IsObject()
     total: any;
+}
+
+export class CompareDocumentsV2DTO {
+    @ApiProperty()
+    @IsObject()
+    projects: CompareDocumentsDTO;
+
+    @ApiProperty()
+    @IsObject()
+    presentations: CompareDocumentsDTO;
 }
 
 export class CompareToolsDTO {

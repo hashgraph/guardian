@@ -82,6 +82,7 @@ interface IPropertyRow {
     styleUrls: ['./projects-comparison-table.component.scss'],
 })
 export class ProjectsComparisonTableComponent implements OnInit {
+    public vpDocuments: any[] = [];
     public loading: boolean = true;
     public columns: boolean[];
     public groups: IGroup[];
@@ -161,7 +162,8 @@ export class ProjectsComparisonTableComponent implements OnInit {
         ]).subscribe((result: any) => {
             const [properties, data] = result;
             this.properties = properties;
-            this.setData(data);
+            this.setData(data.projects);
+            this.vpDocuments = data.presentations
             this.loading = false;
         })
     }

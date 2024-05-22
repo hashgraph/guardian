@@ -12,7 +12,7 @@
 
     <div *ngIf="resultContext" class="list">
         <mat-accordion multi>
-            <mat-expansion-panel expanded>
+            <mat-expansion-panel *ngIf="!disableHeader" expanded>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         <div class="header">Description</div>
@@ -20,13 +20,13 @@
                 </mat-expansion-panel-header>
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
                     <ng-container *ngFor="let context of resultContext">
-                        <div class="middle-compare-result compare-result" 
+                        <div [style.grid-column-start]="2 * context.index"
                             *ngIf="context.right"
-                            [style.grid-column-start]="2 * context.index" 
+                             class="middle-compare-result compare-result"
                             [attr.open]="true">
                         </div>
-                        <div 
-                            [style.grid-column-start]="2 * context.index + 1" 
+                        <div
+                                [style.grid-column-start]="2 * context.index + 1"
                             [attr.open]="true"
                             [ngClass]="{
                                 'left-compare-result': context.left,
@@ -41,51 +41,51 @@
 
             <mat-expansion-panel expanded *ngIf="treeContext">
                 <mat-expansion-panel-header>
-                    <div class="header">Policy Documents</div>
+                    <div class="header">{{ comparationLabels.documentsLabel }}</div>
                 </mat-expansion-panel-header>
 
                 <div class="merge-container">
-                    <div class="legend" 
-                        [attr.type-1]="_type1" 
-                        [attr.type-2]="_type2" 
+                    <div [attr.type-1]="_type1"
+                         [attr.type-2]="_type2"
+                         class="legend"
                         [attr.type-3]="_type3"
                         [attr.type-4]="_type4">
                         <div class="legend-item" (click)="_type1=!_type1">
                             <div class="legend-icon legend-l1"></div>
                             <div class="legend-text">
-                                Blocks are equal, including their child blocks.
+                                {{ comparationLabels.equalFullLabel }}
                             </div>
                         </div>
                         <div class="legend-item" (click)="_type2=!_type2">
                             <div class="legend-icon legend-l2"></div>
                             <div class="legend-text">
-                                blocks are equal, but their child blocks are different.
+                                {{ comparationLabels.equalNotFullLabel }}
                             </div>
                         </div>
                         <div class="legend-item" (click)="_type3=!_type3">
                             <div class="legend-icon legend-l3"></div>
                             <div class="legend-text">
-                                blocks are of the same type and are partially equal.
+                                {{ comparationLabels.sameTypeLabel }}
                             </div>
                         </div>
                         <div class="legend-item" (click)="_type4=!_type4">
                             <div class="legend-icon legend-l4"></div>
                             <div class="legend-text">
-                                Blocks are absent in the other Policy.
+                                {{ comparationLabels.differentLabel }}
                             </div>
                         </div>
                     </div>
 
-                    <div *ngIf="type==='tree'" class="merge-tree" 
+                    <div *ngIf="type==='tree'" [attr.open]="_panelOpenState"
                         [attr.tree-size]="size"
-                        [attr.open]="_panelOpenState" 
+                         [attr.type-2]="_type2"
                         [attr.type-1]="_type1"
-                        [attr.type-2]="_type2" 
-                        [attr.type-3]="_type3" 
+                         [attr.type-3]="_type3"
+                         class="merge-tree"
                         [attr.type-4]="_type4">
 
                         <div *ngFor="let row of treeContext" class="report-item report-item-number"
-                            [attr.hidden]="row.hidden" 
+                             [attr.hidden]="row.hidden"
                             [style.grid-template-columns]="_gridStyle">
 
                             <div class="report-number">{{row.number}}</div>
@@ -95,12 +95,12 @@
                             </div>
 
                             <ng-container *ngFor="let treeItemContext of row.contexts">
-                                <div 
-                                    [attr.offset]="row.lvl" 
-                                    [attr.rate]="treeItemContext.rate" 
+                                <div
+                                        [attr.offset]="row.lvl"
+                                        [attr.rate]="treeItemContext.rate"
                                     [attr.type]="treeItemContext.type"
                                     [style.padding-left.px]="row.offset"
-                                    [style.grid-column-start]="2 * treeItemContext.index + 1" 
+                                        [style.grid-column-start]="2 * treeItemContext.index + 1"
                                     [ngClass]="{
                                         'left-tree': treeItemContext.left,
                                         'right-tree': treeItemContext.right,
@@ -129,9 +129,9 @@
 
                             <ng-container *ngIf="row.open">
                                 <ng-container *ngFor="let treeDetailContext of row.detailContexts">
-                                    <div [attr.open]="row.open" 
+                                    <div [attr.open]="row.open"
                                         [style.padding-left.px]="row.offset"
-                                        [style.grid-column-start]="2 * treeDetailContext.index + 1" 
+                                         [style.grid-column-start]="2 * treeDetailContext.index + 1"
                                         [ngClass]="{
                                             'left-compare-result': treeDetailContext.left,
                                             'right-compare-result': treeDetailContext.right,
@@ -141,9 +141,9 @@
                                         }">
                                         <ng-container *ngTemplateOutlet="resultDetails; context: treeDetailContext"></ng-container>
                                     </div>
-                                    <div class="middle-compare-result compare-result" 
+                                    <div [style.grid-column-start]="2 * treeDetailContext.index"
                                         *ngIf="treeDetailContext.right"
-                                        [style.grid-column-start]="2 * treeDetailContext.index" 
+                                         class="middle-compare-result compare-result"
                                         [attr.open]="row.open"></div>
                                 </ng-container>
                             </ng-container>
@@ -158,9 +158,9 @@
                                         {{ column.label }}
                                     </mat-header-cell>
                                     <mat-cell *cdkCellDef="let row">
-                                        <span class="table-value" 
+                                        <span [attr.value]="row.data[column.name]"
                                             [title]="row.data[column.name]"
-                                            [attr.value]="row.data[column.name]" 
+                                              class="table-value"
                                             [attr.display-type]="column.display">
                                             {{ row.data[column.name] }}
                                         </span>
@@ -241,20 +241,20 @@
 
         <div class="prop-table" [attr.system]="_systemProp">
             <div class="prop-table-header">
-                Documents: 
+                Documents:
                 <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
                     <mat-icon *ngIf="!_systemProp">unfold_more</mat-icon>
                     <mat-icon *ngIf="_systemProp">unfold_less</mat-icon>
                 </div>
             </div>
             <div class="prop-table-body">
-                <div *ngFor="let field of data.fields" class="prop-table-row" 
+                <div *ngFor="let field of data.fields" [attr.offset]="field.lvl"
                     [attr.fantom]="field.fantom"
-                    [attr.type]="field.type" 
-                    [attr.offset]="field.lvl" 
+                     [attr.type]="field.type"
+                     class="prop-table-row"
                     [attr.index]="data.index"
                     [attr.system]="field.system">
-                    <div class="prop-table-name" 
+                    <div class="prop-table-name"
                         [style.padding-left.px]="field.offset"
                         [title]="field.name">
                         {{field.label}}:
@@ -276,12 +276,12 @@
         <div class="prop-table">
             <div class="prop-table-header">Attributes: </div>
             <div class="prop-table-body">
-                <div *ngFor="let attribute of data.attributes" class="prop-table-row" 
+                <div *ngFor="let attribute of data.attributes" [attr.offset]="attribute.lvl"
                     [attr.fantom]="attribute.fantom"
-                    [attr.type]="attribute.type" 
-                    [attr.offset]="attribute.lvl" 
+                     [attr.type]="attribute.type"
+                     class="prop-table-row"
                     [attr.index]="data.index">
-                    <div class="prop-table-name" 
+                    <div class="prop-table-name"
                         [style.padding-left.px]="attribute.offset"
                         [title]="attribute.name">
                         {{attribute.label}}:
@@ -293,7 +293,7 @@
                     </div>
                 </div>
             </div>
-        </div>  
+        </div>
 
         <div class="prop-delimiter"></div>
     </div>
