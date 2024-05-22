@@ -1,7 +1,7 @@
-import { Examples } from "#middlewares";
-import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities, PermissionActions, UserRole } from "@guardian/interfaces";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsString } from "class-validator";
+import { Examples } from '#middlewares';
+import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities, PermissionActions, UserRole } from '@guardian/interfaces';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsString } from 'class-validator';
 
 const permission = PermissionsArray.filter((p) => !p.disabled)[0];
 const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => p.name);

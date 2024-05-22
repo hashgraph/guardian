@@ -108,4 +108,3 @@ export class ThemeDTO {
     })
     rules: ThemeRoleDTO[];
 }
-

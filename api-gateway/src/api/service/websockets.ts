@@ -76,9 +76,6 @@ export class WebSocketsService {
      */
     private readonly clients = new Map();
 
-    constructor() {
-    }
-
     /**
      * Set connection
      * @param cn

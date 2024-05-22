@@ -6,7 +6,6 @@ import { IAuthUser } from '@guardian/common';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, ONLY_SR } from '#helpers';
 
-
 @Controller('suggestions')
 @ApiTags('suggestions')
 export class SuggestionsApi {

@@ -1,4 +1,4 @@
-import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
+import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 
 @ValidatorConstraint({ name: 'string-or-number', async: false })
 export class IsNumberOrString implements ValidatorConstraintInterface {

@@ -1,7 +1,7 @@
 import { IAuthUser } from '@guardian/common';
-import { AssignedEntityType, Permissions, UserRole } from '@guardian/interfaces';
+import { AssignedEntityType, Permissions } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, InternalException, PolicyEngine, Users } from '#helpers';
@@ -199,8 +199,8 @@ export class PermissionsApi {
     }
 
     /**
-      * Remove role
-      */
+     * Remove role
+     */
     @Delete('/roles/:id')
     @Auth(
         Permissions.PERMISSIONS_ROLE_DELETE

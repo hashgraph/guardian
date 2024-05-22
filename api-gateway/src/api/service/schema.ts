@@ -69,8 +69,8 @@ export class SingleSchemaApi {
     @Get('/:schemaId/parents')
     @Auth(
         Permissions.SCHEMAS_SCHEMA_READ,
-        // UserRole.STANDARD_REGISTRY, 
-        // UserRole.AUDITOR ?, 
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
         // UserRole.USER ?
     )
     @ApiOperation({
@@ -113,8 +113,8 @@ export class SingleSchemaApi {
     @Get('/:schemaId/tree')
     @Auth(
         Permissions.SCHEMAS_SCHEMA_READ,
-        // UserRole.STANDARD_REGISTRY, 
-        // UserRole.AUDITOR ?, 
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
         // UserRole.USER ?
     )
     @ApiOperation({
@@ -186,8 +186,8 @@ export class SchemaApi {
     @Get('/')
     @Auth(
         Permissions.SCHEMAS_SCHEMA_READ,
-        // UserRole.STANDARD_REGISTRY, 
-        // UserRole.AUDITOR ?, 
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
         // UserRole.USER ?
     )
     @ApiOperation({
@@ -305,8 +305,8 @@ export class SchemaApi {
     @Get('/:topicId')
     @Auth(
         Permissions.SCHEMAS_SCHEMA_READ,
-        // UserRole.STANDARD_REGISTRY, 
-        // UserRole.AUDITOR ?, 
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
         // UserRole.USER ?
     )
     @ApiOperation({

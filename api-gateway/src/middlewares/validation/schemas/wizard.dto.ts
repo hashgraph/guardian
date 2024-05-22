@@ -1,6 +1,5 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { PolicyDTO } from './policies.js';
-import { IsArray } from 'class-validator';
 
 export class WizardConfigDTO {
     @ApiProperty({

@@ -6,7 +6,6 @@ import { Guardians, Users, UseCache, ONLY_SR, InternalException } from '#helpers
 import { Auth } from '#auth';
 import { Examples, InternalServerErrorDTO, VpDocumentDTO, pageHeader } from '#middlewares';
 
-
 @Controller('trust-chains')
 @ApiTags('trust-chains')
 export class TrustChainsApi {

@@ -1,5 +1,5 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger } from '#helpers';
-import { Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
+import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
@@ -127,7 +127,7 @@ export class TokensApi {
 
             let tokensAndCount = { items: [], count: 0 };
             if (user.did) {
-                if(UserPermissions.has(user, [
+                if (UserPermissions.has(user, [
                     Permissions.TOKENS_TOKEN_CREATE,
                     Permissions.TOKENS_TOKEN_UPDATE,
                     Permissions.TOKENS_TOKEN_DELETE,
