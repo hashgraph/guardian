@@ -10108,7 +10108,7 @@ paths:
         - projects
   /projects/compare/documents:
     post:
-      operationId: ProjectsAPI_compareDocuments
+      operationId: ProjectsAPI_compareDocumentsV2
       summary: Compare documents.
       description: Compare documents.
       parameters: []
@@ -10135,7 +10135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CompareDocumentsDTO'
+                $ref: '#/components/schemas/CompareDocumentsV2DTO'
         '500':
           description: Internal server error.
           content:
@@ -12176,48 +12176,85 @@ components:
       properties:
         id:
           type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
         name:
           type: string
+          example: Schema name
         description:
           type: string
+          example: Description
         entity:
           type: string
+          enum:
+            - NONE
+            - VC
+            - EVC
+            - STANDARD_REGISTRY
+            - USER
+            - POLICY
+            - MINT_TOKEN
+            - RETIRE
+            - WIPE_TOKEN
+            - MINT_NFTOKEN
+            - ISSUER
+            - USER_ROLE
+            - CHUNK
+            - ACTIVITY_IMPACT
+            - TOKEN_DATA_SOURCE
+          example: POLICY
+        iri:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - UNPUBLISHED
+            - ERROR
+          example: DRAFT
+        topicId:
+          type: string
+          example: 0.0.1
+        version:
+          type: string
+          example: 1.0.0
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        category:
+          type: string
+          enum:
+            - POLICY
+            - MODULE
+            - SYSTEM
+            - TAG
+            - TOOL
+          example: POLICY
+        documentURL:
+          type: string
+          example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        contextURL:
+          type: string
+          example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         document:
           type: object
         context:
           type: object
-        uuid:
-          type: string
-        iri:
-          type: string
-        hash:
-          type: string
-        status:
-          type: string
-        topicId:
-          type: string
-        version:
-          type: string
-        owner:
-          type: string
-        messageId:
-          type: string
-        category:
-          type: string
-        documentURL:
-          type: string
-        contextURL:
-          type: string
       required:
         - id
+        - uuid
         - name
         - description
         - entity
-        - document
-        - context
-        - uuid
         - iri
-        - hash
         - status
         - topicId
         - version
@@ -12226,6 +12263,8 @@ components:
         - category
         - documentURL
         - contextURL
+        - document
+        - context
     ExportMessageDTO:
       type: object
       properties:
@@ -12779,6 +12818,7 @@ components:
       properties:
         version:
           type: string
+          example: 1.0.0
       required:
         - version
     MessageSchemaDTO:
@@ -12786,6 +12826,7 @@ components:
       properties:
         messageId:
           type: string
+          example: '0000000000.000000001'
       required:
         - messageId
     ExportSchemaDTO:
@@ -12793,16 +12834,23 @@ components:
       properties:
         id:
           type: string
+          example: '000000000000000000000001'
         name:
           type: string
+          example: Schema name
         description:
           type: string
+          example: Description
         version:
           type: string
+          example: 1.0.0
         owner:
           type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         messageId:
           type: string
+          example: '0000000000.000000001'
       required:
         - id
         - name
@@ -12815,8 +12863,13 @@ components:
       properties:
         name:
           type: string
+          example: Schema name
         entity:
           type: string
+          enum:
+            - STANDARD_REGISTRY
+            - USER
+          example: STANDARD_REGISTRY
       required:
         - name
         - entity
@@ -13590,6 +13643,16 @@ components:
         - title
         - companyName
         - sectoralScope
+    CompareDocumentsV2DTO:
+      type: object
+      properties:
+        projects:
+          $ref: '#/components/schemas/CompareDocumentsDTO'
+        presentations:
+          $ref: '#/components/schemas/CompareDocumentsDTO'
+      required:
+        - projects
+        - presentations
     PropertiesDTO:
       type: object
       properties:
