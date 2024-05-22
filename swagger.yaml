@@ -8515,10 +8515,20 @@ paths:
       parameters:
         - name: policy
           required: true
-          in: path
+          in: query
           description: Policy Id
           example: '000000000000000000000001'
           schema:
+            type: string
+        - name: status
+          required: true
+          in: query
+          description: Token status
+          example: All
+          schema:
+            enum:
+              - Associated
+              - All
             type: string
         - name: pageIndex
           required: true
@@ -9278,6 +9288,36 @@ paths:
                 type: array
                 items:
                   type: number
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_16
+      security:
+        - bearer: []
+  /tokens/menu/all:
+    get:
+      operationId: TokensApi_getMenu
+      summary: Return a list of tokens.
+      description: >-
+        Returns tokens menu. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Modules.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TokenDTO'
         '401':
           description: Unauthorized
         '403':
@@ -13832,11 +13872,11 @@ components:
             - SCHEMAS_SCHEMA_UPDATE
             - SCHEMAS_SCHEMA_DELETE
             - SCHEMAS_SCHEMA_REVIEW
-            - SCHEMAS_SCHEMA_READ
-            - SCHEMAS_SCHEMA_CREATE
-            - SCHEMAS_SCHEMA_UPDATE
-            - SCHEMAS_SCHEMA_DELETE
-            - SCHEMAS_SCHEMA_REVIEW
+            - SCHEMAS_SYSTEM_SCHEMA_READ
+            - SCHEMAS_SYSTEM_SCHEMA_CREATE
+            - SCHEMAS_SYSTEM_SCHEMA_UPDATE
+            - SCHEMAS_SYSTEM_SCHEMA_DELETE
+            - SCHEMAS_SYSTEM_SCHEMA_REVIEW
             - TOOLS_TOOL_READ
             - TOOLS_TOOL_CREATE
             - TOOLS_TOOL_UPDATE
@@ -13846,10 +13886,10 @@ components:
             - TOKENS_TOKEN_CREATE
             - TOKENS_TOKEN_UPDATE
             - TOKENS_TOKEN_DELETE
+            - TOKENS_TOKEN_EXECUTE
             - TOKENS_TOKEN_MANAGE
             - TAGS_TAG_READ
             - TAGS_TAG_CREATE
-            - TAGS_TAG_DELETE
             - PROFILES_RESTORE_ALL
             - SUGGESTIONS_SUGGESTIONS_READ
             - SUGGESTIONS_SUGGESTIONS_UPDATE
@@ -13941,15 +13981,14 @@ components:
         action:
           type: string
           enum:
+            - ALL
             - READ
             - CREATE
             - UPDATE
             - DELETE
             - REVIEW
-            - EXECUTE
-            - ALL
             - AUDIT
-            - ASSOCIATE
+            - EXECUTE
             - MANAGE
             - ASSIGNED
             - PUBLISHED
