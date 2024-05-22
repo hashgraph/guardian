@@ -182,7 +182,7 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).then(response => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
+            expect(response.status).eql(STATUS_CODE.CONFLICT);
             expect(response.body.message).eql("An account with the same name already exists.");
         });
     });
