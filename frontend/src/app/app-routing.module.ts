@@ -136,7 +136,12 @@ const routes: Routes = [
         component: ListOfTokensUserComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER]
+            roles: [
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.TOKENS_TOKEN_EXECUTE
+            ]
         }
     },
     {
@@ -162,8 +167,13 @@ const routes: Routes = [
         component: TokenConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.TOKENS_TOKEN_READ]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         }
     },
     {
@@ -196,8 +206,14 @@ const routes: Routes = [
         component: SchemaConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.SCHEMAS_SCHEMA_READ, Permissions.SCHEMAS_SYSTEM_SCHEMA_READ]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_SCHEMA_READ,
+                Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
+            ]
         }
     },
     {
@@ -205,8 +221,13 @@ const routes: Routes = [
         component: ArtifactConfigComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.ARTIFACTS_FILE_READ, Permissions.ARTIFACTS_FILE_READ]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.ARTIFACTS_FILE_READ
+            ]
         }
 
     },
@@ -281,8 +302,41 @@ const routes: Routes = [
         component: PolicyConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.POLICIES_POLICY_UPDATE]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.POLICIES_POLICY_UPDATE
+            ]
+        }
+    },
+    {
+        path: 'module-configuration',
+        component: PolicyConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.MODULES_MODULE_UPDATE
+            ]
+        }
+    },
+    {
+        path: 'tool-configuration',
+        component: PolicyConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.TOOLS_TOOL_READ
+            ]
         }
     },
     {
@@ -290,8 +344,13 @@ const routes: Routes = [
         component: ModulesListComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.MODULES_MODULE_UPDATE]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.MODULES_MODULE_READ
+            ]
         }
     },
     {
@@ -299,8 +358,13 @@ const routes: Routes = [
         component: ToolsListComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.TOOLS_TOOL_UPDATE]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.TOOLS_TOOL_READ
+            ]
         }
     },
     {

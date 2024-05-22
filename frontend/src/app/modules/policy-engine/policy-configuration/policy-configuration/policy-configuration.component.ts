@@ -306,7 +306,7 @@ export class PolicyConfigurationComponent implements OnInit {
             }
 
             forkJoin([
-                this.tokenService.getTokens(),
+                this.tokenService.menuList(),
                 this.policyEngineService.getBlockInformation(),
                 this.schemaService.getSchemas(this.policyTemplate.topicId),
                 this.modulesService.menuList(),
@@ -447,7 +447,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
             forkJoin([
                 this.policyEngineService.getBlockInformation(),
-                this.tokenService.getTokens(),
+                this.tokenService.menuList(),
                 this.schemaService.getSchemas(this.toolTemplate.topicId),
                 this.modulesService.menuList(),
                 this.toolsService.menuList()
@@ -1520,7 +1520,9 @@ export class PolicyConfigurationComponent implements OnInit {
             module.description = result.description;
             this.loading = true;
             this.modulesService.create(module).subscribe((result) => {
-                this.router.navigate(['/policy-configuration'], { queryParams: { moduleId: result.uuid } });
+                this.router.navigate(['/module-configuration'], { 
+                    queryParams: { moduleId: result.uuid } 
+                });
             }, (e) => {
                 this.loading = false;
             });
@@ -1627,7 +1629,7 @@ export class PolicyConfigurationComponent implements OnInit {
             tool.description = result.description;
             this.loading = true;
             this.toolsService.create(tool).subscribe((result) => {
-                this.router.navigate(['/policy-configuration'], {
+                this.router.navigate(['/tool-configuration'], {
                     queryParams: { toolId: result.id }
                 });
             }, (e) => {

@@ -1,5 +1,5 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger } from '#helpers';
-import { Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
+import { Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
@@ -10,6 +10,18 @@ import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, page
  * Token route
  */
 // export const tokenAPI = Router();
+
+/**
+ * Get entity owner
+ * @param user
+ */
+function tokenOwner(user: IAuthUser): string {
+    if (user?.role === UserRole.USER) {
+        return user.parent;
+    } else {
+        return user.did;
+    }
+}
 
 /**
  * Connect policies to tokens
@@ -96,11 +108,21 @@ export class TokensApi {
         description: 'The numbers of items to return',
         example: 20
     })
-    @ApiParam({
+    @ApiQuery({
         name: 'policy',
         type: String,
         description: 'Policy Id',
         example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        enum: [
+            'Associated',
+            'All'
+        ],
+        description: 'Token status',
+        example: 'All'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -117,6 +139,7 @@ export class TokensApi {
     async getTokens(
         @AuthUser() user: IAuthUser,
         @Query('policy') policy: string,
+        @Query('status') status: string,
         @Query('pageIndex') pageIndex: number,
         @Query('pageSize') pageSize: number,
         @Response() res: any
@@ -126,22 +149,18 @@ export class TokensApi {
             const engineService = new PolicyEngine();
 
             let tokensAndCount = { items: [], count: 0 };
-            if (user.did) {
-                if (UserPermissions.has(user, [
-                    Permissions.TOKENS_TOKEN_CREATE,
-                    Permissions.TOKENS_TOKEN_UPDATE,
-                    Permissions.TOKENS_TOKEN_DELETE,
-                    Permissions.TOKENS_TOKEN_MANAGE
-                ])) {
-                    tokensAndCount = await guardians.getTokensPage(user.did, parseInteger(pageIndex), parseInteger(pageSize));
-                    const map = await engineService.getTokensMap(user.did);
-                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
-                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, false);
-                } else {
+            const owner = tokenOwner(user);
+            if (owner) {
+                if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
                     tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
-                    const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
+                    const map = await engineService.getTokensMap(owner, 'PUBLISH');
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, true);
+                } else {
+                    tokensAndCount = await guardians.getTokensPage(owner, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner);
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, false);
                 }
             }
             return res
@@ -451,7 +470,7 @@ export class TokensApi {
      */
     @Put('/:tokenId/associate')
     @Auth(
-        Permissions.TOKENS_TOKEN_ASSOCIATE,
+        Permissions.TOKENS_TOKEN_EXECUTE,
         // UserRole.USER,
     )
     @ApiOperation({
@@ -502,7 +521,7 @@ export class TokensApi {
      */
     @Put('/push/:tokenId/associate')
     @Auth(
-        Permissions.TOKENS_TOKEN_ASSOCIATE,
+        Permissions.TOKENS_TOKEN_EXECUTE,
         // UserRole.USER,
     )
     @ApiOperation({
@@ -552,7 +571,7 @@ export class TokensApi {
      */
     @Put('/:tokenId/dissociate')
     @Auth(
-        Permissions.TOKENS_TOKEN_ASSOCIATE,
+        Permissions.TOKENS_TOKEN_EXECUTE,
         // UserRole.USER,
     )
     @ApiOperation({
@@ -603,7 +622,7 @@ export class TokensApi {
      */
     @Put('/push/:tokenId/dissociate')
     @Auth(
-        Permissions.TOKENS_TOKEN_ASSOCIATE,
+        Permissions.TOKENS_TOKEN_EXECUTE,
         // UserRole.USER,
     )
     @ApiOperation({
@@ -1212,6 +1231,47 @@ export class TokensApi {
                 throw new HttpException('Token not registered.', HttpStatus.NOT_FOUND);
             }
             throw error;
+        }
+    }
+
+    /**
+     * Policy config menu
+     */
+    @Get('/menu/all')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of tokens.',
+        description: 'Returns tokens menu.' + ONLY_SR
+    })
+    @ApiOkResponse({
+        description: 'Modules.',
+        isArray: true,
+        type: TokenDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getMenu(
+        @AuthUser() user: IAuthUser
+    ): Promise<TokenDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const engineService = new PolicyEngine();
+            const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
+            let items = await guardians.getTokens({ did: tokenOwner(user) });
+            items = await setDynamicTokenPolicy(items, engineService);
+            items = setTokensPolicies(items, map, null, false);
+            return items;
+        } catch (error) {
+            await InternalException(error);
         }
     }
 }

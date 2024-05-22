@@ -1,12 +1,24 @@
 import { Logger, IAuthUser } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
+import { Permissions, SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
 import { Guardians, SchemaUtils, UseCache, InternalException } from '#helpers';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
+
+/**
+ * Get entity owner
+ * @param user
+ */
+function moduleOwner(user: IAuthUser): string {
+    if (user?.role === UserRole.USER) {
+        return user.parent;
+    } else {
+        return user.did;
+    }
+}
 
 @Controller('modules')
 @ApiTags('modules')
@@ -47,7 +59,7 @@ export class ModulesApi {
             if (!module.config || module.config.blockType !== 'module') {
                 throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            return await guardian.createModule(module, user.did);
+            return await guardian.createModule(module, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -94,8 +106,13 @@ export class ModulesApi {
         @Response() res: any
     ): Promise<ModuleDTO[]> {
         try {
+            const options: any = {
+                owner: moduleOwner(user),
+                pageIndex,
+                pageSize
+            };
             const guardians = new Guardians();
-            const { items, count } = await guardians.getModule({ owner: user.did, pageIndex, pageSize });
+            const { items, count } = await guardians.getModule(options);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
@@ -152,7 +169,7 @@ export class ModulesApi {
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
-            const owner = user.did;
+            const owner = moduleOwner(user);
             const { items, count } = await guardians.getSchemasByOwner({
                 category: SchemaCategory.MODULE,
                 owner,
@@ -210,7 +227,7 @@ export class ModulesApi {
             }
 
             const guardians = new Guardians();
-            const owner = user.did;
+            const owner = moduleOwner(user);
 
             newSchema.category = SchemaCategory.MODULE;
             SchemaUtils.fromOld(newSchema);
@@ -264,7 +281,7 @@ export class ModulesApi {
             if (!uuid) {
                 throw new Error('Invalid uuid');
             }
-            return await guardian.deleteModule(uuid, user.did);
+            return await guardian.deleteModule(uuid, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -301,7 +318,7 @@ export class ModulesApi {
     ): Promise<ModuleDTO[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getMenuModule(user.did);
+            return await guardians.getMenuModule(moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -345,7 +362,7 @@ export class ModulesApi {
                 throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const guardian = new Guardians();
-            return await guardian.getModuleById(uuid, user.did);
+            return await guardian.getModuleById(uuid, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -397,7 +414,7 @@ export class ModulesApi {
         }
         try {
             const guardian = new Guardians();
-            return await guardian.updateModule(uuid, module, user.did);
+            return await guardian.updateModule(uuid, module, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -438,7 +455,7 @@ export class ModulesApi {
     ): Promise<any> {
         try {
             const guardian = new Guardians();
-            const file: any = await guardian.exportModuleFile(uuid, user.did);
+            const file: any = await guardian.exportModuleFile(uuid, moduleOwner(user));
             res.header('Content-disposition', `attachment; filename=module_${Date.now()}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -482,7 +499,7 @@ export class ModulesApi {
     ): Promise<ExportMessageDTO> {
         try {
             const guardian = new Guardians();
-            return await guardian.exportModuleMessage(uuid, user.did);
+            return await guardian.exportModuleMessage(uuid, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -524,7 +541,7 @@ export class ModulesApi {
         }
         try {
             const guardian = new Guardians();
-            return await guardian.importModuleMessage(messageId, user.did);
+            return await guardian.importModuleMessage(messageId, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -561,7 +578,7 @@ export class ModulesApi {
     ): Promise<ModuleDTO> {
         const guardian = new Guardians();
         try {
-            return await guardian.importModuleFile(body, user.did);
+            return await guardian.importModuleFile(body, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -603,7 +620,7 @@ export class ModulesApi {
         }
         try {
             const guardian = new Guardians();
-            return await guardian.previewModuleMessage(messageId, user.did);
+            return await guardian.previewModuleMessage(messageId, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -640,7 +657,7 @@ export class ModulesApi {
     ): Promise<ModulePreviewDTO> {
         try {
             const guardian = new Guardians();
-            return await guardian.previewModuleFile(body, user.did);
+            return await guardian.previewModuleFile(body, moduleOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -686,7 +703,7 @@ export class ModulesApi {
     ): Promise<ModuleDTO> {
         try {
             const guardian = new Guardians();
-            return await guardian.publishModule(uuid, user.did, module);
+            return await guardian.publishModule(uuid, moduleOwner(user), module);
         } catch (error) {
             await InternalException(error);
         }
@@ -724,7 +741,7 @@ export class ModulesApi {
     ): Promise<ModuleValidationDTO> {
         try {
             const guardian = new Guardians();
-            return await guardian.validateModule(user.did, module);
+            return await guardian.validateModule(moduleOwner(user), module);
         } catch (error) {
             await InternalException(error);
         }

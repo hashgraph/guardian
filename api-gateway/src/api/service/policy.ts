@@ -7,6 +7,18 @@ import { CACHE } from '../../constants/index.js';
 import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader } from '#middlewares';
 import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles } from '#helpers';
 
+/**
+ * Get entity owner
+ * @param user
+ */
+function policyOwner(user: IAuthUser): string {
+    if (user?.role === UserRole.USER) {
+        return user.parent;
+    } else {
+        return user.did;
+    }
+}
+
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
@@ -1101,7 +1113,7 @@ export class PolicyApi {
             }
             const downloadResult = await engineService.downloadVirtualKeys(
                 policyId,
-                user.did
+                policyOwner(user)
             );
             res.header(
                 'Content-Disposition',
@@ -1156,7 +1168,7 @@ export class PolicyApi {
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.uploadVirtualKeys(user.did, body, policyId);
+            return await engineService.uploadVirtualKeys(policyOwner(user), body, policyId);
         } catch (error) {
             await InternalException(error);
         }
@@ -2365,6 +2377,8 @@ export class PolicyApi {
     @Get('/blocks/about')
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2432,7 +2446,7 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== user.did) {
+        if (policy.owner !== policyOwner(user)) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         if (policy.status !== PolicyType.DRY_RUN) {
@@ -2487,14 +2501,14 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== user.did) {
+        if (policy.owner !== policyOwner(user)) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         if (policy.status !== PolicyType.DRY_RUN) {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {
-            return await engineService.createVirtualUser(policyId, user.did);
+            return await engineService.createVirtualUser(policyId, policyOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -2547,7 +2561,7 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== user.did) {
+        if (policy.owner !== policyOwner(user)) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         if (policy.status !== PolicyType.DRY_RUN) {
@@ -2606,7 +2620,7 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== user.did) {
+        if (policy.owner !== policyOwner(user)) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         if (policy.status !== PolicyType.DRY_RUN) {
@@ -2677,7 +2691,7 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== user.did) {
+        if (policy.owner !== policyOwner(user)) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         try {
@@ -2746,7 +2760,7 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== user.did) {
+        if (policy.owner !== policyOwner(user)) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         try {
@@ -2815,7 +2829,7 @@ export class PolicyApi {
         if (!policy) {
             throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
         }
-        if (policy.owner !== user.did) {
+        if (policy.owner !== policyOwner(user)) {
             throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
         }
         try {

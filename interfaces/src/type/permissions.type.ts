@@ -70,16 +70,16 @@ export enum PermissionEntities {
  * Entity
  */
 export enum PermissionActions {
+    //
+    ALL = 'ALL',
     READ = 'READ',
     CREATE = 'CREATE',
     UPDATE = 'UPDATE',
     DELETE = 'DELETE',
     REVIEW = 'REVIEW',
-    EXECUTE = 'EXECUTE',
     //
-    ALL = 'ALL',
     AUDIT = 'AUDIT',
-    ASSOCIATE = 'ASSOCIATE',
+    EXECUTE = 'EXECUTE',
     MANAGE = 'MANAGE',
     //
     ASSIGNED = 'ASSIGNED',
@@ -161,11 +161,11 @@ export enum Permissions {
     SCHEMAS_SCHEMA_UPDATE = 'SCHEMAS_SCHEMA_UPDATE',
     SCHEMAS_SCHEMA_DELETE = 'SCHEMAS_SCHEMA_DELETE',
     SCHEMAS_SCHEMA_REVIEW = 'SCHEMAS_SCHEMA_REVIEW',
-    SCHEMAS_SYSTEM_SCHEMA_READ = 'SCHEMAS_SCHEMA_READ',
-    SCHEMAS_SYSTEM_SCHEMA_CREATE = 'SCHEMAS_SCHEMA_CREATE',
-    SCHEMAS_SYSTEM_SCHEMA_UPDATE = 'SCHEMAS_SCHEMA_UPDATE',
-    SCHEMAS_SYSTEM_SCHEMA_DELETE = 'SCHEMAS_SCHEMA_DELETE',
-    SCHEMAS_SYSTEM_SCHEMA_REVIEW = 'SCHEMAS_SCHEMA_REVIEW',
+    SCHEMAS_SYSTEM_SCHEMA_READ = 'SCHEMAS_SYSTEM_SCHEMA_READ',
+    SCHEMAS_SYSTEM_SCHEMA_CREATE = 'SCHEMAS_SYSTEM_SCHEMA_CREATE',
+    SCHEMAS_SYSTEM_SCHEMA_UPDATE = 'SCHEMAS_SYSTEM_SCHEMA_UPDATE',
+    SCHEMAS_SYSTEM_SCHEMA_DELETE = 'SCHEMAS_SYSTEM_SCHEMA_DELETE',
+    SCHEMAS_SYSTEM_SCHEMA_REVIEW = 'SCHEMAS_SYSTEM_SCHEMA_REVIEW',
     //TOOLS
     TOOLS_TOOL_READ = 'TOOLS_TOOL_READ',
     TOOLS_TOOL_CREATE = 'TOOLS_TOOL_CREATE',
@@ -178,12 +178,11 @@ export enum Permissions {
     TOKENS_TOKEN_CREATE = 'TOKENS_TOKEN_CREATE',
     TOKENS_TOKEN_UPDATE = 'TOKENS_TOKEN_UPDATE',
     TOKENS_TOKEN_DELETE = 'TOKENS_TOKEN_DELETE',
-    TOKENS_TOKEN_ASSOCIATE = 'TOKENS_TOKEN_ASSOCIATE',
+    TOKENS_TOKEN_EXECUTE = 'TOKENS_TOKEN_EXECUTE',
     TOKENS_TOKEN_MANAGE = 'TOKENS_TOKEN_MANAGE',
     //TAGS
     TAGS_TAG_READ = 'TAGS_TAG_READ',
     TAGS_TAG_CREATE = 'TAGS_TAG_CREATE',
-    TAGS_TAG_DELETE = 'TAGS_TAG_DELETE',
     //PROFILE
     PROFILES_USER_READ = 'PROFILES_USER_READ',
     PROFILES_USER_UPDATE = 'PROFILES_USER_UPDATE',
@@ -521,28 +520,54 @@ export const PermissionsArray: {
             category: PermissionCategories.MODULES,
             entity: PermissionEntities.MODULE,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.MODULES_MODULE_READ,
+            ]
         },
         {
             name: Permissions.MODULES_MODULE_UPDATE,
             category: PermissionCategories.MODULES,
             entity: PermissionEntities.MODULE,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.MODULES_MODULE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ,
+                Permissions.TOOLS_TOOL_READ,
+                Permissions.ARTIFACTS_FILE_READ,
+                Permissions.SETTINGS_THEME_READ,
+                Permissions.SETTINGS_THEME_CREATE,
+                Permissions.SETTINGS_THEME_UPDATE,
+                Permissions.SETTINGS_THEME_DELETE
+            ]
         },
         {
             name: Permissions.MODULES_MODULE_DELETE,
             category: PermissionCategories.MODULES,
             entity: PermissionEntities.MODULE,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.MODULES_MODULE_READ,
+            ]
         },
         {
             name: Permissions.MODULES_MODULE_REVIEW,
             category: PermissionCategories.MODULES,
             entity: PermissionEntities.MODULE,
             action: PermissionActions.REVIEW,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.MODULES_MODULE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ,
+                Permissions.TOOLS_TOOL_READ,
+                Permissions.ARTIFACTS_FILE_READ,
+                Permissions.SETTINGS_THEME_READ,
+                Permissions.SETTINGS_THEME_CREATE,
+                Permissions.SETTINGS_THEME_UPDATE,
+                Permissions.SETTINGS_THEME_DELETE
+            ]
         },
         //POLICY
         {
@@ -575,7 +600,11 @@ export const PermissionsArray: {
                 Permissions.MODULES_MODULE_READ,
                 Permissions.TOOLS_TOOL_READ,
                 Permissions.TOKENS_TOKEN_READ,
-                Permissions.ARTIFACTS_FILE_READ
+                Permissions.ARTIFACTS_FILE_READ,
+                Permissions.SETTINGS_THEME_READ,
+                Permissions.SETTINGS_THEME_CREATE,
+                Permissions.SETTINGS_THEME_UPDATE,
+                Permissions.SETTINGS_THEME_DELETE
             ]
         },
         {
@@ -600,7 +629,11 @@ export const PermissionsArray: {
                 Permissions.MODULES_MODULE_READ,
                 Permissions.TOOLS_TOOL_READ,
                 Permissions.TOKENS_TOKEN_READ,
-                Permissions.ARTIFACTS_FILE_READ
+                Permissions.ARTIFACTS_FILE_READ,
+                Permissions.SETTINGS_THEME_READ,
+                Permissions.SETTINGS_THEME_CREATE,
+                Permissions.SETTINGS_THEME_UPDATE,
+                Permissions.SETTINGS_THEME_DELETE,
             ]
         },
         {
@@ -650,35 +683,52 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SCHEMA,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.POLICIES_POLICY_READ,
+                Permissions.MODULES_MODULE_READ,
+                Permissions.TOOLS_TOOL_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_CREATE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SCHEMA,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_UPDATE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SCHEMA,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_DELETE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SCHEMA,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SCHEMA_REVIEW,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SCHEMA,
             action: PermissionActions.REVIEW,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_READ,
@@ -692,28 +742,40 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_UPDATE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_DELETE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
+            ]
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_REVIEW,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.REVIEW,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
+            ]
         },
         //TOOLS
         {
@@ -728,35 +790,66 @@ export const PermissionsArray: {
             category: PermissionCategories.TOOLS,
             entity: PermissionEntities.TOOL,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOOLS_TOOL_READ
+            ]
         },
         {
             name: Permissions.TOOLS_TOOL_UPDATE,
             category: PermissionCategories.TOOLS,
             entity: PermissionEntities.TOOL,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.MODULES_MODULE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ,
+                Permissions.TOOLS_TOOL_READ,
+                Permissions.TOKENS_TOKEN_READ,
+                Permissions.ARTIFACTS_FILE_READ,
+                Permissions.SETTINGS_THEME_READ,
+                Permissions.SETTINGS_THEME_CREATE,
+                Permissions.SETTINGS_THEME_UPDATE,
+                Permissions.SETTINGS_THEME_DELETE
+            ]
         },
         {
             name: Permissions.TOOLS_TOOL_DELETE,
             category: PermissionCategories.TOOLS,
             entity: PermissionEntities.TOOL,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOOLS_TOOL_READ
+            ]
         },
         {
             name: Permissions.TOOLS_TOOL_REVIEW,
             category: PermissionCategories.TOOLS,
             entity: PermissionEntities.TOOL,
             action: PermissionActions.REVIEW,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.MODULES_MODULE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ,
+                Permissions.TOOLS_TOOL_READ,
+                Permissions.TOKENS_TOKEN_READ,
+                Permissions.ARTIFACTS_FILE_READ,
+                Permissions.SETTINGS_THEME_READ,
+                Permissions.SETTINGS_THEME_CREATE,
+                Permissions.SETTINGS_THEME_UPDATE,
+                Permissions.SETTINGS_THEME_DELETE
+            ]
         },
         {
             name: Permissions.TOOL_MIGRATION_CREATE,
             category: PermissionCategories.TOOLS,
             entity: PermissionEntities.MIGRATION,
             action: PermissionActions.CREATE,
-            disabled: true
+            disabled: true,
+            dependOn: [
+                Permissions.TOOLS_TOOL_READ
+            ]
         },
         //TOKENS
         {
@@ -788,11 +881,11 @@ export const PermissionsArray: {
             disabled: false
         },
         {
-            name: Permissions.TOKENS_TOKEN_ASSOCIATE,
+            name: Permissions.TOKENS_TOKEN_EXECUTE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
-            action: PermissionActions.ASSOCIATE,
-            disabled: true
+            action: PermissionActions.EXECUTE,
+            disabled: false
         },
         {
             name: Permissions.TOKENS_TOKEN_MANAGE,
@@ -814,13 +907,6 @@ export const PermissionsArray: {
             category: PermissionCategories.TAGS,
             entity: PermissionEntities.TAG,
             action: PermissionActions.CREATE,
-            disabled: false
-        },
-        {
-            name: Permissions.TAGS_TAG_DELETE,
-            category: PermissionCategories.TAGS,
-            entity: PermissionEntities.TAG,
-            action: PermissionActions.DELETE,
             disabled: false
         },
         //PROFILE
@@ -1062,7 +1148,6 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.TOKENS_TOKEN_MANAGE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    Permissions.TAGS_TAG_DELETE,
     Permissions.PROFILES_RESTORE_ALL,
     Permissions.SUGGESTIONS_SUGGESTIONS_READ,
     Permissions.SUGGESTIONS_SUGGESTIONS_UPDATE,
@@ -1094,10 +1179,9 @@ export const DefaultRoles: Permissions[] = [
     Permissions.POLICIES_POLICY_EXECUTE,
     //Permissions.SCHEMAS_SCHEMA_READ, ???
     Permissions.TOKENS_TOKEN_READ,
-    Permissions.TOKENS_TOKEN_ASSOCIATE,
+    Permissions.TOKENS_TOKEN_EXECUTE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    Permissions.TAGS_TAG_DELETE,
     Permissions.ACCESS_POLICY_ASSIGNED,
     Permissions.ACCESS_POLICY_PUBLISHED,
 ];

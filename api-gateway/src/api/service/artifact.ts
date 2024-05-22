@@ -1,10 +1,22 @@
-import { Permissions } from '@guardian/interfaces';
+import { Permissions, UserRole } from '@guardian/interfaces';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
 import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
+
+/**
+ * Get entity owner
+ * @param user
+ */
+function artifactOwner(user: IAuthUser): string {
+    if (user?.role === UserRole.USER) {
+        return user.parent;
+    } else {
+        return user.did;
+    }
+}
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -69,7 +81,7 @@ export class ArtifactApi {
         @Response() res: any
     ): Promise<ArtifactDTOItem> {
         try {
-            const options: any = { owner: user.did };
+            const options: any = { owner: artifactOwner(user) };
             if (type) {
                 options.type = type;
             }
@@ -151,7 +163,7 @@ export class ArtifactApi {
             if (!files) {
                 throw new HttpException('There are no files to upload', HttpStatus.BAD_REQUEST)
             }
-            const owner = user.did;
+            const owner = artifactOwner(user);
             const uploadedArtifacts = [];
             const guardian = new Guardians();
             for (const artifact of files) {
@@ -201,7 +213,7 @@ export class ArtifactApi {
     ): Promise<boolean> {
         try {
             const guardian = new Guardians();
-            return await guardian.deleteArtifact(artifactId, user.did);
+            return await guardian.deleteArtifact(artifactId, artifactOwner(user));
         } catch (error) {
             await InternalException(error);
         }

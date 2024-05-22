@@ -186,7 +186,14 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
     ) {
         const childItems: any = [];
         if (user.TOKENS_TOKEN_READ) {
+            if (user.TOKENS_TOKEN_EXECUTE) {
+                childItems.push({
+                    title: 'List of Tokens',
+                    routerLink: '/tokens-user'
+                });
+            }
             if (
+                !user.TOKENS_TOKEN_EXECUTE ||
                 user.TOKENS_TOKEN_CREATE ||
                 user.TOKENS_TOKEN_UPDATE ||
                 user.TOKENS_TOKEN_DELETE ||
@@ -197,12 +204,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                     routerLink: '/tokens'
                 });
             }
-            if (user.TOKENS_TOKEN_ASSOCIATE) {
-                childItems.push({
-                    title: 'List of Tokens',
-                    routerLink: '/tokens-user'
-                });
-            }
+
         }
         if (user.CONTRACTS_CONTRACT_READ) {
             if (

@@ -29,7 +29,7 @@ const categoryNames = new Map<PermissionCategories, string>([
 const actionName = [
     'Read',
     'Create',
-    'Update',
+    'Edit',
     'Delete',
     'Review',
     'Execute',
@@ -144,6 +144,12 @@ export class CategoryGroup {
             this.map.set(permission.entity, entity);
             this.entities.push(entity);
             return entity;
+        }
+    }
+
+    public checkAll() {
+        for (const entity of this.map.values()) {
+            entity.checkAll();
         }
     }
 

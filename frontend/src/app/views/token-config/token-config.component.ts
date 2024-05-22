@@ -3,7 +3,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, SchemaHelper, TagType, Token } from '@guardian/interfaces';
+import { ContractType, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
@@ -30,6 +30,7 @@ enum OperationMode {
 })
 export class TokenConfigComponent implements OnInit {
     public isConfirmed: boolean = false;
+    public user: UserPermissions = new UserPermissions();
     public tokens: any[] = [];
     public loading: boolean = true;
     public tokenId: string = '';
@@ -46,7 +47,6 @@ export class TokenConfigComponent implements OnInit {
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
     public operationMode: OperationMode = OperationMode.None;
-    public user: any;
     public currentPolicy: any = '';
     public policies: any[] | null = null;
     public tagEntity = TagType.Token;
@@ -75,6 +75,8 @@ export class TokenConfigComponent implements OnInit {
     public pageIndex: number;
     public pageSize: number;
     public contracts: any[] = [];
+
+    private selectedUser: any;
 
     constructor(
         public tagsService: TagsService,
@@ -115,6 +117,7 @@ export class TokenConfigComponent implements OnInit {
 
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
+            this.user = new UserPermissions(profile);
             this.policies = policies;
             this.policies.unshift({ id: -1, name: 'All policies' });
             if (this.currentPolicy) {
@@ -153,7 +156,12 @@ export class TokenConfigComponent implements OnInit {
     private loadTokens() {
         this.loading = true;
         forkJoin([
-            this.tokenService.getTokensPage(this.currentPolicy, this.pageIndex, this.pageSize),
+            this.tokenService.getTokensPage(
+                this.currentPolicy, 
+                this.pageIndex, 
+                this.pageSize,
+                'All'
+            ),
             this.contractService.getContracts({
                 type: ContractType.WIPE
             })
@@ -237,16 +245,16 @@ export class TokenConfigComponent implements OnInit {
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
                         const { result } = task;
-                        this.refreshUser(this.user, result);
-                        this.user = null;
+                        this.refreshUser(this.selectedUser, result);
+                        this.selectedUser = null;
                     });
                     break;
                 case OperationMode.Freeze:
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
                         const { result } = task;
-                        this.refreshUser(this.user, result);
-                        this.user = null;
+                        this.refreshUser(this.selectedUser, result);
+                        this.selectedUser = null;
                     });
                     break;
                 default:
@@ -319,7 +327,7 @@ export class TokenConfigComponent implements OnInit {
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Freeze;
-            this.user = user;
+            this.selectedUser = user;
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -333,7 +341,7 @@ export class TokenConfigComponent implements OnInit {
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Kyc;
-            this.user = user;
+            this.selectedUser = user;
         }, (e) => {
             console.error(e.error);
             this.loading = false;

@@ -182,6 +182,7 @@
                                 <td *ngIf="canDisplayColumn('tags')" style="min-width: 185px;">
                                     <tags-explorer
                                         *ngIf="user.TAGS_TAG_READ"
+                                        [user]="user"
                                         [data]="policy._tags"
                                         [entity]="tagEntity"
                                         [owner]="owner"

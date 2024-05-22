@@ -10,6 +10,7 @@ export interface IPermission {
     action: PermissionActions;
     disabled: boolean;
     default: boolean;
+    dependOn?: Permissions[];
 }
 
 export class PermissionsGroup {
@@ -83,6 +84,8 @@ export class PermissionsGroup {
     public setValue(permissions: Permissions[]): void {
         this.clearValue();
         this.addValue(permissions);
+        this.checkCount();
+        this.checkAll();
     }
 
     public getValue(): Permissions[] {
@@ -101,6 +104,12 @@ export class PermissionsGroup {
         }
     }
 
+    public checkAll() {
+        for (const category of this.map.values()) {
+            category.checkAll();
+        }
+    }
+
     public getAction(permissions: Permissions): ActionGroup | undefined {
         return this.actions.get(permissions);
     }
@@ -115,6 +124,17 @@ export class PermissionsGroup {
                 group.actions.set(permission.name, action);
                 group.controls.set(permission.name, action.control);
                 group.form.addControl(permission.name, action.control);
+            }
+        }
+        for (const permission of permissions) {
+            const action = group.actions.get(permission.name);
+            if(permission.dependOn) {
+                for (const sub of permission.dependOn) {
+                    const subAction = group.actions.get(sub);
+                    if(action && subAction) {
+                        subAction.addRef(action);
+                    }
+                }
             }
         }
         return group;

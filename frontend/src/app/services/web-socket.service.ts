@@ -97,7 +97,6 @@ export class WebSocketService {
             this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
         })
         this.connect();
-
     }
 
     static initialize() {
