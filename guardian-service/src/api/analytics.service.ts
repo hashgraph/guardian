@@ -303,7 +303,7 @@ export async function analyticsAPI(): Promise<void> {
         try {
             const {
                 user,
-                type,
+                // type,
                 ids,
                 eventsLvl,
                 propLvl,
