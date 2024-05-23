@@ -1,11 +1,11 @@
 import { IAuthUser, Logger, NotificationHelper } from '@guardian/common';
-import { Permissions, SchemaEntity, UserRole } from '@guardian/interfaces';
+import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO, InternalServerErrorDTO } from '#middlewares';
 import { AuthUser, checkPermission, Auth } from '#auth';
-import { Users, PolicyEngine, Guardians, UseCache, InternalException } from '#helpers';
+import { Users, PolicyEngine, Guardians, UseCache, InternalException, EntityOwner } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ApplicationEnvironment } from '../../environment.js';
@@ -285,8 +285,15 @@ export class AccountApi {
                     if (vcDocuments && vcDocuments.length) {
                         vcDocument = vcDocuments[vcDocuments.length - 1];
                     }
+
                     const { policies } = await engineService.getPolicies(
-                        { filters: { owner: did }, userDid: did }
+                        {
+                            filters: {
+                                status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
+                            },
+                            userDid: did
+                        },
+                        EntityOwner.sr(did)
                     ) as PolicyListResponse;
                     return {
                         did,

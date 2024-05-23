@@ -5,7 +5,7 @@ import { UserRole } from '@guardian/interfaces';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Match } from '../../../helpers/decorators/match.validator.js';
-import { PolicyDTO } from './policies.js';
+import { PolicyDTO } from './policies.dto.js';
 
 export class AccountsResponseDTO {
     @ApiProperty()

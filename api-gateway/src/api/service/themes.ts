@@ -1,5 +1,5 @@
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException, ONLY_SR } from '#helpers';
+import { EntityOwner, Guardians, InternalException, ONLY_SR } from '#helpers';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Response } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
@@ -42,7 +42,8 @@ export class ThemesApi {
     ): Promise<ThemeDTO> {
         try {
             const guardians = new Guardians();
-            return await guardians.createTheme(theme, user.did);
+            const owner = new EntityOwner(user);
+            return await guardians.createTheme(theme, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -91,12 +92,13 @@ export class ThemesApi {
             if (!themeId) {
                 throw new HttpException('Invalid theme id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const oldTheme = await guardians.getThemeById(themeId);
+            const oldTheme = await guardians.getThemeById(themeId, owner);
             if (!oldTheme) {
                 throw new HttpException('Theme not found.', HttpStatus.NOT_FOUND);
             }
-            return await guardians.updateTheme(themeId, theme, user.did);
+            return await guardians.updateTheme(themeId, theme, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -139,8 +141,9 @@ export class ThemesApi {
             if (!themeId) {
                 throw new HttpException('Invalid theme id', HttpStatus.UNPROCESSABLE_ENTITY)
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.deleteTheme(themeId, user.did);
+            return await guardians.deleteTheme(themeId, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -175,7 +178,8 @@ export class ThemesApi {
         try {
             const guardians = new Guardians();
             if (user.did) {
-                return await guardians.getThemes(user.did);
+                const owner = new EntityOwner(user);
+                return await guardians.getThemes(owner);
             } else {
                 return [];
             }
@@ -216,7 +220,8 @@ export class ThemesApi {
     ): Promise<ThemeDTO> {
         const guardian = new Guardians();
         try {
-            return await guardian.importThemeFile(zip, user.did);
+            const owner = new EntityOwner(user);
+            return await guardian.importThemeFile(zip, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -257,7 +262,8 @@ export class ThemesApi {
     ): Promise<any> {
         const guardian = new Guardians();
         try {
-            const file: any = await guardian.exportThemeFile(themeId, user.did);
+            const owner = new EntityOwner(user);
+            const file: any = await guardian.exportThemeFile(themeId, owner);
             res.header('Content-disposition', `attachment; filename=theme_${Date.now()}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);

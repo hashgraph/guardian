@@ -4,7 +4,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, UseCache, InternalException } from '#helpers';
+import { Guardians, UseCache, InternalException, EntityOwner } from '#helpers';
 
 /**
  * Contracts api
@@ -65,9 +65,10 @@ export class ContractsApi {
         @Response() res: any
     ): Promise<ContractDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getContracts(
-                user.parent || user.did,
+                owner,
                 type,
                 pageIndex,
                 pageSize
@@ -108,9 +109,10 @@ export class ContractsApi {
         @Body() body: ContractConfigDTO
     ): Promise<ContractDTO> {
         try {
+            const owner = new EntityOwner(user);
             const { description, type } = body;
             const guardians = new Guardians();
-            return await guardians.createContract(user.did, description, type);
+            return await guardians.createContract(owner, description, type);
         } catch (error) {
             await InternalException(error);
         }
@@ -159,9 +161,10 @@ export class ContractsApi {
         @Body() body: any
     ): Promise<ContractDTO> {
         try {
+            const owner = new EntityOwner(user);
             const { contractId, description } = body;
             const guardians = new Guardians();
-            return await guardians.importContract(user.did, contractId, description);
+            return await guardians.importContract(owner, contractId, description);
         } catch (error) {
             await InternalException(error);
         }
@@ -202,8 +205,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string,
     ): Promise<number> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.checkContractPermissions(user.did, contractId);
+            return await guardians.checkContractPermissions(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -243,8 +247,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.removeContract(user.did, contractId);
+            return await guardians.removeContract(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -303,9 +308,10 @@ export class ContractsApi {
         @Response() res: any
     ): Promise<WiperRequestDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getWipeRequests(
-                user.parent || user.did,
+                owner,
                 contractId,
                 pageIndex,
                 pageSize
@@ -350,8 +356,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.enableWipeRequests(user.did, contractId);
+            return await guardians.enableWipeRequests(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -391,8 +398,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.disableWipeRequests(user.did, contractId);
+            return await guardians.disableWipeRequests(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -432,8 +440,9 @@ export class ContractsApi {
         @Param('requestId') requestId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.approveWipeRequest(user.did, requestId);
+            return await guardians.approveWipeRequest(owner, requestId);
         } catch (error) {
             await InternalException(error);
         }
@@ -479,9 +488,10 @@ export class ContractsApi {
         @Query('ban') ban: boolean,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             return await guardians.rejectWipeRequest(
-                user.did,
+                owner,
                 requestId,
                 String(ban).toLowerCase() === 'true'
             );
@@ -524,8 +534,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.clearWipeRequests(user.did, contractId);
+            return await guardians.clearWipeRequests(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -573,8 +584,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.addWipeAdmin(user.did, contractId, hederaId);
+            return await guardians.addWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -622,8 +634,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.removeWipeAdmin(user.did, contractId, hederaId);
+            return await guardians.removeWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -671,8 +684,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.addWipeManager(user.did, contractId, hederaId);
+            return await guardians.addWipeManager(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -720,8 +734,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.removeWipeManager(user.did, contractId, hederaId);
+            return await guardians.removeWipeManager(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -769,8 +784,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.addWipeWiper(user.did, contractId, hederaId);
+            return await guardians.addWipeWiper(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -818,8 +834,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.removeWipeWiper(user.did, contractId, hederaId);
+            return await guardians.removeWipeWiper(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -862,8 +879,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string
     ): Promise<string> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.syncRetirePools(user.did, contractId);
+            return await guardians.syncRetirePools(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -921,9 +939,10 @@ export class ContractsApi {
         @Response() res: any
     ): Promise<RetireRequestDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getRetireRequests(
-                user.did,
+                owner,
                 contractId,
                 pageIndex,
                 pageSize
@@ -993,9 +1012,10 @@ export class ContractsApi {
         @Response() res: any
     ): Promise<RetirePoolDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const [contracts, count] = await guardians.getRetirePools(
-                user.did,
+                owner,
                 tokens?.split(','),
                 contractId,
                 pageIndex,
@@ -1041,8 +1061,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.clearRetireRequests(user.did, contractId);
+            return await guardians.clearRetireRequests(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1082,8 +1103,9 @@ export class ContractsApi {
         @Param('contractId') contractId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.clearRetirePools(user.did, contractId);
+            return await guardians.clearRetirePools(owner, contractId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1127,8 +1149,9 @@ export class ContractsApi {
         @Body() body: any
     ): Promise<RetirePoolDTO> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.setRetirePool(user.did, contractId, body);
+            return await guardians.setRetirePool(owner, contractId, body);
         } catch (error) {
             await InternalException(error);
         }
@@ -1168,8 +1191,9 @@ export class ContractsApi {
         @Param('poolId') poolId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.unsetRetirePool(user.did, poolId);
+            return await guardians.unsetRetirePool(owner, poolId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1209,8 +1233,9 @@ export class ContractsApi {
         @Param('requestId') requestId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.unsetRetireRequest(user.did, requestId);
+            return await guardians.unsetRetireRequest(owner, requestId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1255,8 +1280,9 @@ export class ContractsApi {
         @Body() body: any
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.retire(user.did, poolId, body);
+            return await guardians.retire(owner, poolId, body);
         } catch (error) {
             await InternalException(error);
         }
@@ -1296,8 +1322,9 @@ export class ContractsApi {
         @Param('requestId') requestId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.approveRetire(user.did, requestId);
+            return await guardians.approveRetire(owner, requestId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1338,8 +1365,9 @@ export class ContractsApi {
         @Param('requestId') requestId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.cancelRetire(user.did, requestId);
+            return await guardians.cancelRetire(owner, requestId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1387,8 +1415,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.addRetireAdmin(user.did, contractId, hederaId);
+            return await guardians.addRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1436,8 +1465,9 @@ export class ContractsApi {
         @Param('hederaId') hederaId: string
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.removeRetireAdmin(user.did, contractId, hederaId);
+            return await guardians.removeRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error);
         }
@@ -1488,8 +1518,9 @@ export class ContractsApi {
         @Response() res: any
     ): Promise<any[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const [vcs, count] = await guardians.getRetireVCs(user.did, pageIndex, pageSize);
+            const [vcs, count] = await guardians.getRetireVCs(owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
             await InternalException(error);

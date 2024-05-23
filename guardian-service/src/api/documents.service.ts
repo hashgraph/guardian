@@ -23,7 +23,7 @@ export async function documentsAPI(
      *
      * @returns {IDidDocument[]} - DID Documents
      */
-    ApiResponse(MessageAPI.GET_DID_DOCUMENTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_DID_DOCUMENTS, async (msg: any) => {
         const reqObj = { where: { did: { $eq: msg.did } } };
         const didDocuments: IDidObject[] = await didDocumentRepository.find(reqObj);
         return new MessageResponse(didDocuments);
@@ -38,7 +38,7 @@ export async function documentsAPI(
      *
      * @returns {IVCDocument[]} - VC Documents
      */
-    ApiResponse(MessageAPI.GET_VC_DOCUMENTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_VC_DOCUMENTS, async (msg: any) => {
         try {
             if (msg) {
                 const reqObj: any = {};
@@ -69,7 +69,7 @@ export async function documentsAPI(
      *
      * @returns {IVPDocument[]} - VP Documents
      */
-    ApiResponse(MessageAPI.GET_VP_DOCUMENTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_VP_DOCUMENTS, async (msg: any) => {
         if (msg) {
             const { filters, pageIndex, pageSize } = msg;
             const otherOptions: any = {};

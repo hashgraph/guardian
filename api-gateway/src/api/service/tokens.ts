@@ -1,4 +1,4 @@
-import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger } from '#helpers';
+import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner } from '#helpers';
 import { Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
@@ -149,7 +149,7 @@ export class TokensApi {
             const engineService = new PolicyEngine();
 
             let tokensAndCount = { items: [], count: 0 };
-            const owner = tokenOwner(user);
+            const owner = new EntityOwner(user);
             if (owner) {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
                     tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
@@ -206,14 +206,11 @@ export class TokensApi {
         try {
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
+            const owner = new EntityOwner(user);
 
-            if (!user.did) {
-                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-
-            let tokens = await guardians.setToken({ token, owner: user.did });
-            tokens = await guardians.getTokens({ did: user.did });
-            const map = await engineService.getTokensMap(user.did);
+            let tokens = await guardians.setToken(token, owner);
+            tokens = await guardians.getTokens({}, owner);
+            const map = await engineService.getTokensMap(owner);
             tokens = setTokensPolicies(tokens, map);
 
             return tokens;
@@ -256,12 +253,12 @@ export class TokensApi {
         if (!user.did) {
             throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
-
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.setTokenAsync(token, user.did, task);
+            await guardians.setTokenAsync(token, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -310,8 +307,9 @@ export class TokensApi {
                 throw new HttpException('The field tokenId is required.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
 
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const tokenObject = await guardians.getTokenById(token.tokenId);
+            const tokenObject = await guardians.getTokenById(token.tokenId, owner);
 
             if (!tokenObject) {
                 throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
@@ -321,7 +319,7 @@ export class TokensApi {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
             }
 
-            return await guardians.updateToken(token);
+            return await guardians.updateToken(token, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -368,7 +366,8 @@ export class TokensApi {
             }
 
             const guardians = new Guardians();
-            const tokenObject = await guardians.getTokenById(token.tokenId);
+            const owner = new EntityOwner(user);
+            const tokenObject = await guardians.getTokenById(token.tokenId, owner);
 
             if (!tokenObject) {
                 throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
@@ -381,7 +380,7 @@ export class TokensApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.UPDATE_TOKEN, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardians.updateTokenAsync(token, task);
+                await guardians.updateTokenAsync(token, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -427,12 +426,9 @@ export class TokensApi {
         @Param('tokenId') tokenId: string
     ): Promise<TaskDTO> {
         try {
-            if (!user.did) {
-                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const tokenObject = await guardians.getTokenById(tokenId);
+            const tokenObject = await guardians.getTokenById(tokenId, owner);
 
             if (!tokenObject) {
                 throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
@@ -443,7 +439,7 @@ export class TokensApi {
             }
 
             const engineService = new PolicyEngine();
-            const map = await engineService.getTokensMap(user.did);
+            const map = await engineService.getTokensMap(owner);
             setTokensPolicies([tokenObject], map, undefined, false);
 
             if (!tokenObject.canDelete) {
@@ -453,7 +449,7 @@ export class TokensApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_TOKEN, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardians.deleteTokenAsync(tokenId, task);
+                await guardians.deleteTokenAsync(tokenId, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -502,8 +498,9 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.associateToken(tokenId, user.did);
+            return await guardians.associateToken(tokenId, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -553,11 +550,12 @@ export class TokensApi {
             throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.ASSOCIATE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.associateTokenAsync(tokenId, user.did, task);
+            await guardians.associateTokenAsync(tokenId, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -603,8 +601,9 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.dissociateToken(tokenId, user.did);
+            return await guardians.dissociateToken(tokenId, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -653,11 +652,12 @@ export class TokensApi {
         if (!user.did) {
             throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.DISSOCIATE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.dissociateTokenAsync(tokenId, user.did, task);
+            await guardians.dissociateTokenAsync(tokenId, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -710,8 +710,9 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.grantKycToken(tokenId, username, user.did);
+            return await guardians.grantKycToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -768,11 +769,12 @@ export class TokensApi {
         if (!user.did) {
             throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.GRANT_KYC, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.grantKycTokenAsync(tokenId, username, user.did, task);
+            await guardians.grantKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -826,7 +828,8 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            return await guardians.revokeKycToken(tokenId, username, user.did);
+            const owner = new EntityOwner(user);
+            return await guardians.revokeKycToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -883,11 +886,12 @@ export class TokensApi {
         if (!user.did) {
             throw new HttpException('User not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.REVOKE_KYC, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.revokeKycTokenAsync(tokenId, username, user.did, task);
+            await guardians.revokeKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -940,8 +944,9 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.freezeToken(tokenId, username, user.did);
+            return await guardians.freezeToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -1057,11 +1062,12 @@ export class TokensApi {
         if (!user.did) {
             throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.FREEZE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.freezeTokenAsync(tokenId, username, user.did, task);
+            await guardians.freezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -1113,11 +1119,12 @@ export class TokensApi {
         if (!user.did) {
             throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.UNFREEZE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.unfreezeTokenAsync(tokenId, username, user.did, task);
+            await guardians.unfreezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
@@ -1170,8 +1177,9 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.getInfoToken(tokenId, username, user.did);
+            return await guardians.getInfoToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
@@ -1263,10 +1271,11 @@ export class TokensApi {
         @AuthUser() user: IAuthUser
     ): Promise<TokenDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const engineService = new PolicyEngine();
-            const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
-            let items = await guardians.getTokens({ did: tokenOwner(user) });
+            const map = await engineService.getTokensMap(owner, 'PUBLISH');
+            let items = await guardians.getTokens({}, owner);
             items = await setDynamicTokenPolicy(items, engineService);
             items = setTokensPolicies(items, map, null, false);
             return items;

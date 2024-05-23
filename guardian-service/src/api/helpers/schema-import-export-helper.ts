@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
@@ -121,7 +121,10 @@ export async function importTagsByFiles(
  * @param ids Schemas ids
  * @returns Schemas to export
  */
-export async function exportSchemas(ids: string[]) {
+export async function exportSchemas(
+    ids: string[],
+    user: IOwner
+) {
     const schemas = await DatabaseServer.getSchemasByIds(ids);
     const map: any = {};
     const relationships: SchemaCollection[] = [];
@@ -170,13 +173,17 @@ export async function getSchemaTarget(topicId: string): Promise<any> {
 
 /**
  * Import schema by files
- * @param owner
+ * @param category
+ * @param user
  * @param files
  * @param topicId
+ * @param notifier
+ * @param skipGenerateId
+ * @param outerSchemasMapping
  */
 export async function importSchemaByFiles(
     category: SchemaCategory,
-    owner: string,
+    user: IOwner,
     files: ISchema[],
     topicId: string,
     notifier: INotifier,
@@ -209,8 +216,8 @@ export async function importSchemaByFiles(
         file.documentURL = null;
         file.contextURL = `schema:${file.uuid}`;
         file.messageId = null;
-        file.creator = owner;
-        file.owner = owner;
+        file.creator = user.creator;
+        file.owner = user.owner;
         file.topicId = topicId || 'draft';
         file.status = SchemaStatus.DRAFT;
         if (file.document?.$defs && outerSchemasMapping) {
@@ -276,7 +283,7 @@ export async function importSchemaByFiles(
         file.category = category;
         file.readonly = false;
         file.system = false;
-        const item = await createSchema(file, owner, emptyNotifier());
+        const item = await createSchema(file, user, emptyNotifier());
         schemasMap[index].newID = item.id.toString();
         notifier.info(`Schema ${index + 1} (${file.name || '-'}) created`);
     }
@@ -294,7 +301,7 @@ export async function importSchemaByFiles(
  */
 export async function importSchemasByMessages(
     category: SchemaCategory,
-    owner: string,
+    user: IOwner,
     messageIds: string[],
     topicId: string,
     notifier: INotifier
@@ -355,7 +362,7 @@ export async function importSchemasByMessages(
 
     let result = await importSchemaByFiles(
         category,
-        owner,
+        user,
         schemas,
         topicId,
         notifier

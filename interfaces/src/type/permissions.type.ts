@@ -668,14 +668,14 @@ export const PermissionsArray: {
             category: PermissionCategories.POLICIES,
             entity: PermissionEntities.MIGRATION,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.POLICIES_RECORD_ALL,
             category: PermissionCategories.POLICIES,
             entity: PermissionEntities.RECORD,
             action: PermissionActions.ALL,
-            disabled: false
+            disabled: true
         },
         //SCHEMAS
         {
@@ -936,7 +936,7 @@ export const PermissionsArray: {
             category: PermissionCategories.PROFILES,
             entity: PermissionEntities.RESTORE,
             action: PermissionActions.ALL,
-            disabled: false
+            disabled: true
         },
         //SUGGESTIONS
         {

@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { Permissions, TaskAction, UserRole } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
-import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor } from '#helpers';
+import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
 /**
@@ -56,8 +56,9 @@ export class ToolsApi {
             if (!tool.config || tool.config.blockType !== 'tool') {
                 throw new HttpException('Invalid tool config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.createTool(tool, toolOwner(user));
+            return await guardian.createTool(tool, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -97,11 +98,12 @@ export class ToolsApi {
             if (!tool.config || tool.config.blockType !== 'tool') {
                 throw new HttpException('Invalid tool config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.CREATE_TOOL, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.createToolAsync(tool, toolOwner(user), task);
+                await guardian.createToolAsync(tool, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -157,12 +159,12 @@ export class ToolsApi {
         @Response() res: any
     ): Promise<ToolDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const { items, count } = await guardians.getTools({
-                owner: toolOwner(user),
                 pageIndex,
                 pageSize
-            });
+            }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
@@ -206,8 +208,9 @@ export class ToolsApi {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.deleteTool(id, toolOwner(user));
+            return await guardian.deleteTool(id, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -250,8 +253,9 @@ export class ToolsApi {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.getToolById(id, toolOwner(user));
+            return await guardian.getToolById(id, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -303,8 +307,9 @@ export class ToolsApi {
             throw new HttpException('Invalid tool config', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.updateTool(id, tool, toolOwner(user));
+            return await guardian.updateTool(id, tool, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -353,8 +358,9 @@ export class ToolsApi {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.publishTool(id, toolOwner(user), tool);
+            return await guardian.publishTool(id, owner, tool);
         } catch (error) {
             await InternalException(error);
         }
@@ -402,11 +408,12 @@ export class ToolsApi {
         if (!id) {
             throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PUBLISH_TOOL, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardian = new Guardians();
-            await guardian.publishToolAsync(id, toolOwner(user), tool, task);
+            await guardian.publishToolAsync(id, owner, tool, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
@@ -447,8 +454,9 @@ export class ToolsApi {
         @Body() tool: ToolDTO
     ): Promise<any> {
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.validateTool(toolOwner(user), tool);
+            return await guardian.validateTool(owner, tool);
         } catch (error) {
             await InternalException(error);
         }
@@ -490,8 +498,9 @@ export class ToolsApi {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            const file: any = await guardian.exportToolFile(id, toolOwner(user));
+            const file: any = await guardian.exportToolFile(id, owner);
             res.header('Content-disposition', `attachment; filename=tool_${Date.now()}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -537,8 +546,9 @@ export class ToolsApi {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.exportToolMessage(id, toolOwner(user));
+            return await guardian.exportToolMessage(id, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -579,8 +589,9 @@ export class ToolsApi {
             throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.previewToolMessage(messageId, toolOwner(user));
+            return await guardian.previewToolMessage(messageId, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -620,9 +631,10 @@ export class ToolsApi {
         if (!messageId) {
             throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const guardian = new Guardians();
         try {
-            return await guardian.importToolMessage(messageId, toolOwner(user));
+            return await guardian.importToolMessage(messageId, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -658,8 +670,9 @@ export class ToolsApi {
         @Body() body: any
     ): Promise<any> {
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.previewToolFile(body, toolOwner(user));
+            return await guardian.previewToolFile(body, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -695,8 +708,9 @@ export class ToolsApi {
         @Body() body: any
     ): Promise<ToolDTO> {
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.importToolFile(body, toolOwner(user));
+            return await guardian.importToolFile(body, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -747,6 +761,7 @@ export class ToolsApi {
         @UploadedFiles() files: any
     ): Promise<ToolDTO> {
         try {
+            const owner = new EntityOwner(user);
             const file = files.find((item) => item.fieldname === 'file');
             if (!file) {
                 throw new Error('There is no tool file');
@@ -757,7 +772,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             const tool = await guardian.importToolFile(
                 file.buffer,
-                toolOwner(user),
+                owner,
                 metadata?.buffer && JSON.parse(metadata.buffer.toString())
             );
             return tool;
@@ -798,11 +813,12 @@ export class ToolsApi {
         @Body() zip: any
     ): Promise<TaskDTO> {
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_TOOL_FILE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolFileAsync(zip, toolOwner(user), task);
+                await guardian.importToolFileAsync(zip, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -864,6 +880,7 @@ export class ToolsApi {
             if (!file) {
                 throw new Error('There is no tool file');
             }
+            const owner = new EntityOwner(user);
             const metadata = files.find(item => item.fieldname === 'metadata');
             const guardian = new Guardians();
             const taskManager = new TaskManager();
@@ -875,7 +892,7 @@ export class ToolsApi {
                 async () => {
                     await guardian.importToolFileAsync(
                         file.buffer,
-                        toolOwner(user),
+                        owner,
                         task,
                         metadata?.buffer && JSON.parse(metadata.buffer.toString())
                     );
@@ -929,11 +946,12 @@ export class ToolsApi {
             throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_TOOL_MESSAGE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolMessageAsync(messageId, toolOwner(user), task);
+                await guardian.importToolMessageAsync(messageId, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -974,8 +992,9 @@ export class ToolsApi {
         @AuthUser() user: IAuthUser
     ): Promise<ToolDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.getMenuTool(toolOwner(user));
+            return await guardians.getMenuTool(owner);
         } catch (error) {
             await InternalException(error);
         }

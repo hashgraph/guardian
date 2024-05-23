@@ -1,4 +1,4 @@
-import { Guardians, TaskManager, ServiceError, ONLY_SR, InternalException } from '#helpers';
+import { Guardians, TaskManager, ServiceError, ONLY_SR, InternalException, EntityOwner } from '#helpers';
 import { IAuthUser, Logger, RunFunctionAsync, } from '@guardian/common';
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
@@ -41,8 +41,9 @@ export class WizardApi {
         @Body() wizardConfig: WizardConfigDTO
     ): Promise<WizardResultDTO> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.wizardPolicyCreate(wizardConfig, user.did);
+            return await guardians.wizardPolicyCreate(wizardConfig, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -80,6 +81,7 @@ export class WizardApi {
         @Body() body: WizardConfigAsyncDTO
     ): Promise<TaskDTO> {
         const { wizardConfig, saveState } = body;
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.WIZARD_CREATE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(
@@ -87,7 +89,7 @@ export class WizardApi {
                 const guardians = new Guardians();
                 await guardians.wizardPolicyCreateAsyncNew(
                     wizardConfig,
-                    user.did,
+                    owner,
                     saveState,
                     task
                 );
@@ -144,7 +146,8 @@ export class WizardApi {
     ): Promise<WizardPreviewDTO> {
         try {
             const guardians = new Guardians();
-            return await guardians.wizardGetPolicyConfig(policyId, wizardConfig, user.did);
+            const owner = new EntityOwner(user);
+            return await guardians.wizardGetPolicyConfig(policyId, wizardConfig, owner);
         } catch (error) {
             await InternalException(error);
         }

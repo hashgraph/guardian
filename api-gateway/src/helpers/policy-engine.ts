@@ -1,7 +1,8 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
-import { DocumentType, GenerateUUIDv4, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
+import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
+import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO } from '#middlewares';
 
 /**
  * Policy engine service
@@ -23,25 +24,38 @@ export class PolicyEngine extends NatsService {
      * Get policy
      * @param filters
      */
-    public async getPolicy(filters: any): Promise<any> {
+    public async getPolicy(filters: any): Promise<PolicyDTO | null> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY, filters);
+    }
+
+    /**
+     * Get policy
+     * @param policyId
+     */
+    public async accessPolicy(
+        policyId: string,
+        owner: IOwner,
+        action: string
+    ): Promise<PolicyDTO> {
+        return await this.sendMessage(PolicyEngineEvents.ACCESS_POLICY, { policyId, owner, action });
     }
 
     /**
      * Get policies
      * @param filters
+     * @param owner
      */
     public async getPolicies<T extends {
         /**
          * Policies array
          */
-        policies: any,
+        policies: PolicyDTO[],
         /**
          * Total count
          */
-        count: any
-    }>(filters): Promise<T> {
-        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES, filters);
+        count: number
+    }>(options: any, owner: IOwner): Promise<T> {
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES, { options, owner });
     }
 
     /**
@@ -49,99 +63,142 @@ export class PolicyEngine extends NatsService {
      * @param owner
      * @param status
      */
-    public async getTokensMap(owner: string, status?: string): Promise<any> {
+    public async getTokensMap(
+        owner: IOwner,
+        status?: string
+    ): Promise<any> {
         return await this.sendMessage<any>(PolicyEngineEvents.GET_TOKENS_MAP, { owner, status });
     }
 
     /**
      * Create policy
      * @param model
-     * @param user
+     * @param owner
      */
-    public async createPolicy(model: any, user: IAuthUser): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES, { model, user });
+    public async createPolicy(
+        model: PolicyDTO,
+        owner: IOwner
+    ): Promise<PolicyDTO> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES, { model, owner });
     }
 
     /**
      * Async create policy
      * @param model
-     * @param user
+     * @param owner
      * @param task
      */
-    public async createPolicyAsync(model: any, user: IAuthUser, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, user, task });
+    public async createPolicyAsync(
+        model: PolicyDTO,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, owner, task });
     }
 
     /**
      * Async clone policy
      * @param policyId Policy identifier
      * @param model Policy configuration
-     * @param user User
+     * @param owner User
      * @param task Task
      */
-    public async clonePolicyAsync(policyId: string, model, user: IAuthUser, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, user, task });
+    public async clonePolicyAsync(
+        policyId: string,
+        model: PolicyDTO,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, owner, task });
     }
 
     /**
      * Async delete policy
      * @param policyId Policy identifier
-     * @param user User
+     * @param owner User
      * @param task Task
      */
-    public async deletePolicyAsync(policyId: string, user: IAuthUser, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, user, task });
+    public async deletePolicyAsync(
+        policyId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, owner, task });
     }
 
     /**
      * Save policy
      * @param model
-     * @param user
+     * @param owner
      * @param policyId
      */
-    public async savePolicy(model: any, user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICIES, { model, user, policyId });
+    public async savePolicy(
+        model: PolicyDTO,
+        owner: IOwner,
+        policyId: string
+    ): Promise<PolicyDTO> {
+        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICIES, { model, owner, policyId });
     }
 
     /**
      * Publish policy
      * @param model
-     * @param user
+     * @param owner
      * @param policyId
      */
-    public async publishPolicy(model: any, user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES, { model, user, policyId });
+    public async publishPolicy(
+        model: any,
+        owner: IOwner,
+        policyId: string
+    ): Promise<PoliciesValidationDTO> {
+        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES, { model, owner, policyId });
     }
 
     /**
      * Async publish policy
      * @param model
-     * @param user
+     * @param owner
      * @param policyId
      * @param task
      */
-    public async publishPolicyAsync(model: any, user: IAuthUser, policyId: string, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, user, policyId, task });
+    public async publishPolicyAsync(
+        model: any,
+        owner: IOwner,
+        policyId: string,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, owner, policyId, task });
     }
 
     /**
      * Dry-run policy
-     * @param user
      * @param policyId
+     * @param owner
      */
-    public async dryRunPolicy(user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { user, policyId });
+    public async dryRunPolicy(
+        policyId: string,
+        owner: IOwner,
+    ): Promise<PoliciesValidationDTO> {
+        return await this.sendMessage(PolicyEngineEvents.DRY_RUN_POLICIES, { policyId, owner });
     }
 
     /**
      * Dry-run policy
+     * @param policyId
+     * @param owner
+     */
+    public async draft(
+        policyId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.DRAFT_POLICIES, { policyId, owner });
+    }
+
+    /**
+     * Restart policy
      * @param user
      * @param policyId
      */
-    public async draft(user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.DRAFT_POLICIES, { user, policyId });
-    }
-
     public async restartPolicyInstance(user: IAuthUser, policyId: string) {
         return await this.sendMessage(PolicyEngineEvents.RESTART_POLICY_INSTANCE, { user, policyId });
     }
@@ -149,11 +206,15 @@ export class PolicyEngine extends NatsService {
     /**
      * Validate policy
      * @param model
-     * @param user
+     * @param owner
      * @param policyId
      */
-    public async validatePolicy(model: any, user: IAuthUser, policyId?: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.VALIDATE_POLICIES, { model, user, policyId });
+    public async validatePolicy(
+        model: PolicyDTO,
+        owner: IOwner,
+        policyId?: string
+    ): Promise<PolicyValidationDTO> {
+        return await this.sendMessage(PolicyEngineEvents.VALIDATE_POLICIES, { model, owner, policyId });
     }
 
     /**
@@ -169,7 +230,10 @@ export class PolicyEngine extends NatsService {
      * Get policies by category Id
      * @param filters
      */
-    public async getPoliciesByCategoriesAndText(categoryIds: string[], text: string): Promise<any> {
+    public async getPoliciesByCategoriesAndText(
+        categoryIds: string[],
+        text: string
+    ): Promise<PolicyDTO[]> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICIES_BY_CATEGORY, { categoryIds, text });
     }
 
@@ -179,7 +243,11 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param blockId
      */
-    public async getBlockData(user: IAuthUser, policyId: string, blockId: string) {
+    public async getBlockData(
+        user: IAuthUser,
+        policyId: string,
+        blockId: string
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, { user, blockId, policyId });
     }
 
@@ -189,7 +257,11 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param tag
      */
-    public async getBlockDataByTag(user: IAuthUser, policyId: string, tag: string) {
+    public async getBlockDataByTag(
+        user: IAuthUser,
+        policyId: string,
+        tag: string
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId });
     }
 
@@ -200,7 +272,12 @@ export class PolicyEngine extends NatsService {
      * @param blockId
      * @param data
      */
-    public async setBlockData(user: IAuthUser, policyId: string, blockId: string, data: any) {
+    public async setBlockData(
+        user: IAuthUser,
+        policyId: string,
+        blockId: string,
+        data: any
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
     }
 
@@ -211,7 +288,12 @@ export class PolicyEngine extends NatsService {
      * @param blockId
      * @param data
      */
-    public async setBlockDataByTag(user: IAuthUser, policyId: string, tag: string, data: any) {
+    public async setBlockDataByTag(
+        user: IAuthUser,
+        policyId: string,
+        tag: string,
+        data: any
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
     }
 
@@ -221,7 +303,11 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param tag
      */
-    public async getBlockByTagName(user: IAuthUser, policyId: string, tag: string) {
+    public async getBlockByTagName(
+        user: IAuthUser,
+        policyId: string,
+        tag: string
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.BLOCK_BY_TAG, { user, tag, policyId });
     }
 
@@ -231,55 +317,68 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param blockId
      */
-    public async getBlockParents(user: IAuthUser, policyId: string, blockId: string): Promise<any> {
+    public async getBlockParents(
+        user: IAuthUser,
+        policyId: string,
+        blockId: string
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_PARENTS, { user, blockId, policyId });
     }
 
     /**
      * Get policy export file
-     * @param user
      * @param policyId
+     * @param owner
      */
-    public async exportFile(user: IAuthUser, policyId: string) {
-        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, user }) as any;
+    public async exportFile(
+        policyId: string,
+        owner: IOwner
+    ): Promise<ArrayBuffer> {
+        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
 
     /**
      * Get policy export message id
-     * @param user
      * @param policyId
+     * @param owner
      */
-    public async exportMessage(user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, { policyId, user });
+    public async exportMessage(
+        policyId: string,
+        owner: IOwner
+    ): Promise<ExportMessageDTO> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, { policyId, owner });
     }
 
     /**
      * Get policy export xlsx
-     * @param user
      * @param policyId
+     * @param owner
      */
-    public async exportXlsx(user: IAuthUser, policyId: string) {
-        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_XLSX, { policyId, user }) as any;
+    public async exportXlsx(
+        policyId: string,
+        owner: IOwner
+    ): Promise<ArrayBuffer> {
+        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_XLSX, { policyId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
 
     /**
      * Load policy file for import
-     * @param user
      * @param zip
+     * @param owner
      * @param versionOfTopicId
      * @param metadata
      */
     public async importFile(
-        user: IAuthUser,
         zip: Buffer,
+        owner: IOwner,
         versionOfTopicId?: string,
         metadata?: PolicyToolMetadata
-    ): Promise<any> {
+    ): Promise<boolean> {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE, {
             zip,
-            user,
+            owner,
             versionOfTopicId,
             metadata,
         });
@@ -287,121 +386,143 @@ export class PolicyEngine extends NatsService {
 
     /**
      * Async load policy file for import
-     * @param user
      * @param zip
+     * @param owner
      * @param versionOfTopicId
      * @param task
      * @param metadata
      */
     public async importFileAsync(
-        user: IAuthUser,
         zip: Buffer,
+        owner: IOwner,
         versionOfTopicId: string,
         task: NewTask,
         metadata?: PolicyToolMetadata
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
-            { zip, user, versionOfTopicId, task, metadata }
+            { zip, owner, versionOfTopicId, task, metadata }
         );
     }
 
     /**
      * Import policy from message
-     * @param user
      * @param messageId
+     * @param owner
      * @param versionOfTopicId
      * @param metadata
      */
     public async importMessage(
-        user: IAuthUser,
         messageId: string,
+        owner: IOwner,
         versionOfTopicId: string,
         metadata?: PolicyToolMetadata
-    ): Promise<any> {
+    ): Promise<boolean> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            { messageId, user, versionOfTopicId, metadata }
+            { messageId, owner, versionOfTopicId, metadata }
         );
     }
 
     /**
      * Async import policy from message
-     * @param user
      * @param messageId
+     * @param owner
      * @param versionOfTopicId
      * @param task
      * @param metadata
      */
     public async importMessageAsync(
-        user: IAuthUser,
         messageId: string,
+        owner: IOwner,
         versionOfTopicId: string,
         task: NewTask,
         metadata?: PolicyToolMetadata
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            { messageId, user, versionOfTopicId, task, metadata }
+            { messageId, owner, versionOfTopicId, task, metadata }
         );
     }
 
     /**
      * Get policy info from file
-     * @param user
      * @param zip
+     * @param owner
      */
-    public async importFilePreview(user: IAuthUser, zip: ArrayBuffer) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, { zip, user });
+    public async importFilePreview(
+        zip: ArrayBuffer,
+        owner: IOwner
+    ): Promise<PolicyPreviewDTO> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, { zip, owner });
     }
 
     /**
      * Load xlsx file for import
-     * @param user
-     * @param zip
-     * @param versionOfTopicId
+     * @param xlsx
+     * @param owner
+     * @param policyId
      */
-    public async importXlsx(user: IAuthUser, xlsx: ArrayBuffer, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX, { user, xlsx, policyId });
+    public async importXlsx(
+        xlsx: ArrayBuffer,
+        owner: IOwner,
+        policyId: string
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX, { xlsx, owner, policyId });
     }
 
     /**
      * Async load xlsx file for import
-     * @param user
-     * @param zip
-     * @param versionOfTopicId
+     * @param xlsx
+     * @param owner
+     * @param policyId
      * @param task
      */
-    public async importXlsxAsync(user: IAuthUser, xlsx: ArrayBuffer, policyId: string, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { user, xlsx, policyId, task });
+    public async importXlsxAsync(
+        xlsx: ArrayBuffer,
+        owner: IOwner,
+        policyId: string,
+        task: NewTask
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC, { xlsx, owner, policyId, task });
     }
 
     /**
      * Get policy info from xlsx file
-     * @param user
      * @param zip
+     * @param owner
      */
-    public async importXlsxPreview(user: IAuthUser, xlsx: ArrayBuffer) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { user, xlsx });
+    public async importXlsxPreview(
+        xlsx: ArrayBuffer,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_XLSX_FILE_PREVIEW, { owner, xlsx });
     }
 
     /**
      * Get policy info from message
-     * @param user
      * @param messageId
+     * @param owner
      */
-    public async importMessagePreview(user: IAuthUser, messageId: string) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, { messageId, user });
+    public async importMessagePreview(
+        messageId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
     }
 
     /**
      * Async get policy info from message
-     * @param user
      * @param messageId
+     * @param owner
      * @param task
      */
-    public async importMessagePreviewAsync(user: IAuthUser, messageId: string, task: NewTask) {
-        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, user, task });
+    public async importMessagePreviewAsync(
+        messageId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, owner, task });
     }
 
     /**
@@ -423,8 +544,11 @@ export class PolicyEngine extends NatsService {
      * Get Virtual Users by policy id
      * @param policyId
      */
-    public async getVirtualUsers(policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId });
+    public async getVirtualUsers(
+        policyId: string,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId, owner });
     }
 
     /**
@@ -432,7 +556,10 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param owner
      */
-    public async createVirtualUser(policyId: string, owner: string) {
+    public async createVirtualUser(
+        policyId: string,
+        owner: IOwner
+    ) {
         return await this.sendMessage(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, owner });
     }
 
@@ -441,18 +568,26 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param did
      */
-    public async loginVirtualUser(policyId: string, did: string) {
-        return await this.sendMessage(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, did });
+    public async loginVirtualUser(
+        policyId: string,
+        virtualDID: string,
+        owner: IOwner
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, virtualDID, owner });
     }
 
     /**
      * Restart Dry-run policy
      * @param model
-     * @param user
+     * @param owner
      * @param policyId
      */
-    public async restartDryRun(model: any, user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.RESTART_DRY_RUN, { model, user, policyId });
+    public async restartDryRun(
+        model: any,
+        owner: IOwner,
+        policyId: string
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.RESTART_DRY_RUN, { model, owner, policyId });
     }
 
     /**
@@ -465,12 +600,14 @@ export class PolicyEngine extends NatsService {
     public async getVirtualDocuments(
         policyId: string,
         type: string,
+        owner: IOwner,
         pageIndex?: number,
         pageSize?: number
     ): Promise<[any[], number]> {
         return await this.sendMessage(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, {
             policyId,
             type,
+            owner,
             pageIndex,
             pageSize
         });
@@ -482,7 +619,10 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      */
-    public async getNavigation(user: IAuthUser, policyId: string) {
+    public async getNavigation(
+        user: IAuthUser,
+        policyId: string
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId });
     }
 
@@ -492,7 +632,10 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      */
-    public async getGroups(user: IAuthUser, policyId: string) {
+    public async getGroups(
+        user: IAuthUser,
+        policyId: string
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId });
     }
 
@@ -503,7 +646,11 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param uuid
      */
-    public async selectGroup(user: IAuthUser, policyId: string, uuid: string) {
+    public async selectGroup(
+        user: IAuthUser,
+        policyId: string,
+        uuid: string
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.SELECT_POLICY_GROUP, { user, policyId, uuid });
     }
 
@@ -512,8 +659,11 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      */
-    public async getMultiPolicy(user: IAuthUser, policyId: string) {
-        return await this.sendMessage(PolicyEngineEvents.GET_MULTI_POLICY, { user, policyId });
+    public async getMultiPolicy(
+        owner: IOwner,
+        policyId: string
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_MULTI_POLICY, { owner, policyId });
     }
 
     /**
@@ -522,17 +672,26 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param data
      */
-    public async setMultiPolicy(user: IAuthUser, policyId: string, data: any) {
-        return await this.sendMessage(PolicyEngineEvents.SET_MULTI_POLICY, { user, policyId, data });
+    public async setMultiPolicy(
+        owner: IOwner,
+        policyId: string,
+        data: any
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.SET_MULTI_POLICY, { owner, policyId, data });
     }
 
     /**
      * Discontinue policy
-     * @param user
      * @param policyId
+     * @param owner
+     * @param date
      */
-    public async discontinuePolicy(user: any, policyId: string, date?: string): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.DISCONTINUE_POLICY, { user, policyId, date });
+    public async discontinuePolicy(
+        policyId: string,
+        owner: IOwner,
+        date?: string
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.DISCONTINUE_POLICY, { policyId, owner, date });
     }
 
     /**
@@ -546,14 +705,15 @@ export class PolicyEngine extends NatsService {
      * @returns Documents and count
      */
     public async getDocuments(
-        owner: string,
+        owner: IOwner,
         policyId: string,
         includeDocument: boolean = false,
         type?: DocumentType,
-        pageIndex?: number,
-        pageSize?: number
+        pageIndex?: number | string,
+        pageSize?: number | string
     ): Promise<[any[], number]> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DOCUMENTS, { owner, policyId, includeDocument, type, pageIndex, pageSize });
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_DOCUMENTS,
+            { owner, policyId, includeDocument, type, pageIndex, pageSize });
     }
 
     /**
@@ -563,7 +723,7 @@ export class PolicyEngine extends NatsService {
      * @returns Errors
      */
     public async migrateData(
-        owner: string,
+        owner: IOwner,
         migrationConfig: MigrationConfig,
     ): Promise<{ error: string, id: string }[]> {
         return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA, { owner, migrationConfig });
@@ -576,11 +736,11 @@ export class PolicyEngine extends NatsService {
      * @param task Task
      */
     public async migrateDataAsync(
-        owner: string,
+        owner: IOwner,
         migrationConfig: MigrationConfig,
-        task
-    ): Promise<void> {
-        await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task });
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(PolicyEngineEvents.MIGRATE_DATA_ASYNC, { owner, migrationConfig, task });
     }
 
     /**
@@ -589,7 +749,10 @@ export class PolicyEngine extends NatsService {
      * @param owner Owner
      * @returns Data
      */
-    public async downloadPolicyData(policyId: string, owner: string) {
+    public async downloadPolicyData(
+        policyId: string,
+        owner: IOwner
+    ) {
         return Buffer.from(
             (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_POLICY_DATA, {
                 policyId,
@@ -605,7 +768,7 @@ export class PolicyEngine extends NatsService {
      * @param owner Owner
      * @returns Virtual keys
      */
-    public async downloadVirtualKeys(policyId: string, owner: string) {
+    public async downloadVirtualKeys(policyId: string, owner: IOwner) {
         return Buffer.from(
             (await this.sendMessage(PolicyEngineEvents.DOWNLOAD_VIRTUAL_KEYS, {
                 policyId,
@@ -621,9 +784,12 @@ export class PolicyEngine extends NatsService {
      * @param data Data
      * @returns Uploaded policy
      */
-    public async uploadPolicyData(user: string, data: any) {
+    public async uploadPolicyData(
+        owner: IOwner,
+        data: any
+    ) {
         return await this.sendMessage(PolicyEngineEvents.UPLOAD_POLICY_DATA, {
-            user,
+            owner,
             data,
         });
     }
@@ -635,7 +801,11 @@ export class PolicyEngine extends NatsService {
      * @param policyId Policy identifier
      * @returns Operation completed
      */
-    public async uploadVirtualKeys(owner: string, data: any, policyId: string) {
+    public async uploadVirtualKeys(
+        owner: IOwner,
+        data: any,
+        policyId: string
+    ) {
         return await this.sendMessage(PolicyEngineEvents.UPLOAD_VIRTUAL_KEYS, {
             owner,
             data,
@@ -649,7 +819,10 @@ export class PolicyEngine extends NatsService {
      * @param owner Owner
      * @returns Tag block map
      */
-    public async getTagBlockMap(policyId: string, owner: string): Promise<any> {
+    public async getTagBlockMap(
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.GET_TAG_BLOCK_MAP, {
             policyId,
             owner,
