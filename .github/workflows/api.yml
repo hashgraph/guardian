@@ -31,7 +31,7 @@ jobs:
               with:
                   ref: 'develop'
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
+              uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 #v4.0.2
               with:
                   node-version: ${{ matrix.node-version }}
             - name: Install dependencies
@@ -119,7 +119,7 @@ jobs:
                   npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" --spec cypress/e2e/api-tests/**/*.cy.js            
                   popd
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@v1
+              uses: EnricoMi/publish-unit-test-result-action@30eadd5010312f995f0d3b3cff7fe2984f69409e # v2.16.1
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml
