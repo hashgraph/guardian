@@ -35,6 +35,9 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
 
+            - name: Setup Yarn
+              uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
+
             - name: Install dependencies
               run: yarn
 
