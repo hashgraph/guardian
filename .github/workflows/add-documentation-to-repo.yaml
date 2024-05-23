@@ -32,6 +32,9 @@ jobs:
       - name: Setup Yarn
         uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
 
+      - name: Install dependencies
+        run: yarn install
+
       - name: Start NatsMQ
         uses: onichandame/nats-action@a8144f9009c5f67c39edd6a50f9de659c44bd135 # v0.0.0
         with:
