@@ -5,7 +5,8 @@ on:
 
 jobs:
     buildAndTest:
-        runs-on: ubuntu-latest
+        name: Build and Test
+        runs-on: [self-hosted, Linux, medium, ephemeral]
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
@@ -21,7 +22,12 @@ jobs:
                 node-version: [ 20.x ]
                 mongodb-version: [ 7.0.5 ]
         steps:
-            - uses: actions/checkout@v1
+            - name: Harden Runner
+              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+              with:
+                  egress-policy: audit
+            - name: Checkout Code
+              uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
               with:
                   ref: 'develop'
             - name: Use Node.js ${{ matrix.node-version }}
