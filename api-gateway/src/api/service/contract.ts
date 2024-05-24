@@ -117,12 +117,9 @@ export class ContractsApi {
             const owner = new EntityOwner(user);
             const { description, type } = body;
             const guardians = new Guardians();
-<<<<<<< HEAD
+
             await this.cacheService.invalidate(getCacheKey([req.url], user))
-            return await guardians.createContract(user.did, description, type);
-=======
             return await guardians.createContract(owner, description, type);
->>>>>>> feature/2844
         } catch (error) {
             await InternalException(error);
         }

@@ -1,4 +1,3 @@
-// <<<<<<< HEAD
 import { Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
