@@ -21,16 +21,16 @@
 
         <div class="policy-dropdown-container">
             <label class="form-label" for="secondaryModule">* Secondary  {{ type }}</label>
-            <p-multiSelect
+            <p-dropdown
                 (onChange)="onChange()"
                 [(ngModel)]="itemId2"
                 [options]="list2"
-                [placeholder]="'Select ' + type + '(-s)'"
+                [placeholder]="'Select ' + type"
                 appendTo="body"
                 id="secondaryModule"
                 optionLabel="name"
                 optionValue="id"
-            ></p-multiSelect>
+            ></p-dropdown>
         </div>
     </div>
 </div>

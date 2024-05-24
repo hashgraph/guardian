@@ -16,8 +16,6 @@ export interface IHederaCredentials {
     readonly hederaAccountKey: string;
 }
 
-
-
 /**
  * User in policy
  */
@@ -49,15 +47,15 @@ export class PolicyUser {
     /**
      * Policy id
      */
-    private policyId: string | null;
+    public readonly policyId: string | null;
     /**
      * Policy owner
      */
-    private policyOwner: string | null;
+    public readonly policyOwner: string | null;
     /**
      * Permissions
      */
-    private permissions: string[];
+    public readonly permissions: string[];
 
     constructor(user: IAuthUser, instance: IPolicyInstance | AnyBlockType) {
         this.did = user.did;
@@ -70,13 +68,12 @@ export class PolicyUser {
         this.policyOwner = instance.policyOwner;
     }
 
-    protected set group(uuid: string) {
-        this._group = uuid;
-        if (this._group) {
-            this._id = `${this._group}:${this._did}`;
-        } else {
-            this._id = this._did;
-        }
+    public get id(): string {
+        return this._id;
+    }
+
+    public get did(): string {
+        return this._did;
     }
 
     protected set did(did: string) {
@@ -88,40 +85,41 @@ export class PolicyUser {
         }
     }
 
-    protected set username(username: string) {
-        this._username = username;
-    }
-
-    protected set role(role: PolicyRole | null) {
-        this._role = role;
-    }
-
-    protected set roleMessage(messageId: string | null) {
-        this._roleMessage = messageId;
-    }
-
-    public get id(): string {
-        return this._id;
-    }
-
-    public get did(): string {
-        return this._did;
-    }
-
     public get username(): string {
         return this._username;
+    }
+
+    protected set username(username: string) {
+        this._username = username;
     }
 
     public get role(): PolicyRole | null {
         return this._role;
     }
 
+    protected set role(role: PolicyRole | null) {
+        this._role = role;
+    }
+
     public get group(): string | null {
         return this._group;
     }
 
+    protected set group(uuid: string) {
+        this._group = uuid;
+        if (this._group) {
+            this._id = `${this._group}:${this._did}`;
+        } else {
+            this._id = this._did;
+        }
+    }
+
     public get roleMessage(): string | null {
         return this._roleMessage;
+    }
+
+    protected set roleMessage(messageId: string | null) {
+        this._roleMessage = messageId;
     }
 
     public get virtual(): boolean {
@@ -150,100 +148,19 @@ export class PolicyUser {
         return this._did === did && this._group === uuid;
     }
 
-    // /**
-    //  * Set Group
-    //  * @param group
-    //  */
-    // public setGroup(group: {
-    //     /**
-    //      * Role in Group
-    //      */
-    //     role?: string,
-    //     /**
-    //      * Group ID
-    //      */
-    //     uuid?: string
-    //     /**
-    //      * Message ID
-    //      */
-    //     messageId?: string
-    // } | null): PolicyUser {
-    //     if (group) {
-    //         this.role = group.role;
-    //         this.group = group.uuid || null;
-    //         this.roleMessage = group.messageId || null;
-    //         if (this.group) {
-    //             this.id = `${this.group}:${this.did}`;
-    //         } else {
-    //             this.id = this.did;
-    //         }
-    //     }
-    //     return this;
-    // }
-
-    // /**
-    //  * Set Virtual DID
-    //  * @param user
-    //  */
-    // public setVirtualUser(user: any): PolicyUser {
-    //     if (user) {
-    //         this.did = user.did;
-    //         this.virtual = true;
-    //         this.username = user.username;
-    //         if (this.group) {
-    //             this.id = `${this.group}:${this.did}`;
-    //         } else {
-    //             this.id = this.did;
-    //         }
-    //     }
-    //     return this;
-    // }
-
-    // /**
-    //  * Create User by group object
-    //  * @param group
-    //  * @param virtual
-    //  */
-    // public static create(group: PolicyRoles, virtual: boolean = false): PolicyUser {
-    //     const user = new PolicyUser(group.did, virtual);
-    //     return user.setGroup(group);
-    // }
-
-    // /**
-    //  * Set username
-    //  * @param username
-    //  */
-    // public setUsername(username: string): PolicyUser {
-    //     this.username = username;
-    //     return this;
-    // }
-
-    // /**
-    //  * Create User by group object
-    //  * @param group
-    //  */
-    // public static fromGroup(group: PolicyRoles): PolicyUser {
-    //     const user = new PolicyUser(group.did, false);
-    //     return user.setGroup(group);
-    // }
-
-    // /**
-    //  * Create User by DID
-    //  * @param group
-    //  */
-    // public static fromDID(did: string): PolicyUser {
-    //     const user = new PolicyUser(did, false);
-    //     return user.setGroup(group);
-    // }
-
-    // /**
-    //  * Create User by Virtual id
-    //  * @param group
-    //  */
-    // public static fromVirtualGroup(group: PolicyRoles): PolicyUser {
-    //     const user = new PolicyUser(group.did, true);
-    //     return user.setGroup(group);
-    // }
+    public toJson() {
+        return {
+            id: this.id,
+            did: this.did,
+            username: this.username,
+            role: this.role,
+            group: this.group,
+            roleMessage: this.roleMessage,
+            virtual: this.virtual,
+            isAdmin: this.isAdmin,
+            policyId: this.policyId
+        }
+    }
 }
 
 /**

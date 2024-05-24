@@ -1,5 +1,3 @@
-import { UserRole } from './user-role.type.js';
-
 /**
  * Category
  */
@@ -108,6 +106,9 @@ export enum Permissions {
     BRANDING_CONFIG_UPDATE = 'BRANDING_CONFIG_UPDATE',
     //CONTRACT
     CONTRACTS_CONTRACT_READ = 'CONTRACTS_CONTRACT_READ',
+    CONTRACTS_CONTRACT_EXECUTE = 'CONTRACTS_CONTRACT_EXECUTE',
+    CONTRACTS_CONTRACT_MANAGE = 'CONTRACTS_CONTRACT_MANAGE',
+
     CONTRACTS_CONTRACT_CREATE = 'CONTRACTS_CONTRACT_CREATE',
     CONTRACTS_CONTRACT_DELETE = 'CONTRACTS_CONTRACT_DELETE',
     CONTRACTS_WIPE_REQUEST_READ = 'CONTRACTS_WIPE_REQUEST_READ',
@@ -316,165 +317,212 @@ export const PermissionsArray: {
             disabled: false
         },
         {
+            name: Permissions.CONTRACTS_CONTRACT_EXECUTE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.CONTRACT,
+            action: PermissionActions.EXECUTE,
+            disabled: false,
+            dependOn: [
+                Permissions.CONTRACTS_CONTRACT_READ,
+                Permissions.CONTRACTS_RETIRE_REQUEST_READ,
+                Permissions.CONTRACTS_POOL_READ,
+                Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
+                Permissions.CONTRACTS_DOCUMENT_READ,
+            ]
+        },
+        {
+            name: Permissions.CONTRACTS_CONTRACT_MANAGE,
+            category: PermissionCategories.CONTRACTS,
+            entity: PermissionEntities.CONTRACT,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.CONTRACTS_CONTRACT_READ,
+                Permissions.CONTRACTS_CONTRACT_CREATE,
+                Permissions.CONTRACTS_CONTRACT_DELETE,
+                Permissions.CONTRACTS_PERMISSIONS_READ,
+                Permissions.CONTRACTS_WIPE_REQUEST_READ,
+                Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
+                Permissions.CONTRACTS_WIPE_REQUEST_REVIEW,
+                Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
+                Permissions.CONTRACTS_WIPE_ADMIN_CREATE,
+                Permissions.CONTRACTS_WIPE_ADMIN_DELETE,
+                Permissions.CONTRACTS_WIPE_MANAGER_CREATE,
+                Permissions.CONTRACTS_WIPE_MANAGER_DELETE,
+                Permissions.CONTRACTS_WIPER_CREATE,
+                Permissions.CONTRACTS_WIPER_DELETE,
+                Permissions.CONTRACTS_POOL_UPDATE,
+                Permissions.CONTRACTS_RETIRE_REQUEST_READ,
+                Permissions.CONTRACTS_POOL_READ,
+                Permissions.CONTRACTS_RETIRE_REQUEST_DELETE,
+                Permissions.CONTRACTS_POOL_DELETE,
+                Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
+                Permissions.CONTRACTS_RETIRE_REQUEST_REVIEW,
+                Permissions.CONTRACTS_RETIRE_ADMIN_CREATE,
+                Permissions.CONTRACTS_RETIRE_ADMIN_DELETE,
+                Permissions.CONTRACTS_DOCUMENT_READ
+            ]
+        },
+        {
             name: Permissions.CONTRACTS_CONTRACT_CREATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.CONTRACT,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_CONTRACT_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.CONTRACT,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_READ,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_REQUEST,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_REQUEST,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_REQUEST,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_REQUEST_REVIEW,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_REQUEST,
             action: PermissionActions.REVIEW,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_ADMIN_CREATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_ADMIN,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_ADMIN_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_ADMIN,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_MANAGER_CREATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_MANAGER,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPE_MANAGER_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPE_MANAGER,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPER_CREATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPER,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_WIPER_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.WIPER,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_POOL_READ,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.POOL,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_POOL_UPDATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.POOL,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_POOL_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.POOL,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_READ,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.RETIRE_REQUEST,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.RETIRE_REQUEST,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.RETIRE_REQUEST,
             action: PermissionActions.DELETE,
-            disabled: false,
+            disabled: true,
         },
         {
             name: Permissions.CONTRACTS_RETIRE_REQUEST_REVIEW,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.RETIRE_REQUEST,
             action: PermissionActions.REVIEW,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_RETIRE_ADMIN_CREATE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.RETIRE_ADMIN,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_RETIRE_ADMIN_DELETE,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.RETIRE_ADMIN,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_PERMISSIONS_READ,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.PERMISSIONS,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.CONTRACTS_DOCUMENT_READ,
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.DOCUMENT,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: true
         },
         //DEMO
         {
@@ -668,14 +716,14 @@ export const PermissionsArray: {
             category: PermissionCategories.POLICIES,
             entity: PermissionEntities.MIGRATION,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.POLICIES_RECORD_ALL,
             category: PermissionCategories.POLICIES,
             entity: PermissionEntities.RECORD,
             action: PermissionActions.ALL,
-            disabled: false
+            disabled: true
         },
         //SCHEMAS
         {
@@ -864,35 +912,51 @@ export const PermissionsArray: {
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_UPDATE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_DELETE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_EXECUTE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.EXECUTE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_MANAGE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.MANAGE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ,
+                Permissions.ACCOUNTS_ACCOUNT_READ
+            ]
         },
         //TAGS
         {
@@ -936,7 +1000,7 @@ export const PermissionsArray: {
             category: PermissionCategories.PROFILES,
             entity: PermissionEntities.RESTORE,
             action: PermissionActions.ALL,
-            disabled: false
+            disabled: true
         },
         //SUGGESTIONS
         {
@@ -1064,7 +1128,6 @@ export const PermissionsArray: {
         }
     ];
 
-
 export const UserDefaultPermission: Permissions[] = [
     Permissions.ACCOUNTS_STANDARD_REGISTRY_READ,
     Permissions.DEMO_KEY_CREATE,
@@ -1074,6 +1137,7 @@ export const UserDefaultPermission: Permissions[] = [
     Permissions.PROFILES_USER_UPDATE,
     Permissions.PROFILES_BALANCE_READ,
 ];
+
 export const SRDefaultPermission: Permissions[] = [
     ...UserDefaultPermission,
     Permissions.ACCOUNTS_ACCOUNT_READ,
@@ -1164,11 +1228,13 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.PERMISSIONS_USER_READ,
     Permissions.ACCESS_POLICY_ALL,
 ];
+
 export const AuditDefaultPermission: Permissions[] = [
     ...UserDefaultPermission,
     Permissions.POLICIES_POLICY_AUDIT,
     Permissions.AUDIT_TRUST_CHAIN_READ,
 ]
+
 export const DefaultRoles: Permissions[] = [
     ...UserDefaultPermission,
     Permissions.CONTRACTS_CONTRACT_READ,
@@ -1183,5 +1249,22 @@ export const DefaultRoles: Permissions[] = [
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
     Permissions.ACCESS_POLICY_ASSIGNED,
+    Permissions.ACCESS_POLICY_PUBLISHED,
+];
+
+export const OldRoles: Permissions[] = [
+    ...UserDefaultPermission,
+    Permissions.CONTRACTS_CONTRACT_READ,
+    Permissions.CONTRACTS_POOL_READ,
+    Permissions.CONTRACTS_RETIRE_REQUEST_READ,
+    Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
+    Permissions.CONTRACTS_DOCUMENT_READ,
+    Permissions.POLICIES_POLICY_EXECUTE,
+    //Permissions.SCHEMAS_SCHEMA_READ, ???
+    Permissions.TOKENS_TOKEN_READ,
+    Permissions.TOKENS_TOKEN_EXECUTE,
+    Permissions.TAGS_TAG_READ,
+    Permissions.TAGS_TAG_CREATE,
+    // Permissions.ACCESS_POLICY_ASSIGNED,
     Permissions.ACCESS_POLICY_PUBLISHED,
 ];

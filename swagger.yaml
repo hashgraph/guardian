@@ -4581,7 +4581,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyDTO'
+                $ref: '#/components/schemas/PoliciesValidationDTO'
         '401':
           description: Unauthorized
         '403':
@@ -4661,7 +4661,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyDTO'
+                $ref: '#/components/schemas/PoliciesValidationDTO'
         '401':
           description: Unauthorized
         '403':
@@ -4678,9 +4678,9 @@ paths:
   /policies/{policyId}/discontinue:
     put:
       operationId: PolicyApi_discontinuePolicy
-      summary: Discontunue policy.
+      summary: Discontinue policy.
       description: >-
-        Discontunue policy. Only users with the Standard Registry role are
+        Discontinue policy. Only users with the Standard Registry role are
         allowed to make the request.
       parameters:
         - name: policyId
@@ -4743,7 +4743,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
         '401':
           description: Unauthorized
         '403':
@@ -5801,7 +5803,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
         '401':
           description: Unauthorized
         '403':
@@ -6512,7 +6516,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDTO'
         '500':
           description: Internal server error.
           content:
@@ -10878,6 +10884,50 @@ paths:
       tags: *ref_26
       security:
         - bearer: []
+  /permissions/roles/default:
+    post:
+      operationId: PermissionsApi_setDefaultRole
+      summary: Set default role.
+      description: Set the role as default for new users.
+      parameters: []
+      requestBody:
+        required: true
+        description: Object that contains role information.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Role Identifier
+                  example: '000000000000000000000001'
+              required:
+                - id
+            examples:
+              Default:
+                value:
+                  id: '000000000000000000000001'
+      responses:
+        '200':
+          description: Created role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_26
+      security:
+        - bearer: []
   /permissions/users:
     get:
       operationId: PermissionsApi_getUsers
@@ -11307,111 +11357,149 @@ components:
       properties:
         id:
           type: string
-          nullable: false
-        _id:
-          type: string
-          nullable: false
+          example: '000000000000000000000001'
         uuid:
           type: string
-          nullable: false
-        type:
-          type: string
-          nullable: false
+          example: 00000000-0000-0000-0000-000000000000
         name:
           type: string
-          nullable: false
+          example: Policy name
         description:
           type: string
-          nullable: false
-        status:
+          example: Description
+        topicDescription:
           type: string
-          nullable: false
-        creator:
-          type: string
-          nullable: false
-        owner:
-          type: string
-          nullable: false
-        topicId:
-          type: string
-          nullable: false
-        messageId:
-          type: string
-          nullable: false
-        codeVersion:
-          type: string
-          nullable: false
-        createDate:
-          type: string
-          nullable: false
-        config:
-          type: object
-          nullable: true
+          example: Description
         policyTag:
           type: string
-          nullable: false
+          example: Tag
+        status:
+          type: string
+          enum:
+            - DRY-RUN
+            - DRAFT
+            - PUBLISH_ERROR
+            - PUBLISH
+            - DISCONTINUED
+          example: DRAFT
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        codeVersion:
+          type: string
+          example: 1.0.0
+        createDate:
+          type: string
+          example: '1900-01-01T00:00:00.000Z'
+        version:
+          type: string
+          example: 1.0.0
+        config:
+          type: object
         userRole:
           type: string
-          nullable: false
+          example: Installer
         userRoles:
-          nullable: false
+          example:
+            - Installer
           type: array
           items:
             type: string
         userGroup:
-          type: string
-          nullable: false
+          type: object
+          example:
+            uuid: 00000000-0000-0000-0000-000000000000
+            role: Installer
+            groupLabel: Label
+            groupName: Name
+            active: true
         userGroups:
-          nullable: true
+          example:
+            - uuid: 00000000-0000-0000-0000-000000000000
+              role: Installer
+              groupLabel: Label
+              groupName: Name
+              active: true
           type: array
           items:
             type: object
-        version:
-          type: string
-          nullable: false
-        topicDescription:
-          type: string
-          nullable: false
         policyRoles:
-          nullable: false
+          example:
+            - Registrant
           type: array
           items:
             type: string
         policyNavigation:
-          nullable: false
+          example:
+            - role: Registrant
+              steps:
+                - block: Block tag
+                  level: 1
+                  name: Step name
           type: array
           items:
             type: object
         policyTopics:
-          nullable: false
+          example:
+            - name: Project
+              description: Project
+              memoObj: topic
+              static: false
+              type: any
           type: array
           items:
             type: object
         policyTokens:
-          nullable: false
+          example:
+            - tokenName: Token name
+              tokenSymbol: Token symbol
+              tokenType: non-fungible
+              decimals: ''
+              changeSupply: true
+              enableAdmin: true
+              enableFreeze: true
+              enableKYC: true
+              enableWipe: true
+              templateTokenTag: token_template_0
           type: array
           items:
             type: object
         policyGroups:
-          nullable: false
+          example:
+            - name: Group name
+              creator: Registrant
+              groupAccessType: Private
+              groupRelationshipType: Multiple
+              members:
+                - Registrant
           type: array
           items:
             type: object
         categories:
-          nullable: false
           type: array
           items:
             type: string
         projectSchema:
           type: string
-          nullable: false
+          example: 00000000-0000-0000-0000-000000000000
       required:
         - id
-        - _id
         - uuid
-        - type
         - name
         - description
+        - topicDescription
+        - policyTag
         - status
         - creator
         - owner
@@ -11419,14 +11507,12 @@ components:
         - messageId
         - codeVersion
         - createDate
+        - version
         - config
-        - policyTag
         - userRole
         - userRoles
         - userGroup
         - userGroups
-        - version
-        - topicDescription
         - policyRoles
         - policyNavigation
         - policyTopics
@@ -12795,17 +12881,28 @@ components:
         - migrateRetirePools
         - editedVCs
         - retireContractId
+    PoliciesValidationDTO:
+      type: object
+      properties:
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyDTO'
+        isValid:
+          type: string
+        errors:
+          $ref: '#/components/schemas/ValidationErrorsDTO'
+      required:
+        - policies
+        - isValid
+        - errors
     PolicyValidationDTO:
       type: object
       properties:
         policy:
-          nullable: false
-          allOf:
-            - $ref: '#/components/schemas/PolicyDTO'
+          $ref: '#/components/schemas/PolicyDTO'
         results:
-          nullable: false
-          allOf:
-            - $ref: '#/components/schemas/ValidationErrorsDTO'
+          $ref: '#/components/schemas/ValidationErrorsDTO'
       required:
         - policy
         - results
@@ -12816,24 +12913,21 @@ components:
       type: object
       properties:
         module:
-          nullable: false
-          allOf:
-            - $ref: '#/components/schemas/PolicyDTO'
+          $ref: '#/components/schemas/PolicyDTO'
         messageId:
           type: string
+          example: '0000000000.000000001'
         schemas:
-          nullable: true
           type: array
           items:
             type: object
         tags:
-          nullable: true
           type: array
           items:
             type: object
         moduleTopicId:
           type: string
-          nullable: true
+          example: 0.0.1
       required:
         - module
         - messageId
@@ -12845,10 +12939,13 @@ components:
       properties:
         id:
           type: string
+          example: '000000000000000000000001'
         name:
           type: string
+          example: Large-Scale
         type:
           type: string
+          example: PROJECT_SCALE
       required:
         - id
         - name
@@ -13865,8 +13962,6 @@ components:
             - POLICIES_POLICY_REVIEW
             - POLICIES_POLICY_EXECUTE
             - POLICIES_POLICY_MANAGE
-            - POLICIES_MIGRATION_CREATE
-            - POLICIES_RECORD_ALL
             - SCHEMAS_SCHEMA_READ
             - SCHEMAS_SCHEMA_CREATE
             - SCHEMAS_SCHEMA_UPDATE
@@ -13890,7 +13985,6 @@ components:
             - TOKENS_TOKEN_MANAGE
             - TAGS_TAG_READ
             - TAGS_TAG_CREATE
-            - PROFILES_RESTORE_ALL
             - SUGGESTIONS_SUGGESTIONS_READ
             - SUGGESTIONS_SUGGESTIONS_UPDATE
             - PERMISSIONS_ROLE_READ

@@ -102,12 +102,43 @@ export class IdHelper {
 export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallback<any>>>
 
 /**
- * BlockUpdateFunction
- * @param type
- * @param args
+ * Update Event
+ * @param blocks
+ * @param user
  */
-export function blockUpdate(type: string, ...args) {
-    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
+export function updateBlockEvent(blocks: string[], user: PolicyUser): void {
+    const type = 'update';
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blocks, user.toJson()] });
+}
+
+/**
+ * Error Event
+ * @param blocks
+ * @param user
+ */
+export function errorBlockEvent(blockType: string, message: any, user: PolicyUser): void {
+    const type = 'error';
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [blockType, message, user.toJson()] });
+}
+
+/**
+ * Info Event
+ * @param blocks
+ * @param user
+ */
+export function infoBlockEvent(user: PolicyUser, policy: Policy): void {
+    const type = 'update-user';
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [user.toJson(), policy] });
+}
+
+/**
+ * External Event
+ * @param blocks
+ * @param user
+ */
+export function externalBlockEvent(event: ExternalEvent<any>): void {
+    const type = 'external';
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, data: [event] });
 }
 
 /**
@@ -150,8 +181,7 @@ export class PolicyComponentsUtils {
             PolicyComponentsUtils._blockUpdateTimeoutMap.set(
                 did,
                 setTimeout(() => {
-                    blockUpdate(
-                        'update',
+                    updateBlockEvent(
                         PolicyComponentsUtils.getParentBlocksToUpdate(
                             block?.policyInstance?.config,
                             blocksToUpdate
@@ -191,29 +221,20 @@ export class PolicyComponentsUtils {
     /**
      * Block error function
      */
-    public static BlockErrorFn: (
-        blockType: string,
-        message: any,
-        user: PolicyUser
-    ) => Promise<void> = async (...args) => {
-        blockUpdate('error', ...args);
+    public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser) {
+        errorBlockEvent(blockType, message, user);
     };
     /**
      * Update user info function
      */
-    public static UpdateUserInfoFn: (
-        user: PolicyUser,
-        policy: Policy
-    ) => Promise<void> = async (...args) => {
-        blockUpdate('update-user', ...args);
+    public static async UpdateUserInfoFn(user: PolicyUser, policy: Policy) {
+        infoBlockEvent(user, policy);
     };
     /**
      * External Event function
      */
-    public static ExternalEventFn: (
-        event: ExternalEvent<any>
-    ) => Promise<void> = async (...args) => {
-        blockUpdate('external', ...args);
+    public static async ExternalEventFn(event: ExternalEvent<any>) {
+        externalBlockEvent(event);
     };
 
     /**
@@ -1318,15 +1339,14 @@ export class PolicyComponentsUtils {
         instance: IPolicyInstance | AnyBlockType
     ): Promise<PolicyUser> {
         const virtual = !!instance.dryRun;
-        const regUser = await (new Users()).getUserById(did);
-        if (!regUser || !regUser.did) {
-            return null;
-        }
-
         let userFull: PolicyUser;
         if (virtual) {
             userFull = new VirtualUser({ did }, instance);
         } else {
+            const regUser = await (new Users()).getUserById(did);
+            if (!regUser || !regUser.did) {
+                return null;
+            }
             userFull = new PolicyUser(regUser, instance);
         }
 

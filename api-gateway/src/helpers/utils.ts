@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { IAuthUser, Logger } from '@guardian/common';
-import { PolicyType, UserRole } from '@guardian/interfaces';
+import { IOwner, PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from './policy-engine.js';
 
 /**
@@ -106,21 +106,8 @@ export async function InternalException(error: HttpException | Error | string) {
  * @param policyId
  * @param owner
  */
-export async function checkPolicy(policyId: string, owner: string): Promise<any> {
-    let policy: any;
-    try {
-        const engineService = new PolicyEngine();
-        policy = await engineService.getPolicy({ filters: policyId });
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    if (!policy) {
-        throw new HttpException('Policy does not exist.', HttpStatus.NOT_FOUND)
-    }
-    if (policy.owner !== owner) {
-        throw new HttpException('Invalid owner.', HttpStatus.FORBIDDEN)
-    }
+export async function checkPolicy(policyId: string, owner: IOwner): Promise<any> {
+    const policy = await (new PolicyEngine().accessPolicy(policyId, owner, 'read'));
     if (policy.status !== PolicyType.DRY_RUN) {
         throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
     }

@@ -108,27 +108,56 @@ export class TokenConfigComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.profileService.getProfile(),
-            this.policyEngineService.all(),
             this.tagsService.getPublishedSchemas()
-        ]).subscribe((value) => {
-            const profile = value[0];
-            const policies = value[1] || [];
-            const tagSchemas: any[] = value[2] || [];
-
+        ]).subscribe(([profile, tagSchemas]) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             this.user = new UserPermissions(profile);
-            this.policies = policies;
-            this.policies.unshift({ id: -1, name: 'All policies' });
-            if (this.currentPolicy) {
-                this.policyDropdownItem = policies.find(p => p.id === this.currentPolicy);
-            }
-            this.tagSchemas = SchemaHelper.map(tagSchemas);
-            this.queryChange();
+            this.tagSchemas = SchemaHelper.map(tagSchemas || []);
+            this.loadPolicies();
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
+    }
+
+    private loadPolicies() {
+        if (this.user.POLICIES_POLICY_READ) {
+            this.loading = true;
+            this.policyEngineService.all().subscribe((value) => {
+                const policies = value || [];
+                this.policies = policies;
+                this.policies.unshift({ id: -1, name: 'All policies' });
+                if (this.currentPolicy) {
+                    this.policyDropdownItem = policies.find(p => p.id === this.currentPolicy);
+                }
+                this.loadContracts();
+            }, ({ message }) => {
+                this.loading = false;
+                console.error(message);
+            });
+        } else {
+            this.policies = null;
+            this.loadContracts();
+        }
+    }
+
+    private loadContracts() {
+        if (this.user.CONTRACTS_CONTRACT_MANAGE) {
+            this.loading = true;
+            this.contractService.getContracts({
+                type: ContractType.WIPE
+            }).subscribe((value) => {
+                this.contracts = value?.body || [];
+                this.queryChange();
+            }, ({ message }) => {
+                this.loading = false;
+                console.error(message);
+            });
+        } else {
+            this.contracts = [];
+            this.queryChange();
+        }
     }
 
     private queryChange() {
@@ -155,24 +184,25 @@ export class TokenConfigComponent implements OnInit {
 
     private loadTokens() {
         this.loading = true;
-        forkJoin([
-            this.tokenService.getTokensPage(
-                this.currentPolicy, 
-                this.pageIndex, 
-                this.pageSize,
-                'All'
-            ),
-            this.contractService.getContracts({
-                type: ContractType.WIPE
-            })
-        ]).subscribe((value) => {
-            this.contracts = value[1] && value[1].body || [];
-            const tokensResponse = value[0];
-            const data = tokensResponse.body || [];
+        this.tokenService.getTokensPage(
+            this.currentPolicy,
+            this.pageIndex,
+            this.pageSize,
+            'All'
+        ).subscribe((tokensResponse) => {
+            const data = tokensResponse?.body || [];
             this.tokens = data.map((e: any) => new Token(e));
-            this.tokensCount =
-                tokensResponse.headers.get('X-Total-Count') ||
+            this.tokensCount = tokensResponse?.headers.get('X-Total-Count') ||
                 this.tokens.length;
+            this.loadTagsData();
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
+
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 for (const token of this.tokens) {
@@ -185,7 +215,11 @@ export class TokenConfigComponent implements OnInit {
                 console.error(e.error);
                 this.loading = false;
             });
-        });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     public onFilter() {

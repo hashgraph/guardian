@@ -44,10 +44,25 @@
         border: none !important;
     }
 
-    .table-row {}
+    .table-row[readonly="true"] {
+        .cell-size-id {
+            color: #777;
+            font-weight: 500;
+        }
+        .edit-btn,
+        .delete-btn {
+            display: none;
+        }
+    }
 
     .cell-size-id {
         min-width: 140px;
+    }
+
+    .cell-size-default {
+        min-width: 250px;
+        width: 250px;
+        max-width: 250px;
     }
 
     .cell-size-operations {
@@ -66,6 +81,10 @@
 
     .flex-column-gap-20 {
         column-gap: 20px;
+    }
+
+    .toggle-container::ng-deep input:checked + .slider {
+        cursor: not-allowed;
     }
 }
 
@@ -128,6 +147,11 @@
             height: 40px;
             padding: 8px;
             border-radius: 8px;
+
+            .p-button-label {
+                font-size: 14px;
+                padding: 0px 10px;
+            }
         }
     }
 

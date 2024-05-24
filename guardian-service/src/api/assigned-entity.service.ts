@@ -28,6 +28,9 @@ export async function getTarget(
                 return null;
             }
         }
+        default: {
+            return null;
+        }
     }
 }
 
@@ -40,7 +43,13 @@ export async function AssignedEntityAPI(): Promise<void> {
      *
      * @param payload - option
      */
-    ApiResponse(MessageAPI.ASSIGN_ENTITY, async (msg) => {
+    ApiResponse(MessageAPI.ASSIGN_ENTITY, async (msg: {
+        type: AssignedEntityType,
+        entityId: string,
+        assign: boolean,
+        did: string,
+        owner: string
+    }) => {
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -69,7 +78,12 @@ export async function AssignedEntityAPI(): Promise<void> {
      *
      * @param payload - option
      */
-    ApiResponse(MessageAPI.CHECK_ENTITY, async (msg) => {
+    ApiResponse(MessageAPI.CHECK_ENTITY, async (msg: {
+        type: AssignedEntityType,
+        entityId: string,
+        checkAssign: boolean,
+        did: string
+    }) => {
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
@@ -98,7 +112,10 @@ export async function AssignedEntityAPI(): Promise<void> {
      *
      * @param payload - option
      */
-    ApiResponse(MessageAPI.ASSIGNED_ENTITIES, async (msg) => {
+    ApiResponse(MessageAPI.ASSIGNED_ENTITIES, async (msg: {
+        did: string,
+        type?: AssignedEntityType
+    }) => {
         try {
             if (!msg) {
                 throw new Error('Invalid assign parameters');

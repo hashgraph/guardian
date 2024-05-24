@@ -22,7 +22,7 @@ export class PermissionsService {
         let params = new HttpParams();
         if (filters && typeof filters === 'object') {
             for (const key of Object.keys(filters)) {
-                if(filters[key]) {
+                if (filters[key]) {
                     params = params.set(key, filters[key]);
                 }
             }
@@ -66,6 +66,10 @@ export class PermissionsService {
 
     public createRole(role: any): Observable<any> {
         return this.http.post<any>(`${this.url}/roles`, role);
+    }
+
+    public setDefaultRole(id: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/roles/default`, { id });
     }
 
     public deleteRole(id: string): Observable<any> {

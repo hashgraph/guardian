@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import { PolicyDTO } from './policies.js';
+import { PolicyDTO } from './policies.dto.js';
 
 export class WizardConfigDTO {
     @ApiProperty({

@@ -196,15 +196,6 @@ export class PolicyLink<T> {
     }
 
     /**
-     * Create user
-     * @param did
-     * @private
-     */
-    private async createUser1(did: string, group: string): Promise<PolicyUser> {
-        return await PolicyComponentsUtils.GetPolicyUserByDID(did, group, this.target);
-    }
-
-    /**
      * Destructor
      */
     public destroy(): void {

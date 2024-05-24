@@ -246,6 +246,60 @@ export class PermissionsApi {
     }
 
     /**
+     * Create role
+     */
+    @Post('/roles/default')
+    @Auth(
+        Permissions.PERMISSIONS_ROLE_CREATE
+    )
+    @ApiOperation({
+        summary: 'Set default role.',
+        description: 'Set the role as default for new users.',
+    })
+    @ApiBody({
+        description: 'Object that contains role information.',
+        required: true,
+        schema: {
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    description: 'Role Identifier',
+                    example: Examples.DB_ID
+                }
+            },
+            required: ['id']
+        },
+        examples: {
+            Default: {
+                value: {
+                    id: Examples.DB_ID
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Created role.',
+        type: RoleDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(RoleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async setDefaultRole(
+        @AuthUser() user: IAuthUser,
+        @Body() body: { id: string }
+    ): Promise<RoleDTO> {
+        try {
+            return await (new Users()).setDefaultRole(body?.id, user.did);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
      * Return a list of all users
      */
     @Get('/users/')

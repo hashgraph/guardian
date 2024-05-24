@@ -36,7 +36,7 @@
             <div class="item-block">
                 <div 
                     (click)="barItem.childItems ? barItem.active = !barItem.active : null"
-                    [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
+                    [class.current]="isCurrent(barItem, activeLink)"
                     [routerLink]="!barItem.childItems ? barItem.routerLink : null"
                     class="item clickable"
                 >

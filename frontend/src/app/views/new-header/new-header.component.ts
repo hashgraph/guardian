@@ -202,4 +202,10 @@ export class NewHeaderComponent implements OnInit {
         event.stopImmediatePropagation()
         this.router.navigate(['/branding']);
     }
+
+    public isCurrent(barItem: any, activeLink: string): boolean {
+        return !barItem.childItems && (
+            activeLink.startsWith(barItem.routerLink)
+        );
+    }
 }

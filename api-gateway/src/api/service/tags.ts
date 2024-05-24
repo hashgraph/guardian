@@ -4,7 +4,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { ONLY_SR, SchemaUtils, Guardians, InternalException, getCacheKey, CacheService, UseCache } from '#helpers';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException, getCacheKey, CacheService, UseCache, EntityOwner } from '#helpers';
 
 @Controller('tags')
 @ApiTags('tags')
@@ -45,8 +45,9 @@ export class TagsApi {
         @Body() body: TagDTO
     ): Promise<TagDTO> {
         try {
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.createTag(body, user.did);
+            return await guardian.createTag(body, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -189,8 +190,9 @@ export class TagsApi {
             if (!uuid) {
                 throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
             }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.deleteTag(uuid, user.did);
+            return await guardian.deleteTag(uuid, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -300,9 +302,9 @@ export class TagsApi {
     ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const owner = user.did;
+            const owner = new EntityOwner(user);
             const { items, count } = await guardians.getTagSchemas(owner, pageIndex, pageSize);
-            items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
+            items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
             // res.locals.data = SchemaUtils.toOld(items)
             return res
                 .header('X-Total-Count', count)
@@ -349,12 +351,12 @@ export class TagsApi {
             }
 
             const guardians = new Guardians();
-            const owner = user.did;
+            const owner = new EntityOwner(user);
             newSchema.category = SchemaCategory.TAG;
             SchemaUtils.fromOld(newSchema);
             SchemaUtils.clearIds(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-            const schemas = await guardians.createTagSchema(newSchema);
+            const schemas = await guardians.createTagSchema(newSchema, owner);
 
             await this.cacheService.invalidate(getCacheKey([req.url], user))
 
@@ -398,13 +400,14 @@ export class TagsApi {
         @Param('schemaId') schemaId: string,
     ): Promise<boolean> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(schemaId);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
-            await guardians.deleteSchema(schemaId, user?.did);
+            await guardians.deleteSchema(schemaId, owner);
             return true;
         } catch (error) {
             await InternalException(error);
@@ -451,7 +454,7 @@ export class TagsApi {
         @Body() newSchema: SchemaDTO
     ): Promise<SchemaDTO[]> {
         try {
-            const owner = user.did;
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(newSchema.id);
             const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
@@ -461,7 +464,7 @@ export class TagsApi {
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-            return await guardians.updateSchema(newSchema);
+            return await guardians.updateSchema(newSchema, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -509,7 +512,8 @@ export class TagsApi {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             const version = '1.0.0';
-            return await guardians.publishTagSchema(schemaId, version, user.did);
+            const owner = new EntityOwner(user);
+            return await guardians.publishTagSchema(schemaId, version, owner);
         } catch (error) {
             await InternalException(error);
         }

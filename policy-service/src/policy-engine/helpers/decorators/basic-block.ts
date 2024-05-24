@@ -8,7 +8,7 @@ import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
 import { Logger, DatabaseServer, Policy } from '@guardian/common';
 import deepEqual from 'deep-equal';
-import { PolicyUser, VirtualUser } from '../../policy-user.js';
+import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
 
 /**

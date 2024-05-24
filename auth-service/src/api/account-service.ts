@@ -2,13 +2,14 @@ import { IAuthUser } from './auth.interface.js';
 import pkg from 'jsonwebtoken';
 
 import { User } from '../entity/user.js';
+import { DynamicRole } from '../entity/dynamic-role.js';
 import * as util from 'util';
 import crypto from 'crypto';
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
 import {
     AuditDefaultPermission,
     AuthEvents,
-    DefaultRoles,
+    OldRoles,
     GenerateUUIDv4,
     IGenerateTokenMessage,
     IGenerateTokenResponse,
@@ -32,26 +33,58 @@ import {
 
 const { sign, verify } = pkg;
 
-function setDefaultPermissions(user: User): User {
+export function setDefaultPermissions(user: User): User {
     if (user) {
-        if(user.role === UserRole.STANDARD_REGISTRY) {
+        if (user.role === UserRole.STANDARD_REGISTRY) {
             user.permissions = SRDefaultPermission;
-        } else if(user.role === UserRole.AUDITOR) {
+        } else if (user.role === UserRole.AUDITOR) {
             user.permissions = AuditDefaultPermission;
-        } else if(user.role === UserRole.USER) {
-            if(user.permissionsGroup && user.permissionsGroup.length) {
+        } else if (user.role === UserRole.USER) {
+            if (user.permissionsGroup && user.permissionsGroup.length) {
                 user.permissions = [
                     ...UserDefaultPermission,
                     ...user.permissions
                 ];
             } else {
-                user.permissions = DefaultRoles;
+                user.permissions = OldRoles;
             }
         } else {
             user.permissions = UserDefaultPermission;
         }
     }
     return user;
+}
+
+export async function createNewUser(
+    username: string,
+    password: string,
+    role: UserRole,
+    walletToken: string,
+    parent: string,
+    did: string,
+    provider: string,
+    providerId: string
+): Promise<User> {
+    const defaultRole = await new DataBaseHelper(DynamicRole).findOne({
+        owner: null,
+        default: true,
+        readonly: true
+    });
+    const permissionsGroup = defaultRole ? [defaultRole.id] : [];
+    const permissions = defaultRole ? defaultRole.permissions : [];
+    const user = (new DataBaseHelper(User)).create({
+        username,
+        password,
+        role,
+        walletToken,
+        parent,
+        did,
+        provider,
+        providerId,
+        permissionsGroup,
+        permissions
+    });
+    return await (new DataBaseHelper(User)).save(user);
 }
 
 /**
@@ -262,17 +295,17 @@ export class AccountService extends NatsService {
                 if (checkUserName) {
                     return new MessageError('An account with the same name already exists.');
                 }
-
-                const user = userRepository.create({
+                const user = await createNewUser(
                     username,
-                    password: passwordDigest,
+                    passwordDigest,
                     role,
-                    // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-                    walletToken: '',
-                    parent: null,
-                    did: null
-                });
-                return new MessageResponse(await userRepository.save(user));
+                    '',
+                    null,
+                    null,
+                    null,
+                    null,
+                );
+                return new MessageResponse(user);
 
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
@@ -283,24 +316,18 @@ export class AccountService extends NatsService {
         this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER,
             async (msg: ProviderAuthUser) => {
                 try {
-                    const userRepository = new DataBaseHelper(User);
-                    let user = await userRepository.findOne({
-                        username: msg.username
-                    });
-
+                    let user = await (new DataBaseHelper(User)).findOne({ username: msg.username });
                     if (!user) {
-                        user = userRepository.create({
-                            username: msg.username,
-                            password: null,
-                            role: msg.role,
-                            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-                            walletToken: '',
-                            parent: null,
-                            did: null,
-                            provider: msg.provider,
-                            providerId: msg.providerId
-                        });
-                        await userRepository.save(user);
+                        user = await createNewUser(
+                            msg.username,
+                            null,
+                            msg.role,
+                            '',
+                            null,
+                            null,
+                            msg.provider,
+                            msg.providerId
+                        )
                     }
                     const secretManager = SecretManager.New();
                     const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
@@ -446,9 +473,6 @@ export class AccountService extends NatsService {
                 if (filters) {
                     if (filters.role) {
                         options.permissionsGroup = filters.role;
-                    }
-                    if (filters.status) {
-
                     }
                     if (filters.username) {
                         options.username = { $regex: '.*' + filters.username + '.*' };
