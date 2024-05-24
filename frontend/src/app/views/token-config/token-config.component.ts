@@ -157,8 +157,8 @@ export class TokenConfigComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.tokenService.getTokensPage(
-                this.currentPolicy, 
-                this.pageIndex, 
+                this.currentPolicy,
+                this.pageIndex,
                 this.pageSize,
                 'All'
             ),
@@ -173,6 +173,12 @@ export class TokenConfigComponent implements OnInit {
             this.tokensCount =
                 tokensResponse.headers.get('X-Total-Count') ||
                 this.tokens.length;
+            this.loadTagsData();
+        });
+    }
+
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 for (const token of this.tokens) {
@@ -185,7 +191,11 @@ export class TokenConfigComponent implements OnInit {
                 console.error(e.error);
                 this.loading = false;
             });
-        });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     public onFilter() {

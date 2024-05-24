@@ -19,7 +19,7 @@ const available = permissions.reduce(function (map, p) {
     return map;
 }, new Map<string, any>);
 
-function updatePermissions(permissions: string[]): string[] {
+export function updatePermissions(permissions: string[]): string[] {
     const list = new Set<string>();
     for (const name of permissions) {
         if (available.has(name)) {
@@ -33,6 +33,14 @@ function updatePermissions(permissions: string[]): string[] {
         }
     }
     return Array.from(list);
+}
+
+export async function getDefaultRole(owner: string): Promise<DynamicRole> {
+    const defaultRole = await new DataBaseHelper(DynamicRole).findOne({ owner, default: true });
+    if (defaultRole) {
+        return defaultRole;
+    }
+    return await new DataBaseHelper(DynamicRole).findOne({ owner: null, default: true, readonly: true });
 }
 
 /**
@@ -87,21 +95,40 @@ export class RoleService extends NatsService {
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.orderBy = {
+                        owner: 'ASC',
+                        createDate: 'DESC'
+                    };
                     otherOptions.limit = _pageSize;
                     otherOptions.offset = _pageIndex * _pageSize;
                 } else {
-                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.orderBy = {
+                        owner: 'ASC',
+                        createDate: 'DESC'
+                    };
                     otherOptions.limit = 100;
                 }
-                const options: any = { owner };
-                if (filters) {
-                    if (filters.name) {
-                        options.name = { $regex: '.*' + filters.name + '.*' };
-                    }
+
+                const options: any = {
+                    $or: [
+                        { owner },
+                        {
+                            owner: null,
+                            default: true,
+                            readonly: true
+                        }
+                    ]
+                };
+                if (filters?.name) {
+                    options.name = { $regex: '.*' + filters.name + '.*' };
                 }
 
                 const [items, count] = await new DataBaseHelper(DynamicRole).findAndCount(options, otherOptions);
+                const defaultRole = await getDefaultRole(owner);
+                const defaultRoleId = defaultRole?.id;
+                for (const item of items) {
+                    item.default = item.id === defaultRoleId;
+                }
 
                 return new MessageResponse({ items, count });
             } catch (error) {
@@ -129,6 +156,8 @@ export class RoleService extends NatsService {
                 role.owner = owner;
                 role.uuid = GenerateUUIDv4();
                 role.permissions = updatePermissions(role.permissions);
+                role.default = false;
+                role.readonly = false;
 
                 let item = new DataBaseHelper(DynamicRole).create(role);
                 item = await new DataBaseHelper(DynamicRole).save(item);
@@ -211,6 +240,64 @@ export class RoleService extends NatsService {
                 }
                 await new DataBaseHelper(DynamicRole).remove(item);
                 return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        /**
+         * Set default role
+         *
+         * @param {any} msg - default role parameters
+         *
+         * @returns {boolean} - Operation success
+         */
+        this.getMessages(AuthEvents.SET_DEFAULT_ROLE, async (msg: any) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid delete role parameters');
+                }
+                const { id, owner } = msg;
+                const items = await new DataBaseHelper(DynamicRole).find({ owner });
+                for (const item of items) {
+                    item.default = item.id === id;
+                }
+                await new DataBaseHelper(DynamicRole).update(items);
+                const result = items.find((role) => role.default);
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        /**
+         * Set default role
+         *
+         * @param {any} msg - default role parameters
+         *
+         * @returns {boolean} - Operation success
+         */
+        this.getMessages(AuthEvents.SET_DEFAULT_USER_ROLE, async (msg: any) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid delete role parameters');
+                }
+                const { username, owner } = msg;
+                const target = await new DataBaseHelper(User).findOne({
+                    username,
+                    parent: owner
+                })
+                if (!target) {
+                    return new MessageError('User does not exist');
+                }
+                const defaultRole = await getDefaultRole(owner);
+                target.permissionsGroup = defaultRole ? [defaultRole.id] : [];
+                target.permissions = defaultRole ? defaultRole.permissions : [];
+
+                const result = await new DataBaseHelper(User).update(target);
+                return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

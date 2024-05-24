@@ -157,7 +157,18 @@ export class ListOfTokensUserComponent implements OnInit {
                 }
             });
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.tokensCount =
+                tokensResponse.headers.get('X-Total-Count') ||
+                this.tokens.length;
+            this.loadTagsData();
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
 
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 if (this.tokens) {
@@ -172,18 +183,11 @@ export class ListOfTokensUserComponent implements OnInit {
                 console.error(e.error);
                 this.loading = false;
             });
-
+        } else {
             setTimeout(() => {
                 this.loading = false;
-            }, 200)
-
-            this.tokensCount =
-                tokensResponse.headers.get('X-Total-Count') ||
-                this.tokens.length;
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
+            }, 500);
+        } 
     }
 
     associate(token: Token) {

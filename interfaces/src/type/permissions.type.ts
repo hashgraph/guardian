@@ -862,35 +862,50 @@ export const PermissionsArray: {
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_UPDATE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_DELETE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_EXECUTE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.EXECUTE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         {
             name: Permissions.TOKENS_TOKEN_MANAGE,
             category: PermissionCategories.TOKENS,
             entity: PermissionEntities.TOKEN,
             action: PermissionActions.MANAGE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.TOKENS_TOKEN_READ
+            ]
         },
         //TAGS
         {

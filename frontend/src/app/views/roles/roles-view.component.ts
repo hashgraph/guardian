@@ -196,20 +196,6 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         this.lastCategory = false;
     }
 
-    private checkCount(category: any) {
-        let count = 0;
-        if (category.entities) {
-            for (const entity of category.entities) {
-                for (const action of entity.actions) {
-                    if (action && action.formControl && action.formControl.value) {
-                        count++;
-                    }
-                }
-            }
-        }
-        category.count = count;
-    }
-
     public onSelectCategory(category: CategoryGroup) {
         this.selectedCategory = category;
         this.lastCategory = this.group.last === category;
@@ -239,5 +225,17 @@ export class RolesViewComponent implements OnInit, OnDestroy {
             this.selectedCategory = this.group.next(this.selectedCategory);
             this.lastCategory = this.group.last === this.selectedCategory;
         }
+    }
+
+    public setDefault(row: any) {
+        if(row.default) {
+            return;
+        }
+        this.loading = true;
+        this.permissionsService.setDefaultRole(row.id).subscribe((response) => {
+            this.loadData();
+        }, (e) => {
+            this.loadError(e);
+        });
     }
 }

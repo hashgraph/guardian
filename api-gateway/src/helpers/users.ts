@@ -2,6 +2,7 @@ import { Singleton } from '../helpers/decorators/singleton.js';
 import { ApplicationStates, AuthEvents, GenerateUUIDv4, MessageAPI, UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '@guardian/common';
 import { Injectable } from '@nestjs/common';
+import { RoleDTO } from '#middlewares';
 
 /**
  * Items and count
@@ -263,6 +264,16 @@ export class Users extends NatsService {
      */
     public async deleteRole(id: string, owner: string): Promise<boolean> {
         return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner });
+    }
+
+    /**
+     * Det default role
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async setDefaultRole(id: string, owner: string): Promise<RoleDTO> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner });
     }
 
     /**
