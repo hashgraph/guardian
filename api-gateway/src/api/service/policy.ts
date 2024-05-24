@@ -391,7 +391,7 @@ export class PolicyApi {
             return await engineService.getPolicy({
                 filters: policyId,
                 userDid: user.did,
-            });
+            }, new EntityOwner(user));
         } catch (error) {
             await InternalException(error);
         }

@@ -24,8 +24,8 @@ export class PolicyEngine extends NatsService {
      * Get policy
      * @param filters
      */
-    public async getPolicy(filters: any): Promise<PolicyDTO | null> {
-        return await this.sendMessage(PolicyEngineEvents.GET_POLICY, filters);
+    public async getPolicy(options: any, owner: IOwner): Promise<PolicyDTO | null> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY, { options, owner });
     }
 
     /**

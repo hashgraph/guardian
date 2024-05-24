@@ -215,7 +215,7 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
  * @param user
  */
 export async function incrementSchemaVersion(
-    iri: string, 
+    iri: string,
     user: IOwner
 ): Promise<SchemaCollection> {
     if (!user || !iri) {
@@ -338,9 +338,9 @@ export async function sendSchemaMessage(
 }
 
 export async function copyDefsSchemas(
-    defs: any, 
+    defs: any,
     user: IOwner,
-    topicId: string, 
+    topicId: string,
     root: any
 ) {
     if (!defs) {
@@ -353,9 +353,9 @@ export async function copyDefsSchemas(
 }
 
 export async function copySchemaAsync(
-    iri: string, 
-    topicId: string, 
-    name: string, 
+    iri: string,
+    topicId: string,
+    name: string,
     user: IOwner
 ) {
     const users = new Users();

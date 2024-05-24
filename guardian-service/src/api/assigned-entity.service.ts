@@ -28,6 +28,9 @@ export async function getTarget(
                 return null;
             }
         }
+        default: {
+            return null;
+        }
     }
 }
 

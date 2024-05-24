@@ -1,5 +1,3 @@
-import { UserRole } from './user-role.type.js';
-
 /**
  * Category
  */
@@ -1063,7 +1061,6 @@ export const PermissionsArray: {
             disabled: false
         }
     ];
-
 
 export const UserDefaultPermission: Permissions[] = [
     Permissions.ACCOUNTS_STANDARD_REGISTRY_READ,

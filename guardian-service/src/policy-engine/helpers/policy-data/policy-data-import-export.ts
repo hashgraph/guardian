@@ -313,7 +313,7 @@ export class PolicyDataImportExport {
      * @returns Imported policy
      */
     static async importData(
-        userId: string, 
+        userId: string,
         data: Buffer
     ) {
         await DatabaseServer.clearPolicyCaches({

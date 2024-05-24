@@ -5,7 +5,6 @@ import {
     DatabaseServer,
     findAllEntities,
     getArtifactType,
-    IAuthUser,
     Logger,
     MessageAction,
     MessageServer,
@@ -184,10 +183,10 @@ export class PolicyEngine extends NatsService {
      */
     public async accessPolicy(policy: Policy, user: IOwner, action: string): Promise<boolean> {
         const code = await this.accessPolicyCode(policy, user);
-        if (code == 1) {
+        if (code === 1) {
             throw new Error('Policy does not exist.');
         }
-        if (code == 2) {
+        if (code === 2) {
             throw new Error(`Insufficient permissions to ${action} the policy.`);
         }
         return true;
@@ -898,14 +897,14 @@ export class PolicyEngine extends NatsService {
     public async validateAndPublishPolicy(
         model: any,
         policyId: string,
-        user: IOwner,
+        owner: IOwner,
         notifier: INotifier
     ): Promise<IPublishResult> {
         const version = model.policyVersion;
 
         notifier.start('Find and validate policy');
         const policy = await DatabaseServer.getPolicyById(policyId);
-        await this.accessPolicy(policy, user, 'read');
+        await this.accessPolicy(policy, owner, 'read');
 
         if (!policy.config) {
             throw new Error('The policy is empty');
@@ -939,14 +938,14 @@ export class PolicyEngine extends NatsService {
                 await this.destroyModel(policyId);
                 await DatabaseServer.clearDryRun(policy.id.toString());
             }
-            const newPolicy = await this.publishPolicy(policy, user, version, notifier);
+            const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
 
             if (newPolicy.status === PolicyType.PUBLISH) {
                 new AISuggestionsService().rebuildAIVector().then();
             }
 
             await this.generateModel(newPolicy.id.toString());
-            const users = await new Users().getUsersBySrId(user.owner);
+            const users = await new Users().getUsersBySrId(owner.owner);
 
             await Promise.all(
                 users.map(

@@ -611,7 +611,7 @@ export async function toolsAPI(): Promise<void> {
     ApiResponse(MessageAPI.TOOL_IMPORT_FILE_PREVIEW,
         async (msg: { zip: any, owner: IOwner }) => {
             try {
-                const { zip, owner } = msg;
+                const { zip } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }

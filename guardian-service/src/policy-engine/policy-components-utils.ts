@@ -10,7 +10,7 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn: (uuid: string, user: IPolicyUser) => Promise<void>;
+    public static BlockUpdateFn: (uuid: string[], user: IPolicyUser) => Promise<void>;
     /**
      * Block error function
      */

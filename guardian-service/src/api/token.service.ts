@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IRootConfig, IToken, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishTokenTags } from './tag.service.js';
 
@@ -563,9 +563,9 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     /**
      * Create new token
      *
-     * @param {IToken} payload - token
+     * @param payload - token
      *
-     * @returns {IToken[]} - all tokens
+     * @returns all tokens
      */
     ApiResponse(MessageAPI.SET_TOKEN,
         async (msg: { item: Token, owner: IOwner }) => {
@@ -865,7 +865,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
      * @param {string} [payload.tokenId] - token id
      * @param {string} [payload.did] - user did
      *
-     * @returns {IToken[]} - tokens
+     * @returns tokens
      */
     ApiResponse(MessageAPI.GET_TOKENS,
         async (msg: { filters: any, owner: IOwner }) => {
@@ -895,7 +895,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
      * @param {string} [payload.tokenId] - token id
      * @param {string} [payload.did] - user did
      *
-     * @returns {IToken[], number} - tokens and count
+     * @returns {any[], number} - tokens and count
      */
     ApiResponse(MessageAPI.GET_TOKENS_PAGE,
         async (msg: { owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
@@ -931,7 +931,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
      *
      * @param {Object} [payload] - filters
      *
-     * @returns {IToken} - token
+     * @returns token
      */
     ApiResponse(MessageAPI.GET_TOKEN,
         async (msg: { tokenId: string, owner: IOwner }) => {

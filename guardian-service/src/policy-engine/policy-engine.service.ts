@@ -117,15 +117,6 @@ export class PolicyEngineService {
     }
 
     /**
-     * Get user by username
-     * @param username
-     */
-    private async getUserDid(username: string): Promise<string> {
-        const userFull = await this.users.getUser(username);
-        return userFull?.did;
-    }
-
-    /**
      * Callback fires when block state changed
      * @param uuid {string} - id of block
      * @param user {IPolicyUser} - short user object
@@ -216,30 +207,35 @@ export class PolicyEngineService {
             }
         };
 
-        this.channel.getMessages(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
-            const { type, args } = msg;
+        this.channel.getMessages(PolicyEvents.BLOCK_UPDATE_BROADCAST,
+            (msg: { type: string, data: any[] }) => {
+                const { type, data } = msg;
 
-            switch (type) {
-                case 'update':
-                    PolicyComponentsUtils.BlockUpdateFn(args[0], args[1]);
-                    break;
-
-                case 'error':
-                    PolicyComponentsUtils.BlockErrorFn(args[0], args[1], args[2]);
-                    break;
-
-                case 'update-user':
-                    PolicyComponentsUtils.UpdateUserInfoFn(args[0], args[1]);
-                    break;
-
-                case 'external':
-                    PolicyComponentsUtils.ExternalEventFn(args[0]);
-                    break;
-
-                default:
-                    throw new Error('Unknown type');
-            }
-        })
+                switch (type) {
+                    case 'update': {
+                        const [blocks, user] = data;
+                        PolicyComponentsUtils.BlockUpdateFn(blocks, user);
+                        break;
+                    }
+                    case 'error': {
+                        const [blockType, message, user] = data;
+                        PolicyComponentsUtils.BlockErrorFn(blockType, message, user);
+                        break;
+                    }
+                    case 'update-user': {
+                        const [user, policy] = data;
+                        PolicyComponentsUtils.UpdateUserInfoFn(user, policy);
+                        break;
+                    }
+                    case 'external': {
+                        const [event] = data;
+                        PolicyComponentsUtils.ExternalEventFn(event);
+                        break;
+                    }
+                    default:
+                        throw new Error('Unknown type');
+                }
+            })
 
         this.channel.getMessages(PolicyEvents.RECORD_UPDATE_BROADCAST, async (msg: any) => {
             const policy = await DatabaseServer.getPolicyById(msg?.policyId);
@@ -265,9 +261,14 @@ export class PolicyEngineService {
         });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY,
-            async (msg: { filters: any, userDid: string }) => {
-                const { filters, userDid } = msg;
+            async (msg: {
+                options: { filters: any, userDid: string },
+                owner: IOwner
+            }) => {
+                const { options, owner } = msg;
+                const { filters, userDid } = options;
                 const policy = await DatabaseServer.getPolicy(filters);
+                await this.policyEngine.accessPolicy(policy, owner, 'read');
 
                 const result: any = policy;
                 if (policy) {
@@ -283,10 +284,10 @@ export class PolicyEngineService {
                     const { policyId, owner, action } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     const code = await this.policyEngine.accessPolicyCode(policy, owner);
-                    if (code == 1) {
+                    if (code === 1) {
                         return new MessageError('Policy does not exist.', 404);
                     }
-                    if (code == 2) {
+                    if (code === 2) {
                         return new MessageError(`Insufficient permissions to ${action} the policy.`, 403);
                     }
                     return new MessageResponse(policy);
@@ -1747,7 +1748,6 @@ export class PolicyEngineService {
 
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
-
 
                     const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, owner.creator);
                     if (item) {

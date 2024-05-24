@@ -1,27 +1,10 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner } from '#helpers';
-import { Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
+import { IOwner, Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
-
-/**
- * Token route
- */
-// export const tokenAPI = Router();
-
-/**
- * Get entity owner
- * @param user
- */
-function tokenOwner(user: IAuthUser): string {
-    if (user?.role === UserRole.USER) {
-        return user.parent;
-    } else {
-        return user.did;
-    }
-}
 
 /**
  * Connect policies to tokens
@@ -61,19 +44,23 @@ function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpt
  * @param tokens
  * @param engineService
  */
-async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine): Promise<any> {
-    if (!tokens || !engineService) {
+async function setDynamicTokenPolicy(
+    tokens: any[],
+    owner: IOwner
+): Promise<any> {
+    if (!tokens || !owner) {
         return tokens;
     }
     for (const token of tokens) {
         if (!token.policyId) {
             continue;
         }
+        const engineService = new PolicyEngine();
         const policy = await engineService.getPolicy({
             filters: {
                 id: token.policyId,
             }
-        });
+        }, owner);
         token.policies = [`${policy.name} (${policy.version || 'DRAFT'})`];
         token.policyIds = [policy.id];
     }
@@ -154,12 +141,12 @@ export class TokensApi {
                 if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
                     tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner, 'PUBLISH');
-                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, true);
                 } else {
                     tokensAndCount = await guardians.getTokensPage(owner, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner);
-                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
                     tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, false);
                 }
             }
@@ -1276,7 +1263,7 @@ export class TokensApi {
             const engineService = new PolicyEngine();
             const map = await engineService.getTokensMap(owner, 'PUBLISH');
             let items = await guardians.getTokens({}, owner);
-            items = await setDynamicTokenPolicy(items, engineService);
+            items = await setDynamicTokenPolicy(items, owner);
             items = setTokensPolicies(items, map, null, false);
             return items;
         } catch (error) {

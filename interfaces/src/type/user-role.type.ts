@@ -1,5 +1,3 @@
-import { Permissions } from "./permissions.type";
-
 /**
  * User role
  */

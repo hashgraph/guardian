@@ -1,13 +1,10 @@
-import * as pkg from '@guardian/interfaces';
+import { GeoJsonContext, SchemaHelper, SchemaStatus, SentinelHubContext, IOwner } from '@guardian/interfaces';
 import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
 import { publishSchemaTags } from './../tag.service.js';
 import { exportSchemas } from './schema-import-export-helper.js';
 import { IRootConfig } from '../../interfaces/root-config.interface.js';
-import { IOwner } from '@guardian/interfaces';
-
-const { GeoJsonContext, SchemaHelper, SchemaStatus, SentinelHubContext } = pkg;
 
 /**
  * Check access
