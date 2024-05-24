@@ -74,7 +74,6 @@ export class ArtifactApi {
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
     @UseCache({isFastify: true})
     async getArtifacts(
         @AuthUser() user: IAuthUser,

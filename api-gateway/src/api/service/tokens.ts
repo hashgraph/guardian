@@ -1,7 +1,7 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, CacheService, getCacheKey } from '#helpers';
 import { Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
@@ -308,7 +308,7 @@ export class TokensApi {
     async updateToken(
         @AuthUser() user: IAuthUser,
         @Body() token: TokenDTO,
-        @Req req
+        @Req() req
     ): Promise<TokenDTO> {
         try {
             if (!user.did) {

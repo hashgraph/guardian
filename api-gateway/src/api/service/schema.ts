@@ -9,6 +9,7 @@ import { CACHE } from '#constants';
 import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, getParentUser, CacheService, getCacheKey } from '#helpers';
 import process from 'process';
 
+@Controller('schema')
 @ApiTags('schema')
 export class SingleSchemaApi {
     /**
@@ -256,7 +257,6 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY, UserRole.AUDITOR, UserRole.USER)
     @UseCache()
     async getSchemasPage(
         @AuthUser() user: IAuthUser,
