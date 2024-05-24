@@ -9,7 +9,7 @@ import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Pro
 import {
     AuditDefaultPermission,
     AuthEvents,
-    DefaultRoles,
+    OldRoles,
     GenerateUUIDv4,
     IGenerateTokenMessage,
     IGenerateTokenResponse,
@@ -46,7 +46,7 @@ export function setDefaultPermissions(user: User): User {
                     ...user.permissions
                 ];
             } else {
-                user.permissions = DefaultRoles;
+                user.permissions = OldRoles;
             }
         } else {
             user.permissions = UserDefaultPermission;

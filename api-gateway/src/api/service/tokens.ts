@@ -302,7 +302,7 @@ export class TokensApi {
                 throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
             }
 
-            if (tokenObject.owner !== user.did) {
+            if (tokenObject.owner !== owner.owner) {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
             }
 
@@ -360,7 +360,7 @@ export class TokensApi {
                 throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
             }
 
-            if (tokenObject.owner !== user.did) {
+            if (tokenObject.owner !== owner.owner) {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
             }
 
@@ -421,7 +421,7 @@ export class TokensApi {
                 throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
             }
 
-            if (tokenObject.owner !== user.did) {
+            if (tokenObject.owner !== owner.owner) {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN);
             }
 

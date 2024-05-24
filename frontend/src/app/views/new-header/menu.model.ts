@@ -208,11 +208,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
         }
         if (user.CONTRACTS_CONTRACT_READ) {
             if (
-                user.CONTRACTS_RETIRE_REQUEST_READ ||
-                user.CONTRACTS_RETIRE_REQUEST_CREATE ||
-                user.CONTRACTS_RETIRE_REQUEST_DELETE ||
-                user.CONTRACTS_RETIRE_REQUEST_REVIEW ||
-                user.CONTRACTS_DOCUMENT_READ
+                user.CONTRACTS_CONTRACT_EXECUTE
             ) {
                 childItems.push({
                     title: 'Retirement',
@@ -220,20 +216,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 });
             }
             if (
-                user.CONTRACTS_CONTRACT_CREATE ||
-                user.CONTRACTS_CONTRACT_DELETE ||
-                user.CONTRACTS_WIPE_REQUEST_READ ||
-                user.CONTRACTS_WIPE_REQUEST_UPDATE ||
-                user.CONTRACTS_WIPE_REQUEST_REVIEW ||
-                user.CONTRACTS_WIPE_REQUEST_DELETE ||
-                user.CONTRACTS_WIPE_ADMIN_CREATE ||
-                user.CONTRACTS_WIPE_ADMIN_DELETE ||
-                user.CONTRACTS_WIPE_MANAGER_CREATE ||
-                user.CONTRACTS_WIPE_MANAGER_DELETE ||
-                user.CONTRACTS_WIPER_CREATE ||
-                user.CONTRACTS_WIPER_DELETE ||
-                user.CONTRACTS_POOL_UPDATE ||
-                user.CONTRACTS_POOL_DELETE
+                user.CONTRACTS_CONTRACT_MANAGE
             ) {
                 childItems.push({
                     title: 'Manage Contracts',

@@ -173,7 +173,8 @@ async function createToken(
         ...token,
         tokenId: GenerateUUIDv4(),
         adminId: null,
-        owner: root.did,
+        creator: user.creator,
+        owner: user.owner,
         policyId: null,
     };
 
@@ -199,6 +200,7 @@ async function createToken(
 async function updateToken(
     oldToken: Token,
     newToken: Token,
+    user: IOwner,
     tokenRepository: DataBaseHelper<Token>,
     notifier: INotifier
 ): Promise<Token> {
@@ -212,7 +214,7 @@ async function updateToken(
     } else if (oldToken.draftToken && !newToken.draftToken) {
         notifier.start('Resolve Hedera account');
         const users = new Users();
-        const root = await users.getHederaAccount(oldToken.owner);
+        const root = await users.getHederaAccount(user.creator);
 
         notifier.completedAndStart('Create and save token in DB');
 
@@ -259,10 +261,9 @@ async function updateToken(
         const wallet = new Wallet();
         const workers = new Workers();
 
-        const root = await users.getHederaAccount(oldToken.owner);
-
+        const root = await users.getHederaAccount(user.creator);
         const adminKey = await wallet.getUserKey(
-            oldToken.owner,
+            user.owner,
             KeyType.TOKEN_ADMIN_KEY,
             oldToken.tokenId
         );
@@ -290,7 +291,7 @@ async function updateToken(
         const saveKeys = [];
         if (changes.enableFreeze) {
             saveKeys.push(wallet.setUserKey(
-                root.did,
+                user.owner,
                 KeyType.TOKEN_FREEZE_KEY,
                 tokenData.tokenId,
                 tokenData.freezeKey
@@ -298,7 +299,7 @@ async function updateToken(
         }
         if (changes.enableKYC) {
             saveKeys.push(wallet.setUserKey(
-                root.did,
+                user.owner,
                 KeyType.TOKEN_KYC_KEY,
                 tokenData.tokenId,
                 tokenData.kycKey
@@ -306,7 +307,7 @@ async function updateToken(
         }
         if (changes.enableWipe) {
             saveKeys.push(wallet.setUserKey(
-                root.did,
+                user.owner,
                 KeyType.TOKEN_WIPE_KEY,
                 tokenData.tokenId,
                 tokenData.wipeKey
@@ -325,16 +326,21 @@ async function updateToken(
  * @param tokenRepository
  * @param notifier
  */
-async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<boolean> {
+async function deleteToken(
+    token: Token,
+    user: IOwner,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<boolean> {
     if (!token.draftToken) {
         notifier.start('Resolve Hedera account');
         const users = new Users();
         const wallet = new Wallet();
         const workers = new Workers();
 
-        const root = await users.getHederaAccount(token.owner);
+        const root = await users.getHederaAccount(user.creator);
         const adminKey = await wallet.getUserKey(
-            token.owner,
+            user.owner,
             KeyType.TOKEN_ADMIN_KEY,
             token.tokenId
         );
@@ -456,7 +462,7 @@ async function grantKycToken(
     notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
     const workers = new Workers();
     const kycKey = await new Wallet().getUserKey(
-        token.owner,
+        owner.owner,
         KeyType.TOKEN_KYC_KEY,
         token.tokenId
     );
@@ -524,7 +530,7 @@ async function freezeToken(
     notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
     const workers = new Workers();
     const freezeKey = await new Wallet().getUserKey(
-        token.owner,
+        owner.owner,
         KeyType.TOKEN_FREEZE_KEY,
         token.tokenId
     );
@@ -617,7 +623,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     throw new Error('Token not found');
                 }
 
-                return new MessageResponse(await updateToken(item, token, tokenRepository, emptyNotifier()));
+                return new MessageResponse(await updateToken(item, token, owner, tokenRepository, emptyNotifier()));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -637,7 +643,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     throw new Error('Token not found');
                 }
 
-                const result = await updateToken(item, token, tokenRepository, notifier);
+                const result = await updateToken(item, token, owner, tokenRepository, notifier);
                 notifier.result(result);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -659,7 +665,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 if (!item || item.owner !== owner.owner) {
                     throw new Error('Token not found');
                 }
-                const result = await deleteToken(item, tokenRepository, notifier);
+                const result = await deleteToken(item, owner, tokenRepository, notifier);
                 notifier.result(result);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

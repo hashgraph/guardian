@@ -120,6 +120,14 @@ export class UserPermissions {
         return this.check(Permissions.CONTRACTS_CONTRACT_READ);
     }
 
+    public get CONTRACTS_CONTRACT_EXECUTE(): boolean {
+        return this.check(Permissions.CONTRACTS_CONTRACT_EXECUTE);
+    }
+
+    public get CONTRACTS_CONTRACT_MANAGE(): boolean {
+        return this.check(Permissions.CONTRACTS_CONTRACT_MANAGE);
+    }
+
     public get CONTRACTS_CONTRACT_CREATE(): boolean {
         return this.check(Permissions.CONTRACTS_CONTRACT_CREATE);
     }

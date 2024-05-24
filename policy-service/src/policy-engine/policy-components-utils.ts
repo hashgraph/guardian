@@ -1339,15 +1339,14 @@ export class PolicyComponentsUtils {
         instance: IPolicyInstance | AnyBlockType
     ): Promise<PolicyUser> {
         const virtual = !!instance.dryRun;
-        const regUser = await (new Users()).getUserById(did);
-        if (!regUser || !regUser.did) {
-            return null;
-        }
-
         let userFull: PolicyUser;
         if (virtual) {
             userFull = new VirtualUser({ did }, instance);
         } else {
+            const regUser = await (new Users()).getUserById(did);
+            if (!regUser || !regUser.did) {
+                return null;
+            }
             userFull = new PolicyUser(regUser, instance);
         }
 
