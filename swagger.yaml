@@ -10884,6 +10884,50 @@ paths:
       tags: *ref_26
       security:
         - bearer: []
+  /permissions/roles/default:
+    post:
+      operationId: PermissionsApi_setDefaultRole
+      summary: Set default role.
+      description: Set the role as default for new users.
+      parameters: []
+      requestBody:
+        required: true
+        description: Object that contains role information.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Role Identifier
+                  example: '000000000000000000000001'
+              required:
+                - id
+            examples:
+              Default:
+                value:
+                  id: '000000000000000000000001'
+      responses:
+        '200':
+          description: Created role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleDTO'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_26
+      security:
+        - bearer: []
   /permissions/users:
     get:
       operationId: PermissionsApi_getUsers
