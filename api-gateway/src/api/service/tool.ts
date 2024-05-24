@@ -1,10 +1,22 @@
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors } from '@nestjs/common';
-import { Permissions, TaskAction } from '@guardian/interfaces';
+import { Permissions, TaskAction, UserRole } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
 import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, CacheService, getCacheKey } from '#helpers';
 import { AuthUser, Auth } from '#auth';
+
+/**
+ * Get entity owner
+ * @param user
+ */
+function toolOwner(user: IAuthUser): string {
+    if (user?.role === UserRole.USER) {
+        return user.parent;
+    } else {
+        return user.did;
+    }
+}
 
 @Controller('tools')
 @ApiTags('tools')
@@ -51,7 +63,7 @@ export class ToolsApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url], req.user))
 
-            return await guardian.createTool(tool, user.did);
+          return await guardian.createTool(tool, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -95,7 +107,7 @@ export class ToolsApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.CREATE_TOOL, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.createToolAsync(tool, user.did, task);
+                await guardian.createToolAsync(tool, toolOwner(user), task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -153,7 +165,11 @@ export class ToolsApi {
     ): Promise<ToolDTO[]> {
         try {
             const guardians = new Guardians();
-            const { items, count } = await guardians.getTools({ owner: user.did, pageIndex, pageSize });
+            const { items, count } = await guardians.getTools({
+                owner: toolOwner(user),
+                pageIndex,
+                pageSize
+            });
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);
@@ -202,7 +218,7 @@ export class ToolsApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url], req.user))
 
-            return await guardian.deleteTool(id, user.did);
+            return await guardian.deleteTool(id, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -247,7 +263,7 @@ export class ToolsApi {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const guardian = new Guardians();
-            return await guardian.getToolById(id, user.did);
+            return await guardian.getToolById(id, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -304,7 +320,7 @@ export class ToolsApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url], req.user))
 
-            return await guardian.updateTool(id, tool, user.did);
+            return await guardian.updateTool(id, tool, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -354,7 +370,7 @@ export class ToolsApi {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const guardian = new Guardians();
-            return await guardian.publishTool(id, user.did, tool);
+            return await guardian.publishTool(id, toolOwner(user), tool);
         } catch (error) {
             await InternalException(error);
         }
@@ -406,7 +422,7 @@ export class ToolsApi {
         const task = taskManager.start(TaskAction.PUBLISH_TOOL, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardian = new Guardians();
-            await guardian.publishToolAsync(id, user.did, tool, task);
+            await guardian.publishToolAsync(id, toolOwner(user), tool, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
@@ -448,7 +464,7 @@ export class ToolsApi {
     ): Promise<any> {
         try {
             const guardian = new Guardians();
-            return await guardian.validateTool(user.did, tool);
+            return await guardian.validateTool(toolOwner(user), tool);
         } catch (error) {
             await InternalException(error);
         }
@@ -491,7 +507,7 @@ export class ToolsApi {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const guardian = new Guardians();
-            const file: any = await guardian.exportToolFile(id, user.did);
+            const file: any = await guardian.exportToolFile(id, toolOwner(user));
             res.header('Content-disposition', `attachment; filename=tool_${Date.now()}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -538,7 +554,7 @@ export class ToolsApi {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const guardian = new Guardians();
-            return await guardian.exportToolMessage(id, user.did);
+            return await guardian.exportToolMessage(id, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -580,7 +596,7 @@ export class ToolsApi {
         }
         try {
             const guardian = new Guardians();
-            return await guardian.previewToolMessage(messageId, user.did);
+            return await guardian.previewToolMessage(messageId, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -622,7 +638,7 @@ export class ToolsApi {
         }
         const guardian = new Guardians();
         try {
-            return await guardian.importToolMessage(messageId, user.did);
+            return await guardian.importToolMessage(messageId, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -659,7 +675,7 @@ export class ToolsApi {
     ): Promise<any> {
         try {
             const guardian = new Guardians();
-            return await guardian.previewToolFile(body, user.did);
+            return await guardian.previewToolFile(body, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -696,7 +712,7 @@ export class ToolsApi {
     ): Promise<ToolDTO> {
         try {
             const guardian = new Guardians();
-            return await guardian.importToolFile(body, user.did);
+            return await guardian.importToolFile(body, toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -757,7 +773,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             const tool = await guardian.importToolFile(
                 file.buffer,
-                user.did,
+                toolOwner(user),
                 metadata?.buffer && JSON.parse(metadata.buffer.toString())
             );
             return tool;
@@ -802,7 +818,7 @@ export class ToolsApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_TOOL_FILE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolFileAsync(zip, user.did, task);
+                await guardian.importToolFileAsync(zip, toolOwner(user), task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -875,7 +891,7 @@ export class ToolsApi {
                 async () => {
                     await guardian.importToolFileAsync(
                         file.buffer,
-                        user.did,
+                        toolOwner(user),
                         task,
                         metadata?.buffer && JSON.parse(metadata.buffer.toString())
                     );
@@ -933,7 +949,7 @@ export class ToolsApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.IMPORT_TOOL_MESSAGE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardian.importToolMessageAsync(messageId, user.did, task);
+                await guardian.importToolMessageAsync(messageId, toolOwner(user), task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -975,7 +991,7 @@ export class ToolsApi {
     ): Promise<ToolDTO[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getMenuTool(user.did);
+            return await guardians.getMenuTool(toolOwner(user));
         } catch (error) {
             await InternalException(error);
         }

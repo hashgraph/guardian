@@ -181,7 +181,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 });
                 break;
             case TaskAction.CREATE_TOOL:
-                this.router.navigate(['policy-configuration'], {
+                this.router.navigate(['tool-configuration'], {
                     queryParams: {
                         toolId: result,
                     },
@@ -275,7 +275,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         );
                         this._configurationErrors.set(tool?.id, errors);
                     }
-                    this.router.navigate(['policy-configuration'], {
+                    this.router.navigate(['tool-configuration'], {
                         queryParams: {
                             toolId: tool?.id
                         },

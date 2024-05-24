@@ -162,7 +162,7 @@
                                 <div *ngFor="let action of entity.actions;" class="all-permission">
                                     <mat-checkbox 
                                         *ngIf="action"
-                                        color="primary" 
+                                        color="primary"
                                         (change)="onCheckAll(entity)"
                                         [formControl]="action.control"></mat-checkbox>
                                 </div>

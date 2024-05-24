@@ -449,10 +449,10 @@ export class SchemaApi {
      */
     @Get('/list/all')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_UPDATE,
-        Permissions.POLICIES_POLICY_UPDATE,
-        Permissions.MODULES_MODULE_UPDATE,
-        Permissions.TOOLS_TOOL_UPDATE,
+        Permissions.SCHEMAS_SCHEMA_READ,
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.MODULES_MODULE_READ,
+        Permissions.TOOLS_TOOL_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

@@ -20,6 +20,7 @@ export class ActionGroup {
     public readonly id: PermissionActions;
     public readonly permission: Permissions;
     public readonly control: FormControl;
+    public readonly refs: ActionGroup[];
     public tooltip: string;
 
     constructor(permission: IPermission, parent: EntityGroup) {
@@ -27,6 +28,7 @@ export class ActionGroup {
         this.id = permission.action;
         this.permission = permission.name;
         this.control = new FormControl(false);
+        this.refs = [];
         this.tooltip = '';
     }
 
@@ -49,5 +51,29 @@ export class ActionGroup {
     public addValue(permissions: Permissions[]): void {
         const value = permissions && permissions.includes(this.permission);
         this.control.setValue(value);
+    }
+
+    public addRef(action: ActionGroup) {
+        this.refs.push(action);
+        action.control.valueChanges.subscribe(value => {
+            this._update()
+        });
+    }
+
+    public _update() {
+        let dependent = false;
+        for (const ref of this.refs) {
+            dependent = dependent || ref.getValue();
+        }
+        if(dependent) {
+            this.control.disable();
+            if (!this.control.value) {
+                this.control.setValue(true);
+                this.parent.checkAll();
+                this.parent.checkCount();
+            }
+        } else {
+            this.control.enable();
+        }
     }
 }

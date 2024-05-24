@@ -156,7 +156,7 @@ export class TagsApi {
      */
     @Delete('/:uuid')
     @Auth(
-        Permissions.TAGS_TAG_DELETE,
+        Permissions.TAGS_TAG_CREATE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )

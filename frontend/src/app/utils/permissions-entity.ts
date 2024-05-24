@@ -48,7 +48,6 @@ const actionIndexes = new Map<PermissionActions, number>([
     [PermissionActions.REVIEW, 4],
     [PermissionActions.EXECUTE, 5],
     [PermissionActions.MANAGE, 6],
-    [PermissionActions.ASSOCIATE, 7],
 
     [PermissionActions.ALL, -1],
     [PermissionActions.AUDIT, -1],
@@ -199,6 +198,10 @@ export class EntityGroup {
             }
         }
         this.all = _all;
+    }
+
+    public checkCount(): void {
+        this.parent.checkCount();
     }
 
     public disable(): void {

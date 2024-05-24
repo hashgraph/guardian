@@ -1,5 +1,5 @@
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
-import { AuthEvents, GenerateUUIDv4, PermissionsArray, UserRole, } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
 
@@ -23,8 +23,8 @@ function updatePermissions(permissions: string[]): string[] {
     const list = new Set<string>();
     for (const name of permissions) {
         if (available.has(name)) {
+            list.add(name);
             const permission = available.get(name);
-            list.add(permission.name);
             if (permission.dependOn) {
                 for (const sub of permission.dependOn) {
                     list.add(sub);
@@ -276,7 +276,7 @@ export class RoleService extends NatsService {
          */
         this.getMessages(AuthEvents.REFRESH_USER_PERMISSIONS, async (msg: any) => {
             try {
-                const { id, owner } = msg; 
+                const { id, owner } = msg;
                 const users = await new DataBaseHelper(User).find({
                     parent: owner,
                     permissionsGroup: id

@@ -372,8 +372,8 @@ export class UserPermissions {
         return this.check(Permissions.TOKENS_TOKEN_DELETE);
     }
 
-    public get TOKENS_TOKEN_ASSOCIATE(): boolean {
-        return this.check(Permissions.TOKENS_TOKEN_ASSOCIATE);
+    public get TOKENS_TOKEN_EXECUTE(): boolean {
+        return this.check(Permissions.TOKENS_TOKEN_EXECUTE);
     }
 
     public get TOKENS_TOKEN_MANAGE(): boolean {
@@ -387,10 +387,6 @@ export class UserPermissions {
 
     public get TAGS_TAG_CREATE(): boolean {
         return this.check(Permissions.TAGS_TAG_CREATE);
-    }
-
-    public get TAGS_TAG_DELETE(): boolean {
-        return this.check(Permissions.TAGS_TAG_DELETE);
     }
 
     //PROFILE

@@ -213,36 +213,23 @@ export class ProjectsAPI {
         }
 
         const policyIds = _data.map((p: any) => p.policyId);
-        const vpDocuments = await Promise.all(policyIds.map(async (id) => {
-            const documents = await guardians.getVpDocuments({
-                filters: { policyId: id }
-            });
-            return documents.items
-        }))
-
-        const minLength = Math.min.apply(null, vpDocuments.map(d => d.length));
 
         const refLvl = samePolicy ? 'Revert' : 'Merge';
         const keyLvl = samePolicy ? 'Default' : 'Property';
 
         try {
-            const comparisonVpArray = [];
-
-            for (let index = 0; index < minLength; index++) {
-                comparisonVpArray.push(await guardians.compareDocuments(
-                    user,
-                    null,
-                    vpDocuments.map(d => d[index].id),
-                    '1',
-                    '2',
-                    '2',
-                    '0',
-                    0,
-                    'Direct'
-                ))
-            }
-
-            const comparisonVc = await guardians.compareDocuments(
+            const comparationVpArray = await guardians.compareVPDocuments(
+                user,
+                null,
+                policyIds,
+                '1',
+                '2',
+                '2',
+                '0',
+                0,
+                'Direct'
+            );
+            const comparationVc = await guardians.compareDocuments(
                 user,
                 null,
                 ids,
@@ -253,14 +240,12 @@ export class ProjectsAPI {
                 keyLvl,
                 refLvl
             );
-
             return {
-                projects: comparisonVc,
-                presentations: comparisonVpArray
+                projects: comparationVc,
+                presentations: comparationVpArray
             }
-
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
