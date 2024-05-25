@@ -35,7 +35,7 @@
         "http-errors": "^2.0.0",
         "js-yaml": "^4.1.0",
         "mikro-orm": "^6.1.11",
-        "mongodb": "6.5.0",
+        "mongodb": "6.6.0",
         "mongoose": "^6.10.0",
         "morgan": "^1.10.0",
         "nats": "^2.12.1",
