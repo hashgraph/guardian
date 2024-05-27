@@ -154,9 +154,9 @@ export class ToolsApi {
     @HttpCode(HttpStatus.OK)
     async getTools(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<ToolDTO[]> {
         try {
             const owner = new EntityOwner(user);

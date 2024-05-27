@@ -123,12 +123,16 @@ export class LoggerApi {
         name: 'name',
         type: Number,
         description: 'Name',
+        required: false,
+        example: 'Search'
     })
     @ApiQuery({
         name: 'existingAttributes',
         type: String,
         isArray: true,
         description: 'Existing attributes',
+        required: false,
+        example: ['WORKER']
     })
     @ApiOkResponse({
         description: 'Successful operation.',

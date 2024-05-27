@@ -31,18 +31,21 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'type',
         enum: ContractType,
         description: 'Contract type',
+        required: false,
         example: ContractType.RETIRE,
     })
     @ApiOkResponse({
@@ -59,10 +62,10 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getContracts(
         @AuthUser() user: IAuthUser,
-        @Query('type') type: ContractType,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('type') type?: ContractType,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<ContractDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -273,18 +276,21 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
+        required: false,
         example: '0.0.1',
     })
     @ApiOkResponse({
@@ -302,10 +308,10 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getWipeRequests(
         @AuthUser() user: IAuthUser,
-        @Query('contractId') contractId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('contractId') contractId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<WiperRequestDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -470,7 +476,9 @@ export class ContractsApi {
     @ApiQuery({
         name: 'ban',
         type: Boolean,
-        description: 'Reject and ban'
+        description: 'Reject and ban',
+        required: false,
+        example: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -485,7 +493,7 @@ export class ContractsApi {
     async rejectWipeRequest(
         @AuthUser() user: IAuthUser,
         @Param('requestId') requestId: string,
-        @Query('ban') ban: boolean,
+        @Query('ban') ban?: boolean,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
@@ -904,18 +912,21 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
+        required: false,
         example: '0.0.1',
     })
     @ApiOkResponse({
@@ -933,10 +944,10 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getRetireRequests(
         @AuthUser() user: IAuthUser,
-        @Query('contractId') contractId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('contractId') contractId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<RetireRequestDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -970,24 +981,28 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20,
     })
     @ApiQuery({
         name: 'contractId',
         type: String,
         description: 'Contract identifier',
+        required: false,
         example: '0.0.1',
     })
     @ApiQuery({
         name: 'tokens',
         type: String,
         description: 'Tokens',
+        required: false,
         example: '0.0.1,0.0.2,0.0.3',
     })
     @ApiOkResponse({
@@ -1005,11 +1020,11 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getRetirePools(
         @AuthUser() user: IAuthUser,
-        @Query('contractId') contractId: string,
-        @Query('tokens') tokens: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('contractId') contractId?: string,
+        @Query('tokens') tokens?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<RetirePoolDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -1490,12 +1505,14 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20,
     })
     @ApiOkResponse({
@@ -1513,9 +1530,9 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getRetireVCs(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<any[]> {
         try {
             const owner = new EntityOwner(user);

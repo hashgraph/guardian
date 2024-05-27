@@ -272,11 +272,15 @@ export class TagsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -293,9 +297,9 @@ export class TagsApi {
     @HttpCode(HttpStatus.OK)
     async getSchemas(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<any> {
         try {
             const guardians = new Guardians();

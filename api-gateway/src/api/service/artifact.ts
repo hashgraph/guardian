@@ -22,29 +22,46 @@ export class ArtifactApi {
         description: 'Returns all artifacts.',
     })
     @ApiQuery({
+        name: 'id',
+        type: String,
+        description: 'Artifact identifier',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
         name: 'type',
         enum: ['tool', 'policy'],
         description: 'Tool|Policy',
+        required: false,
+        example: 'policy'
     })
     @ApiQuery({
         name: 'policyId',
         type: String,
         description: 'Policy identifier',
+        required: false,
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'toolId',
         type: String,
         description: 'Tool identifier',
+        required: false,
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -60,13 +77,13 @@ export class ArtifactApi {
     @HttpCode(HttpStatus.OK)
     async getArtifacts(
         @AuthUser() user: IAuthUser,
-        @Query('type') type: string,
-        @Query('policyId') policyId: string,
-        @Query('toolId') toolId: string,
+        @Response() res: any,
         @Query('id') id: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('type') type?: string,
+        @Query('policyId') policyId?: string,
+        @Query('toolId') toolId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<ArtifactDTOItem> {
         try {
             const options: any = {

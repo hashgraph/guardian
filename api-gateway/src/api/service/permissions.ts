@@ -55,17 +55,22 @@ export class PermissionsApi {
         name: 'name',
         type: String,
         description: 'Filter by role name',
+        required: false,
         example: 'name'
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -81,10 +86,10 @@ export class PermissionsApi {
     @HttpCode(HttpStatus.OK)
     async getRoles(
         @AuthUser() user: IAuthUser,
-        @Query('name') name: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('name') name?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<RoleDTO[]> {
         try {
             const options: any = {
@@ -310,11 +315,11 @@ export class PermissionsApi {
         summary: 'Return a list of all users.',
         description: 'Returns all users.',
     })
-
     @ApiQuery({
         name: 'role',
         type: String,
         description: 'Filter by role',
+        required: false,
         example: Examples.DB_ID
     })
     @ApiQuery({
@@ -322,23 +327,29 @@ export class PermissionsApi {
         type: String,
         enum: ['Active', 'Inactive'],
         description: 'Filter by status',
+        required: false,
         example: 'Active'
     })
     @ApiQuery({
         name: 'username',
         type: String,
         description: 'Filter by username',
+        required: false,
         example: 'username'
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -354,12 +365,12 @@ export class PermissionsApi {
     @HttpCode(HttpStatus.OK)
     async getUsers(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('role') role: string,
-        @Query('status') status: string,
-        @Query('username') username: string,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('role') role?: string,
+        @Query('status') status?: string,
+        @Query('username') username?: string
     ): Promise<UserRolesDTO[]> {
         try {
             const options: any = {
@@ -401,10 +412,6 @@ export class PermissionsApi {
         description: 'User Identifier',
         required: true,
         example: 'username'
-    })
-    @ApiBody({
-        description: 'User permissions.',
-        type: UserRolesDTO,
     })
     @ApiOkResponse({
         description: 'User permissions.',
@@ -511,18 +518,23 @@ export class PermissionsApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiQuery({
         name: 'status',
         type: String,
         enum: ['ALL', 'DRAFT', 'DRY-RUN', 'PUBLISH_ERROR', 'DISCONTINUED', 'PUBLISH'],
         description: 'Filter by status',
+        required: false,
         example: 'Active'
     })
     @ApiOkResponse({
@@ -539,11 +551,11 @@ export class PermissionsApi {
     @HttpCode(HttpStatus.OK)
     async getAssignedPolicies(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('username') username: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('status') status: string,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('status') status?: string
     ): Promise<PolicyDTO[]> {
         let row: any;
         const users = new Users();

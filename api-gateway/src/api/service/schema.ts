@@ -57,7 +57,7 @@ export class SingleSchemaApi {
             if (!schema.system && schema.status !== SchemaStatus.PUBLISHED && schema.owner !== owner.owner) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
-            SchemaHelper.updatePermission([schema],owner);
+            SchemaHelper.updatePermission([schema], owner);
             return SchemaUtils.toOld(schema);
         } catch (error) {
             await InternalException(error);
@@ -260,14 +260,14 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async getSchemasPage(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('category') category: string,
-        @Query('policyId') policyId: string,
-        @Query('moduleId') moduleId: string,
-        @Query('toolId') toolId: string,
-        @Query('topicId') topicId: string,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('category') category?: string,
+        @Query('policyId') policyId?: string,
+        @Query('moduleId') moduleId?: string,
+        @Query('toolId') toolId?: string,
+        @Query('topicId') topicId?: string
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -356,11 +356,11 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async getSchemasPageByTopicId(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('topicId') topicId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('category') category: string,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('category') category?: string,
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -528,8 +528,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async getSub(
         @AuthUser() user: IAuthUser,
-        @Query('category') category: string,
-        @Query('topicId') topicId: string,
+        @Query('category') category?: string,
+        @Query('topicId') topicId?: string
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -693,7 +693,7 @@ export class SchemaApi {
             newSchema.category = newSchema.category || SchemaCategory.POLICY;
             SchemaHelper.checkSchemaKey(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-            await guardians.createSchemaAsync(newSchema,owner, task);
+            await guardians.createSchemaAsync(newSchema, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -1599,10 +1599,10 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async getSystemSchema(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('username') owner: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();

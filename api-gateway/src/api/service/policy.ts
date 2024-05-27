@@ -36,12 +36,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -57,9 +61,9 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getPolicies(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -621,8 +625,8 @@ export class PolicyApi {
         schema: {
             type: 'object',
             properties: {
-                'date': {
-                    type: 'date'
+                date: {
+                    type: 'string'
                 }
             }
         }
@@ -847,22 +851,30 @@ export class PolicyApi {
     @ApiQuery({
         name: 'includeDocument',
         type: Boolean,
-        description: 'Include document field.'
+        description: 'Include document field.',
+        required: false,
+        example: true
     })
     @ApiQuery({
         name: 'type',
         enum: DocumentType,
-        description: 'Document type.'
+        description: 'Document type.',
+        required: false,
+        example: DocumentType.VC
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Documents.',
@@ -878,12 +890,12 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyDocuments(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('type') type: DocumentType,
-        @Query('includeDocument') includeDocument: boolean,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('type') type?: DocumentType,
+        @Query('includeDocument') includeDocument?: boolean,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
@@ -1699,6 +1711,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -1718,8 +1731,8 @@ export class PolicyApi {
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromMessage(
         @AuthUser() user: IAuthUser,
-        @Query('versionOfTopicId') versionOfTopicId: string,
-        @Body() body: ImportMessageDTO
+        @Body() body: ImportMessageDTO,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<PolicyDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1755,6 +1768,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -1773,8 +1787,8 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromMessageAsync(
         @AuthUser() user: IAuthUser,
-        @Query('versionOfTopicId') versionOfTopicId: string,
-        @Body() body: ImportMessageDTO
+        @Body() body: ImportMessageDTO,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<any> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1908,6 +1922,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -1929,7 +1944,7 @@ export class PolicyApi {
     async importPolicyFromFile(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId: string,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
@@ -1956,6 +1971,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiConsumes('multipart/form-data')
@@ -1991,7 +2007,7 @@ export class PolicyApi {
     async importPolicyFromFileWithMetadata(
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId: string,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<PolicyDTO[]> {
         try {
             const policyFile = files.find(
@@ -2032,6 +2048,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -2052,7 +2069,7 @@ export class PolicyApi {
     async importPolicyFromFileAsync(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId: string
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -2082,6 +2099,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiConsumes('multipart/form-data')
@@ -2116,7 +2134,7 @@ export class PolicyApi {
     async importPolicyFromFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId: string,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -2578,12 +2596,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Transactions.',
@@ -2599,10 +2621,10 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getDryRunTransactions(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -2637,12 +2659,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Artifacts.',
@@ -2658,10 +2684,10 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getDryRunArtifacts(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -2696,12 +2722,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 20
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Files.',
@@ -2717,10 +2747,10 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getDryRunIpfs(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);

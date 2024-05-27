@@ -87,18 +87,21 @@ export class TokensApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20
     })
     @ApiQuery({
         name: 'policy',
         type: String,
         description: 'Policy Id',
+        required: false,
         example: Examples.DB_ID
     })
     @ApiQuery({
@@ -109,6 +112,7 @@ export class TokensApi {
             'All'
         ],
         description: 'Token status',
+        required: false,
         example: 'All'
     })
     @ApiOkResponse({
@@ -125,11 +129,11 @@ export class TokensApi {
     @HttpCode(HttpStatus.OK)
     async getTokens(
         @AuthUser() user: IAuthUser,
-        @Query('policy') policy: string,
-        @Query('status') status: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('policy') policy?: string,
+        @Query('status') status?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<TokenDTO[]> {
         try {
             const guardians = new Guardians();
