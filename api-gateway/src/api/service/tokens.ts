@@ -13,7 +13,7 @@ import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, page
  * @param policyId
  * @param notEmpty
  */
-function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpty?: boolean): T[] {
+function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: string, notEmpty?: boolean): T[] {
     if (!tokens) {
         return [];
     }
@@ -98,7 +98,7 @@ export class TokensApi {
         example: 20
     })
     @ApiQuery({
-        name: 'policy',
+        name: 'policyId',
         type: String,
         description: 'Policy Id',
         required: false,
@@ -130,7 +130,7 @@ export class TokensApi {
     async getTokens(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
-        @Query('policy') policy?: string,
+        @Query('policyId') policyId?: string,
         @Query('status') status?: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -146,12 +146,12 @@ export class TokensApi {
                     tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner, 'PUBLISH');
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
-                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, true);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
                     tokensAndCount = await guardians.getTokensPage(owner, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner);
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
-                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, false);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, false);
                 }
             }
             return res
