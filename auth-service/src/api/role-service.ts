@@ -329,8 +329,21 @@ export class RoleService extends NatsService {
                 const roleIds: string[] = user.permissionsGroup;
                 const roles: DynamicRole[] = [];
                 for (const id of roleIds) {
-                    const item = await new DataBaseHelper(DynamicRole).findOne({ id, owner });
-                    if (!item || item.owner !== owner) {
+                    const item = await new DataBaseHelper(DynamicRole).findOne({
+                        $or: [
+                            {
+                                id,
+                                owner
+                            },
+                            {
+                                id,
+                                owner: null,
+                                default: true,
+                                readonly: true
+                            }
+                        ]
+                    });
+                    if (!item) {
                         throw new Error('Role does not exist');
                     }
                     roles.push(item);
