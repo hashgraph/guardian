@@ -101,7 +101,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccountsResponseDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -127,7 +127,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccountsResponseDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -155,7 +155,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/AggregatedDTOItem'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -181,7 +181,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BalanceResponseDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -220,7 +220,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SearchPoliciesDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -274,7 +274,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ComparePoliciesDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -317,7 +317,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompareModulesDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -358,7 +358,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompareSchemasDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -403,7 +403,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompareDocumentsDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -448,7 +448,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CompareToolsDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -508,7 +508,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -558,7 +558,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -606,7 +606,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -658,7 +658,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -710,7 +710,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -752,7 +752,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SearchBlocksDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -832,7 +832,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ArtifactDTOItem'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -881,7 +881,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ArtifactDTOItem'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -914,7 +914,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -973,7 +973,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ContractDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1007,7 +1007,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContractDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1050,7 +1050,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContractDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1085,7 +1085,7 @@ paths:
               schema:
                 type: number
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1120,7 +1120,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1178,7 +1178,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/WiperRequestDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1213,7 +1213,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1248,7 +1248,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1283,7 +1283,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1325,7 +1325,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1360,7 +1360,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1402,7 +1402,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1443,7 +1443,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1485,7 +1485,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1526,7 +1526,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1568,7 +1568,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1609,7 +1609,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1644,7 +1644,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Date'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1700,7 +1700,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/RetireRequestDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1763,7 +1763,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/RetirePoolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1798,7 +1798,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1833,7 +1833,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1873,7 +1873,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RetirePoolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1908,7 +1908,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1943,7 +1943,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -1982,7 +1982,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2017,7 +2017,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2050,7 +2050,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2092,7 +2092,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2133,7 +2133,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2182,7 +2182,7 @@ paths:
                 items:
                   type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2225,7 +2225,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2251,7 +2251,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2312,7 +2312,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2353,7 +2353,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2415,7 +2415,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2450,7 +2450,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/LogResultDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2492,7 +2492,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2577,7 +2577,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2628,7 +2628,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2686,7 +2686,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2722,7 +2722,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2757,7 +2757,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2791,7 +2791,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2832,7 +2832,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2862,7 +2862,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2896,7 +2896,7 @@ paths:
         '200':
           description: File.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2932,7 +2932,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ExportMessageDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -2968,7 +2968,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3004,7 +3004,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3040,7 +3040,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModulePreviewDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3076,7 +3076,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModulePreviewDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3120,7 +3120,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3155,7 +3155,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ModuleValidationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3190,7 +3190,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3241,7 +3241,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3276,7 +3276,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3311,7 +3311,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3345,7 +3345,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3386,7 +3386,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3430,7 +3430,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolValidationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3474,7 +3474,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3509,7 +3509,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolValidationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3543,7 +3543,7 @@ paths:
         '200':
           description: Successful operation. Response zip file.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3579,7 +3579,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ExportMessageDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3615,7 +3615,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolPreviewDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3651,7 +3651,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3687,7 +3687,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolPreviewDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3723,7 +3723,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3766,7 +3766,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3802,7 +3802,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3845,7 +3845,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3881,7 +3881,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3911,7 +3911,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ToolDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3946,7 +3946,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProfileDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -3984,7 +3984,7 @@ paths:
         '200':
           description: Created.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4026,7 +4026,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4061,7 +4061,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4101,7 +4101,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4141,7 +4141,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4174,7 +4174,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DidDocumentStatusDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4207,7 +4207,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DidKeyStatusDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4256,7 +4256,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4293,7 +4293,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4335,7 +4335,7 @@ paths:
                     id:
                       type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4370,7 +4370,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4405,7 +4405,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4447,7 +4447,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4481,7 +4481,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4516,7 +4516,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4557,7 +4557,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4600,7 +4600,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PoliciesValidationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4644,7 +4644,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4680,7 +4680,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PoliciesValidationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4727,7 +4727,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4764,7 +4764,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4799,7 +4799,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyValidationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4832,7 +4832,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4865,7 +4865,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4906,7 +4906,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -4981,7 +4981,7 @@ paths:
                 items:
                   type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5017,7 +5017,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5053,7 +5053,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5088,7 +5088,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5124,7 +5124,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5162,7 +5162,7 @@ paths:
         '200':
           description: Operation completed.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5197,7 +5197,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlockDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5239,7 +5239,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlockDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5285,7 +5285,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlockDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5332,7 +5332,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlockDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5373,7 +5373,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlockDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5415,7 +5415,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlockDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5459,7 +5459,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/BlockDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5498,7 +5498,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5534,7 +5534,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ExportMessageDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5573,7 +5573,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5618,7 +5618,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5661,7 +5661,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5696,7 +5696,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyPreviewDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5731,7 +5731,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5776,7 +5776,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5828,7 +5828,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5871,7 +5871,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5921,7 +5921,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -5957,7 +5957,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyPreviewDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6000,7 +6000,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6043,7 +6043,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6079,7 +6079,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6103,7 +6103,7 @@ paths:
         '200':
           description: Block descriptions.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6134,7 +6134,7 @@ paths:
         '200':
           description: Virtual users.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6165,7 +6165,7 @@ paths:
         '200':
           description: Virtual users.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6203,7 +6203,7 @@ paths:
         '200':
           description: Virtual users.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6241,7 +6241,7 @@ paths:
         '200':
           description: .
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6299,7 +6299,7 @@ paths:
                 items:
                   type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6357,7 +6357,7 @@ paths:
                 items:
                   type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6415,7 +6415,7 @@ paths:
                 items:
                   type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6446,7 +6446,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6483,7 +6483,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6576,7 +6576,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6611,7 +6611,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6652,7 +6652,7 @@ paths:
                     items:
                       type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6736,7 +6736,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6773,7 +6773,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6836,7 +6836,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6879,7 +6879,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6911,7 +6911,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6941,7 +6941,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -6985,7 +6985,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7020,7 +7020,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7062,7 +7062,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7099,7 +7099,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7154,7 +7154,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7202,7 +7202,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7243,7 +7243,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7282,7 +7282,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7319,7 +7319,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7372,7 +7372,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7418,7 +7418,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7467,7 +7467,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7509,7 +7509,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7545,7 +7545,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ExportSchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7576,7 +7576,7 @@ paths:
         '200':
           description: Successful operation. Response zip file.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7617,7 +7617,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7674,7 +7674,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7705,7 +7705,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7748,7 +7748,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7782,7 +7782,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7822,7 +7822,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7858,7 +7858,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7900,7 +7900,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7942,7 +7942,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -7977,7 +7977,7 @@ paths:
               schema:
                 type: object
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8006,7 +8006,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8035,7 +8035,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8063,7 +8063,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SettingsDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8089,7 +8089,7 @@ paths:
               schema:
                 type: string
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8111,7 +8111,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8144,7 +8144,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TagDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8189,7 +8189,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TagMapDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8222,7 +8222,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8260,7 +8260,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TagMapDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8311,7 +8311,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8345,7 +8345,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8380,7 +8380,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8423,7 +8423,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8462,7 +8462,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8492,7 +8492,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/SchemaDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8525,7 +8525,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskStatusDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8596,7 +8596,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/TokenDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8633,7 +8633,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/TokenDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8667,7 +8667,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8702,7 +8702,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8736,7 +8736,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8771,7 +8771,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8806,7 +8806,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenInfoDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8841,7 +8841,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8876,7 +8876,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenInfoDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8911,7 +8911,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8953,7 +8953,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenInfoDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -8995,7 +8995,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9037,7 +9037,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenInfoDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9079,7 +9079,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9121,7 +9121,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenInfoDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9163,7 +9163,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenInfoDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9205,7 +9205,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9247,7 +9247,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9289,7 +9289,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TokenInfoDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9324,7 +9324,7 @@ paths:
                 items:
                   type: number
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9354,7 +9354,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/TokenDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9389,7 +9389,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ThemeDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9419,7 +9419,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ThemeDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9461,7 +9461,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ThemeDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9495,7 +9495,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9530,7 +9530,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ThemeDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9561,7 +9561,7 @@ paths:
         '200':
           description: Successful operation. Response zip file.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9627,7 +9627,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/VpDocumentDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9707,7 +9707,7 @@ paths:
                   - chain
                   - userMap
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9742,7 +9742,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/WizardResultDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9778,7 +9778,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9820,7 +9820,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/WizardPreviewDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9851,7 +9851,7 @@ paths:
         '200':
           description: Successful operation.
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9906,7 +9906,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuggestionsOutputDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9942,7 +9942,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuggestionsConfigDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -9969,7 +9969,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuggestionsConfigDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10018,7 +10018,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/NotificationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10047,7 +10047,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/NotificationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10075,7 +10075,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ProgressDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10103,7 +10103,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/NotificationDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10136,7 +10136,7 @@ paths:
               schema:
                 type: number
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10265,7 +10265,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordStatusDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10308,7 +10308,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10351,7 +10351,7 @@ paths:
                 type: string
                 format: binary
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10388,7 +10388,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/RecordActionDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10430,7 +10430,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10472,7 +10472,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10507,7 +10507,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RunningResultDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10542,7 +10542,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RunningDetailsDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10584,7 +10584,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10626,7 +10626,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10668,7 +10668,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10744,7 +10744,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PermissionsDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10801,7 +10801,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/RoleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10833,7 +10833,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RoleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10873,7 +10873,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RoleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10905,7 +10905,7 @@ paths:
               schema:
                 type: boolean
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -10949,7 +10949,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RoleDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -11022,7 +11022,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserRolesDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -11055,7 +11055,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserRolesDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -11094,7 +11094,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserRolesDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -11164,7 +11164,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
@@ -11204,7 +11204,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyDTO'
         '401':
-          description: Unauthorized
+          description: Unauthorized.
         '403':
           description: Forbidden.
         '500':
