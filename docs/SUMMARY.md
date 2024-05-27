@@ -575,6 +575,7 @@
     * [🥇 Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate](guardian/demo-guide/carbon-offsets/gold-standard-carbon-sequestration-through-accelerated-carbonation-of-concrete-aggregate.md)
     * [🏭 AMS-I.D: Grid Connected Renewable Electricity Generation – v.18.0](guardian/demo-guide/carbon-offsets/ams-i.d-grid-connected-renewable-electricity-generation-v.18.0.md)
     * [🏭 PWRM0002 : Plastic Waste Recycling Methodology](guardian/demo-guide/carbon-offsets/pwrm0002-plastic-waste-recycling.md)
+    * [🍚 Methane Emission Reduction by Adjusted Water Management Practice in Rice Cultivation](guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation.md)
   * [🏭 Carbon Emissions](guardian/demo-guide/carbon-emissions/README.md)
     * [🏡 Remote Work GHG Policy](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/README.md)
       * [📖 Introduction to Remote Work GHG](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/introduction-to-remote-work-ghg.md)
