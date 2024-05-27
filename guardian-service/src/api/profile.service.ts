@@ -306,7 +306,8 @@ async function createUserProfile(
             creator: userDID,
             owner: userDID,
             assigned: false,
-            published: false
+            published: false,
+            username: null
         }
         let schema: SchemaCollection = null;
 

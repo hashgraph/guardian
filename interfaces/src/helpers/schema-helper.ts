@@ -663,8 +663,8 @@ export class SchemaHelper {
         const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
         data.version = data.version || version;
         data.uuid = data.uuid || uuid;
-        data.owner = newOwner.owner;
-        data.creator = newOwner.creator;
+        data.owner = newOwner.owner || newOwner.username;
+        data.creator = newOwner.creator || newOwner.username;
         const type = SchemaHelper.buildType(data.uuid, data.version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;

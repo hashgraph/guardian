@@ -3,6 +3,10 @@
  */
 export interface IOwner {
     /**
+     * Current user username
+     */
+    username: string
+    /**
      * Current user
      */
     creator: string

@@ -782,14 +782,14 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_CREATE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.CREATE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]
@@ -799,7 +799,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.UPDATE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]
@@ -809,7 +809,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.DELETE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]
@@ -819,7 +819,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.REVIEW,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]

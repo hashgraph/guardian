@@ -234,7 +234,7 @@ export class PolicyEngine extends NatsService {
                 await DatabaseServer.getTopicById(policyTopicId),
                 true
             );
-            const root = await users.getHederaAccount(schema.owner);
+            const root = await users.getHederaAccount(owner.creator);
             const dependencySchemas = await DatabaseServer.getSchemas({
                 $and: [
                     { iri: { $in: schema.defs } },
@@ -494,7 +494,7 @@ export class PolicyEngine extends NatsService {
         });
         for (const schema of schemasToDelete) {
             if (schema.status === SchemaStatus.DRAFT) {
-                await deleteSchema(schema.id, notifier);
+                await deleteSchema(schema.id, user, notifier);
             }
         }
         notifier.completedAndStart('Delete artifacts');
@@ -508,7 +508,7 @@ export class PolicyEngine extends NatsService {
         notifier.completedAndStart('Publishing delete policy message');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true);
         const users = new Users();
-        const root = await users.getHederaAccount(policyToDelete.owner);
+        const root = await users.getHederaAccount(user.creator);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);

@@ -51,7 +51,7 @@ export class SingleSchemaApi {
             if (!schema) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
-            if (schema.system && !schema.active && schema.creator !== user.username) {
+            if (schema.system && !schema.active && schema.owner !== user.username && schema.owner !== owner.creator) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
             if (!schema.system && schema.status !== SchemaStatus.PUBLISHED && schema.owner !== owner.owner) {
@@ -421,7 +421,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
-            if (schema.system && !schema.active && schema.creator !== user.username) {
+            if (schema.system && !schema.active && schema.owner !== owner.username && schema.owner !== owner.creator) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
             if (!schema.system && schema.status !== SchemaStatus.PUBLISHED && schema.owner !== owner.owner) {
@@ -740,7 +740,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
@@ -794,6 +794,7 @@ export class SchemaApi {
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
         let schema: ISchema;
+        const owner = new EntityOwner(user);
         try {
             schema = await guardians.getSchemaById(schemaId);
         } catch (error) {
@@ -802,7 +803,7 @@ export class SchemaApi {
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
         }
-        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
         if (error) {
             throw new HttpException(error, HttpStatus.FORBIDDEN)
         }
@@ -810,7 +811,6 @@ export class SchemaApi {
             throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
-            const owner = new EntityOwner(user);
             const schemas = (await guardians.deleteSchema(schemaId, owner, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, owner);
             return SchemaUtils.toOld(schemas);
@@ -886,7 +886,7 @@ export class SchemaApi {
         } catch (error) {
             await InternalException(error);
         }
-        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
         if (error) {
             throw new HttpException(error, HttpStatus.FORBIDDEN)
         }
@@ -960,7 +960,7 @@ export class SchemaApi {
         if (!schema) {
             throw new HttpException('Schema not found', HttpStatus.NOT_FOUND)
         }
-        const notAllowed = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        const notAllowed = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
         if (notAllowed) {
             throw new HttpException(notAllowed, HttpStatus.FORBIDDEN)
         }
@@ -1654,7 +1654,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.SYSTEM);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN);
             }
@@ -1714,7 +1714,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.SYSTEM);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN);
             }

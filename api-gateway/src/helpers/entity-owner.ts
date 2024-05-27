@@ -8,6 +8,7 @@ export class EntityOwner implements IOwner {
     public readonly owner: string;
     public readonly assigned: boolean;
     public readonly published: boolean;
+    public readonly username: string;
 
     constructor(user?: IAuthUser) {
         if (user) {
@@ -15,6 +16,7 @@ export class EntityOwner implements IOwner {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             this.parent = this.parent;
+            this.username = user.username;
             if (user.role === UserRole.USER) {
                 this.creator = user.did;
                 this.owner = user.parent;
@@ -43,6 +45,7 @@ export class EntityOwner implements IOwner {
         return {
             creator: did,
             owner: did,
+            username: null,
             assigned: false,
             published: false
         }

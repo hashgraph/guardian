@@ -2723,7 +2723,8 @@ export async function contractAPI(
                 creator: sr.did,
                 owner: sr.did,
                 assigned: false,
-                published: false
+                published: false,
+                username: null
             }
             if (pool.immediately) {
                 await saveRetireVC(

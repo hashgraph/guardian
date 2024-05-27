@@ -401,7 +401,7 @@ export class TagsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(schemaId);
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
@@ -455,7 +455,7 @@ export class TagsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(newSchema.id);
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
@@ -503,14 +503,14 @@ export class TagsApi {
         @Param('schemaId') schemaId: string,
     ): Promise<SchemaDTO> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(schemaId);
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             const version = '1.0.0';
-            const owner = new EntityOwner(user);
             return await guardians.publishTagSchema(schemaId, version, owner);
         } catch (error) {
             await InternalException(error);
