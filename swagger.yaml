@@ -11261,8 +11261,10 @@ components:
       properties:
         code:
           type: number
+          example: 500
         message:
           type: string
+          example: Error message
       required:
         - code
         - message
