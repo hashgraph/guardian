@@ -56,13 +56,10 @@ export async function themeAPI(): Promise<void> {
                 }
                 const { themeId, theme, owner } = msg;
 
-                const item = await DatabaseServer.getTheme({
-                    id: themeId,
-                    owner
-                });
+                const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
 
                 if (!item || item.owner !== owner.creator) {
-                    throw new Error('Invalid theme');
+                    return new MessageError('Theme is not found');
                 }
 
                 item.name = theme.name;
@@ -138,7 +135,7 @@ export async function themeAPI(): Promise<void> {
                 const { themeId, owner } = msg;
                 const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
                 if (!item || item.owner !== owner.creator) {
-                    throw new Error('Invalid theme');
+                    return new MessageError('Theme is not found');
                 }
                 await DatabaseServer.removeTheme(item);
                 return new MessageResponse(true);
@@ -164,7 +161,7 @@ export async function themeAPI(): Promise<void> {
                 const { themeId, owner } = msg;
                 const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
                 if (!item || item.owner !== owner.creator) {
-                    throw new Error('Invalid theme');
+                    return new MessageError('Theme is not found');
                 }
                 const zip = await ThemeImportExport.generate(item);
                 const file = await zip.generateAsync({

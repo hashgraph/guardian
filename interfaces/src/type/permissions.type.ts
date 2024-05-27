@@ -1153,6 +1153,7 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.CONTRACTS_CONTRACT_READ,
     Permissions.CONTRACTS_CONTRACT_CREATE,
     Permissions.CONTRACTS_CONTRACT_DELETE,
+    Permissions.CONTRACTS_CONTRACT_MANAGE,
     Permissions.CONTRACTS_WIPE_REQUEST_READ,
     Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
     Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
