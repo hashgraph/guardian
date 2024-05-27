@@ -205,20 +205,26 @@ export class EntityGroup {
     }
 
     public disable(): void {
-        for (const action of this.map.values()) {
-            action.disable();
+        for (const action of this.actions) {
+            if (action) {
+                action.disable();
+            }
         }
     }
 
     public clearValue(): void {
-        for (const action of this.map.values()) {
-            action.clearValue();
+        for (const action of this.actions) {
+            if (action) {
+                action.clearValue();
+            }
         }
     }
 
     public addValue(permissions: Permissions[]): void {
-        for (const action of this.map.values()) {
-            action.addValue(permissions);
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
         }
     }
 }

@@ -22,6 +22,7 @@ export class ActionGroup {
     public readonly control: FormControl;
     public readonly refs: ActionGroup[];
     public tooltip: string;
+    private _disable: boolean;
 
     constructor(permission: IPermission, parent: EntityGroup) {
         this.parent = parent;
@@ -30,6 +31,7 @@ export class ActionGroup {
         this.control = new FormControl(false);
         this.refs = [];
         this.tooltip = '';
+        this._disable = false;
     }
 
     public setValue(value: boolean): void {
@@ -42,6 +44,7 @@ export class ActionGroup {
 
     public disable(): void {
         this.control.disable();
+        this._disable = true;
     }
 
     public clearValue(): void {
@@ -65,14 +68,14 @@ export class ActionGroup {
         for (const ref of this.refs) {
             dependent = dependent || ref.getValue();
         }
-        if(dependent) {
+        if (dependent) {
             this.control.disable();
             if (!this.control.value) {
                 this.control.setValue(true);
                 this.parent.checkAll();
                 this.parent.checkCount();
             }
-        } else {
+        } else if (!this._disable) {
             this.control.enable();
         }
     }

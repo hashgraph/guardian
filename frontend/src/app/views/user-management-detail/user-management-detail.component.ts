@@ -172,6 +172,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
                 }
             }
         }
+        this.group.disable();
     }
 
     public onChangeRole() {
