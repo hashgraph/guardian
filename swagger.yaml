@@ -2180,7 +2180,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/'
+                  type: object
         '401':
           description: Unauthorized
         '403':
@@ -4979,7 +4979,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/'
+                  type: object
         '401':
           description: Unauthorized
         '403':
