@@ -43,8 +43,8 @@ export class ActionGroup {
     }
 
     public disable(): void {
-        this.control.disable();
         this._disable = true;
+        this.control.disable();
     }
 
     public clearValue(): void {
@@ -53,7 +53,8 @@ export class ActionGroup {
 
     public addValue(permissions: Permissions[]): void {
         const value = permissions && permissions.includes(this.permission);
-        this.control.setValue(value);
+        const newValue = this.control.value || value;
+        this.control.setValue(newValue);
     }
 
     public addRef(action: ActionGroup) {
@@ -78,5 +79,19 @@ export class ActionGroup {
         } else if (!this._disable) {
             this.control.enable();
         }
+    }
+
+    public isDepend(permissions: Permissions): boolean {
+        if (this.permission === permissions) {
+            return true;
+        }
+        if (this.refs && this.refs.length) {
+            for (const ref of this.refs) {
+                if (ref.permission === permissions) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

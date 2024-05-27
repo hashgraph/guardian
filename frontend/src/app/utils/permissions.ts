@@ -114,6 +114,16 @@ export class PermissionsGroup {
         return this.actions.get(permissions);
     }
 
+    public getDependencies(permissions: Permissions): ActionGroup[] {
+        const result:ActionGroup[] = [];
+        for (const action of this.actions.values()) {
+            if(action.isDepend(permissions)) {
+                result.push(action);
+            }
+        }
+        return result;
+    }
+
     public static from(permissions: IPermission[]): PermissionsGroup {
         const group = new PermissionsGroup();
         for (const permission of permissions) {

@@ -85,6 +85,7 @@
                                             <mat-checkbox 
                                                 color="primary" 
                                                 *ngIf="action"
+                                                matTooltipPosition="above"
                                                 [matTooltip]="action.tooltip"
                                                 [matTooltipDisabled]="!action.tooltip"
                                                 [formControl]="action.control"></mat-checkbox>
@@ -95,6 +96,7 @@
                                             <mat-checkbox 
                                                 *ngIf="action"
                                                 color="primary" 
+                                                matTooltipPosition="above"
                                                 [matTooltip]="action.tooltip"
                                                 [matTooltipDisabled]="!action.tooltip"
                                                 [formControl]="action.control"></mat-checkbox>

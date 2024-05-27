@@ -163,16 +163,17 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             if (role && role.permissions) {
                 this.group.addValue(role.permissions);
                 for (const permission of role.permissions) {
-                    const action = this.group.getAction(permission);
-                    if (action) {
-                        action.tooltip = action.tooltip ?
-                            `${action.tooltip}, ${role.name}` :
-                            `${role.name}`;
+                    const dependencies = this.group.getDependencies(permission);
+                    for (const action of dependencies) {
+                        if (action.tooltip) {
+                            action.tooltip = `${action.tooltip}, "${role.name}"`;
+                        } else {
+                            action.tooltip = `Roles: "${role.name}"`;
+                        }
                     }
                 }
             }
         }
-        this.group.disable();
     }
 
     public onChangeRole() {
