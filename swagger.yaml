@@ -770,44 +770,51 @@ paths:
       summary: Returns all artifacts.
       description: Returns all artifacts.
       parameters:
+        - name: id
+          required: false
+          in: query
+          description: Artifact identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
         - name: type
-          required: true
+          required: false
           in: query
           description: Tool|Policy
+          example: policy
           schema:
             enum:
               - tool
               - policy
             type: string
         - name: policyId
-          required: true
+          required: false
           in: query
           description: Policy identifier
+          example: '000000000000000000000001'
           schema:
             type: string
         - name: toolId
-          required: true
+          required: false
           in: query
           description: Tool identifier
-          schema:
-            type: string
-        - name: id
-          required: true
-          in: query
+          example: '000000000000000000000001'
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -926,7 +933,7 @@ paths:
       description: Returns all contracts.
       parameters:
         - name: type
-          required: true
+          required: false
           in: query
           description: Contract type
           example: RETIRE
@@ -936,7 +943,7 @@ paths:
               - RETIRE
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
@@ -945,7 +952,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
           example: 20
@@ -1134,14 +1141,14 @@ paths:
         are allowed to make the request.
       parameters:
         - name: contractId
-          required: true
+          required: false
           in: query
           description: Contract identifier
           example: 0.0.1
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
@@ -1150,7 +1157,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
           example: 20
@@ -1304,9 +1311,10 @@ paths:
           schema:
             type: string
         - name: ban
-          required: true
+          required: false
           in: query
           description: Reject and ban
+          example: true
           schema:
             type: boolean
       responses:
@@ -1655,14 +1663,14 @@ paths:
       description: Returns all retire requests.
       parameters:
         - name: contractId
-          required: true
+          required: false
           in: query
           description: Contract identifier
           example: 0.0.1
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
@@ -1671,7 +1679,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
           example: 20
@@ -1711,21 +1719,21 @@ paths:
       description: Returns all retire pools.
       parameters:
         - name: contractId
-          required: true
+          required: false
           in: query
           description: Contract identifier
           example: 0.0.1
           schema:
             type: string
         - name: tokens
-          required: true
+          required: false
           in: query
           description: Tokens
           example: 0.0.1,0.0.2,0.0.3
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
@@ -1734,7 +1742,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
           example: 20
@@ -2144,7 +2152,7 @@ paths:
       description: Returns all retire vcs.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
@@ -2153,7 +2161,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
           example: 20
@@ -2385,7 +2393,7 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_5
       security:
-        - bearerAuth: []
+        - bearer: []
   /ipfs/file/{cid}/dry-run:
     get:
       operationId: IpfsApi_getFileDryRun
@@ -2464,15 +2472,18 @@ paths:
         are allowed to make the request.
       parameters:
         - name: name
-          required: true
+          required: false
           in: query
           description: Name
+          example: Search
           schema:
             type: number
         - name: existingAttributes
-          required: true
+          required: false
           in: query
           description: Existing attributes
+          example:
+            - WORKER
           schema:
             type: array
             items:
@@ -2587,17 +2598,19 @@ paths:
         allowed to make the request.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -2636,21 +2649,23 @@ paths:
         are allowed to make the request.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic id
           example: 0.0.1
@@ -4211,17 +4226,19 @@ paths:
       description: Returns all policies.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -4699,7 +4716,7 @@ paths:
               type: object
               properties:
                 date:
-                  type: date
+                  type: string
       responses:
         '200':
           description: Successful operation.
@@ -4917,32 +4934,36 @@ paths:
           schema:
             type: string
         - name: type
-          required: true
+          required: false
           in: query
           description: Document type.
+          example: VC
           schema:
             enum:
               - VC
               - VP
             type: string
         - name: includeDocument
-          required: true
+          required: false
           in: query
           description: Include document field.
+          example: true
           schema:
             type: boolean
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -5574,7 +5595,7 @@ paths:
         request.
       parameters:
         - name: versionOfTopicId
-          required: true
+          required: false
           in: query
           description: The topic ID of policy version.
           example: 0.0.00000001
@@ -5619,7 +5640,7 @@ paths:
         request.
       parameters:
         - name: versionOfTopicId
-          required: true
+          required: false
           in: query
           description: The topic ID of policy version.
           example: 0.0.00000001
@@ -5732,7 +5753,7 @@ paths:
         Standard Registry role are allowed to make the request.
       parameters:
         - name: versionOfTopicId
-          required: true
+          required: false
           in: query
           description: The topic ID of policy version.
           example: 0.0.00000001
@@ -5777,7 +5798,7 @@ paths:
         Standard Registry role are allowed to make the request.
       parameters:
         - name: versionOfTopicId
-          required: true
+          required: false
           in: query
           description: The topic ID of policy version.
           example: 0.0.00000001
@@ -5829,7 +5850,7 @@ paths:
         Standard Registry role are allowed to make the request.
       parameters:
         - name: versionOfTopicId
-          required: true
+          required: false
           in: query
           description: The topic ID of policy version.
           example: 0.0.00000001
@@ -5872,7 +5893,7 @@ paths:
         Standard Registry role are allowed to make the request.
       parameters:
         - name: versionOfTopicId
-          required: true
+          required: false
           in: query
           description: The topic ID of policy version.
           example: 0.0.00000001
@@ -6248,17 +6269,19 @@ paths:
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -6304,17 +6327,19 @@ paths:
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -6360,17 +6385,19 @@ paths:
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 20
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -8254,17 +8281,19 @@ paths:
         allowed to make the request.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -8520,14 +8549,14 @@ paths:
         Auditor role.
       parameters:
         - name: policy
-          required: true
+          required: false
           in: query
           description: Policy Id
           example: '000000000000000000000001'
           schema:
             type: string
         - name: status
-          required: true
+          required: false
           in: query
           description: Token status
           example: All
@@ -8537,7 +8566,7 @@ paths:
               - All
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
@@ -8546,7 +8575,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
           example: 20
@@ -9553,7 +9582,7 @@ paths:
         Registry role are allowed to make the request.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
@@ -9562,21 +9591,21 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
           example: 20
           schema:
             type: number
         - name: policyId
-          required: true
+          required: false
           in: query
           description: Policy Id
           example: '000000000000000000000001'
           schema:
             type: string
         - name: policyOwner
-          required: true
+          required: false
           in: query
           description: Policy Owner
           example: >-
@@ -9959,17 +9988,19 @@ paths:
       description: Returns all notifications.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -10657,7 +10688,7 @@ paths:
       parameters:
         - name: q
           required: true
-          in: path
+          in: query
           description: The question of choosing a methodology
           example: Find me large scale projects
           schema:
@@ -10733,24 +10764,26 @@ paths:
       description: Returns all roles.
       parameters:
         - name: name
-          required: true
+          required: false
           in: query
           description: Filter by role name
           example: name
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
       responses:
@@ -10935,28 +10968,30 @@ paths:
       description: Returns all users.
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
         - name: role
-          required: true
+          required: false
           in: query
           description: Filter by role
           example: '000000000000000000000001'
           schema:
             type: string
         - name: status
-          required: true
+          required: false
           in: query
           description: Filter by status
           example: Active
@@ -10966,7 +11001,7 @@ paths:
               - Inactive
             type: string
         - name: username
-          required: true
+          required: false
           in: query
           description: Filter by username
           example: username
@@ -11012,13 +11047,6 @@ paths:
           example: username
           schema:
             type: string
-      requestBody:
-        required: true
-        description: User permissions.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRolesDTO'
       responses:
         '200':
           description: User permissions.
@@ -11092,21 +11120,23 @@ paths:
           schema:
             type: string
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: >-
             The number of pages to skip before starting to collect the result
             set
+          example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: The numbers of items to return
+          example: 20
           schema:
             type: number
         - name: status
-          required: true
+          required: false
           in: query
           description: Filter by status
           example: Active
