@@ -111,63 +111,65 @@
             </div>
         </mat-tab>
         <mat-tab label="Assigned Policies">
-            <div class="filters-container">
-                <div class="filter-container">
-                    <p-dropdown 
-                        (onChange)="onFilter()" 
-                        [(ngModel)]="statusFilterValue" 
-                        [options]="statusFilterOption">
-                        <ng-template pTemplate="selectedItem">
-                            <div *ngIf="statusFilterValue">
-                                <span class="dropdown-label">Status</span> 
-                                <span class="dropdown-item">
-                                    {{ statusFilterValue }}
-                                </span>
-                            </div>
-                        </ng-template>
-                        <ng-template let-option pTemplate="item">
-                            <div class="dropdown-item">
-                                {{ option.name }}
-                            </div>
-                        </ng-template>
-                    </p-dropdown>
+            <div class="tab-container">
+                <div class="filters-container">
+                    <div class="filter-container">
+                        <p-dropdown 
+                            (onChange)="onFilter()" 
+                            [(ngModel)]="statusFilterValue" 
+                            [options]="statusFilterOption">
+                            <ng-template pTemplate="selectedItem">
+                                <div *ngIf="statusFilterValue">
+                                    <span class="dropdown-label">Status</span> 
+                                    <span class="dropdown-item">
+                                        {{ statusFilterValue }}
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template let-option pTemplate="item">
+                                <div class="dropdown-item">
+                                    {{ option.name }}
+                                </div>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
                 </div>
-            </div>
 
-            <div class="grid-container">
-                <table>
-                    <tr class="grid-header">
-                        <th class="header-cell-text cell-size-id">NAME</th>
-                        <th class="header-cell-text cell-size-id">Description</th>
-                        <th class="header-cell-text cell-size-id">Status</th>
-                        <th class="header-cell-text cell-size-id">Version</th>
-                        <th class="header-cell-text cell-size-assigned">Assigned to This User</th>
-                    </tr>
-                    <tbody>
-                        <ng-container *ngFor="let row of policyPage">
-                            <tr class="grid-row">
-                                <td class="row-cell-text cell-size-id">{{ row.name }}</td>
-                                <td class="row-cell-text cell-size-id">{{ row.description }}</td>
-                                <td class="row-cell-text cell-size-id">
-                                    <div class="chip chip-color-{{getColor(row.status, !!row.discontinuedDate)}}">
-                                        {{ getLabelStatus(row.status, !!row.discontinuedDate) }}
-                                    </div>
-                                </td>
-                                <td class="row-cell-text cell-size-id">{{ row.version }}</td>
-                                <td class="row-cell-text cell-size-assigned">
-                                    <mat-checkbox color="primary" 
-                                        [checked]="row.assigned" 
-                                        (change)="assignPolicy(row)"></mat-checkbox>
-                            </tr>
-                        </ng-container>
-                    </tbody>
-                </table>
-                <app-paginator 
-                    [pageIndex]="pageIndex" 
-                    [pageSize]="pageSize" 
-                    [length]="policyCount"
-                    (page)="onPolicyPage($event)"
-                ></app-paginator>
+                <div class="grid-container">
+                    <table>
+                        <tr class="grid-header">
+                            <th class="header-cell-text cell-size-id">NAME</th>
+                            <th class="header-cell-text cell-size-id">Description</th>
+                            <th class="header-cell-text cell-size-id">Status</th>
+                            <th class="header-cell-text cell-size-id">Version</th>
+                            <th class="header-cell-text cell-size-assigned">Assigned to This User</th>
+                        </tr>
+                        <tbody>
+                            <ng-container *ngFor="let row of policyPage">
+                                <tr class="grid-row">
+                                    <td class="row-cell-text cell-size-id">{{ row.name }}</td>
+                                    <td class="row-cell-text cell-size-id">{{ row.description }}</td>
+                                    <td class="row-cell-text cell-size-id">
+                                        <div class="chip chip-color-{{getColor(row.status, !!row.discontinuedDate)}}">
+                                            {{ getLabelStatus(row.status, !!row.discontinuedDate) }}
+                                        </div>
+                                    </td>
+                                    <td class="row-cell-text cell-size-id">{{ row.version }}</td>
+                                    <td class="row-cell-text cell-size-assigned">
+                                        <mat-checkbox color="primary" 
+                                            [checked]="row.assigned" 
+                                            (change)="assignPolicy(row)"></mat-checkbox>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                    <app-paginator 
+                        [pageIndex]="pageIndex" 
+                        [pageSize]="pageSize" 
+                        [length]="policyCount"
+                        (page)="onPolicyPage($event)"
+                    ></app-paginator>
+                </div>
             </div>
         </mat-tab>
     </mat-tab-group>
