@@ -8548,7 +8548,7 @@ paths:
         as the KYC, Freeze, and Association statuses. Not allowed for the
         Auditor role.
       parameters:
-        - name: policy
+        - name: policyId
           required: false
           in: query
           description: Policy Id
