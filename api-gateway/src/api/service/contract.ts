@@ -1519,7 +1519,12 @@ export class ContractsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: 'object',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object'
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',

@@ -263,9 +263,7 @@ export class ProjectsAPI {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(PropertiesDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })

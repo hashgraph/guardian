@@ -130,7 +130,7 @@ export class RecordApi {
         schema: {
             type: 'string',
             format: 'binary'
-        },
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
