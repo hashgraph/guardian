@@ -12,7 +12,7 @@ export function Auth(...permissions: Permissions[]) {
             RolesGuard
         ),
         ApiBearerAuth(),
-        ApiUnauthorizedResponse({ description: 'Unauthorized' }),
+        ApiUnauthorizedResponse({ description: 'Unauthorized.' }),
         ApiForbiddenResponse({ description: 'Forbidden.' })
     )
 }
