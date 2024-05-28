@@ -51,7 +51,8 @@
                     <tr class="table-row" [attr.readonly]="row.readonly">
                         <td class="cell-size-id">{{ row.name }}</td>
                         <td class="cell-size-default">
-                            <div class="toggle-container">
+                            <div class="toggle-container" 
+                                *ngIf="user.PERMISSIONS_ROLE_CREATE || user.PERMISSIONS_ROLE_UPDATE">
                                 <label class="switch">
                                     <input [ngModel]="row.default" type="checkbox" (change)="setDefault(row)">
                                     <span class="slider round"></span>
@@ -60,15 +61,21 @@
                         </td>
                         <td class="cell-size-operations">
                             <div class="flex flex-column-gap-20">
-                                <svg-icon (click)="goToUsers(row)"
+                                <svg-icon 
+                                    *ngIf="user.PERMISSIONS_ROLE_MANAGE"
+                                    (click)="goToUsers(row)"
                                     class="opacity-icon"
                                     src="/assets/images/icons/group.svg"
                                     [svgClass]="'primary-color'"></svg-icon>
-                                <svg-icon (click)="onEdit(row)"
+                                <svg-icon 
+                                    *ngIf="user.PERMISSIONS_ROLE_UPDATE"
+                                    (click)="onEdit(row)"
                                     class="opacity-icon edit-btn"
                                     src="/assets/images/icons/edit.svg"
                                     [svgClass]="'primary-color'"></svg-icon>
-                                <svg-icon (click)="onDelete(row)"
+                                <svg-icon 
+                                    *ngIf="user.PERMISSIONS_ROLE_DELETE"
+                                    (click)="onDelete(row)"
                                     class="opacity-icon delete-btn"
                                     src="/assets/images/icons/delete.svg"
                                     [svgClass]="'delete-color'"></svg-icon>
