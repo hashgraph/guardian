@@ -11,7 +11,7 @@ FROM base as interfaces
 COPY --link interfaces/package.json interfaces/tsconfig*.json yarn.lock ./
 COPY --link interfaces/src src/
 # Here and after. Leverage a cache mount to /root/.yarn to speed up subsequent builds
-RUN --mount=type=cache,target=/root/.yarn \
+RUN --mount=type=cache,target=$YARN_CACHE_FOLDER,sharing=private \
     yarn install --frozen-lockfile && yarn pack
 
 # Stage 2: Build common module
@@ -20,7 +20,7 @@ COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/inte
 COPY --link common/package.json common/tsconfig*.json yarn.lock ./
 COPY --link common/src src/
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=/root/.yarn \
+RUN --mount=type=cache,target=$YARN_CACHE_FOLDER,sharing=private \
     yarn install && yarn pack
 
 # Stage 3: Installing production dependecies
@@ -29,7 +29,7 @@ COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/inte
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link notification-service/package.json notification-service/tsconfig*.json yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=/root/.yarn,sharing=private \
+RUN --mount=type=cache,target=$YARN_CACHE_FOLDER,sharing=private \
     yarn install --prod
 
 # Stage 4: Build service
@@ -38,7 +38,7 @@ COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/inte
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
 COPY --link notification-service/src src/
-RUN --mount=type=cache,target=/root/.yarn \
+RUN --mount=type=cache,target=$YARN_CACHE_FOLDER,sharing=private \
     yarn install --frozen-lockfile && yarn run build:prod
 
 # Stage 5: Create the final image

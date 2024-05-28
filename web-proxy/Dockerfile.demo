@@ -11,7 +11,7 @@ FROM base as interfaces
 COPY --link interfaces/package.json interfaces/tsconfig*.json yarn.lock ./
 COPY --link interfaces/src src/
 # Leverage a cache mount to /root/.yarn to speed up subsequent builds
-RUN --mount=type=cache,target=/root/.yarn \
+RUN --mount=type=cache,target=$YARN_CACHE_FOLDER,sharing=private \
     yarn install --frozen-lockfile && yarn pack
 
 # Stage 2: Build frontend
