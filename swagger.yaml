@@ -11020,7 +11020,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserRolesDTO'
+                  $ref: '#/components/schemas/UserDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -11053,7 +11053,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserRolesDTO'
+                $ref: '#/components/schemas/UserDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -11085,14 +11085,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRolesDTO'
+              type: array
+              items:
+                type: string
+            examples:
+              Roles:
+                value:
+                  - '000000000000000000000001'
+                  - '000000000000000000000001'
       responses:
         '200':
           description: User permissions.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserRolesDTO'
+                $ref: '#/components/schemas/UserDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -11181,6 +11188,93 @@ paths:
       operationId: PermissionsApi_assignPolicy
       summary: Assign policy.
       description: Assign policy.
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: User Identifier
+          example: username
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Options.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignPolicyDTO'
+      responses:
+        '200':
+          description: Assigned policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_26
+      security:
+        - bearer: []
+  /permissions/users/{username}/delegate:
+    put:
+      operationId: PermissionsApi_delegateRole
+      summary: Delegate user permissions.
+      description: Delegate user permissions for the specified username.
+      parameters:
+        - name: username
+          required: true
+          in: path
+          description: User Identifier
+          example: username
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: User permissions.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+            examples:
+              Roles:
+                value:
+                  - '000000000000000000000001'
+                  - '000000000000000000000001'
+      responses:
+        '200':
+          description: User permissions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_26
+      security:
+        - bearer: []
+  /permissions/users/{username}/policies/delegate:
+    post:
+      operationId: PermissionsApi_delegatePolicy
+      summary: Delegate policy.
+      description: Delegate policy.
       parameters:
         - name: username
           required: true
@@ -11573,11 +11667,41 @@ components:
       properties:
         username:
           type: string
+          example: username
+        role:
+          type: string
+          enum: &ref_35
+            - STANDARD_REGISTRY
+            - USER
+            - AUDITOR
+          example: USER
+        permissionsGroup:
+          example: &ref_36
+            - {}
+          type: array
+          items:
+            type: string
+        permissions:
+          example: &ref_37
+            - POLICIES_POLICY_READ
+          type: array
+          items:
+            type: string
         did:
           type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        parent:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        hederaAccountId:
+          type: string
+          example: 0.0.1
       required:
         - username
-        - did
+        - role
+        - permissions
     BalanceResponseDTO:
       type: object
       properties:
@@ -12638,41 +12762,44 @@ components:
       properties:
         username:
           type: string
-          nullable: false
+          example: username
         role:
           type: string
-          nullable: false
+          enum: *ref_35
+          example: USER
         permissionsGroup:
-          nullable: false
+          example: *ref_36
           type: array
           items:
             type: string
         permissions:
-          nullable: false
+          example: *ref_37
           type: array
           items:
             type: string
         did:
           type: string
-          nullable: true
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         parent:
           type: string
-          nullable: true
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         hederaAccountId:
           type: string
-          nullable: true
+          example: 0.0.1
         confirmed:
           type: boolean
-          nullable: true
+          example: true
         failed:
           type: boolean
-          nullable: true
+          example: true
         topicId:
           type: string
-          nullable: true
+          example: 0.0.1
         parentTopicId:
           type: string
-          nullable: true
+          example: 0.0.1
         didDocument:
           type: object
           nullable: true
@@ -12682,7 +12809,6 @@ components:
       required:
         - username
         - role
-        - permissionsGroup
         - permissions
     SubjectDTO:
       type: object
@@ -13949,7 +14075,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_35
+          enum: &ref_38
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -13997,10 +14123,11 @@ components:
             - PERMISSIONS_ROLE_CREATE
             - PERMISSIONS_ROLE_UPDATE
             - PERMISSIONS_ROLE_DELETE
-            - PERMISSIONS_USER_READ
+            - PERMISSIONS_ROLE_MANAGE
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
             - ACCESS_POLICY_ALL
+            - DELEGATION_ROLE_MANAGE
           example:
             - POLICIES_POLICY_READ
       required:
@@ -14014,7 +14141,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_35
+          enum: *ref_38
           example: ANALYTIC_POLICY_READ
         category:
           type: string
@@ -14040,6 +14167,7 @@ components:
             - TOOLS
             - PERMISSIONS
             - ACCESS
+            - DELEGATION
           example: ANALYTIC
         entity:
           type: string
@@ -14109,46 +14237,6 @@ components:
         - action
         - disabled
         - dependOn
-    UserRolesDTO:
-      type: object
-      properties:
-        username:
-          type: string
-          example: username
-        did:
-          type: string
-          example: >-
-            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
-        parent:
-          type: string
-          example: >-
-            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
-        role:
-          type: string
-          enum:
-            - STANDARD_REGISTRY
-            - USER
-            - AUDITOR
-          example: USER
-        permissionsGroup:
-          type: string
-          enum:
-            - STANDARD_REGISTRY
-            - USER
-            - AUDITOR
-          example: Dynamic role name
-        permissions:
-          type: string
-          enum: *ref_35
-          example:
-            - POLICIES_POLICY_READ
-      required:
-        - username
-        - did
-        - parent
-        - role
-        - permissionsGroup
-        - permissions
     AssignPolicyDTO:
       type: object
       properties:
