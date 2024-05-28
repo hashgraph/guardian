@@ -3400,8 +3400,14 @@ export class DatabaseServer {
      * @param assigned
      * @param did
      */
-    public static async assignEntity(type: AssignedEntityType, entityId: string, assigned: boolean, did: string): Promise<AssignEntity> {
-        const item = new DataBaseHelper(AssignEntity).create({ type, entityId, assigned, did });
+    public static async assignEntity(
+        type: AssignedEntityType,
+        entityId: string,
+        assigned: boolean,
+        did: string,
+        owner: string
+    ): Promise<AssignEntity> {
+        const item = new DataBaseHelper(AssignEntity).create({ type, entityId, assigned, did, owner });
         return await new DataBaseHelper(AssignEntity).save(item);
     }
 
@@ -3434,8 +3440,17 @@ export class DatabaseServer {
      * @param entityId
      * @param did
      */
-    public static async removeAssignEntity(type: AssignedEntityType, entityId: string, did: string): Promise<boolean> {
-        const item = await (new DataBaseHelper(AssignEntity)).findOne({ type, entityId, did });
+    public static async removeAssignEntity(
+        type: AssignedEntityType,
+        entityId: string,
+        did: string,
+        owner?: string
+    ): Promise<boolean> {
+        const filters: any = { type, entityId, did };
+        if (owner) {
+            filters.owner = owner;
+        }
+        const item = await (new DataBaseHelper(AssignEntity)).findOne(filters);
         if (item) {
             await (new DataBaseHelper(AssignEntity)).remove(item);
         }

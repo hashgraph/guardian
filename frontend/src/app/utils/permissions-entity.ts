@@ -1,68 +1,21 @@
 import { FormControl } from "@angular/forms";
 import { Permissions, PermissionActions, PermissionEntities } from "@guardian/interfaces";
-import { CategoryAccess, CategoryGroup } from "./permissions-category";
-import { IPermission } from "./permissions";
 import { ActionAccess, ActionGroup } from "./permissions-action";
+import { ICategory, IEntity, IPermission, actionIndexes, entityNames } from "./permissions-interface";
 
-const entityNames = new Map<PermissionEntities, string>([
-    [PermissionEntities.ACCOUNT, 'Account'],
-    [PermissionEntities.STANDARD_REGISTRY, 'Standard Registry'],
-    [PermissionEntities.USER, 'User'],
-    [PermissionEntities.BALANCE, 'Balance'],
-    [PermissionEntities.RESTORE, 'Restore'],
-    [PermissionEntities.RECORD, 'Record'],
-    [PermissionEntities.POLICY, 'Policy'],
-    [PermissionEntities.TOOL, 'Tool'],
-    [PermissionEntities.DOCUMENT, 'Document'],
-    [PermissionEntities.SCHEMA, 'Schema'],
-    [PermissionEntities.MODULE, 'Module'],
-    [PermissionEntities.FILE, 'File'],
-    [PermissionEntities.CONFIG, 'Config'],
-    [PermissionEntities.CONTRACT, 'Contract'],
-    [PermissionEntities.WIPE_REQUEST, 'Wipe Request'],
-    [PermissionEntities.WIPE_ADMIN, 'Wipe Admin'],
-    [PermissionEntities.WIPE_MANAGER, 'Wipe Manager'],
-    [PermissionEntities.WIPER, 'Wiper'],
-    [PermissionEntities.POOL, 'Pool'],
-    [PermissionEntities.RETIRE_REQUEST, 'Retire Request'],
-    [PermissionEntities.RETIRE_ADMIN, 'Retire Admin'],
-    [PermissionEntities.PERMISSIONS, 'Permissions'],
-    [PermissionEntities.KEY, 'Key'],
-    [PermissionEntities.LOG, 'Log'],
-    [PermissionEntities.MIGRATION, 'Migration'],
-    [PermissionEntities.SETTINGS, 'Settings'],
-    [PermissionEntities.SUGGESTIONS, 'Suggestions'],
-    [PermissionEntities.TAG, 'Tag'],
-    [PermissionEntities.SYSTEM_SCHEMA, 'System Schema'],
-    [PermissionEntities.THEME, 'Theme'],
-    [PermissionEntities.TOKEN, 'Token'],
-    [PermissionEntities.TRUST_CHAIN, 'Trust Chain'],
-    [PermissionEntities.ROLE, 'Role']
-])
-
-const actionIndexes = new Map<PermissionActions, number>([
-    [PermissionActions.READ, 0],
-    [PermissionActions.CREATE, 1],
-    [PermissionActions.UPDATE, 2],
-    [PermissionActions.DELETE, 3],
-    [PermissionActions.REVIEW, 4],
-    [PermissionActions.EXECUTE, 5],
-    [PermissionActions.MANAGE, 6],
-
-    [PermissionActions.ALL, -1],
-    [PermissionActions.AUDIT, -1],
-])
-
-export class EntityAccess {
-    public readonly parent: CategoryAccess;
+export class EntityAccess implements IEntity {
+    public readonly parent: ICategory;
     public readonly id: PermissionEntities;
     public readonly name: string;
     public readonly type: string;
     public readonly actions: ActionAccess[];
     public readonly map = new Map<PermissionActions, ActionGroup>();
     public readonly control: FormControl;
+    public readonly canAll = false;
 
-    constructor(permission: IPermission, parent: CategoryAccess) {
+    public all: boolean;
+
+    constructor(permission: IPermission, parent: ICategory) {
         this.parent = parent;
         this.id = permission.entity;
         this.name = entityNames.get(permission.entity) || '';
@@ -89,6 +42,16 @@ export class EntityAccess {
                 this.map.get(PermissionActions.ALL)?.setValue(true);
             }
         });
+    }
+
+    public selectAll(): void {
+        throw new Error("Method not implemented.");
+    }
+    public checkAll(): void {
+        throw new Error("Method not implemented.");
+    }
+    public checkCount(): void {
+        throw new Error("Method not implemented.");
     }
 
     public addAction(permission: IPermission): ActionGroup {
@@ -134,17 +97,81 @@ export class EntityAccess {
     }
 }
 
-export class EntityGroup {
-    public readonly parent: CategoryGroup;
+export class EntityDelegate implements IEntity {
+    public readonly parent: ICategory;
     public readonly id: PermissionEntities;
     public readonly name: string;
     public readonly type: string;
     public readonly actions: ActionGroup[];
     public readonly map = new Map<PermissionActions, ActionGroup>();
+    public readonly canAll = false;
 
     public all: boolean = false;
 
-    constructor(permission: IPermission, parent: CategoryGroup) {
+    constructor(permission: IPermission, parent: ICategory) {
+        this.parent = parent;
+        this.id = permission.entity;
+        this.name = entityNames.get(permission.entity) || '';
+        this.type = 'checkbox';
+        this.actions = new Array(1);
+    }
+
+    public get control(): FormControl {
+        return null as any;
+    }
+
+    public addAction(permission: IPermission): ActionGroup {
+        const action = new ActionGroup(permission, this);
+        this.actions[0] = action;
+        this.map.set(permission.action, action);
+        return action;
+    }
+
+    public selectAll(): void { }
+
+    public checkAll(): void { }
+
+    public checkCount(): void {
+        this.parent.checkCount();
+    }
+
+    public disable(): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.disable();
+            }
+        }
+    }
+
+    public clearValue(): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.clearValue();
+            }
+        }
+    }
+
+    public addValue(permissions: Permissions[]): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
+        }
+    }
+}
+
+export class EntityGroup implements IEntity {
+    public readonly parent: ICategory;
+    public readonly id: PermissionEntities;
+    public readonly name: string;
+    public readonly type: string;
+    public readonly actions: ActionGroup[];
+    public readonly map = new Map<PermissionActions, ActionGroup>();
+    public readonly canAll = true;
+
+    public all: boolean = false;
+
+    constructor(permission: IPermission, parent: ICategory) {
         this.parent = parent;
         this.id = permission.entity;
         this.name = entityNames.get(permission.entity) || '';

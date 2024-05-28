@@ -1,4 +1,3 @@
-import { IAuthUser } from '@guardian/common';
 import { IOwner, ISchema, SchemaCategory } from '@guardian/interfaces';
 
 /**

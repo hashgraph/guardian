@@ -1,66 +1,59 @@
 import { FormControl, FormGroup } from "@angular/forms";
-import { Permissions, PermissionActions, PermissionCategories, PermissionEntities } from "@guardian/interfaces";
-import { CategoryAccess, CategoryDetails, CategoryGroup } from "./permissions-category";
+import { Permissions, PermissionCategories } from "@guardian/interfaces";
+import { CategoryAccess, CategoryDelegate, CategoryDetails, CategoryGroup } from "./permissions-category";
 import { ActionGroup } from "./permissions-action";
-
-export interface IPermission {
-    name: Permissions;
-    category: PermissionCategories;
-    entity: PermissionEntities;
-    action: PermissionActions;
-    disabled: boolean;
-    default: boolean;
-    dependOn?: Permissions[];
-}
+import { IAction, ICategory, IPermission } from "./permissions-interface";
 
 export class PermissionsGroup {
     public readonly form = new FormGroup({});
     public readonly controls = new Map<Permissions, FormControl>();
-    public readonly actions = new Map<Permissions, ActionGroup>();
-    public readonly map = new Map<PermissionCategories, CategoryGroup>();
-    public readonly categories: CategoryGroup[] = [];
+    public readonly actions = new Map<Permissions, IAction>();
+    public readonly map = new Map<PermissionCategories, ICategory>();
+    public readonly categories: ICategory[] = [];
 
-    public get first(): CategoryGroup {
+    public get first(): ICategory {
         return this.categories[0];
     }
 
-    public get last(): CategoryGroup {
+    public get last(): ICategory {
         return this.categories[this.categories.length - 1];
     }
 
-    public next(current: CategoryGroup | null): CategoryGroup {
+    public next(current: ICategory | null): ICategory {
         const index = this.categories.findIndex((e) => e === current);
         return this.categories[index + 1];
     }
 
-    public addCategory(permission: IPermission): CategoryGroup {
+    public addCategory(permission: IPermission): ICategory {
         if (this.map.has(permission.category)) {
             return this.map.get(permission.category) as any;
         } else {
-            const category = new CategoryGroup(permission);
-            this.map.set(permission.category, category);
-            this.categories.push(category);
-            return category;
+            switch (permission.category) {
+                case PermissionCategories.ACCESS: {
+                    const category = new CategoryAccess();
+                    this.map.set(permission.category, category);
+                    this.categories.push(category);
+                    return category;
+                }
+                case PermissionCategories.DELEGATION: {
+                    const category = new CategoryDelegate();
+                    this.map.set(permission.category, category);
+                    this.categories.push(category);
+                    return category;
+                }
+                default: {
+                    const category = new CategoryGroup(permission);
+                    this.map.set(permission.category, category);
+                    this.categories.push(category);
+                    return category;
+                }
+            }
         }
     }
 
     public addRole(): void {
         const category = new CategoryDetails('Role Details')
         this.categories.unshift(category as any);
-    }
-
-    public addAccess(permissions: IPermission[]): void {
-        const category = new CategoryAccess();
-        this.categories.push(category as any);
-        for (const permission of permissions) {
-            if (permission.category === PermissionCategories.ACCESS) {
-                const entity = category.addEntity(permission);
-                const action = entity.addAction(permission);
-                this.actions.set(permission.name, action);
-                this.controls.set(permission.name, action.control);
-                this.form.addControl(permission.name, action.control);
-            }
-        }
     }
 
     public disable(): void {
@@ -110,14 +103,14 @@ export class PermissionsGroup {
         }
     }
 
-    public getAction(permissions: Permissions): ActionGroup | undefined {
+    public getAction(permissions: Permissions): IAction | undefined {
         return this.actions.get(permissions);
     }
 
-    public getDependencies(permissions: Permissions): ActionGroup[] {
-        const result:ActionGroup[] = [];
+    public getDependencies(permissions: Permissions): IAction[] {
+        const result: IAction[] = [];
         for (const action of this.actions.values()) {
-            if(action.isDepend(permissions)) {
+            if (action.isDepend(permissions)) {
                 result.push(action);
             }
         }
@@ -127,21 +120,19 @@ export class PermissionsGroup {
     public static from(permissions: IPermission[]): PermissionsGroup {
         const group = new PermissionsGroup();
         for (const permission of permissions) {
-            if (permission.category !== PermissionCategories.ACCESS) {
-                const category = group.addCategory(permission);
-                const entity = category.addEntity(permission);
-                const action = entity.addAction(permission);
-                group.actions.set(permission.name, action);
-                group.controls.set(permission.name, action.control);
-                group.form.addControl(permission.name, action.control);
-            }
+            const category = group.addCategory(permission);
+            const entity = category.addEntity(permission);
+            const action = entity.addAction(permission);
+            group.actions.set(permission.name, action);
+            group.controls.set(permission.name, action.control);
+            group.form.addControl(permission.name, action.control);
         }
         for (const permission of permissions) {
             const action = group.actions.get(permission.name);
-            if(permission.dependOn) {
+            if (permission.dependOn) {
                 for (const sub of permission.dependOn) {
                     const subAction = group.actions.get(sub);
-                    if(action && subAction) {
+                    if (action && subAction) {
                         subAction.addRef(action);
                     }
                 }

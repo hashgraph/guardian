@@ -21,10 +21,16 @@
             <div class="permissions-content">
                 <div class="selected-roles">
                     <div class="role-header">Selected Roles</div>
-                    <div *ngIf="permissionsGroup?.length" class="roles-content">
-                        <div *ngFor="let roleId of permissionsGroup" class="role-content">
-                            <div class="role-name">{{getRoleName(roleId)}}</div>
-                            <div class="role-icon" (click)="onDeleteRole(roleId)">
+                    <div *ngIf="roleGroups?.length" class="roles-content">
+                        <div *ngFor="let group of roleGroups" 
+                                class="role-content"
+                                matTooltipPosition="above"
+                                matTooltip="Assigned by another user"
+                                [matTooltipDisabled]="group.own"
+                                [attr.own]="group.own"
+                                [attr.editable]="group.canEdit">
+                            <div class="role-name">{{group.roleName}}</div>
+                            <div class="role-icon" (click)="onDeleteRole(group.roleId)">
                                 <svg-icon class="svg-icon-16" 
                                     src="/assets/images/icons/16/circle-close.svg" 
                                     svgClass="close-icon-color"></svg-icon>
@@ -38,7 +44,7 @@
                             [options]="roles"
                             optionLabel="name"
                             optionValue="id"
-                            [(ngModel)]="permissionsGroup"
+                            [(ngModel)]="roleIds"
                             emptyMessage="Search by Role name"
                             placeholder="Search by Role name"
                             appendTo="body"
@@ -62,12 +68,14 @@
                         </div>
                         <div class="category-actions">
                             <div class="category-actions-header">ACTIONS</div>
-                            <ng-container *ngIf="category.type ==='Access'">
-                                <div *ngFor="let action of category.actions; let i=index" class="permission big perm-{{i}}">{{action}}</div>
-                            </ng-container>
-                            <ng-container *ngIf="category.type ==='Permissions'">
-                                <div *ngFor="let action of category.actions; let i=index" class="permission perm-{{i}}">{{action}}</div>
-                            </ng-container>
+                            <div class="permissions">
+                                <ng-container *ngIf="category.type ==='Access'">
+                                    <div *ngFor="let action of category.actions; let i=index" class="permission big perm-{{i}}">{{action}}</div>
+                                </ng-container>
+                                <ng-container *ngIf="category.type ==='Permissions'">
+                                    <div *ngFor="let action of category.actions; let i=index" class="permission perm-{{i}}">{{action}}</div>
+                                </ng-container>
+                            </div>
                         </div>
                         <div class="category-body">
                             <div *ngFor="let entity of category.entities" class="entity">
@@ -158,6 +166,7 @@
                                     <td class="row-cell-text cell-size-assigned">
                                         <mat-checkbox color="primary" 
                                             [checked]="row.assigned" 
+                                            [disabled]="row.assigned && row.assignedBy !== user.did && !user.PERMISSIONS_ROLE_MANAGE" 
                                             (change)="assignPolicy(row)"></mat-checkbox>
                                 </tr>
                             </ng-container>

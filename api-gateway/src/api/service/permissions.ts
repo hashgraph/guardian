@@ -1,10 +1,10 @@
 import { IAuthUser } from '@guardian/common';
-import { AssignedEntityType, Permissions } from '@guardian/interfaces';
+import { AssignedEntityType, Permissions, UserPermissions } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserRolesDTO, pageHeader } from '#middlewares';
+import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, InternalException, PolicyEngine, Users } from '#helpers';
+import { Guardians, InternalException, Users } from '#helpers';
 import { WebSocketsService } from './websockets.js';
 
 @Controller('permissions')
@@ -15,7 +15,8 @@ export class PermissionsApi {
      */
     @Get('/')
     @Auth(
-        Permissions.PERMISSIONS_ROLE_READ
+        Permissions.PERMISSIONS_ROLE_READ,
+        Permissions.DELEGATION_ROLE_MANAGE
     )
     @ApiOperation({
         summary: 'Return a list of all permissions.',
@@ -45,7 +46,8 @@ export class PermissionsApi {
      */
     @Get('/roles/')
     @Auth(
-        Permissions.PERMISSIONS_ROLE_READ
+        Permissions.PERMISSIONS_ROLE_READ,
+        Permissions.DELEGATION_ROLE_MANAGE
     )
     @ApiOperation({
         summary: 'Return a list of all roles.',
@@ -92,11 +94,12 @@ export class PermissionsApi {
         @Query('pageSize') pageSize?: number
     ): Promise<RoleDTO[]> {
         try {
+            const owner = user.parent || user.did;
             const options: any = {
-                filters: {
-                    name
-                },
-                owner: user.did,
+                name,
+                owner,
+                user: user.did,
+                onlyOwn: !UserPermissions.has(user, Permissions.PERMISSIONS_ROLE_READ),
                 pageIndex,
                 pageSize
             };
@@ -251,7 +254,7 @@ export class PermissionsApi {
     }
 
     /**
-     * Create role
+     * Set default role
      */
     @Post('/roles/default')
     @Auth(
@@ -309,7 +312,8 @@ export class PermissionsApi {
      */
     @Get('/users/')
     @Auth(
-        Permissions.PERMISSIONS_USER_READ
+        Permissions.PERMISSIONS_ROLE_MANAGE,
+        Permissions.DELEGATION_ROLE_MANAGE
     )
     @ApiOperation({
         summary: 'Return a list of all users.',
@@ -355,13 +359,13 @@ export class PermissionsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: UserRolesDTO,
+        type: UserDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(UserRolesDTO, InternalServerErrorDTO)
+    @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getUsers(
         @AuthUser() user: IAuthUser,
@@ -371,15 +375,16 @@ export class PermissionsApi {
         @Query('role') role?: string,
         @Query('status') status?: string,
         @Query('username') username?: string
-    ): Promise<UserRolesDTO[]> {
+    ): Promise<UserDTO[]> {
         try {
             const options: any = {
                 filters: {
                     role,
                     status,
-                    username
+                    username,
+                    did: { $ne: user.did }
                 },
-                parent: user.did,
+                parent: user.parent ? user.parent : user.did,
                 pageIndex,
                 pageSize
             };
@@ -399,7 +404,8 @@ export class PermissionsApi {
      */
     @Get('/users/:username')
     @Auth(
-        Permissions.PERMISSIONS_ROLE_UPDATE,
+        Permissions.PERMISSIONS_ROLE_MANAGE,
+        Permissions.DELEGATION_ROLE_MANAGE
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -415,22 +421,23 @@ export class PermissionsApi {
     })
     @ApiOkResponse({
         description: 'User permissions.',
-        type: UserRolesDTO
+        type: UserDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(UserRolesDTO, InternalServerErrorDTO)
+    @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getUser(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string
-    ): Promise<UserRolesDTO> {
+    ): Promise<UserDTO> {
         try {
+            const owner = user.parent || user.did;
             const users = new Users();
             const row = await users.getUser(username);
-            if (!row || row.parent !== user.did) {
+            if (!row || row.parent !== owner || row.did === user.did) {
                 throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND);
             }
             return row as any;
@@ -444,7 +451,7 @@ export class PermissionsApi {
      */
     @Put('/users/:username')
     @Auth(
-        Permissions.PERMISSIONS_ROLE_UPDATE,
+        Permissions.PERMISSIONS_ROLE_MANAGE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -460,23 +467,29 @@ export class PermissionsApi {
     })
     @ApiBody({
         description: 'User permissions.',
-        type: UserRolesDTO,
+        type: String,
+        isArray: true,
+        examples: {
+            Roles: {
+                value: [Examples.DB_ID, Examples.DB_ID]
+            }
+        }
     })
     @ApiOkResponse({
         description: 'User permissions.',
-        type: UserRolesDTO
+        type: UserDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(UserRolesDTO, InternalServerErrorDTO)
+    @ApiExtraModels(UserDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async updateUser(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string,
-        @Body() body: UserRolesDTO
-    ): Promise<UserRolesDTO> {
+        @Body() body: string[]
+    ): Promise<UserDTO> {
         let row: any;
         const users = new Users();
         try {
@@ -484,7 +497,7 @@ export class PermissionsApi {
         } catch (error) {
             await InternalException(error);
         }
-        if (!row || row.parent !== user.did) {
+        if (!row || row.parent !== user.did || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
@@ -502,7 +515,8 @@ export class PermissionsApi {
      */
     @Get('/users/:username/policies')
     @Auth(
-        Permissions.PERMISSIONS_ROLE_READ
+        Permissions.PERMISSIONS_ROLE_MANAGE,
+        Permissions.DELEGATION_ROLE_MANAGE
     )
     @ApiOperation({
         summary: 'Return a list of all roles.',
@@ -557,30 +571,27 @@ export class PermissionsApi {
         @Query('pageSize') pageSize?: number,
         @Query('status') status?: string
     ): Promise<PolicyDTO[]> {
-        let row: any;
-        const users = new Users();
+        const owner = user.parent || user.did;
+        let target: any;
         try {
-            row = await users.getUser(username);
+            target = await (new Users()).getUser(username);
         } catch (error) {
             await InternalException(error);
         }
-        if (!row || row.parent !== user.did) {
+        if (!target || target.parent !== owner) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
             const options: any = {
-                filters: {
-                    owner: user.did
-                },
-                userDid: row.did,
+                owner,
+                user: user.did,
+                target: target.did,
+                onlyOwn: !UserPermissions.has(user, Permissions.PERMISSIONS_ROLE_READ),
                 pageIndex,
-                pageSize
+                pageSize,
+                status
             };
-            if (status && status !== 'ALL') {
-                options.filters.status = status;
-            }
-            const engineService = new PolicyEngine();
-            const { policies, count } = await engineService.getAssignedPolicies(options);
+            const { policies, count } = await (new Guardians()).getAssignedPolicies(options);
             return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
             await InternalException(error);
@@ -592,7 +603,7 @@ export class PermissionsApi {
      */
     @Post('/users/:username/policies/assign')
     @Auth(
-        Permissions.PERMISSIONS_ROLE_CREATE
+        Permissions.PERMISSIONS_ROLE_MANAGE
     )
     @ApiOperation({
         summary: 'Assign policy.',
@@ -632,12 +643,135 @@ export class PermissionsApi {
         } catch (error) {
             await InternalException(error);
         }
-        if (!row || row.parent !== user.did) {
+        if (!row || row.parent !== user.did || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
             const { policyId, assign } = body;
             return await (new Guardians()).assignEntity(
+                AssignedEntityType.Policy,
+                policyId,
+                assign,
+                row.did,
+                user.did
+            );
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Delegate role
+     */
+    @Put('/users/:username/delegate')
+    @Auth(Permissions.DELEGATION_ROLE_MANAGE)
+    @ApiOperation({
+        summary: 'Delegate user permissions.',
+        description: 'Delegate user permissions for the specified username.'
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'User Identifier',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: 'User permissions.',
+        type: String,
+        isArray: true,
+        examples: {
+            Roles: {
+                value: [Examples.DB_ID, Examples.DB_ID]
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'User permissions.',
+        type: UserDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(UserDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async delegateRole(
+        @AuthUser() user: IAuthUser,
+        @Param('username') username: string,
+        @Body() body: string[]
+    ): Promise<UserDTO> {
+        let row: any;
+        const users = new Users();
+        try {
+            row = await users.getUser(username);
+        } catch (error) {
+            await InternalException(error);
+        }
+        if (!row || row.parent !== user.parent || row.did === user.did) {
+            throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
+        }
+        try {
+            const result = await users.delegateUserRole(username, body, user.did);
+            const wsService = new WebSocketsService();
+            wsService.updatePermissions(result);
+            return result;
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Delegate policy
+     */
+    @Post('/users/:username/policies/delegate')
+    @Auth(
+        Permissions.DELEGATION_ROLE_MANAGE
+    )
+    @ApiOperation({
+        summary: 'Delegate policy.',
+        description: 'Delegate policy.',
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'User Identifier',
+        required: true,
+        example: 'username'
+    })
+    @ApiBody({
+        description: 'Options.',
+        required: true,
+        type: AssignPolicyDTO,
+    })
+    @ApiOkResponse({
+        description: 'Assigned policy.',
+        type: PolicyDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async delegatePolicy(
+        @AuthUser() user: IAuthUser,
+        @Param('username') username: string,
+        @Body() body: AssignPolicyDTO
+    ): Promise<PolicyDTO> {
+        let row: any;
+        const users = new Users();
+        try {
+            row = await users.getUser(username);
+        } catch (error) {
+            await InternalException(error);
+        }
+        if (!row || row.parent !== user.parent || row.did === user.did) {
+            throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
+        }
+        try {
+            const { policyId, assign } = body;
+            return await (new Guardians()).delegateEntity(
                 AssignedEntityType.Policy,
                 policyId,
                 assign,

@@ -22,7 +22,8 @@ export enum PermissionCategories {
     AUDIT = 'AUDIT',
     TOOLS = 'TOOLS',
     PERMISSIONS = 'PERMISSIONS',
-    ACCESS = 'ACCESS'
+    ACCESS = 'ACCESS',
+    DELEGATION = 'DELEGATION'
 }
 
 /**
@@ -205,11 +206,13 @@ export enum Permissions {
     PERMISSIONS_ROLE_CREATE = 'PERMISSIONS_ROLE_CREATE',
     PERMISSIONS_ROLE_UPDATE = 'PERMISSIONS_ROLE_UPDATE',
     PERMISSIONS_ROLE_DELETE = 'PERMISSIONS_ROLE_DELETE',
-    PERMISSIONS_USER_READ = 'PERMISSIONS_USER_READ',
+    PERMISSIONS_ROLE_MANAGE = 'PERMISSIONS_ROLE_MANAGE',
     //ACCESS
     ACCESS_POLICY_ASSIGNED = 'ACCESS_POLICY_ASSIGNED',
     ACCESS_POLICY_PUBLISHED = 'ACCESS_POLICY_PUBLISHED',
     ACCESS_POLICY_ALL = 'ACCESS_POLICY_ALL',
+    //DELEGATION
+    DELEGATION_ROLE_MANAGE = 'DELEGATION_ROLE_MANAGE',
 }
 
 /**
@@ -1080,28 +1083,40 @@ export const PermissionsArray: {
             category: PermissionCategories.PERMISSIONS,
             entity: PermissionEntities.ROLE,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         {
             name: Permissions.PERMISSIONS_ROLE_UPDATE,
             category: PermissionCategories.PERMISSIONS,
             entity: PermissionEntities.ROLE,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         {
             name: Permissions.PERMISSIONS_ROLE_DELETE,
             category: PermissionCategories.PERMISSIONS,
             entity: PermissionEntities.ROLE,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         {
-            name: Permissions.PERMISSIONS_USER_READ,
+            name: Permissions.PERMISSIONS_ROLE_MANAGE,
             category: PermissionCategories.PERMISSIONS,
-            entity: PermissionEntities.USER,
-            action: PermissionActions.READ,
-            disabled: false
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         //ACCESS
         {
@@ -1123,6 +1138,13 @@ export const PermissionsArray: {
             category: PermissionCategories.ACCESS,
             entity: PermissionEntities.POLICY,
             action: PermissionActions.ALL,
+            disabled: false
+        },
+        {
+            name: Permissions.DELEGATION_ROLE_MANAGE,
+            category: PermissionCategories.DELEGATION,
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.MANAGE,
             disabled: false
         }
     ];
@@ -1225,8 +1247,8 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.PERMISSIONS_ROLE_CREATE,
     Permissions.PERMISSIONS_ROLE_UPDATE,
     Permissions.PERMISSIONS_ROLE_DELETE,
-    Permissions.PERMISSIONS_USER_READ,
-    Permissions.ACCESS_POLICY_ALL,
+    Permissions.PERMISSIONS_ROLE_MANAGE,
+    Permissions.ACCESS_POLICY_ALL
 ];
 
 export const AuditDefaultPermission: Permissions[] = [

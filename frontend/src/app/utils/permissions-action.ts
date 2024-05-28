@@ -1,22 +1,52 @@
 import { FormControl } from "@angular/forms";
 import { Permissions, PermissionActions } from "@guardian/interfaces";
-import { IPermission } from "./permissions";
-import { EntityAccess, EntityGroup } from "./permissions-entity";
+import { IAction, IEntity, IPermission } from "./permissions-interface";
 
-export class ActionAccess {
-    public readonly parent: EntityAccess;
+export class ActionAccess implements IAction {
+    public readonly parent: IEntity;
     public readonly id: string;
+    public readonly permission: Permissions;
+    public readonly control: FormControl;
+    public readonly refs: ActionGroup[];
     public tooltip: string;
 
-    constructor(action: string, parent: EntityAccess) {
+    constructor(action: string, parent: IEntity) {
         this.parent = parent;
         this.id = action;
         this.tooltip = '';
     }
+
+    public setValue(value: boolean): void {
+        throw new Error("Method not implemented.");
+    }
+
+    public getValue(): boolean {
+        throw new Error("Method not implemented.");
+    }
+
+    public disable(): void {
+        throw new Error("Method not implemented.");
+    }
+
+    public clearValue(): void {
+        throw new Error("Method not implemented.");
+    }
+
+    public addValue(permissions: Permissions[]): void {
+        throw new Error("Method not implemented.");
+    }
+
+    public addRef(action: IAction): void {
+        throw new Error("Method not implemented.");
+    }
+
+    public isDepend(permissions: Permissions): boolean {
+        throw new Error("Method not implemented.");
+    }
 }
 
-export class ActionGroup {
-    public readonly parent: EntityGroup;
+export class ActionGroup implements IAction {
+    public readonly parent: IEntity;
     public readonly id: PermissionActions;
     public readonly permission: Permissions;
     public readonly control: FormControl;
@@ -24,7 +54,7 @@ export class ActionGroup {
     public tooltip: string;
     private _disable: boolean;
 
-    constructor(permission: IPermission, parent: EntityGroup) {
+    constructor(permission: IPermission, parent: IEntity) {
         this.parent = parent;
         this.id = permission.action;
         this.permission = permission.name;
@@ -64,7 +94,7 @@ export class ActionGroup {
         });
     }
 
-    public _update() {
+    private _update() {
         let dependent = false;
         for (const ref of this.refs) {
             dependent = dependent || ref.getValue();

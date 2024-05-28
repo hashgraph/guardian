@@ -558,7 +558,7 @@ export async function createSchema(
  * @param notifier Notifier
  */
 export async function deleteSchema(
-    schemaId: any, 
+    schemaId: any,
     owner: IOwner,
     notifier: INotifier
 ) {

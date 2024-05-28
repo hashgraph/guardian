@@ -1600,7 +1600,7 @@ export class SchemaApi {
     async getSystemSchema(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
-        @Param('username') owner: string,
+        @Param('username') username: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
     ): Promise<SchemaDTO[]> {

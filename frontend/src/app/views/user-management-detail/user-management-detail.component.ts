@@ -18,7 +18,14 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     public roleMap = new Map<string, any>();
     public target: any | null = null;
     public username: string = '';
-    public permissionsGroup: string[];
+    public roleIds: string[];
+    public roleGroups: {
+        roleId: string,
+        roleName: string,
+        owner: string,
+        own: boolean,
+        canEdit: boolean
+    }[];
     public group: PermissionsGroup;
     public permissions: any[] = [];
 
@@ -97,7 +104,6 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
                 .reduce((map, role) => map.set(role.id, role), new Map<string, any>());
             this.permissions = permissions || [];
             this.group = PermissionsGroup.from(this.permissions);
-            this.group.addAccess(this.permissions);
             this.group.disable();
             this.loadData();
         }, (e) => {
@@ -117,10 +123,22 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.permissionsService.getUser(this.username).subscribe((user) => {
             this.target = user;
+            this.roleIds = [];
+            this.roleGroups = [];
             if (this.target.permissionsGroup) {
-                this.permissionsGroup = [...this.target.permissionsGroup];
-            } else {
-                this.permissionsGroup = []
+                for (const group of this.target.permissionsGroup) {
+                    const item = {
+                        roleId: group.roleId,
+                        roleName: group.roleName,
+                        owner: group.owner,
+                        canEdit: group.owner === this.user.did || this.user.PERMISSIONS_ROLE_MANAGE,
+                        own: group.owner === this.user.did
+                    }
+                    this.roleGroups.push(item);
+                    if (item.canEdit) {
+                        this.roleIds.push(item.roleId);
+                    }
+                }
             }
             this.updateControls();
             setTimeout(() => {
@@ -158,8 +176,8 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     private updateControls() {
         this.group.clearValue();
-        for (const id of this.permissionsGroup) {
-            const role = this.roleMap.get(id);
+        for (const group of this.roleGroups) {
+            const role = this.roleMap.get(group.roleId);
             if (role && role.permissions) {
                 this.group.addValue(role.permissions);
                 for (const permission of role.permissions) {
@@ -176,13 +194,33 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         }
     }
 
+    private changed(): boolean {
+        if (!this.roleIds || !this.target) {
+            return false;
+        }
+        if (!this.target.permissionsGroup) {
+            return true;
+        }
+        if (this.roleIds.length !== this.target.permissionsGroup.length) {
+            return true;
+        }
+        const list = new Set(this.roleIds);
+        for (const group of this.target.permissionsGroup) {
+            if (!list.has(group.roleId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public onChangeRole() {
         this.updateControls();
         this.onSave();
     }
 
     public onDeleteRole(roleId: string) {
-        this.permissionsGroup = this.permissionsGroup.filter((id) => id !== roleId);
+        this.roleIds = this.roleIds.filter((id) => id !== roleId);
+        this.roleGroups = this.roleGroups.filter((group) => group.roleId !== roleId);
         this.updateControls();
         this.onSave();
     }
@@ -196,14 +234,32 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     public onSave() {
-        this.target.permissionsGroup = this.permissionsGroup;
-        this.loading = true;
-        this.permissionsService.updateUser(this.username, this.target).subscribe((response) => {
-            this.loadData();
-        }, (e) => {
-            this.loading = false;
-            console.error(e);
-        });
+        if (!this.changed()) {
+            return;
+        }
+        if (this.user.PERMISSIONS_ROLE_MANAGE) {
+            this.loading = true;
+            this.permissionsService.updateUser(
+                this.username,
+                this.roleIds
+            ).subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+                console.error(e);
+            });
+        } else if (this.user.DELEGATION_ROLE_MANAGE) {
+            this.loading = true;
+            this.permissionsService.delegateRole(
+                this.username,
+                this.roleIds
+            ).subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+                console.error(e);
+            });
+        }
     }
 
     public onChange(event: any) {
@@ -222,16 +278,29 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     public assignPolicy(policy: any) {
-        this.loading = true;
-        this.permissionsService.assignPolicy(
-            this.username,
-            policy.id,
-            !policy.assigned
-        ).subscribe((response) => {
-            this.loadData();
-        }, (e) => {
-            this.loadError(e);
-        });
+        if (this.user.PERMISSIONS_ROLE_MANAGE) {
+            this.loading = true;
+            this.permissionsService.assignPolicy(
+                this.username,
+                policy.id,
+                !policy.assigned
+            ).subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loadError(e);
+            });
+        } else if (this.user.DELEGATION_ROLE_MANAGE) {
+            this.loading = true;
+            this.permissionsService.delegatePolicy(
+                this.username,
+                policy.id,
+                !policy.assigned
+            ).subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loadError(e);
+            });
+        }
     }
 
     public getColor(status: string, expired: boolean = false) {

@@ -1,5 +1,5 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner } from '#helpers';
-import { IOwner, Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
+import { IOwner, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';

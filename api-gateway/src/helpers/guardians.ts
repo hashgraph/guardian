@@ -1,5 +1,31 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
-import { ApplicationStates, AssignedEntityType, CommonSettings, ContractAPI, ContractType, GenerateUUIDv4, IArtifact, IChainItem, IContract, IDidObject, IOwner, IRetirePool, IRetireRequest, ISchema, IToken, ITokenInfo, IUser, IVCDocument, IVPDocument, MessageAPI, PolicyToolMetadata, RetireTokenPool, RetireTokenRequest, SchemaNode, SuggestionsOrderPriority } from '@guardian/interfaces';
+import {
+    ApplicationStates,
+    AssignedEntityType,
+    CommonSettings,
+    ContractAPI,
+    ContractType,
+    GenerateUUIDv4,
+    IArtifact,
+    IChainItem,
+    IContract,
+    IDidObject,
+    IOwner,
+    IRetirePool,
+    IRetireRequest,
+    ISchema,
+    IToken,
+    ITokenInfo,
+    IUser,
+    IVCDocument,
+    IVPDocument,
+    MessageAPI,
+    PolicyToolMetadata,
+    RetireTokenPool,
+    RetireTokenRequest,
+    SchemaNode,
+    SuggestionsOrderPriority
+} from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
 import { ModuleDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO } from '#middlewares';
@@ -2579,6 +2605,23 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Assign entity
+     * @param type
+     * @param entityId
+     * @param assign
+     * @param did
+     */
+    public async delegateEntity(
+        type: AssignedEntityType,
+        entityId: string,
+        assign: boolean,
+        did: string,
+        owner: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.DELEGATE_ENTITY, { type, entityId, assign, did, owner });
+    }
+
+    /**
      * Check entity
      * @param type
      * @param entityId
@@ -2604,5 +2647,13 @@ export class Guardians extends NatsService {
         type?: AssignedEntityType
     ): Promise<any[]> {
         return await this.sendMessage(MessageAPI.ASSIGNED_ENTITIES, { type, did });
+    }
+
+    /**
+     * Get policy
+     * @param filters
+     */
+    public async getAssignedPolicies(options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ASSIGNED_POLICIES, options);
     }
 }

@@ -159,7 +159,7 @@ export class AggregatedDTOItem {
 
 export type AggregatedDTO = AggregatedDTOItem[]
 
-export class UserDTO {
+class UserDTO {
     @ApiProperty()
     username: string;
 

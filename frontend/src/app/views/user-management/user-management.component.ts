@@ -89,9 +89,8 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
             for (const user of this.page) {
                 const permissionsGroup = [];
                 if (Array.isArray(user.permissionsGroup)) {
-                    for (const roleId of user.permissionsGroup) {
-                        const name = this.roleMap.get(roleId) || roleId;
-                        permissionsGroup.push(name);
+                    for (const group of user.permissionsGroup) {
+                        permissionsGroup.push(group.roleName || group.roleId);
                     }
                 }
                 user.__permissionsGroup = permissionsGroup.join(', ');
@@ -120,16 +119,6 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
             this.pageSize = event.pageSize;
         }
         this.loadData();
-    }
-
-    public onChangeRole(row: any) {
-        this.loading = true;
-        this.permissionsService.updateUser(row.username, row).subscribe((response) => {
-            this.loadData();
-        }, (e) => {
-            this.loading = false;
-            console.error(e);
-        });
     }
 
     public onFilter() {

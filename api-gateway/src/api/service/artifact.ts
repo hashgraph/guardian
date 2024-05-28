@@ -1,4 +1,4 @@
-import { Permissions, UserRole } from '@guardian/interfaces';
+import { Permissions } from '@guardian/interfaces';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';

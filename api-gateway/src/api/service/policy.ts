@@ -1,6 +1,6 @@
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, IOwner, Permissions, PolicyType, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors, } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CACHE } from '../../constants/index.js';

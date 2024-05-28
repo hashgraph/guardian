@@ -234,10 +234,36 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
     }
 
     if (
+        user.DELEGATION_ROLE_MANAGE ||
+        user.PERMISSIONS_ROLE_MANAGE ||
+        user.PERMISSIONS_ROLE_CREATE ||
+        user.PERMISSIONS_ROLE_UPDATE ||
+        user.PERMISSIONS_ROLE_DELETE ||
         user.SETTINGS_SETTINGS_READ ||
         user.LOG_LOG_READ
     ) {
         const childItems: any = [];
+        if (
+            user.PERMISSIONS_ROLE_CREATE ||
+            user.PERMISSIONS_ROLE_UPDATE ||
+            user.PERMISSIONS_ROLE_DELETE
+        ) {
+            childItems.push({
+                title: 'Manage Roles',
+                routerLink: '/roles'
+            });
+        }
+
+        if (
+            user.DELEGATION_ROLE_MANAGE ||
+            user.PERMISSIONS_ROLE_MANAGE
+        ) {
+            childItems.push({
+                title: 'User Management',
+                routerLink: '/user-management'
+            });
+        }
+
         if (user.SETTINGS_SETTINGS_READ) {
             childItems.push({
                 title: 'Settings',

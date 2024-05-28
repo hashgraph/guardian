@@ -477,6 +477,9 @@ export class AccountService extends NatsService {
                     if (filters.username) {
                         options.username = { $regex: '.*' + filters.username + '.*' };
                     }
+                    if (filters.did) {
+                        options.did = filters.did;
+                    }
                 }
 
                 const [items, count] = await new DataBaseHelper(User).findAndCount(options, otherOptions);

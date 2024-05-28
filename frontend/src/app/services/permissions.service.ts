@@ -11,7 +11,6 @@ export class PermissionsService {
     private readonly url: string = `${API_BASE_URL}/permissions`;
 
     constructor(private http: HttpClient) {
-
     }
 
     public static getOptions(
@@ -51,8 +50,12 @@ export class PermissionsService {
         return this.http.get<any>(`${this.url}/users/${username}`);
     }
 
-    public updateUser(username: string, user: any): Observable<any> {
-        return this.http.put<any>(`${this.url}/users/${username}`, user);
+    public updateUser(username: string, roles: string[]): Observable<any> {
+        return this.http.put<any>(`${this.url}/users/${username}`, roles);
+    }
+
+    public delegateRole(username: string, roles: string[]): Observable<any> {
+        return this.http.put<any>(`${this.url}/users/${username}/delegate`, roles);
     }
 
     public getRoles(
@@ -92,5 +95,9 @@ export class PermissionsService {
 
     public assignPolicy(username: string, policyId: any, assign: boolean) {
         return this.http.post<any>(`${this.url}/users/${username}/policies/assign`, { policyId, assign });
+    }
+
+    public delegatePolicy(username: string, policyId: any, assign: boolean) {
+        return this.http.post<any>(`${this.url}/users/${username}/policies/delegate`, { policyId, assign });
     }
 }

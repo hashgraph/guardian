@@ -465,18 +465,22 @@ export class UserPermissions {
         return this.check(Permissions.PERMISSIONS_ROLE_DELETE);
     }
 
-    public get PERMISSIONS_USER_READ(): boolean {
-        return this.check(Permissions.PERMISSIONS_USER_READ);
+    public get PERMISSIONS_ROLE_MANAGE(): boolean {
+        return this.check(Permissions.PERMISSIONS_ROLE_MANAGE);
     }
+
     //ACCESS
     public get ACCESS_POLICY_ASSIGNED(): boolean {
-        return this.check(Permissions.PERMISSIONS_USER_READ);
+        return this.check(Permissions.ACCESS_POLICY_ASSIGNED);
     }
     public get ACCESS_POLICY_PUBLISHED(): boolean {
-        return this.check(Permissions.PERMISSIONS_USER_READ);
+        return this.check(Permissions.ACCESS_POLICY_PUBLISHED);
     }
     public get ACCESS_POLICY_ALL(): boolean {
-        return this.check(Permissions.PERMISSIONS_USER_READ);
+        return this.check(Permissions.ACCESS_POLICY_ALL);
+    }
+    public get DELEGATION_ROLE_MANAGE(): boolean {
+        return this.check(Permissions.DELEGATION_ROLE_MANAGE);
     }
 
     public static isPolicyAdmin(user: any): boolean {

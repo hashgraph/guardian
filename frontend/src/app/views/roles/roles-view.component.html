@@ -155,11 +155,13 @@
             <div *ngIf="selectedCategory.type === 'Permissions'" class="category-body">
                 <div class="category-actions">
                     <div class="category-actions-header">ACTIONS</div>
-                    <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission perm-{{i}}">{{action}}</div>
+                    <div class="permissions">
+                        <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission perm-{{i}}">{{action}}</div>
+                    </div>
                 </div>
                 <div class="category-permission">
                     <div *ngFor="let entity of selectedCategory.entities" class="entity">
-                        <div class="entity-all" (click)="onAll(entity)">
+                        <div *ngIf="entity.canAll" class="entity-all" (click)="onAll(entity)">
                             <mat-checkbox 
                                 color="primary" 
                                 [checked]="entity.all"></mat-checkbox>
@@ -195,7 +197,9 @@
             <div *ngIf="selectedCategory.type === 'Access'" class="category-body">
                 <div class="category-actions">
                     <div class="category-actions-header">ACTIONS</div>
-                    <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission big perm-{{i}}">{{action}}</div>
+                    <div class="permissions">
+                        <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission big perm-{{i}}">{{action}}</div>
+                    </div>
                 </div>
                 <div class="category-permission">
                     <div *ngFor="let entity of selectedCategory.entities" class="entity">

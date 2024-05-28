@@ -49,6 +49,7 @@
             color: #777;
             font-weight: 500;
         }
+
         .edit-btn,
         .delete-btn {
             display: none;
@@ -83,7 +84,7 @@
         column-gap: 20px;
     }
 
-    .toggle-container::ng-deep input:checked + .slider {
+    .toggle-container::ng-deep input:checked+.slider {
         cursor: not-allowed;
     }
 }
@@ -242,8 +243,6 @@
     margin-top: 24px;
 }
 
-
-
 .role-content {
     display: grid;
     grid-template-columns: 300px auto;
@@ -370,6 +369,14 @@
                     padding-left: 30px;
                 }
 
+                .permissions {
+                    display: flex;
+                    width: 700px;
+                    min-width: 700px;
+                    overflow: hidden;
+                    justify-content: flex-start;
+                }
+
                 .permission {
                     color: #848FA9;
                     height: 48px;
@@ -434,10 +441,16 @@
                         width: 700px;
                         min-width: 700px;
                         overflow: hidden;
-                        justify-content: flex-end;
+                        justify-content: flex-start;
 
                         mat-radio-group {
                             display: flex;
+                        }
+
+                        mat-radio-button {
+                            width: 20px;
+                            height: 20px;
+                            overflow: visible;
                         }
 
                         .permission {
@@ -471,6 +484,7 @@
                                 left: 43px;
                                 top: 28px;
                             }
+
                             &::before {
                                 content: "";
                                 position: absolute;
