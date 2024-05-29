@@ -81,14 +81,7 @@
                             <div *ngFor="let entity of category.entities" class="entity">
                                 <div class="entity-name">{{entity.name}}</div>
                                 <div class="permissions">
-                                    <ng-container *ngIf="category.type ==='Access'">
-                                        <mat-radio-group  [formControl]="entity.control">
-                                            <div *ngFor="let action of entity.actions; let i=index" class="permission big perm-{{i}}">
-                                                <mat-radio-button color="primary" [value]="action.id"></mat-radio-button>
-                                            </div>
-                                        </mat-radio-group>
-                                    </ng-container>
-                                    <ng-container *ngIf="category.type ==='Permissions' && entity.type ==='all'">
+                                    <ng-container *ngIf="entity.type ==='all'">
                                         <div *ngFor="let action of entity.actions;" class="all-permission">
                                             <mat-checkbox 
                                                 color="primary" 
@@ -99,8 +92,20 @@
                                                 [formControl]="action.control"></mat-checkbox>
                                         </div>
                                     </ng-container>
-                                    <ng-container *ngIf="category.type ==='Permissions' && entity.type ==='checkbox'">
+                                    <ng-container *ngIf="entity.type ==='checkbox'">
                                         <div *ngFor="let action of entity.actions; let i=index" class="permission perm-{{i}}">
+                                            <mat-checkbox 
+                                                *ngIf="action"
+                                                color="primary" 
+                                                matTooltipPosition="above"
+                                                [matTooltip]="action.tooltip"
+                                                [matTooltipDisabled]="!action.tooltip"
+                                                [formControl]="action.control"></mat-checkbox>
+                                            <div *ngIf="!action" class="permission-background"></div>
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngIf="entity.type ==='radio'">
+                                        <div *ngFor="let action of entity.actions; let i=index" class="permission big perm-{{i}}">
                                             <mat-checkbox 
                                                 *ngIf="action"
                                                 color="primary" 

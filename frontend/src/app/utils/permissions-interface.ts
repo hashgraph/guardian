@@ -54,6 +54,8 @@ export interface ICategory {
 
     addValue(permissions: Permissions[]): void;
 
+    mergeValue(permissions: Permissions[]): void;
+
     addEntity(permission: IPermission): IEntity;
 }
 
@@ -81,6 +83,8 @@ export interface IEntity {
     clearValue(): void;
 
     addValue(permissions: Permissions[]): void;
+
+    mergeValue(permissions: Permissions[]): void;
 }
 
 export const entityNames = new Map<PermissionEntities, string>([
@@ -130,6 +134,13 @@ export const actionIndexes = new Map<PermissionActions, number>([
 
     [PermissionActions.ALL, -1],
     [PermissionActions.AUDIT, -1],
+])
+
+export const accessIndexes = new Map<PermissionActions, number>([
+    [PermissionActions.ASSIGNED, 0],
+    [PermissionActions.PUBLISHED, 1],
+    [PermissionActions.ASSIGNED_AND_PUBLISHED, 2],
+    [PermissionActions.ALL, 3],
 ])
 
 export const categoryNames = new Map<PermissionCategories, string>([

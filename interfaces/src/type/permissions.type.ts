@@ -82,7 +82,8 @@ export enum PermissionActions {
     MANAGE = 'MANAGE',
     //
     ASSIGNED = 'ASSIGNED',
-    PUBLISHED = 'PUBLISHED'
+    PUBLISHED = 'PUBLISHED',
+    ASSIGNED_AND_PUBLISHED = 'ASSIGNED_AND_PUBLISHED'
 }
 
 /**
@@ -208,9 +209,10 @@ export enum Permissions {
     PERMISSIONS_ROLE_DELETE = 'PERMISSIONS_ROLE_DELETE',
     PERMISSIONS_ROLE_MANAGE = 'PERMISSIONS_ROLE_MANAGE',
     //ACCESS
+    ACCESS_POLICY_ALL = 'ACCESS_POLICY_ALL',
     ACCESS_POLICY_ASSIGNED = 'ACCESS_POLICY_ASSIGNED',
     ACCESS_POLICY_PUBLISHED = 'ACCESS_POLICY_PUBLISHED',
-    ACCESS_POLICY_ALL = 'ACCESS_POLICY_ALL',
+    ACCESS_POLICY_ASSIGNED_AND_PUBLISHED = 'ACCESS_POLICY_ASSIGNED_AND_PUBLISHED',
     //DELEGATION
     DELEGATION_ROLE_MANAGE = 'DELEGATION_ROLE_MANAGE',
 }
@@ -1120,6 +1122,13 @@ export const PermissionsArray: {
         },
         //ACCESS
         {
+            name: Permissions.ACCESS_POLICY_ALL,
+            category: PermissionCategories.ACCESS,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.ALL,
+            disabled: false
+        },
+        {
             name: Permissions.ACCESS_POLICY_ASSIGNED,
             category: PermissionCategories.ACCESS,
             entity: PermissionEntities.POLICY,
@@ -1134,12 +1143,13 @@ export const PermissionsArray: {
             disabled: false
         },
         {
-            name: Permissions.ACCESS_POLICY_ALL,
+            name: Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
             category: PermissionCategories.ACCESS,
             entity: PermissionEntities.POLICY,
-            action: PermissionActions.ALL,
+            action: PermissionActions.ASSIGNED_AND_PUBLISHED,
             disabled: false
         },
+        //DELEGATION
         {
             name: Permissions.DELEGATION_ROLE_MANAGE,
             category: PermissionCategories.DELEGATION,
@@ -1271,8 +1281,7 @@ export const DefaultRoles: Permissions[] = [
     Permissions.TOKENS_TOKEN_EXECUTE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    Permissions.ACCESS_POLICY_ASSIGNED,
-    Permissions.ACCESS_POLICY_PUBLISHED,
+    Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
 ];
 
 export const OldRoles: Permissions[] = [
@@ -1289,6 +1298,5 @@ export const OldRoles: Permissions[] = [
     Permissions.TOKENS_TOKEN_EXECUTE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    // Permissions.ACCESS_POLICY_ASSIGNED,
     Permissions.ACCESS_POLICY_PUBLISHED,
 ];

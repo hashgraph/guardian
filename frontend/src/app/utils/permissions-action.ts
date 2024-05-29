@@ -2,49 +2,6 @@ import { FormControl } from "@angular/forms";
 import { Permissions, PermissionActions } from "@guardian/interfaces";
 import { IAction, IEntity, IPermission } from "./permissions-interface";
 
-export class ActionAccess implements IAction {
-    public readonly parent: IEntity;
-    public readonly id: string;
-    public readonly permission: Permissions;
-    public readonly control: FormControl;
-    public readonly refs: ActionGroup[];
-    public tooltip: string;
-
-    constructor(action: string, parent: IEntity) {
-        this.parent = parent;
-        this.id = action;
-        this.tooltip = '';
-    }
-
-    public setValue(value: boolean): void {
-        throw new Error("Method not implemented.");
-    }
-
-    public getValue(): boolean {
-        throw new Error("Method not implemented.");
-    }
-
-    public disable(): void {
-        throw new Error("Method not implemented.");
-    }
-
-    public clearValue(): void {
-        throw new Error("Method not implemented.");
-    }
-
-    public addValue(permissions: Permissions[]): void {
-        throw new Error("Method not implemented.");
-    }
-
-    public addRef(action: IAction): void {
-        throw new Error("Method not implemented.");
-    }
-
-    public isDepend(permissions: Permissions): boolean {
-        throw new Error("Method not implemented.");
-    }
-}
-
 export class ActionGroup implements IAction {
     public readonly parent: IEntity;
     public readonly id: PermissionActions;

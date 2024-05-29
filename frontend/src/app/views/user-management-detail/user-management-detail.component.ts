@@ -176,10 +176,14 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     private updateControls() {
         this.group.clearValue();
+
+        for (const action of this.group.actions.values()) {
+            action.tooltip = '';
+        }
         for (const group of this.roleGroups) {
             const role = this.roleMap.get(group.roleId);
             if (role && role.permissions) {
-                this.group.addValue(role.permissions);
+                this.group.mergeValue(role.permissions);
                 for (const permission of role.permissions) {
                     const dependencies = this.group.getDependencies(permission);
                     for (const action of dependencies) {

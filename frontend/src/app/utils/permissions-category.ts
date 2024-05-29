@@ -31,6 +31,10 @@ export class CategoryDetails implements ICategory {
     public addEntity(permission: IPermission): EntityGroup {
         throw new Error("Method not implemented.");
     }
+
+    public mergeValue(permissions: Permissions[]): void {
+        throw new Error("Method not implemented.");
+    }
 }
 
 export class CategoryAccess implements ICategory {
@@ -80,6 +84,12 @@ export class CategoryAccess implements ICategory {
     public addValue(permissions: Permissions[]): void {
         for (const entity of this.map.values()) {
             entity.addValue(permissions);
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const entity of this.map.values()) {
+            entity.mergeValue(permissions);
         }
     }
 }
@@ -139,6 +149,12 @@ export class CategoryDelegate implements ICategory {
     public addValue(permissions: Permissions[]): void {
         for (const entity of this.map.values()) {
             entity.addValue(permissions);
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const entity of this.entities) {
+            entity.mergeValue(permissions);
         }
     }
 }
@@ -202,6 +218,12 @@ export class CategoryGroup implements ICategory {
     public addValue(permissions: Permissions[]): void {
         for (const entity of this.entities) {
             entity.addValue(permissions);
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const entity of this.entities) {
+            entity.mergeValue(permissions);
         }
     }
 }

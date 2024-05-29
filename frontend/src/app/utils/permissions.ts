@@ -1,7 +1,6 @@
 import { FormControl, FormGroup } from "@angular/forms";
 import { Permissions, PermissionCategories } from "@guardian/interfaces";
 import { CategoryAccess, CategoryDelegate, CategoryDetails, CategoryGroup } from "./permissions-category";
-import { ActionGroup } from "./permissions-action";
 import { IAction, ICategory, IPermission } from "./permissions-interface";
 
 export class PermissionsGroup {
@@ -71,6 +70,12 @@ export class PermissionsGroup {
     public addValue(permissions: Permissions[]): void {
         for (const category of this.categories) {
             category.addValue(permissions);
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const category of this.categories) {
+            category.mergeValue(permissions);
         }
     }
 

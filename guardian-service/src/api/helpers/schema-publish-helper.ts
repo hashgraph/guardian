@@ -25,9 +25,9 @@ export async function accessSchema(
     if (user.creator === schema.creator) {
         return true;
     }
-    if (user.published && schema.status !== SchemaStatus.PUBLISHED) {
-        throw new Error(`Insufficient permissions to ${action} the schema.`);
-    }
+    // if (user.published && schema.status !== SchemaStatus.PUBLISHED) {
+    //     throw new Error(`Insufficient permissions to ${action} the schema.`);
+    // }
     // if (user.assigned) {
     //     const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Schema, schema.id, user.creator);
     //     if (!assigned) {

@@ -216,14 +216,13 @@
                         <div class="permissions">
                             <mat-radio-group  [formControl]="entity.control">
                                 <div *ngFor="let action of entity.actions; let i=index" class="permission big perm-{{i}}">
-                                    <mat-radio-button color="primary" [value]="action.id"></mat-radio-button>
+                                    <mat-radio-button color="primary" [value]="action.permission"></mat-radio-button>
                                 </div>
                             </mat-radio-group>
                         </div>
                     </div>
                 </div>
             </div>
-
 
         </div>
     </div>

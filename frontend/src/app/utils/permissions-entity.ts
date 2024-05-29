@@ -1,101 +1,7 @@
 import { FormControl } from "@angular/forms";
 import { Permissions, PermissionActions, PermissionEntities } from "@guardian/interfaces";
-import { ActionAccess, ActionGroup } from "./permissions-action";
-import { ICategory, IEntity, IPermission, actionIndexes, entityNames } from "./permissions-interface";
-
-export class EntityAccess implements IEntity {
-    public readonly parent: ICategory;
-    public readonly id: PermissionEntities;
-    public readonly name: string;
-    public readonly type: string;
-    public readonly actions: ActionAccess[];
-    public readonly map = new Map<PermissionActions, ActionGroup>();
-    public readonly control: FormControl;
-    public readonly canAll = false;
-
-    public all: boolean;
-
-    constructor(permission: IPermission, parent: ICategory) {
-        this.parent = parent;
-        this.id = permission.entity;
-        this.name = entityNames.get(permission.entity) || '';
-        this.type = 'group';
-        this.actions = [
-            new ActionAccess('Assigned', this),
-            new ActionAccess('Published', this),
-            new ActionAccess('Assigned & Published', this),
-            new ActionAccess('All', this)
-        ];
-        this.control = new FormControl('Assigned & Published');
-        this.control.valueChanges.subscribe(value => {
-            for (const control of this.map.values()) {
-                control.setValue(false);
-            }
-            if (value === 'Assigned') {
-                this.map.get(PermissionActions.ASSIGNED)?.setValue(true);
-            } else if (value === 'Published') {
-                this.map.get(PermissionActions.PUBLISHED)?.setValue(true);
-            } else if (value === 'Assigned & Published') {
-                this.map.get(PermissionActions.ASSIGNED)?.setValue(true);
-                this.map.get(PermissionActions.PUBLISHED)?.setValue(true);
-            } else if (value === 'All') {
-                this.map.get(PermissionActions.ALL)?.setValue(true);
-            }
-        });
-    }
-
-    public selectAll(): void {
-        throw new Error("Method not implemented.");
-    }
-    public checkAll(): void {
-        throw new Error("Method not implemented.");
-    }
-    public checkCount(): void {
-        throw new Error("Method not implemented.");
-    }
-
-    public addAction(permission: IPermission): ActionGroup {
-        const action = new ActionGroup(permission, this as any);
-        this.map.set(permission.action, action);
-        return action;
-    }
-
-    public disable(): void {
-        this.control.disable();
-        for (const action of this.map.values()) {
-            action.disable();
-        }
-    }
-
-    public clearValue(): void {
-        this.control.setValue('Assigned & Published');
-        for (const action of this.map.values()) {
-            action.clearValue();
-        }
-    }
-
-    public addValue(permissions: Permissions[]): void {
-        for (const action of this.map.values()) {
-            action.addValue(permissions);
-        }
-        const all = this.map.get(PermissionActions.ALL)?.getValue();
-        const published = this.map.get(PermissionActions.PUBLISHED)?.getValue();
-        const assigned = this.map.get(PermissionActions.ASSIGNED)?.getValue();
-        if (all) {
-            this.control.setValue('All');
-        } else {
-            if (assigned && published) {
-                this.control.setValue('Assigned & Published');
-            } else if (assigned) {
-                this.control.setValue('Assigned');
-            } else if (published) {
-                this.control.setValue('Published');
-            } else {
-                this.control.setValue('');
-            }
-        }
-    }
-}
+import { ActionGroup } from "./permissions-action";
+import { ICategory, IEntity, IPermission, accessIndexes, actionIndexes, entityNames } from "./permissions-interface";
 
 export class EntityDelegate implements IEntity {
     public readonly parent: ICategory;
@@ -152,6 +58,14 @@ export class EntityDelegate implements IEntity {
     }
 
     public addValue(permissions: Permissions[]): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
         for (const action of this.actions) {
             if (action) {
                 action.addValue(permissions);
@@ -248,6 +162,100 @@ export class EntityGroup implements IEntity {
     }
 
     public addValue(permissions: Permissions[]): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
+        }
+    }
+}
+
+export class EntityAccess implements IEntity {
+    public readonly parent: ICategory;
+    public readonly id: PermissionEntities;
+    public readonly name: string;
+    public readonly type: string;
+    public readonly actions: ActionGroup[];
+    public readonly map = new Map<PermissionActions, ActionGroup>();
+    public readonly canAll = true;
+    public readonly control: FormControl;
+
+    public all: boolean = false;
+
+    constructor(permission: IPermission, parent: ICategory) {
+        this.parent = parent;
+        this.id = permission.entity;
+        this.name = entityNames.get(permission.entity) || '';
+        this.type = 'radio';
+        this.actions = new Array(4);
+        this.control = new FormControl('Assigned & Published');
+        this.control.valueChanges.subscribe(value => {
+            for (const action of this.actions) {
+                if (action) {
+                    action.setValue(value === action.permission);
+                }
+            }
+        });
+    }
+
+    public addAction(permission: IPermission): ActionGroup {
+        const action = new ActionGroup(permission, this);
+        const index = accessIndexes.get(permission.action) || 0;
+        this.actions[index] = action;
+        this.map.set(permission.action, action);
+        return action;
+    }
+
+    public selectAll(): void { }
+
+    public checkAll(): void { }
+
+    public checkCount(): void {
+        this.parent.checkCount();
+    }
+
+    public disable(): void {
+        for (const action of this.actions) {
+            if (action) {
+                action.disable();
+            }
+        }
+    }
+
+    public clearValue(): void {
+        this.control.setValue('');
+        for (const action of this.actions) {
+            if (action) {
+                action.clearValue();
+            }
+        }
+    }
+
+    public addValue(permissions: Permissions[]): void {
+        for (const action of this.actions) {
+            if (action) {
+                const value = permissions && permissions.includes(action.permission);
+                if (value) {
+                    this.control.setValue(action.permission);
+                }
+            }
+        }
+        for (const action of this.actions) {
+            if (action) {
+                action.addValue(permissions);
+            }
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
         for (const action of this.actions) {
             if (action) {
                 action.addValue(permissions);
