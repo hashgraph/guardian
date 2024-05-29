@@ -57,8 +57,6 @@ export class PolicyUser {
      */
     public readonly permissions: string[];
 
-    constructor(did: string, instance: IPolicyInstance | AnyBlockType)
-    constructor(user: IAuthUser, instance: IPolicyInstance | AnyBlockType)
     constructor(arg: IAuthUser | string, instance: IPolicyInstance | AnyBlockType) {
         if (typeof arg === 'string') {
             this.did = arg;
