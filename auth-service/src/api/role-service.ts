@@ -3,7 +3,7 @@ import { AuthEvents, GenerateUUIDv4, IGroup, PermissionsArray } from '@guardian/
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
 
-const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => {
+const permissionList = PermissionsArray.filter((p) => !p.disabled).map((p) => {
     return {
         name: p.name,
         category: p.category,
@@ -14,24 +14,24 @@ const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => {
     }
 })
 
-const available = permissions.reduce(function (map, p) {
+const availableList = permissionList.reduce((map, p) => {
     map.set(p.name, p);
     return map;
-}, new Map<string, any>);
+}, new Map<string, any>());
 
 class ListPermissions {
-    private _list: Set<string>;
+    private readonly _list: Set<string>;
 
     constructor() {
         this._list = new Set<string>();
     }
 
     public add(permission: string) {
-        if (this._list.has(permission) || !available.has(permission)) {
+        if (this._list.has(permission) || !availableList.has(permission)) {
             return;
         }
         this._list.add(permission);
-        const config = available.get(permission);
+        const config = availableList.get(permission);
         if (config.dependOn) {
             for (const sub of config.dependOn) {
                 this.add(sub);
@@ -81,13 +81,13 @@ export class RoleService extends NatsService {
      */
     registerListeners(): void {
         /**
-          * Get permissions
-          *
-          * @returns {any[]} permissions
-          */
+         * Get permissions
+         *
+         * @returns {any[]} permissions
+         */
         this.getMessages(AuthEvents.GET_PERMISSIONS, async (_: any) => {
             try {
-                return new MessageResponse(permissions);
+                return new MessageResponse(permissionList);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -95,12 +95,12 @@ export class RoleService extends NatsService {
         });
 
         /**
-          * Get roles
-          *
-          * @param payload - filters
-          *
-          * @returns {any[]} roles
-          */
+         * Get roles
+         *
+         * @param payload - filters
+         *
+         * @returns {any[]} roles
+         */
         this.getMessages(AuthEvents.GET_ROLES,
             async (msg: {
                 name: string,
@@ -157,7 +157,6 @@ export class RoleService extends NatsService {
                             return new MessageResponse({ items: [], count: 0 });
                         }
                     }
-
 
                     const [items, count] = await new DataBaseHelper(DynamicRole).findAndCount(options, otherOptions);
                     const defaultRole = await getDefaultRole(owner);
@@ -400,8 +399,8 @@ export class RoleService extends NatsService {
                     }
 
                     target.permissionsGroup = [];
-                    for (const [roleId, [owner, roleName]] of roleMap.entries()) {
-                        target.permissionsGroup.push({ roleId, roleName, owner });
+                    for (const [roleId, [roleOwner, roleName]] of roleMap.entries()) {
+                        target.permissionsGroup.push({ roleId, roleName, owner: roleOwner });
                     }
                     target.permissions = Array.from(permissions);
 
@@ -432,8 +431,8 @@ export class RoleService extends NatsService {
                         if (user.permissionsGroup) {
                             for (const group of user.permissionsGroup) {
                                 if (!roleMap.has(group.roleId)) {
-                                    const role = await new DataBaseHelper(DynamicRole).findOne({ id: group.roleId });
-                                    roleMap.set(group.roleId, role);
+                                    const row = await new DataBaseHelper(DynamicRole).findOne({ id: group.roleId });
+                                    roleMap.set(group.roleId, row);
                                 }
                                 const role = roleMap.get(group.roleId);
                                 if (role) {
@@ -505,9 +504,9 @@ export class RoleService extends NatsService {
 
                     const permissions = new Set<string>();
                     const permissionsGroup: IGroup[] = [];
-                    for (const [owner, role] of othersRoles.values()) {
+                    for (const [roleOwner, role] of othersRoles.values()) {
                         if (role) {
-                            permissionsGroup.push({ roleId: role.id, roleName: role.name, owner });
+                            permissionsGroup.push({ roleId: role.id, roleName: role.name, owner: roleOwner });
                             for (const permission of role.permissions) {
                                 permissions.add(permission);
                             }

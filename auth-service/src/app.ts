@@ -71,7 +71,7 @@ Promise.all([
 
         await new RoleService().setConnection(cn).init();
         new RoleService().registerListeners();
-        
+
         if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
             await new MeecoAuthService().setConnection(cn).init();
             new MeecoAuthService().registerListeners();

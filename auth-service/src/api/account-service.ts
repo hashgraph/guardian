@@ -435,13 +435,6 @@ export class AccountService extends NatsService {
             }
         });
 
-        /**
-         * Get users
-          *
-          * @param payload - filters
-          *
-          * @returns {any[]} users
-          */
         this.getMessages(AuthEvents.GET_USER_ACCOUNTS, async (msg: any) => {
             try {
                 if (!msg) {
