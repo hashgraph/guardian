@@ -1344,10 +1344,11 @@ export class PolicyComponentsUtils {
             userFull = new VirtualUser({ did }, instance);
         } else {
             const regUser = await (new Users()).getUserById(did);
-            if (!regUser || !regUser.did) {
-                return null;
+            if (regUser) {
+                userFull = new PolicyUser(regUser, instance);
+            } else {
+                userFull = new PolicyUser(did, instance);
             }
-            userFull = new PolicyUser(regUser, instance);
         }
 
         if (groupUUID) {
@@ -1377,10 +1378,11 @@ export class PolicyComponentsUtils {
             userFull = new VirtualUser(group, instance);
         } else {
             const regUser = await (new Users()).getUserById(group.did);
-            if (!regUser || !regUser.did) {
-                return null;
+            if (regUser) {
+                userFull = new PolicyUser(regUser, instance);
+            } else {
+                userFull = new PolicyUser(group.did, instance);
             }
-            userFull = new PolicyUser(regUser, instance);
         }
         return userFull.setCurrentGroup(group);
     }

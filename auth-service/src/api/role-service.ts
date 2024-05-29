@@ -19,20 +19,37 @@ const available = permissions.reduce(function (map, p) {
     return map;
 }, new Map<string, any>);
 
-export function updatePermissions(permissions: string[]): string[] {
-    const list = new Set<string>();
-    for (const name of permissions) {
-        if (available.has(name)) {
-            list.add(name);
-            const permission = available.get(name);
-            if (permission.dependOn) {
-                for (const sub of permission.dependOn) {
-                    list.add(sub);
-                }
+class ListPermissions {
+    private _list: Set<string>;
+
+    constructor() {
+        this._list = new Set<string>();
+    }
+
+    public add(permission: string) {
+        if (this._list.has(permission) || !available.has(permission)) {
+            return;
+        }
+        this._list.add(permission);
+        const config = available.get(permission);
+        if (config.dependOn) {
+            for (const sub of config.dependOn) {
+                this.add(sub);
             }
         }
     }
-    return Array.from(list);
+
+    public list(): string[] {
+        return Array.from(this._list);
+    }
+
+    public static unique(permissions: string[]): string[] {
+        const list = new ListPermissions();
+        for (const name of permissions) {
+            list.add(name);
+        }
+        return list.list();
+    }
 }
 
 export async function getDefaultRole(owner: string): Promise<DynamicRole> {
@@ -175,7 +192,7 @@ export class RoleService extends NatsService {
                     delete role.id;
                     role.owner = owner;
                     role.uuid = GenerateUUIDv4();
-                    role.permissions = updatePermissions(role.permissions);
+                    role.permissions = ListPermissions.unique(role.permissions);
                     role.default = false;
                     role.readonly = false;
 
@@ -212,7 +229,7 @@ export class RoleService extends NatsService {
 
                     item.name = role.name;
                     item.description = role.description;
-                    item.permissions = updatePermissions(role.permissions);
+                    item.permissions = ListPermissions.unique(role.permissions);
                     const result = await new DataBaseHelper(DynamicRole).update(item);
                     return new MessageResponse(result);
                 } catch (error) {
@@ -467,7 +484,7 @@ export class RoleService extends NatsService {
                     for (const group of target.permissionsGroup) {
                         if (group.owner !== owner) {
                             const role = await new DataBaseHelper(DynamicRole).findOne({ id: group.roleId });
-                            if(role) {
+                            if (role) {
                                 othersRoles.set(role.id, [group.owner, role]);
                             }
                         }
@@ -489,7 +506,7 @@ export class RoleService extends NatsService {
                     const permissions = new Set<string>();
                     const permissionsGroup: IGroup[] = [];
                     for (const [owner, role] of othersRoles.values()) {
-                        if(role) {
+                        if (role) {
                             permissionsGroup.push({ roleId: role.id, roleName: role.name, owner });
                             for (const permission of role.permissions) {
                                 permissions.add(permission);
