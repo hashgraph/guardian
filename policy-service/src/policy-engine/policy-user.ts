@@ -145,7 +145,11 @@ export class PolicyUser {
     }
 
     public equal(did: string, uuid: string): boolean {
-        return this._did === did && this._group === uuid;
+        if (this._group || uuid) {
+            return this._did === did && this._group === uuid;
+        } else {
+            return this._did === did;
+        }
     }
 
     public toJson() {
