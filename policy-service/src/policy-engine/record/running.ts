@@ -4,7 +4,7 @@ import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { RecordAction } from './action.type.js';
 import { RecordMethod } from './method.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
-import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcHelper } from '@guardian/common';
 import { RecordItem } from './record-item.js';
@@ -363,19 +363,8 @@ export class Running {
      * @param did
      * @private
      */
-    private async getUser(did: string): Promise<IPolicyUser> {
-        const userFull = new PolicyUser(did);
-        userFull.setVirtualUser({ did });
-        const groups = await this.policyInstance
-            .components
-            .databaseServer
-            .getGroupsByUser(this.policyId, did);
-        for (const group of groups) {
-            if (group.active !== false) {
-                return userFull.setGroup(group);
-            }
-        }
-        return userFull;
+    private async getUser(did: string): Promise<PolicyUser> {
+        return await PolicyComponentsUtils.GetVirtualUser(did, this.policyInstance);
     }
 
     /**

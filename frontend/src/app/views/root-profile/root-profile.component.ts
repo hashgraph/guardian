@@ -24,11 +24,11 @@ enum OperationMode {
  * Standard Registry profile settings page.
  */
 @Component({
-    selector: 'app-root-config',
-    templateUrl: './root-config.component.html',
-    styleUrls: ['./root-config.component.scss'],
+    selector: 'app-root-profile',
+    templateUrl: './root-profile.component.html',
+    styleUrls: ['./root-profile.component.scss'],
 })
-export class RootConfigComponent implements OnInit, OnDestroy{
+export class RootProfileComponent implements OnInit, OnDestroy{
     @ViewChild('actionMenu') actionMenu: any;
 
     public loading: boolean = true;

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsObject, IsString } from 'class-validator';
+import { IsArray, IsObject, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SearchPoliciesDTO {
@@ -10,6 +10,41 @@ export class SearchPoliciesDTO {
     @ApiProperty()
     @IsObject()
     result: any;
+}
+
+export class SearchBlocksDTO {
+    @ApiProperty()
+    @IsString()
+    name: string;
+
+    @ApiProperty()
+    @IsString()
+    description: string;
+
+    @ApiProperty()
+    @IsString()
+    version: string;
+
+    @ApiProperty()
+    @IsString()
+    owner: string;
+
+    @ApiProperty()
+    @IsString()
+    topicId: string;
+
+    @ApiProperty()
+    @IsString()
+    messageId: string;
+
+    @ApiProperty()
+    @IsString()
+    hash: string;
+
+    @ApiProperty({ type: () => Object })
+    @IsArray()
+    @Type(() => Object)
+    chains: any[];
 }
 
 export class ComparePoliciesDTO {
@@ -112,7 +147,7 @@ export class CompareDocumentsDTO {
     total: any;
 }
 
-export class CompareDocumentsDTOV2{
+export class CompareDocumentsV2DTO {
     @ApiProperty()
     @IsObject()
     projects: CompareDocumentsDTO;
@@ -150,111 +185,4 @@ export class CompareToolsDTO {
     @ApiProperty()
     @IsObject()
     total: any;
-}
-
-export class FilterSearchPoliciesDTO {
-    @ApiProperty()
-    @IsString()
-    policyId: string;
-}
-
-export class FilterPoliciesDTO {
-    @ApiProperty()
-    @IsString()
-    policyId1: string;
-
-    @ApiProperty()
-    @IsString()
-    policyId2: string;
-
-    @ApiProperty({ type: () => String })
-    @IsArray()
-    @Type(() => String)
-    policyIds: string[];
-
-    @ApiProperty()
-    @IsNumber()
-    eventsLvl: number;
-
-    @ApiProperty()
-    @IsNumber()
-    propLvl: number;
-
-    @ApiProperty()
-    @IsNumber()
-    childrenLvl: number;
-
-    @ApiProperty()
-    @IsNumber()
-    idLvl: number;
-}
-
-export class FilterModulesDTO {
-    @ApiProperty()
-    @IsString()
-    moduleId1: string;
-
-    @ApiProperty()
-    @IsString()
-    moduleId2: string;
-
-    @ApiProperty()
-    @IsNumber()
-    eventsLvl: number;
-
-    @ApiProperty()
-    @IsNumber()
-    propLvl: number;
-
-    @ApiProperty()
-    @IsNumber()
-    childrenLvl: number;
-
-    @ApiProperty()
-    @IsNumber()
-    idLvl: number;
-}
-
-export class FilterSchemasDTO {
-    @ApiProperty()
-    @IsString()
-    schemaId1: string;
-
-    @ApiProperty()
-    @IsString()
-    schemaId2: string;
-
-    @ApiProperty()
-    @IsNumber()
-    idLvl: number;
-}
-
-export class FilterDocumentsDTO {
-    @ApiProperty()
-    @IsString()
-    documentId1: string;
-
-    @ApiProperty()
-    @IsString()
-    documentId2: string;
-
-    @ApiProperty({ type: () => String })
-    @IsArray()
-    @Type(() => String)
-    documentIds: string[];
-}
-
-export class FilterToolsDTO {
-    @ApiProperty()
-    @IsString()
-    toolId1: string;
-
-    @ApiProperty()
-    @IsString()
-    toolId2: string;
-
-    @ApiProperty({ type: () => String })
-    @IsArray()
-    @Type(() => String)
-    toolIds: string[];
 }

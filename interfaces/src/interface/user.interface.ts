@@ -16,6 +16,12 @@ export class ISession {
     role: UserRole;
 }
 
+export interface IGroup {
+    roleId: string,
+    roleName: string,
+    owner: string
+}
+
 /**
  * User interface
  */
@@ -24,52 +30,74 @@ export interface IUser {
      * Was confirmed
      */
     confirmed?: boolean;
+
     /**
      * Was failed
      */
     failed?: boolean;
+
     /**
      * Username
      */
     username?: string;
+
     /**
      * Role
      */
     role?: UserRole;
+
     /**
      * Hedera account id
      */
     hederaAccountId?: string;
+
     /**
      * Hedera account private key
      */
     hederaAccountKey?: string;
+
     /**
      * Wallet token
      */
     walletToken?: string;
+
     /**
      * DID
      */
     did?: string;
+
     /**
      * Topic ID
      */
     topicId?: string;
+
     /**
      * Parent topic ID
      */
     parentTopicId?: string;
+
     /**
      * Parent
      */
     parent?: string;
+
     /**
      * DID document instance
      */
     didDocument?: IDidObject;
+
     /**
      * VC document instance
      */
     vcDocument?: IVCDocument;
+
+    /**
+     * Group name
+     */
+    permissionsGroup?: IGroup[];
+
+    /**
+     * Permissions
+     */
+    permissions?: string[];
 }

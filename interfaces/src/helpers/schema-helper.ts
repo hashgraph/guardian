@@ -1,4 +1,4 @@
-import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '../index.js';
+import { IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '../index.js';
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { Schema } from '../models/schema.js';
 import geoJson from './geojson-schema/geo-json.js';
@@ -653,7 +653,7 @@ export class SchemaHelper {
      * @param data
      * @param newOwner
      */
-    public static updateOwner(data: ISchema, newOwner: string) {
+    public static updateOwner(data: ISchema, newOwner: IOwner) {
         let document = data.document;
         if (typeof document === 'string') {
             document = JSON.parse(document) as ISchemaDocument;
@@ -663,8 +663,8 @@ export class SchemaHelper {
         const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
         data.version = data.version || version;
         data.uuid = data.uuid || uuid;
-        data.owner = newOwner;
-        data.creator = newOwner;
+        data.owner = newOwner.owner || newOwner.username;
+        data.creator = newOwner.creator || newOwner.username;
         const type = SchemaHelper.buildType(data.uuid, data.version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
@@ -680,10 +680,10 @@ export class SchemaHelper {
      * @param data
      * @param did
      */
-    public static updatePermission(data: ISchema[], did: string) {
+    public static updatePermission(data: ISchema[], owner: IOwner) {
         for (const element of data) {
-            element.isOwner = element.owner && element.owner === did;
-            element.isCreator = element.creator && element.creator === did;
+            element.isOwner = element.owner && element.owner === owner.owner;
+            element.isCreator = element.creator && element.creator === owner.creator;
         }
     }
 

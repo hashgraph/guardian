@@ -5,7 +5,7 @@ import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterface
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { KeyType } from '@guardian/common';
@@ -39,7 +39,7 @@ export class InterfaceDocumentActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const data: any = {
@@ -74,7 +74,7 @@ export class InterfaceDocumentActionBlock {
      * @param user
      * @param document
      */
-    async setData(user: IPolicyUser, document: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: IPolicyEventState = { data: document };
@@ -85,14 +85,14 @@ export class InterfaceDocumentActionBlock {
             if (option) {
                 const newUser = option.user === UserType.CURRENT
                     ? user
-                    : PolicyUtils.getDocumentOwner(ref, document);
+                    : await PolicyUtils.getDocumentOwner(ref, document);
                 ref.triggerEvents(option.tag, newUser, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
         }
 
         if (ref.options.type === 'dropdown') {
-            const newUser = PolicyUtils.getDocumentOwner(ref, document);
+            const newUser = await PolicyUtils.getDocumentOwner(ref, document);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
         }

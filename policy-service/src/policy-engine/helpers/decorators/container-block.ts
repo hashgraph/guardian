@@ -2,7 +2,7 @@ import { BasicBlock } from '../../helpers/decorators/basic-block.js';
 import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyBlock, IPolicyContainerBlock } from '../../policy-engine.interface.js';
-import { IPolicyUser } from '../../policy-user.js';
+import { PolicyUser } from '../../policy-user.js';
 
 /**
  * Container block decorator
@@ -25,7 +25,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param data
              * @param target
              */
-            async changeStep(user: IPolicyUser, data: any, target: IPolicyBlock) {
+            async changeStep(user: PolicyUser, data: any, target: IPolicyBlock) {
                 let result: any;
                 if (typeof super.changeStep === 'function') {
                     result = super.changeStep(user, data, target);
@@ -37,7 +37,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get block data
              * @param user
              */
-            async getData(user: IPolicyUser | null): Promise<any> {
+            async getData(user: PolicyUser | null): Promise<any> {
                 let data = {}
                 if (super.getData) {
                     data = await super.getData(user);
@@ -45,7 +45,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
                 const children = ref.children.map(child => {
-                    if (child.defaultActive && child.isActive(user) && child.hasPermission(user.role, user)) {
+                    if (child.defaultActive && child.isActive(user) && child.hasPermission(user)) {
                         return {
                             uiMetaData: child.options.uiMetaData,
                             content: child.blockType,

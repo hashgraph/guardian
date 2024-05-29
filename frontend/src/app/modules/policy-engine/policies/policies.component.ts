@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserRole } from '@guardian/interfaces';
+import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -30,6 +30,78 @@ import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-pol
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
 
+const columns = [{
+    id: 'name',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'description',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'topic',
+    permissions: (user: UserPermissions) => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
+    id: 'roles',
+    permissions: (user: UserPermissions) => {
+        return !(
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
+    id: 'version',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'tags',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'tokens',
+    permissions: (user: UserPermissions) => {
+        return user.TOKENS_TOKEN_READ;
+    }
+}, {
+    id: 'schemas',
+    permissions: (user: UserPermissions) => {
+        return user.SCHEMAS_SCHEMA_READ;
+    }
+}, {
+    id: 'status',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'instance',
+    permissions: (user: UserPermissions) => {
+        return true;
+    }
+}, {
+    id: 'operations',
+    permissions: (user: UserPermissions) => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}];
+
 /**
  * Component for choosing a policy and
  * display blocks of the selected policy
@@ -40,8 +112,8 @@ import { ContractService } from 'src/app/services/contract.service';
     styleUrls: ['./policies.component.scss'],
 })
 export class PoliciesComponent implements OnInit {
+    public user: UserPermissions = new UserPermissions();
     public policies: any[] | null;
-    public role!: any;
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public pageIndex: number;
@@ -54,7 +126,6 @@ export class PoliciesComponent implements OnInit {
     public publishMenuSelector: any = null;
     public noFilterResults: boolean = false;
     private columns: string[] = [];
-    private columnsRole: any = {};
     private publishMenuOption = [
         {
             id: 'Publish',
@@ -129,6 +200,14 @@ export class PoliciesComponent implements OnInit {
         };
     });
 
+    public checkMigrationStatus(status: string): boolean {
+        return (
+            status === 'PUBLISH' ||
+            status === 'DRY-RUN' ||
+            status === 'DISCONTINUED'
+        )
+    }
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -142,7 +221,6 @@ export class PoliciesComponent implements OnInit {
         private wizardService: WizardService,
         private tokenService: TokenService,
         private analyticsService: AnalyticsService,
-        private changeDetector: ChangeDetectorRef,
         private contractSerivce: ContractService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
@@ -151,29 +229,6 @@ export class PoliciesComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.policiesCount = 0;
-        this.columnsRole = {};
-        this.columnsRole[UserRole.STANDARD_REGISTRY] = [
-            'name',
-            'description',
-            // 'roles',
-            'topic',
-            'version',
-            'tags',
-            'tokens',
-            'schemas',
-            'status',
-            'instance',
-            'operations',
-        ];
-        this.columnsRole[UserRole.USER] = [
-            'name',
-            'description',
-            'roles',
-            'version',
-            'tags',
-            'status',
-            'instance',
-        ];
     }
 
     ngOnInit() {
@@ -189,29 +244,26 @@ export class PoliciesComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.tagsService.getPublishedSchemas(),
-        ]).subscribe(
-            (value) => {
-                const profile: IUser | null = value[0];
-                const tagSchemas: any[] = value[1] || [];
+        ]).subscribe((value) => {
+            const profile: IUser | null = value[0];
+            const tagSchemas: any[] = value[1] || [];
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.user = new UserPermissions(profile);
+            this.owner = this.user.did;
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
 
-                this.isConfirmed = !!(profile && profile.confirmed);
-                this.role = profile ? profile.role : null;
-                this.owner = profile?.did;
-                this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.columns = columns
+                .filter((c) => c.permissions(this.user))
+                .map((c) => c.id);
 
-                if (this.role == UserRole.STANDARD_REGISTRY) {
-                    this.columns = this.columnsRole[UserRole.STANDARD_REGISTRY];
-                } else {
-                    this.columns = this.columnsRole[UserRole.USER];
-                }
-                if (this.isConfirmed) {
-                    this.loadAllPolicy();
-                } else {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }
-            },
+            if (this.isConfirmed) {
+                this.loadAllPolicy();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }
+        },
             (e) => {
                 this.loading = false;
             }
@@ -221,48 +273,51 @@ export class PoliciesComponent implements OnInit {
     private loadAllPolicy() {
         this.loading = true;
         this.tagOptions = [];
-        this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe(
-            (policiesResponse) => {
-                this.policies = policiesResponse.body?.map(policy => {
-                    if (policy.discontinuedDate) {
-                        policy.discontinuedDate = new Date(policy.discontinuedDate);
-                    }
-                    return policy;
-                }) || [];
-                this.policiesCount =
-                    policiesResponse.headers.get('X-Total-Count') ||
-                    this.policies.length;
-                const ids = this.policies.map((e) => e.id);
-                this.tagsService.search(this.tagEntity, ids).subscribe(
-                    (data) => {
-                        if (this.policies) {
-                            for (const policy of this.policies) {
-                                (policy as any)._tags = data[policy.id];
-                                data[policy.id]?.tags.forEach((tag: any) => {
-                                    const totalTagOptions = [
-                                        ...this.tagOptions,
-                                        tag.name,
-                                    ];
-                                    this.tagOptions = [
-                                        ...new Set(totalTagOptions),
-                                    ];
-                                });
-                            }
-                        }
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
-            },
-            (e) => {
+        this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
+            this.policies = policiesResponse.body?.map(policy => {
+                if (policy.discontinuedDate) {
+                    policy.discontinuedDate = new Date(policy.discontinuedDate);
+                }
+                return policy;
+            }) || [];
+            this.policiesCount =
+                policiesResponse.headers.get('X-Total-Count') ||
+                this.policies.length;
+
+            this.loadPolicyTags(this.policies);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    private loadPolicyTags(policies: any[]) {
+        if (!this.user.TAGS_TAG_READ || !policies || !policies.length) {
+            setTimeout(() => {
                 this.loading = false;
-            }
-        );
+            }, 500);
+        } else {
+            const ids = policies.map((e) => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                for (const policy of policies) {
+                    (policy as any)._tags = data[policy.id];
+                    data[policy.id]?.tags.forEach((tag: any) => {
+                        const totalTagOptions = [
+                            ...this.tagOptions,
+                            tag.name,
+                        ];
+                        this.tagOptions = [
+                            ...new Set(totalTagOptions),
+                        ];
+                    });
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+        }
     }
 
     public onPage(event: any): void {
@@ -1106,7 +1161,7 @@ export class PoliciesComponent implements OnInit {
     }
 
     public onChangeStatus(event: any, policy: any): void {
-        switch(policy.status) {
+        switch (policy.status) {
             case 'DRAFT':
                 this.onPublishAction(event, policy);
                 break;

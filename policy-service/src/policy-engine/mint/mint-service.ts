@@ -3,7 +3,7 @@ import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, 
 import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MintRequest, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { TokenConfig } from './configs/token-config.js';
 import { MintNFT } from './types/mint-nft.js';
 import { MintFT } from './types/mint-ft.js';
@@ -89,7 +89,7 @@ export class MintService {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
-        documentOwner: IPolicyUser,
+        documentOwner: PolicyUser,
         root: IHederaCredentials,
         targetAccount: string,
         vpMessageId: string,
@@ -596,7 +596,7 @@ export class MintService {
      */
     private static async getMultipleConfig(
         ref: AnyBlockType,
-        documentOwner: IPolicyUser
+        documentOwner: PolicyUser
     ) {
         return await DatabaseServer.getMultiPolicy(
             ref.policyInstance.instanceTopicId,

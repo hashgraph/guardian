@@ -5,7 +5,7 @@ import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { IPolicyBlock, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
@@ -42,7 +42,7 @@ export class TokenActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const { options } = PolicyComponentsUtils.GetBlockRef(this);
         return { uiMetaData: options.uiMetaData };
     }

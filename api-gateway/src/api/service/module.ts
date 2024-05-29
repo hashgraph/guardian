@@ -1,658 +1,744 @@
-import { Logger } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Query, Req, Res, Response } from '@nestjs/common';
-import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
-import { ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
-import { SchemaUtils } from '../../helpers/schema-utils.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
-import { Auth } from '../../auth/auth.decorator.js';
+import { Logger, IAuthUser } from '@guardian/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
+import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
+import { AuthUser, Auth } from '#auth';
+import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
+import { Guardians, SchemaUtils, UseCache, InternalException, EntityOwner } from '#helpers';
+
+const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('modules')
 @ApiTags('modules')
 export class ModulesApi {
+    /**
+     * Creates a new module
+     */
+    @Post('/')
+    @Auth(
+        Permissions.MODULES_MODULE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Creates a new module.',
-        description: 'Creates a new module. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Creates a new module.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiBody({
+        description: 'Module config.',
+        type: ModuleDTO,
+    })
     @ApiOkResponse({
-        description: 'Successful operation.'
+        description: 'Created module.',
+        type: ModuleDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/')
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async postModules(@Req() req, @Response() res): Promise<any> {
+    async postModules(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ModuleDTO
+    ): Promise<ModuleDTO> {
         try {
             const guardian = new Guardians();
-            const module = req.body;
+            const module = body;
             if (!module.config || module.config.blockType !== 'module') {
                 throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const item = await guardian.createModule(module, req.user.did);
-            return res.status(201).send(item);
+            return await guardian.createModule(module, new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @ApiOperation({
-        summary: 'Return a list of all modules.',
-        description: 'Returns all modules. Only users with the Standard Registry and Installer role are allowed to make the request.',
-    })
-    @ApiSecurity('bearer')
-    @ApiImplicitQuery({
-        name: 'policyId',
-        type: String,
-        description: 'Policy identifier',
-        required: false
-    })
-    @ApiImplicitQuery({
-        name: 'pageIndex',
-        type: Number,
-        description: 'The number of pages to skip before starting to collect the result set',
-        required: false
-    })
-    @ApiImplicitQuery({
-        name: 'pageSize',
-        type: Number,
-        description: 'The numbers of items to return',
-        required: false
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        schema: {
-            'type': 'object',
-            'properties': {
-                'id': {
-                    'type': 'string'
-                },
-                'uuid': {
-                    'type': 'string'
-                },
-                'name': {
-                    'type': 'string'
-                },
-                'description': {
-                    'type': 'string'
-                },
-                'config': {
-                    'type': 'object'
-                },
-                'status': {
-                    'type': 'string'
-                },
-                'creator': {
-                    'type': 'string'
-                },
-                'owner': {
-                    'type': 'string'
-                },
-                'topicId': {
-                    'type': 'string'
-                },
-                'messageId': {
-                    'type': 'string'
-                },
-                'codeVersion': {
-                    'type': 'string'
-                },
-                'createDate': {
-                    'type': 'string'
-                },
-                'type': {
-                    'type': 'string'
-                }
-            }
-        },
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @Get('/')
-    @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async getModules(@Req() req, @Response() res): Promise<any> {
-        try {
-            const guardians = new Guardians();
-
-            let pageIndex: any;
-            let pageSize: any;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
-            }
-            const { items, count } = await guardians.getModule({
-                owner: req.user.did,
-                pageIndex,
-                pageSize
-            });
-            return res.header('X-Total-Count', count).send(items);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
     /**
-     * @param req
-     * @param res
-     * @param pageIndex
-     * @param pageSize
-     * @param topicId
+     * Get list of all modules
+     */
+    @Get('/')
+    @Auth(
+        Permissions.MODULES_MODULE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all modules.',
+        description: 'Returns all modules.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: ModuleDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getModules(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<ModuleDTO[]> {
+        try {
+            const options: any = {
+                pageIndex,
+                pageSize
+            };
+            const guardians = new Guardians();
+            const { items, count } = await guardians.getModule(options, new EntityOwner(user));
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get list of all schemas
      */
     @Get('/schemas')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all module schemas.',
+        description: 'Returns all module schemas.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        type: String,
+        description: 'Topic id',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: SchemaDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
-    @UseCache({ isExpress: true })
-    @Auth(UserRole.STANDARD_REGISTRY)
     async getModuleSchemas(
-        @Req() req,
-        @Res() res,
-        @Query('pageIndex') pageIndex,
-        @Query('pageSize') pageSize,
-        @Query('topicId') topicId
-    ): Promise<any> {
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('topicId') topicId?: string,
+    ): Promise<SchemaDTO[]> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            const owner = user.did;
-
+            const owner = new EntityOwner(user);
             const { items, count } = await guardians.getSchemasByOwner({
                 category: SchemaCategory.MODULE,
-                owner,
                 topicId,
                 pageIndex,
                 pageSize
-            });
+            }, owner);
             items.forEach((s) => {
-                s.readonly = s.readonly || s.owner !== owner
+                s.readonly = s.readonly || s.owner !== owner.owner
             });
-            res.locals.data = SchemaUtils.toOld(items)
+            // res.locals.data = SchemaUtils.toOld(items)
             return res
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Create schema
+     */
     @Post('/schemas')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Creates a new module schema.',
+        description: 'Creates a new module schema.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Schema config.',
+        type: SchemaDTO,
+    })
+    @ApiCreatedResponse({
+        description: 'Created schema.',
+        type: SchemaDTO,
+        isArray: true,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async postSchemas(@Req() req, @Response() res): Promise<any> {
+    async postSchemas(
+        @AuthUser() user: IAuthUser,
+        @Body() newSchema: SchemaDTO
+    ): Promise<SchemaDTO[]> {
         try {
-            const user = req.user;
-            const newSchema = req.body;
-
             if (!newSchema) {
                 throw new HttpException('Schema does not exist.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const guardians = new Guardians();
-            const owner = user.did;
-
-            SchemaUtils.fromOld(newSchema);
-            delete newSchema.version;
-            delete newSchema.id;
-            delete newSchema._id;
-            delete newSchema.status;
-            delete newSchema.topicId;
+            const owner = new EntityOwner(user);
 
             newSchema.category = SchemaCategory.MODULE;
+            SchemaUtils.fromOld(newSchema);
+            SchemaUtils.clearIds(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-            const schema = await guardians.createSchema(newSchema);
 
-            return res.status(201).send(SchemaUtils.toOld(schema));
+            const schemas = await guardians.createSchema(newSchema, owner);
+
+            return SchemaUtils.toOld(schemas);
         } catch (error) {
             await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
-        }
-    }
-
-    @ApiOperation({
-        summary: 'Deletes the module with the provided module ID. Only users with the Standard Registry role are allowed to make the request.',
-        description: 'Deletes the module.'
-    })
-    @ApiSecurity('bearer')
-    @Delete('/:uuid')
-    @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async deleteModule(@Req() req, @Response() res): Promise<any> {
-        try {
-            const guardian = new Guardians();
-            if (!req.params.uuid) {
-                throw new Error('Invalid uuid')
-            }
-            const result = await guardian.deleteModule(req.params.uuid, req.user.did);
-            return res.status(200).send(result);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
-     * @param req
+     * Remove module
      */
+    @Delete('/:uuid')
+    @Auth(
+        Permissions.MODULES_MODULE_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Deletes the module.',
+        description: 'Deletes the module with the provided module ID.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Module Identifier',
+        example: Examples.UUID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteModule(
+        @AuthUser() user: IAuthUser,
+        @Param('uuid') uuid: string,
+    ): Promise<boolean> {
+        try {
+            const guardian = new Guardians();
+            if (!uuid) {
+                throw new Error('Invalid uuid');
+            }
+            return await guardian.deleteModule(uuid, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get all modules
+     */
+    @Get('/menu')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return a list of modules.',
-        description: 'Returns modules menu. Only users with the Standard Registry and Installer role are allowed to make the request.'
+        description: 'Returns modules menu.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
     @ApiOkResponse({
-        schema: {
-            type: 'array'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Modules.',
+        isArray: true,
+        type: ModuleDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Get('/menu')
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @UseCache()
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async getMenu(@Req() req): Promise<any> {
+    @HttpCode(HttpStatus.OK)
+    async getMenu(
+        @AuthUser() user: IAuthUser,
+    ): Promise<ModuleDTO[]> {
         try {
             const guardians = new Guardians();
-            return await guardians.getMenuModule(req.user.did);
+            return await guardians.getMenuModule(new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
     /**
-     * @param req
-     * @param res
+     * Retrieves module configuration
      */
+    @Get('/:uuid')
+    @Auth(
+        Permissions.MODULES_MODULE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Retrieves module configuration.',
-        description: 'Retrieves module configuration for the specified module ID. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Retrieves module configuration for the specified module ID.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Module Identifier',
+        example: Examples.UUID
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Successful operation.',
+        type: ModuleDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Get('/:uuid')
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async getModule(@Req() req, @Response() res): Promise<any> {
+    async getModule(
+        @AuthUser() user: IAuthUser,
+        @Param('uuid') uuid: string,
+    ): Promise<ModuleDTO> {
         try {
-            const guardian = new Guardians();
-            if (!req.params.uuid) {
+            if (!uuid) {
                 throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
             }
-            const item = await guardian.getModuleById(req.params.uuid, req.user.did);
-            return res.send(item);
+            const guardian = new Guardians();
+            return await guardian.getModuleById(uuid, new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Updates module configuration
+     */
+    @Put('/:uuid')
+    @Auth(
+        Permissions.MODULES_MODULE_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Updates module configuration.',
-        description: 'Updates module configuration for the specified module ID. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Updates module configuration for the specified module ID.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Module Identifier',
+        example: Examples.UUID
+    })
+    @ApiBody({
+        description: 'Module config.',
+        type: ModuleDTO,
     })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiSecurity('bearer')
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Successful operation.',
+        type: ModuleDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Put('/:uuid')
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async putModule(@Req() req, @Response() res): Promise<any> {
-        if (!req.params.uuid) {
+    async putModule(
+        @AuthUser() user: IAuthUser,
+        @Param('uuid') uuid: string,
+        @Body() module: ModuleDTO
+    ): Promise<ModuleDTO> {
+        if (!uuid) {
             throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
         }
-        const guardian = new Guardians();
-        const module = req.body;
         if (!module.config || module.config.blockType !== 'module') {
             throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
-            const result = await guardian.updateModule(req.params.uuid, module, req.user.did);
-            return res.status(201).send(result);
+            const guardian = new Guardians();
+            return await guardian.updateModule(uuid, module, new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Export module
+     */
+    @Get('/:uuid/export/file')
+    @Auth(
+        Permissions.MODULES_MODULE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return module and its artifacts in a zip file format for the specified module.',
-        description: 'Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Module Identifier',
+        example: Examples.UUID
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'File.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Get('/:uuid/export/file')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async moduleExportFile(@Req() req, @Response() res): Promise<any> {
-        const guardian = new Guardians();
+    async moduleExportFile(
+        @AuthUser() user: IAuthUser,
+        @Param('uuid') uuid: string,
+        @Response() res: any
+    ): Promise<any> {
         try {
-            const file: any = await guardian.exportModuleFile(req.params.uuid, req.user.did);
+            const guardian = new Guardians();
+            const file: any = await guardian.exportModuleFile(uuid, new EntityOwner(user));
             res.header('Content-disposition', `attachment; filename=module_${Date.now()}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Export module
+     */
+    @Get('/:uuid/export/message')
+    @Auth(
+        Permissions.MODULES_MODULE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Return Heder message ID for the specified published module.',
-        description: 'Returns the Hedera message ID for the specified module published onto IPFS. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Returns the Hedera message ID for the specified module published onto IPFS.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Module Identifier',
+        example: Examples.UUID,
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Message.',
+        type: ExportMessageDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Get('/:uuid/export/message')
+    @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async moduleExportMessage(@Req() req, @Response() res): Promise<any> {
-        const guardian = new Guardians();
+    async moduleExportMessage(
+        @AuthUser() user: IAuthUser,
+        @Param('uuid') uuid: string
+    ): Promise<ExportMessageDTO> {
         try {
-            return res.send(await guardian.exportModuleMessage(req.params.uuid, req.user.did));
+            const guardian = new Guardians();
+            return await guardian.exportModuleMessage(uuid, new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
-    @ApiOperation({
-        summary: 'Imports new module from IPFS.',
-        description: 'Imports new module and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.'
-    })
-    @ApiSecurity('bearer')
-    @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
+    /**
+     * Imports new module from IPFS
+     */
     @Post('/import/message')
-    @HttpCode(HttpStatus.CREATED)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async moduleImportMessage(@Req() req, @Response() res): Promise<any> {
-        const guardian = new Guardians();
-        try {
-            const module = await guardian.importModuleMessage(req.body.messageId, req.user.did);
-            return res.status(201).send(module);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @ApiOperation({
-        summary: 'Imports new module from a zip file.',
-        description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.'
-    })
-    @ApiSecurity('bearer')
-    @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
-    })
-    @Post('/import/file')
-    @HttpCode(HttpStatus.CREATED)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async moduleImportFile(@Req() req, @Response() res): Promise<any> {
-        const guardian = new Guardians();
-        try {
-            const module = await guardian.importModuleFile(req.body, req.user.did);
-            return res.status(201).send(module);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
+    @Auth(
+        Permissions.MODULES_MODULE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new module from IPFS.',
-        description: 'Imports new module and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Imports new module and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Created module.',
+        type: ModuleDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/import/message/preview')
-    @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async moduleImportMessagePreview(@Req() req, @Response() res): Promise<any> {
-        const guardian = new Guardians();
+    @ApiExtraModels(ImportMessageDTO, ModuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async moduleImportMessage(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ImportMessageDTO
+    ): Promise<ModuleDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         try {
-            const module = await guardian.previewModuleMessage(req.body.messageId, req.user.did);
-            return res.send(module);
+            const guardian = new Guardians();
+            return await guardian.importModuleMessage(messageId, new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Imports new module from a zip file
+     */
+    @Post('/import/file')
+    @Auth(
+        Permissions.MODULES_MODULE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Imports new module from a zip file.',
-        description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiBody({
+        description: 'File.',
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Created module.',
+        type: ModuleDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/import/file/preview')
-    @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async moduleImportFilePreview(@Req() req, @Response() res): Promise<any> {
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async moduleImportFile(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<ModuleDTO> {
         const guardian = new Guardians();
         try {
-            const module = await guardian.previewModuleFile(req.body, req.user.did);
-            return res.send(module);
+            return await guardian.importModuleFile(body, new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Import preview
+     */
+    @Post('/import/message/preview')
+    @Auth(
+        Permissions.MODULES_MODULE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Imports new module from IPFS.',
+        description: 'Imports new module and all associated artifacts from IPFS into the local DB.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Message.',
+        type: ImportMessageDTO,
+    })
+    @ApiOkResponse({
+        description: 'Module preview.',
+        type: ModulePreviewDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ImportMessageDTO, ModulePreviewDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async moduleImportMessagePreview(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ImportMessageDTO
+    ): Promise<ModulePreviewDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            const guardian = new Guardians();
+            return await guardian.previewModuleMessage(messageId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Import preview
+     */
+    @Post('/import/file/preview')
+    @Auth(
+        Permissions.MODULES_MODULE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Imports new module from a zip file.',
+        description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'File.',
+    })
+    @ApiOkResponse({
+        description: 'Module preview.',
+        type: ModulePreviewDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ModulePreviewDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async moduleImportFilePreview(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<ModulePreviewDTO> {
+        try {
+            const guardian = new Guardians();
+            return await guardian.previewModuleFile(body, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Publish module
+     */
+    @Put('/:uuid/publish')
+    @Auth(
+        Permissions.MODULES_MODULE_REVIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Publishes the module onto IPFS.',
-        description: 'Publishes the module with the specified (internal) module ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Publishes the module with the specified (internal) module ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Module Identifier',
+        example: Examples.UUID
+    })
+    @ApiBody({
+        description: 'Module.',
+        type: ModuleDTO,
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Successful operation.',
+        type: ModuleDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Put('/:uuid/publish')
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async publishModule(@Req() req, @Response() res): Promise<any> {
-        const guardian = new Guardians();
+    async publishModule(
+        @AuthUser() user: IAuthUser,
+        @Param('uuid') uuid: string,
+        @Body() module: ModuleDTO
+    ): Promise<ModuleDTO> {
         try {
-            const module = await guardian.publishModule(req.params.uuid, req.user.did, req.body);
-            return res.send(module);
+            const guardian = new Guardians();
+            return await guardian.publishModule(uuid, new EntityOwner(user), module);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Validates selected module
+     */
+    @Post('/validate')
+    @Auth(
+        Permissions.MODULES_MODULE_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Validates selected module.',
-        description: 'Validates selected module. Only users with the Standard Registry role are allowed to make the request.'
+        description: 'Validates selected module.' + ONLY_SR,
     })
-    @ApiSecurity('bearer')
+    @ApiBody({
+        description: 'Module config.',
+        type: ModuleDTO,
+    })
     @ApiOkResponse({
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Validation result.',
+        type: ModuleValidationDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/validate')
+    @ApiExtraModels(ModuleDTO, ModuleValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @Auth(UserRole.STANDARD_REGISTRY)
-    async validateModule(@Req() req, @Response() res): Promise<any> {
-        const guardian = new Guardians();
+    async validateModule(
+        @AuthUser() user: IAuthUser,
+        @Body() module: ModuleDTO
+    ): Promise<ModuleValidationDTO> {
         try {
-            return res.send(await guardian.validateModule(req.user.did, req.body));
+            const guardian = new Guardians();
+            return await guardian.validateModule(new EntityOwner(user), module);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 }

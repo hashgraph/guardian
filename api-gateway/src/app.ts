@@ -13,9 +13,8 @@ import process from 'process';
 import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
-import { SwaggerModels, SwaggerPaths } from './old-descriptions.js';
 import { MeecoAuth } from './helpers/meeco.js';
-import * as extraModels from './middlewares/validation/schemas/index.js'
+import * as extraModels from './middlewares/index.js'
 import { ProjectService } from './helpers/projects.js';
 import { AISuggestions } from './helpers/ai-suggestions.js';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -70,10 +69,10 @@ Promise.all([
         await new MeecoAuth().registerListeners();
 
         const server = app.getHttpServer();
-        const wsService = new WebSocketsService(server, cn);
-        wsService.init();
+        const wsService = new WebSocketsService();
+        wsService.setConnection(server, cn).init();
 
-        new TaskManager().setDependecies(wsService, cn);
+        new TaskManager().setDependencies(wsService, cn);
 
         const document = SwaggerModule.createDocument(app, SwaggerConfig, {
             extraModels: Object.values(extraModels).filter((constructor: new (...args: any[]) => any) => {
@@ -84,10 +83,10 @@ Promise.all([
                 } catch {
                     return false;
                 }
-            })
+            }) as any
         });
-        Object.assign(document.paths, SwaggerPaths)
-        Object.assign(document.components.schemas, SwaggerModels.schemas);
+        // Object.assign(document.paths, SwaggerPaths)
+        // Object.assign(document.components.schemas, SwaggerModels.schemas);
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
