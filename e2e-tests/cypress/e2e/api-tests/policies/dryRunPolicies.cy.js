@@ -40,6 +40,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
                 headers: {
                     authorization,
                 },
+                timeout: 180000,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
             });

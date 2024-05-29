@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 context("Schemas", { tags: '@schemas' }, () => {
     const authorization = Cypress.env("authorization");
-    const schemaUUID = ("0000b23a-b1ea-408f-a573"+ Math.floor(Math.random() * 999999) + "a2060a")
+    const schemaUUID = ("0000b23a-b1ea-408f-a573" + Math.floor(Math.random() * 999999) + "a2060a")
 
     before(() => {
         cy.request({
@@ -21,20 +21,79 @@ context("Schemas", { tags: '@schemas' }, () => {
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
-                    description: "new",
-                    hash: "",
+                    name: "q",
+                    entity: "VC",
                     status: "DRAFT",
                     readonly: false,
-                    name: "test",
-                    entity: "NONE",
-                    document:
-                        '{"$id":"#${schemaUUID}","$comment":"{\\"term\\": \\"${schemaUUID}\\", \\"@id\\": \\"https://localhost/schema#${schemaUUID}\\"}","title":"test","description":" test","type":"object","properties":{"@context":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"type":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"id":{"type":"string","readOnly":true},"field0":{"title":"test field","description":"test field","readOnly":false,"$comment":"{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}","type":"string"}},"required":["@context","type"],"additionalProperties":false}',
+                    document: {
+                        "$id": "#" + schemaUUID + "",
+                        "$comment": "{ \"@id\": \"schema:" + schemaUUID + "#" + schemaUUID + "\", \"term\": \"" + schemaUUID + "\" }",
+                        "title": "q",
+                        "type": "object",
+                        "properties": {
+                            "@context": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ],
+                                "readOnly": true
+                            },
+                            "id": {
+                                "type": "string",
+                                "readOnly": true
+                            },
+                            "policyId": {
+                                "title": "policyId",
+                                "description": "policyId",
+                                "readOnly": true,
+                                "type": "string",
+                                "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+                            },
+                            "ref": {
+                                "title": "ref",
+                                "description": "ref",
+                                "readOnly": true,
+                                "type": "string",
+                                "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+                            }
+                        },
+                        "required": [
+                            "@context",
+                            "type",
+                            "policyId"
+                        ],
+                        "additionalProperties": false,
+                        "$defs": {}
+                    },
+                    topicId: topicUid,
+                    active: false,
+                    system: false,
+                    category: "POLICY",
                 },
-            }).then((response) => {
-         
             });
         });
-    });
+    })
 
     it("Publish the schema with the provided (internal) schema ID", () => {
         cy.request({

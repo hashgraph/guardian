@@ -3,15 +3,15 @@ import API from "../../../support/ApiUrls";
 
 context("Contracts", { tags: '@contracts' },() => {
     const authorization = Cypress.env("authorization");
-    const optionKey = "option";
-    let username = Math.floor(Math.random() * 99999) + "UserContReqTests";
-    let contractNameR = Math.floor(Math.random() * 99999) + "RCon4RequestsTests";
-    let contractNameW = Math.floor(Math.random() * 99999) + "WCon4RequestsTests";
-    let wContractId, rContractId, tokenId, policyId, hederaId, rConractUuid, tokenId2, policyId2;
-    let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId, approveRegistrantBtnBlockId;
-    let waitForApproveApplicationBlockId2, deviceGridBlockId2, issueRequestGridBlockId2, approveRegistrantBtnBlockId2;
+    //const username = Math.floor(Math.random() * 999) + "User";
+    const username = "4User";
+    const contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
+    const contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
+    const optionKey = "option"
+    let wContractId, rContractId, tokenId, policyId, hederaId, rConractUuid
+    let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId, approveRegistrantBtnBlockId
 
-    const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
+    let whileWipeRequestCreating = (dataToCompare, request, attempts) => {
         if (attempts < 100) {
             attempts++
             cy.wait(3000)

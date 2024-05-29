@@ -1,8 +1,9 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Analytics",  { tags: '@analytics' },() => {
+context("Analytics", { tags: '@analytics' }, () => {
     const authorization = Cypress.env("authorization");
+    let toolId1, toolId2
     before(() => {
         cy.request({
             method: METHOD.POST,
@@ -17,6 +18,7 @@ context("Analytics",  { tags: '@analytics' },() => {
         })
             .then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                toolId1 = response.body.id;
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.ToolsImportMsg,
@@ -29,37 +31,27 @@ context("Analytics",  { tags: '@analytics' },() => {
                     timeout: 180000
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                    toolId2 = response.body.id;
                 })
             })
     })
 
     it("Compare tools", () => {
-        let toolId1, toolId2
         cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Tools,
+            method: METHOD.POST,
+            url: API.ApiServer + API.ToolCompare,
+            body: {
+                toolId1: toolId1,
+                toolId2: toolId2
+            },
             headers: {
                 authorization,
             }
         }).then((response) => {
-            toolId1 = response.body.at(1)._id
-            toolId2 = response.body.at(0)._id
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.ToolCompare,
-                body: {
-                    toolId1: toolId1,
-                    toolId2: toolId2
-                },
-                headers: {
-                    authorization,
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.left.id).to.eq(toolId1);
-                expect(response.body.right.id).to.eq(toolId2);
-                expect(response.body.total).not.null;
-            })
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            expect(response.body.left.id).to.eq(toolId1);
+            expect(response.body.right.id).to.eq(toolId2);
+            expect(response.body.total).not.null;
         })
     });
 
@@ -80,7 +72,6 @@ context("Analytics",  { tags: '@analytics' },() => {
     });
 
     it("Compare tools with empty auth - Negative", () => {
-        const auth = ""
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare,
@@ -89,7 +80,7 @@ context("Analytics",  { tags: '@analytics' },() => {
                 toolId2: "641983a931fe4fd0e741b399"
             },
             headers: {
-                authorization: auth,
+                authorization: "",
             },
             failOnStatusCode: false
         }).then((response) => {
@@ -98,7 +89,6 @@ context("Analytics",  { tags: '@analytics' },() => {
     });
 
     it("Compare tools with invalid auth - Negative", () => {
-        const auth = "Bearer wqe"
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare,
@@ -107,7 +97,7 @@ context("Analytics",  { tags: '@analytics' },() => {
                 toolId2: "641983a931fe4fd0e741b399"
             },
             headers: {
-                authorization: auth,
+                authorization: "Bearer wqe",
             },
             failOnStatusCode: false
         }).then((response) => {
@@ -116,30 +106,19 @@ context("Analytics",  { tags: '@analytics' },() => {
     });
 
     it("Compare tools(Export)", () => {
-        let toolId1, toolId2
         cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Tools,
+            method: METHOD.POST,
+            url: API.ApiServer + API.ToolCompare + API.ExportCSV,
+            body: {
+                toolId1: toolId1,
+                toolId2: toolId2
+            },
             headers: {
                 authorization,
             }
         }).then((response) => {
-            toolId1 = response.body.at(1)._id
-            toolId2 = response.body.at(0)._id
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.ToolCompare + API.ExportCSV,
-                body: {
-                    toolId1: toolId1,
-                    toolId2: toolId2
-                },
-                headers: {
-                    authorization,
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body).to.include("data:text/csv");
-            })
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            expect(response.body).to.include("data:text/csv");
         })
     });
 
@@ -160,7 +139,6 @@ context("Analytics",  { tags: '@analytics' },() => {
     });
 
     it("Compare tools(Export) with empty auth - Negative", () => {
-        const auth = ""
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare + API.ExportCSV,
@@ -169,7 +147,7 @@ context("Analytics",  { tags: '@analytics' },() => {
                 toolId2: "641983a931fe4fd0e741b399"
             },
             headers: {
-                authorization: auth,
+                authorization: "",
             },
             failOnStatusCode: false
         }).then((response) => {
@@ -178,7 +156,6 @@ context("Analytics",  { tags: '@analytics' },() => {
     });
 
     it("Compare tools(Export) with invalid auth - Negative", () => {
-        const auth = "Bearer wqe"
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare + API.ExportCSV,
@@ -187,7 +164,7 @@ context("Analytics",  { tags: '@analytics' },() => {
                 toolId2: "641983a931fe4fd0e741b399"
             },
             headers: {
-                authorization: auth,
+                authorization: "Bearer wqe",
             },
             failOnStatusCode: false
         }).then((response) => {

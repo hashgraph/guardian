@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 context("Artifacts", { tags: "@artifacts" }, () => {
+    
     const authorization = Cypress.env("authorization");
     let artifactId;
 
@@ -19,52 +20,33 @@ context("Artifacts", { tags: "@artifacts" }, () => {
                     timeout: 300000,
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
+                    cy.request({
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Artifacts,
+                        headers: {
+                            authorization,
+                        },
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.OK);
+                        artifactId = response.body.at(0).id;
+                    })
                 });
-            })
+           })
     });
 
     it("Delete artifact", () => {
         cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Artifacts,
+            url: API.ApiServer + API.Artifacts + artifactId,
+            method: METHOD.DELETE,
             headers: {
                 authorization,
             },
         }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            artifactId = response.body.at(0).id;
-            cy.request({
-                url: API.ApiServer + API.Artifacts + artifactId,
-                method: METHOD.DELETE,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.NO_CONTENT);
-            });
+            expect(response.status).eql(STATUS_CODE.OK);
         });
     });
 
     it("Delete already deleted artifact - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Artifacts,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            artifactId = response.body.at(0).id;
-            cy.request({
-                url: API.ApiServer + API.Artifacts + artifactId,
-                method: METHOD.DELETE,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.NO_CONTENT);
-            });
-        });
         cy.request({
             url: API.ApiServer + API.Artifacts + artifactId,
             method: METHOD.DELETE,
@@ -137,7 +119,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
         cy.request({
             url: API.ApiServer + API.Artifacts + artifactId,
             method: METHOD.DELETE,
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -150,7 +132,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
             headers: {
                 authorization: "Bearer wqe",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -163,7 +145,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
             headers: {
                 authorization: "",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });

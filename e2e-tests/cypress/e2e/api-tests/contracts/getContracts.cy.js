@@ -1,12 +1,12 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Contracts", { tags: '@contracts' },() => {
+context("Contracts", { tags: '@contracts' }, () => {
     const authorization = Cypress.env("authorization");
     before(() => {
 
-        const contractNameR = Math.floor(Math.random() * 999) + "RCon4GetTests";
-        const contractNameW = Math.floor(Math.random() * 999) + "WCon4GetTests";
+        const contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
+        const contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
 
         cy.request({
             method: METHOD.POST,
