@@ -19,6 +19,11 @@ const availableList = permissionList.reduce((map, p) => {
     return map;
 }, new Map<string, any>());
 
+const allList = PermissionsArray.reduce((map, p) => {
+    map.set(p.name, p);
+    return map;
+}, new Map<string, any>());
+
 class ListPermissions {
     private readonly _list: Set<string>;
 
@@ -26,15 +31,28 @@ class ListPermissions {
         this._list = new Set<string>();
     }
 
-    public add(permission: string) {
-        if (this._list.has(permission) || !availableList.has(permission)) {
+    public add(permission: string, system: boolean) {
+        if (this._list.has(permission)) {
             return;
         }
+        let config: any;
+        if (system) {
+            if (allList.has(permission)) {
+                config = allList.get(permission);
+            } else {
+                return;
+            }
+        } else {
+            if (availableList.has(permission)) {
+                config = availableList.get(permission);
+            } else {
+                return;
+            }
+        }
         this._list.add(permission);
-        const config = availableList.get(permission);
         if (config.dependOn) {
             for (const sub of config.dependOn) {
-                this.add(sub);
+                this.add(sub, true);
             }
         }
     }
@@ -46,7 +64,7 @@ class ListPermissions {
     public static unique(permissions: string[]): string[] {
         const list = new ListPermissions();
         for (const name of permissions) {
-            list.add(name);
+            list.add(name, false);
         }
         return list.list();
     }
