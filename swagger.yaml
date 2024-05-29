@@ -14124,9 +14124,10 @@ components:
             - PERMISSIONS_ROLE_UPDATE
             - PERMISSIONS_ROLE_DELETE
             - PERMISSIONS_ROLE_MANAGE
+            - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
-            - ACCESS_POLICY_ALL
+            - ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
             - DELEGATION_ROLE_MANAGE
           example:
             - POLICIES_POLICY_READ
@@ -14220,6 +14221,7 @@ components:
             - MANAGE
             - ASSIGNED
             - PUBLISHED
+            - ASSIGNED_AND_PUBLISHED
           example: READ
         disabled:
           type: boolean
