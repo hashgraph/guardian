@@ -531,6 +531,16 @@ export class Guardians extends NatsService {
 
     /**
      * Return schemas
+     * @param {any} options
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getSchemasByOwnerV2(options: any, owner: IOwner): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS_V2, { options, owner });
+    }
+
+    /**
+     * Return schemas
      *
      * @param {Object} uuid - filters
      *
@@ -838,6 +848,24 @@ export class Guardians extends NatsService {
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS, {
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Return schemas V2 03.06.2024
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getSystemSchemasV2(
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS_V2, {
             pageIndex,
             pageSize
         });
@@ -2160,6 +2188,26 @@ export class Guardians extends NatsService {
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Return tag schemas V2
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getTagSchemasV2(
+        owner: IOwner,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS_V2, {
             owner,
             pageIndex,
             pageSize

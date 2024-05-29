@@ -93,7 +93,7 @@ export class SchemaConfigComponent implements OnInit {
     public type: SchemaType = SchemaType.System;
     public isConfirmed: boolean = false;
     public currentTopic: string = '';
-    public page: Schema[] = [];
+    public page: ISchema[] = [];
     public pageIndex: number = 0;
     public pageSize: number = 25;
     public count: number = 0;
@@ -546,6 +546,7 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+            // this.page = schemasResponse.body || [];
             this.page = SchemaHelper.map(schemasResponse.body || []);
             for (const element of this.page as any[]) {
                 element.__policyId = this.policyIdByTopic[element.topicId];
@@ -562,10 +563,10 @@ export class SchemaConfigComponent implements OnInit {
 
     private loadTagsData() {
         if (this.type === SchemaType.Policy && this.user.TAGS_TAG_READ) {
-            const ids = this.page.map(e => e.id);
+            const ids = this.page.map(e => String(e.id));
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 for (const schema of this.page) {
-                    (schema as any)._tags = data[schema.id];
+                    (schema as any)._tags = data[String(schema.id)];
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -919,6 +920,7 @@ export class SchemaConfigComponent implements OnInit {
         if (this.readonly) {
             return;
         }
+
         const dialogRef = this.dialogService.open(SchemaDialog, {
             header: 'New Schema',
             width: '950px',
@@ -930,7 +932,8 @@ export class SchemaConfigComponent implements OnInit {
                 policies: this.policies,
                 modules: this.modules,
                 tools: this.draftTools,
-                properties: this.properties
+                properties: this.properties,
+                category: this.getCategory()
             }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
@@ -989,7 +992,7 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    private onEditDocument(element: Schema): void {
+    private onEditDocument(element: ISchema): void {
         const dialogRef = this.dialogService.open(SchemaDialog, {
             header: 'Edit Schema',
             width: '950px',
@@ -1002,11 +1005,12 @@ export class SchemaConfigComponent implements OnInit {
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
-                scheme: element
+                scheme: element,
+                category: this.getCategory()
             }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
-            this.updateSchema(element.id, schema);
+            this.updateSchema(String(element.id), schema);
         });
     }
 
@@ -1081,7 +1085,7 @@ export class SchemaConfigComponent implements OnInit {
     private onCloneSchema(element: Schema): void {
         const newDocument: any = { ...element };
         delete newDocument._id;
-        delete newDocument.id;
+        // delete newDocument.id;
         delete newDocument.uuid;
         delete newDocument.creator;
         delete newDocument.owner;
@@ -1099,7 +1103,8 @@ export class SchemaConfigComponent implements OnInit {
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
-                scheme: newDocument
+                scheme: newDocument,
+                category: this.getCategory()
             }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {

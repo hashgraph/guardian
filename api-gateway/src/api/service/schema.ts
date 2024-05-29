@@ -2,7 +2,7 @@
 import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiParam, ApiQuery, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO, Examples, pageHeader } from '#middlewares';
@@ -301,6 +301,126 @@ export class SchemaApi {
     }
 
     /**
+     * Return a list of all schemas 30.05.2024 V2.
+     */
+    @Get('/')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
+        // UserRole.USER ?
+    )
+    @ApiOperation({
+        summary: 'Return a list of all schemas.',
+        description: 'Returns all schemas.',
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiQuery({
+        name: 'category',
+        type: String,
+        description: 'Schema category',
+        required: false,
+        example: SchemaCategory.POLICY
+    })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy id',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'moduleId',
+        type: String,
+        description: 'Module id',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'toolId',
+        type: String,
+        description: 'Tool id',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'topicId',
+        type: String,
+        description: 'Topic id',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: SchemaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getSchemasPageV2(
+        @AuthUser() user: IAuthUser,
+        @Query('pageIndex') pageIndex: number,
+        @Query('pageSize') pageSize: number,
+        @Query('category') category: string,
+        @Query('policyId') policyId: string,
+        @Query('moduleId') moduleId: string,
+        @Query('toolId') toolId: string,
+        @Query('topicId') topicId: string,
+        @Response() res: any
+    ): Promise<SchemaDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const options: any = {};
+            if (pageSize) {
+                options.pageIndex = pageIndex;
+                options.pageSize = pageSize;
+            }
+            if (category) {
+                options.category = category;
+            }
+            if (topicId) {
+                options.topicId = topicId;
+            }
+            if (policyId) {
+                options.policyId = policyId;
+            }
+            if (moduleId) {
+                options.moduleId = moduleId;
+            }
+            if (toolId) {
+                options.toolId = toolId;
+            }
+            const { items, count } = await guardians.getSchemasByOwnerV2(options, owner);
+            SchemaHelper.updatePermission(items, owner);
+            const schemas = SchemaUtils.toOld(items)
+
+            return res.header('X-Total-Count', count).send(schemas);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
      * Get page
      */
     @Get('/:topicId')
@@ -538,6 +658,75 @@ export class SchemaApi {
             }
             const owner = new EntityOwner(user);
             return await guardians.getSubSchemas(category, topicId, owner);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get schema by id with sub schemas
+     */
+    @Get('schema-with-sub-schemas')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_UPDATE,
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns a list of schemas.',
+        description: 'Returns a list of schemas.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        type: String,
+        description: 'Topic Id',
+        required: false,
+        example: '0.0.1'
+    })
+    @ApiQuery({
+        name: 'category',
+        type: String,
+        description: 'Schema category',
+        required: false,
+        example: SchemaCategory.POLICY
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: SchemaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @UseCache()
+    @HttpCode(HttpStatus.OK)
+    async getSchemaWithSubSchemas(
+        @AuthUser() user: IAuthUser,
+        @Query('category') category: string,
+        @Query('topicId') topicId: string,
+        @Query('schemaId') schemaId: string,
+    ): Promise<{schema: SchemaDTO, subSchemas: SchemaDTO[]} | {}> {
+        try {
+            const guardians = new Guardians();
+            if (!user.did) {
+                return {};
+            }
+            const owner = new EntityOwner(user);
+
+            let promiseSchema: Promise<ISchema | void> = new Promise<void>(resolve => resolve())
+
+            if(schemaId) {
+                promiseSchema = guardians.getSchemaById(schemaId)
+            }
+
+            const [schema, subSchemas] =
+                await Promise.all([promiseSchema, guardians.getSubSchemas(category, topicId, owner)]);
+
+            return { schema, subSchemas };
         } catch (error) {
             await InternalException(error);
         }
@@ -1614,6 +1803,71 @@ export class SchemaApi {
             await InternalException(error);
         }
     }
+
+    /**
+     * Get system schemas page
+     */
+    @Get('/system/:username')
+    @Auth(
+        Permissions.SCHEMAS_SYSTEM_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all system schemas.',
+        description: 'Returns all system schemas.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'username',
+        required: true,
+        example: 'username'
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: SchemaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getSystemSchemaV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('username') username: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<SchemaDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const { items, count } = await guardians.getSystemSchemasV2(pageIndex, pageSize);
+            items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
+            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
 
     /**
      * Delete system schema
