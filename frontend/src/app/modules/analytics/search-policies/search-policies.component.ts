@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
@@ -18,6 +18,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 })
 export class SearchPoliciesComponent implements OnInit {
     public loading: boolean = true;
+    public user: UserPermissions = new UserPermissions();
     public type: any;
     public policyId: any;
     public policy: any;
@@ -91,6 +92,7 @@ export class SearchPoliciesComponent implements OnInit {
             const tagSchemas: any[] = value[1] || [];
             this.owner = profile?.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.user = new UserPermissions(profile);
             this.loadPolicy();
         }, (e) => {
             this.loading = false;

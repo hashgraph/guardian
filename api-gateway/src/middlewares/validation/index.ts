@@ -39,3 +39,8 @@ const validate = (schema) => async (req, res, next) => {
 };
 
 export default validate
+
+export * from './examples.js';
+export * from './page-header.js';
+export * from './fields-validation.js';
+export * from './schemas/index.js';

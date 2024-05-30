@@ -3,7 +3,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicySourceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { StateField } from '../helpers/decorators/index.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
@@ -63,7 +63,7 @@ export class InterfaceDocumentsSource {
      * @param user
      * @param data
      */
-    public async setData(user: IPolicyUser, data: any): Promise<void> {
+    public async setData(user: PolicyUser, data: any): Promise<void> {
         const oldState = this.state || {};
         oldState[user.id] = data;
         this.state = oldState;
@@ -80,7 +80,7 @@ export class InterfaceDocumentsSource {
      * @param uuid
      * @param queryParams
      */
-    async getData(user: IPolicyUser, uuid: string, queryParams: any): Promise<any> {
+    async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
         const filters = ref.getFiltersAddons().map(addon => {
@@ -177,7 +177,7 @@ export class InterfaceDocumentsSource {
      * @param paginationData Paginaton data
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: IPolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
         const aggregation = [...filtersAndDataType.filters, {
             $match: {

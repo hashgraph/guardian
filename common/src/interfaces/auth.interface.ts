@@ -38,6 +38,14 @@ export interface IAuthUser {
      * Use fireblocks signing
      */
     useFireblocksSigning: boolean;
+    /**
+     * Group name
+     */
+    permissionsGroup?: string[];
+    /**
+     * Permissions
+     */
+    permissions?: string[];
 }
 
 /**

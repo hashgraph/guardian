@@ -98,8 +98,15 @@
                     <ng-container matColumnDef="tags">
                         <th mat-header-cell *matHeaderCellDef> Tags </th>
                         <td mat-cell *matCellDef="let element">
-                            <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                                [schemas]="tagSchemas" [entity]="tagEntity" [service]="tagsService"></tags-explorer>
+                            <tags-explorer 
+                                *ngIf="user.TAGS_TAG_READ"
+                                [user]="user"
+                                [data]="element._tags" 
+                                [owner]="owner" 
+                                [target]="element.id"
+                                [schemas]="tagSchemas" 
+                                [entity]="tagEntity" 
+                                [service]="tagsService"></tags-explorer>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="description">

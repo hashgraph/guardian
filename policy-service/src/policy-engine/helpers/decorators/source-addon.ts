@@ -1,7 +1,7 @@
 import { PolicyBlockDecoratorOptions } from '../../interfaces/index.js';
 import { BasicBlock } from '../../helpers/decorators/basic-block.js';
 import { IPolicyBlock } from '../../policy-engine.interface.js';
-import { IPolicyUser } from '../../policy-user.js';
+import { PolicyUser } from '../../policy-user.js';
 
 /**
  * Source addon
@@ -26,7 +26,7 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param countResult
              * @param otherOptions
              */
-            public getFromSource(user: IPolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any): any[] | number {
+            public getFromSource(user: PolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any): any[] | number {
                 if (typeof super.getFromSource === 'function') {
                     return super.getFromSource(user, globalFilters, countResult, otherOptions);
                 }
@@ -39,7 +39,7 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters Global filters
              * @returns Filters
              */
-            public getFromSourceFilters(user: IPolicyUser, globalFilters: any): any {
+            public getFromSourceFilters(user: PolicyUser, globalFilters: any): any {
                 if (typeof super.getFromSourceFilters === 'function') {
                     return super.getFromSourceFilters(user, globalFilters);
                 }

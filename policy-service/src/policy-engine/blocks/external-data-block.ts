@@ -6,7 +6,7 @@ import { PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
-import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import {
     VcDocument as VcDocumentCollection,
@@ -77,7 +77,7 @@ export class ExternalDataBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
+    protected async validateDocuments(user: PolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const error = await validator.run({
@@ -158,18 +158,7 @@ export class ExternalDataBlock {
             verify = false;
         }
 
-        let user: PolicyUser = null;
-        if (data.owner) {
-            user = new PolicyUser(data.owner, !!ref.dryRun);
-            if (data.group) {
-                const group = await ref.databaseServer.getUserInGroup(ref.policyId, data.owner, data.group);
-                user.setGroup(group);
-            } else {
-                const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, data.owner);
-                user.setGroup(group);
-            }
-        }
-
+        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data);
         const docOwner = await PolicyUtils.getUserCredentials(ref, data.owner);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();

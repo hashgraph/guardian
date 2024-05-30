@@ -66,11 +66,11 @@ export async function suggestionsAPI(): Promise<void> {
             if (!destNodes[destNodes.length - 1].children?.length) {
                 return [
                     (srcNodes && srcNodes[i + destNodes.length]?.blockType) ||
-                        null,
+                    null,
                     (srcNodes[i + destNodes.length - 1].children &&
                         srcNodes[i + destNodes.length - 1]?.children[0]
                             ?.blockType) ||
-                        null,
+                    null,
                 ];
             }
             stack.push({
@@ -167,43 +167,41 @@ export async function suggestionsAPI(): Promise<void> {
      * @param {any} msg User and suggestions input
      * @returns Suggusted next and nested blocks
      */
-    ApiResponse(MessageAPI.SUGGESTIONS, async (msg: any) => {
-        try {
-            const {
-                suggestionsInput,
-                user,
-            }: { suggestionsInput: any; user: IAuthUser } = msg;
-            if (!user?.did) {
-                throw new Error('Invalid user did');
-            }
-            const suggestionsConfig = await DatabaseServer.getSuggestionsConfig(
-                user.did
-            );
-            const suggestionsConfigItems = sortObjectsArray(
-                suggestionsConfig?.items || [],
-                'index'
-            );
-            const configs: any[] = [];
-            for (const item of suggestionsConfigItems) {
-                const config =
-                    item.type === ConfigType.POLICY
-                        ? await DatabaseServer.getPolicyById(item.id)
-                        : await DatabaseServer.getModuleById(item.id);
-                if (config) {
-                    configs.push(config.config);
+    ApiResponse(MessageAPI.SUGGESTIONS,
+        async (msg: { suggestionsInput: any, user: IAuthUser }) => {
+            try {
+                const { suggestionsInput, user } = msg;
+                if (!user?.did) {
+                    throw new Error('Invalid user did');
                 }
+                const suggestionsConfig = await DatabaseServer.getSuggestionsConfig(
+                    user.did
+                );
+                const suggestionsConfigItems = sortObjectsArray(
+                    suggestionsConfig?.items || [],
+                    'index'
+                );
+                const configs: any[] = [];
+                for (const item of suggestionsConfigItems) {
+                    const config =
+                        item.type === ConfigType.POLICY
+                            ? await DatabaseServer.getPolicyById(item.id)
+                            : await DatabaseServer.getModuleById(item.id);
+                    if (config) {
+                        configs.push(config.config);
+                    }
+                }
+                const [next, nested] = checkConfigsInTemplates(
+                    configs,
+                    Array.isArray(suggestionsInput)
+                        ? suggestionsInput
+                        : [suggestionsInput]
+                );
+                return new MessageResponse({ next, nested });
+            } catch (error) {
+                return new MessageError(error);
             }
-            const [next, nested] = checkConfigsInTemplates(
-                configs,
-                Array.isArray(suggestionsInput)
-                    ? suggestionsInput
-                    : [suggestionsInput]
-            );
-            return new MessageResponse({ next, nested });
-        } catch (error) {
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Set suggestions config
@@ -211,27 +209,25 @@ export async function suggestionsAPI(): Promise<void> {
      * @param {any} msg User and items
      * @returns Applyied suggestions config items
      */
-    ApiResponse(MessageAPI.SET_SUGGESTIONS_CONFIG, async (msg: any) => {
-        try {
-            const {
-                items,
-                user,
-            }: { items: SuggestionsOrderPriority; user: IAuthUser } = msg;
-            if (!user?.did) {
-                throw new Error('Invalid user did');
+    ApiResponse(MessageAPI.SET_SUGGESTIONS_CONFIG,
+        async (msg: { items: SuggestionsOrderPriority[], user: IAuthUser }) => {
+            try {
+                const { items, user } = msg;
+                if (!user?.did) {
+                    throw new Error('Invalid user did');
+                }
+                if (!Array.isArray(items)) {
+                    throw new Error('Invalid items for suggestions config');
+                }
+                const config = await DatabaseServer.setSuggestionsConfig({
+                    user: user.did,
+                    items,
+                });
+                return new MessageResponse(config.items);
+            } catch (error) {
+                return new MessageError(error);
             }
-            if (!Array.isArray(items)) {
-                throw new Error('Invalid items for suggestions config');
-            }
-            const config = await DatabaseServer.setSuggestionsConfig({
-                user: user.did,
-                items,
-            });
-            return new MessageResponse(config.items);
-        } catch (error) {
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Get suggestions config
@@ -239,16 +235,17 @@ export async function suggestionsAPI(): Promise<void> {
      * @param {any} msg User
      * @returns Suggestions config items
      */
-    ApiResponse(MessageAPI.GET_SUGGESTIONS_CONFIG, async (msg: any) => {
-        try {
-            const { user }: { user: IAuthUser } = msg;
-            if (!user?.did) {
-                throw new Error('Invalid user did');
+    ApiResponse(MessageAPI.GET_SUGGESTIONS_CONFIG,
+        async (msg: { user: IAuthUser }) => {
+            try {
+                const { user } = msg;
+                if (!user?.did) {
+                    throw new Error('Invalid user did');
+                }
+                const config = await DatabaseServer.getSuggestionsConfig(user.did);
+                return new MessageResponse(config?.items || []);
+            } catch (error) {
+                return new MessageError(error);
             }
-            const config = await DatabaseServer.getSuggestionsConfig(user.did);
-            return new MessageResponse(config?.items || []);
-        } catch (error) {
-            return new MessageError(error);
-        }
-    });
+        });
 }

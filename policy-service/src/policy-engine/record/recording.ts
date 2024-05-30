@@ -2,7 +2,7 @@ import { DatabaseServer, HederaDidDocument } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { RecordingStatus } from './status.type.js';
 import { RecordAction } from './action.type.js';
 import { RecordMethod } from './method.type.js';
@@ -118,7 +118,7 @@ export class Recording {
      * @param uuid
      * @public
      */
-    public async selectGroup(user: IPolicyUser, uuid: string): Promise<void> {
+    public async selectGroup(user: PolicyUser, uuid: string): Promise<void> {
         await this.record(RecordAction.SelectGroup, null, user?.did, { uuid });
     }
 
@@ -129,7 +129,7 @@ export class Recording {
      * @param data
      * @public
      */
-    public async setBlockData(user: IPolicyUser, block: AnyBlockType, data: any): Promise<void> {
+    public async setBlockData(user: PolicyUser, block: AnyBlockType, data: any): Promise<void> {
         await this.record(RecordAction.SetBlockData, block?.tag, user?.did, data);
     }
 
