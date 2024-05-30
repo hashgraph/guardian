@@ -1,4 +1,4 @@
-import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction, UserRole } from '@guardian/interfaces';
+import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
 import { ApiParam, ApiQuery, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
@@ -6,7 +6,7 @@ import { AuthUser, Auth } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO, Examples, pageHeader } from '#middlewares';
 import { CACHE } from '#constants';
-import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, getParentUser, CacheService, getCacheKey, EntityOwner } from '#helpers';
+import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import process from 'process';
 
 @Controller('schema')
@@ -50,13 +50,13 @@ export class SingleSchemaApi {
             if (!schema) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
-            if (schema.system && !schema.active && schema.creator !== user.username) {
+            if (schema.system && !schema.active && schema.owner !== user.username && schema.owner !== owner.creator) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
             if (!schema.system && schema.status !== SchemaStatus.PUBLISHED && schema.owner !== owner.owner) {
                 throw new HttpException(`Schema not found.`, HttpStatus.NOT_FOUND);
             }
-            SchemaHelper.updatePermission([schema],owner);
+            SchemaHelper.updatePermission([schema], owner);
             return SchemaUtils.toOld(schema);
         } catch (error) {
             await InternalException(error);
@@ -263,14 +263,14 @@ export class SchemaApi {
     @UseCache()
     async getSchemasPage(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('category') category: string,
-        @Query('policyId') policyId: string,
-        @Query('moduleId') moduleId: string,
-        @Query('toolId') toolId: string,
-        @Query('topicId') topicId: string,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('category') category?: string,
+        @Query('policyId') policyId?: string,
+        @Query('moduleId') moduleId?: string,
+        @Query('toolId') toolId?: string,
+        @Query('topicId') topicId?: string
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -360,11 +360,11 @@ export class SchemaApi {
     @UseCache()
     async getSchemasPageByTopicId(
         @AuthUser() user: IAuthUser,
-        @Param('topicId') topicId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('category') category: string,
         @Response() res: any,
+        @Param('topicId') topicId: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('category') category?: string,
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -425,7 +425,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
-            if (schema.system && !schema.active && schema.creator !== user.username) {
+            if (schema.system && !schema.active && schema.owner !== owner.username && schema.owner !== owner.creator) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }
             if (!schema.system && schema.status !== SchemaStatus.PUBLISHED && schema.owner !== owner.owner) {
@@ -532,8 +532,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async getSub(
         @AuthUser() user: IAuthUser,
-        @Query('category') category: string,
-        @Query('topicId') topicId: string,
+        @Query('category') category?: string,
+        @Query('topicId') topicId?: string
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -702,7 +702,8 @@ export class SchemaApi {
             newSchema.category = newSchema.category || SchemaCategory.POLICY;
             SchemaHelper.checkSchemaKey(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-            await guardians.createSchemaAsync(newSchema,owner, task);
+
+            await guardians.createSchemaAsync(newSchema, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
@@ -750,7 +751,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
@@ -809,6 +810,8 @@ export class SchemaApi {
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
         let schema: ISchema;
+        const owner = new EntityOwner(user);
+
         try {
             schema = await guardians.getSchemaById(schemaId);
         } catch (error) {
@@ -817,7 +820,7 @@ export class SchemaApi {
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
         }
-        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
         if (error) {
             throw new HttpException(error, HttpStatus.FORBIDDEN)
         }
@@ -825,7 +828,6 @@ export class SchemaApi {
             throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
-            const owner = new EntityOwner(user);
             const schemas = (await guardians.deleteSchema(schemaId, owner, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, owner);
 
@@ -904,7 +906,7 @@ export class SchemaApi {
         } catch (error) {
             await InternalException(error);
         }
-        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
         if (error) {
             throw new HttpException(error, HttpStatus.FORBIDDEN)
         }
@@ -978,7 +980,7 @@ export class SchemaApi {
         if (!schema) {
             throw new HttpException('Schema not found', HttpStatus.NOT_FOUND)
         }
-        const notAllowed = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        const notAllowed = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
         if (notAllowed) {
             throw new HttpException(notAllowed, HttpStatus.FORBIDDEN)
         }
@@ -1621,10 +1623,10 @@ export class SchemaApi {
     @UseCache()
     async getSystemSchema(
         @AuthUser() user: IAuthUser,
-        @Param('username') owner: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Param('username') username: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -1676,7 +1678,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
             }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.SYSTEM);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN);
             }
@@ -1736,7 +1738,7 @@ export class SchemaApi {
             if (!schema) {
                 throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND);
             }
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.SYSTEM);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN);
             }

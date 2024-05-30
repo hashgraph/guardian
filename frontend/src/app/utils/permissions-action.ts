@@ -1,35 +1,24 @@
 import { FormControl } from "@angular/forms";
 import { Permissions, PermissionActions } from "@guardian/interfaces";
-import { IPermission } from "./permissions";
-import { EntityAccess, EntityGroup } from "./permissions-entity";
+import { IAction, IEntity, IPermission } from "./permissions-interface";
 
-export class ActionAccess {
-    public readonly parent: EntityAccess;
-    public readonly id: string;
-    public tooltip: string;
-
-    constructor(action: string, parent: EntityAccess) {
-        this.parent = parent;
-        this.id = action;
-        this.tooltip = '';
-    }
-}
-
-export class ActionGroup {
-    public readonly parent: EntityGroup;
+export class ActionGroup implements IAction {
+    public readonly parent: IEntity;
     public readonly id: PermissionActions;
     public readonly permission: Permissions;
     public readonly control: FormControl;
     public readonly refs: ActionGroup[];
     public tooltip: string;
+    private _disable: boolean;
 
-    constructor(permission: IPermission, parent: EntityGroup) {
+    constructor(permission: IPermission, parent: IEntity) {
         this.parent = parent;
         this.id = permission.action;
         this.permission = permission.name;
         this.control = new FormControl(false);
         this.refs = [];
         this.tooltip = '';
+        this._disable = false;
     }
 
     public setValue(value: boolean): void {
@@ -41,6 +30,7 @@ export class ActionGroup {
     }
 
     public disable(): void {
+        this._disable = true;
         this.control.disable();
     }
 
@@ -50,7 +40,8 @@ export class ActionGroup {
 
     public addValue(permissions: Permissions[]): void {
         const value = permissions && permissions.includes(this.permission);
-        this.control.setValue(value);
+        const newValue = this.control.value || value;
+        this.control.setValue(newValue);
     }
 
     public addRef(action: ActionGroup) {
@@ -60,20 +51,34 @@ export class ActionGroup {
         });
     }
 
-    public _update() {
+    private _update() {
         let dependent = false;
         for (const ref of this.refs) {
             dependent = dependent || ref.getValue();
         }
-        if(dependent) {
+        if (dependent) {
             this.control.disable();
             if (!this.control.value) {
                 this.control.setValue(true);
                 this.parent.checkAll();
                 this.parent.checkCount();
             }
-        } else {
+        } else if (!this._disable) {
             this.control.enable();
         }
+    }
+
+    public isDepend(permissions: Permissions): boolean {
+        if (this.permission === permissions) {
+            return true;
+        }
+        if (this.refs && this.refs.length) {
+            for (const ref of this.refs) {
+                if (ref.permission === permissions) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

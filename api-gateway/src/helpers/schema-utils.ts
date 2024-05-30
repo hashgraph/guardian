@@ -1,5 +1,4 @@
-import { IAuthUser } from '@guardian/common';
-import { ISchema, SchemaCategory } from '@guardian/interfaces';
+import { IOwner, ISchema, SchemaCategory } from '@guardian/interfaces';
 
 /**
  * API Schema Utils
@@ -73,16 +72,23 @@ export class SchemaUtils {
      *
      * @returns {string} error
      */
-    public static checkPermission(schema: ISchema, user: IAuthUser, type: SchemaCategory): string | null {
+    public static checkPermission(
+        schema: ISchema,
+        user: IOwner,
+        type: SchemaCategory
+    ): string | null {
         if (!schema) {
             return 'Schema does not exist.';
         }
         if (schema.system) {
-            if (schema.creator !== user.username) {
+            if (
+                schema.creator !== user.username &&
+                schema.creator !== user.creator
+            ) {
                 return 'Invalid creator.';
             }
         } else {
-            if (schema.creator !== user.did) {
+            if (schema.owner !== user.owner) {
                 return 'Invalid creator.';
             }
         }

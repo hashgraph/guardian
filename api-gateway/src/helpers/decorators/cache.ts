@@ -1,10 +1,10 @@
 import { UseInterceptors, applyDecorators, SetMetadata } from '@nestjs/common';
 
 //interceptors
-import { CacheInterceptor } from '../../helpers/interceptors/cache.js';
+import { CacheInterceptor } from '#helpers';
 
 //constants
-import { CACHE, META_DATA } from '../../constants/index.js';
+import { CACHE, META_DATA } from '#constants';
 import process from 'process';
 
 const enableCache = process.env.ENABLE_CACHE;

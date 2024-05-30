@@ -11,9 +11,9 @@ import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheServ
 @Controller('branding')
 @ApiTags('branding')
 export class BrandingApi {
-
     constructor(private readonly cacheService: CacheService) {
     }
+
     /**
      * Set branding
      */

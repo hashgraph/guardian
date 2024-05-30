@@ -142,9 +142,9 @@ export class PolicyLink<T> {
      */
     private async getUser(user: PolicyUser, data: T): Promise<PolicyUser> {
         if (this.actor === EventActor.Owner) {
-            user = await this.getOwner(user, data);
+            return await this.getOwner(user, data);
         } else if (this.actor === EventActor.Issuer) {
-            user = await this.getIssuer(user, data);
+            return await this.getIssuer(user, data);
         } else {
             return user;
         }

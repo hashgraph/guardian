@@ -117,7 +117,7 @@ export async function artifactAPI(): Promise<void> {
             const filter: any = {};
 
             if (owner) {
-                filter.owner = owner;
+                filter.owner = owner.owner;
             }
 
             if (policyId) {
@@ -169,12 +169,14 @@ export async function artifactAPI(): Promise<void> {
     ApiResponse(MessageAPI.DELETE_ARTIFACT,
         async (msg: { artifactId: string, owner: IOwner }) => {
             try {
-                if (!msg || !msg.artifactId || !msg.owner) {
+                const { artifactId, owner } = msg;
+                if (!artifactId || !owner) {
                     return new MessageError('Invalid delete artifact parameters');
                 }
+
                 const artifactToDelete = await DatabaseServer.getArtifact({
-                    id: msg.artifactId,
-                    owner: msg.owner
+                    id: artifactId,
+                    owner: owner.owner
                 });
                 const parentId = artifactToDelete.policyId;
 

@@ -435,13 +435,6 @@ export class AccountService extends NatsService {
             }
         });
 
-        /**
-         * Get users
-          *
-          * @param payload - filters
-          *
-          * @returns {any[]} users
-          */
         this.getMessages(AuthEvents.GET_USER_ACCOUNTS, async (msg: any) => {
             try {
                 if (!msg) {
@@ -476,6 +469,9 @@ export class AccountService extends NatsService {
                     }
                     if (filters.username) {
                         options.username = { $regex: '.*' + filters.username + '.*' };
+                    }
+                    if (filters.did) {
+                        options.did = filters.did;
                     }
                 }
 

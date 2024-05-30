@@ -553,7 +553,7 @@ export async function schemaAPI(): Promise<void> {
                     );
                 }
 
-                await deleteSchema(id, emptyNotifier());
+                await deleteSchema(id, owner, emptyNotifier());
 
                 if (needResult) {
                     const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });

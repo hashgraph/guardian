@@ -26,7 +26,7 @@ import {
     WiperRequest,
     Workers,
 } from '@guardian/common';
-import { ContractAPI, ContractParamType, ContractType, IOwner, RetireTokenPool, RetireTokenRequest, Schema, SchemaEntity, SchemaHelper, TokenType, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
+import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, RetireTokenPool, RetireTokenRequest, Schema, SchemaEntity, SchemaHelper, TokenType, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
@@ -2719,12 +2719,7 @@ export async function contractAPI(
                 ])
             );
 
-            const srUser: IOwner = {
-                creator: sr.did,
-                owner: sr.did,
-                assigned: false,
-                published: false
-            }
+            const srUser = EntityOwner.sr(sr.did);
             if (pool.immediately) {
                 await saveRetireVC(
                     contractRepository,

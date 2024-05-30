@@ -1,5 +1,4 @@
 import {
-    AssignedEntityType,
     DocumentCategoryType,
     DocumentType,
     ExternalMessageEvents,
@@ -366,47 +365,6 @@ export class PolicyEngineService {
                     const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);
-                    }
-                    return new MessageResponse({ policies, count });
-                } catch (error) {
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_ASSIGNED_POLICIES,
-            async (msg: { filters: any, userDid: string, pageIndex: string, pageSize: string }) => {
-                try {
-                    const { filters, userDid, pageIndex, pageSize } = msg;
-                    const otherOptions: any = {
-                        fields: [
-                            'id',
-                            'uuid',
-                            'name',
-                            'version',
-                            'description',
-                            'status',
-                            'owner',
-                            'topicId',
-                            'messageId',
-                            'instanceTopicId',
-                            'discontinuedDate'
-                        ]
-                    };
-                    const _pageSize = parseInt(pageSize, 10);
-                    const _pageIndex = parseInt(pageIndex, 10);
-                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                        otherOptions.orderBy = { createDate: 'DESC' };
-                        otherOptions.limit = _pageSize;
-                        otherOptions.offset = _pageIndex * _pageSize;
-                    } else {
-                        otherOptions.orderBy = { createDate: 'DESC' };
-                        otherOptions.limit = 100;
-                    }
-                    const [policies, count] = await DatabaseServer.getPoliciesAndCount(filters, otherOptions);
-                    const assigned = await DatabaseServer.getAssignedEntities(userDid, AssignedEntityType.Policy);
-                    const assignedMap = new Set(assigned.map((e) => e.entityId));
-                    for (const policy of policies) {
-                        (policy as any).assigned = assignedMap.has(policy.id);
                     }
                     return new MessageResponse({ policies, count });
                 } catch (error) {

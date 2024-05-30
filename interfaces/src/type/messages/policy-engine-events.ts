@@ -61,6 +61,6 @@ export enum PolicyEngineEvents {
     UPLOAD_POLICY_DATA = 'policy-engine-event-upload-policy-data',
     UPLOAD_VIRTUAL_KEYS = 'policy-engine-event-upload-virtual-keys',
     GET_TAG_BLOCK_MAP = 'policy-engine-event-get-tag-block-map',
-    GET_ASSIGNED_POLICIES = 'policy-engine-event-get-assigned-policies',
+
     ACCESS_POLICY = 'policy-engine-event-access-policy'
 }

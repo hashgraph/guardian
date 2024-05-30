@@ -1,6 +1,6 @@
 import { ClientProxy } from '@nestjs/microservices';
 import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Query } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiParam, ApiExtraModels } from '@nestjs/swagger';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { AISuggestions, InternalException } from '#helpers';
 import { InternalServerErrorDTO } from '#middlewares';
 

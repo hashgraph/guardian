@@ -22,7 +22,8 @@ export enum PermissionCategories {
     AUDIT = 'AUDIT',
     TOOLS = 'TOOLS',
     PERMISSIONS = 'PERMISSIONS',
-    ACCESS = 'ACCESS'
+    ACCESS = 'ACCESS',
+    DELEGATION = 'DELEGATION'
 }
 
 /**
@@ -81,7 +82,8 @@ export enum PermissionActions {
     MANAGE = 'MANAGE',
     //
     ASSIGNED = 'ASSIGNED',
-    PUBLISHED = 'PUBLISHED'
+    PUBLISHED = 'PUBLISHED',
+    ASSIGNED_AND_PUBLISHED = 'ASSIGNED_AND_PUBLISHED'
 }
 
 /**
@@ -108,7 +110,6 @@ export enum Permissions {
     CONTRACTS_CONTRACT_READ = 'CONTRACTS_CONTRACT_READ',
     CONTRACTS_CONTRACT_EXECUTE = 'CONTRACTS_CONTRACT_EXECUTE',
     CONTRACTS_CONTRACT_MANAGE = 'CONTRACTS_CONTRACT_MANAGE',
-
     CONTRACTS_CONTRACT_CREATE = 'CONTRACTS_CONTRACT_CREATE',
     CONTRACTS_CONTRACT_DELETE = 'CONTRACTS_CONTRACT_DELETE',
     CONTRACTS_WIPE_REQUEST_READ = 'CONTRACTS_WIPE_REQUEST_READ',
@@ -206,11 +207,14 @@ export enum Permissions {
     PERMISSIONS_ROLE_CREATE = 'PERMISSIONS_ROLE_CREATE',
     PERMISSIONS_ROLE_UPDATE = 'PERMISSIONS_ROLE_UPDATE',
     PERMISSIONS_ROLE_DELETE = 'PERMISSIONS_ROLE_DELETE',
-    PERMISSIONS_USER_READ = 'PERMISSIONS_USER_READ',
+    PERMISSIONS_ROLE_MANAGE = 'PERMISSIONS_ROLE_MANAGE',
     //ACCESS
+    ACCESS_POLICY_ALL = 'ACCESS_POLICY_ALL',
     ACCESS_POLICY_ASSIGNED = 'ACCESS_POLICY_ASSIGNED',
     ACCESS_POLICY_PUBLISHED = 'ACCESS_POLICY_PUBLISHED',
-    ACCESS_POLICY_ALL = 'ACCESS_POLICY_ALL',
+    ACCESS_POLICY_ASSIGNED_AND_PUBLISHED = 'ACCESS_POLICY_ASSIGNED_AND_PUBLISHED',
+    //DELEGATION
+    DELEGATION_ROLE_MANAGE = 'DELEGATION_ROLE_MANAGE',
 }
 
 /**
@@ -783,14 +787,14 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.READ,
-            disabled: false
+            disabled: true
         },
         {
             name: Permissions.SCHEMAS_SYSTEM_SCHEMA_CREATE,
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.CREATE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]
@@ -800,7 +804,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.UPDATE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]
@@ -810,7 +814,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.DELETE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]
@@ -820,7 +824,7 @@ export const PermissionsArray: {
             category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.SYSTEM_SCHEMA,
             action: PermissionActions.REVIEW,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.SCHEMAS_SYSTEM_SCHEMA_READ
             ]
@@ -1081,30 +1085,49 @@ export const PermissionsArray: {
             category: PermissionCategories.PERMISSIONS,
             entity: PermissionEntities.ROLE,
             action: PermissionActions.CREATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         {
             name: Permissions.PERMISSIONS_ROLE_UPDATE,
             category: PermissionCategories.PERMISSIONS,
             entity: PermissionEntities.ROLE,
             action: PermissionActions.UPDATE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         {
             name: Permissions.PERMISSIONS_ROLE_DELETE,
             category: PermissionCategories.PERMISSIONS,
             entity: PermissionEntities.ROLE,
             action: PermissionActions.DELETE,
-            disabled: false
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         {
-            name: Permissions.PERMISSIONS_USER_READ,
+            name: Permissions.PERMISSIONS_ROLE_MANAGE,
             category: PermissionCategories.PERMISSIONS,
-            entity: PermissionEntities.USER,
-            action: PermissionActions.READ,
-            disabled: false
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.MANAGE,
+            disabled: false,
+            dependOn: [
+                Permissions.PERMISSIONS_ROLE_READ
+            ]
         },
         //ACCESS
+        {
+            name: Permissions.ACCESS_POLICY_ALL,
+            category: PermissionCategories.ACCESS,
+            entity: PermissionEntities.POLICY,
+            action: PermissionActions.ALL,
+            disabled: false
+        },
         {
             name: Permissions.ACCESS_POLICY_ASSIGNED,
             category: PermissionCategories.ACCESS,
@@ -1120,10 +1143,18 @@ export const PermissionsArray: {
             disabled: false
         },
         {
-            name: Permissions.ACCESS_POLICY_ALL,
+            name: Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
             category: PermissionCategories.ACCESS,
             entity: PermissionEntities.POLICY,
-            action: PermissionActions.ALL,
+            action: PermissionActions.ASSIGNED_AND_PUBLISHED,
+            disabled: false
+        },
+        //DELEGATION
+        {
+            name: Permissions.DELEGATION_ROLE_MANAGE,
+            category: PermissionCategories.DELEGATION,
+            entity: PermissionEntities.ROLE,
+            action: PermissionActions.MANAGE,
             disabled: false
         }
     ];
@@ -1153,6 +1184,7 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.CONTRACTS_CONTRACT_READ,
     Permissions.CONTRACTS_CONTRACT_CREATE,
     Permissions.CONTRACTS_CONTRACT_DELETE,
+    Permissions.CONTRACTS_CONTRACT_MANAGE,
     Permissions.CONTRACTS_WIPE_REQUEST_READ,
     Permissions.CONTRACTS_WIPE_REQUEST_UPDATE,
     Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
@@ -1225,8 +1257,8 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.PERMISSIONS_ROLE_CREATE,
     Permissions.PERMISSIONS_ROLE_UPDATE,
     Permissions.PERMISSIONS_ROLE_DELETE,
-    Permissions.PERMISSIONS_USER_READ,
-    Permissions.ACCESS_POLICY_ALL,
+    Permissions.PERMISSIONS_ROLE_MANAGE,
+    Permissions.ACCESS_POLICY_ALL
 ];
 
 export const AuditDefaultPermission: Permissions[] = [
@@ -1242,14 +1274,14 @@ export const DefaultRoles: Permissions[] = [
     Permissions.CONTRACTS_RETIRE_REQUEST_READ,
     Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
     Permissions.CONTRACTS_DOCUMENT_READ,
+    Permissions.CONTRACTS_CONTRACT_EXECUTE,
     Permissions.POLICIES_POLICY_EXECUTE,
     //Permissions.SCHEMAS_SCHEMA_READ, ???
     Permissions.TOKENS_TOKEN_READ,
     Permissions.TOKENS_TOKEN_EXECUTE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    Permissions.ACCESS_POLICY_ASSIGNED,
-    Permissions.ACCESS_POLICY_PUBLISHED,
+    Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
 ];
 
 export const OldRoles: Permissions[] = [
@@ -1259,12 +1291,12 @@ export const OldRoles: Permissions[] = [
     Permissions.CONTRACTS_RETIRE_REQUEST_READ,
     Permissions.CONTRACTS_RETIRE_REQUEST_CREATE,
     Permissions.CONTRACTS_DOCUMENT_READ,
+    Permissions.CONTRACTS_CONTRACT_EXECUTE,
     Permissions.POLICIES_POLICY_EXECUTE,
     //Permissions.SCHEMAS_SCHEMA_READ, ???
     Permissions.TOKENS_TOKEN_READ,
     Permissions.TOKENS_TOKEN_EXECUTE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    // Permissions.ACCESS_POLICY_ASSIGNED,
     Permissions.ACCESS_POLICY_PUBLISHED,
 ];

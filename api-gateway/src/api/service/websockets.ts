@@ -102,6 +102,10 @@ export class WebSocketsService {
      * @param user
      */
     public updatePermissions(users: IAuthUser | IAuthUser[]): void {
+        if(!users) {
+            return;
+        }
+
         const usersMap = new Map<string, any>();
         if (Array.isArray(users)) {
             for (const user of users) {

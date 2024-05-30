@@ -105,25 +105,37 @@
         height: 28px;
         margin-right: 8px;
         border: 1px solid #848FA9;
-        background: #EFF3F7;
+        background: #fff;
         border-radius: 6px;
-        padding: 3px 6px 3px 12px;
+        padding: 3px 12px 3px 12px;
         user-select: none;
-    }
 
-    .role-name {
-        min-width: 50px;
-        max-width: 150px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-    }
+        &[own="true"] {
+            background: #EFF3F7;
+        }
 
-    .role-icon {
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-        padding: 1px 3px;
+        .role-name {
+            min-width: 50px;
+            max-width: 150px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    
+        .role-icon {
+            display: none;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            padding: 3px 3px 3px 6px;
+        }
+
+        &[editable="true"] {
+            .role-icon {
+                display: block;
+            }
+        }
+
     }
 
     .roles {
@@ -200,13 +212,21 @@
                 padding-left: 30px;
             }
 
+            .permissions {
+                display: flex;
+                width: 700px;
+                min-width: 700px;
+                overflow: hidden;
+                justify-content: flex-start;
+            }
+
             .permission {
                 height: 48px;
                 width: 100px;
                 min-width: 100px;
                 display: flex;
                 align-items: center;
-                justify-content: center;
+                // justify-content: center;
 
                 &.big {
                     width: 170px;
@@ -236,9 +256,19 @@
 
                 .permissions {
                     display: flex;
+                    width: 700px;
+                    min-width: 700px;
+                    overflow: hidden;
+                    justify-content: flex-start;
 
                     mat-radio-group {
                         display: flex;
+                    }
+
+                    mat-radio-button {
+                        width: 20px;
+                        height: 20px;
+                        overflow: visible;
                     }
 
                     .permission {
@@ -247,8 +277,9 @@
                         min-width: 100px;
                         display: flex;
                         align-items: center;
-                        justify-content: center;
-
+                        // justify-content: center;
+                        padding-left: 4px;
+                        
                         &.big {
                             width: 170px;
                             min-width: 170px;
@@ -293,6 +324,11 @@
             }
         }
     }
+}
+
+.tab-container {
+    padding: 2px;
+    min-height: 300px;
 }
 
 .grid-container {
@@ -385,7 +421,7 @@
         line-height: 16px;
         margin-right: 10px;
     }
-    
+
     .dropdown-item {
         color: var(--color-grey-black-2);
         font-family: Inter, serif;

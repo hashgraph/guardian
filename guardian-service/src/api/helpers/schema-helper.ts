@@ -422,7 +422,7 @@ export async function copySchemaAsync(
  */
 export async function createSchemaAndArtifacts(
     category: SchemaCategory,
-    newSchema: any,
+    newSchema: ISchema,
     user: IOwner,
     notifier: INotifier
 ) {
@@ -450,7 +450,7 @@ export async function createSchemaAndArtifacts(
     }
 
     SchemaHelper.setVersion(newSchema, null, previousVersion);
-    const row = await createSchema(newSchema, newSchema.owner, notifier);
+    const row = await createSchema(newSchema, user, notifier);
 
     if (old) {
         const tags = await DatabaseServer.getTags({
@@ -485,6 +485,7 @@ export async function createSchema(
     if (newSchema) {
         delete newSchema.status;
     }
+
     const schemaObject = DatabaseServer.createSchema(newSchema);
     notifier.completedAndStart('Resolve Topic');
     let topic: TopicConfig;
@@ -536,7 +537,6 @@ export async function createSchema(
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
     }
-
     notifier.completedAndStart('Save to IPFS & Hedera');
     if (topic) {
         await sendSchemaMessage(
@@ -546,7 +546,6 @@ export async function createSchema(
             schemaObject
         );
     }
-
     notifier.completedAndStart('Update schema in DB');
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
     notifier.completed();
@@ -558,7 +557,11 @@ export async function createSchema(
  * @param schemaId Schema ID
  * @param notifier Notifier
  */
-export async function deleteSchema(schemaId: any, notifier: INotifier) {
+export async function deleteSchema(
+    schemaId: any,
+    owner: IOwner,
+    notifier: INotifier
+) {
     if (!schemaId) {
         return;
     }
@@ -576,7 +579,7 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
         if (topic) {
             const users = new Users();
-            const root = await users.getHederaAccount(item.owner);
+            const root = await users.getHederaAccount(owner.creator);
             await sendSchemaMessage(
                 root,
                 topic,

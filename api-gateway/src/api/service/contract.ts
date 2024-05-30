@@ -4,7 +4,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, UseCache, InternalException, CacheService, getCacheKey, EntityOwner } from '#helpers';
+import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 
 /**
  * Contracts api
@@ -34,6 +34,7 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
@@ -63,10 +64,10 @@ export class ContractsApi {
     @UseCache()
     async getContracts(
         @AuthUser() user: IAuthUser,
-        @Query('type') type: ContractType,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('type') type?: ContractType,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<ContractDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -119,6 +120,7 @@ export class ContractsApi {
             const guardians = new Guardians();
 
             await this.cacheService.invalidate(getCacheKey([req.url], user))
+
             return await guardians.createContract(owner, description, type);
         } catch (error) {
             await InternalException(error);
@@ -280,6 +282,7 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
@@ -309,10 +312,10 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getWipeRequests(
         @AuthUser() user: IAuthUser,
-        @Query('contractId') contractId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('contractId') contractId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<WiperRequestDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -477,7 +480,9 @@ export class ContractsApi {
     @ApiQuery({
         name: 'ban',
         type: Boolean,
-        description: 'Reject and ban'
+        description: 'Reject and ban',
+        required: false,
+        example: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -492,7 +497,7 @@ export class ContractsApi {
     async rejectWipeRequest(
         @AuthUser() user: IAuthUser,
         @Param('requestId') requestId: string,
-        @Query('ban') ban: boolean,
+        @Query('ban') ban?: boolean,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
@@ -911,6 +916,7 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
@@ -940,10 +946,10 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getRetireRequests(
         @AuthUser() user: IAuthUser,
-        @Query('contractId') contractId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('contractId') contractId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<RetireRequestDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -977,6 +983,7 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
@@ -1012,11 +1019,11 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getRetirePools(
         @AuthUser() user: IAuthUser,
-        @Query('contractId') contractId: string,
-        @Query('tokens') tokens: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('contractId') contractId?: string,
+        @Query('tokens') tokens?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<RetirePoolDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -1497,6 +1504,7 @@ export class ContractsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0,
     })
     @ApiQuery({
@@ -1509,7 +1517,12 @@ export class ContractsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: 'object',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object'
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -1520,9 +1533,9 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async getRetireVCs(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<any[]> {
         try {
             const owner = new EntityOwner(user);

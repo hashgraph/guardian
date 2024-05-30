@@ -1,11 +1,12 @@
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyType, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader, PoliciesValidationDTO } from '#middlewares';
-import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, CacheService, getCacheKey, EntityOwner } from '#helpers';
+import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import { CACHE, PREFIXES } from '#constants';
+
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -17,9 +18,9 @@ async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
-
     constructor(private readonly cacheService: CacheService) {
     }
+
     /**
      * Return a list of all policies
      */
@@ -39,12 +40,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -60,9 +65,9 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getPolicies(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
@@ -624,8 +629,8 @@ export class PolicyApi {
         schema: {
             type: 'object',
             properties: {
-                'date': {
-                    type: 'date'
+                date: {
+                    type: 'string'
                 }
             }
         }
@@ -791,6 +796,11 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
+// <<<<<<< HEAD
+//     @ApiOperation({
+//         summary: 'Returns a list of groups the user is a member of.',
+//         description: 'Returns a list of groups the user is a member of.',
+// =======
     @ApiOperation({
         summary: 'Returns a list of groups the user is a member of.',
         description: 'Returns a list of groups the user is a member of.',
@@ -850,28 +860,41 @@ export class PolicyApi {
     @ApiQuery({
         name: 'includeDocument',
         type: Boolean,
-        description: 'Include document field.'
+        description: 'Include document field.',
+        required: false,
+        example: true
     })
     @ApiQuery({
         name: 'type',
         enum: DocumentType,
-        description: 'Document type.'
+        description: 'Document type.',
+        required: false,
+        example: DocumentType.VC
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Documents.',
         isArray: true,
         headers: pageHeader,
-        type: 'object',
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object'
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -881,12 +904,12 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyDocuments(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('type') type: DocumentType,
-        @Query('includeDocument') includeDocument: boolean,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('type') type?: DocumentType,
+        @Query('includeDocument') includeDocument?: boolean,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
@@ -1702,6 +1725,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -1721,8 +1745,8 @@ export class PolicyApi {
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromMessage(
         @AuthUser() user: IAuthUser,
-        @Query('versionOfTopicId') versionOfTopicId: string,
-        @Body() body: ImportMessageDTO
+        @Body() body: ImportMessageDTO,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<PolicyDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1758,6 +1782,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -1776,8 +1801,8 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromMessageAsync(
         @AuthUser() user: IAuthUser,
-        @Query('versionOfTopicId') versionOfTopicId: string,
-        @Body() body: ImportMessageDTO
+        @Body() body: ImportMessageDTO,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<any> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1911,6 +1936,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -1932,16 +1958,17 @@ export class PolicyApi {
     async importPolicyFromFile(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId: string,
-        @Req() req
+        @Req() req,
+        @Query('versionOfTopicId') versionOfTopicId?: string,
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
 
-            const invalidedCacheTags = [PREFIXES.ARTIFACTS]
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user))
-
             await engineService.importFile(file, new EntityOwner(user), versionOfTopicId);
+
+            const invalidedCacheTags = [PREFIXES.ARTIFACTS];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
             return await getOldResult(user);
         } catch (error) {
             await InternalException(error);
@@ -1964,6 +1991,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiConsumes('multipart/form-data')
@@ -1999,7 +2027,7 @@ export class PolicyApi {
     async importPolicyFromFileWithMetadata(
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId: string,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<PolicyDTO[]> {
         try {
             const policyFile = files.find(
@@ -2040,6 +2068,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiBody({
@@ -2060,7 +2089,7 @@ export class PolicyApi {
     async importPolicyFromFileAsync(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId: string
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -2090,6 +2119,7 @@ export class PolicyApi {
         name: 'versionOfTopicId',
         type: String,
         description: 'The topic ID of policy version.',
+        required: false,
         example: '0.0.00000001'
     })
     @ApiConsumes('multipart/form-data')
@@ -2124,7 +2154,7 @@ export class PolicyApi {
     async importPolicyFromFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
         @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId: string,
+        @Query('versionOfTopicId') versionOfTopicId?: string
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
@@ -2586,12 +2616,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Transactions.',
@@ -2607,10 +2641,10 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getDryRunTransactions(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -2645,12 +2679,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Artifacts.',
@@ -2666,10 +2704,10 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getDryRunArtifacts(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -2704,12 +2742,16 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 20
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Files.',
@@ -2725,10 +2767,10 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async getDryRunIpfs(
         @AuthUser() user: IAuthUser,
+        @Response() res: any,
         @Param('policyId') policyId: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);

@@ -1,5 +1,5 @@
 import { Examples } from '#middlewares';
-import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities, PermissionActions, UserRole } from '@guardian/interfaces';
+import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities, PermissionActions } from '@guardian/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsString } from 'class-validator';
 
@@ -82,52 +82,6 @@ export class RoleDTO {
         example: Examples.DID
     })
     owner: string;
-
-    @ApiProperty({
-        type: 'string',
-        required: true,
-        enum: permissions,
-        example: [Permissions.POLICIES_POLICY_READ]
-    })
-    permissions: string[];
-}
-
-export class UserRolesDTO {
-    @ApiProperty({
-        type: 'string',
-        required: true,
-        example: 'username'
-    })
-    username: string;
-
-    @ApiProperty({
-        type: 'string',
-        required: true,
-        example: Examples.DID
-    })
-    did: string;
-
-    @ApiProperty({
-        type: 'string',
-        example: Examples.DID
-    })
-    parent?: string;
-
-    @ApiProperty({
-        type: 'string',
-        required: true,
-        enum: UserRole,
-        example: UserRole.USER
-    })
-    role: UserRole;
-
-    @ApiProperty({
-        type: 'string',
-        required: true,
-        enum: UserRole,
-        example: 'Dynamic role name'
-    })
-    permissionsGroup: string;
 
     @ApiProperty({
         type: 'string',

@@ -292,8 +292,27 @@ export class Users extends NatsService {
      * @param owner
      * @returns Operation Success
      */
-    public async updateUserRole(username: string, user: any, owner: string): Promise<any> {
-        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, user, owner });
+    public async updateUserRole(
+        username: string,
+        userRoles: string[],
+        owner: string
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner });
+    }
+
+    /**
+     * Delegate user role
+     * @param username
+     * @param userRoles
+     * @param owner
+     * @returns Operation Success
+     */
+    public async delegateUserRole(
+        username: string,
+        userRoles: string[],
+        owner: string
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.DELEGATE_USER_ROLE, { username, userRoles, owner });
     }
 
     /**

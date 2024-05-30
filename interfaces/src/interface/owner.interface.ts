@@ -1,7 +1,13 @@
+import { AccessType } from '../type/access.type.js'
+
 /**
  * Entity owner
  */
 export interface IOwner {
+    /**
+     * Current user username
+     */
+    username: string
     /**
      * Current user
      */
@@ -11,11 +17,7 @@ export interface IOwner {
      */
     owner: string
     /**
-     * Only assigned
+     * Access assigned
      */
-    assigned: boolean
-    /**
-     * Only published
-     */
-    published: boolean
+    access: AccessType
 }

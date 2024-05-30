@@ -1,5 +1,5 @@
-import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, CacheService, getCacheKey, EntityOwner } from '#helpers';
-import { IOwner, Permissions, TaskAction, UserPermissions, UserRole } from '@guardian/interfaces';
+import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner, CacheService, getCacheKey } from '#helpers';
+import { IOwner, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
@@ -13,7 +13,7 @@ import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, page
  * @param policyId
  * @param notEmpty
  */
-function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpty?: boolean): T[] {
+function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: string, notEmpty?: boolean): T[] {
     if (!tokens) {
         return [];
     }
@@ -91,18 +91,21 @@ export class TokensApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20
     })
     @ApiQuery({
-        name: 'policy',
+        name: 'policyId',
         type: String,
         description: 'Policy Id',
+        required: false,
         example: Examples.DB_ID
     })
     @ApiQuery({
@@ -113,6 +116,7 @@ export class TokensApi {
             'All'
         ],
         description: 'Token status',
+        required: false,
         example: 'All'
     })
     @ApiOkResponse({
@@ -130,11 +134,11 @@ export class TokensApi {
     // @UseCache()
     async getTokens(
         @AuthUser() user: IAuthUser,
-        @Query('policy') policy: string,
-        @Query('status') status: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('policyId') policyId?: string,
+        @Query('status') status?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<TokenDTO[]> {
         try {
             const guardians = new Guardians();
@@ -147,12 +151,12 @@ export class TokensApi {
                     tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner, 'PUBLISH');
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
-                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, true);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
                 } else {
                     tokensAndCount = await guardians.getTokensPage(owner, parseInteger(pageIndex), parseInteger(pageSize));
                     const map = await engineService.getTokensMap(owner);
                     tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
-                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policy, false);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, false);
                 }
             }
             return res

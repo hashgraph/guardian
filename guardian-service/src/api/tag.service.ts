@@ -515,7 +515,7 @@ export async function tagsAPI(): Promise<void> {
 
                 if (item.topicId && item.status === 'Published') {
                     const users = new Users();
-                    const root = await users.getHederaAccount(item.owner);
+                    const root = await users.getHederaAccount(msg.owner.creator);
                     const topic = await DatabaseServer.getTopicById(item.topicId);
                     const topicConfig = await TopicConfig.fromObject(topic, true);
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)

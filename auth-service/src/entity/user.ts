@@ -1,5 +1,5 @@
 import { BeforeCreate, Entity, Enum, Property, Unique } from '@mikro-orm/core';
-import { IUser, UserRole } from '@guardian/interfaces';
+import { IGroup, IUser, UserRole } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 
 /**
@@ -85,7 +85,7 @@ export class User extends BaseEntity implements IUser {
      * Group name
      */
     @Property({ nullable: true })
-    permissionsGroup?: string[];
+    permissionsGroup?: IGroup[];
 
     /**
      * Permissions

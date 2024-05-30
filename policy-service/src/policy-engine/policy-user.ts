@@ -57,10 +57,16 @@ export class PolicyUser {
      */
     public readonly permissions: string[];
 
-    constructor(user: IAuthUser, instance: IPolicyInstance | AnyBlockType) {
-        this.did = user.did;
-        this.username = user.username;
-        this.permissions = user.permissions || [];
+    constructor(arg: IAuthUser | string, instance: IPolicyInstance | AnyBlockType) {
+        if (typeof arg === 'string') {
+            this.did = arg;
+            this.username = null;
+            this.permissions = [];
+        } else {
+            this.did = arg.did;
+            this.username = arg.username;
+            this.permissions = arg.permissions || [];
+        }
         this.role = null;
         this.group = null;
         this.roleMessage = null;
@@ -145,7 +151,11 @@ export class PolicyUser {
     }
 
     public equal(did: string, uuid: string): boolean {
-        return this._did === did && this._group === uuid;
+        if (this._group || uuid) {
+            return this._did === did && this._group === uuid;
+        } else {
+            return this._did === did;
+        }
     }
 
     public toJson() {

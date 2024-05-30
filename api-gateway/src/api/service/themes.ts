@@ -7,6 +7,7 @@ import { AuthUser, Auth } from '#auth';
 import { Examples, InternalServerErrorDTO, ThemeDTO } from '#middlewares';
 import { PREFIXES } from '#constants';
 
+
 @Controller('themes')
 @ApiTags('themes')
 export class ThemesApi {
@@ -44,13 +45,14 @@ export class ThemesApi {
     async setThemes(
         @AuthUser() user: IAuthUser,
         @Body() theme: ThemeDTO,
-        @Req() req
+        @Req() req,
     ): Promise<ThemeDTO> {
         try {
             const guardians = new Guardians();
-            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
-
             const owner = new EntityOwner(user);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], req.user));
+
             return await guardians.createTheme(theme, owner);
         } catch (error) {
             await InternalException(error);

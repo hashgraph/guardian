@@ -1,54 +1,48 @@
 import { Permissions, PermissionCategories, PermissionEntities } from "@guardian/interfaces";
-import { IPermission } from "./permissions";
-import { EntityAccess, EntityGroup } from "./permissions-entity";
+import { EntityAccess, EntityDelegate, EntityGroup } from "./permissions-entity";
+import { ICategory, IEntity, IPermission, actionAccessName, actionName, categoryNames, delegateAccessName } from "./permissions-interface";
 
-const categoryNames = new Map<PermissionCategories, string>([
-    [PermissionCategories.ACCOUNTS, 'Accounts'],
-    [PermissionCategories.SESSION, 'Session'],
-    [PermissionCategories.PROFILES, 'Profiles'],
-    [PermissionCategories.ANALYTIC, 'Analytic'],
-    [PermissionCategories.ARTIFACTS, 'Artifacts'],
-    [PermissionCategories.POLICIES, 'Policies'],
-    [PermissionCategories.BRANDING, 'Branding'],
-    [PermissionCategories.CONTRACTS, 'Contracts'],
-    [PermissionCategories.DEMO, 'Demo'],
-    [PermissionCategories.IPFS, 'IPFS'],
-    [PermissionCategories.LOG, 'Logs'],
-    [PermissionCategories.MODULES, 'Modules'],
-    [PermissionCategories.SETTINGS, 'Settings'],
-    [PermissionCategories.SUGGESTIONS, 'Suggestions'],
-    [PermissionCategories.TAGS, 'Tags'],
-    [PermissionCategories.SCHEMAS, 'Schemas'],
-    [PermissionCategories.TOKENS, 'Tokens'],
-    [PermissionCategories.AUDIT, 'Audit'],
-    [PermissionCategories.TOOLS, 'Tools'],
-    [PermissionCategories.PERMISSIONS, 'Permissions'],
-    [PermissionCategories.ACCESS, 'Access']
-])
+export class CategoryDetails implements ICategory {
+    public readonly type: string = 'Role';
+    public readonly id: string;
+    public readonly name: string;
+    public readonly map = new Map<PermissionEntities, EntityGroup>();
+    public readonly entities: EntityGroup[] = [];
+    public readonly actions: string[] = [];
+    public count: number = 0;
 
-const actionName = [
-    'Read',
-    'Create',
-    'Edit',
-    'Delete',
-    'Review',
-    'Execute',
-    'Manage'
-]
+    constructor(name: string) {
+        this.id = '';
+        this.name = name;
+    }
 
-export const actionAccessName = [
-    'Assigned',
-    'Published',
-    'Assigned & Published',
-    'All'
-]
+    public checkCount() {
+        this.count = 0;
+    }
 
-export class CategoryAccess {
+    public checkAll() { }
+
+    public disable(): void { }
+
+    public clearValue(): void { }
+
+    public addValue(permissions: Permissions[]): void { }
+
+    public addEntity(permission: IPermission): EntityGroup {
+        throw new Error("Method not implemented.");
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        throw new Error("Method not implemented.");
+    }
+}
+
+export class CategoryAccess implements ICategory {
     public readonly type: string = 'Access';
     public readonly id: PermissionCategories;
     public readonly name: string;
-    public readonly map = new Map<PermissionEntities, EntityAccess>();
-    public readonly entities: EntityAccess[] = [];
+    public readonly map = new Map<PermissionEntities, IEntity>();
+    public readonly entities: IEntity[] = [];
     public readonly actions: string[];
     public count: number = 0;
 
@@ -58,7 +52,7 @@ export class CategoryAccess {
         this.actions = actionAccessName;
     }
 
-    public addEntity(permission: IPermission): EntityAccess {
+    public addEntity(permission: IPermission): IEntity {
         if (this.map.has(permission.entity)) {
             return this.map.get(permission.entity) as any;
         } else {
@@ -72,6 +66,8 @@ export class CategoryAccess {
     public checkCount() {
         this.count = 0;
     }
+
+    public checkAll() { }
 
     public disable(): void {
         for (const entity of this.map.values()) {
@@ -90,38 +86,80 @@ export class CategoryAccess {
             entity.addValue(permissions);
         }
     }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const entity of this.map.values()) {
+            entity.mergeValue(permissions);
+        }
+    }
 }
 
-
-export class CategoryDetails {
-    public readonly type: string = 'Role';
-    public readonly id: string;
+export class CategoryDelegate implements ICategory {
+    public readonly type: string = 'Permissions';
+    public readonly id: PermissionCategories;
     public readonly name: string;
-    public readonly map = new Map<PermissionEntities, EntityGroup>();
-    public readonly entities: EntityGroup[] = [];
-    public readonly actions: string[] = [];
+    public readonly map = new Map<PermissionEntities, IEntity>();
+    public readonly entities: IEntity[] = [];
+    public readonly actions: string[];
     public count: number = 0;
 
-    constructor(name: string) {
-        this.id = '';
-        this.name = name;
+    constructor() {
+        this.id = PermissionCategories.DELEGATION;
+        this.name = 'Delegate';
+        this.actions = delegateAccessName;
+    }
+
+    public addEntity(permission: IPermission): IEntity {
+        if (this.map.has(permission.entity)) {
+            return this.map.get(permission.entity) as any;
+        } else {
+            const entity = new EntityDelegate(permission, this);
+            this.map.set(permission.entity, entity);
+            this.entities.push(entity);
+            return entity;
+        }
     }
 
     public checkCount() {
-        this.count = 0;
+        let count = 0;
+        for (const entity of this.map.values()) {
+            for (const action of entity.actions) {
+                if (action && action.control && action.control.value) {
+                    count++;
+                }
+            }
+        }
+        this.count = count;
     }
 
+    public checkAll() { }
+
     public disable(): void {
+        for (const entity of this.map.values()) {
+            entity.disable();
+        }
     }
 
     public clearValue(): void {
+        for (const entity of this.map.values()) {
+            entity.clearValue();
+        }
     }
 
     public addValue(permissions: Permissions[]): void {
+        for (const entity of this.map.values()) {
+            entity.addValue(permissions);
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const entity of this.entities) {
+            entity.mergeValue(permissions);
+        }
     }
 }
 
-export class CategoryGroup {
+export class CategoryGroup implements ICategory {
     public readonly type: string = 'Permissions';
     public readonly id: PermissionCategories;
     public readonly name: string;
@@ -180,6 +218,12 @@ export class CategoryGroup {
     public addValue(permissions: Permissions[]): void {
         for (const entity of this.entities) {
             entity.addValue(permissions);
+        }
+    }
+
+    public mergeValue(permissions: Permissions[]): void {
+        for (const entity of this.entities) {
+            entity.mergeValue(permissions);
         }
     }
 }

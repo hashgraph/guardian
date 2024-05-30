@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { CategoryGroup, EntityGroup, PermissionsGroup } from 'src/app/utils/index';
+import { ICategory, IEntity } from 'src/app/utils/permissions-interface';
 
 @Component({
     selector: 'app-roles-view',
@@ -24,7 +25,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     public newRole: FormGroup | null = null;
     public controls: Map<string, any>;
     public group: PermissionsGroup;
-    public selectedCategory: CategoryGroup | null = null;
+    public selectedCategory: ICategory | null = null;
     public lastCategory: boolean = false;
 
     constructor(
@@ -189,24 +190,23 @@ export class RolesViewComponent implements OnInit, OnDestroy {
             permissions: this.group.form
         });
         this.group.addRole();
-        this.group.addAccess(this.permissions);
         this.group.setValue(row?.permissions);
         this.group.checkCount();
         this.selectedCategory = this.group.first;
         this.lastCategory = false;
     }
 
-    public onSelectCategory(category: CategoryGroup) {
+    public onSelectCategory(category: ICategory) {
         this.selectedCategory = category;
         this.lastCategory = this.group.last === category;
     }
 
-    public onAll(entity: EntityGroup) {
+    public onAll(entity: IEntity) {
         entity.selectAll();
         this.selectedCategory?.checkCount();
     }
 
-    public onCheckAll(entity: EntityGroup) {
+    public onCheckAll(entity: IEntity) {
         entity.checkAll();
         this.selectedCategory?.checkCount();
     }

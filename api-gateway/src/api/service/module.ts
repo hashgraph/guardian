@@ -1,20 +1,20 @@
 import { Logger, IAuthUser } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, Req } from '@nestjs/common';
-import { Permissions, SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
+import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
-import { Guardians, SchemaUtils, UseCache, InternalException, CacheService, getCacheKey, EntityOwner } from '#helpers';
-import { PREFIXES } from '#constants';
+import { Guardians, SchemaUtils, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
+import { PREFIXES } from '../../constants';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
 @Controller('modules')
 @ApiTags('modules')
 export class ModulesApi {
-
     constructor(private readonly cacheService: CacheService) {
     }
+
     /**
      * Creates a new module
      */
@@ -73,12 +73,16 @@ export class ModulesApi {
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
-        description: 'The number of pages to skip before starting to collect the result set'
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'The numbers of items to return'
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -94,9 +98,9 @@ export class ModulesApi {
     @HttpCode(HttpStatus.OK)
     async getModules(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<ModuleDTO[]> {
         try {
             const options: any = {
@@ -127,17 +131,22 @@ export class ModulesApi {
         name: 'topicId',
         type: String,
         description: 'Topic id',
+        required: false,
         example: Examples.ACCOUNT_ID
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -154,10 +163,10 @@ export class ModulesApi {
     @HttpCode(HttpStatus.OK)
     async getModuleSchemas(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('topicId') topicId: string,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('topicId') topicId?: string,
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -709,13 +718,13 @@ export class ModulesApi {
             const guardian = new Guardians();
 
             const invalidedCacheKeys = [
-              `${PREFIXES.MODULES}${req.params.uuid}/export/file`,
-              `${PREFIXES.MODULES}${req.params.uuid}/export/message`
+                `${PREFIXES.MODULES}${req.params.uuid}/export/file`,
+                `${PREFIXES.MODULES}${req.params.uuid}/export/message`
             ];
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user));
 
-          return await guardian.publishModule(uuid, new EntityOwner(user), module);
+            return await guardian.publishModule(uuid, new EntityOwner(user), module);
         } catch (error) {
             await InternalException(error);
         }

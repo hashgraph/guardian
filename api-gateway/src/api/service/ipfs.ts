@@ -114,7 +114,7 @@ export class IpfsApi {
      * Get file
      */
     @Get('/file/:cid')
-    @ApiSecurity('bearerAuth')
+    @ApiSecurity('bearer')
     @ApiOperation({
         summary: 'Get file from ipfs.',
         description: 'Get file from ipfs.',

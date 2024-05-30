@@ -1,4 +1,4 @@
-import { DidDocumentStatus, DocumentStatus, IOwner, ISignOptions, MessageAPI, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentStatus, EntityOwner, IOwner, ISignOptions, MessageAPI, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
@@ -302,12 +302,7 @@ async function createUserProfile(
     notifier.completedAndStart('Publish Schema');
     let schemaObject: Schema;
     try {
-        const srUser: IOwner = {
-            creator: userDID,
-            owner: userDID,
-            assigned: false,
-            published: false
-        }
+        const srUser: IOwner = EntityOwner.sr(userDID);
         let schema: SchemaCollection = null;
 
         schema = await new DataBaseHelper(SchemaCollection).findOne({

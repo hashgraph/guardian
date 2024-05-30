@@ -1,22 +1,10 @@
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors } from '@nestjs/common';
-import { Permissions, TaskAction, UserRole } from '@guardian/interfaces';
+import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
-import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, CacheService, getCacheKey, EntityOwner } from '#helpers';
+import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, getCacheKey, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
-
-/**
- * Get entity owner
- * @param user
- */
-function toolOwner(user: IAuthUser): string {
-    if (user?.role === UserRole.USER) {
-        return user.parent;
-    } else {
-        return user.did;
-    }
-}
 
 @Controller('tools')
 @ApiTags('tools')
@@ -161,9 +149,9 @@ export class ToolsApi {
     @UseCache()
     async getTools(
         @AuthUser() user: IAuthUser,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
     ): Promise<ToolDTO[]> {
         try {
             const owner = new EntityOwner(user);

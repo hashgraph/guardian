@@ -25,24 +25,28 @@ export class TrustChainsApi {
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
         example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
         example: 20
     })
     @ApiQuery({
         name: 'policyId',
         type: String,
         description: 'Policy Id',
+        required: false,
         example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'policyOwner',
         type: String,
         description: 'Policy Owner',
+        required: false,
         example: Examples.DID
     })
     @ApiOkResponse({
@@ -58,11 +62,11 @@ export class TrustChainsApi {
     @ApiExtraModels(VpDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getTrustChains(
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
-        @Query('policyId') policyId: number,
-        @Query('policyOwner') policyOwner: number,
-        @Response() res: any
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('policyId') policyId?: string,
+        @Query('policyOwner') policyOwner?: string
     ): Promise<VpDocumentDTO[]> {
         try {
             const guardians = new Guardians();

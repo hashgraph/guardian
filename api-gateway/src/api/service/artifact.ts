@@ -1,11 +1,11 @@
-import { Permissions, UserRole } from '@guardian/interfaces';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, Req} from '@nestjs/common';
+import { Permissions } from '@guardian/interfaces';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, Req } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
-import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, CacheService, UseCache, getCacheKey, EntityOwner } from '#helpers';
+import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
-import { PREFIXES } from '#constants';
+import { PREFIXES } from '../../constants';
 
 @Controller('artifacts')
 @ApiTags('artifacts')
@@ -26,29 +26,46 @@ export class ArtifactApi {
         description: 'Returns all artifacts.',
     })
     @ApiQuery({
+        name: 'id',
+        type: String,
+        description: 'Artifact identifier',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
         name: 'type',
         enum: ['tool', 'policy'],
         description: 'Tool|Policy',
+        required: false,
+        example: 'policy'
     })
     @ApiQuery({
         name: 'policyId',
         type: String,
         description: 'Policy identifier',
+        required: false,
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'toolId',
         type: String,
         description: 'Tool identifier',
+        required: false,
+        example: Examples.DB_ID
     })
     @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -65,14 +82,14 @@ export class ArtifactApi {
     @UseCache({isFastify: true})
     async getArtifacts(
         @AuthUser() user: IAuthUser,
-        @Query('type') type: string,
-        @Query('policyId') policyId: string,
-        @Query('toolId') toolId: string,
-        @Query('id') id: string,
-        @Query('pageIndex') pageIndex: number,
-        @Query('pageSize') pageSize: number,
+        @Response() res: any,
         @Req() req,
-        @Response() res: any
+        @Query('id') id: string,
+        @Query('type') type?: string,
+        @Query('policyId') policyId?: string,
+        @Query('toolId') toolId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
     ): Promise<ArtifactDTOItem> {
         try {
             const options: any = {
@@ -214,13 +231,11 @@ export class ArtifactApi {
         @AuthUser() user: IAuthUser,
         @Param('artifactId') artifactId: string,
         @Req() req,
-        @Response() res
     ): Promise<boolean> {
         try {
             const guardian = new Guardians();
-
-            const invalidedCacheTags = [PREFIXES.ARTIFACTS]
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user))
+            const invalidedCacheTags = [PREFIXES.ARTIFACTS];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await guardian.deleteArtifact(artifactId, new EntityOwner(user));
         } catch (error) {

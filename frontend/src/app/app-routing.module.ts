@@ -430,8 +430,15 @@ const routes: Routes = [
         component: RolesViewComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.PERMISSIONS_ROLE_READ]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.PERMISSIONS_ROLE_CREATE,
+                Permissions.PERMISSIONS_ROLE_UPDATE,
+                Permissions.PERMISSIONS_ROLE_DELETE,
+            ]
         }
     },
     {
@@ -439,8 +446,14 @@ const routes: Routes = [
         component: UsersManagementComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.PERMISSIONS_ROLE_READ]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.DELEGATION_ROLE_MANAGE,
+                Permissions.PERMISSIONS_ROLE_MANAGE
+            ]
         }
     },
     {
@@ -448,8 +461,14 @@ const routes: Routes = [
         component: UsersManagementDetailComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.STANDARD_REGISTRY],
-            permissions: [Permissions.PERMISSIONS_ROLE_READ]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.DELEGATION_ROLE_MANAGE,
+                Permissions.PERMISSIONS_ROLE_MANAGE
+            ]
         }
     },
 

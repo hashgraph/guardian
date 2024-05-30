@@ -1,8 +1,8 @@
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Version } from '@nestjs/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, Examples } from '#middlewares';
-import { CACHE } from '../../constants/index.js';
+import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
 
 /**
@@ -263,9 +263,7 @@ export class ProjectsAPI {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(PropertiesDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.LONG_TTL })

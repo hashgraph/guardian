@@ -1,4 +1,4 @@
-import { AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { AccessType, AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DataBaseHelper,
@@ -161,19 +161,35 @@ export class PolicyEngine extends NatsService {
         if (user.creator === policy.creator) {
             return 0
         }
-        if (user.published && (
-            policy.status !== PolicyType.PUBLISH &&
-            policy.status !== PolicyType.DISCONTINUED
-        )) {
-            return 2
-        }
-        if (user.assigned) {
-            const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
-            if (!assigned) {
-                return 2
+        const published = (
+            policy.status === PolicyType.PUBLISH ||
+            policy.status === PolicyType.DISCONTINUED
+        );
+        const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
+
+        switch (user.access) {
+            case AccessType.ALL: {
+                return 0;
+            }
+            case AccessType.ASSIGNED_OR_PUBLISHED: {
+                return (published || assigned) ? 0 : 2;
+            }
+            case AccessType.PUBLISHED: {
+                return (published) ? 0 : 2;
+            }
+            case AccessType.ASSIGNED: {
+                return (assigned) ? 0 : 2;
+            }
+            case AccessType.ASSIGNED_AND_PUBLISHED: {
+                return (published && assigned) ? 0 : 2;
+            }
+            case AccessType.NONE: {
+                return 2;
+            }
+            default: {
+                return 2;
             }
         }
-        return 0
     }
 
     /**
@@ -199,13 +215,44 @@ export class PolicyEngine extends NatsService {
      */
     public async addAccessFilters(filters: { [field: string]: any }, user: IOwner): Promise<any> {
         filters.owner = user.owner;
-        if (user.published) {
-            filters.status = { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] };
-        }
-        if (user.assigned) {
-            const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
-            const assignedMap = assigned.map((e) => e.entityId);
-            filters.id = { $in: assignedMap };
+        switch (user.access) {
+            case AccessType.ALL: {
+                break;
+            }
+            case AccessType.ASSIGNED_OR_PUBLISHED: {
+                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap = assigned.map((e) => e.entityId);
+                filters.$or = [
+                    { status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] } },
+                    { id: { $in: assignedMap } }
+                ];
+                break;
+            }
+            case AccessType.PUBLISHED: {
+                filters.status = { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] };
+                break;
+            }
+            case AccessType.ASSIGNED: {
+                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap = assigned.map((e) => e.entityId);
+                filters.id = { $in: assignedMap };
+                break;
+            }
+            case AccessType.ASSIGNED_AND_PUBLISHED: {
+                const assigned = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
+                const assignedMap = assigned.map((e) => e.entityId);
+                filters.id = { $in: assignedMap };
+                filters.status = { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] };
+                break;
+            }
+            case AccessType.NONE: {
+                filters.id = { $in: [] };
+                break;
+            }
+            default: {
+                filters.id = { $in: [] };
+                break;
+            }
         }
     }
 
@@ -234,7 +281,7 @@ export class PolicyEngine extends NatsService {
                 await DatabaseServer.getTopicById(policyTopicId),
                 true
             );
-            const root = await users.getHederaAccount(schema.owner);
+            const root = await users.getHederaAccount(owner.creator);
             const dependencySchemas = await DatabaseServer.getSchemas({
                 $and: [
                     { iri: { $in: schema.defs } },
@@ -494,7 +541,7 @@ export class PolicyEngine extends NatsService {
         });
         for (const schema of schemasToDelete) {
             if (schema.status === SchemaStatus.DRAFT) {
-                await deleteSchema(schema.id, notifier);
+                await deleteSchema(schema.id, user, notifier);
             }
         }
         notifier.completedAndStart('Delete artifacts');
@@ -508,7 +555,7 @@ export class PolicyEngine extends NatsService {
         notifier.completedAndStart('Publishing delete policy message');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true);
         const users = new Users();
-        const root = await users.getHederaAccount(policyToDelete.owner);
+        const root = await users.getHederaAccount(user.creator);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
         message.setDocument(policyToDelete);

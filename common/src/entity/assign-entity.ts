@@ -40,4 +40,10 @@ export class AssignEntity extends BaseEntity {
      */
     @Property()
     assigned: boolean;
+
+    /**
+     * Owner DID
+     */
+    @Property()
+    owner: string;
 }

@@ -1,6 +1,9 @@
-import { IAuthUser } from '@guardian/common';
-import { AccessType, IOwner, Permissions, UserPermissions, UserRole } from '@guardian/interfaces';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { UserPermissions } from '../helpers/permissions-helper.js';
+import { IOwner } from '../interface/owner.interface.js';
+import { IUser } from '../interface/user.interface.js';
+import { AccessType } from '../type/access.type.js';
+import { Permissions } from '../type/permissions.type.js';
+import { UserRole } from '../type/user-role.type.js';
 
 export class EntityOwner implements IOwner {
     public readonly parent: string;
@@ -9,11 +12,8 @@ export class EntityOwner implements IOwner {
     public readonly username: string;
     public readonly access: AccessType;
 
-    constructor(user?: IAuthUser) {
+    constructor(user?: IUser) {
         if (user) {
-            if (!user.did) {
-                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
             this.parent = this.parent;
             this.username = user.username;
             if (user.role === UserRole.USER) {
