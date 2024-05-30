@@ -16,9 +16,7 @@ context('Accounts', { tags: '@accounts' }, () => {
             expect(response.status).to.eq(STATUS_CODE.OK)
             expect(response.body).to.have.property('id')
             expect(response.body).to.have.property('username', 'StandardRegistry')
-            expect(response.body).to.have.property('password')
             expect(response.body).to.have.property('did')
-            expect(response.body).to.have.property('walletToken')
             expect(response.body).to.have.property('hederaAccountId')
             expect(response.body).to.have.property('role')
         })
@@ -50,7 +48,6 @@ context('Accounts', { tags: '@accounts' }, () => {
                 }).then((response) => {
                     expect(response.status).to.eq(200)
                     expect(response.body).to.have.property('id')
-                    expect(response.body).to.have.property('password')
                     expect(response.body.role).eq('USER')
                 })
             })
