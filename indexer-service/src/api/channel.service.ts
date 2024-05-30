@@ -1,7 +1,13 @@
-import { Controller, Inject, Module } from '@nestjs/common';
-import { Client, ClientProxy, EventPattern, MessagePattern, Payload, Transport, } from '@nestjs/microservices';
+import { Controller, Inject } from '@nestjs/common';
+import {
+    ClientProxy,
+    EventPattern,
+} from '@nestjs/microservices';
 import process from 'process';
-import { IndexerMessageAPI, MessageResponse, MessageError, Utils } from '@indexer/common';
+import {
+    IndexerMessageAPI,
+    Utils,
+} from '@indexer/common';
 
 @Controller()
 export class ChannelService {
@@ -18,7 +24,7 @@ export class ChannelService {
                 id: this.id,
                 name: this.name,
                 status: this.status,
-                delay: this.STATUS_DELAY
+                delay: this.STATUS_DELAY,
             };
             this.client.emit(IndexerMessageAPI.INDEXER_STATUS, status);
         }, this.STATUS_DELAY);
@@ -33,7 +39,7 @@ export class ChannelService {
             id: this.id,
             name: this.name,
             status: this.status,
-            delay: this.STATUS_DELAY
+            delay: this.STATUS_DELAY,
         };
         this.client.emit(IndexerMessageAPI.INDEXER_STATUS, status);
     }

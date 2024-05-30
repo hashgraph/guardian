@@ -31,6 +31,7 @@
     "api-tests",
     "ai-service",
     "notification-service",
+    "indexer-interfaces",
     "indexer-common",
     "indexer-api-gateway",
     "indexer-service",

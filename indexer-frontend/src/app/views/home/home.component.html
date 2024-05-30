@@ -1,23 +1,3 @@
-<!-- <div>
-    <form class="example-form">
-        <mat-form-field class="full-width">
-            <mat-label>Item ID</mat-label>
-            <input matInput placeholder="Search by item id" [formControl]="searchControl">
-        </mat-form-field>
-
-        <button mat-flat-button color="primary" (click)="onSearch()" [disabled]="searchControl.invalid">Search</button>
-    </form>
-
-    <div class="results">
-        @for (item of results; track item;) {
-        <div class="result">
-            <div class="result__type">{{item.type}}</div>
-            <div class="result__id">{{item.id}}</div>
-        </div>
-        }
-    </div>
-</div> -->
-
 <div class="container page-content">
     <div class="main">
         <div class="search-container">
@@ -25,31 +5,39 @@
             <div class="search-label">
                 <div class="search-label__header">{{ 'home.header' | transloco }}
                 </div>
-                <div class="search-label__description">{{ 'home.description' | transloco }}</div>
+                <div class="search-label__description">{{ 'home.description' | transloco }} <b>{{
+                        'home.bold_description' | transloco}}</b></div>
             </div>
 
             <div class="search-control">
 
                 <form class="search-control__form" (submit)="onSearch()">
-                    <mat-form-field class="search-control__input">
-                        <input matInput [placeholder]="'header.search_placeholder' | transloco" [formControl]="searchControl">
-                    </mat-form-field>
-                    <div class="search-control__icon">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd"
-                                d="M2.19985 6.19961C2.19985 5.13874 2.62128 4.12133 3.37143 3.37118C4.12157 2.62104 5.13899 2.19961 6.19985 2.19961C7.26072 2.19961 8.27814 2.62104 9.02828 3.37118C9.77843 4.12133 10.1999 5.13874 10.1999 6.19961C10.1999 7.26048 9.77843 8.27789 9.02828 9.02804C8.27814 9.77818 7.26072 10.1996 6.19985 10.1996C5.13899 10.1996 4.12157 9.77818 3.37143 9.02804C2.62128 8.27789 2.19985 7.26048 2.19985 6.19961ZM6.19985 0.599609C5.31252 0.599609 4.43789 0.810467 3.64804 1.21481C2.85819 1.61915 2.17573 2.20539 1.6569 2.92523C1.13807 3.64507 0.797719 4.4779 0.663902 5.35508C0.530084 6.23226 0.606629 7.12869 0.887228 7.97049C1.16783 8.81228 1.64445 9.57535 2.27781 10.1968C2.91117 10.8183 3.68315 11.2803 4.53012 11.5449C5.37709 11.8095 6.2748 11.869 7.14929 11.7185C8.02377 11.5681 8.84999 11.212 9.55985 10.6796C9.5826 10.7099 9.60746 10.7385 9.63426 10.7652L12.0343 13.1652C12.1851 13.3109 12.3872 13.3916 12.597 13.3898C12.8067 13.3879 13.0074 13.3038 13.1557 13.1555C13.304 13.0071 13.3882 12.8065 13.39 12.5967C13.3918 12.387 13.3112 12.1849 13.1655 12.034L10.7655 9.63401C10.7387 9.60721 10.7101 9.58235 10.6799 9.55961C11.3038 8.72762 11.6838 7.73831 11.7772 6.70252C11.8706 5.66674 11.6737 4.62541 11.2086 3.69521C10.7436 2.76502 10.0286 1.98272 9.14395 1.43596C8.25928 0.889211 7.23984 0.599609 6.19985 0.599609Z"
-                                fill="#B0B5BA" />
-                        </svg>
-                    </div>
+                    <p-iconField iconPosition="right" class="search-control__input">
+                        <p-inputIcon styleClass="pi pi-search" (click)="search.focus()" />
+                        <input #search pInputText [placeholder]="'header.search_placeholder' | transloco" type="text"
+                            [formControl]="searchControl" />
+                    </p-iconField>
                 </form>
 
             </div>
         </div>
     </div>
+
     <div class="result">
+        <h1>{{ 'landing.overview' | transloco }}</h1>
+        <div class="cards">
+            @for (stat of stats; track $index) {
+            <app-stat-card [cardLabel]="stat.label" [chartData]="{ labels: stat.labels, data: stat.data}"
+                [link]="stat.link" [count]="stat.count" [upcount]="stat.upcount"></app-stat-card>
+            }
 
+        </div>
     </div>
-    <div class="overview">
 
+    <div class="overview">
+        <h1>{{'landing.project_locations' | transloco}}</h1>
+        <div class="map-container">
+            <app-project-locations [projectLocations]="projectLocations"></app-project-locations>
+        </div>
     </div>
 </div>

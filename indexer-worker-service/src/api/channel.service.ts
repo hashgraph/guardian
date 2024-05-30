@@ -98,7 +98,7 @@ export class Worker {
      * Start jobs
      */
     public async start(): Promise<Worker> {
-        await TopicService.addTopic("0.0.1960");
+        await TopicService.addTopic(process.env.INITIALIZATION_TOPIC_ID);
         await this.topics.start();
         await this.messages.start();
         await this.tokens.start();

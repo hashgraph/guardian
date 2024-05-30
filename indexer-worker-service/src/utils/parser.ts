@@ -1,4 +1,5 @@
-import { MessageCache, Message, MessageType } from '@indexer/common';
+import { MessageCache, Message } from '@indexer/common';
+import { MessageType } from '@indexer/interfaces';
 
 export class Parser {
     public static parseMassage(row: MessageCache): Message | null {
@@ -167,8 +168,12 @@ export class Parser {
                     }
                     break;
                 case MessageType.ROLE_DOCUMENT:
+                    message.options.issuer = json.issuer;
                     message.options.role = json.role;
                     message.options.group = json.group;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
                     break;
                 case MessageType.SYNCHRONIZATION_EVENT:
                     message.options.user = json.user;

@@ -9,6 +9,7 @@ export interface IGridFilters {
     pageSize?: number;
     orderDir?: string;
     orderField?: string;
+    keywords?: string;
     [field: string]: any;
 }
 
@@ -25,7 +26,9 @@ export interface IDetailsResults {
     uuid?: string;
     item?: any,
     history?: any[],
-    row?: any
+    row?: any;
+    activity?: any;
+    schema?: any;
 }
 
 export interface IRelationshipsResults {
@@ -44,6 +47,7 @@ export interface IRelationshipsResults {
         target: string,
         type: string
     }[]
+    categories?: any
 }
 
 /**
@@ -56,8 +60,8 @@ export class SearchService {
     constructor(private http: HttpClient) {
     }
 
-    public search(data: string): Observable<any> {
-        const options = ApiUtils.getOptions({ search: data });
-        return this.http.get<any>(this.url, options);
+    public search(data: string, pageIndex: number): Observable<IGridResults> {
+        const options = ApiUtils.getOptions({ search: data, pageIndex });
+        return this.http.get<any>(this.url, options) as any;
     }
 }

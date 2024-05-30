@@ -69,8 +69,11 @@ export class DataBaseHelper {
         }
         return DataBaseHelper.orm.em.fork();
     }
-
-    public static async loadFile(filename: string): Promise<string> {
+    public static async loadFile(filename: string): Promise<string>
+    // tslint:disable-next-line:unified-signatures
+    public static async loadFile(filename: string, raw: false): Promise<string>
+    public static async loadFile(filename: string, raw: true): Promise<Buffer>
+    public static async loadFile(filename: string, raw = false): Promise<string | Buffer> {
         const files = await DataBaseHelper.gridFS.find({ filename }).toArray();
         if (files.length === 0) {
             return null;
@@ -82,6 +85,6 @@ export class DataBaseHelper {
             bufferArray.push(data);
         }
         const buffer = Buffer.concat(bufferArray);
-        return buffer.toString();
+        return raw ? buffer : buffer.toString();
     }
 }

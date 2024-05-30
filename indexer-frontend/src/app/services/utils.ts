@@ -1,7 +1,7 @@
 import { HttpParams } from '@angular/common/http';
 
 interface IFilters {
-    [field: string]: any
+    [field: string]: any;
 }
 
 export class ApiUtils {

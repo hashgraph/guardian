@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-
 export class PageDTO {
     @ApiProperty({ type: 'number', nullable: false, required: true })
     pageIndex: number;

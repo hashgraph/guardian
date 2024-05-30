@@ -15,6 +15,10 @@ import { TranslocoModule } from '@jsverse/transloco';
 import { SelectFilterComponent } from '@components/select-filter/select-filter.component';
 import { EntitiesService } from '@services/entities.service';
 import { FiltersService } from '@services/filters.service';
+import { ColumnType, TableComponent } from '@components/table/table.component';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { ChipsModule } from 'primeng/chips';
 
 @Component({
     selector: 'vp-documents',
@@ -37,14 +41,59 @@ import { FiltersService } from '@services/filters.service';
         LoadingComponent,
         TranslocoModule,
         ReactiveFormsModule,
-        SelectFilterComponent
+        SelectFilterComponent,
+        TableComponent,
+        InputGroupModule,
+        InputGroupAddonModule,
+        ChipsModule
     ]
 })
 export class VpDocumentsComponent extends BaseGridComponent {
-    public searchFilter: Filter;
-    public policyFilter: Filter;
-    public statusFilter: Filter;
-    public schemaFilter: Filter;
+    columns: any[] = [
+        {
+            type: ColumnType.TEXT,
+            field: 'consensusTimestamp',
+            title: 'grid.consensus_timestamp',
+            width: '250px',
+            sort: true
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '150px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'uuid',
+            title: 'grid.uuid',
+            width: '350px',
+        },
+        {
+            type: ColumnType.CHIP,
+            field: 'status',
+            title: 'grid.status',
+            width: '100px',
+            sort: true
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.issuer',
+            title: 'grid.issuer',
+            width: '500px',
+        },
+        {
+            type: ColumnType.BUTTON,
+            title: 'grid.open',
+            btn_label: 'grid.open',
+            width: '100px',
+            callback: this.onOpen.bind(this),
+        },
+    ];
 
     constructor(
         private entitiesService: EntitiesService,
@@ -53,45 +102,28 @@ export class VpDocumentsComponent extends BaseGridComponent {
         router: Router
     ) {
         super(route, router);
-        this.displayedColumns = [
-            'topicId',
-            'consensusTimestamp',
-            'uuid',
-            'status',
-            'option.issuer',
-            'account',
-            'menu'
-        ];
-
-        this.searchFilter = new Filter({
-            type: 'search',
-            field: 'search',
-        });
-        this.policyFilter = new Filter({
-            type: 'select',
-            field: 'policy',
-            multiple: true,
-            data: ['iRec 2', 'iRec 4', 'iRec 5', 'CDM', 'iRec 6', 'iRec 9', 'iRec 2', 'iRec 4', 'iRec 5', 'CDM', 'iRec 6', 'iRec 9']
-        });
-        this.statusFilter = new Filter({
-            type: 'select',
-            field: 'status',
-            multiple: true,
-            data: ['iRec 2', 'iRec 4', 'iRec 5', 'CDM', 'iRec 6', 'iRec 9', 'iRec 2', 'iRec 4', 'iRec 5', 'CDM', 'iRec 6', 'iRec 9']
-        });
-        this.schemaFilter = new Filter({
-            type: 'select',
-            field: 'schema',
-            multiple: true,
-            data: ['iRec 2', 'iRec 4', 'iRec 5', 'CDM', 'iRec 6', 'iRec 9', 'iRec 2', 'iRec 4', 'iRec 5', 'CDM', 'iRec 6', 'iRec 9']
-        });
-
-        this.filters = [
-            this.searchFilter,
-            this.policyFilter,
-            this.statusFilter,
-            this.schemaFilter
-        ]
+        this.filters.push(
+            new Filter({
+                label: 'grid.filter.topic_id',
+                type: 'input',
+                field: 'topicId',
+            }),
+            new Filter({
+                type: 'input',
+                field: 'options.issuer',
+                label: 'grid.issuer',
+            }),
+            new Filter({
+                type: 'input',
+                field: 'analytics.policyId',
+                label: 'grid.filter.policy_id',
+            }),
+            new Filter({
+                type: 'input',
+                field: 'analytics.schemaIds',
+                label: 'grid.filter.schema_id',
+            }),
+        );
     }
 
     protected loadData(): void {
@@ -125,9 +157,5 @@ export class VpDocumentsComponent extends BaseGridComponent {
                 console.error(message);
             }
         });
-    }
-
-    public onOpen(element: any) {
-        this.router.navigate([`/vp-documents/${element.consensusTimestamp}`]);
     }
 }

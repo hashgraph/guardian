@@ -29,6 +29,7 @@ export class TokenService {
                 data.treasury = info.treasury_account_id;
                 data.memo = info.memo;
                 data.totalSupply = info.total_supply;
+                data.decimals = info.decimals;
             }
 
             if (data.memo && row.status !== 'UPDATED') {
@@ -162,7 +163,7 @@ export class TokenService {
             const row = em.create(NftCache, {
                 tokenId: nft.token_id,
                 serialNumber: nft.serial_number,
-                metadata: nft.metadata,
+                metadata: atob(nft.metadata),
                 lastUpdate: Date.now()
             });
             em.persist(row);

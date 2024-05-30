@@ -158,6 +158,12 @@ export class MessageService {
     }
 
     public static async loadFiles(cid: string): Promise<string | null> {
+        const existingFile = await DataBaseHelper.gridFS.find({
+            filename: cid
+        }).toArray();
+        if (existingFile.length > 0) {
+            return existingFile[0]._id.toString();
+        }
         const document = await IPFSService.getFile(cid);
         if (!document) {
             return null;
@@ -165,8 +171,7 @@ export class MessageService {
         return new Promise<string>((resolve, reject) => {
             try {
                 const fileStream = DataBaseHelper.gridFS.openUploadStream(cid);
-                fileStream.write(document);
-                fileStream.end(() => resolve(fileStream.id?.toString()));
+                fileStream.end(document, () => resolve(fileStream.id?.toString()));
             } catch (error) {
                 console.log(error);
                 reject(error);

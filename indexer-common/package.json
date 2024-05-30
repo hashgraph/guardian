@@ -1,6 +1,7 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
+        "@elastic/elasticsearch": "^8.12.2",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
@@ -10,6 +11,7 @@
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.1",
         "mongodb": "^6.5.0",
+        "nats": "^2.6.1",
         "@mikro-orm/core": "^6.1.11",
         "@mikro-orm/mongodb": "^6.1.11",
         "@mikro-orm/migrations-mongodb": "^6.1.11"

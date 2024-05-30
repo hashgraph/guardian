@@ -7,7 +7,7 @@
     },
     "newProjectRoot": "projects",
     "projects": {
-        "myApp": {
+        "indexer-frontend": {
             "projectType": "application",
             "schematics": {
                 "@schematics/angular:component": {
@@ -21,7 +21,7 @@
                 "build": {
                     "builder": "@angular-devkit/build-angular:application",
                     "options": {
-                        "outputPath": "dist/my-app",
+                        "outputPath": "dist/indexer-frontend",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
                         "polyfills": [
@@ -35,8 +35,10 @@
                         ],
                         "styles": [
                             "@angular/material/prebuilt-themes/deeppurple-amber.css",
+                            "node_modules/primeng/resources/primeng.min.css",
                             "src/styles.scss",
-                            "src/variables.scss"
+                            "src/variables.scss",
+                            "node_modules/ol/ol.css"
                         ],
                         "scripts": []
                     },
@@ -46,12 +48,12 @@
                                 {
                                     "type": "initial",
                                     "maximumWarning": "500kb",
-                                    "maximumError": "1mb"
+                                    "maximumError": "5mb"
                                 },
                                 {
                                     "type": "anyComponentStyle",
                                     "maximumWarning": "2kb",
-                                    "maximumError": "4kb"
+                                    "maximumError": "5mb"
                                 }
                             ],
                             "outputHashing": "all"
@@ -68,10 +70,10 @@
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "production": {
-                            "buildTarget": "myApp:build:production"
+                            "buildTarget": "indexer-frontend:build:production"
                         },
                         "development": {
-                            "buildTarget": "myApp:build:development"
+                            "buildTarget": "indexer-frontend:build:development"
                         }
                     },
                     "defaultConfiguration": "development"
@@ -79,7 +81,7 @@
                 "extract-i18n": {
                     "builder": "@angular-devkit/build-angular:extract-i18n",
                     "options": {
-                        "buildTarget": "myApp:build"
+                        "buildTarget": "indexer-frontend:build"
                     }
                 },
                 "test": {
@@ -97,8 +99,10 @@
                         ],
                         "styles": [
                             "@angular/material/prebuilt-themes/deeppurple-amber.css",
+                            "node_modules/primeng/resources/primeng.min.css",
                             "src/styles.scss",
-                            "src/variables.scss"
+                            "src/variables.scss",
+                            "node_modules/ol/ol.css"
                         ],
                         "scripts": []
                     }

@@ -1,23 +1,38 @@
 .container {
     .main {
         width: 100%;
-        min-height: calc(480px - var(--header-height));
-        height: calc(50vh - var(--header-height));
-        max-height: calc(600px - var(--header-height));
-        background: var(--color-primary-background);
+        // min-height: calc(480px - var(--header-height));
+        // height: calc(50vh - var(--header-height));
+        height: 50%;
         background-image: url("@assets/main.jfif");
         background-position-y: calc(0px - var(--header-height));
         background-size: 100% auto;
+        overflow: auto;
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            display: block;
+            background: #4169e263;
+            width: 100%;
+            height: 100%;
+            // min-height: calc(480px - var(--header-height));
+            // height: calc(50vh - var(--header-height));
+        }
 
         .search-container {
+            z-index: 2;
             width: 530px;
             height: 144px;
 
             .search-label {
-                color: var(--color-primary-negative);
+                color: white;
                 text-align: center;
                 margin-bottom: 32px;
 
@@ -36,7 +51,6 @@
                 width: 530px;
                 height: 40px;
                 position: relative;
-                overflow: hidden;
                 display: flex;
 
                 &__form {
@@ -47,45 +61,48 @@
                 &__input {
                     width: 100%;
                     height: 40px;
-                    overflow: hidden;
-                    box-sizing: border-box;
-                    transition: width 0.3s ease-in-out;
-                    cursor: text;
-
-                    &::ng-deep {
-                        .mat-mdc-form-field-subscript-wrapper {
-                            display: none !important;
-                        }
-
-                        .mat-mdc-text-field-wrapper {
-                            border-radius: 8px !important;
-                        }
-
-                        .mat-mdc-form-field-infix {
-                            padding-top: 9px !important;
-                            padding-bottom: 9px !important;
-                            min-height: 40px !important;
-                            font-size: var(--font-size-normal) !important;
-                        }
-
-                        .mdc-line-ripple {
-                            display: none !important;
-                        }
+                    input {
+                        width: 100%;
                     }
                 }
-
-                &__icon {
-                    position: absolute;
-                    top: 4px;
-                    right: 8px;
-                    width: 32px;
-                    height: 32px;
-                    padding: 9px 9px;
-                    box-sizing: border-box;
-                    pointer-events: none;
-                }
-
             }
         }
     }
+}
+
+.result, .overview {
+    min-height: 50%;
+    background-color: #f8f8f8;
+    padding-left: 80px;
+    padding-right: 80px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.result {
+    padding-top: 48px;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: center;
+    height: 100%;
+    margin: auto 0;
+}
+
+.overview {
+    padding-bottom: 50px;
+    height: 50%;
+}
+
+.map-container {
+    border: 1px solid var(--color-gray-2);
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 10px;
 }

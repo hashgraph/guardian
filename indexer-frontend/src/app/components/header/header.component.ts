@@ -1,11 +1,25 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
 import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatInputModule } from '@angular/material/input';
-import { ActivatedRoute, NavigationEnd, Params, Router, RouterModule } from '@angular/router';
-import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+    ActivatedRoute,
+    NavigationEnd,
+    Params,
+    Router,
+    RouterModule,
+} from '@angular/router';
+import {
+    FormControl,
+    FormsModule,
+    ReactiveFormsModule,
+} from '@angular/forms';
+import { MenuItem } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
+import { BadgeModule } from 'primeng/badge';
+import { RippleModule } from 'primeng/ripple';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
     selector: 'app-header',
@@ -15,26 +29,96 @@ import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angu
     imports: [
         CommonModule,
         FormsModule,
-        MatButtonModule,
         TranslocoModule,
-        MatMenuModule,
-        MatInputModule,
         ReactiveFormsModule,
         RouterModule,
-    ]
+        MenuModule,
+        BadgeModule,
+        RippleModule,
+        IconFieldModule,
+        InputIconModule,
+        InputTextModule,
+    ],
 })
 export class HeaderComponent {
     public loading: boolean = true;
-    public searchControl = new FormControl<string>('', [Validators.required]);
+    public searchControl = new FormControl<string>('');
     public small: boolean = false;
     public home: boolean = true;
+
+    public accountsMenu: MenuItem[] = [
+        {
+            label: 'header.standard_registries',
+            routerLink: '/registries',
+        },
+        {
+            label: 'header.registry_users',
+            routerLink: '/registry-users',
+        },
+    ];
+
+    public methodologiesMenu: MenuItem[] = [
+        {
+            label: 'header.policies',
+            routerLink: '/policies',
+        },
+        {
+            label: 'header.tools',
+            routerLink: '/tools',
+        },
+        {
+            label: 'header.modules',
+            routerLink: '/modules',
+        },
+        {
+            label: 'header.schemas',
+            routerLink: '/schemas',
+        },
+        {
+            label: 'header.tokens',
+            routerLink: '/tokens',
+        },
+        {
+            label: 'header.roles',
+            routerLink: '/roles',
+        },
+    ];
+
+    public documentsMenu: MenuItem[] = [
+        {
+            label: 'header.dids',
+            routerLink: '/did-documents',
+        },
+        {
+            label: 'header.vcs',
+            routerLink: '/vc-documents',
+        },
+        {
+            label: 'header.vps',
+            routerLink: '/vp-documents',
+        },
+    ];
+
+    public othersMenu: MenuItem[] = [
+        {
+            label: 'header.nfts',
+            routerLink: '/nfts',
+        },
+        {
+            label: 'header.topics',
+            routerLink: '/topics',
+        },
+        {
+            label: 'header.contracts',
+            routerLink: '/contracts',
+        },
+    ];
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private translocoService: TranslocoService
-    ) {
-    }
+    ) {}
 
     ngOnInit() {
         this.translocoService.events$.subscribe((v) => {
@@ -51,7 +135,7 @@ export class HeaderComponent {
             if (event instanceof NavigationEnd) {
                 this.home = event.url === '/';
             }
-        })
+        });
     }
 
     public onSearch(): void {

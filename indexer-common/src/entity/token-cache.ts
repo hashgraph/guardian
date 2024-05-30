@@ -45,4 +45,7 @@ export class TokenCache {
 
     @Property()
     totalSupply: any;
+
+    @Property({ nullable: true })
+    decimals?: string;
 }

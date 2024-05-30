@@ -1,20 +1,28 @@
-import { IRelationshipsResults } from "@services/search.service";
-import { EChartsOption } from "echarts";
+import { IRelationshipsResults } from '@services/search.service';
+import { EChartsOption } from 'echarts';
 
-export function createChartConfig(data: any[] = [], links: any = []): EChartsOption {
+export function createChartConfig(
+    data: any[] = [],
+    links: any = [],
+    categories = []
+): EChartsOption {
     return {
         title: {
-            text: 'Relationships'
+            text: 'Relationships',
         },
         tooltip: {},
+        legend: [
+            {
+                data: categories,
+            },
+        ],
         animationDurationUpdate: 1500,
         animationEasingUpdate: 'quinticInOut',
         series: [
             {
+                legendHoverLink: false,
                 type: 'graph',
                 layout: 'none',
-                // layout: 'circular',
-                // layout: 'force',
                 draggable: true,
                 symbolSize: 50,
                 roam: true,
@@ -27,98 +35,106 @@ export function createChartConfig(data: any[] = [], links: any = []): EChartsOpt
                     ellipsis: '...',
                     formatter: function (d: any) {
                         return d.data.value || d.data.name;
-                    }
+                    },
                 },
                 edgeSymbol: ['circle', 'arrow'],
                 edgeSymbolSize: [4, 10],
                 edgeLabel: {
-                    fontSize: 20
+                    fontSize: 20,
                 },
                 emphasis: {
-                    focus: 'adjacency'
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 10,
+                    },
                 },
                 data,
                 links,
                 lineStyle: {
-                    opacity: 0.9,
-                    width: 2,
-                    curveness: 0
+                    color: 'source',
+                    curveness: 0.3,
                 },
                 tooltip: {
                     trigger: 'item',
-                    formatter: '{c}<br />{b}'
+                    formatter: '{c}<br />{b}',
                 },
-                // force: {
-                //     repulsion: 500,
-                //     gravity: 0.1,
-                //     edgeLength: 500,
-                //     layoutAnimation: true,
-                //     friction: 0.6,
-                // }
-            }
-        ]
+                categories,
+            },
+        ],
     };
 }
 
-export function createChartData(item: any, target: any, index: number, tool: number): any {
-    const f = 2 * Math.PI / (tool - 1);
-    const r = 1000;
+export function createChartData(
+    item: any,
+    target: any,
+    index: number,
+    count: number
+): any {
+    const [x, y] = getCoordinates(item.category, index, count);
     return {
-        // symbol: 'rect',
         symbolSize: [80, 80],
-        // symbolSize: 100,
         name: item.id,
-        value: item.type,
-        // x: index * 100,
-        // y: Math.random() * 1000,
-        x: item.id === target.id ? 0 : r * Math.cos(index * f),
-        y: item.id === target.id ? 0 : r * Math.sin(index * f),
-        itemStyle: {
-            color: item.id === target.id ? '#cf6c17' : '#556fc3',
-            shadowColor: 'rgba(0, 0, 0, 0.5)',
-            shadowBlur: 10
-        }
-    }
+        value: item.name || item.type,
+        entityType: item.type,
+        x,
+        y,
+        itemStyle:
+            item.id === target.id
+                ? {
+                      color: '#cf6c17',
+                      shadowColor: 'rgba(0, 0, 0, 0.5)',
+                      shadowBlur: 10,
+                  }
+                : undefined,
+        category: item.category,
+    };
+}
+
+function getCoordinates(categoryIndex: number, index: number, count: number) {
+    const x = categoryIndex * 300 + (index % 2 === 0 ? 30 : -30);
+    const y = index * 200 - (count / 2) * 200;
+    return [x, y];
 }
 
 export function createChartLink(item: any): any {
     return {
         source: item.source,
         target: item.target,
-        lineStyle: {
-            curveness: 0.2
-        },
-        tooltip: {
-            show: false
-        }
-    }
+    };
 }
 
 export function createChart(result: IRelationshipsResults | null = null) {
-    if (
-        result &&
-        result.relationships &&
-        result.links
-    ) {
+    if (result && result.relationships && result.links) {
         const data = [];
         const relationships = result.relationships.sort((a, b) => {
             return a.id > b.id ? 1 : -1;
         });
+        const categoriesLength: any = {};
+        const categoriesIndexes: any = {};
+        for (let i = 0; i < result.categories.length; i++) {
+            categoriesLength[i] = relationships.filter(
+                (item: any) => item.category === i
+            ).length;
+            categoriesIndexes[i] = 0;
+        }
+        // tslint:disable-next-line:prefer-for-of
         for (let index = 0; index < relationships.length; index++) {
+            const item: any = relationships[index];
             data.push(
                 createChartData(
-                    relationships[index],
+                    item,
                     result.target,
-                    index,
-                    relationships.length
+                    categoriesIndexes[item.category],
+                    categoriesLength[item.category]
                 )
-            )
+            );
+            categoriesIndexes[item.category]++;
         }
         const links = [];
         for (const item of result.links) {
             links.push(createChartLink(item));
         }
-        return createChartConfig(data, links);
+        return createChartConfig(data, links, result.categories);
     } else {
         return createChartConfig();
     }

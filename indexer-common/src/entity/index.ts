@@ -5,3 +5,6 @@ export * from './topic-cache.js';
 export * from './token-cache.js';
 export * from './nft-cache.js';
 export * from './elastic-cache.js';
+export * from './analytics.js';
+export * from './project-coordinates.js';
+export * from './synchronization-task.js';

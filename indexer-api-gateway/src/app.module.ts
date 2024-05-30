@@ -7,26 +7,27 @@ import {
     ElasticApi,
     LogsApi,
     StatusApi,
-    //
+    // PROD
     SearchApi,
     FiltersApi,
-    EntityApi
+    EntityApi,
+    LandingApi,
 } from './api/index.js';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 
 @Module({
     imports: [
-        ClientsModule.register([{
-            name: 'INDEXER_API',
-            transport: Transport.NATS,
-            options: {
-                name: `${process.env.SERVICE_CHANNEL}`,
-                servers: [
-                    `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
-            }
-        }])
+        ClientsModule.register([
+            {
+                name: 'INDEXER_API',
+                transport: Transport.NATS,
+                options: {
+                    name: `${process.env.SERVICE_CHANNEL}`,
+                    servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+                },
+            },
+        ]),
     ],
     controllers: [
         StatusApi,
@@ -34,16 +35,21 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
         ElasticApi,
         SearchApi,
         FiltersApi,
-        EntityApi
+        EntityApi,
+        LandingApi,
     ],
     providers: [
         // LoggerService,
-    ]
+    ],
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(express.json({
-            limit: JSON_REQUEST_LIMIT
-        })).forRoutes('*');
+        consumer
+            .apply(
+                express.json({
+                    limit: JSON_REQUEST_LIMIT,
+                })
+            )
+            .forRoutes('*');
     }
 }

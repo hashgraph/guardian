@@ -15,6 +15,7 @@ import { TranslocoHttpLoader } from './transloco-loader';
 import { SearchService } from '@services/search.service';
 import { EntitiesService } from '@services/entities.service';
 import { FiltersService } from '@services/filters.service';
+import { LandingService } from '@services/landing.service';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -24,11 +25,12 @@ export const appConfig: ApplicationConfig = {
         SearchService,
         EntitiesService,
         FiltersService,
+        LandingService,
         provideHttpClient(),
-        provideRouter(routes), 
+        provideRouter(routes),
         provideAnimationsAsync(),
-        provideEcharts(), 
-        provideHttpClient(), 
+        provideEcharts(),
+        provideHttpClient(),
         provideTransloco({
             config: {
                 availableLangs: ['en'],

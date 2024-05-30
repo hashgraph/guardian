@@ -1,104 +1,48 @@
 <div class="page-content">
-    <app-loading [loading]="loading"></app-loading>
-
     <div class="header"></div>
     <div class="content">
+        <div class="header">
+            <h1>{{ 'details.header.vp' | transloco }}</h1>
+        </div>
+        @if (loading) {
+        <div class="loading">
+            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+        </div>
+        } @else {
         @if (row) {
-        <mat-tab-group [selectedIndex]="tabIndex" (selectedTabChange)="onTab($event)">
+        <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
             @if (target) {
-            <mat-tab [label]="'details.overview' | transloco">
-                <div class="grid-2">
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.topic_id' | transloco }}</mat-label>
-                        <input matInput [value]="target.topicId" readonly="true" />
-                    </mat-form-field>
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.consensus_timestamp' | transloco }}</mat-label>
-                        <input matInput [value]="target.consensusTimestamp" readonly="true" />
-                    </mat-form-field>
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.uuid' | transloco }}</mat-label>
-                        <input matInput [value]="target.uuid" readonly="true" />
-                    </mat-form-field>
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.type' | transloco }}</mat-label>
-                        <input matInput [value]="target.type" readonly="true" />
-                    </mat-form-field>
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.action' | transloco }}</mat-label>
-                        <input matInput [value]="target.action" readonly="true" />
-                    </mat-form-field>
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.status' | transloco }}</mat-label>
-                        <input matInput [value]="target.status" readonly="true" />
-                    </mat-form-field>
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.status_reason' | transloco }}</mat-label>
-                        <input matInput [value]="target.statusReason" readonly="true" />
-                    </mat-form-field>
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.hedera.issuer' | transloco }}</mat-label>
-                        <input matInput [value]="target.options.issuer" readonly="true" />
-                    </mat-form-field>
-                </div>
-            </mat-tab>
+            <p-tabPanel [header]="'details.overview' | transloco">
+                <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+            </p-tabPanel>
 
-            <mat-tab [label]="'details.documents' | transloco">
-                @for (url of first.files; track $index) {
-                <div class="grid-1">
-                    <mat-form-field class="full-width">
-                        <mat-label>{{ 'details.ipfs' | transloco }}</mat-label>
-                        <input matInput [value]="url" readonly="true" />
-                    </mat-form-field>
-                    <textarea name id cols="30" rows="10">{{getDocument(first.documents[$index])}}</textarea>
+            <p-tabPanel [header]="'details.documents' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="getDocument(first.documents[0])" readonly pInputTextarea>
+                    </textarea>
                 </div>
-                }
-            </mat-tab>
+            </p-tabPanel>
 
-            <mat-tab [label]="'details.history' | transloco">
-                <div class="history">
-                    @for (item of history; track $index) {
-                    <div class="grid-3">
-                        <mat-form-field class="full-width">
-                            <mat-label>{{ 'details.hedera.consensus_timestamp' | transloco }}</mat-label>
-                            <input matInput [value]="item.consensusTimestamp" readonly="true" />
-                        </mat-form-field>
-                        <mat-form-field class="full-width">
-                            <mat-label>{{ 'details.hedera.topic_id' | transloco }}</mat-label>
-                            <input matInput [value]="item.topicId" readonly="true" />
-                        </mat-form-field>
-                        <mat-form-field class="full-width">
-                            <mat-label>{{ 'details.hedera.action' | transloco }}</mat-label>
-                            <input matInput [value]="item.action" readonly="true" />
-                        </mat-form-field>
-                        <mat-form-field class="full-width">
-                            <mat-label>{{ 'details.hedera.status' | transloco }}</mat-label>
-                            <input matInput [value]="item.status" readonly="true" />
-                        </mat-form-field>
-                        <mat-form-field class="full-width">
-                            <mat-label>{{ 'details.hedera.status_reason' | transloco }}</mat-label>
-                            <input matInput [value]="item.statusReason || ''" readonly="true" />
-                        </mat-form-field>
-                    </div>
-                    }
+            <p-tabPanel [header]="'details.history' | transloco">
+                <app-table [columns]="historyColumns" [data]="history" [paginator]="false"
+                    [loading]="false"></app-table>
+            </p-tabPanel>
+
+            <p-tabPanel [header]="'details.relationships' | transloco">
+                <div echarts [options]="chartOption" class="relationships-chart" (chartDblClick)="onSelect($event)">
                 </div>
-            </mat-tab>
-
-            <mat-tab [label]="'details.relationships' | transloco">
-                <div echarts [options]="chartOption" class="relationships-chart" (chartDblClick)="onSelect($event)"></div>
-            </mat-tab>
+            </p-tabPanel>
             }
-            <mat-tab [label]="'details.raw_data' | transloco">
-                <textarea style="
-                    margin: 20px;
-                    width: calc(100vw - 50px);
-                    height: calc(100vh - 200px);
-                    resize: none;
-                ">{{ getJson(row) }}</textarea>
-            </mat-tab>
-        </mat-tab-group>
+            <p-tabPanel [header]="'details.raw_data' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="row | json" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
         } @else {
         <div>{{ 'details.not_found' | transloco }}</div>
+        }
         }
     </div>
 </div>

@@ -10,6 +10,18 @@ import { BaseDetailsComponent } from '../base-details/base-details.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { createChart } from '../base-details/relationships-chart.config';
 import { EntitiesService } from '@services/entities.service';
+import { TabViewModule } from 'primeng/tabview';
+import { ColumnType, TableComponent } from '@components/table/table.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SchemaFormViewComponent } from '@components/schema-form-view/schema-form-view.component';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { Schema } from '@indexer/interfaces';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+    OverviewFormComponent,
+    OverviewFormField,
+} from '@components/overview-form/overview-form.component';
 
 @Component({
     selector: 'vc-document-details',
@@ -25,11 +37,88 @@ import { EntitiesService } from '@services/entities.service';
         MatTabsModule,
         NgxEchartsDirective,
         MatInputModule,
-        TranslocoModule
-    ]
+        TranslocoModule,
+        TabViewModule,
+        TableComponent,
+        ProgressSpinnerModule,
+        SchemaFormViewComponent,
+        InputTextareaModule,
+        SelectButtonModule,
+        FormsModule,
+        OverviewFormComponent,
+    ],
 })
 export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
+
+    overviewFields: OverviewFormField[] = [
+        {
+            label: 'details.vc.overview.topic_id',
+            path: 'topicId',
+            link: '/topics',
+        },
+        {
+            label: 'details.vc.overview.issuer',
+            path: 'options.issuer',
+        },
+        {
+            label: 'details.vc.overview.policy',
+            path: 'analytics.policyId',
+            link: '/policies',
+        },
+        {
+            label: 'details.hedera.action',
+            path: 'action',
+        },
+        {
+            label: 'details.hedera.status',
+            path: 'status',
+        },
+    ];
+    tabs: any[] = ['overview', 'document', 'history', 'relationships', 'raw'];
+    historyColumns: any[] = [
+        {
+            title: 'details.hedera.consensus_timestamp',
+            field: 'consensusTimestamp',
+            type: ColumnType.TEXT,
+            width: '250px',
+        },
+        {
+            title: 'details.hedera.topic_id',
+            field: 'topicId',
+            type: ColumnType.TEXT,
+            width: '100px',
+        },
+        {
+            title: 'details.hedera.action',
+            field: 'action',
+            type: ColumnType.TEXT,
+            width: '200px',
+        },
+        {
+            title: 'details.hedera.status',
+            field: 'status',
+            type: ColumnType.TEXT,
+            width: '100px',
+        },
+        {
+            title: 'details.hedera.status_reason',
+            field: 'statusReason',
+            type: ColumnType.TEXT,
+            width: '100px',
+        },
+    ];
+    documentViewOptions = [
+        {
+            icon: 'pi pi-align-justify',
+            value: 'json',
+        },
+        {
+            icon: 'pi pi-address-book',
+            value: 'document',
+        },
+    ];
+    documentViewOption = 'document';
 
     constructor(
         private entitiesService: EntitiesService,
@@ -37,6 +126,13 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
         router: Router
     ) {
         super(route, router);
+    }
+
+    protected override setResult(result?: any) {
+        super.setResult(result);
+        if (result?.schema) {
+            this.schema = new Schema(result?.schema, '');
+        }
     }
 
     protected override loadData(): void {
@@ -52,7 +148,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 error: ({ message }) => {
                     this.loading = false;
                     console.error(message);
-                }
+                },
             });
         } else {
             this.setResult();
@@ -73,21 +169,15 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 error: ({ message }) => {
                     this.loading = false;
                     console.error(message);
-                }
+                },
             });
         }
     }
 
     protected override getTabIndex(name: string): number {
         if (this.target) {
-            switch (name) {
-                case 'overview': return 0;
-                case 'documents': return 1;
-                case 'history': return 2;
-                case 'relationships': return 3;
-                case 'raw': return 4;
-                default: return 0;
-            }
+            const tabIndex = this.tabs.findIndex(item => item === name)
+            return tabIndex >= 0 ? tabIndex : 0;
         } else {
             return 0;
         }
@@ -95,14 +185,7 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     protected override getTabName(index: number): string {
         if (this.target) {
-            switch (index) {
-                case 0: return 'overview';
-                case 1: return 'documents';
-                case 2: return 'history';
-                case 3: return 'relationships';
-                case 4: return 'raw';
-                default: return 'raw';
-            }
+            return this.tabs[index] || 'raw';
         } else {
             return 'raw';
         }
@@ -112,9 +195,13 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
         this.chartOption = createChart(this.relationships);
     }
 
-    public onSelect(event: ECElementEvent) {
+    public onSelect(event: any) {
         if (event.dataType === 'node') {
-            this.toEntity(String(event.value), event.name, 'relationships');
+            this.toEntity(
+                String(event.data?.entityType),
+                event.name,
+                'relationships'
+            );
         }
     }
 
@@ -124,5 +211,14 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     public getDocument(item: any): string {
         return JSON.stringify(JSON.parse(item), null, 4);
+    }
+
+    public getCredentialSubject(): any {
+        try {
+            return JSON.parse(this.target.documents[0]).credentialSubject[0];
+        } catch (error) {
+            console.log(error);
+            return {};
+        }
     }
 }

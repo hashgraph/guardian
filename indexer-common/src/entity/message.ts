@@ -1,4 +1,11 @@
-import { Entity, Property, PrimaryKey, SerializedPrimaryKey, Unique, Index } from '@mikro-orm/core';
+import {
+    Entity,
+    Property,
+    PrimaryKey,
+    SerializedPrimaryKey,
+    Unique,
+    Index,
+} from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
@@ -6,6 +13,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'topicId', properties: ['topicId'] })
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'type', properties: ['type'] })
+@Index({ name: 'files', properties: ['files'] })
 export class Message {
     @PrimaryKey()
     _id: ObjectId;
@@ -48,6 +56,17 @@ export class Message {
 
     @Property({ nullable: true })
     options: any;
+
+    @Property({ nullable: true, type: 'unknown' })
+    analytics?: {
+        registryId?: string;
+        schemaId?: string;
+        schemaName?: string;
+        policyId?: string;
+        policyIds?: string;
+        textSearch?: string;
+        childSchemas?: any[];
+    };
 
     @Property({ nullable: true })
     files: string[];

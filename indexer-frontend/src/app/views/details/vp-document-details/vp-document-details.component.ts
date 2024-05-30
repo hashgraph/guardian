@@ -10,6 +10,11 @@ import { BaseDetailsComponent } from '../base-details/base-details.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { createChart } from '../base-details/relationships-chart.config';
 import { EntitiesService } from '@services/entities.service';
+import { OverviewFormComponent, OverviewFormField } from '@components/overview-form/overview-form.component';
+import { TabViewModule } from 'primeng/tabview';
+import { ColumnType, TableComponent } from '@components/table/table.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 
 @Component({
     selector: 'vp-document-details',
@@ -25,11 +30,76 @@ import { EntitiesService } from '@services/entities.service';
         MatTabsModule,
         NgxEchartsDirective,
         MatInputModule,
-        TranslocoModule
+        TranslocoModule,
+        OverviewFormComponent,
+        TabViewModule,
+        TableComponent,
+        ProgressSpinnerModule,
+        InputTextareaModule
     ]
 })
 export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
+
+    overviewFields: OverviewFormField[] = [{
+        label: 'details.hedera.topic_id',
+        path: 'topicId',
+        link: '/topics'
+    }, {
+        label: 'details.hedera.consensus_timestamp',
+        path: 'consensusTimestamp'
+    },{
+        label: 'details.hedera.uuid',
+        path: 'uuid'
+    },{
+        label: 'details.hedera.type',
+        path: 'type'
+    },{
+        label: 'details.hedera.action',
+        path: 'action'
+    },{
+        label: 'details.hedera.status',
+        path: 'status'
+    },{
+        label: 'details.hedera.status_reason',
+        path: 'statusReason'
+    }, {
+        label: 'details.hedera.issuer',
+        path: 'options.issuer'
+    }]
+
+    historyColumns: any[] = [
+        {
+            title: 'details.hedera.consensus_timestamp',
+            field: 'consensusTimestamp',
+            type: ColumnType.TEXT,
+            width: '250px'
+        },
+        {
+            title: 'details.hedera.topic_id',
+            field: 'topicId',
+            type: ColumnType.TEXT,
+            width: '100px'
+        },
+        {
+            title: 'details.hedera.action',
+            field: 'action',
+            type: ColumnType.TEXT,
+            width: '200px'
+        },
+        {
+            title: 'details.hedera.status',
+            field: 'status',
+            type: ColumnType.TEXT,
+            width: '100px'
+        },
+        {
+            title: 'details.hedera.status_reason',
+            field: 'statusReason',
+            type: ColumnType.TEXT,
+            width: '100px'
+        }
+    ]
 
     constructor(
         private entitiesService: EntitiesService,
@@ -112,9 +182,13 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
         this.chartOption = createChart(this.relationships);
     }
 
-    public onSelect(event: ECElementEvent) {
+    public onSelect(event: any) {
         if (event.dataType === 'node') {
-            this.toEntity(String(event.value), event.name, 'relationships');
+            this.toEntity(
+                String(event.data?.entityType),
+                event.name,
+                'relationships'
+            );
         }
     }
 

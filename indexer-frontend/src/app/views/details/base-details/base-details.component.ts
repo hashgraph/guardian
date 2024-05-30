@@ -1,17 +1,22 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IDetailsResults, IRelationshipsResults } from '@services/search.service';
+import {
+    IDetailsResults,
+    IRelationshipsResults,
+} from '@services/search.service';
 import { Subscription } from 'rxjs';
 import { MatTabChangeEvent } from '@angular/material/tabs';
+import { Activity } from '@components/activity/activity.component';
 
 @Component({
     selector: 'base-details',
     template: '',
-    styles: []
+    styles: [],
 })
 export abstract class BaseDetailsComponent {
     public loading: boolean = true;
     public id: string = '';
+    public serialNumber: string = '';
 
     public uuid: string = '';
     public history: any[] = [];
@@ -20,21 +25,21 @@ export abstract class BaseDetailsComponent {
     public target: any = null;
     public row: any = null;
     public relationships: IRelationshipsResults | null = null;
+    public schema?: any;
     public tab: string = '';
     public tabIndex: number = 0;
 
     private _queryObserver?: Subscription;
     private _paramsObserver?: Subscription;
 
-    constructor(
-        protected route: ActivatedRoute,
-        protected router: Router
-    ) {
-    }
+    activityItems: any[] = [];
+    totalActivity: number = 0;
+
+    constructor(protected route: ActivatedRoute, protected router: Router) {}
 
     ngOnInit() {
         this.loading = false;
-        this._queryObserver = this.route.queryParams.subscribe(params => {
+        this._queryObserver = this.route.queryParams.subscribe((params) => {
             const tab = params['tab'];
             if (this.id) {
                 if (this.tab !== tab) {
@@ -47,10 +52,14 @@ export abstract class BaseDetailsComponent {
                 this.tabIndex = this.getTabIndex(tab);
             }
         });
-        this._paramsObserver = this.route.params.subscribe(params => {
+        this._paramsObserver = this.route.params.subscribe((params) => {
             const id = params['id'];
             if (this.id !== id) {
                 this.id = id;
+                const serialNumber = params['serialNumber'];
+                if (serialNumber) {
+                    this.serialNumber = serialNumber;
+                }
                 this.loadData();
                 this.onNavigate();
             }
@@ -62,6 +71,114 @@ export abstract class BaseDetailsComponent {
         this._paramsObserver?.unsubscribe();
     }
 
+    getActivityHandler(activity: string) {
+        switch (activity) {
+            case Activity.Registries:
+                return () => this.onOpenRegistries();
+            case Activity.Topics:
+                return () => this.onOpenTopics();
+            case Activity.Policies:
+                return () => this.onOpenPolicies();
+            case Activity.Tools:
+                return () => this.onOpenTools();
+            case Activity.Modules:
+                return () => this.onOpenModules();
+            case Activity.Schemas:
+                return () => this.onOpenSchemas();
+            case Activity.Tokens:
+                return () => this.onOpenTokens();
+            case Activity.Roles:
+                return () => this.onOpenRoles();
+            case Activity.DIDs:
+                return () => this.onOpenDIDs();
+            case Activity.VCs:
+                return () => this.onOpenVCs();
+            case Activity.VPs:
+                return () => this.onOpenVPs();
+            case Activity.Contracts:
+                return () => this.onOpenContracts();
+            case Activity.Users:
+                return () => this.onOpenUsers();
+            default:
+                throw new Error(`Unknown activity: ${activity}`);
+        }
+    }
+
+    protected onOpenRegistries() {
+        this.router.navigate(['/registries']);
+    }
+
+    protected onOpenTopics() {
+        this.router.navigate(['/topics']);
+    }
+
+    protected onOpenPolicies() {
+        this.router.navigate(['/policies']);
+    }
+
+    protected onOpenTools() {
+        this.router.navigate(['/tools']);
+    }
+
+    protected onOpenModules() {
+        this.router.navigate(['/modules']);
+    }
+
+    protected onOpenSchemas() {
+        this.router.navigate(['/schemas']);
+    }
+
+    protected onOpenTokens() {
+        this.router.navigate(['/tokens']);
+    }
+
+    protected onOpenRoles() {
+        this.router.navigate(['/roles']);
+    }
+
+    protected onOpenDIDs() {
+        this.router.navigate(['/did-documents']);
+    }
+
+    protected onOpenVCs() {
+        this.router.navigate(['/vc-documents']);
+    }
+
+    protected onOpenVPs() {
+        this.router.navigate(['/vp-documents']);
+    }
+
+    protected onOpenContracts() {
+        this.router.navigate(['/contracts']);
+    }
+
+    protected onOpenUsers() {
+        this.router.navigate(['/registry-users']);
+    }
+
+    protected handleActivities(activity: any) {
+        this.totalActivity = 0;
+        this.activityItems = [];
+        // tslint:disable-next-line:forin
+        for (const name in activity) {
+            this.totalActivity += activity[name];
+        }
+        // tslint:disable-next-line:forin
+        for (const name in activity) {
+            const value =
+                activity[name] > 0
+                    ? Math.round((activity[name] * 100) / this.totalActivity)
+                    : 0;
+            this.activityItems.push({
+                label: 'details.activity.' + name,
+                count: activity[name],
+                activity: name,
+                value,
+                click: this.getActivityHandler(name),
+            });
+        }
+    }
+
     protected setResult(result?: IDetailsResults): void {
         this.uuid = '';
         this.history = [];
@@ -71,6 +188,9 @@ export abstract class BaseDetailsComponent {
         this.row = null;
         this.relationships = null;
         if (result) {
+            if (result.activity) {
+                this.handleActivities(result.activity);
+            }
             this.row = result.row;
             this.target = result.item;
             if (Array.isArray(result.history)) {
@@ -80,7 +200,7 @@ export abstract class BaseDetailsComponent {
             } else {
                 this.first = this.target;
                 this.last = this.target;
-                this.history = [this.target]
+                this.history = [this.target];
             }
         }
         this.tabIndex = this.getTabIndex(this.tab);
@@ -95,12 +215,12 @@ export abstract class BaseDetailsComponent {
             relativeTo: this.route,
             queryParams: { tab },
             queryParamsHandling: 'merge',
-            replaceUrl: true
+            replaceUrl: true,
         });
     }
 
-    protected onTab(event: MatTabChangeEvent) {
-        this.setTab(this.getTabName(event.index));
+    protected onTab(index: number | any) {
+        this.setTab(this.getTabName(index));
     }
 
     protected toEntity(type: string, id: string, tab?: string) {
@@ -126,7 +246,7 @@ export abstract class BaseDetailsComponent {
                 break;
             }
             case 'Instance-Policy': {
-                this.router.navigate([`/instance-policies/${id}`], option);
+                this.router.navigate([`/policies/${id}`], option);
                 break;
             }
             case 'VP-Document': {
@@ -134,12 +254,11 @@ export abstract class BaseDetailsComponent {
                 break;
             }
             case 'Standard Registry': {
-                this.router.navigate([`/standard-registries/${id}`], option);
+                this.router.navigate([`/registries/${id}`], option);
                 break;
             }
             case 'Topic': {
-                debugger;
-                this.router.navigate([`/topic-documents/${id}`], option);
+                this.router.navigate([`/topics/${id}`], option);
                 break;
             }
             case 'Token': {
@@ -171,9 +290,6 @@ export abstract class BaseDetailsComponent {
                 break;
             }
             default: {
-                //TODO
-                debugger;
-                this.router.navigate([`/messages/${id}`], option);
                 break;
             }
         }

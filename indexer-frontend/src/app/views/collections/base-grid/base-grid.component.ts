@@ -3,23 +3,29 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
 import { PageEvent } from '@angular/material/paginator';
 import { IGridFilters, IGridResults } from '@services/search.service';
-import { Subscription } from 'rxjs';
+import { Observer, Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
+import { TablePageEvent } from 'primeng/table';
+import { SortEvent } from 'primeng/api';
 
 export class Filter {
+    public readonly label: string;
     public readonly type: string;
     public readonly field: string;
     public readonly multiple: boolean;
     public readonly control: FormControl;
+    public subscription?: Subscription;
     public data: any;
 
     constructor(option: {
-        type: string,
-        field: string,
-        multiple?: boolean,
-        control?: FormControl,
-        data?: any,
+        type: string;
+        field: string;
+        label: string;
+        multiple?: boolean;
+        control?: FormControl;
+        data?: any;
     }) {
+        this.label = option.label;
         this.type = option.type;
         this.field = option.field;
         this.multiple = !!option.multiple;
@@ -32,7 +38,9 @@ export class Filter {
     }
 
     public setValue(value: any) {
-        this.control.setValue(value);
+        this.control.setValue(value, {
+            emitEvent: false,
+        });
     }
 
     public get value(): any {
@@ -43,7 +51,7 @@ export class Filter {
 @Component({
     selector: 'base-grid',
     template: '',
-    styles: []
+    styles: [],
 })
 export abstract class BaseGridComponent {
     @ViewChild(MatSort) sort!: MatSort;
@@ -51,8 +59,9 @@ export abstract class BaseGridComponent {
     public loadingData: boolean = true;
     public loadingFilters: boolean = true;
 
+    public entity!: string;
     public pageIndex: number = 0;
-    public pageSize: number = 20;
+    public pageSize: number = 10;
     public total: number = 0;
     public orderField: string = '';
     public orderDir: string = '';
@@ -62,26 +71,61 @@ export abstract class BaseGridComponent {
     public pageSizeOptions = [5, 10, 25, 100];
 
     public filters: Filter[] = [];
+    public keywords: FormControl = new FormControl([]);
 
+    private _keywordsSubscriber?: Subscription;
     private _queryObserver?: Subscription;
 
-    constructor(
-        protected route: ActivatedRoute,
-        protected router: Router
-    ) {
-    }
+    constructor(protected route: ActivatedRoute, protected router: Router) {}
 
     ngOnInit(): void {
         this.loadingData = false;
         this.loadingFilters = false;
-        this._queryObserver = this.route.queryParams.subscribe(params => {
-            this.onNavigate(params);
-        });
+        this._queryObserver = this.route.queryParams.subscribe(
+            (params: any) => {
+                this._keywordsSubscriber?.unsubscribe();
+                this.filters.forEach((filter) =>
+                    filter.subscription?.unsubscribe()
+                );
+                if (params.pageIndex) {
+                    this.pageIndex = Number(params.pageIndex);
+                }
+                if (params.pageSize) {
+                    this.pageSize = Number(params.pageSize);
+                }
+                if (params.orderDir) {
+                    this.orderDir = params.orderDir?.toLowerCase();
+                }
+                if (params.orderField) {
+                    this.orderField = params.orderField;
+                }
+                if (params.keywords) {
+                    try {
+                        const keywords = JSON.parse(params.keywords);
+                        if (Array.isArray(keywords)) {
+                            this.keywords.patchValue(keywords);
+                        }
+                        // tslint:disable-next-line:no-empty
+                    } catch {}
+                }
+                this._keywordsSubscriber = this.keywords.valueChanges.subscribe(
+                    () => this.onFilter()
+                );
+                this.onNavigate(params);
+            }
+        );
         this.loadFilters();
     }
 
     ngOnDestroy(): void {
         this._queryObserver?.unsubscribe();
+        this._keywordsSubscriber?.unsubscribe();
+        this.filters.forEach((filter) => {
+            filter.subscription =
+                filter.control?.valueChanges.subscribe(() =>
+                    this.onFilter()
+                );
+        });
     }
 
     ngAfterViewInit(): void {
@@ -91,31 +135,45 @@ export abstract class BaseGridComponent {
     public onPage(pageEvent: PageEvent): void {
         this.pageIndex = pageEvent.pageIndex;
         this.pageSize = pageEvent.pageSize;
-        this.onFilter();
+        this.updateRequest();
     }
 
     public onSort(sortEvent: Sort): void {
         this.orderField = sortEvent.active;
-        this.orderDir = sortEvent.direction
-        this.onFilter();
+        this.orderDir = sortEvent.direction;
+        this.updateRequest();
     }
 
-    public onFilter(): void {
+    public onFilter() {
+        this.pageIndex = 0;
+        this.updateRequest();
+    }
+
+    public updateRequest(): void {
         const filters = this.getFilters();
+        console.log(filters);
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: filters,
-            queryParamsHandling: 'merge'
+            // replaceUrl: true,
+            // queryParamsHandling: 'merge',
         });
     }
 
     protected onNavigate(params: Params): void {
+        // tslint:disable-next-line:forin
         for (const key in params) {
             const filter = this.filters.find((f) => f.field === key);
             if (filter) {
                 filter.setValue(params[key]);
             }
         }
+        this.filters.forEach((filter) => {
+            filter.subscription =
+                filter.control?.valueChanges.subscribe(() =>
+                    this.onFilter()
+                );
+        });
         this.loadData();
     }
 
@@ -132,6 +190,10 @@ export abstract class BaseGridComponent {
         }
         filters.pageIndex = this.pageIndex;
         filters.pageSize = this.pageSize;
+        const keywords = this.keywords.value;
+        if (Array.isArray(keywords) && keywords.length > 0) {
+            filters.keywords = JSON.stringify(keywords);
+        }
         return filters;
     }
 
@@ -163,4 +225,11 @@ export abstract class BaseGridComponent {
 
     protected abstract loadData(): void;
     protected abstract loadFilters(): void;
+
+    public onOpen(element: any) {
+        this.router.navigate([
+            this.route.snapshot.url[0].path,
+            element.consensusTimestamp,
+        ]);
+    }
 }

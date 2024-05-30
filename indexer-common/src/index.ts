@@ -15,5 +15,4 @@ export * from './messages/message-response.js';
 export * from './messages/message-api.js';
 export * from './messages/message-body.js';
 export * from './elastic/index.js';
-export * from './types/index.js';
 export const entities = Object.values(ent);
