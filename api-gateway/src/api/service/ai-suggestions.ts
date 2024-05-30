@@ -1,10 +1,8 @@
-import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Req } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { AISuggestions } from '@helpers/ai-suggestions';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
+import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Query } from '@nestjs/common';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
+import { AISuggestions, InternalException } from '#helpers';
+import { InternalServerErrorDTO } from '#middlewares';
 
 /**
  * AI suggestions route
@@ -18,7 +16,6 @@ export class AISuggestionsAPI {
     /**
      * Ask
      */
-
     @Get('/ask')
     @ApiOperation({
         summary: 'Get methodology suggestion',
@@ -30,7 +27,7 @@ export class AISuggestionsAPI {
             example: 'ACM0001, ACM0002, ACM0006, ACM0007, ACM0018'
         },
     })
-    @ApiImplicitParam({
+    @ApiQuery({
         name: 'q',
         type: String,
         description: 'The question of choosing a methodology',
@@ -39,42 +36,45 @@ export class AISuggestionsAPI {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getAIAnswer(@Req() req): Promise<string> {
-        const question = req.query.q as string;
-        const aiSuggestions = new AISuggestions();
-        let aiResponse;
+    async getAIAnswer(
+        @Query('q') q: string,
+    ): Promise<string> {
         try {
-            aiResponse = await aiSuggestions.getAIAnswer(question);
-        } catch (e) {
-            aiResponse = null;
-            new Logger().error(e, ['API_GATEWAY']);
-            throw e;
+            const aiSuggestions = new AISuggestions();
+            return await aiSuggestions.getAIAnswer(q);
+        } catch (error) {
+            await InternalException(error);
         }
-
-        return aiResponse;
     }
 
+    /**
+     * Rebuild AI vector
+     */
     @Put('/rebuild-vector')
     @ApiOperation({
         summary: 'Rebuild AI vector',
         description: 'Rebuilds vector based on policy data in the DB',
     })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async rebuildVector(@Req() req): Promise<boolean> {
-        const aiSuggestions = new AISuggestions();
-        let result = false;
+    async rebuildVector(): Promise<boolean> {
         try {
-            result = await aiSuggestions.rebuildAIVector();
-        } catch (e) {
-            new Logger().error(e, ['API_GATEWAY']);
-            throw e;
+            const aiSuggestions = new AISuggestions();
+            return await aiSuggestions.rebuildAIVector();
+        } catch (error) {
+            await InternalException(error);
         }
-
-        return result;
     }
 }

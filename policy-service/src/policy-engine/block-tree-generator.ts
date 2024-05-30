@@ -1,13 +1,13 @@
-import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface';
-import { PolicyComponentsUtils } from './policy-components-utils';
-import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
+import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { GenerateUUIDv4, IUser, PolicyEvents } from '@guardian/interfaces';
 import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, NatsService, Policy, Singleton, Users, } from '@guardian/common';
-import { IPolicyUser, PolicyUser } from './policy-user';
-import { PolicyValidator } from '@policy-engine/block-validators';
+import { PolicyUser } from './policy-user.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js'
 import { headers } from 'nats';
-import { Inject } from '@helpers/decorators/inject';
-import { ComponentsService } from './helpers/components-service';
-import { RecordUtils } from './record-utils';
+import { ComponentsService } from './helpers/components-service.js';
+import { RecordUtils } from './record-utils.js';
+import { Inject } from '../helpers/decorators/inject.js'
 
 /**
  * Block tree generator
@@ -19,7 +19,7 @@ export class BlockTreeGenerator extends NatsService {
      * @private
      */
     @Inject()
-    private readonly users: Users;
+    declare private users: Users;
 
     /**
      * Message queue name
@@ -43,29 +43,15 @@ export class BlockTreeGenerator extends NatsService {
      * @param policy
      * @param user
      */
-    public async getUser(policy: IPolicyInstance | IPolicyInterfaceBlock, user: IUser): Promise<IPolicyUser> {
-        const regUser = await this.users.getUser(user.username);
-        if (!regUser || !regUser.did) {
+    public async getUser(
+        policy: IPolicyInstance | IPolicyInterfaceBlock,
+        user: IUser
+    ): Promise<PolicyUser> {
+        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy);
+        if (!user) {
             throw new Error(`Forbidden`);
         }
-        const userFull = new PolicyUser(regUser.did);
-        if (policy.dryRun) {
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                const virtualUser = await DatabaseServer.getVirtualUser(policy.policyId);
-                userFull.setVirtualUser(virtualUser);
-            } else {
-                throw new Error(`Forbidden`);
-            }
-        } else {
-            userFull.setUsername(regUser.username);
-        }
-        const groups = await policy.components.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
-        for (const group of groups) {
-            if (group.active !== false) {
-                return userFull.setGroup(group);
-            }
-        }
-        return userFull;
+        return policyUser;
     }
 
     /**
@@ -220,6 +206,10 @@ export class BlockTreeGenerator extends NatsService {
             const { tag } = msg;
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
             return new MessageResponse({ id: block.uuid });
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_TAG_BLOCK_MAP, policyId, async () => {
+            return new MessageResponse(Object.fromEntries(PolicyComponentsUtils.GetTagBlockMap(policyId)));
         });
 
         this.getPolicyMessages(PolicyEvents.GET_POLICY_NAVIGATION, policyId, async (msg: any) => {

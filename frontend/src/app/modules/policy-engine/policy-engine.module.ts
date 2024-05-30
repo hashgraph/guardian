@@ -137,6 +137,7 @@ import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector'
 // Dialogs
 import { DiscontinuePolicy } from './dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
+import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-editor-dialog.component';
 
 @NgModule({
     declarations: [
@@ -234,6 +235,7 @@ import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
         ResizingDirective,
         DiscontinuePolicy,
         MigrateData,
+        JsonEditorDialogComponent,
     ],
     imports: [
         CommonModule,

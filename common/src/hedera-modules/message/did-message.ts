@@ -1,11 +1,11 @@
-import { Message } from './message';
-import { IURL } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { DidMessageBody } from './message-body.interface';
-import { Hashing } from '../hashing';
-import { IPFS } from '../../helpers';
-import { CommonDidDocument } from '../vcjs';
+import { Message } from './message.js';
+import { IURL } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { DidMessageBody } from './message-body.interface.js';
+import { Hashing } from '../hashing.js';
+import { IPFS } from '../../helpers/index.js';
+import { CommonDidDocument } from '../vcjs/index.js';
 
 /**
  * DID message

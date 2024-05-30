@@ -1,8 +1,8 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { PolicyComponentsUtils } from '../../policy-components-utils';
-import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/index.js';
+import { BasicBlock } from '../../helpers/decorators/basic-block.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
+import { BlockActionError } from '../../errors/index.js';
+import { PolicyUser } from '../../policy-user.js';
 
 /**
  * Data source addon decorator
@@ -29,7 +29,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get block filters
              * @param user
              */
-            public async getFilters(user: IPolicyUser): Promise<{ [key: string]: string }> {
+            public async getFilters(user: PolicyUser): Promise<{ [key: string]: string }> {
                 if (typeof super.getFilters === 'function') {
                     return super.getFilters(user);
                 }
@@ -75,7 +75,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @protected
              */
-            protected setFilters(filters: any, user: IPolicyUser): void {
+            protected setFilters(filters: any, user: PolicyUser): void {
                 if (typeof super.setFilters === 'function') {
                     super.setFilters(filters, user);
                 } else {
@@ -89,7 +89,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters
              * @protected
              */
-            protected async getSources(user: IPolicyUser, globalFilters: any): Promise<any[]> {
+            protected async getSources(user: PolicyUser, globalFilters: any): Promise<any[]> {
                 const data = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {

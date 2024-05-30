@@ -1,5 +1,5 @@
-import { Wallet } from './wallet';
-import { SecretManagerType } from '../secret-manager';
+import { Wallet } from './wallet.js';
+import { SecretManagerType } from '../secret-manager/index.js';
 
 process.env.AWS_REGION = 'eu-central-1'
 

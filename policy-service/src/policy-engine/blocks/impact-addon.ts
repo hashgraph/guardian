@@ -1,12 +1,12 @@
-import { TokenAddon } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
+import { TokenAddon } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
-import { BlockActionError } from '@policy-engine/errors';
+import { BlockActionError } from '../errors/index.js';
 
 /**
  * Calculate math addon
@@ -92,7 +92,7 @@ export class TokenOperationAddon {
     public async run(
         documents: VcDocument[],
         root: UserCredentials,
-        user: IPolicyUser
+        user: PolicyUser
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const policySchema = await this.getSchema();

@@ -1,6 +1,6 @@
 import { IToken, TokenType } from '@guardian/interfaces';
 import { Entity, Property, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 
 /**
  * Tokens collection
@@ -85,6 +85,12 @@ export class Token extends BaseEntity implements IToken {
      */
     @Property({ nullable: true })
     owner?: string;
+
+    /**
+     * Token creator
+     */
+    @Property({ nullable: true })
+    creator?: string;
 
     /**
      * Owner

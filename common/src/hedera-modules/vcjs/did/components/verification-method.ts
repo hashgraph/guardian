@@ -1,5 +1,5 @@
-import { IVerificationMethod } from '../types/did-document';
-import { VerificationMethodProperties } from '../types/verification-method-properties';
+import { IVerificationMethod } from '../types/did-document.js';
+import { VerificationMethodProperties } from '../types/verification-method-properties.js';
 
 /**
  * Did document method

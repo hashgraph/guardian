@@ -1,8 +1,9 @@
 {
     "name": "api-tests",
-    "version": "2.23.1",
+    "version": "2.24.1",
     "description": "API Tests",
     "main": "index.js",
+    "type": "module",
     "scripts": {
         "test": "mocha index.js",
         "test:ci": "mocha index.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/api-tests.xml"
@@ -25,8 +26,5 @@
         "gulp-rename": "^2.0.0",
         "gulp-sourcemaps": "^3.0.0",
         "gulp-typescript": "^6.0.0-alpha.1"
-    },
-    "resolutions": {
-        "@types/mime": "3.0.4"
     }
 }

@@ -1,11 +1,9 @@
-import { Logger } from '@guardian/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Controller, Body, HttpCode, HttpException, HttpStatus, Post, Req, Response, Get, Inject } from '@nestjs/common';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { ProjectService } from '@helpers/projects';
-import { ProjectDTO, PropertiesDTO } from '@middlewares/validation/schemas/projects';
-import { CompareDocumentsDTO, FilterDocumentsDTO, InternalServerErrorDTO } from '@middlewares/validation/schemas';
-import { Guardians } from '@helpers/guardians';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Version } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, Examples } from '#middlewares';
+import { CACHE } from '../../constants/index.js';
+import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
 
 /**
  * Projects route
@@ -24,11 +22,6 @@ export class ProjectsAPI {
         summary: 'Search projects',
         description: 'Search projects by filters',
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        isArray: true,
-        type: ProjectDTO,
-    })
     @ApiBody({
         description: 'The question of choosing a methodology',
         required: true,
@@ -39,25 +32,27 @@ export class ProjectsAPI {
             }
         }
     })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: ProjectDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(ProjectDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async projectSearch(@Req() req, @Response() res): Promise<ProjectDTO[]> {
-        const projectService = new ProjectService();
-
-        const categoryIds = req.body.categoryIds;
-        const policyIds = req.body.policyIds;
-
+    async projectSearch(
+        @Body() body: any
+    ): Promise<ProjectDTO[]> {
+        const categoryIds = body?.categoryIds;
+        const policyIds = body?.policyIds;
         try {
-            const projects = await projectService.search(categoryIds, policyIds);
-            return res.send(projects);
+            const projectService = new ProjectService();
+            return await projectService.search(categoryIds, policyIds);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
@@ -76,13 +71,13 @@ export class ProjectsAPI {
         examples: {
             Filter1: {
                 value: {
-                    documentId1: '000000000000000000000001',
-                    documentId2: '000000000000000000000002'
+                    documentId1: Examples.DB_ID,
+                    documentId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                    documentIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -95,8 +90,11 @@ export class ProjectsAPI {
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareDocuments(@Body() body, @Req() req): Promise<any> {
+    async compareDocumentsV1(
+        @Body() body: FilterDocumentsDTO
+    ): Promise<any> {
         const guardians = new Guardians();
         const documentId1 = body ? body.documentId1 : null;
         const documentId2 = body ? body.documentId2 : null;
@@ -141,10 +139,118 @@ export class ProjectsAPI {
                 refLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Compare documents
+     */
+    @Post('/compare/documents')
+    @ApiOperation({
+        summary: 'Compare documents.',
+        description: 'Compare documents.',
+    })
+    @ApiBody({
+        description: 'Filters.',
+        required: true,
+        type: FilterDocumentsDTO,
+        examples: {
+            Filter1: {
+                value: {
+                    documentId1: Examples.DB_ID,
+                    documentId2: Examples.DB_ID
+                }
+            },
+            Filter2: {
+                value: {
+                    documentIds: [Examples.DB_ID, Examples.DB_ID],
+                }
+            }
+        }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: CompareDocumentsV2DTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @Version('2')
+    @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsV2DTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async compareDocumentsV2(
+        @Body() body: FilterDocumentsDTO
+    ): Promise<any> {
+        const guardians = new Guardians();
+        const documentId1 = body ? body.documentId1 : null;
+        const documentId2 = body ? body.documentId2 : null;
+        const documentIds = body ? body.documentIds : null;
+        let ids: string[];
+        if (documentId1 && documentId2) {
+            ids = [documentId1, documentId2];
+        } else if (Array.isArray(documentIds) && documentIds.length > 1) {
+            ids = documentIds;
+        }
+        if (!ids) {
+            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        const idLvl = 0;
+        const eventsLvl = 0;
+        const propLvl = 2;
+        const childrenLvl = 0;
+        const user = null;
+
+        let samePolicy: boolean = true;
+        const _data = await guardians.getVcDocuments({ id: ids });
+        for (let index = 1; index < _data.length; index++) {
+            if (_data[index - 1].policyId !== _data[index].policyId) {
+                samePolicy = false;
+                break;
+            }
+        }
+
+        const policyIds = _data.map((p: any) => p.policyId);
+
+        const refLvl = samePolicy ? 'Revert' : 'Merge';
+        const keyLvl = samePolicy ? 'Default' : 'Property';
+
+        try {
+            const comparationVpArray = await guardians.compareVPDocuments(
+                user,
+                null,
+                policyIds,
+                '1',
+                '2',
+                '2',
+                '0',
+                0,
+                'Direct'
+            );
+            const comparationVc = await guardians.compareDocuments(
+                user,
+                null,
+                ids,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl,
+                keyLvl,
+                refLvl
+            );
+            return {
+                projects: comparationVc,
+                presentations: comparationVpArray
+            }
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     */
     @Get('/properties')
     @ApiOperation({
         summary: 'Get all properties',
@@ -157,19 +263,17 @@ export class ProjectsAPI {
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
+    @ApiExtraModels(PropertiesDTO, InternalServerErrorDTO)
+    @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.ACCEPTED)
-    async getPolicyProperties(@Req() req, @Response() res): Promise<any> {
+    async getPolicyProperties(): Promise<any> {
         try {
             const projectService = new ProjectService();
-            const policyProperties = await projectService.getPolicyProperties();
-            return res.send(policyProperties);
+            return await projectService.getPolicyProperties();
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

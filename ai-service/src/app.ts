@@ -1,8 +1,8 @@
+import { AISuggestionService } from './helpers/suggestions.js';
+import { aiSuggestionsAPI } from './api/service/ai-suggestions-service.js';
+import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
+import { AIManager } from './ai-manager.js';
 import { ApplicationState, Logger, MessageBrokerChannel } from '@guardian/common';
-import { AISuggestionService } from './helpers/suggestions';
-import { aiSuggestionsAPI } from './api/service/ai-suggestions-service';
-import { AISuggestionsDB } from './helpers/ai-suggestions-db';
-import { AIManager } from './ai-manager';
 import * as process from 'process';
 import { ApplicationStates } from '@guardian/interfaces';
 

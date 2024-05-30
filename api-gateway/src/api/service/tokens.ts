@@ -1,44 +1,10 @@
-import { Guardians } from '@helpers/guardians';
-import { ITokenInfo, TaskAction, UserRole } from '@guardian/interfaces';
-import { Logger, RunFunctionAsync } from '@guardian/common';
-import { PolicyEngine } from '@helpers/policy-engine';
-import { TaskManager } from '@helpers/task-manager';
-import { ServiceError } from '@helpers/service-requests-base';
-import { prepareValidationResponse } from '@middlewares/validation';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Put,
-    Req,
-    Response,
-} from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
-import {
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiUnauthorizedResponse,
-    ApiExtraModels,
-    ApiForbiddenResponse,
-    ApiTags,
-    ApiBearerAuth,
-    ApiParam,
-    ApiBody,
-    ApiSecurity,
-    ApiUnprocessableEntityResponse,
-} from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '@middlewares/validation/schemas';
-import { Auth } from '@auth/auth.decorator';
-
-/**
- * Token route
- */
-// export const tokenAPI = Router();
+import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner } from '#helpers';
+import { IOwner, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
+import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { AuthUser, Auth } from '#auth';
+import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
 
 /**
  * Connect policies to tokens
@@ -47,7 +13,7 @@ import { Auth } from '@auth/auth.decorator';
  * @param policyId
  * @param notEmpty
  */
-function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpty?: boolean): T[] {
+function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: string, notEmpty?: boolean): T[] {
     if (!tokens) {
         return [];
     }
@@ -78,19 +44,23 @@ function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpt
  * @param tokens
  * @param engineService
  */
-async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine): Promise<any> {
-    if (!tokens || !engineService) {
+async function setDynamicTokenPolicy(
+    tokens: any[],
+    owner: IOwner
+): Promise<any> {
+    if (!tokens || !owner) {
         return tokens;
     }
     for (const token of tokens) {
         if (!token.policyId) {
             continue;
         }
+        const engineService = new PolicyEngine();
         const policy = await engineService.getPolicy({
             filters: {
                 id: token.policyId,
             }
-        });
+        }, owner);
         token.policies = [`${policy.name} (${policy.version || 'DRAFT'})`];
         token.policyIds = [policy.id];
     }
@@ -100,267 +70,432 @@ async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine
 @Controller('tokens')
 @ApiTags('tokens')
 export class TokensApi {
+    /**
+     * Return a list of tokens
+     */
     @Get('/')
-    @HttpCode(HttpStatus.OK)
-    async getTokens(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        try {
-            const guardians = new Guardians();
-            const engineService = new PolicyEngine();
-
-            const user = req.user;
-            const policyId = req.query?.policy;
-
-            let pageIndex: number;
-            let pageSize: number;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = Number.parseInt(req.query.pageIndex, 10);
-                pageSize = Number.parseInt(req.query.pageSize, 10);
-            }
-
-            let tokensAndCount = {
-                items: [],
-                count: 0
-            }
-
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                tokensAndCount = await guardians.getTokensPage(user.did, pageIndex, pageSize);
-                const map = await engineService.getTokensMap(user.did);
-                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
-                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, false);
-            } else if (user.did) {
-                tokensAndCount = await guardians.getAssociatedTokens(user.did, pageIndex, pageSize);
-                const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
-                tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, engineService);
-                tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
-            }
-            return res
-                .setHeader('X-Total-Count', tokensAndCount.count)
-                .json(tokensAndCount.items);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
-        }
-    }
-
-    @Post('/')
-    @HttpCode(HttpStatus.CREATED)
-    async newToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        try {
-            const guardians = new Guardians();
-            const engineService = new PolicyEngine();
-            const user = req.user;
-
-            if (!user.did) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
-            }
-
-            let tokens = await guardians.setToken({
-                token: req.body,
-                owner: user.did
-            });
-
-            tokens = await guardians.getTokens({ did: user.did });
-            const map = await engineService.getTokensMap(user.did);
-            tokens = setTokensPolicies(tokens, map);
-
-            return res.status(201).json(tokens);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Post('/push')
-    @HttpCode(HttpStatus.ACCEPTED)
-    async pushTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
-        if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
-        }
-        const token = req.body;
-        const taskManager = new TaskManager();
-        const task = taskManager.start(TaskAction.CREATE_TOKEN, user.id);
-        RunFunctionAsync<ServiceError>(async () => {
-            const guardians = new Guardians();
-            await guardians.setTokenAsync(token, user.did, task);
-        }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
-        });
-
-        return res.status(202).send(task);
-    }
-
-    @Put('/')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.TOKENS_TOKEN_READ
+        // UserRole.STANDARD_REGISTRY
+        // UserRole.USER
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
-        summary: 'Update token.',
-        description: 'Update token. Only users with the Standard Registry role are allowed to make the request.',
+        summary: 'Return a list of tokens.',
+        description: 'Returns all tokens. For the Standard Registry role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role.',
     })
-    @ApiBody({
-        description: 'Token',
-        required: true,
-        schema: {
-            type: 'object'
-        }
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        enum: [
+            'Associated',
+            'All'
+        ],
+        description: 'Token status',
+        required: false,
+        example: 'All'
     })
     @ApiOkResponse({
-        description: 'Updated token.',
-        schema: {
-            'type': 'object'
-        },
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
-    @ApiUnprocessableEntityResponse({
-        description: 'Unprocessable entity.'
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: TokenDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @HttpCode(HttpStatus.CREATED)
-    async updateToken(@Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
-        const token = req.body;
+    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getTokens(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('policyId') policyId?: string,
+        @Query('status') status?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<TokenDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const engineService = new PolicyEngine();
 
-        if (!user.did) {
-            throw new HttpException('User is not registered', HttpStatus.UNPROCESSABLE_ENTITY);
+            let tokensAndCount = { items: [], count: 0 };
+            const owner = new EntityOwner(user);
+            if (owner) {
+                if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
+                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner, 'PUBLISH');
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
+                } else {
+                    tokensAndCount = await guardians.getTokensPage(owner, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner);
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, false);
+                }
+            }
+            return res
+                .header('X-Total-Count', tokensAndCount.count)
+                .send(tokensAndCount.items);
+        } catch (error) {
+            await InternalException(error);
         }
-
-        if (!token.tokenId) {
-            throw new HttpException('The field tokenId is required', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
-
-        const guardians = new Guardians();
-        const tokenObject = await guardians.getTokenById(token.tokenId);
-
-        if (!tokenObject) {
-            throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
-        }
-
-        if (tokenObject.owner !== user.did) {
-            throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
-        }
-
-        return await guardians.updateToken(token);
     }
 
-    @Put('/push')
-    @HttpCode(HttpStatus.ACCEPTED)
-    async updateTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    /**
+     * Creates a new token
+     */
+    @Post('/')
+    @Auth(
+        Permissions.TOKENS_TOKEN_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Creates a new token.',
+        description: 'Creates a new token.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Object that contains token information.',
+        required: true,
+        type: TokenDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenDTO,
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async newToken(
+        @AuthUser() user: IAuthUser,
+        @Body() token: TokenDTO
+    ): Promise<TokenDTO[]> {
         try {
-            const user = req.user;
-            const token = req.body;
+            const guardians = new Guardians();
+            const engineService = new PolicyEngine();
+            const owner = new EntityOwner(user);
 
+            let tokens = await guardians.setToken(token, owner);
+            tokens = await guardians.getTokens({}, owner);
+            const map = await engineService.getTokensMap(owner);
+            tokens = setTokensPolicies(tokens, map);
+
+            return tokens;
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Creates a new token
+     */
+    @Post('/push')
+    @Auth(
+        Permissions.TOKENS_TOKEN_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Creates a new token.',
+        description: 'Creates a new token.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Object that contains token information.',
+        required: true,
+        type: TokenDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async pushTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() token: TokenDTO
+    ): Promise<TaskDTO> {
+        if (!user.did) {
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        const owner = new EntityOwner(user);
+        const taskManager = new TaskManager();
+        const task = taskManager.start(TaskAction.CREATE_TOKEN, user.id);
+        RunFunctionAsync<ServiceError>(async () => {
+            const guardians = new Guardians();
+            await guardians.setTokenAsync(token, owner, task);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
+        });
+
+        return task;
+    }
+
+    /**
+     * Update token
+     */
+    @Put('/')
+    @Auth(
+        Permissions.TOKENS_TOKEN_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Update token.',
+        description: 'Update token.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Object that contains token information.',
+        required: true,
+        type: TokenDTO
+    })
+    @ApiOkResponse({
+        description: 'Updated token.',
+        type: TokenDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async updateToken(
+        @AuthUser() user: IAuthUser,
+        @Body() token: TokenDTO
+    ): Promise<TokenDTO> {
+        try {
             if (!user.did) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
 
             if (!token.tokenId) {
-                return res.status(422).json(prepareValidationResponse('The field tokenId is required'));
+                throw new HttpException('The field tokenId is required.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const tokenObject = await guardians.getTokenById(token.tokenId, owner);
+
+            if (!tokenObject) {
+                throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
+            }
+
+            if (tokenObject.owner !== owner.owner) {
+                throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
+            }
+
+            return await guardians.updateToken(token, owner);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Update token
+     */
+    @Put('/push')
+    @Auth(
+        Permissions.TOKENS_TOKEN_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Update token.',
+        description: 'Update token.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Object that contains token information.',
+        required: true,
+        type: TokenDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async updateTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() token: TokenDTO
+    ): Promise<TaskDTO> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+
+            if (!token.tokenId) {
+                throw new HttpException('Invalid token id.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
 
             const guardians = new Guardians();
-            const tokenObject = await guardians.getTokenById(token.tokenId);
+            const owner = new EntityOwner(user);
+            const tokenObject = await guardians.getTokenById(token.tokenId, owner);
 
             if (!tokenObject) {
-                throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
+                throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
             }
 
-            if (tokenObject.owner !== user.did) {
+            if (tokenObject.owner !== owner.owner) {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
             }
 
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.UPDATE_TOKEN, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardians.updateTokenAsync(token, task);
+                await guardians.updateTokenAsync(token, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
 
-            return res.status(202).send(task);
+            return task;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Delete token
+     */
     @Delete('/push/:tokenId')
+    @Auth(
+        Permissions.TOKENS_TOKEN_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Deletes the token with the provided schema ID.',
+        description: 'Deletes the token with the provided schema ID.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async deleteTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async deleteTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string
+    ): Promise<TaskDTO> {
         try {
-            const user = req.user;
-            const tokenId = req.params.tokenId;
-
-            if (!user.did) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
-            }
-
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const tokenObject = await guardians.getTokenById(tokenId);
+            const tokenObject = await guardians.getTokenById(tokenId, owner);
 
             if (!tokenObject) {
                 throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
             }
 
-            if (tokenObject.owner !== user.did) {
+            if (tokenObject.owner !== owner.owner) {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN);
             }
 
             const engineService = new PolicyEngine();
-            const map = await engineService.getTokensMap(user.did);
+            const map = await engineService.getTokensMap(owner);
             setTokensPolicies([tokenObject], map, undefined, false);
 
             if (!tokenObject.canDelete) {
-                throw new HttpException('Token cannot be deleted', HttpStatus.FORBIDDEN);
+                throw new HttpException('Token cannot be deleted.', HttpStatus.FORBIDDEN);
             }
 
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_TOKEN, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                await guardians.deleteTokenAsync(tokenId, task);
+                await guardians.deleteTokenAsync(tokenId, owner, task);
             }, async (error) => {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
 
-            return res.status(202).send(task);
+            return task;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Associate
+     */
     @Put('/:tokenId/associate')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associates the user with the provided Hedera token.',
+        description: 'Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async associateToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
+    async associateToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string
+    ): Promise<TokenInfoDTO> {
         try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const userDid = req.user.did;
-            if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const status = await guardians.associateToken(tokenId, userDid);
-            return res.json(status);
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.associateToken(tokenId, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
                 throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
@@ -369,46 +504,101 @@ export class TokensApi {
         }
     }
 
+    /**
+     * Associate
+     */
     @Put('/push/:tokenId/associate')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associates the user with the provided Hedera token.',
+        description: 'Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async associateTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
-        const tokenId = req.params.tokenId;
-        const user = req.user;
+    async associateTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string
+    ): Promise<TaskDTO> {
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.ASSOCIATE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.associateTokenAsync(tokenId, user.did, task);
+            await guardians.associateTokenAsync(tokenId, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
 
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Dissociate
+     */
     @Put('/:tokenId/dissociate')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associate the user with the provided Hedera token.',
+        description: 'Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async dissociateToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
+    async dissociateToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string
+    ): Promise<TokenInfoDTO> {
         try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const userDid = req.user.did;
-            if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const status = await guardians.dissociateToken(tokenId, userDid);
-            return res.json(status);
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.dissociateToken(tokenId, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
                 throw new HttpException('Token does not exist.', HttpStatus.NOT_FOUND)
@@ -417,296 +607,671 @@ export class TokensApi {
         }
     }
 
+    /**
+     * Dissociate
+     */
     @Put('/push/:tokenId/dissociate')
+    @Auth(
+        Permissions.TOKENS_TOKEN_EXECUTE,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Associate the user with the provided Hedera token.',
+        description: 'Disassociates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async dissociateTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.USER)(req.user);
-        const tokenId = req.params.tokenId;
-        const user = req.user;
+    async dissociateTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string
+    ): Promise<TaskDTO> {
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.DISSOCIATE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.dissociateTokenAsync(tokenId, user.did, task);
+            await guardians.dissociateTokenAsync(tokenId, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * KYC
+     */
     @Put('/:tokenId/:username/grant-kyc')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Sets the KYC flag for the user.',
+        description: 'Sets the KYC flag for the user.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async grantKyc(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async grantKyc(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TokenInfoDTO> {
         try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const userDid = req.user.did;
-            if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            return res.json(await guardians.grantKycToken(tokenId, username, userDid));
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.grantKycToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
+                throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
             }
             throw error;
         }
     }
 
+    /**
+     * KYC
+     */
     @Put('/push/:tokenId/:username/grant-kyc')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Sets the KYC flag for the user.',
+        description: 'Sets the KYC flag for the user.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async grantKycAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const tokenId = req.params.tokenId;
-        const username = req.params.username;
-        const user = req.user;
+    async grantKycAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TaskDTO> {
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.GRANT_KYC, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.grantKycTokenAsync(tokenId, username, user.did, task);
+            await guardians.grantKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * KYC
+     */
     @Put('/:tokenId/:username/revoke-kyc')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Unsets the KYC flag for the user.',
+        description: 'Unsets the KYC flag for the user.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async revokeKyc(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async revokeKyc(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TokenInfoDTO> {
         try {
             const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const userDid = req.user.did;
-            if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const result = await guardians.revokeKycToken(tokenId, username, userDid);
-            return res.json(result);
+            const owner = new EntityOwner(user);
+            return await guardians.revokeKycToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+                throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new HttpException('Token not found', HttpStatus.NOT_FOUND)
+                throw new HttpException('Token not found.', HttpStatus.NOT_FOUND)
             }
             throw error;
         }
     }
 
+    /**
+     * KYC
+     */
     @Put('/push/:tokenId/:username/revoke-kyc')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Unsets the KYC flag for the user.',
+        description: 'Unsets the KYC flag for the user.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async revokeKycAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const tokenId = req.params.tokenId;
-        const username = req.params.username;
-        const user = req.user;
+    async revokeKycAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TaskDTO> {
         if (!user.did) {
-            throw new HttpException('User not registered', HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new HttpException('User not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.REVOKE_KYC, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.revokeKycTokenAsync(tokenId, username, user.did, task);
+            await guardians.revokeKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Freeze
+     */
     @Put('/:tokenId/:username/freeze')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Freeze transfers of the specified token for the user.',
+        description: 'Freezes transfers of the specified token for the user.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async freezeToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async freezeToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TokenInfoDTO> {
         try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const userDid = req.user.did;
-            if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const result = await guardians.freezeToken(tokenId, username, userDid);
-            return res.json(result);
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.freezeToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
+                throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
+                throw new HttpException('Token not registered.', HttpStatus.NOT_FOUND);
             }
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Unfreeze
+     */
     @Put('/:tokenId/:username/unfreeze')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Unfreezes transfers of the specified token for the user.',
+        description: 'Unfreezes transfers of the specified token for the user.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async unfreezeToken(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async unfreezeToken(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TokenInfoDTO> {
         try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const userDid = req.user.did;
-            if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const result = await guardians.unfreezeToken(tokenId, username, userDid);
-            return res.json(result);
+            const guardians = new Guardians();
+            return await guardians.unfreezeToken(tokenId, username, user.did);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
+                throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
+                throw new HttpException('Token not registered.', HttpStatus.NOT_FOUND);
             }
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * Freeze
+     */
     @Put('/push/:tokenId/:username/freeze')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Freeze transfers of the specified token for the user.',
+        description: 'Freezes transfers of the specified token for the user.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async freezeTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const tokenId = req.params.tokenId;
-        const username = req.params.username;
-        const user = req.user;
+    async freezeTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TaskDTO> {
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.FREEZE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.freezeTokenAsync(tokenId, username, user.did, task);
+            await guardians.freezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Unfreeze
+     */
     @Put('/push/:tokenId/:username/unfreeze')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Unfreezes transfers of the specified token for the user.',
+        description: 'Unfreezes transfers of the specified token for the user.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async unfreezeTokenAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const tokenId = req.params.tokenId;
-        const username = req.params.username;
-        const user = req.user;
+    async unfreezeTokenAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TaskDTO> {
         if (!user.did) {
-            return res.status(422).json(prepareValidationResponse('User not registered'));
+            throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
         }
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.UNFREEZE_TOKEN, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.unfreezeTokenAsync(tokenId, username, user.did, task);
+            await guardians.unfreezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
-
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * User info
+     */
     @Get('/:tokenId/:username/info')
+    @Auth(
+        Permissions.TOKENS_TOKEN_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns user information for the selected token.',
+        description: 'Returns user information for the selected token.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'username',
+        type: String,
+        description: 'Username',
+        required: true,
+        example: 'username'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TokenInfoDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenInfoDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getTokenInfo(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getTokenInfo(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Param('username') username: string
+    ): Promise<TokenInfoDTO> {
         try {
-            const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const username = req.params.username;
-            const userDid = req.user.did;
-            if (!userDid) {
-                return res.status(422).json(prepareValidationResponse('User not registered'));
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const result = await guardians.getInfoToken(tokenId, username, userDid);
-            return res.json(result as ITokenInfo);
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.getInfoToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
+                throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
             if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
+                throw new HttpException('Token not registered.', HttpStatus.NOT_FOUND);
             }
             throw error;
         }
     }
 
+    /**
+     * Serials
+     */
     @Get('/:tokenId/serials')
-    @ApiBearerAuth()
-    @ApiExtraModels(InternalServerErrorDTO)
+    @Auth(
+        Permissions.TOKENS_TOKEN_READ
+        // UserRole.STANDARD_REGISTRY
+        // UserRole.USER
+    )
     @ApiOperation({
         summary: 'Return token serials.',
         description: 'Returns token serials of current user.',
     })
     @ApiParam({
         name: 'tokenId',
-        type: 'string',
-        description: 'Token identifier',
+        type: String,
+        description: 'Token ID',
         required: true,
-        example: '0.0.1',
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Token serials.',
         isArray: true,
         type: Number,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
     })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getTokenSerials(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string
+    ): Promise<number[]> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.getTokenSerials(tokenId, user.did);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            if (error?.message?.toLowerCase().includes('user not found')) {
+                throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
+            }
+            if (error?.message?.toLowerCase().includes('token not found')) {
+                throw new HttpException('Token not registered.', HttpStatus.NOT_FOUND);
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Policy config menu
+     */
+    @Get('/menu/all')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of tokens.',
+        description: 'Returns tokens menu.' + ONLY_SR
+    })
+    @ApiOkResponse({
+        description: 'Modules.',
+        isArray: true,
+        type: TokenDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
+    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getTokenSerials(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
+    async getMenu(
+        @AuthUser() user: IAuthUser
+    ): Promise<TokenDTO[]> {
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const tokenId = req.params.tokenId;
-            const userDid = req.user.did;
-            const result = await guardians.getTokenSerials(tokenId, userDid);
-            return res.json(result);
+            const engineService = new PolicyEngine();
+            const map = await engineService.getTokensMap(owner, 'PUBLISH');
+            let items = await guardians.getTokens({}, owner);
+            items = await setDynamicTokenPolicy(items, owner);
+            items = setTokensPolicies(items, map, null, false);
+            return items;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            if (error?.message?.toLowerCase().includes('user not found')) {
-                throw new HttpException('User not registered', HttpStatus.NOT_FOUND);
-            }
-            if (error?.message?.toLowerCase().includes('token not found')) {
-                throw new HttpException('Token not registered', HttpStatus.NOT_FOUND);
-            }
-            throw error;
+            await InternalException(error);
         }
     }
 }

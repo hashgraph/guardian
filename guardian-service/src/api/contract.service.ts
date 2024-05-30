@@ -1,6 +1,7 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     Contract,
+    ContractMessage,
     DataBaseHelper,
     DatabaseServer,
     KeyType,
@@ -13,6 +14,7 @@ import {
     RetirePool,
     RetireRequest,
     Schema as SchemaCollection,
+    Topic,
     TopicConfig,
     TopicHelper,
     Users,
@@ -20,36 +22,15 @@ import {
     VcDocument as VcDocumentCollection,
     VcHelper,
     VCMessage,
-    ContractMessage,
     Wallet,
     WiperRequest,
     Workers,
-    Topic,
 } from '@guardian/common';
-import {
-    ContractParamType,
-    ContractType,
-    ContractAPI,
-    Schema,
-    SchemaEntity,
-    SchemaHelper,
-    TopicType,
-    WorkerTaskType,
-    UserRole,
-    RetireTokenPool,
-    RetireTokenRequest,
-    TokenType,
-} from '@guardian/interfaces';
+import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, RetireTokenPool, RetireTokenRequest, Schema, SchemaEntity, SchemaHelper, TokenType, TopicType, UserRole, WorkerTaskType, } from '@guardian/interfaces';
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import {
-    contractCall,
-    contractQuery,
-    createContract,
-    customContractCall,
-    publishSystemSchema,
-} from './helpers';
+import { contractCall, contractQuery, createContract, customContractCall, publishSystemSchema, } from './helpers/index.js';
 
 const retireAbi = new ethers.Interface([
     'function retire(tuple(address, int64, int64[])[])',
@@ -128,7 +109,7 @@ async function setPool(
                     contractId
                 );
                 // tslint:disable-next-line:no-empty
-            } catch {}
+            } catch { }
             await setContractWiperPermissions(
                 contractRepository,
                 retirePoolRepository,
@@ -235,7 +216,7 @@ async function setContractWiperPermissions(
     );
 }
 
-async function setPoolContract(
+export async function setPoolContract(
     workers: Workers,
     contractId: string,
     hederaAccountId: string,
@@ -796,8 +777,7 @@ export async function syncRetireContract(
                         contractOwnerIds.map((user) =>
                             NotificationHelper.info(
                                 `Pools cleared in contract: ${contractId}`,
-                                `All ${
-                                    count === 1 ? 'single' : 'double'
+                                `All ${count === 1 ? 'single' : 'double'
                                 } pools cleared`,
                                 user
                             )
@@ -817,8 +797,7 @@ export async function syncRetireContract(
                         contractOwnerIds.map((user) =>
                             NotificationHelper.info(
                                 `Requests cleared in contract: ${contractId}`,
-                                `All ${
-                                    count === 1 ? 'single' : 'double'
+                                `All ${count === 1 ? 'single' : 'double'
                                 } requests cleared`,
                                 user
                             )
@@ -931,7 +910,7 @@ async function getContractPermissions(
 async function saveRetireVC(
     contractRepository: DataBaseHelper<Contract>,
     contractId: string,
-    did: string,
+    owner: IOwner,
     hederaAccountId: string,
     hederaAccountKey: string,
     userHederaAccountId: string,
@@ -939,7 +918,7 @@ async function saveRetireVC(
 ) {
     const contract = await contractRepository.findOne({
         contractId,
-        owner: did,
+        owner: owner.creator,
     });
 
     const topicConfig = await TopicConfig.fromObject({
@@ -952,7 +931,7 @@ async function saveRetireVC(
 
     const userTopic = await TopicConfig.fromObject(
         await new DataBaseHelper(Topic).findOne({
-            owner: did,
+            owner: owner.creator,
             type: TopicType.UserTopic,
         }),
         true
@@ -970,10 +949,11 @@ async function saveRetireVC(
             active: true,
         });
         if (schema) {
-            schema.creator = did;
-            schema.owner = did;
+            schema.creator = owner.creator;
+            schema.owner = owner.owner;
             const item = await publishSystemSchema(
                 schema,
+                owner,
                 messageServer,
                 MessageAction.PublishSystemSchema
             );
@@ -993,7 +973,7 @@ async function saveRetireVC(
             serials: token.serials,
         })),
     };
-    credentialSubject.id = did;
+    credentialSubject.id = owner.creator;
 
     if (schemaObject) {
         credentialSubject = SchemaHelper.updateObjectContext(
@@ -1002,7 +982,7 @@ async function saveRetireVC(
         );
     }
 
-    const didDocument = await vcHelper.loadDidDocument(did);
+    const didDocument = await vcHelper.loadDidDocument(owner.creator);
     const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -1011,7 +991,7 @@ async function saveRetireVC(
 
     await new DataBaseHelper(VcDocumentCollection).save({
         hash: vcMessage.hash,
-        owner: did,
+        owner: owner.creator,
         document: vcMessage.document,
         type: schemaObject?.entity,
         documentFields: ['credentialSubject.0.user'],
@@ -1028,7 +1008,12 @@ export async function contractAPI(
     retireRequestRepository: DataBaseHelper<RetireRequest>,
     vcRepostitory: DataBaseHelper<VcDocument>
 ): Promise<void> {
-    ApiResponse(ContractAPI.GET_CONTRACTS, async (msg) => {
+    ApiResponse(ContractAPI.GET_CONTRACTS, async (msg: {
+        owner: IOwner,
+        type: ContractType,
+        pageIndex?: any,
+        pageSize?: any
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1039,8 +1024,8 @@ export async function contractAPI(
             if (!type) {
                 return new MessageError('Type is required');
             }
-            if (!owner) {
-                return new MessageError('User is requred');
+            if (!owner.owner) {
+                return new MessageError('User is required');
             }
 
             const otherOptions: any = {};
@@ -1058,7 +1043,7 @@ export async function contractAPI(
             return new MessageResponse(
                 await contractRepository.findAndCount(
                     {
-                        owner,
+                        owner: owner.owner,
                         type,
                     },
                     otherOptions
@@ -1070,31 +1055,36 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.CREATE_CONTRACT, async (msg) => {
+    ApiResponse(ContractAPI.CREATE_CONTRACT, async (msg: {
+        owner: IOwner,
+        description: string,
+        type: ContractType
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { description, did, type } = msg;
+            const { description, owner, type } = msg;
 
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(did);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                did
+                owner.creator
             );
+            const signOptions = await wallet.getUserSignOptions(root);
 
-            const topicHelper = new TopicHelper(root.hederaAccountId, rootKey);
+            const topicHelper = new TopicHelper(root.hederaAccountId, rootKey, signOptions);
             const topic = await topicHelper.create(
                 {
                     type: TopicType.ContractTopic,
                     name: TopicType.ContractTopic,
                     description: TopicType.ContractTopic,
-                    owner: did,
+                    owner: owner.creator,
                     policyId: null,
                     policyUUID: null,
                 },
@@ -1118,7 +1108,7 @@ export async function contractAPI(
 
             const contract = await contractRepository.save({
                 contractId,
-                owner: did,
+                owner: owner.creator,
                 description,
                 permissions: type === ContractType.WIPE ? 15 : 3,
                 type,
@@ -1132,7 +1122,8 @@ export async function contractAPI(
             contractMessage.setDocument(contract);
             const messageServer = new MessageServer(
                 root.hederaAccountId,
-                rootKey
+                rootKey,
+                signOptions
             );
             await messageServer
                 .setTopicObject(topic)
@@ -1144,28 +1135,32 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.IMPORT_CONTRACT, async (msg) => {
+    ApiResponse(ContractAPI.IMPORT_CONTRACT, async (msg: {
+        owner: IOwner,
+        contractId: string,
+        description: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid contract identifier');
             }
-            const { contractId, did, description } = msg;
+            const { contractId, owner, description } = msg;
 
             if (!contractId) {
                 throw new Error('Contract identifier is required');
             }
-            if (!did) {
+            if (!owner.creator) {
                 throw new Error('DID is required');
             }
 
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(did);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                did
+                owner.creator
             );
 
             const permissions = await getContractPermissions(
@@ -1209,7 +1204,7 @@ export async function contractAPI(
             const contract = await contractRepository.save(
                 {
                     contractId,
-                    owner: did,
+                    owner: owner.creator,
                     description,
                     permissions,
                     topicId: memo,
@@ -1225,7 +1220,7 @@ export async function contractAPI(
                 },
                 {
                     contractId,
-                    owner: did,
+                    owner: owner.creator,
                 }
             );
             if (
@@ -1265,13 +1260,16 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.CONTRACT_PERMISSIONS, async (msg) => {
+    ApiResponse(ContractAPI.CONTRACT_PERMISSIONS, async (msg: {
+        owner: IOwner,
+        id: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { did, id } = msg;
+            const { owner, id } = msg;
 
             if (!id) {
                 throw new Error('Invalid contract identifier');
@@ -1288,11 +1286,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(did);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                did
+                owner.creator
             );
 
             const permissions = await getContractPermissions(
@@ -1308,7 +1306,7 @@ export async function contractAPI(
                 },
                 {
                     contractId,
-                    owner: did,
+                    owner: owner.creator,
                 }
             );
             return new MessageResponse(permissions);
@@ -1318,62 +1316,68 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.REMOVE_CONTRACT, async (msg) => {
+    ApiResponse(ContractAPI.REMOVE_CONTRACT,
+        async (msg: { owner: IOwner, id: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
+                }
+
+                const { owner, id } = msg;
+
+                if (!id) {
+                    throw new Error('Invalid contract identifier');
+                }
+                if (!owner.creator) {
+                    throw new Error('Invalid contract owner');
+                }
+
+                const contract = await contractRepository.findOne(id, {
+                    fields: ['contractId'],
+                });
+                if (!contract) {
+                    throw new Error('Contract not found');
+                }
+                const contractId = contract.contractId;
+
+                await contractRepository.delete({
+                    contractId,
+                    owner: owner.creator,
+                });
+
+                const existingContracts = await contractRepository.count({
+                    contractId,
+                });
+                if (existingContracts < 1) {
+                    await retirePoolRepository.delete({
+                        contractId,
+                    });
+                    await retireRequestRepository.delete({
+                        contractId,
+                    });
+                }
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(ContractAPI.GET_WIPE_REQUESTS, async (msg: {
+        owner: IOwner,
+        contractId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { owner, id } = msg;
+            const { pageIndex, pageSize, owner, contractId } = msg;
 
-            if (!id) {
-                throw new Error('Invalid contract identifier');
-            }
-            if (!owner) {
-                throw new Error('Invalid contract owner');
-            }
-
-            const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
-            });
-            if (!contract) {
-                throw new Error('Contract not found');
-            }
-            const contractId = contract.contractId;
-
-            await contractRepository.delete({
-                contractId,
-                owner,
-            });
-
-            const existingContracts = await contractRepository.count({
-                contractId,
-            });
-            if (existingContracts < 1) {
-                await retirePoolRepository.delete({
-                    contractId,
-                });
-                await retireRequestRepository.delete({
-                    contractId,
-                });
-            }
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.GET_WIPE_REQUESTS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
-            }
-
-            const { pageIndex, pageSize, did, contractId } = msg;
-
-            if (!did) {
-                return new MessageError('User is requred');
+            if (!owner.owner) {
+                return new MessageError('User is required');
             }
 
             const otherOptions: any = {};
@@ -1389,7 +1393,7 @@ export async function contractAPI(
             }
 
             const contractFilters: any = {
-                owner: did,
+                owner: owner.owner,
             };
             if (contractId) {
                 contractFilters.contractId = contractId;
@@ -1412,171 +1416,178 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.ENABLE_WIPE_REQUESTS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
+    ApiResponse(ContractAPI.ENABLE_WIPE_REQUESTS,
+        async (msg: { owner: IOwner, id: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
+                }
+
+                const { owner, id } = msg;
+
+                if (!id) {
+                    throw new Error('Invalid contract identifier');
+                }
+                if (!owner.creator) {
+                    throw new Error('Invalid contract owner');
+                }
+
+                const contract = await contractRepository.findOne(id, {
+                    fields: ['contractId'],
+                });
+                if (!contract) {
+                    throw new Error('Contract not found');
+                }
+                const contractId = contract.contractId;
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                await contractCall(
+                    ContractAPI.ENABLE_WIPE_REQUESTS,
+                    workers,
+                    contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'enableRequests'
+                );
+
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
+        });
 
-            const { owner, id } = msg;
+    ApiResponse(ContractAPI.DISABLE_WIPE_REQUESTS,
+        async (msg: { owner: IOwner, id: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
+                }
 
-            if (!id) {
-                throw new Error('Invalid contract identifier');
+                const { owner, id } = msg;
+
+                if (!id) {
+                    throw new Error('Invalid contract identifier');
+                }
+                if (!owner.creator) {
+                    throw new Error('Invalid contract owner');
+                }
+
+                const contract = await contractRepository.findOne(id, {
+                    fields: ['contractId'],
+                });
+                if (!contract) {
+                    throw new Error('Contract not found');
+                }
+                const contractId = contract.contractId;
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                await contractCall(
+                    ContractAPI.DISABLE_WIPE_REQUESTS,
+                    workers,
+                    contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'disableRequests'
+                );
+
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            if (!owner) {
-                throw new Error('Invalid contract owner');
+        });
+
+    ApiResponse(ContractAPI.APPROVE_WIPE_REQUEST,
+        async (msg: { owner: IOwner, requestId: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
+                }
+
+                const { owner, requestId } = msg;
+
+                if (!owner.creator) {
+                    throw new Error('Invalid contract owner');
+                }
+                if (!requestId) {
+                    throw new Error('Invalid request identifier');
+                }
+
+                const request = await wipeRequestRepository.findOne({
+                    id: requestId,
+                });
+                if (!request) {
+                    throw new Error('Request is not found');
+                }
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                await contractCall(
+                    ContractAPI.APPROVE_WIPE_REQUEST,
+                    workers,
+                    request.contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'approve',
+                    [
+                        {
+                            type: ContractParamType.ADDRESS,
+                            value: AccountId.fromString(
+                                request.user
+                            ).toSolidityAddress(),
+                        },
+                    ]
+                );
+
+                await wipeRequestRepository.remove(request);
+
+                await setContractWiperPermissions(
+                    contractRepository,
+                    retirePoolRepository,
+                    request.user,
+                    request.contractId,
+                    true
+                );
+
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
+        });
 
-            const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
-            });
-            if (!contract) {
-                throw new Error('Contract not found');
-            }
-            const contractId = contract.contractId;
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            await contractCall(
-                ContractAPI.ENABLE_WIPE_REQUESTS,
-                workers,
-                contractId,
-                root.hederaAccountId,
-                rootKey,
-                'enableRequests'
-            );
-
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.DISABLE_WIPE_REQUESTS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
-            }
-
-            const { owner, id } = msg;
-
-            if (!id) {
-                throw new Error('Invalid contract identifier');
-            }
-            if (!owner) {
-                throw new Error('Invalid contract owner');
-            }
-
-            const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
-            });
-            if (!contract) {
-                throw new Error('Contract not found');
-            }
-            const contractId = contract.contractId;
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            await contractCall(
-                ContractAPI.DISABLE_WIPE_REQUESTS,
-                workers,
-                contractId,
-                root.hederaAccountId,
-                rootKey,
-                'disableRequests'
-            );
-
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.APPROVE_WIPE_REQUEST, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
-            }
-
-            const { owner, requestId } = msg;
-
-            if (!owner) {
-                throw new Error('Invalid contract owner');
-            }
-            if (!requestId) {
-                throw new Error('Invalid request identifier');
-            }
-
-            const request = await wipeRequestRepository.findOne({
-                id: requestId,
-            });
-            if (!request) {
-                throw new Error('Request is not found');
-            }
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            await contractCall(
-                ContractAPI.APPROVE_WIPE_REQUEST,
-                workers,
-                request.contractId,
-                root.hederaAccountId,
-                rootKey,
-                'approve',
-                [
-                    {
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            request.user
-                        ).toSolidityAddress(),
-                    },
-                ]
-            );
-
-            await wipeRequestRepository.remove(request);
-
-            await setContractWiperPermissions(
-                contractRepository,
-                retirePoolRepository,
-                request.user,
-                request.contractId,
-                true
-            );
-
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.REJECT_WIPE_REQUEST, async (msg) => {
+    ApiResponse(ContractAPI.REJECT_WIPE_REQUEST, async (msg: {
+        owner: IOwner,
+        requestId: string,
+        ban: boolean
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1584,7 +1595,7 @@ export async function contractAPI(
 
             const { owner, requestId, ban } = msg;
 
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!requestId) {
@@ -1601,11 +1612,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -1638,60 +1649,65 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.CLEAR_WIPE_REQUESTS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
+    ApiResponse(ContractAPI.CLEAR_WIPE_REQUESTS,
+        async (msg: { owner: IOwner, id: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
+                }
+
+                const { owner, id } = msg;
+
+                if (!id) {
+                    throw new Error('Invalid contract identifier');
+                }
+                if (!owner.creator) {
+                    throw new Error('Invalid contract owner');
+                }
+
+                const contract = await contractRepository.findOne(id, {
+                    fields: ['contractId'],
+                });
+                if (!contract) {
+                    throw new Error('Contract not found');
+                }
+                const contractId = contract.contractId;
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                await contractCall(
+                    ContractAPI.CLEAR_WIPE_REQUESTS,
+                    workers,
+                    contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'clear'
+                );
+
+                await wipeRequestRepository.delete({
+                    contractId,
+                });
+
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
+        });
 
-            const { owner, id } = msg;
-
-            if (!id) {
-                throw new Error('Invalid contract identifier');
-            }
-            if (!owner) {
-                throw new Error('Invalid contract owner');
-            }
-
-            const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
-            });
-            if (!contract) {
-                throw new Error('Contract not found');
-            }
-            const contractId = contract.contractId;
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            await contractCall(
-                ContractAPI.CLEAR_WIPE_REQUESTS,
-                workers,
-                contractId,
-                root.hederaAccountId,
-                rootKey,
-                'clear'
-            );
-
-            await wipeRequestRepository.delete({
-                contractId,
-            });
-
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.ADD_WIPE_ADMIN, async (msg) => {
+    ApiResponse(ContractAPI.ADD_WIPE_ADMIN, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1702,7 +1718,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -1720,11 +1736,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -1751,7 +1767,11 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.REMOVE_WIPE_ADMIN, async (msg) => {
+    ApiResponse(ContractAPI.REMOVE_WIPE_ADMIN, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1762,7 +1782,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -1780,11 +1800,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -1811,7 +1831,11 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.ADD_WIPE_MANAGER, async (msg) => {
+    ApiResponse(ContractAPI.ADD_WIPE_MANAGER, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1822,7 +1846,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -1840,11 +1864,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -1871,7 +1895,11 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.REMOVE_WIPE_MANAGER, async (msg) => {
+    ApiResponse(ContractAPI.REMOVE_WIPE_MANAGER, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1882,7 +1910,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -1900,11 +1928,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -1931,7 +1959,11 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.ADD_WIPE_WIPER, async (msg) => {
+    ApiResponse(ContractAPI.ADD_WIPE_WIPER, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -1942,7 +1974,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -1960,11 +1992,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -1991,7 +2023,11 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.REMOVE_WIPE_WIPER, async (msg) => {
+    ApiResponse(ContractAPI.REMOVE_WIPE_WIPER, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2002,7 +2038,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -2020,11 +2056,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -2051,112 +2087,118 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.SYNC_RETIRE_POOLS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
-            }
-
-            const { owner, id } = msg;
-
-            if (!id) {
-                throw new Error('Invalid contract identifier');
-            }
-            if (!owner) {
-                throw new Error('Invalid owner');
-            }
-
-            const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
-            });
-            if (!contract) {
-                throw new Error('Contract not found');
-            }
-            const contractId = contract.contractId;
-            const workers = new Workers();
-
-            const pools = await retirePoolRepository.find({
-                contractId,
-            });
-
-            const handledContracts = new Set<string>();
-            //const handledTokens = new Set<string>();
-            for (const pool of pools) {
-                for (const token of pool.tokens) {
-                    // if (handledTokens.has(token.token)) {
-                    //     continue;
-                    // }
-                    // handledTokens.add(token.token);
-                    const tokenInfo = await workers.addRetryableTask(
-                        {
-                            type: WorkerTaskType.GET_TOKEN_INFO,
-                            data: { tokenId: token.token },
-                        },
-                        10
-                    );
-                    token.contract = getTokenContractId(tokenInfo.wipe_key);
-                    if (handledContracts.has(token.contract)) {
-                        continue;
-                    }
-                    handledContracts.add(token.contract);
-                    const isWiper = await isContractWiper(
-                        workers,
-                        token.contract,
-                        contractId
-                    );
-                    await setContractWiperPermissions(
-                        contractRepository,
-                        retirePoolRepository,
-                        contractId,
-                        token.contract,
-                        isWiper
-                    );
+    ApiResponse(ContractAPI.SYNC_RETIRE_POOLS,
+        async (msg: { owner: IOwner, id: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
                 }
-                // tslint:disable-next-line:no-shadowed-variable
-                const contract = await contractRepository.findOne({
+
+                const { owner, id } = msg;
+
+                if (!id) {
+                    throw new Error('Invalid contract identifier');
+                }
+                if (!owner.creator) {
+                    throw new Error('Invalid owner');
+                }
+
+                const contract = await contractRepository.findOne(id, {
+                    fields: ['contractId'],
+                });
+                if (!contract) {
+                    throw new Error('Contract not found');
+                }
+                const contractId = contract.contractId;
+                const workers = new Workers();
+
+                const pools = await retirePoolRepository.find({
                     contractId,
                 });
 
-                pool.enabled =
-                    pool.tokens.findIndex(
-                        (token) =>
-                            !contract.wipeContractIds.includes(token.contract)
-                    ) < 0;
+                const handledContracts = new Set<string>();
+                //const handledTokens = new Set<string>();
+                for (const pool of pools) {
+                    for (const token of pool.tokens) {
+                        // if (handledTokens.has(token.token)) {
+                        //     continue;
+                        // }
+                        // handledTokens.add(token.token);
+                        const tokenInfo = await workers.addRetryableTask(
+                            {
+                                type: WorkerTaskType.GET_TOKEN_INFO,
+                                data: { tokenId: token.token },
+                            },
+                            10
+                        );
+                        token.contract = getTokenContractId(tokenInfo.wipe_key);
+                        if (handledContracts.has(token.contract)) {
+                            continue;
+                        }
+                        handledContracts.add(token.contract);
+                        const isWiper = await isContractWiper(
+                            workers,
+                            token.contract,
+                            contractId
+                        );
+                        await setContractWiperPermissions(
+                            contractRepository,
+                            retirePoolRepository,
+                            contractId,
+                            token.contract,
+                            isWiper
+                        );
+                    }
+                    // tslint:disable-next-line:no-shadowed-variable
+                    const contract = await contractRepository.findOne({
+                        contractId,
+                    });
+
+                    pool.enabled =
+                        pool.tokens.findIndex(
+                            (token) =>
+                                !contract.wipeContractIds.includes(token.contract)
+                        ) < 0;
+                }
+
+                await retirePoolRepository.update(pools);
+
+                const syncDate = new Date();
+
+                const contracts = await contractRepository.find({
+                    contractId,
+                });
+
+                await contractRepository.update(
+                    // tslint:disable-next-line:no-shadowed-variable
+                    contracts.map((contract) => {
+                        contract.syncPoolsDate = syncDate;
+                        return contract;
+                    })
+                );
+
+                return new MessageResponse(syncDate);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
+        });
 
-            await retirePoolRepository.update(pools);
-
-            const syncDate = new Date();
-
-            const contracts = await contractRepository.find({
-                contractId,
-            });
-
-            await contractRepository.update(
-                // tslint:disable-next-line:no-shadowed-variable
-                contracts.map((contract) => {
-                    contract.syncPoolsDate = syncDate;
-                    return contract;
-                })
-            );
-
-            return new MessageResponse(syncDate);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.GET_RETIRE_REQUESTS, async (msg) => {
+    ApiResponse(ContractAPI.GET_RETIRE_REQUESTS, async (msg: {
+        owner: IOwner,
+        contractId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { pageIndex, pageSize, did, contractId } = msg;
+            const { pageIndex, pageSize, owner, contractId } = msg;
 
-            if (!did) {
-                return new MessageError('User is requred');
+            if (!owner.creator) {
+                return new MessageError('User is required');
             }
 
             const otherOptions: any = {};
@@ -2172,44 +2214,42 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(did);
+            const user = await users.getUserById(owner.creator);
 
             const filters: any = {};
             if (contractId) {
                 filters.contractId = contractId;
             }
 
+            let result: any;
             if (user.role === UserRole.STANDARD_REGISTRY) {
                 if (!filters.contractId) {
                     const contracts = await contractRepository.find({
-                        owner: did,
+                        owner: owner.creator,
                     });
                     filters.contractId = {
                         $in: contracts.map((item) => item.id),
                     };
                 }
-                return new MessageResponse(
-                    await retireRequestRepository.findAndCount(
-                        filters,
-                        otherOptions
-                    )
-                );
+                result = await retireRequestRepository.findAndCount(filters, otherOptions);
             } else if (user.role === UserRole.USER) {
                 filters.user = user.hederaAccountId;
-                return new MessageResponse(
-                    await retireRequestRepository.findAndCount(
-                        filters,
-                        otherOptions
-                    )
-                );
+                result = await retireRequestRepository.findAndCount(filters, otherOptions);
             }
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
 
-    ApiResponse(ContractAPI.GET_RETIRE_POOLS, async (msg) => {
+    ApiResponse(ContractAPI.GET_RETIRE_POOLS, async (msg: {
+        owner: IOwner,
+        tokens?: string[],
+        contractId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2217,7 +2257,7 @@ export async function contractAPI(
 
             const { pageIndex, pageSize, owner, contractId, tokens } = msg;
 
-            if (!owner) {
+            if (!owner.creator) {
                 return new MessageError('User is requred');
             }
 
@@ -2234,7 +2274,7 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner);
+            const user = await users.getUserById(owner.creator);
 
             const filters: any = {
                 $and: [],
@@ -2249,7 +2289,7 @@ export async function contractAPI(
             } else {
                 const contracts = await contractRepository.find({
                     type: ContractType.RETIRE,
-                    owner: user.role === UserRole.USER ? user.parent : owner,
+                    owner: owner.owner,
                 });
                 filters.$and.push({
                     contractId: {
@@ -2274,153 +2314,159 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.CLEAR_RETIRE_REQUESTS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
+    ApiResponse(ContractAPI.CLEAR_RETIRE_REQUESTS,
+        async (msg: { owner: IOwner, id: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
+                }
+
+                const { owner, id } = msg;
+
+                if (!id) {
+                    throw new Error('Invalid contract identifier');
+                }
+                if (!owner.creator) {
+                    throw new Error('Invalid contract owner');
+                }
+
+                const contract = await contractRepository.findOne(id, {
+                    fields: ['contractId'],
+                });
+                if (!contract) {
+                    throw new Error('Contract not found');
+                }
+                const contractId = contract.contractId;
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                await contractCall(
+                    ContractAPI.CLEAR_RETIRE_REQUESTS,
+                    workers,
+                    contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'clearRequests',
+                    [
+                        {
+                            type: ContractParamType.UINT8,
+                            value: 1,
+                        },
+                    ]
+                );
+                await contractCall(
+                    ContractAPI.CLEAR_RETIRE_REQUESTS,
+                    workers,
+                    contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'clearRequests',
+                    [
+                        {
+                            type: ContractParamType.UINT8,
+                            value: 2,
+                        },
+                    ]
+                );
+
+                await retireRequestRepository.delete({
+                    contractId,
+                });
+
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
+        });
 
-            const { owner, id } = msg;
+    ApiResponse(ContractAPI.CLEAR_RETIRE_POOLS,
+        async (msg: { owner: IOwner, id: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get contract parameters');
+                }
 
-            if (!id) {
-                throw new Error('Invalid contract identifier');
+                const { owner, id } = msg;
+
+                if (!id) {
+                    throw new Error('Invalid contract identifier');
+                }
+                if (!owner.creator) {
+                    throw new Error('Invalid contract owner');
+                }
+
+                const contract = await contractRepository.findOne(id, {
+                    fields: ['contractId'],
+                });
+                if (!contract) {
+                    throw new Error('Contract not found');
+                }
+                const contractId = contract.contractId;
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                await contractCall(
+                    ContractAPI.CLEAR_RETIRE_POOLS,
+                    workers,
+                    contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'clearPools',
+                    [
+                        {
+                            type: ContractParamType.UINT8,
+                            value: 1,
+                        },
+                    ]
+                );
+                await contractCall(
+                    ContractAPI.CLEAR_RETIRE_POOLS,
+                    workers,
+                    contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'clearPools',
+                    [
+                        {
+                            type: ContractParamType.UINT8,
+                            value: 2,
+                        },
+                    ]
+                );
+
+                await retirePoolRepository.delete({
+                    contractId,
+                });
+
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            if (!owner) {
-                throw new Error('Invalid contract owner');
-            }
+        });
 
-            const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
-            });
-            if (!contract) {
-                throw new Error('Contract not found');
-            }
-            const contractId = contract.contractId;
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            await contractCall(
-                ContractAPI.CLEAR_RETIRE_REQUESTS,
-                workers,
-                contractId,
-                root.hederaAccountId,
-                rootKey,
-                'clearRequests',
-                [
-                    {
-                        type: ContractParamType.UINT8,
-                        value: 1,
-                    },
-                ]
-            );
-            await contractCall(
-                ContractAPI.CLEAR_RETIRE_REQUESTS,
-                workers,
-                contractId,
-                root.hederaAccountId,
-                rootKey,
-                'clearRequests',
-                [
-                    {
-                        type: ContractParamType.UINT8,
-                        value: 2,
-                    },
-                ]
-            );
-
-            await retireRequestRepository.delete({
-                contractId,
-            });
-
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.CLEAR_RETIRE_POOLS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get contract parameters');
-            }
-
-            const { owner, id } = msg;
-
-            if (!id) {
-                throw new Error('Invalid contract identifier');
-            }
-            if (!owner) {
-                throw new Error('Invalid contract owner');
-            }
-
-            const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
-            });
-            if (!contract) {
-                throw new Error('Contract not found');
-            }
-            const contractId = contract.contractId;
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            await contractCall(
-                ContractAPI.CLEAR_RETIRE_POOLS,
-                workers,
-                contractId,
-                root.hederaAccountId,
-                rootKey,
-                'clearPools',
-                [
-                    {
-                        type: ContractParamType.UINT8,
-                        value: 1,
-                    },
-                ]
-            );
-            await contractCall(
-                ContractAPI.CLEAR_RETIRE_POOLS,
-                workers,
-                contractId,
-                root.hederaAccountId,
-                rootKey,
-                'clearPools',
-                [
-                    {
-                        type: ContractParamType.UINT8,
-                        value: 2,
-                    },
-                ]
-            );
-
-            await retirePoolRepository.delete({
-                contractId,
-            });
-
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.SET_RETIRE_POOLS, async (msg) => {
+    ApiResponse(ContractAPI.SET_RETIRE_POOLS, async (msg: {
+        owner: IOwner,
+        id: string,
+        options: { tokens: RetireTokenPool[]; immediately: boolean }
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -2431,7 +2477,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Contract identifier is required');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Owner is required');
             }
             if (!options) {
@@ -2449,11 +2495,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await setPoolContract(
@@ -2480,130 +2526,136 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.UNSET_RETIRE_POOLS, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid add contract pair parameters');
+    ApiResponse(ContractAPI.UNSET_RETIRE_POOLS,
+        async (msg: { owner: IOwner, poolId: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid add contract pair parameters');
+                }
+
+                const { owner, poolId } = msg;
+
+                if (!owner.creator) {
+                    throw new Error('Owner is required');
+                }
+                if (!poolId) {
+                    throw new Error('Pool identifier is required');
+                }
+
+                const pool = await retirePoolRepository.findOne({
+                    id: poolId,
+                });
+
+                if (!pool) {
+                    throw new Error('Pool is not found');
+                }
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                const result = await contractCall(
+                    ContractAPI.UNSET_RETIRE_POOLS,
+                    workers,
+                    pool.contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'unsetPool',
+                    [
+                        {
+                            type: ContractParamType.ADDRESS_ARRAY,
+                            value: pool.tokens.map((token) =>
+                                TokenId.fromString(token.token).toSolidityAddress()
+                            ),
+                        },
+                    ]
+                );
+
+                await retirePoolRepository.remove(pool);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
+        });
 
-            const { owner, poolId } = msg;
+    ApiResponse(ContractAPI.UNSET_RETIRE_REQUEST,
+        async (msg: { owner: IOwner, requestId: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid add contract pair parameters');
+                }
 
-            if (!owner) {
-                throw new Error('Owner is required');
+                const { owner, requestId } = msg;
+
+                if (!owner.creator) {
+                    throw new Error('Owner is required');
+                }
+                if (!requestId) {
+                    throw new Error('Pool identifier is required');
+                }
+
+                const request = await retireRequestRepository.findOne({
+                    id: requestId,
+                });
+
+                if (!request) {
+                    throw new Error('Request is not found');
+                }
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                const result = await contractCall(
+                    ContractAPI.UNSET_RETIRE_REQUEST,
+                    workers,
+                    request.contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'unsetRequest',
+                    [
+                        {
+                            type: ContractParamType.ADDRESS,
+                            value: AccountId.fromString(
+                                request.user
+                            ).toSolidityAddress(),
+                        },
+                        {
+                            type: ContractParamType.ADDRESS_ARRAY,
+                            value: request.tokens.map((token) =>
+                                TokenId.fromString(token.token).toSolidityAddress()
+                            ),
+                        },
+                    ]
+                );
+                await retireRequestRepository.remove(request);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            if (!poolId) {
-                throw new Error('Pool identifier is required');
-            }
+        });
 
-            const pool = await retirePoolRepository.findOne({
-                id: poolId,
-            });
-
-            if (!pool) {
-                throw new Error('Pool is not found');
-            }
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            const result = await contractCall(
-                ContractAPI.UNSET_RETIRE_POOLS,
-                workers,
-                pool.contractId,
-                root.hederaAccountId,
-                rootKey,
-                'unsetPool',
-                [
-                    {
-                        type: ContractParamType.ADDRESS_ARRAY,
-                        value: pool.tokens.map((token) =>
-                            TokenId.fromString(token.token).toSolidityAddress()
-                        ),
-                    },
-                ]
-            );
-
-            await retirePoolRepository.remove(pool);
-
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.UNSET_RETIRE_REQUEST, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid add contract pair parameters');
-            }
-
-            const { owner, requestId } = msg;
-
-            if (!owner) {
-                throw new Error('Owner is required');
-            }
-            if (!requestId) {
-                throw new Error('Pool identifier is required');
-            }
-
-            const request = await retireRequestRepository.findOne({
-                id: requestId,
-            });
-
-            if (!request) {
-                throw new Error('Request is not found');
-            }
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            const result = await contractCall(
-                ContractAPI.UNSET_RETIRE_REQUEST,
-                workers,
-                request.contractId,
-                root.hederaAccountId,
-                rootKey,
-                'unsetRequest',
-                [
-                    {
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            request.user
-                        ).toSolidityAddress(),
-                    },
-                    {
-                        type: ContractParamType.ADDRESS_ARRAY,
-                        value: request.tokens.map((token) =>
-                            TokenId.fromString(token.token).toSolidityAddress()
-                        ),
-                    },
-                ]
-            );
-            await retireRequestRepository.remove(request);
-
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.RETIRE, async (msg) => {
+    ApiResponse(ContractAPI.RETIRE, async (msg: {
+        owner: IOwner,
+        poolId: string,
+        tokens: RetireTokenRequest[]
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -2611,14 +2663,13 @@ export async function contractAPI(
 
             let {
                 // tslint:disable-next-line:prefer-const
-                did,
+                owner,
                 // tslint:disable-next-line:prefer-const
                 poolId,
                 tokens,
-            }: { did: string; poolId: string; tokens: RetireTokenRequest[] } =
-                msg;
+            } = msg;
 
-            if (!did) {
+            if (!owner.creator) {
                 throw new Error('User is required');
             }
             if (!poolId) {
@@ -2640,11 +2691,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(did);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                did
+                owner.creator
             );
 
             const sr = await users.getUserById(root.parent || root.did);
@@ -2668,11 +2719,12 @@ export async function contractAPI(
                 ])
             );
 
+            const srUser = EntityOwner.sr(sr.did);
             if (pool.immediately) {
                 await saveRetireVC(
                     contractRepository,
                     pool.contractId,
-                    sr.did,
+                    srUser,
                     sr.hederaAccountId,
                     srKey,
                     root.hederaAccountId,
@@ -2697,141 +2749,147 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.APPROVE_RETIRE, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid add contract pair parameters');
+    ApiResponse(ContractAPI.APPROVE_RETIRE,
+        async (msg: { owner: IOwner, requestId: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid add contract pair parameters');
+                }
+
+                const { owner, requestId } = msg;
+
+                if (!owner.creator) {
+                    throw new Error('Owner is required');
+                }
+                if (!requestId) {
+                    throw new Error('Pool identifier is required');
+                }
+
+                const request = await retireRequestRepository.findOne({
+                    id: requestId,
+                });
+
+                if (!request) {
+                    throw new Error('Request is not found');
+                }
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                const result = await contractCall(
+                    ContractAPI.APPROVE_RETIRE,
+                    workers,
+                    request.contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'approveRetire',
+                    [
+                        {
+                            type: ContractParamType.ADDRESS,
+                            value: AccountId.fromString(
+                                request.user
+                            ).toSolidityAddress(),
+                        },
+                        {
+                            type: ContractParamType.ADDRESS_ARRAY,
+                            value: request.tokens.map((token) =>
+                                TokenId.fromString(token.token).toSolidityAddress()
+                            ),
+                        },
+                    ]
+                );
+
+                await saveRetireVC(
+                    contractRepository,
+                    request.contractId,
+                    owner,
+                    root.hederaAccountId,
+                    rootKey,
+                    request.user,
+                    request.tokens
+                );
+
+                await retireRequestRepository.remove(request);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
+        });
 
-            const { owner, requestId } = msg;
+    ApiResponse(ContractAPI.CANCEL_RETIRE,
+        async (msg: { owner: IOwner, requestId: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid add contract pair parameters');
+                }
 
-            if (!owner) {
-                throw new Error('Owner is required');
+                const { owner, requestId } = msg;
+
+                if (!owner.creator) {
+                    throw new Error('Owner is required');
+                }
+                if (!requestId) {
+                    throw new Error('Pool identifier is required');
+                }
+
+                const request = await retireRequestRepository.findOne({
+                    id: requestId,
+                });
+
+                if (!request) {
+                    throw new Error('Request is not found');
+                }
+
+                const users = new Users();
+                const wallet = new Wallet();
+                const workers = new Workers();
+                const root = await users.getUserById(owner.creator);
+                const rootKey = await wallet.getKey(
+                    root.walletToken,
+                    KeyType.KEY,
+                    owner.creator
+                );
+
+                const result = await contractCall(
+                    ContractAPI.CANCEL_RETIRE,
+                    workers,
+                    request.contractId,
+                    root.hederaAccountId,
+                    rootKey,
+                    'cancelRetire',
+                    [
+                        {
+                            type: ContractParamType.ADDRESS_ARRAY,
+                            value: request.tokens.map((token) =>
+                                TokenId.fromString(token.token).toSolidityAddress()
+                            ),
+                        },
+                    ]
+                );
+
+                await retireRequestRepository.remove(request);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            if (!requestId) {
-                throw new Error('Pool identifier is required');
-            }
+        });
 
-            const request = await retireRequestRepository.findOne({
-                id: requestId,
-            });
-
-            if (!request) {
-                throw new Error('Request is not found');
-            }
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            const result = await contractCall(
-                ContractAPI.APPROVE_RETIRE,
-                workers,
-                request.contractId,
-                root.hederaAccountId,
-                rootKey,
-                'approveRetire',
-                [
-                    {
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            request.user
-                        ).toSolidityAddress(),
-                    },
-                    {
-                        type: ContractParamType.ADDRESS_ARRAY,
-                        value: request.tokens.map((token) =>
-                            TokenId.fromString(token.token).toSolidityAddress()
-                        ),
-                    },
-                ]
-            );
-
-            await saveRetireVC(
-                contractRepository,
-                request.contractId,
-                owner,
-                root.hederaAccountId,
-                rootKey,
-                request.user,
-                request.tokens
-            );
-
-            await retireRequestRepository.remove(request);
-
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.CANCEL_RETIRE, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid add contract pair parameters');
-            }
-
-            const { owner, requestId } = msg;
-
-            if (!owner) {
-                throw new Error('Owner is required');
-            }
-            if (!requestId) {
-                throw new Error('Pool identifier is required');
-            }
-
-            const request = await retireRequestRepository.findOne({
-                id: requestId,
-            });
-
-            if (!request) {
-                throw new Error('Request is not found');
-            }
-
-            const users = new Users();
-            const wallet = new Wallet();
-            const workers = new Workers();
-            const root = await users.getUserById(owner);
-            const rootKey = await wallet.getKey(
-                root.walletToken,
-                KeyType.KEY,
-                owner
-            );
-
-            const result = await contractCall(
-                ContractAPI.CANCEL_RETIRE,
-                workers,
-                request.contractId,
-                root.hederaAccountId,
-                rootKey,
-                'cancelRetire',
-                [
-                    {
-                        type: ContractParamType.ADDRESS_ARRAY,
-                        value: request.tokens.map((token) =>
-                            TokenId.fromString(token.token).toSolidityAddress()
-                        ),
-                    },
-                ]
-            );
-
-            await retireRequestRepository.remove(request);
-
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(ContractAPI.ADD_RETIRE_ADMIN, async (msg) => {
+    ApiResponse(ContractAPI.ADD_RETIRE_ADMIN, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2842,7 +2900,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -2860,11 +2918,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -2891,7 +2949,11 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.REMOVE_RETIRE_ADMIN, async (msg) => {
+    ApiResponse(ContractAPI.REMOVE_RETIRE_ADMIN, async (msg: {
+        owner: IOwner,
+        id: string,
+        hederaId: string
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2902,7 +2964,7 @@ export async function contractAPI(
             if (!id) {
                 throw new Error('Invalid contract identifier');
             }
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Invalid contract owner');
             }
             if (!hederaId) {
@@ -2920,11 +2982,11 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
-            const root = await users.getUserById(owner);
+            const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
-                owner
+                owner.creator
             );
 
             await contractCall(
@@ -2951,7 +3013,11 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(ContractAPI.GET_RETIRE_VCS, async (msg) => {
+    ApiResponse(ContractAPI.GET_RETIRE_VCS, async (msg: {
+        owner: IOwner,
+        pageIndex?: any,
+        pageSize?: any
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -2959,7 +3025,7 @@ export async function contractAPI(
 
             const { pageIndex, pageSize, owner } = msg;
 
-            if (!owner) {
+            if (!owner.creator) {
                 throw new Error('Owner is required');
             }
 
@@ -2976,10 +3042,10 @@ export async function contractAPI(
             }
 
             const users = new Users();
-            const user = await users.getUserById(owner);
+            const user = await users.getUserById(owner.creator);
 
             const filters: any = {
-                owner: user.parent || owner,
+                owner: owner.owner,
                 type: SchemaEntity.RETIRE_TOKEN,
             };
             if (user.role === UserRole.USER) {

@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { Users } from '@helpers/users';
+import { Users } from '../helpers/users.js';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 
@@ -48,7 +48,7 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             new Logger().warn(error.message, ['API_GATEWAY']);
         }
     }
-    res.sendStatus(401);
+    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
 }
 
 /**
@@ -83,9 +83,9 @@ export function permissionHelper(...roles: string[]) {
                     return;
                 }
             }
-            res.sendStatus(403);
+            throw new HttpException('Forbidden', HttpStatus.FORBIDDEN)
         } else {
-            res.sendStatus(401);
+            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
     }
 }

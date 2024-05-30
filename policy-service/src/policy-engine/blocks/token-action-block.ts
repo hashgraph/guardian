@@ -1,13 +1,13 @@
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyComponentsUtils } from '../policy-components-utils';
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
-import { BlockActionError } from '@policy-engine/errors';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { IPolicyBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
+import { BlockActionError } from '../errors/index.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Information block
@@ -42,7 +42,7 @@ export class TokenActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const { options } = PolicyComponentsUtils.GetBlockRef(this);
         return { uiMetaData: options.uiMetaData };
     }

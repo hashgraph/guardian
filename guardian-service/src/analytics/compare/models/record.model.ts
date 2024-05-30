@@ -1,9 +1,9 @@
 import { IRecordResult } from '@guardian/common';
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { IWeightModel } from '../interfaces/weight-model.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { WeightType } from '../types/weight.type';
-import { DocumentModel } from './document.model';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { IWeightModel } from '../interfaces/weight-model.interface.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { WeightType } from '../types/weight.type.js';
+import { DocumentModel } from './document.model.js';
 
 /**
  * Document Model

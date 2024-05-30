@@ -4,14 +4,14 @@ import {
     MessageType,
     TagMessage,
 } from '@guardian/common';
-import { AnalyticsStatus as Status } from '@entity/analytics-status';
-import { AnalyticsTag as Tag } from '@entity/analytics-tag';
-import { AnalyticsToken as Token } from '@entity/analytics-token';
-import { AnalyticsTokenCache as TokenCache } from '@entity/analytics-token-cache';
-import { ReportStatus } from '@interfaces/report-status.type';
-import { ReportSteep } from '@interfaces/report-steep.type';
-import { Tasks } from '@helpers/tasks';
-import { AnalyticsUtils } from '@helpers/utils';
+import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
+import { AnalyticsTag as Tag } from '../entity/analytics-tag.js';
+import { AnalyticsToken as Token } from '../entity/analytics-token.js';
+import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cache.js';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
+import { Tasks } from '../helpers/tasks.js';
+import { AnalyticsUtils } from '../helpers/utils.js';
 
 /**
  * Search tokens info

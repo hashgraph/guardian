@@ -1,21 +1,45 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
-import { ApiTags } from '@nestjs/swagger';
-import { Auth } from '@auth/auth.decorator';
-import { UserRole } from '@guardian/interfaces';
+import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { Auth } from '#auth';
+import { Permissions } from '@guardian/interfaces';
+import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
+import { ONLY_SR, Guardians, UseCache, InternalException } from '#helpers';
 
 /**
  * Branding route
  */
 @Controller('branding')
 @ApiTags('branding')
-export class BrandingApi{
-
-    @Auth(UserRole.STANDARD_REGISTRY)
-    @HttpCode(HttpStatus.NO_CONTENT)
+export class BrandingApi {
+    /**
+     * Set branding
+     */
     @Post('/')
-    async setBranding(@Body() body: any): Promise<any> {
+    @Auth(
+        Permissions.BRANDING_CONFIG_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Update branding.',
+        description: 'Update branding.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Object that contains config.',
+        required: true,
+        type: BrandingDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async setBranding(
+        @Body() body: BrandingDTO
+    ): Promise<any> {
         try {
             const {
                 headerColor,
@@ -38,27 +62,35 @@ export class BrandingApi{
                 headerColor1,
                 termsAndConditions
             };
-
             const guardians = new Guardians();
             await guardians.setBranding(JSON.stringify(data));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
-
-        return;
     }
 
+    /**
+     * Get branding
+     */
     @Get('/')
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: BrandingDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
+    @UseCache()
+    @HttpCode(HttpStatus.OK)
     async getBranding(): Promise<any> {
         try {
             const guardians = new Guardians();
             const brandingDataString = await guardians.getBranding();
-            const brandingData = JSON.parse(brandingDataString.config);
-            return brandingData;
+            return JSON.parse(brandingDataString.config);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

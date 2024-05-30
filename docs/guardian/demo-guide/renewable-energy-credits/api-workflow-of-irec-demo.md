@@ -1,27 +1,25 @@
-# ⚙ iREC API Demo Guide
+# ⚙️ iREC API Demo Guide
 
 ## Standard Registry
 
 ### Create Root Account
 
-{% swagger method="post" path="" baseUrl="/account" summary="Creating Standard Registry" %}
-{% swagger-description %}
+## Creating Standard Registry
+
+<mark style="color:green;">`POST`</mark> `/account`
+
 To create a Root Account
-{% endswagger-description %}
 
-{% swagger-parameter in="body" name="username" type="String" required="true" %}
-rootUsername
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="password" type="String" required="true" %}
-rootPassword
-{% endswagger-parameter %}
+| Name                                       | Type   | Description        |
+| ------------------------------------------ | ------ | ------------------ |
+| username<mark style="color:red;">\*</mark> | String | rootUsername       |
+| password<mark style="color:red;">\*</mark> | String | rootPassword       |
+| role<mark style="color:red;">\*</mark>     | String | STANDARD\_REGISTRY |
 
-{% swagger-parameter in="body" name="role" type="String" required="true" %}
-STANDARD\_REGISTRY
-{% endswagger-parameter %}
-
-{% swagger-response status="201: Created" description="Successful Operation" %}
+{% tabs %}
+{% tab title="201: Created Successful Operation" %}
 ```javascript
 {
     "username": "1tckto80",
@@ -32,25 +30,26 @@ STANDARD\_REGISTRY
     "id": "627d4b99ab3cae7c07025893"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Login as Standard Registry
 
-{% swagger method="post" path="" baseUrl="/accounts/login" summary="Login to the Root Account" %}
-{% swagger-description %}
+## Login to the Root Account
+
+<mark style="color:green;">`POST`</mark> `/accounts/login`
+
 Login as Standard Registry
-{% endswagger-description %}
 
-{% swagger-parameter in="body" name="username" type="String" required="true" %}
-username
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="password" type="String" required="true" %}
-Password
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| username<mark style="color:red;">\*</mark> | String | username    |
+| password<mark style="color:red;">\*</mark> | String | Password    |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
   "username": "1tckto80",
@@ -59,54 +58,50 @@ Password
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjF0Y2t0bzgwIiwiZGlkIjpudWxsLCJyb2xlIjoiUk9PVF9BVVRIT1JJVFkiLCJpYXQiOjE2NTIzNzk5MDR9.xo6WrNhW5uPfpxBICgTHqyip7TFk2GnrUHtMTJ-TKgU"  
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Generating Root Key
 
-{% swagger method="get" path="" baseUrl="/demo/randomKey" summary="To Generate Root Key" %}
-{% swagger-description %}
-Generating Root Key
-{% endswagger-description %}
+## To Generate Root Key
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+<mark style="color:blue;">`GET`</mark> `/demo/randomKey`
+
+Generating Root Key
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "0.0.34751301",
     "key": "302e020100300...."
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Update Root Profile
 
-{% swagger method="put" path="{rootUsername}" baseUrl="/profiles/" summary="Updating Profile of Standard Registry" %}
-{% swagger-description %}
+## Updating Profile of Standard Registry
 
-{% endswagger-description %}
+<mark style="color:orange;">`PUT`</mark> `/profiles/{rootUsername}`
 
-{% swagger-parameter in="body" name="hederaAccountID" type="String" required="true" %}
-rootID
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="hederaAccountKey" type="Key" required="true" %}
-rootKey
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="vcDocument" type="Array" required="false" %}
-
-{% endswagger-parameter %}
-{% endswagger %}
+| Name                                               | Type   | Description |
+| -------------------------------------------------- | ------ | ----------- |
+| hederaAccountID<mark style="color:red;">\*</mark>  | String | rootID      |
+| hederaAccountKey<mark style="color:red;">\*</mark> | Key    | rootKey     |
+| vcDocument                                         | Array  |             |
 
 ### Get Root Profile
 
-{% swagger method="get" path="" baseUrl="/profiles/{rootUsername}" summary="Getting Standard Registry Profile Details" %}
-{% swagger-description %}
+## Getting Standard Registry Profile Details
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/profiles/{rootUsername}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "username": "1tckto80",
@@ -184,31 +179,27 @@ rootKey
     }
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ## User
 
 ### Create User Account
 
-{% swagger method="post" path="" baseUrl="/accounts/register" summary="Creating User Account" %}
-{% swagger-description %}
+## Creating User Account
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/accounts/register`
 
-{% swagger-parameter in="body" name="username" type="String" required="true" %}
-rootUsername
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="password" type="String" required="true" %}
-rootPassword
-{% endswagger-parameter %}
+| Name                                       | Type   | Description  |
+| ------------------------------------------ | ------ | ------------ |
+| username<mark style="color:red;">\*</mark> | String | rootUsername |
+| password<mark style="color:red;">\*</mark> | String | rootPassword |
+| role<mark style="color:red;">\*</mark>     | String | USER         |
 
-{% swagger-parameter in="body" name="role" type="String" required="true" %}
-USER
-{% endswagger-parameter %}
-
-{% swagger-response status="201: Created" description="Successful Operation" %}
+{% tabs %}
+{% tab title="201: Created Successful Operation" %}
 ```javascript
 {
     "username": "keovlmcy",
@@ -219,25 +210,24 @@ USER
     "id": "627d5740ab3cae7c07025895"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Login to User Account
 
-{% swagger method="post" path="" baseUrl="/accounts/login" summary="Login as User" %}
-{% swagger-description %}
+## Login as User
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/accounts/login`
 
-{% swagger-parameter in="body" name="username" type="String" required="true" %}
-rootUsername
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="password" type="String" required="true" %}
-rootPassword
-{% endswagger-parameter %}
+| Name                                       | Type   | Description  |
+| ------------------------------------------ | ------ | ------------ |
+| username<mark style="color:red;">\*</mark> | String | rootUsername |
+| password<mark style="color:red;">\*</mark> | String | rootPassword |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "username": "keovlmcy",
@@ -246,54 +236,48 @@ rootPassword
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imtlb3ZsbWN5IiwiZGlkIjpudWxsLCJyb2xlIjoiVVNFUiIsImlhdCI6MTY1MjM4MTcyNn0.T6ptsaQmCvHUVUfqcO3LJHY4GVZJn9Sbgt5N9WpZ_bI"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Generate User Key
 
-{% swagger method="get" path="" baseUrl="/demo/randomKey" summary="Generating User Key" %}
-{% swagger-description %}
+## Generating User Key
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/demo/randomKey`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "0.0.34751370",
     "key": "302e0201003005...."
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Update User Profile
 
-{% swagger method="put" path="" baseUrl="/profiles/{userUsername}" summary="Updating User Profiles" %}
-{% swagger-description %}
+## Updating User Profiles
 
-{% endswagger-description %}
+<mark style="color:orange;">`PUT`</mark> `/profiles/{userUsername}`
 
-{% swagger-parameter in="body" name="hederaAccountID" type="ID" required="true" %}
-UserID
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="hederaAccountKey" type="Key" required="true" %}
-UserKey
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="parent" type="DID" required="true" %}
-rootDID
-{% endswagger-parameter %}
-{% endswagger %}
+| Name                                               | Type | Description |
+| -------------------------------------------------- | ---- | ----------- |
+| hederaAccountID<mark style="color:red;">\*</mark>  | ID   | UserID      |
+| hederaAccountKey<mark style="color:red;">\*</mark> | Key  | UserKey     |
+| parent<mark style="color:red;">\*</mark>           | DID  | rootDID     |
 
 ### Get User Profile
 
-{% swagger method="get" path="" baseUrl="/profiles/{userUsername}" summary="Getting User Profile Details" %}
-{% swagger-description %}
+## Getting User Profile Details
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/profiles/{userUsername}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "username": "keovlmcy",
@@ -335,8 +319,8 @@ rootDID
     }
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ## Policy
 
@@ -344,16 +328,18 @@ rootDID
 
 #### Import Policy
 
-{% swagger method="post" path="" baseUrl="/policies/import/message" summary="Importing Policy" %}
-{% swagger-description %}
+## Importing Policy
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/import/message`
 
-{% swagger-parameter in="body" name="messageID" type="ID" required="true" %}
-1651598638.021817000
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                                        | Type | Description          |
+| ------------------------------------------- | ---- | -------------------- |
+| messageID<mark style="color:red;">\*</mark> | ID   | 1651598638.021817000 |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     {
@@ -2701,21 +2687,23 @@ rootDID
     }
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Publish Policy
 
-{% swagger method="put" path="{policyId}/publish" baseUrl="/policies/" summary="Publishing Policy" %}
-{% swagger-description %}
+## Publishing Policy
 
-{% endswagger-description %}
+<mark style="color:orange;">`PUT`</mark> `/policies/{policyId}/publish`
 
-{% swagger-parameter in="body" name="policyVersion" type="String" required="true" %}
-1.0.0
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                                            | Type   | Description |
+| ----------------------------------------------- | ------ | ----------- |
+| policyVersion<mark style="color:red;">\*</mark> | String | 1.0.0       |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "policies": [
@@ -5545,19 +5533,19 @@ rootDID
     }
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Tokens
 
 #### Get Tokens
 
-{% swagger method="get" path="" baseUrl="/tokens" summary="Getting Tokens Details" %}
-{% swagger-description %}
+## Getting Tokens Details
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/tokens`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     
@@ -5577,33 +5565,33 @@ rootDID
         "kyc": null
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Associate
 
-{% swagger method="put" path="" baseUrl="/tokens/{token_Id}/associate" summary="Associating the Token" %}
-{% swagger-description %}
+## Associating the Token
 
-{% endswagger-description %}
+<mark style="color:orange;">`PUT`</mark> `/tokens/{token_Id}/associate`
 
-{% swagger-response status="200: OK" description="" %}
+{% tabs %}
+{% tab title="200: OK " %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Grant KYC
 
-{% swagger method="put" path="{userUsername}/grantKYC" baseUrl="/tokens/{tokenId}/" summary="Granting KYC" %}
-{% swagger-description %}
+## Granting KYC
 
-{% endswagger-description %}
+<mark style="color:orange;">`PUT`</mark> `/tokens/{tokenId}/{userUsername}/grantKYC`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "tokenId": "0.0.34804363",
@@ -5615,35 +5603,35 @@ rootDID
     "kyc": true
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### Blocks
 
 #### Choose Role uuid
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/choose_role" summary="Choosing Role" %}
-{% swagger-description %}
+## Choosing Role
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/choose_role`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "4bee425d-dfba-451a-b47d-ac945aeddc3e"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Choose Role
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{chooseRoleBlockUUID}}" summary="Choosing role as Registrant" %}
-{% swagger-description %}
+## Choosing role as Registrant
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{{policyId}}/blocks/{{chooseRoleBlockUUID}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "6282755493e1d09322c4ed13",
@@ -7993,33 +7981,33 @@ rootDID
     "createDate": "2022-05-16T16:01:24.955Z"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Create Application uuid
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/create_application" summary="Displaying Application uuid" %}
-{% swagger-description %}
+## Displaying Application uuid
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/create_application`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "c6a4db28-6a4f-4137-9b42-530783443147"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Get Registrant Schema
 
-{% swagger method="get" path="" baseUrl="policies/{{policyId}}/blocks/{{create_application_uuid}}" summary="Displaying Registrant Schema uuid" %}
-{% swagger-description %}
+## Displaying Registrant Schema uuid
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `policies/{{policyId}}/blocks/{{create_application_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "c6a4db28-6a4f-4137-9b42-530783443147",
@@ -9342,57 +9330,56 @@ rootDID
     "data": null
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Create Registrant
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{create_application_uuid}}" summary="Creating Registrant" %}
-{% swagger-description %}
+## Creating Registrant
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{{policyId}}/blocks/{{create_application_uuid}}`
 
-{% swagger-parameter in="body" name="document" required="false" %}
-{ "type": "\{{registrant\_schema\_type\}}", "@context": \[ "\{{registrant\_schema\_context\}}" ], "field0": "2022-05-11", "field1": { "type": "\{{registrant\_schema\_field1\_type\}}", "@context": \[ "\{{registrant\_schema\_field1\_context\}}" ], "field0": "Applicant Legal Name", "field1": "Registered address line 1", "field2": "Registered address line 2", "field3": "Registered address line 3", "field4": "Postal (ZIP) code", "field5": "Country", "field6": "Legal Status", "field7": "Country of company registration/private residence", "field8": "Corporate registration number/passport number", "field9": "VAT number", "field10": "Website URL", "field11": "Main business (e.g. food retailer)", "field12": 1, "field13": 1, "field14": "Name of the Chief Executive Officer/General Manager", "field15": "Chief Executive Officer/General Manager passport number", "field16": "Please state in which countries the organization is active", "field17": "Please list the main (>10%) shareholders", "field18": 1, "field19": "email@email.com" }, "field2": { "type": "\{{registrant\_schema\_field2\_type\}}", "@context": \[ "\{{registrant\_schema\_field2\_context\}}" ], "field0": "Organization Name", "field1": "Address line 1", "field2": "Address line 2", "field3": "Address line 3", "field4": "Postal code", "field5": "Country", "field6": "Contact person", "field7": "email@email.com", "field8": "123456789", "field9": "Fax", "field10": "Existing I-REC Registry organization(s) to become subsidiary" }, "field3": { "type": "\{{registrant\_schema\_field3\_type\}}", "@context": \[ "\{{registrant\_schema\_field3\_context\}}" ], "field0": "Family Name (surname)", "field1": "Other (Given) Names", "field2": "Title", "field3": "email@email.com", "field4": "123456789", "field5": "Fax" }
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="body" name="ref" required="false" %}
-null
-{% endswagger-parameter %}
+| Name     | Type   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| document | String | { "type": "\{{registrant\_schema\_type\}}", "@context": \[ "\{{registrant\_schema\_context\}}" ], "field0": "2022-05-11", "field1": { "type": "\{{registrant\_schema\_field1\_type\}}", "@context": \[ "\{{registrant\_schema\_field1\_context\}}" ], "field0": "Applicant Legal Name", "field1": "Registered address line 1", "field2": "Registered address line 2", "field3": "Registered address line 3", "field4": "Postal (ZIP) code", "field5": "Country", "field6": "Legal Status", "field7": "Country of company registration/private residence", "field8": "Corporate registration number/passport number", "field9": "VAT number", "field10": "Website URL", "field11": "Main business (e.g. food retailer)", "field12": 1, "field13": 1, "field14": "Name of the Chief Executive Officer/General Manager", "field15": "Chief Executive Officer/General Manager passport number", "field16": "Please state in which countries the organization is active", "field17": "Please list the main (>10%) shareholders", "field18": 1, "field19": "email@email.com" }, "field2": { "type": "\{{registrant\_schema\_field2\_type\}}", "@context": \[ "\{{registrant\_schema\_field2\_context\}}" ], "field0": "Organization Name", "field1": "Address line 1", "field2": "Address line 2", "field3": "Address line 3", "field4": "Postal code", "field5": "Country", "field6": "Contact person", "field7": "email@email.com", "field8": "123456789", "field9": "Fax", "field10": "Existing I-REC Registry organization(s) to become subsidiary" }, "field3": { "type": "\{{registrant\_schema\_field3\_type\}}", "@context": \[ "\{{registrant\_schema\_field3\_context\}}" ], "field0": "Family Name (surname)", "field1": "Other (Given) Names", "field2": "Title", "field3": "email@email.com", "field4": "123456789", "field5": "Fax" } |
+| ref      | String | null                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Get Approved Registrant
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_registrant_btn" summary="Displaying Approved Registrant uuid" %}
-{% swagger-description %}
+## Displaying Approved Registrant uuid
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/approve_registrant_btn`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "c2eef66b-ec9f-42c5-99b2-430625c49e88"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Get Grid Documents
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{registrants_grid_uuid}}" summary="Displaying Grid Documents" %}
-{% swagger-description %}
+## Displaying Grid Documents
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{registrants_grid_uuid}}`
 
-{% swagger-response status="200: OK" description="" %}
+{% tabs %}
+{% tab title="200: OK " %}
 ```javascript
 {
     "data": [
@@ -9565,53 +9552,55 @@ null
     ]
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Approve Registrant
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{approve_registrant_btn_uuid}}" summary="Approving Registrant" %}
-{% swagger-description %}
+## Approving Registrant
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{{policyId}}/blocks/{{approve_registrant_btn_uuid}}`
 
-{% swagger-parameter in="body" name="reg" required="false" %}
+#### Request Body
 
-{% endswagger-parameter %}
+| Name | Type   | Description |
+| ---- | ------ | ----------- |
+| reg  | String |             |
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting uuid of device created
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/create_device_form" summary="Getting uuid of created device" %}
-{% swagger-description %}
+## Getting uuid of created device
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/create_device_form`
 
-{% swagger-response status="200: OK" description="" %}
+{% tabs %}
+{% tab title="200: OK " %}
 ```javascript
 {
     "id": "bb8ddf01-e056-4632-8aa1-7c1c8aa5a1ee"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Device Schema
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{create_device_form_uuid}}" summary="Device Schema Details" %}
-{% swagger-description %}
+## Device Schema Details
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{create_device_form_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "fa1688ba-85de-4944-b7d4-698da4338fb4",
@@ -11149,69 +11138,71 @@ null
     }
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Create Device
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{create_device_form_uuid}}" summary="Creating Device" %}
-{% swagger-description %}
+## Creating Device
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{{policyId}}/blocks/{{create_device_form_uuid}}`
 
-{% swagger-parameter in="body" required="true" %}
-\{{req\_body\}}
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name                               | Type   | Description     |
+| ---------------------------------- | ------ | --------------- |
+| <mark style="color:red;">\*</mark> | String | \{{req\_body\}} |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Approve Device Button UUID
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_device_btn" summary="Getting UUID of Approved Device Button" %}
-{% swagger-description %}
+## Getting UUID of Approved Device Button
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/approve_device_btn`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "329a1412-4206-4b99-840c-fdb82dfb4cd8"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Approve Device Grid UUID
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_devices_grid" summary="Getting UUID of Approve Device Grid" %}
-{% swagger-description %}
+## Getting UUID of Approve Device Grid
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/approve_devices_grid`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "9fb94eaa-ecc9-441b-9fb0-5f163989aa35"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Get Grid Documents
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{approve_devices_grid_uuid}}" summary="Getting Grid Documents" %}
-{% swagger-description %}
+## Getting Grid Documents
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{approve_devices_grid_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "data": [
@@ -11410,69 +11401,71 @@ null
     ]
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Approve Device
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{approve_device_btn_uuid}}" summary="Approving Device" %}
-{% swagger-description %}
+## Approving Device
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{{policyId}}/blocks/{{approve_device_btn_uuid}}`
 
-{% swagger-parameter in="body" required="false" %}
-\{{req\_body\}}
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name | Type   | Description     |
+| ---- | ------ | --------------- |
+|      | String | \{{req\_body\}} |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting UUID of Create Issue Request
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/create_issue_request_form" summary="Getting Create Issue Request UUID" %}
-{% swagger-description %}
+## Getting Create Issue Request UUID
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/create_issue_request_form`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "d3f0c4dd-26fa-47e0-8b30-d16713591926"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Grid UUID
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_devices_grid" summary="Getting Grid UUID" %}
-{% swagger-description %}
+## Getting Grid UUID
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/approve_devices_grid`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "9fb94eaa-ecc9-441b-9fb0-5f163989aa35"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Grid Documents
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{issue_grid_uuid}}" summary="Displaying Grid Documents" %}
-{% swagger-description %}
+## Displaying Grid Documents
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{issue_grid_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {{
     "data": [
@@ -11672,17 +11665,17 @@ null
     ]
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Issue Schema
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{create_issue_request_form_uuid}}" summary="Getting Schema of Issue Request" %}
-{% swagger-description %}
+## Getting Schema of Issue Request
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{create_issue_request_form_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "d3f0c4dd-26fa-47e0-8b30-d16713591926",
@@ -13133,69 +13126,71 @@ null
     "data": null
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Create Issue Request
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{create_issue_request_form_uuid}}" summary="Creating Issue Request" %}
-{% swagger-description %}
+## Creating Issue Request
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{{policyId}}/blocks/{{create_issue_request_form_uuid}}`
 
-{% swagger-parameter in="body" required="false" %}
-\{{req\_body\}}
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name | Type   | Description     |
+| ---- | ------ | --------------- |
+|      | String | \{{req\_body\}} |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Approve Request Button UUID
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/approve_issue_requests_btn" summary="Getting Approve Request Button UUID" %}
-{% swagger-description %}
+## Getting Approve Request Button UUID
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/approve_issue_requests_btn`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "c99c6ba4-3a1e-41f6-8347-c158a44c9833"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Issue Request Grid UUID
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/issue_requests_grid(evident)" summary="Getting Issue Request Gird UUID" %}
-{% swagger-description %}
+## Getting Issue Request Grid UUID
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/issue_requests_grid(evident)`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "f0e06628-47c8-435f-bd82-08fdaea6a8cd"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Approve Issue Grid Documents
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{approve_issue_grid_uuid}}" summary="Getting Grid Documents of Approve Issue" %}
-{% swagger-description %}
+## Getting Grid Documents of Approve Issue
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{approve_issue_grid_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "data": [
@@ -13384,55 +13379,57 @@ null
     ]
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Approve Issue Request
 
-{% swagger method="post" path="" baseUrl="policies/{{policyId}}/blocks/{{approve_issue_requests_btn_uuid}}" summary="Approving Issue Request" %}
-{% swagger-description %}
+## Approving Issue Request
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `policies/{{policyId}}/blocks/{{approve_issue_requests_btn_uuid}}`
 
-{% swagger-parameter in="body" required="false" %}
-\{{req\_body\}}
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+| Name | Type   | Description     |
+| ---- | ------ | --------------- |
+|      | String | \{{req\_body\}} |
+
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 ### TrustChain
 
 #### Getting Grid UUID
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/vp_grid" summary="Getting Grid UUID" %}
-{% swagger-description %}
+## Getting Grid UUID
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/vp_grid`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "a5bd02f3-2427-47d8-bb1a-2b0eca38be06"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting Grid Documents
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{vpGridBlock_uuid}}" summary="Getting Grid Documents" %}
-{% swagger-description %}
+## Getting Grid Documents
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{vpGridBlock_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "data": [
@@ -13632,49 +13629,49 @@ null
     ]
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting TrustChain Block UUID
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/tag/trustChainBlock" summary="Getting TrustChain Block UUID" %}
-{% swagger-description %}
+## Getting TrustChain Block UUID
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/tag/trustChainBlock`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "id": "2b9978c8-fb7e-4b60-b1d0-21eae5ef0d8f"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Setting Hash Filter
 
-{% swagger method="post" path="" baseUrl="/policies/{{policyId}}/blocks/{{trustChainBlock_uuid}}" summary="Setting Hash Filter" %}
-{% swagger-description %}
+## Setting Hash Filter
 
-{% endswagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{{policyId}}/blocks/{{trustChainBlock_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
 #### Getting TrustChain Block Data
 
-{% swagger method="get" path="" baseUrl="/policies/{{policyId}}/blocks/{{trustChainBlock_uuid}}" summary="Getting TrustChain Block Data" %}
-{% swagger-description %}
+## Getting TrustChain Block Data
 
-{% endswagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{{policyId}}/blocks/{{trustChainBlock_uuid}}`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
     "hash": "GChWHiV7Ef1e6Gec9dLjcVHVkn2SCxceBQbSndwMmL91",
@@ -19417,5 +19414,5 @@ null
     }
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

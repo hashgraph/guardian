@@ -1,8 +1,8 @@
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { IRate } from '../interfaces/rate.interface';
-import { Rate } from './rate';
-import { DocumentsRate } from './documents-rate';
-import { RecordModel } from '../models/record.model';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { IRate } from '../interfaces/rate.interface.js';
+import { Rate } from './rate.js';
+import { DocumentsRate } from './documents-rate.js';
+import { RecordModel } from '../models/record.model.js';
 
 /**
  * Calculates the difference between two Documents

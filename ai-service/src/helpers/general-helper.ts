@@ -1,4 +1,4 @@
-import { Methodology } from '../models/models';
+import { Methodology } from '../models/models.js';
 import { Policy, PolicyCategory } from '@guardian/common';
 
 export function GetMehodologiesByPolicies(responseText: string, policies: Policy[]) {

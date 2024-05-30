@@ -7,6 +7,14 @@ services:
     expose:
       - 27017
 
+  cache:
+    image: registry.redict.io/redict
+    restart: always
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+
   mongo-express:
     image: mongo-express:1.0.0-alpha.4
     expose:
@@ -139,6 +147,7 @@ services:
       - 3002
     depends_on:
       - mongo
+      - cache
       - message-broker
       - guardian-service
       - auth-service

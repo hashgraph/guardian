@@ -1,8 +1,8 @@
-import { Recording } from './record/recording';
-import { Running } from './record';
-import { PolicyComponentsUtils } from './policy-components-utils';
-import { IPolicyUser } from './policy-user';
-import { AnyBlockType } from './policy-engine.interface';
+import { Recording } from './record/recording.js';
+import { Running } from './record/index.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { PolicyUser } from './policy-user.js';
+import { AnyBlockType } from './policy-engine.interface.js';
 
 /**
  * Record utils
@@ -201,7 +201,7 @@ export class RecordUtils {
      */
     public static async RecordSelectGroup(
         policyId: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         uuid: string
     ): Promise<void> {
         const record = RecordUtils.GetRecordingController(policyId);
@@ -221,7 +221,7 @@ export class RecordUtils {
      */
     public static async RecordSetBlockData(
         policyId: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         block: AnyBlockType,
         data: any
     ): Promise<void> {

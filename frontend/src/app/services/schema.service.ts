@@ -180,12 +180,12 @@ export class SchemaService {
         return this.http.get<ISchema>(`${this.url}/system/entity/${entity}`);
     }
 
-    public getSchemaParents(id: string): Observable<ISchema[]> {
-        return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
-    }
-
     public copySchema(copyInfo: any) {
         return this.http.post<ITask>(`${this.url}/push/copy`, copyInfo);
+    }
+
+    public getSchemaParents(id: string): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
     }
 
     public getSchemaTree(id: string): Observable<SchemaNode> {

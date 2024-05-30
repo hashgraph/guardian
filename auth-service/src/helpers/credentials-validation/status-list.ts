@@ -1,4 +1,4 @@
-import { Bitstring } from './bitstring';
+import { Bitstring } from './bitstring.js';
 
 export class StatusList {
   private readonly bitstring: any;

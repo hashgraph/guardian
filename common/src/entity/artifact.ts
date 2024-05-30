@@ -1,5 +1,5 @@
 import { BeforeCreate, Entity, Enum, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
@@ -48,6 +48,12 @@ export class Artifact extends BaseEntity {
      */
     @Property({ nullable: true })
     category?: 'tool' | 'policy';
+
+    /**
+     * Artifact creator
+     */
+    @Property({ nullable: true })
+    creator?: string;
 
     /**
      * Default document values

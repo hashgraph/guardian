@@ -1,4 +1,4 @@
-import { Log } from '@entity/log';
+import { Log } from '../entity/log.js';
 import { DataBaseHelper, LargePayloadContainer, MessageError, MessageResponse } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';

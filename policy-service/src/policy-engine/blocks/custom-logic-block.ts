@@ -1,26 +1,23 @@
 import { Worker } from 'node:worker_threads';
 import path from 'path'
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import {
-    VcHelper,
-    DIDMessage,
-    MessageAction,
-    MessageServer,
-    HederaDidDocument
-} from '@guardian/common';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { DIDMessage, HederaDidDocument, MessageAction, MessageServer, VcHelper } from '@guardian/common';
 import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { BlockActionError } from '@policy-engine/errors';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { BlockActionError } from '../errors/index.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { fileURLToPath } from 'url';
+
+const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
-    owner: IPolicyUser;
+    owner: PolicyUser;
     id: string;
     reference: string;
     accounts: any;
@@ -104,7 +101,7 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: IPolicyEventState, user: IPolicyUser): Promise<IPolicyDocument | IPolicyDocument[]> {
+    execute(state: IPolicyEventState, user: PolicyUser): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -160,7 +157,7 @@ export class CustomLogicBlock {
 
                 const importCode = `const [done, user, documents, mathjs, artifacts, formulajs] = arguments;\r\n`;
                 const expression = ref.options.expression || '';
-                const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {
+                const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
                     workerData: {
                         execFunc: `${importCode}${execCode}${expression}`,
                         user,
@@ -193,12 +190,12 @@ export class CustomLogicBlock {
      */
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
-        user: IPolicyUser,
+        user: PolicyUser,
         ref: IPolicyCalculateBlock
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
-        const owner = PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -347,7 +344,7 @@ export class CustomLogicBlock {
      */
     private async generateId(
         idType: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         userCred: UserCredentials
     ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -364,9 +361,11 @@ export class CustomLogicBlock {
                 message.setDocument(didObject);
 
                 const hederaCred = await userCred.loadHederaCredentials(ref);
+                const signOptions = await userCred.loadSignOptions(ref);
                 const client = new MessageServer(
                     hederaCred.hederaAccountId,
                     hederaCred.hederaAccountKey,
+                    signOptions,
                     ref.dryRun
                 );
                 const messageResult = await client

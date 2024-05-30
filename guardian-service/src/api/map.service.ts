@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { Logger, MessageError, MessageResponse, } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
@@ -13,7 +13,7 @@ export async function mapAPI(): Promise<void> {
      *
      * @returns {any} Artifacts and count
      */
-    ApiResponse(MessageAPI.GET_MAP_API_KEY, async (msg) => {
+    ApiResponse(MessageAPI.GET_MAP_API_KEY, async (_:any) => {
         try {
             return new MessageResponse(process.env.MAP_API_KEY || '');
         } catch (error) {
@@ -22,7 +22,7 @@ export async function mapAPI(): Promise<void> {
         }
     });
 
-    ApiResponse(MessageAPI.GET_SENTINEL_API_KEY, async (msg) => {
+    ApiResponse(MessageAPI.GET_SENTINEL_API_KEY, async (_:any) => {
         try {
             return new MessageResponse(process.env.GET_SENTINEL_API_KEY || '');
         } catch (error) {

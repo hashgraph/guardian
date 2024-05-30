@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { GenerateUUIDv4, IUser, SchemaHelper, TagType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
@@ -35,6 +35,7 @@ enum OperationMode {
 })
 export class ToolsListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
+    public user: UserPermissions = new UserPermissions();
     public isConfirmed: boolean = false;
     public tools: any[] | null;
     public toolsCount: any;
@@ -96,6 +97,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.user = new UserPermissions(profile);
 
             if (this.isConfirmed) {
                 this.loadAllTools();
@@ -115,8 +117,15 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             this.tools = policiesResponse.body || [];
             this.toolsCount = policiesResponse.headers.get('X-Total-Count') || this.tools.length;
             this.canPublishAnyTool = this.tools.some(tool => tool.status === 'DRAFT');
+            this.loadTagsData();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
 
-            const ids = this.tools.map(e => e.id);
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
+            const ids = this.tools?.map(e => e.id) || [];
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 if (this.tools) {
                     for (const policy of this.tools) {
@@ -130,9 +139,11 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 console.error(e.error);
                 this.loading = false;
             });
-        }, (e) => {
-            this.loading = false;
-        });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     public onPage(event: any) {

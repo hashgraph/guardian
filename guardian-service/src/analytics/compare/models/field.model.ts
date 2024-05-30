@@ -1,11 +1,11 @@
 import MurmurHash3 from 'imurmurhash';
-import { CompareOptions, IIdLvl, IPropertiesLvl } from '../interfaces/compare-options.interface';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { IWeightModel } from '../interfaces/weight-model.interface';
-import { PropertyType } from '../types/property.type';
-import { WeightType } from '../types/weight.type';
-import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model';
-import { SchemaDocumentModel } from './schema-document.model';
+import { CompareOptions, IIdLvl, IPropertiesLvl } from '../interfaces/compare-options.interface.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { IWeightModel } from '../interfaces/weight-model.interface.js';
+import { PropertyType } from '../types/property.type.js';
+import { WeightType } from '../types/weight.type.js';
+import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model.js';
+import { SchemaDocumentModel } from './schema-document.model.js';
 
 /**
  * Field Model
@@ -180,8 +180,7 @@ export class FieldModel implements IWeightModel {
     constructor(
         name: string,
         prop: any,
-        required: boolean,
-        index: number
+        required: boolean
     ) {
         let _property = prop;
         if (_property.oneOf && _property.oneOf.length) {

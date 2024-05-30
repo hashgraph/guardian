@@ -1,5 +1,5 @@
-import PolygonCoordinates from './ref/polygon-coordinates';
-import BoundingBox from './ref/bounding-box';
+import PolygonCoordinates from './ref/polygon-coordinates.js';
+import BoundingBox from './ref/bounding-box.js';
 
 export default {
     title: 'GeoJSON MultiPolygon',

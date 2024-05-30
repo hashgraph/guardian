@@ -1,6 +1,6 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, getArtifactExtention, getArtifactType, Logger, MessageError, MessageResponse, } from '@guardian/common';
-import { MessageAPI, ModuleStatus, PolicyType } from '@guardian/interfaces';
+import { IOwner, MessageAPI, ModuleStatus, PolicyType } from '@guardian/interfaces';
 
 export async function getParent(parentId: string) {
     if (!parentId) {
@@ -34,13 +34,21 @@ export async function artifactAPI(): Promise<void> {
      *
      * @returns {Artifact} - Uploaded artifact
      */
-    ApiResponse(MessageAPI.UPLOAD_ARTIFACT, async (msg) => {
+    ApiResponse(MessageAPI.UPLOAD_ARTIFACT, async (msg: {
+        artifact: any,
+        owner: IOwner,
+        parentId: string
+    }) => {
         try {
-            if (!msg || !msg.artifact || !msg.parentId || !msg.owner) {
+            if (!msg) {
+                return new MessageError('Invalid get artifact parameters');
+            }
+
+            const { artifact, parentId, owner } = msg;
+            if (!artifact || !parentId || !owner) {
                 throw new Error('Invalid upload artifact parameters');
             }
 
-            const parentId = msg.parentId;
             const parent = await getParent(parentId);
 
             if (!parent) {
@@ -58,18 +66,18 @@ export async function artifactAPI(): Promise<void> {
                 }
             }
 
-            const extention = getArtifactExtention(msg.artifact.originalname);
+            const extention = getArtifactExtention(artifact.originalname);
             const type = getArtifactType(extention);
-            const artifact = await DatabaseServer.saveArtifact({
-                name: msg.artifact.originalname.split('.')[0],
+            const row = await DatabaseServer.saveArtifact({
+                name: artifact.originalname.split('.')[0],
                 extention,
                 type,
-                policyId: msg.parentId,
-                owner: msg.owner,
+                policyId: parentId,
+                owner: owner.owner,
                 category
             } as any);
-            await DatabaseServer.saveArtifactFile(artifact.uuid, Buffer.from(msg.artifact.buffer));
-            return new MessageResponse(artifact);
+            await DatabaseServer.saveArtifactFile(row.uuid, Buffer.from(msg.artifact.buffer));
+            return new MessageResponse(row);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message);
@@ -83,7 +91,15 @@ export async function artifactAPI(): Promise<void> {
      *
      * @returns {any} Artifacts and count
      */
-    ApiResponse(MessageAPI.GET_ARTIFACTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_ARTIFACTS, async (msg: {
+        type: string,
+        id: string,
+        toolId: string,
+        policyId: string,
+        pageIndex: string,
+        pageSize: string,
+        owner: IOwner
+    }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get artifact parameters');
@@ -101,7 +117,7 @@ export async function artifactAPI(): Promise<void> {
             const filter: any = {};
 
             if (owner) {
-                filter.owner = owner;
+                filter.owner = owner.owner;
             }
 
             if (policyId) {
@@ -150,39 +166,42 @@ export async function artifactAPI(): Promise<void> {
      *
      * @returns {boolean} - Operation success
      */
-    ApiResponse(MessageAPI.DELETE_ARTIFACT, async (msg) => {
-        try {
-            if (!msg || !msg.artifactId || !msg.owner) {
-                return new MessageError('Invalid delete artifact parameters');
-            }
-            const artifactToDelete = await DatabaseServer.getArtifact({
-                id: msg.artifactId,
-                owner: msg.owner
-            });
-            const parentId = artifactToDelete.policyId;
+    ApiResponse(MessageAPI.DELETE_ARTIFACT,
+        async (msg: { artifactId: string, owner: IOwner }) => {
+            try {
+                const { artifactId, owner } = msg;
+                if (!artifactId || !owner) {
+                    return new MessageError('Invalid delete artifact parameters');
+                }
 
-            if (!parentId) {
-                return new MessageResponse(false);
-            }
+                const artifactToDelete = await DatabaseServer.getArtifact({
+                    id: artifactId,
+                    owner: owner.owner
+                });
+                const parentId = artifactToDelete.policyId;
 
-            const parent = await getParent(parentId);
-            if (parent) {
-                if (parent.type === 'policy') {
-                    if (parent.item.status !== PolicyType.DRAFT) {
-                        throw new Error('There is no appropriate policy or policy is not in DRAFT status');
-                    }
-                } else if (parent.type === 'tool') {
-                    if (parent.item.status === ModuleStatus.PUBLISHED) {
-                        throw new Error('There is no appropriate tool or tool is not in DRAFT status');
+                if (!parentId) {
+                    return new MessageResponse(false);
+                }
+
+                const parent = await getParent(parentId);
+                if (parent) {
+                    if (parent.type === 'policy') {
+                        if (parent.item.status !== PolicyType.DRAFT) {
+                            throw new Error('There is no appropriate policy or policy is not in DRAFT status');
+                        }
+                    } else if (parent.type === 'tool') {
+                        if (parent.item.status === ModuleStatus.PUBLISHED) {
+                            throw new Error('There is no appropriate tool or tool is not in DRAFT status');
+                        }
                     }
                 }
-            }
 
-            await DatabaseServer.removeArtifact(artifactToDelete);
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+                await DatabaseServer.removeArtifact(artifactToDelete);
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 }

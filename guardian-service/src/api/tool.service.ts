@@ -1,41 +1,15 @@
-import { ApiResponse } from '@api/helpers/api-response';
-import {
-    BinaryMessageResponse,
-    DatabaseServer,
-    Logger,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    MessageType,
-    ToolMessage,
-    PolicyTool,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    ToolImportExport,
-    RunFunctionAsync,
-    SchemaFields,
-    replaceAllEntities,
-    replaceAllVariables,
-    Hashing
-} from '@guardian/common';
-import {
-    IRootConfig,
-    MessageAPI,
-    ModuleStatus,
-    SchemaStatus,
-    TopicType
-} from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { findAndPublishSchema } from '@api/helpers/schema-publish-helper';
-import { incrementSchemaVersion } from '@api/helpers/schema-helper';
-import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
-import { ToolValidator } from '@policy-engine/block-validators/tool-validator';
-import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers';
+import { ApiResponse } from '../api/helpers/api-response.js';
+import { BinaryMessageResponse, DatabaseServer, Hashing, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
+import { incrementSchemaVersion } from '../api/helpers/schema-helper.js';
+import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
+import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
+import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js';
+import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers/index.js';
 import * as crypto from 'crypto';
-import { publishToolTags } from './tag.service';
+import { publishToolTags } from './tag.service.js';
 
 /**
  * Sha256
@@ -64,7 +38,7 @@ export function sha256(data: ArrayBuffer): string {
  */
 export async function preparePreviewMessage(
     messageId: string,
-    owner: string,
+    user: IOwner,
     notifier: INotifier
 ): Promise<any> {
     notifier.start('Resolve Hedera account');
@@ -73,8 +47,8 @@ export async function preparePreviewMessage(
     }
 
     const users = new Users();
-    const root = await users.getHederaAccount(owner);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+    const root = await users.getHederaAccount(user.creator);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const message = await messageServer.getMessage<ToolMessage>(messageId);
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
@@ -99,7 +73,11 @@ export async function preparePreviewMessage(
  * @param owner
  * @param notifier
  */
-export async function validateAndPublish(id: string, owner: string, notifier: INotifier) {
+export async function validateAndPublish(
+    id: string,
+    user: IOwner,
+    notifier: INotifier
+) {
     notifier.start('Find and validate tool');
     const item = await DatabaseServer.getToolById(id);
     if (!item) {
@@ -117,7 +95,7 @@ export async function validateAndPublish(id: string, owner: string, notifier: IN
     notifier.completed();
 
     if (isValid) {
-        const newTool = await publishTool(item, owner, notifier);
+        const newTool = await publishTool(item, user, notifier);
         return { tool: newTool, isValid, errors };
     } else {
         return { tool: item, isValid, errors };
@@ -144,7 +122,7 @@ export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors>
  */
 export async function publishTool(
     tool: PolicyTool,
-    owner: string,
+    user: IOwner,
     notifier: INotifier
 ): Promise<PolicyTool> {
     try {
@@ -153,23 +131,23 @@ export async function publishTool(
 
         notifier.start('Resolve Hedera account');
         const users = new Users();
-        const root = await users.getHederaAccount(owner);
+        const root = await users.getHederaAccount(user.creator);
 
         notifier.completedAndStart('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
-        tool = await publishSchemas(tool, owner, root, notifier);
+        tool = await publishSchemas(tool, user, root, notifier);
 
         notifier.completedAndStart('Create tags topic');
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
         const tagsTopic = await topicHelper.create({
             type: TopicType.TagsTopic,
             name: tool.name || TopicType.TagsTopic,
             description: tool.description || TopicType.TagsTopic,
-            owner,
+            owner: user.owner,
             policyId: tool.id.toString(),
             policyUUID: tool.uuid
         }, { admin: true, submit: false });
@@ -228,7 +206,7 @@ export async function publishTool(
  */
 export async function publishSchemas(
     tool: PolicyTool,
-    owner: string,
+    owner: IOwner,
     root: IRootConfig,
     notifier: INotifier
 ): Promise<PolicyTool> {
@@ -280,8 +258,8 @@ export async function publishSchemas(
  * @param notifier
  */
 export async function createTool(
-    json: any,
-    owner: string,
+    json: PolicyTool,
+    user: IOwner,
     notifier: INotifier
 ): Promise<PolicyTool> {
     const logger = new Logger();
@@ -292,12 +270,10 @@ export async function createTool(
         delete json.id;
         delete json.status;
         delete json.owner;
-        delete json.version;
         delete json.messageId;
     }
-    json.creator = owner;
-    json.owner = owner;
-    json.type = 'CUSTOM';
+    json.creator = user.creator;
+    json.owner = user.owner;
     json.status = ModuleStatus.DRAFT;
     json.codeVersion = PolicyConverterUtils.VERSION;
 
@@ -308,26 +284,26 @@ export async function createTool(
         if (!tool.topicId) {
             notifier.completedAndStart('Resolve Hedera account');
             const users = new Users();
-            const root = await users.getHederaAccount(owner);
+            const root = await users.getHederaAccount(user.creator);
 
             notifier.completedAndStart('Create topic');
             logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true
+                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
             );
-            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const topic = await topicHelper.create({
                 type: TopicType.ToolTopic,
                 name: tool.name || TopicType.ToolTopic,
                 description: tool.description || TopicType.ToolTopic,
-                owner,
+                owner: user.owner,
                 targetId: tool.id.toString(),
                 targetUUID: tool.uuid
             }, { admin: true, submit: true });
             await topic.saveKeys();
 
             notifier.completedAndStart('Create tool in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const message = new ToolMessage(MessageType.Tool, MessageAction.CreateTool);
             message.setDocument(tool);
             const messageStatus = await messageServer
@@ -361,19 +337,20 @@ export async function toolsAPI(): Promise<void> {
      *
      * @returns {PolicyTool} new tool
      */
-    ApiResponse(MessageAPI.CREATE_TOOL, async (msg) => {
-        try {
-            if (!msg) {
-                throw new Error('Invalid Params');
+    ApiResponse(MessageAPI.CREATE_TOOL,
+        async (msg: { tool: PolicyTool, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+                const { tool, owner } = msg;
+                const item = await createTool(tool, owner, emptyNotifier());
+                return new MessageResponse(item);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            const { tool, owner } = msg;
-            const item = await createTool(tool, owner, emptyNotifier());
-            return new MessageResponse(item);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Create new tool
@@ -382,410 +359,432 @@ export async function toolsAPI(): Promise<void> {
      *
      * @returns {PolicyTool} new tool
      */
-    ApiResponse(MessageAPI.CREATE_TOOL_ASYNC, async (msg) => {
-        if (!msg) {
-            throw new Error('Invalid Params');
-        }
-        const { tool, owner, task } = msg;
-        const notifier = await initNotifier(task);
-        RunFunctionAsync(async () => {
-            const item = await createTool(tool, owner, notifier);
-            notifier.result(item.id);
-        }, async (error) => {
-            notifier.error(error);
-        });
-        return new MessageResponse(task);
-    });
-
-    ApiResponse(MessageAPI.GET_TOOLS, async (msg) => {
-        try {
+    ApiResponse(MessageAPI.CREATE_TOOL_ASYNC,
+        async (msg: { tool: PolicyTool, owner: IOwner, task: any }) => {
             if (!msg) {
-                return new MessageError('Invalid load tools parameter');
+                throw new Error('Invalid Params');
             }
+            const { tool, owner, task } = msg;
+            const notifier = await initNotifier(task);
+            RunFunctionAsync(async () => {
+                const item = await createTool(tool, owner, notifier);
+                notifier.result(item.id);
+            }, async (error) => {
+                notifier.error(error);
+            });
+            return new MessageResponse(task);
+        });
 
-            const { pageIndex, pageSize, owner } = msg;
-            const otherOptions: any = {};
-            const _pageSize = parseInt(pageSize, 10);
-            const _pageIndex = parseInt(pageIndex, 10);
-            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                otherOptions.orderBy = { createDate: 'DESC' };
-                otherOptions.limit = _pageSize;
-                otherOptions.offset = _pageIndex * _pageSize;
-            } else {
-                otherOptions.orderBy = { createDate: 'DESC' };
-                otherOptions.limit = 100;
-            }
-            otherOptions.fields = [
-                'id',
-                'creator',
-                'owner',
-                'name',
-                'description',
-                'uuid',
-                'topicId',
-                'messageId',
-                'hash',
-                'status'
-            ];
-            const [items, count] = await DatabaseServer.getToolsAndCount({
-                $or: [{
-                    owner
-                }, {
-                    status: ModuleStatus.PUBLISHED
-                }]
-            }, otherOptions);
-            return new MessageResponse({ items, count });
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+    ApiResponse(MessageAPI.GET_TOOLS,
+        async (msg: { filters: any, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const { filters, owner } = msg;
+                const { pageIndex, pageSize } = filters;
 
-    ApiResponse(MessageAPI.DELETE_TOOL, async (msg) => {
-        try {
-            if (!msg.id || !msg.owner) {
-                return new MessageError('Invalid load tools parameter');
-            }
-            const item = await DatabaseServer.getToolById(msg.id);
-            if (!item || item.owner !== msg.owner) {
-                throw new Error('Invalid tool');
-            }
-            if (item.status === ModuleStatus.PUBLISHED) {
-                throw new Error('Tool published');
-            }
-            await DatabaseServer.removeTool(item);
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.GET_MENU_TOOLS, async (msg) => {
-        try {
-            const tools: any[] = await DatabaseServer.getTools({
-                status: ModuleStatus.PUBLISHED
-            }, {
-                fields: [
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                otherOptions.fields = [
                     'id',
+                    'creator',
+                    'owner',
                     'name',
                     'description',
+                    'uuid',
                     'topicId',
-                    'hash',
                     'messageId',
-                    'owner',
-                    'config',
-                    'configFileId',
-                    'tools'
-                ]
-            });
-            const ids = tools.map(t => t.topicId);
-            const schemas = await DatabaseServer.getSchemas(
-                { topicId: { $in: ids } },
-                {
+                    'hash',
+                    'status'
+                ];
+                const [items, count] = await DatabaseServer.getToolsAndCount({
+                    $or: [{
+                        owner: owner.owner
+                    }, {
+                        status: ModuleStatus.PUBLISHED
+                    }]
+                }, otherOptions);
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.DELETE_TOOL,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                const { id, owner } = msg;
+                if (!id || !owner) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const item = await DatabaseServer.getToolById(id);
+                if (!item || item.owner !== owner.owner) {
+                    throw new Error('Invalid tool');
+                }
+                if (item.status === ModuleStatus.PUBLISHED) {
+                    throw new Error('Tool published');
+                }
+                await DatabaseServer.removeTool(item);
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_MENU_TOOLS,
+        async (msg: { owner: IOwner }) => {
+            try {
+                const tools: any[] = await DatabaseServer.getTools({
+                    status: ModuleStatus.PUBLISHED
+                }, {
                     fields: [
                         'id',
                         'name',
                         'description',
                         'topicId',
-                        'iri',
+                        'hash',
+                        'messageId',
+                        'owner',
+                        'config',
+                        'configFileId',
+                        'tools'
                     ]
+                });
+                const ids = tools.map(t => t.topicId);
+                const schemas = await DatabaseServer.getSchemas(
+                    { topicId: { $in: ids } },
+                    {
+                        fields: [
+                            'id',
+                            'name',
+                            'description',
+                            'topicId',
+                            'iri',
+                        ]
+                    }
+                );
+                const map = new Map<string, any>();
+                for (const tool of tools) {
+                    delete tool.configFileId;
+                    if (tool.config) {
+                        tool.config = {
+                            inputEvents: tool.config.inputEvents,
+                            outputEvents: tool.config.outputEvents,
+                            variables: tool.config.variables
+                        }
+                    }
+                    tool.schemas = [];
+                    map.set(tool.topicId, tool);
                 }
-            );
-            const map = new Map<string, any>();
-            for (const tool of tools) {
-                delete tool.configFileId;
-                if (tool.config) {
-                    tool.config = {
-                        inputEvents: tool.config.inputEvents,
-                        outputEvents: tool.config.outputEvents,
-                        variables: tool.config.variables
+                for (const schema of schemas) {
+                    if (map.has(schema.topicId)) {
+                        map.get(schema.topicId).schemas.push(schema);
                     }
                 }
-                tool.schemas = [];
-                map.set(tool.topicId, tool);
-            }
-            for (const schema of schemas) {
-                if (map.has(schema.topicId)) {
-                    map.get(schema.topicId).schemas.push(schema);
-                }
-            }
-            return new MessageResponse(tools);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.UPDATE_TOOL, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid load tools parameter');
-            }
-            const { id, tool, owner } = msg;
-            const item = await DatabaseServer.getToolById(id);
-            if (!item || item.owner !== owner) {
-                throw new Error('Invalid tool');
-            }
-            if (item.status === ModuleStatus.PUBLISHED) {
-                throw new Error('Tool published');
-            }
-
-            item.config = tool.config;
-            item.name = tool.name;
-            item.description = tool.description;
-
-            await updateToolConfig(item);
-            const result = await DatabaseServer.updateTool(item);
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.GET_TOOL, async (msg) => {
-        try {
-            if (!msg.id || !msg.owner) {
-                return new MessageError('Invalid load tools parameter');
-            }
-            const item = await DatabaseServer.getToolById(msg.id);
-            if (!item) {
-                throw new Error('Invalid tool');
-            }
-            if (item.status !== ModuleStatus.PUBLISHED && item.owner !== msg.owner) {
-                throw new Error('Invalid tool');
-            }
-            return new MessageResponse(item);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.TOOL_EXPORT_FILE, async (msg) => {
-        try {
-            if (!msg.id || !msg.owner) {
-                return new MessageError('Invalid load tools parameter');
-            }
-
-            const item = await DatabaseServer.getToolById(msg.id);
-            if (!item) {
-                throw new Error('Invalid tool');
-            }
-            if (item.status !== ModuleStatus.PUBLISHED && item.owner !== msg.owner) {
-                throw new Error('Invalid tool');
-            }
-
-            await updateToolConfig(item);
-            const zip = await ToolImportExport.generate(item);
-            const file = await zip.generateAsync({
-                type: 'arraybuffer',
-                compression: 'DEFLATE',
-                compressionOptions: {
-                    level: 3,
-                },
-            });
-            return new BinaryMessageResponse(file);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.TOOL_EXPORT_MESSAGE, async (msg) => {
-        try {
-            if (!msg.id || !msg.owner) {
-                return new MessageError('Invalid load tools parameter');
-            }
-
-            const item = await DatabaseServer.getToolById(msg.id);
-            if (!item) {
-                throw new Error('Invalid tool');
-            }
-
-            return new MessageResponse({
-                id: item.id,
-                uuid: item.uuid,
-                name: item.name,
-                description: item.description,
-                messageId: item.messageId,
-                owner: item.owner
-            });
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.TOOL_IMPORT_FILE_PREVIEW, async (msg) => {
-        try {
-            const { zip } = msg;
-            if (!zip) {
-                throw new Error('file in body is empty');
-            }
-            const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            return new MessageResponse(preview);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW, async (msg) => {
-        try {
-            const { messageId, owner } = msg;
-            const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
-            return new MessageResponse(preview);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.TOOL_IMPORT_FILE, async (msg) => {
-        try {
-            const { zip, owner, metadata } = msg;
-            if (!zip) {
-                throw new Error('file in body is empty');
-            }
-            const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata);
-            if (errors?.length) {
-                const message = importToolErrors(errors);
-                new Logger().warn(message, ['GUARDIAN_SERVICE']);
-                return new MessageError(message);
-            } else {
-                return new MessageResponse(tool);
-            }
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE, async (msg) => {
-        try {
-            const { messageId, owner } = msg;
-            if (!messageId || typeof messageId !== 'string') {
-                throw new Error('Message ID in body is empty');
-            }
-            const id = messageId.trim();
-            const oldTool = await DatabaseServer.getTool({ messageId: id });
-            if (oldTool) {
-                throw new Error('The tool already exists');
-            }
-            const notifier = emptyNotifier();
-            const users = new Users();
-            const root = await users.getHederaAccount(owner);
-            const item = await importToolByMessage(root, id, notifier);
-            notifier.completed();
-            return new MessageResponse(item);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.TOOL_IMPORT_FILE_ASYNC, async (msg) => {
-        const { zip, owner, task, metadata} = msg;
-        const notifier = await initNotifier(task);
-        RunFunctionAsync(async () => {
-            if (!zip) {
-                throw new Error('file in body is empty');
-            }
-            const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-            const { tool, errors } = await importToolByFile(owner, preview, notifier, metadata);
-            if (errors?.length) {
-                const message = importToolErrors(errors);
-                notifier.error(message);
-                new Logger().warn(message, ['GUARDIAN_SERVICE']);
-            } else {
-                notifier.result({
-                    toolId: tool.id,
-                    errors: []
-                });
-            }
-        }, async (error) => {
-            notifier.error(error);
-        });
-        return new MessageResponse(task);
-    });
-
-    ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC, async (msg) => {
-        const { messageId, owner, task } = msg;
-        const notifier = await initNotifier(task);
-        RunFunctionAsync(async () => {
-            if (!messageId || typeof messageId !== 'string') {
-                throw new Error('Message ID in body is empty');
-            }
-            const id = messageId.trim();
-            const oldTool = await DatabaseServer.getTool({ messageId: id });
-            if (oldTool) {
-                throw new Error('The tool already exists');
-            }
-            const users = new Users();
-            const root = await users.getHederaAccount(owner);
-            const { tool, errors } = await importToolByMessage(root, id, notifier);
-            notifier.completed();
-            if (errors?.length) {
-                const message = importToolErrors(errors);
-                notifier.error(message);
-                new Logger().warn(message, ['GUARDIAN_SERVICE']);
-            } else {
-                notifier.result({
-                    toolId: tool.id,
-                    errors: []
-                });
-            }
-        }, async (error) => {
-            notifier.error(error);
-        });
-        return new MessageResponse(task);
-    });
-
-    ApiResponse(MessageAPI.PUBLISH_TOOL, async (msg) => {
-        try {
-            const { id, owner } = msg;
-            const result = await validateAndPublish(id, owner, emptyNotifier());
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.PUBLISH_TOOL_ASYNC, async (msg) => {
-        try {
-            const { id, owner, task } = msg;
-            const notifier = await initNotifier(task);
-
-            RunFunctionAsync(async () => {
-                const result = await validateAndPublish(id, owner, notifier);
-                notifier.result(result);
-            }, async (error) => {
+                return new MessageResponse(tools);
+            } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.UPDATE_TOOL,
+        async (msg: { id: string, tool: PolicyTool, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const { id, tool, owner } = msg;
+                const item = await DatabaseServer.getToolById(id);
+                if (!item || item.owner !== owner.owner) {
+                    throw new Error('Invalid tool');
+                }
+                if (item.status === ModuleStatus.PUBLISHED) {
+                    throw new Error('Tool published');
+                }
+
+                item.config = tool.config;
+                item.name = tool.name;
+                item.description = tool.description;
+
+                await updateToolConfig(item);
+                const result = await DatabaseServer.updateTool(item);
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_TOOL,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                const { id, owner } = msg;
+                if (!id || !owner) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const item = await DatabaseServer.getToolById(id);
+                if (!item) {
+                    throw new Error('Invalid tool');
+                }
+                if (item.status !== ModuleStatus.PUBLISHED && item.owner !== owner.owner) {
+                    throw new Error('Invalid tool');
+                }
+                return new MessageResponse(item);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.TOOL_EXPORT_FILE,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                const { id, owner } = msg;
+                if (!id || !owner) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+
+                const item = await DatabaseServer.getToolById(id);
+                if (!item) {
+                    throw new Error('Invalid tool');
+                }
+                if (item.status !== ModuleStatus.PUBLISHED && item.owner !== owner.owner) {
+                    throw new Error('Invalid tool');
+                }
+
+                await updateToolConfig(item);
+                const zip = await ToolImportExport.generate(item);
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 3,
+                    },
+                });
+                return new BinaryMessageResponse(file);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.TOOL_EXPORT_MESSAGE,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                const { id, owner } = msg;
+                if (!id || !owner) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+
+                const item = await DatabaseServer.getToolById(id);
+                if (!item) {
+                    throw new Error('Invalid tool');
+                }
+
+                return new MessageResponse({
+                    id: item.id,
+                    uuid: item.uuid,
+                    name: item.name,
+                    description: item.description,
+                    messageId: item.messageId,
+                    owner: item.owner
+                });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.TOOL_IMPORT_FILE_PREVIEW,
+        async (msg: { zip: any, owner: IOwner }) => {
+            try {
+                const { zip } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
+                return new MessageResponse(preview);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE_PREVIEW,
+        async (msg: { messageId: string, owner: IOwner }) => {
+            try {
+                const { messageId, owner } = msg;
+                const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
+                return new MessageResponse(preview);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.TOOL_IMPORT_FILE,
+        async (msg: { zip: any, owner: IOwner, metadata: any }) => {
+            try {
+                const { zip, owner, metadata } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
+                const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata);
+                if (errors?.length) {
+                    const message = importToolErrors(errors);
+                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                    return new MessageError(message);
+                } else {
+                    return new MessageResponse(tool);
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE,
+        async (msg: { messageId: string, owner: IOwner }) => {
+            try {
+                const { messageId, owner } = msg;
+                if (!messageId || typeof messageId !== 'string') {
+                    throw new Error('Message ID in body is empty');
+                }
+                const id = messageId.trim();
+                const oldTool = await DatabaseServer.getTool({ messageId: id });
+                if (oldTool) {
+                    throw new Error('The tool already exists');
+                }
+                const notifier = emptyNotifier();
+                const users = new Users();
+                const root = await users.getHederaAccount(owner.creator);
+                const item = await importToolByMessage(root, id, owner, notifier);
+                notifier.completed();
+                return new MessageResponse(item);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.TOOL_IMPORT_FILE_ASYNC,
+        async (msg: { zip: any, owner: IOwner, metadata: any, task: any }) => {
+            const { zip, owner, task, metadata } = msg;
+            const notifier = await initNotifier(task);
+            RunFunctionAsync(async () => {
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
+                const { tool, errors } = await importToolByFile(owner, preview, notifier, metadata);
+                if (errors?.length) {
+                    const message = importToolErrors(errors);
+                    notifier.error(message);
+                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                } else {
+                    notifier.result({
+                        toolId: tool.id,
+                        errors: []
+                    });
+                }
+            }, async (error) => {
                 notifier.error(error);
             });
-
             return new MessageResponse(task);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 
-    ApiResponse(MessageAPI.VALIDATE_TOOL, async (msg) => {
-        try {
-            const { tool } = msg;
-            const results = await validateTool(tool);
-            return new MessageResponse({
-                results,
-                tool
+    ApiResponse(MessageAPI.TOOL_IMPORT_MESSAGE_ASYNC,
+        async (msg: { messageId: string, owner: IOwner, task: any }) => {
+            const { messageId, owner, task } = msg;
+            const notifier = await initNotifier(task);
+            RunFunctionAsync(async () => {
+                if (!messageId || typeof messageId !== 'string') {
+                    throw new Error('Message ID in body is empty');
+                }
+                const id = messageId.trim();
+                const oldTool = await DatabaseServer.getTool({ messageId: id });
+                if (oldTool) {
+                    throw new Error('The tool already exists');
+                }
+                const users = new Users();
+                const root = await users.getHederaAccount(owner.creator);
+                const { tool, errors } = await importToolByMessage(root, id, owner, notifier);
+                notifier.completed();
+                if (errors?.length) {
+                    const message = importToolErrors(errors);
+                    notifier.error(message);
+                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                } else {
+                    notifier.result({
+                        toolId: tool.id,
+                        errors: []
+                    });
+                }
+            }, async (error) => {
+                notifier.error(error);
             });
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+            return new MessageResponse(task);
+        });
+
+    ApiResponse(MessageAPI.PUBLISH_TOOL,
+        async (msg: { id: string, owner: IOwner, tool: PolicyTool }) => {
+            try {
+                const { id, owner } = msg;
+                const result = await validateAndPublish(id, owner, emptyNotifier());
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.PUBLISH_TOOL_ASYNC,
+        async (msg: { id: string, owner: IOwner, tool: PolicyTool, task: any }) => {
+            try {
+                const { id, owner, task } = msg;
+                const notifier = await initNotifier(task);
+
+                RunFunctionAsync(async () => {
+                    const result = await validateAndPublish(id, owner, notifier);
+                    notifier.result(result);
+                }, async (error) => {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                });
+
+                return new MessageResponse(task);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.VALIDATE_TOOL,
+        async (msg: { owner: IOwner, tool: PolicyTool }) => {
+            try {
+                const { tool } = msg;
+                const results = await validateTool(tool);
+                return new MessageResponse({
+                    results,
+                    tool
+                });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 }

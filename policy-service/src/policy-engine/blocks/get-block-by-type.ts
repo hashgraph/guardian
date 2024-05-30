@@ -1,5 +1,5 @@
-import * as blocks from './';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import * as blocks from './index.js';
+import { IPolicyBlock } from '../policy-engine.interface.js';
 
 /**
  * Return block constructor by block type

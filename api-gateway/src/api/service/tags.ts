@@ -1,40 +1,106 @@
-import { Logger } from '@guardian/common';
-import { Guardians } from '@helpers/guardians';
-import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
-import { SchemaUtils } from '@helpers/schema-utils';
-import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Put, Req, Response } from '@nestjs/common';
-import { checkPermission } from '@auth/authorization-helper';
-import { ApiTags } from '@nestjs/swagger';
+import { IAuthUser } from '@guardian/common';
+import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner } from '#helpers';
 
 @Controller('tags')
 @ApiTags('tags')
 export class TagsApi {
+    /**
+     * Create tag
+     */
     @Post('/')
+    @Auth(
+        Permissions.TAGS_TAG_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Creates new tag.',
+        description: 'Creates new tag.',
+    })
+    @ApiBody({
+        description: 'Object that contains tag information.',
+        required: true,
+        type: TagDTO,
+    })
+    @ApiOkResponse({
+        description: 'Created tag.',
+        type: TagDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TagDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async setTags(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
+    async setTags(
+        @AuthUser() user: IAuthUser,
+        @Body() body: TagDTO
+    ): Promise<TagDTO> {
         try {
-            if (!req.headers.authorization || !req.user || !req.user.did) {
-                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
-            }
+            const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            const item = await guardian.createTag(req.body, req.user.did);
-            return res.status(201).json(item);
+            return await guardian.createTag(body, owner);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get tags
+     */
     @Post('/search')
-    @HttpCode(HttpStatus.OK)
-    async searchTags(@Req() req, @Response() res): Promise<any> {
-        try {
-            const guardians = new Guardians();
-            if (!req.headers.authorization || !req.user || !req.user.did) {
-                throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+    @Auth(
+        Permissions.TAGS_TAG_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Search tags.',
+        description: 'Search tags.',
+    })
+    @ApiBody({
+        description: 'Object that contains filters',
+        required: true,
+        type: TagFilterDTO,
+        examples: {
+            Single: {
+                value: {
+                    entity: 'PolicyDocument',
+                    target: Examples.MESSAGE_ID
+                }
+            },
+            Multiple: {
+                value: {
+                    entity: 'PolicyDocument',
+                    targets: [
+                        Examples.MESSAGE_ID,
+                        Examples.MESSAGE_ID
+                    ]
+                }
             }
-            const { entity, target, targets } = req.body;
+        }
+    })
+    @ApiOkResponse({
+        description: 'Created tag.',
+        type: TagMapDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TagFilterDTO, TagMapDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async searchTags(
+        @Body() body: TagFilterDTO
+    ): Promise<{ [localTarget: string]: TagMapDTO }> {
+        try {
+            const { entity, target, targets } = body;
+
             let _targets: string[];
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -55,6 +121,7 @@ export class TagsApi {
                 throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
+            const guardians = new Guardians();
             const items = await guardians.getTags(entity, _targets);
             const dates = await guardians.getTagCache(entity, _targets);
 
@@ -76,209 +143,405 @@ export class TagsApi {
                     }
                 }
             }
-            return res.json(tagMap);
+            return tagMap;
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error
+            await InternalException(error);
         }
     }
 
+    /**
+     * Delete tag
+     */
     @Delete('/:uuid')
+    @Auth(
+        Permissions.TAGS_TAG_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Delete tag.',
+        description: 'Delete tag.',
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: String,
+        description: 'Tag identifier',
+        required: true,
+        example: Examples.UUID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async deleteTag(@Req() req, @Response() res): Promise<any> {
-        if (!req.user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
-        }
+    async deleteTag(
+        @AuthUser() user: IAuthUser,
+        @Param('uuid') uuid: string,
+    ): Promise<boolean> {
         try {
-            const guardian = new Guardians();
-            if (!req.params.uuid) {
+            if (!uuid) {
                 throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
             }
-            const result = await guardian.deleteTag(req.params.uuid, req.user.did);
-            return res.json(result);
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.deleteTag(uuid, owner);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-            // return next(error);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Synchronization
+     */
     @Post('/synchronization')
-    @HttpCode(HttpStatus.OK)
-    async synchronizationTags(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
-        if (!req.headers.authorization || !req.user || !req.user.did) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+    @Auth(
+        Permissions.TAGS_TAG_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Synchronization of tags with an external network.',
+        description: 'Synchronization of tags with an external network.',
+    })
+    @ApiBody({
+        description: 'Object that contains filters',
+        required: true,
+        type: TagFilterDTO,
+        examples: {
+            Single: {
+                value: {
+                    entity: 'PolicyDocument',
+                    target: Examples.MESSAGE_ID
+                }
+            }
         }
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TagMapDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(TagMapDTO, TagFilterDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async synchronizationTags(
+        @Body() body: TagFilterDTO
+    ): Promise<TagMapDTO> {
         try {
-            const guardians = new Guardians();
-            const { entity, target } = req.body;
-
+            const { entity, target } = body;
             if (!entity) {
                 throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
             }
-
             if (typeof target !== 'string') {
                 throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
+            const guardians = new Guardians();
             const tags = await guardians.synchronizationTags(entity, target);
-
-            const result = {
+            return {
                 entity,
                 target,
                 tags,
                 refreshDate: (new Date()).toISOString(),
             }
-            return res.json(result);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get list of all schemas
+     */
     @Get('/schemas')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all tag schemas.',
+        description: 'Returns all tag schemas.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: SchemaDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
-    async getSchemas(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getSchemas(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<any> {
         try {
-            const user = req.user;
             const guardians = new Guardians();
-            const owner = user.did;
-            let pageIndex: any;
-            let pageSize: any;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = req.query.pageIndex;
-                pageSize = req.query.pageSize;
-            }
+            const owner = new EntityOwner(user);
             const { items, count } = await guardians.getTagSchemas(owner, pageIndex, pageSize);
-            items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
+            items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
+            // res.locals.data = SchemaUtils.toOld(items)
             return res
-                .setHeader('X-Total-Count', count)
-                .json(SchemaUtils.toOld(items));
+                .header('X-Total-Count', count)
+                .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Create schema
+     */
     @Post('/schemas')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Creates a new tag schema.',
+        description: 'Creates a new tag schema.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Schema config.',
+        type: SchemaDTO,
+    })
+    @ApiCreatedResponse({
+        description: 'Created schema.',
+        type: SchemaDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async postSchemas(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async postSchemas(
+        @AuthUser() user: IAuthUser,
+        @Body() newSchema: SchemaDTO
+    ): Promise<SchemaDTO> {
         try {
-            const user = req.user;
-            const newSchema = req.body;
-
             if (!newSchema) {
                 throw new HttpException('Schema does not exist.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const guardians = new Guardians();
-            const owner = user.did;
-
+            const owner = new EntityOwner(user);
+            newSchema.category = SchemaCategory.TAG;
             SchemaUtils.fromOld(newSchema);
-            delete newSchema.version;
-            delete newSchema.id;
-            delete newSchema._id;
-            delete newSchema.status;
-            delete newSchema.topicId;
-
+            SchemaUtils.clearIds(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-            const schema = await guardians.createTagSchema(newSchema);
 
-            return res.status(201).json(SchemaUtils.toOld(schema));
+            const schemas = await guardians.createTagSchema(newSchema, owner);
+            return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Delete schema
+     */
     @Delete('/schemas/:schemaId')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Deletes the schema.',
+        description: 'Deletes the schema with the provided schema ID.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: 'string',
+        required: true,
+        description: 'Schema Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async deleteSchema(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async deleteSchema(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+    ): Promise<boolean> {
         try {
-            const user = req.user;
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const schemaId = req.params.schemaId;
             const schema = await guardians.getSchemaById(schemaId);
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
-            await guardians.deleteSchema(schemaId, user?.did);
-            return res.json(true);
+            await guardians.deleteSchema(schemaId, owner);
+            return true;
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Update schema
+     */
     @Put('/schemas/:schemaId')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Updates schema configuration.',
+        description: 'Updates schema configuration for the specified schema ID.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: 'string',
+        required: true,
+        description: 'Schema Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiBody({
+        description: 'Schema config.',
+        type: SchemaDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaDTO,
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async setTag(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async updateSchema(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Body() newSchema: SchemaDTO
+    ): Promise<SchemaDTO[]> {
         try {
-            const user = req.user;
-            const newSchema = req.body;
-            const owner = user.did;
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const schema = await guardians.getSchemaById(newSchema.id);
-            const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
-            await guardians.updateSchema(newSchema);
-            return res.json(newSchema);
+            return await guardians.updateSchema(newSchema, owner);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Publish schema
+     */
     @Put('/schemas/:schemaId/publish')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_REVIEW,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Publishes the schema.',
+        description: 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: 'string',
+        required: true,
+        description: 'Schema Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaDTO,
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async publishTag(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
-        const guardians = new Guardians();
-        const schemaId = req.params.schemaId;
-        let schema;
+    async publishTag(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+    ): Promise<SchemaDTO> {
         try {
-            schema = await guardians.getSchemaById(schemaId);
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const schema = await guardians.getSchemaById(schemaId);
+            const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
+            if (error) {
+                throw new HttpException(error, HttpStatus.FORBIDDEN)
+            }
+            const version = '1.0.0';
+            return await guardians.publishTagSchema(schemaId, version, owner);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        const version = '1.0.0';
-        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
-        if (error) {
-            throw new HttpException(error, HttpStatus.FORBIDDEN)
-        }
-        try {
-            const result = await guardians.publishTagSchema(schemaId, version, user.did);
-            return res.json(result);
-        } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get published schema
+     */
     @Get('/schemas/published')
-    @HttpCode(HttpStatus.OK)
-    async getPublished(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER)(req.user);
+    @Auth()
+    @ApiOperation({
+        summary: 'Return a list of all published schemas.',
+        description: 'Return a list of all published schemas.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaDTO,
+        isArray: true
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    async getPublished(): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
-            const schemas = await guardians.getPublishedTagSchemas();
-            return res.send(schemas);
+            return await guardians.getPublishedTagSchemas();
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 }

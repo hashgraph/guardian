@@ -1,17 +1,17 @@
 import { Policy } from '@guardian/common';
-import { BlockModel } from './block.model';
-import { CompareOptions } from '../interfaces/compare-options.interface';
-import { SchemaModel } from './schema.model';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { PropertyModel } from './property.model';
-import { PropertyType } from '../types/property.type';
-import { TokenModel } from './token.model';
-import { GroupModel } from './group.model';
-import { TopicModel } from './topic.model';
-import { TemplateTokenModel } from './template-token.model';
-import { RoleModel } from './role.model';
-import { FileModel } from './file.model';
-import { CompareUtils } from '../utils/utils';
+import { BlockModel } from './block.model.js';
+import { CompareOptions } from '../interfaces/compare-options.interface.js';
+import { SchemaModel } from './schema.model.js';
+import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { PropertyModel } from './property.model.js';
+import { PropertyType } from '../types/property.type.js';
+import { TokenModel } from './token.model.js';
+import { GroupModel } from './group.model.js';
+import { TopicModel } from './topic.model.js';
+import { TemplateTokenModel } from './template-token.model.js';
+import { RoleModel } from './role.model.js';
+import { FileModel } from './file.model.js';
+import { CompareUtils } from '../utils/utils.js';
 
 /**
  * Policy Model

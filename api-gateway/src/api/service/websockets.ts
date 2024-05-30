@@ -1,11 +1,10 @@
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws'
 import { IncomingMessage, Server } from 'http';
-import { Users } from '@helpers/users';
 import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
-import { generateNumberFromString, Logger, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, Singleton } from '@guardian/common';
+import { generateNumberFromString, IAuthUser, Logger, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
-import { Injectable } from '@nestjs/common';
-import { MeecoAuth } from '@helpers/meeco';
+// import { Injectable } from '@nestjs/common';
+import { MeecoAuth, Users } from '#helpers';
 import { Mutex } from 'async-mutex';
 
 /**
@@ -37,40 +36,56 @@ export class WebSocketsServiceChannel extends NatsService {
 /**
  * WebSocket service class
  */
-@Injectable()
+// @Injectable()
+@Singleton
 export class WebSocketsService {
     /**
      * Channel
      * @private
      */
-    private readonly channel: WebSocketsServiceChannel;
+    private channel: WebSocketsServiceChannel;
+    /**
+     * Server
+     * @private
+     */
+    private server: Server
     /**
      * WebSocket server
      * @private
      */
-    private readonly wss: WebSocket.Server;
-
-    private readonly clients = new Map();
+    private wss: WebSocketServer;
 
     /**
      * Get statuses mutex
+     * @private
      */
     private readonly getStatusesMutex = new Mutex();
-
     /**
      * Get statuses clients
+     * @private
      */
     private readonly getStatusesClients: Set<WebSocket> = new Set();
-
     /**
      * Notification reading set
+     * @private
      */
     private readonly notificationReadingMap: Set<string> = new Set();
+    /**
+     * Clients
+     * @private
+     */
+    private readonly clients = new Map();
 
-    constructor(private readonly server: Server, cn: NatsConnection) {
-        this.wss = new WebSocket.Server({ server: this.server });
+    /**
+     * Set connection
+     * @param cn
+     */
+    public setConnection(server: Server, cn: NatsConnection): WebSocketsService {
+        this.server = server;
+        this.wss = new WebSocketServer({ server: this.server });
         this.channel = new WebSocketsServiceChannel();
         this.channel.setConnection(cn);
+        return this;
     }
 
     /**
@@ -80,6 +95,42 @@ export class WebSocketsService {
         this.registerConnection();
         this.registerMessageHandler();
         await this.channel.init();
+    }
+
+    /**
+     * Update permissions
+     * @param user
+     */
+    public updatePermissions(users: IAuthUser | IAuthUser[]): void {
+        if(!users) {
+            return;
+        }
+        const usersMap = new Map<string, any>();
+        if (Array.isArray(users)) {
+            for (const user of users) {
+                usersMap.set(user.id, {
+                    username: user.username,
+                    did: user.did,
+                    permissions: user.permissions,
+                    permissionsGroup: user.permissionsGroup
+                })
+            }
+        } else {
+            usersMap.set(users.id, {
+                username: users.username,
+                did: users.did,
+                permissions: users.permissions,
+                permissionsGroup: users.permissionsGroup
+            })
+        }
+        this.wss.clients.forEach((client: any) => {
+            if (usersMap.has(client.user?.id)) {
+                this.send(client, {
+                    type: 'UPDATE_PERMISSIONS',
+                    data: usersMap.get(client.user?.id)
+                });
+            }
+        });
     }
 
     /**
@@ -173,7 +224,7 @@ export class WebSocketsService {
                     MessageAPI.SEND_STATUS,
                     // tslint:disable-next-line:no-shadowed-variable
                     (msg) => {
-                        const {name, state} = msg;
+                        const { name, state } = msg;
 
                         if (!statuses[name]) {
                             statuses[name] = [];
@@ -275,9 +326,9 @@ export class WebSocketsService {
                             Object.assign(msg, {
                                 user: user
                                     ? {
-                                          username: user.username,
-                                          did: user.did,
-                                      }
+                                        username: user.username,
+                                        did: user.did,
+                                    }
                                     : null,
                             });
                             if (this.checkUserByName(client, msg)) {
@@ -390,15 +441,14 @@ export class WebSocketsService {
                     const meecoUser = MeecoAuth.extractUserFromApprovedMeecoToken(meecoSubmissionApproveResp)
                     // The username structure is necessary to avoid collisions - meeco doest not provide unique username
                     const userProvider = {
-                        role:  data.role || UserRole.STANDARD_REGISTRY as UserRole,
-                        username: `${meecoUser.firstName}${meecoUser.familyName}${
-                            generateNumberFromString(meecoUser.id)
-                        }`.toLowerCase().replace(/\s+/g, ''),
+                        role: data.role || UserRole.STANDARD_REGISTRY as UserRole,
+                        username: `${meecoUser.firstName}${meecoUser.familyName}${generateNumberFromString(meecoUser.id)
+                            }`.toLowerCase().replace(/\s+/g, ''),
                         providerId: meecoUser.id,
                         provider: ExternalProviders.MEECO,
                     };
                     const guardianData = await new Users().generateNewUserTokenBasedOnExternalUserProvider(
-                      userProvider
+                        userProvider
                     );
 
                     ws.send(JSON.stringify({

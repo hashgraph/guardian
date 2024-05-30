@@ -1,6 +1,6 @@
 import NodeVault from 'node-vault'
-import { SecretManagerBase } from '../secret-manager-base';
-import { ApproleCrential, IHcpVaultSecretManagerConfigs } from './hcp-vault-secret-manager-configs';
+import { SecretManagerBase } from '../secret-manager-base.js';
+import { ApproleCrential, IHcpVaultSecretManagerConfigs } from './hcp-vault-secret-manager-configs.js';
 
 /**
  * This class is responsible for managing secrets in Hashicorp Vault

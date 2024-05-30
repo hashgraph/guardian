@@ -1,15 +1,6 @@
-import moduleAlias from 'module-alias';
 import dotenv from 'dotenv';
 import 'reflect-metadata'
 import fs from 'fs';
-
-moduleAlias.addAliases({
-    '@api': __dirname + '/api',
-    '@helpers': __dirname + '/helpers',
-    '@entity': __dirname + '/entity',
-    '@interfaces': __dirname + '/interfaces',
-    '@middlewares': __dirname + '/middlewares',
-});
 
 dotenv.config();
 

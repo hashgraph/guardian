@@ -1,7 +1,7 @@
-import { BaseEntity } from '../models';
+import { BaseEntity } from '../models/index.js';
 import { GenerateUUIDv4, PolicyCategoryExport, PolicyType } from '@guardian/interfaces';
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
-import { DataBaseHelper } from '../helpers';
+import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 
 /**

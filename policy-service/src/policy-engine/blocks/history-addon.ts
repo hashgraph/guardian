@@ -1,5 +1,5 @@
-import { SourceAddon } from '@policy-engine/helpers/decorators';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
+import { SourceAddon } from '../helpers/decorators/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 
 /**
  * History Addon

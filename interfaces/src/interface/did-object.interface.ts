@@ -1,5 +1,5 @@
-import {DidDocumentStatus} from '../type/did-status.type';
-import {IDidDocument} from './did-document';
+import {DidDocumentStatus} from '../type/did-status.type.js';
+import {IDidDocument} from './did-document.js';
 
 /**
  * DID object

@@ -1,6 +1,6 @@
-import { WalletAccount } from '@entity/wallet-account';
+import { WalletAccount } from '../entity/wallet-account.js';
 import { DataBaseHelper, Logger } from '@guardian/common';
-import { IVault } from '../vaults';
+import { IVault } from '../vaults/index.js';
 
 /**
  * Migration function

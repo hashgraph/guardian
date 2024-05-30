@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/helpers/api-response';
+import { ApiResponse } from '../api/helpers/api-response.js';
 import { DataBaseHelper, Environment, Logger, MessageError, MessageResponse, SecretManager, Settings, Topic, ValidateConfiguration, Workers } from '@guardian/common';
 import { CommonSettings, MessageAPI } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
@@ -56,7 +56,7 @@ export async function configAPI(
     /**
      * Get settings
      */
-    ApiResponse(MessageAPI.GET_SETTINGS, async (msg) => {
+    ApiResponse(MessageAPI.GET_SETTINGS, async (_: any) => {
         try {
             const secretManager = SecretManager.New();
             const { OPERATOR_ID } = await secretManager.getSecrets('keys/operator');
@@ -74,7 +74,7 @@ export async function configAPI(
         }
     });
 
-    ApiResponse(MessageAPI.GET_ENVIRONMENT, async (msg) => {
+    ApiResponse(MessageAPI.GET_ENVIRONMENT, async (_: any) => {
         return new MessageResponse(Environment.network);
     })
 }

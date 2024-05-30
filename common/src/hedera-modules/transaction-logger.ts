@@ -1,10 +1,10 @@
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer } from '../database-modules';
-import { Logger, RunFunctionAsync, Workers } from '../helpers';
-import { MessageResponse } from '../models';
-import { Singleton } from '../decorators/singleton';
-import { NatsService } from '../mq';
-import { SecretManager } from '../secret-manager';
+import { DatabaseServer } from '../database-modules/index.js';
+import { Logger, RunFunctionAsync, Workers } from '../helpers/index.js';
+import { MessageResponse } from '../models/index.js';
+import { Singleton } from '../decorators/singleton.js';
+import { NatsService } from '../mq/index.js';
+import { SecretManager } from '../secret-manager/index.js';
 
 /**
  * Transaction log level

@@ -1,6 +1,6 @@
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
-import { SecretManagerBase } from '../secret-manager-base';
-import { IGcpSecretManagerConfigs } from './gcp-secret-manager-configs';
+import { SecretManagerBase } from '../secret-manager-base.js';
+import { IGcpSecretManagerConfigs } from './gcp-secret-manager-configs.js';
 
 /**
  * This class is responsible for managing secrets in AWS Secret Manager
