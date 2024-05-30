@@ -14242,12 +14242,15 @@ components:
     AssignPolicyDTO:
       type: object
       properties:
-        policyId:
-          type: string
-          example: '000000000000000000000001'
+        policyIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
         assign:
           type: boolean
           example: true
       required:
-        - policyId
+        - policyIds
         - assign
