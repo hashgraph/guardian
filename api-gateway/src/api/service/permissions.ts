@@ -647,10 +647,10 @@ export class PermissionsApi {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
-            const { policyId, assign } = body;
+            const { policyIds, assign } = body;
             return await (new Guardians()).assignEntity(
                 AssignedEntityType.Policy,
-                policyId,
+                policyIds,
                 assign,
                 row.did,
                 user.did
@@ -770,10 +770,10 @@ export class PermissionsApi {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
-            const { policyId, assign } = body;
+            const { policyIds, assign } = body;
             return await (new Guardians()).delegateEntity(
                 AssignedEntityType.Policy,
-                policyId,
+                policyIds,
                 assign,
                 row.did,
                 user.did

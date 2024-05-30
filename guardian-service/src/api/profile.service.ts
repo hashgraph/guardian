@@ -123,7 +123,9 @@ async function setupUserProfile(
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
     });
+    await users.createDefaultRole(username);
     await users.setDefaultRole(username, profile.parent);
+
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
     if (profile.useFireblocksSigning) {

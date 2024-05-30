@@ -52,7 +52,7 @@
     border-radius: 16px;
     border: 1px solid #E1E7EF;
     background: #fff;
-    margin-bottom: 24px;
+    margin-bottom: 88px;
     margin-top: 24px;
 
     .user-header {
@@ -479,4 +479,21 @@
 .chip-color-yellow {
     color: var(--color-accent-yellow-1);
     background: var(--color-accent-yellow-2);
+}
+
+.role-footer {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    height: 64px;
+    background: #fff;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 48px;
+    border-top: 1px solid #E1E7EF;
+
+    .secondary {
+        margin-right: 12px;
+    }
 }
