@@ -1,0 +1,10 @@
+<div class="dialog-content">
+    <div class="editor">
+        <ngx-codemirror [(ngModel)]="this.result" [options]="codeMirrorOptions"></ngx-codemirror>
+    </div>
+    <div class="dialog-footer">
+        <button (click)="this.dialogRef.close()" class="button secondary" label="Close" pButton type="button"></button>
+        <button *ngIf="!readOnly" (click)="this.dialogRef.close(this.result)" [label]="'Save'" class="button" pButton
+            type="button"></button>
+    </div>
+</div>

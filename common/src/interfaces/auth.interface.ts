@@ -34,6 +34,18 @@ export interface IAuthUser {
      * Wallet token
      */
     walletToken?: string;
+    /**
+     * Use fireblocks signing
+     */
+    useFireblocksSigning: boolean;
+    /**
+     * Group name
+     */
+    permissionsGroup?: string[];
+    /**
+     * Permissions
+     */
+    permissions?: string[];
 }
 
 /**

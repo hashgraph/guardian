@@ -1,4 +1,4 @@
-import * as pkg from '@guardian/interfaces';
+import { GeoJsonContext, SchemaHelper, SchemaStatus, SentinelHubContext, IOwner } from '@guardian/interfaces';
 import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
@@ -6,7 +6,36 @@ import { publishSchemaTags } from './../tag.service.js';
 import { exportSchemas } from './schema-import-export-helper.js';
 import { IRootConfig } from '../../interfaces/root-config.interface.js';
 
-const { GeoJsonContext, SchemaHelper, SchemaStatus, SentinelHubContext } = pkg;
+/**
+ * Check access
+ * @param schema
+ * @param user
+ */
+export async function accessSchema(
+    schema: SchemaCollection,
+    user: IOwner,
+    action: string
+): Promise<boolean> {
+    if (!schema) {
+        throw new Error('Schema does not exist.');
+    }
+    if (user.owner !== schema.owner) {
+        throw new Error(`Insufficient permissions to ${action} the schema.`);
+    }
+    if (user.creator === schema.creator) {
+        return true;
+    }
+    // if (user.published && schema.status !== SchemaStatus.PUBLISHED) {
+    //     throw new Error(`Insufficient permissions to ${action} the schema.`);
+    // }
+    // if (user.assigned) {
+    //     const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Schema, schema.id, user.creator);
+    //     if (!assigned) {
+    //         throw new Error(`Insufficient permissions to ${action} the schema.`);
+    //     }
+    // }
+    return true;
+}
 
 /**
  * Publish schema
@@ -17,6 +46,7 @@ const { GeoJsonContext, SchemaHelper, SchemaStatus, SentinelHubContext } = pkg;
  */
 export async function publishSchema(
     item: SchemaCollection,
+    user: IOwner,
     messageServer: MessageServer,
     type?: MessageAction
 ): Promise<SchemaCollection> {
@@ -50,7 +80,7 @@ export async function publishSchema(
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
 
-    const relationships = await exportSchemas([item.id]);
+    const relationships = await exportSchemas([item.id], user);
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
@@ -81,7 +111,11 @@ export async function publishSchema(
  * @param owner Owner
  * @param root HederaAccount
  */
-export async function publishDefsSchemas(defs: any, owner: string, root: IRootConfig) {
+export async function publishDefsSchemas(
+    defs: any,
+    user: IOwner,
+    root: IRootConfig
+) {
     if (!defs) {
         return;
     }
@@ -91,8 +125,8 @@ export async function publishDefsSchemas(defs: any, owner: string, root: IRootCo
             iri: schemaId
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
-            schema = await incrementSchemaVersion(schema.iri, owner);
-            await findAndPublishSchema(schema.id, schema.version, owner, root, emptyNotifier());
+            schema = await incrementSchemaVersion(schema.iri, user);
+            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier());
         }
     }
 }
@@ -108,19 +142,15 @@ export async function publishDefsSchemas(defs: any, owner: string, root: IRootCo
 export async function findAndPublishSchema(
     id: string,
     version: string,
-    owner: string,
+    user: IOwner,
     root: IRootConfig,
     notifier: INotifier
 ): Promise<SchemaCollection> {
     notifier.start('Load schema');
 
     let item = await DatabaseServer.getSchema(id);
-    if (!item) {
-        throw new Error(`Schema not found: ${id}`);
-    }
-    if (item.creator !== owner) {
-        throw new Error('Invalid owner');
-    }
+    await accessSchema(item, user, 'publish');
+
     if (!item.topicId || item.topicId === 'draft') {
         throw new Error('Invalid topicId');
     }
@@ -130,17 +160,17 @@ export async function findAndPublishSchema(
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaIri = item.iri;
-    await publishDefsSchemas(item.document?.$defs, owner, root);
+    await publishDefsSchemas(item.document?.$defs, user, root);
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
     const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
-    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');
 
     SchemaHelper.updateVersion(item, version);
-    item = await publishSchema(item, messageServer, MessageAction.PublishSchema);
+    item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Publish tags');
     await publishSchemaTags(item, root);
@@ -161,6 +191,7 @@ export async function findAndPublishSchema(
  */
 export async function publishSystemSchema(
     item: SchemaCollection,
+    user: IOwner,
     messageServer: MessageServer,
     type?: MessageAction,
     notifier?: INotifier
@@ -173,7 +204,7 @@ export async function publishSystemSchema(
     item.version = undefined;
     item.topicId = messageServer.getTopic();
     SchemaHelper.setVersion(item, undefined, undefined);
-    const result = await publishSchema(item, messageServer, type);
+    const result = await publishSchema(item, user, messageServer, type);
     if (notifier) {
         notifier.info(`Schema ${result.name || '-'} published`);
     }
@@ -190,16 +221,17 @@ export async function publishSystemSchema(
 export async function publishSystemSchemas(
     systemSchemas: SchemaCollection[],
     messageServer: MessageServer,
-    owner: string,
+    user: IOwner,
     notifier: INotifier
 ): Promise<void> {
     const tasks = [];
     for (const schema of systemSchemas) {
         if (schema) {
-            schema.creator = owner;
-            schema.owner = owner;
+            schema.creator = user.creator;
+            schema.owner = user.owner;
             tasks.push(publishSystemSchema(
                 schema,
+                user,
                 messageServer,
                 MessageAction.PublishSystemSchema,
                 notifier
@@ -216,16 +248,14 @@ export async function publishSystemSchemas(
  * Find and publish schema
  * @param item
  * @param version
- * @param owner
+ * @param user
  */
 export async function findAndDryRunSchema(
     item: SchemaCollection,
     version: string,
-    owner: string
+    user: IOwner
 ): Promise<SchemaCollection> {
-    if (item.creator !== owner) {
-        throw new Error('Invalid owner');
-    }
+    await accessSchema(item, user, 'publish')
 
     if (!item.topicId) {
         throw new Error('Invalid topicId');

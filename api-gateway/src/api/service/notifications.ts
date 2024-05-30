@@ -1,235 +1,201 @@
-import { AuthGuard } from '../../auth/auth-guard.js';
-import { Logger, NotificationService } from '@guardian/common';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { NotificationDTO, ProgressDTO, } from '../../middlewares/validation/schemas/notifications.js';
-import { Controller, Delete, Get, HttpCode, HttpStatus, Post, Req, Response, UseGuards, } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
+import { IAuthUser, NotificationService } from '@guardian/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, NotificationDTO, ProgressDTO, pageHeader } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
+import { InternalException, parseInteger } from '#helpers';
 
 @Controller('notifications')
 @ApiTags('notifications')
 export class NotificationsApi {
-    constructor(private readonly notifier: NotificationService) {}
+    constructor(private readonly notifier: NotificationService) { }
 
+    /**
+     * Get all notifications
+     */
+    @Get('/')
+    @Auth()
     @ApiOperation({
         summary: 'Get all notifications',
         description: 'Returns all notifications.',
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
-    @ApiOkResponse({
-        description:
-            'Successful operation. Returns notifications and count.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(NotificationDTO),
-            },
-        },
-        headers: {
-            'X-Total-Count': {
-                description: 'Count of notifications',
-            },
-        },
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation. Returns notifications and count.',
+        isArray: true,
+        headers: pageHeader,
+        type: NotificationDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO,
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Get('/')
+    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getAllNotifications(@Req() req, @Response() res) {
+    async getAllNotifications(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<NotificationDTO[]> {
         try {
-            let pageIndex: number;
-            let pageSize: number;
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                pageIndex = Number.parseInt(req.query.pageIndex, 10);
-                pageSize = Number.parseInt(req.query.pageSize, 10);
-            }
             const [notifications, count] = await this.notifier.all(
-                req.user.id,
-                pageIndex,
-                pageSize
+                user.id,
+                parseInteger(pageIndex),
+                parseInteger(pageSize)
             );
-            return res.setHeader('X-Total-Count', count).json(notifications);
+            return res.header('X-Total-Count', count).send(notifications);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get new notifications
+     */
+    @Get('/new')
+    @Auth()
     @ApiOperation({
         summary: 'Get new notifications',
         description: 'Returns new notifications.',
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
-        description:
-            'Successful operation. Returns new notifications.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(NotificationDTO),
-            },
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+        description: 'Successful operation. Returns new notifications.',
+        isArray: true,
+        type: NotificationDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO,
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Get('/new')
+    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getNewNotifications(@Req() req, @Response() res): Promise<any> {
+    async getNewNotifications(
+        @AuthUser() user: IAuthUser
+    ): Promise<NotificationDTO> {
         try {
-            if (!req.user.id) {
+            if (!user.id) {
                 throw Error('User is not registered');
             }
-            return res.json(
-                await this.notifier.getNewNotifications(req.user.id)
-            );
+            return await this.notifier.getNewNotifications(user.id);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get progresses
+     */
+    @Get('/progresses')
+    @Auth()
     @ApiOperation({
         summary: 'Get progresses',
         description: 'Returns progresses.',
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(ProgressDTO, InternalServerErrorDTO)
     @ApiOkResponse({
-        description:
-            'Successful operation. Returns progresses.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(ProgressDTO),
-            },
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+        description: 'Successful operation. Returns progresses.',
+        isArray: true,
+        type: ProgressDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO,
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Get('/progresses')
+    @ApiExtraModels(ProgressDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getProgresses(@Req() req, @Response() res): Promise<any> {
+    async getProgresses(
+        @AuthUser() user: IAuthUser
+    ): Promise<ProgressDTO> {
         try {
-            if (!req.user.id) {
+            if (!user.id) {
                 throw Error('User is not registered');
             }
-            return res.json(await this.notifier.getProgresses(req.user.id));
+            return await this.notifier.getProgresses(user.id);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Read all notifications
+     */
+    @Post('/read/all')
+    @Auth()
     @ApiOperation({
         summary: 'Read all notifications',
-        description: 'Returns new notifications.',
+        description: 'Returns new notifications.'
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @ApiOkResponse({
-        description:
-            'Successful operation. Returns notifications.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(NotificationDTO),
-            },
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+        description: 'Successful operation. Returns notifications.',
+        isArray: true,
+        type: NotificationDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Post('/read/all')
+    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async readAll(@Req() req, @Response() res): Promise<any> {
+    async readAll(
+        @AuthUser() user: IAuthUser
+    ): Promise<NotificationDTO> {
         try {
-            if (!req.user.id) {
+            if (!user.id) {
                 throw Error('User is not registered');
             }
-            return res.json(await this.notifier.readAll(req.user.id));
+            return await this.notifier.readAll(user.id);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Delete notifications up to this point
+     */
+    @Delete('/delete/:notificationId')
+    @Auth()
     @ApiOperation({
         summary: 'Delete notifications up to this point',
-        description: 'Returns deleted notifications count.',
+        description: 'Returns deleted notifications count.'
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(InternalServerErrorDTO)
     @ApiParam({
         name: 'notificationId',
         type: 'string',
+        required: true,
+        description: 'Notification Identifier',
+        example: Examples.UUID
     })
     @ApiOkResponse({
-        description:
-            'Successful operation. Returns deleted notifications count.',
-        schema: {
-            type: 'number',
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+        description: 'Successful operation. Returns deleted notifications count.',
+        type: Number
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Delete('/delete/:notificationId')
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async delete(@Req() req, @Response() res) {
+    async delete(
+        @AuthUser() user: IAuthUser,
+        @Param('notificationId') notificationId: string,
+    ): Promise<number> {
         try {
-            return res.json(
-                await this.notifier.deleteUpTo(
-                    req.user.id,
-                    req.params.notificationId
-                )
-            );
+            return await this.notifier.deleteUpTo(user.id, notificationId);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

@@ -8,7 +8,7 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { EventBlock } from '../helpers/decorators/event-block.js';
 import { VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -134,7 +134,7 @@ export class UploadVcDocumentBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
@@ -153,7 +153,7 @@ export class UploadVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: IPolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (!user.did) {

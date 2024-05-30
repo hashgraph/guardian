@@ -12,6 +12,7 @@ import {
     COMMON_CONNECTION_CONFIG,
     Contract,
     DataBaseHelper,
+    DatabaseServer,
     DidDocument,
     entities,
     Environment,
@@ -71,6 +72,7 @@ import { SynchronizationTask } from './helpers/synchronization-task.js';
 import { recordAPI } from './api/record.service.js';
 import { projectsAPI } from './api/projects.service.js';
 import { AISuggestionsService } from './helpers/ai-suggestions.js';
+import { AssignedEntityAPI } from './api/assigned-entity.service.js';
 
 export const obj = {};
 
@@ -97,6 +99,7 @@ Promise.all([
         'v2-17-0',
         'v2-18-0',
         'v2-20-0',
+        'v2-23-1',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -185,6 +188,7 @@ Promise.all([
         await brandingAPI(brandingRepository);
         await suggestionsAPI();
         await projectsAPI();
+        await AssignedEntityAPI()
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -391,6 +395,21 @@ Promise.all([
         channel
     );
     policyDiscontinueTask.start(true);
+    const clearPolicyCache = new SynchronizationTask(
+        'clear-policy-cache-sync',
+        async () => {
+            const policyCaches = await DatabaseServer.getPolicyCaches();
+            const now = Date.now();
+            for (const policyCache of policyCaches) {
+                if (policyCache.createDate.addDays(1).getTime() <= now) {
+                    await DatabaseServer.clearPolicyCaches(policyCache.id);
+                }
+            }
+        },
+        process.env.CLEAR_POLICY_CACHE_INTERVAL || '0 * * * *',
+        channel
+    );
+    clearPolicyCache.start(true);
 
     startMetricsServer();
 }, (reason) => {

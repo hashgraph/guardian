@@ -1,5 +1,6 @@
-import { Entity, Property } from '@mikro-orm/core';
+import { Entity, Enum, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
+import { TokenType } from '@guardian/interfaces';
 
 /**
  * Mint request
@@ -17,6 +18,21 @@ export class MintRequest extends BaseEntity {
      */
     @Property()
     tokenId: string;
+
+    /**
+     * Token type
+     */
+    @Enum({
+        items: () => TokenType,
+        nullable: true,
+    })
+    tokenType?: TokenType;
+
+    /**
+     * Decimals
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    decimals?: any
 
     /**
      * Target account

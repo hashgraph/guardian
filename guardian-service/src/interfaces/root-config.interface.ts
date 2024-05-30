@@ -1,3 +1,5 @@
+import { ISignOptions } from '@guardian/interfaces';
+
 /**
  * Root config interface
  */
@@ -18,4 +20,8 @@ export interface IRootConfig {
      * Root DID
      */
     did: string;
+    /**
+     * Sign options
+     */
+    signOptions: ISignOptions;
 }

@@ -4,7 +4,7 @@ import { AnyBlockType, IPolicyReportBlock } from '../policy-engine.interface.js'
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { IReport, MessagesReport } from '../helpers/messages-report.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -52,7 +52,7 @@ export class MessagesReportBlock {
      * Update user state
      * @private
      */
-    private updateStatus(ref: AnyBlockType, status: string, user: IPolicyUser) {
+    private updateStatus(ref: AnyBlockType, status: string, user: PolicyUser) {
         ref.updateBlock({ status }, user);
     }
 
@@ -62,7 +62,7 @@ export class MessagesReportBlock {
      * @param messageId
      * @private
      */
-    private async createReport(user: IPolicyUser, messageId: string): Promise<void> {
+    private async createReport(user: PolicyUser, messageId: string): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const report = new MessagesReport();
@@ -82,7 +82,7 @@ export class MessagesReportBlock {
      * @param user
      * @param uuid
      */
-    async getData(user: IPolicyUser, uuid: string): Promise<any> {
+    async getData(user: PolicyUser, uuid: string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             const target = await ref.getCache<string>(this.USER_FILTER_VALUE, user);
@@ -103,7 +103,7 @@ export class MessagesReportBlock {
      * @param user
      * @param data
      */
-    async setData(user: IPolicyUser, data: any) {
+    async setData(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const value: string = data.filterValue;

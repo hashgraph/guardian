@@ -5,9 +5,10 @@ import {
     Logger,
     MessageError,
     MessageResponse,
+    Theme,
     ThemeImportExport
 } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with themes.
@@ -20,24 +21,25 @@ export async function themeAPI(): Promise<void> {
      *
      * @returns {Theme} new theme
      */
-    ApiResponse(MessageAPI.CREATE_THEME, async (msg) => {
-        try {
-            if (!msg) {
-                throw new Error('Invalid create theme parameters');
-            }
-            const { theme, owner } = msg;
-            delete theme._id;
-            delete theme.id;
-            theme.owner = owner;
-            theme.uuid = GenerateUUIDv4();
+    ApiResponse(MessageAPI.CREATE_THEME,
+        async (msg: { theme: Theme, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid create theme parameters');
+                }
+                const { theme, owner } = msg;
+                delete theme._id;
+                delete theme.id;
+                theme.owner = owner.creator;
+                theme.uuid = GenerateUUIDv4();
 
-            const item = await DatabaseServer.createTheme(theme);
-            return new MessageResponse(item);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+                const item = await DatabaseServer.createTheme(theme);
+                return new MessageResponse(item);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 
     /**
      * Update theme
@@ -46,34 +48,32 @@ export async function themeAPI(): Promise<void> {
      *
      * @returns {Theme} theme
      */
-    ApiResponse(MessageAPI.UPDATE_THEME, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid update theme parameters');
+    ApiResponse(MessageAPI.UPDATE_THEME,
+        async (msg: { themeId: string, theme: Theme, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid update theme parameters');
+                }
+                const { themeId, theme, owner } = msg;
+
+                const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
+
+                if (!item || item.owner !== owner.creator) {
+                    return new MessageError('Theme is not found');
+                }
+
+                item.name = theme.name;
+                item.description = theme.description;
+                item.rules = theme.rules;
+                item.syntaxGroups = theme.syntaxGroups;
+
+                const result = await DatabaseServer.updateTheme(item);
+                return new MessageResponse(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            const { themeId, theme, owner } = msg;
-
-            const item = await DatabaseServer.getTheme({
-                id: themeId,
-                owner
-            });
-
-            if (!item || item.owner !== owner) {
-                throw new Error('Invalid theme');
-            }
-
-            item.name = theme.name;
-            item.description = theme.description;
-            item.rules = theme.rules;
-            item.syntaxGroups = theme.syntaxGroups;
-
-            const result = await DatabaseServer.updateTheme(item);
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Get themes
@@ -82,19 +82,20 @@ export async function themeAPI(): Promise<void> {
      *
      * @returns {any} themes
      */
-    ApiResponse(MessageAPI.GET_THEMES, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get theme parameters');
+    ApiResponse(MessageAPI.GET_THEMES,
+        async (msg: { owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get theme parameters');
+                }
+                const { owner } = msg;
+                const items = await DatabaseServer.getThemes({ owner: owner.creator });
+                return new MessageResponse(items);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            const { owner } = msg;
-            const items = await DatabaseServer.getThemes({ owner });
-            return new MessageResponse(items);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Get theme by Id
@@ -103,19 +104,20 @@ export async function themeAPI(): Promise<void> {
      *
      * @returns {any} theme
      */
-    ApiResponse(MessageAPI.GET_THEME, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid get theme parameters');
+    ApiResponse(MessageAPI.GET_THEME,
+        async (msg: { themeId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid get theme parameters');
+                }
+                const { themeId, owner } = msg;
+                const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
+                return new MessageResponse(item);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            const { themeId } = msg;
-            const item = await DatabaseServer.getTheme({ id: themeId });
-            return new MessageResponse(item);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Delete theme
@@ -124,23 +126,24 @@ export async function themeAPI(): Promise<void> {
      *
      * @returns {boolean} - Operation success
      */
-    ApiResponse(MessageAPI.DELETE_THEME, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid delete theme parameters');
+    ApiResponse(MessageAPI.DELETE_THEME,
+        async (msg: { themeId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid delete theme parameters');
+                }
+                const { themeId, owner } = msg;
+                const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
+                if (!item || item.owner !== owner.creator) {
+                    return new MessageError('Theme is not found');
+                }
+                await DatabaseServer.removeTheme(item);
+                return new MessageResponse(true);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            const { themeId, owner } = msg;
-            const item = await DatabaseServer.getTheme({ id: themeId, owner });
-            if (!item || item.owner !== owner) {
-                throw new Error('Invalid theme');
-            }
-            await DatabaseServer.removeTheme(item);
-            return new MessageResponse(true);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Export theme
@@ -149,30 +152,31 @@ export async function themeAPI(): Promise<void> {
      *
      * @returns {boolean} - zip file
      */
-    ApiResponse(MessageAPI.THEME_EXPORT_FILE, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid export theme parameters');
+    ApiResponse(MessageAPI.THEME_EXPORT_FILE,
+        async (msg: { themeId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid export theme parameters');
+                }
+                const { themeId, owner } = msg;
+                const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
+                if (!item || item.owner !== owner.creator) {
+                    return new MessageError('Theme is not found');
+                }
+                const zip = await ThemeImportExport.generate(item);
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 3,
+                    },
+                });
+                return new BinaryMessageResponse(file);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-            const { themeId, owner } = msg;
-            const item = await DatabaseServer.getTheme({ id: themeId, owner });
-            if (!item || item.owner !== owner) {
-                throw new Error('Invalid theme');
-            }
-            const zip = await ThemeImportExport.generate(item);
-            const file = await zip.generateAsync({
-                type: 'arraybuffer',
-                compression: 'DEFLATE',
-                compressionOptions: {
-                    level: 3,
-                },
-            });
-            return new BinaryMessageResponse(file);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 
     /**
      * Import theme
@@ -181,30 +185,34 @@ export async function themeAPI(): Promise<void> {
      *
      * @returns {boolean} - new theme
      */
-    ApiResponse(MessageAPI.THEME_IMPORT_FILE, async (msg) => {
-        try {
-            const { zip, owner } = msg;
-            if (!zip) {
-                throw new Error('file in body is empty');
+    ApiResponse(MessageAPI.THEME_IMPORT_FILE,
+        async (msg: { zip: any, owner: IOwner }) => {
+            try {
+                const { zip, owner } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+
+                const preview = await ThemeImportExport.parseZipFile(Buffer.from(zip.data));
+
+                const { theme } = preview;
+                delete theme._id;
+                delete theme.id;
+                theme.uuid = GenerateUUIDv4();
+                theme.owner = owner.creator;
+
+                if (await DatabaseServer.getTheme({
+                    name: theme.name,
+                    owner: owner.creator
+                })) {
+                    theme.name = theme.name + '_' + Date.now();
+                }
+                const item = await DatabaseServer.createTheme(theme);
+
+                return new MessageResponse(item);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-
-            const preview = await ThemeImportExport.parseZipFile(Buffer.from(zip.data));
-
-            const { theme } = preview;
-            delete theme._id;
-            delete theme.id;
-            theme.uuid = GenerateUUIDv4();
-            theme.owner = owner;
-
-            if (await DatabaseServer.getTheme({ name: theme.name, owner })) {
-                theme.name = theme.name + '_' + Date.now();
-            }
-            const item = await DatabaseServer.createTheme(theme);
-
-            return new MessageResponse(item);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 }

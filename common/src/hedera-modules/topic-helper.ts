@@ -1,5 +1,5 @@
-import { TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { TopicConfig, MessageAction, MessageServer, TopicMessage } from './index.js';
+import { ISignOptions, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { MessageAction, MessageServer, TopicConfig, TopicMessage } from './index.js';
 import { TopicMemo } from './memo-mappings/topic-memo.js';
 import { Workers } from '../helpers/index.js';
 
@@ -18,6 +18,8 @@ export class TopicHelper {
      */
     private hederaAccountKey: string;
 
+    private readonly signOptions: ISignOptions;
+
     /**
      * Dry-run
      * @private
@@ -27,11 +29,13 @@ export class TopicHelper {
     constructor(
         operatorId: string,
         operatorKey: string,
+        signOptions: ISignOptions,
         dryRun: string = null
     ) {
         this.dryRun = dryRun || null;
         this.hederaAccountId = operatorId;
         this.hederaAccountKey = operatorKey;
+        this.signOptions = signOptions;
     }
 
     /**
@@ -148,7 +152,7 @@ export class TopicHelper {
      */
     // tslint:disable-next-line:completed-docs
     public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
+        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
@@ -173,7 +177,7 @@ export class TopicHelper {
      * @param rationale
      */
     public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
+        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({

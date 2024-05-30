@@ -36,8 +36,6 @@ Now we will be creating the Policy. Click on the "Policies" tab and select "Poli
 
 For this demo guide, we will use the "Import from Open Source" way. Click on that button and find the policy for this guide and click on the import button.
 
-The policy can also be imported by using IPFS timestamp: 1707206651.379730003
-
 Once the policy is imported successfully, you get two options: Publish and Dry Run mode. We select the Dry Run option and select Go.
 
 <figure><img src="../../../.gitbook/assets/image (68) (1).png" alt=""><figcaption></figcaption></figure>

@@ -1,7 +1,7 @@
 import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { BasicBlock } from './basic-block.js';
 import { BlockActionError } from '../../errors/index.js';
-import { IPolicyUser } from '../../policy-user.js';
+import { PolicyUser } from '../../policy-user.js';
 import { PolicyType } from '@guardian/interfaces';
 
 /**
@@ -77,7 +77,7 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters
              * @protected
              */
-            protected async getSources(user: IPolicyUser, globalFilters: any): Promise<any[]> {
+            protected async getSources(user: PolicyUser, globalFilters: any): Promise<any[]> {
                 const data = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {

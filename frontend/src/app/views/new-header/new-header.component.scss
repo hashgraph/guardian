@@ -70,32 +70,42 @@
 }
 
 #logotype {
-    max-height: 32px;
-    min-height: 32px;
-    margin: 24px 16px 42px 16px;
+    margin: 0 0 18px 0;
+    height: 80px;
+    min-height: 80px;
+    max-height: 80px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    grid-column-gap: 10px;
     column-gap: 10px;
     cursor: pointer;
+    padding: 0px 0px 0px 24px;
 
-    img {
+    #company-logo {
         max-width: 32px;
         max-height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+        width: 32px;
+        height: 32px;
         background-size: 100%;
+        background-image: url(/assets/images/logo.png);
+        background-origin: border-box;
+        background-repeat: no-repeat;
     }
 
     span {
         width: max(100%, 100% - 32px);
         color: #fff;
         font-family: Inter, serif;
-        font-size: 18px;
+        font-size: 20px;
         font-style: normal;
         font-weight: 700;
         line-height: normal;
-        text-align: center;
-        transition: opacity 0.125s ease-in-out,
-            width 0.125s ease-in-out;
+        transition: opacity 0.125s ease-in-out, width 0.125s ease-in-out;
+        padding-left: 12px;
+        text-transform: uppercase;
     }
 }
 

@@ -5,6 +5,7 @@ import { UserRole } from '@guardian/interfaces';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Match } from '../../../helpers/decorators/match.validator.js';
+import { PolicyDTO } from './policies.dto.js';
 
 export class AccountsResponseDTO {
     @ApiProperty()
@@ -20,7 +21,7 @@ export class AccountsResponseDTO {
     @ApiProperty()
     @IsString()
     @Expose()
-    did: string
+    did?: string
 }
 
 export class AccountsSessionResponseDTO {
@@ -142,56 +143,6 @@ export class VcDocumentDTO {
     proof: ProofDTO;
 }
 
-export class PolicyDTO {
-    @ApiProperty()
-    _id: string;
-
-    @ApiProperty()
-    createDate: Date;
-
-    @ApiProperty()
-    uuid: string;
-
-    @ApiProperty()
-    name: string;
-
-    @ApiProperty()
-    description: string;
-
-    @ApiProperty()
-    status: string;
-
-    @ApiProperty()
-    creator: string;
-
-    @ApiProperty()
-    owner: string;
-
-    @ApiProperty()
-    topicId: string;
-
-    @ApiProperty()
-    policyTag: string;
-
-    @ApiProperty()
-    codeVersion: string;
-
-    @ApiProperty()
-    userRoles: string[];
-
-    @ApiProperty()
-    userGroups: Object[];
-
-    @ApiProperty()
-    userRole: string;
-
-    @ApiProperty()
-    userGroup: string;
-
-    @ApiProperty()
-    id: string;
-}
-
 export class AggregatedDTOItem {
     @ApiProperty()
     did: string;
@@ -208,7 +159,7 @@ export class AggregatedDTOItem {
 
 export type AggregatedDTO = AggregatedDTOItem[]
 
-export class UserDTO {
+class UserDTO {
     @ApiProperty()
     username: string;
 

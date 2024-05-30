@@ -1,22 +1,15 @@
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DataTypes, PolicyUtils } from '../helpers/utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
-import {
-    PolicyRoles,
-    VcDocument as VcDocumentCollection,
-    MessageAction,
-    MessageServer,
-    VcHelper,
-    VcDocumentDefinition as VcDocument,
-    VPMessage,
-} from '@guardian/common';
+import { MessageAction, MessageServer, PolicyRoles, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcHelper, VPMessage, } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
+import { DocumentCategoryType } from '@guardian/interfaces';
 
 /**
  * Sign Status
@@ -78,12 +71,12 @@ export class MultiSignBlock {
     /**
      * Join GET Data
      * @param {IPolicyDocument | IPolicyDocument[]} documents
-     * @param {IPolicyUser} user
+     * @param {PolicyUser} user
      * @param {AnyBlockType} parent
      */
     public async joinData<T extends IPolicyDocument | IPolicyDocument[]>(
         documents: T,
-        user: IPolicyUser,
+        user: PolicyUser,
         parent: AnyBlockType
     ): Promise<T> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
@@ -110,7 +103,7 @@ export class MultiSignBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const data: any = {
             id: ref.uuid,
@@ -127,7 +120,7 @@ export class MultiSignBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: IPolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const { status, document } = blockData;
         const documentId = document.id;
@@ -194,7 +187,7 @@ export class MultiSignBlock {
         users: PolicyRoles[],
         sourceDoc: VcDocumentCollection,
         documentId: string,
-        currentUser: IPolicyUser
+        currentUser: PolicyUser
     ) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
@@ -213,7 +206,7 @@ export class MultiSignBlock {
         const declinedThreshold = Math.round(users.length - signedThreshold + 1);
 
         if (signed >= signedThreshold) {
-            const docOwner = PolicyUtils.getDocumentOwner(ref, sourceDoc);
+            const docOwner = await PolicyUtils.getDocumentOwner(ref, sourceDoc);
             const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
             const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, docOwner.did);
 
@@ -229,6 +222,7 @@ export class MultiSignBlock {
             );
 
             const documentOwnerHederaCred = await documentOwnerCred.loadHederaCredentials(ref);
+            const signOptions = await documentOwnerCred.loadSignOptions(ref);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
@@ -237,6 +231,7 @@ export class MultiSignBlock {
             const messageServer = new MessageServer(
                 documentOwnerHederaCred.hederaAccountId,
                 documentOwnerHederaCred.hederaAccountKey,
+                signOptions,
                 ref.dryRun
             );
 
@@ -245,7 +240,7 @@ export class MultiSignBlock {
                 .sendMessage(vpMessage);
             const vpMessageId = vpMessageResult.getId();
             const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
-            vpDocument.type = DataTypes.MULTI_SIGN;
+            vpDocument.type = DocumentCategoryType.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
             vpDocument.relationships = sourceDoc.messageId ? [sourceDoc.messageId] : null;
@@ -277,9 +272,9 @@ export class MultiSignBlock {
     /**
      * Get Document Status
      * @param {IPolicyDocument} document
-     * @param {IPolicyUser} user
+     * @param {PolicyUser} user
      */
-    private async getDocumentStatus(document: IPolicyDocument, user: IPolicyUser) {
+    private async getDocumentStatus(document: IPolicyDocument, user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const confirmationDocument = await ref.databaseServer.getMultiSignStatus(ref.uuid, document.id);
         const data: any[] = await ref.databaseServer.getMultiSignDocuments(ref.uuid, document.id, user.group);
@@ -328,9 +323,9 @@ export class MultiSignBlock {
 
     /**
      * Remove User Event
-     * @param {IPolicyUser} user
+     * @param {PolicyUser} user
      */
-    private async onRemoveUser(user: IPolicyUser) {
+    private async onRemoveUser(user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (user) {
             const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);

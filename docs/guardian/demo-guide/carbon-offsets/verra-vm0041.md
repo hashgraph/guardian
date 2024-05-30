@@ -62,9 +62,7 @@ VM0041 represents a pivotal methodology in addressing methane emissions within t
 
 ### Demo Video <a href="#toc154152884" id="toc154152884"></a>
 
-[https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk](https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk)
-
-![Video titled: VM0041 - Reduction of Enteric Methane Emissions from Ruminants through the Use of Feed Ingredients](<../../../.gitbook/assets/0 (1).jpeg>)
+[Youtube](https://youtu.be/yym5TjkxQAs?si=\_N-sE8IvMJS030Xk)
 
 ### Policy Workflow <a href="#toc154152885" id="toc154152885"></a>
 
@@ -73,8 +71,6 @@ VM0041 represents a pivotal methodology in addressing methane emissions within t
 ### Policy Guide <a href="#toc154152886" id="toc154152886"></a>
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
-
-Policy: 1707208032.927115206
 
 ### Available Roles <a href="#toc154152887" id="toc154152887"></a>
 
@@ -98,21 +94,21 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 1. Create a new user and assign role as Project Proponent.
 
-![](<../../../.gitbook/assets/2 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1) (1) (1).png>)
 
 2. Create a New project by clicking on "New Project" button and enter all the required details.
 
-![](<../../../.gitbook/assets/3 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/3 (1) (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/4 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/4 (1) (1) (1) (1).png>)
 
 3. Once project details are submitted, Verra adds the project to the project pipeline.
 
-![](<../../../.gitbook/assets/5 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/5 (1) (1) (1) (1).png>)
 
 4. Now, we create a new user and assign its role as VVB
 
-![](<../../../.gitbook/assets/6 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/6 (1) (1) (1) (1).png>)
 
 5. We need to set VVB name
 

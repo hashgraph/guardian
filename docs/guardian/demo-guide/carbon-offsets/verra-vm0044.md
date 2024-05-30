@@ -51,8 +51,6 @@ Within this digital methodology, users will use a collection of Clean Developmen
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.&#x20;
 
-Latest Version - 1698670386.926112366
-
 **Available Roles**&#x20;
 
 Project Proponent - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Verra’s VCS program and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Carbon Units (VCU) as an incentive for their emission reductions. &#x20;

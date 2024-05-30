@@ -18,8 +18,9 @@
                     [class.selected]="item === select"
                     class="item"
                 >
-                    <svg-icon class="svg-icon-16"
-                              src="/assets/images/icons/16/label.svg"
+                    <svg-icon 
+                        class="svg-icon-16"
+                        src="/assets/images/icons/16/label.svg"
                         [svgClass]="item === select ? 'white-color' : 'primary-color'"></svg-icon>
                     <div class="name">
                         {{item.name}}
@@ -31,7 +32,7 @@
             </div>
 
             <button (click)="onAdd()"
-                *ngIf="this.tab === 1"
+                *ngIf="this.tab === 1 && canCreate"
                 [label]="'Create a Tag'"
                 class="button secondary"
                 icon="pi pi-plus"
@@ -40,21 +41,23 @@
 
             <div *ngIf="select" class="details-container">
                 <div *ngFor="let item of select.items"
-                     [attr.open]="item.open"
+                    [attr.open]="item.open"
                     [attr.owner]="item.owner === owner"
-                     [attr.status]="item.status"
+                    [attr.status]="item.status"
                     class="item"
                 >
                     <div (click)="onOpen(item)" [class.collapsed]="!item.open" class="header">
-                        <svg-icon class="svg-icon-16"
+                        <svg-icon 
+                            class="svg-icon-16"
                             [class.rotate-180]="!item.open"
-                                  src="/assets/images/icons/16/top-arrow.svg"
-                                  svgClass="collapse-color"></svg-icon>
+                            src="/assets/images/icons/16/top-arrow.svg"
+                            svgClass="collapse-color"></svg-icon>
                         <span>{{item.owner}}</span>
-                        <svg-icon (click)="onDelete($event, item)"
-                                  class="svg-icon-16"
+                        <svg-icon 
+                            (click)="onDelete($event, item)"
+                            class="svg-icon-16"
                             *ngIf="item.owner === owner"
-                                  src="/assets/images/icons/16/delete.svg"
+                            src="/assets/images/icons/16/delete.svg"
                             svgClass="accent-color-red"></svg-icon>
                     </div>
                     <div [style.display]="item.open ? 'flex' : 'none'" class="expand-items">
@@ -115,7 +118,7 @@
     <button (click)="dialogRef.close()" [disabled]="loading" class="button secondary" label="Close" pButton></button>
 </div>
 <ng-template #emptyContainer>
-    <div class="empty-container">
+    <div *ngIf="canCreate" class="empty-container">
         <svg-icon class="svg-icon-32"
                   src="/assets/images/icons/32/list.svg"
             svgClass="grey-color">

@@ -39,3 +39,5 @@ export * from './schema-node.interface.js';
 export * from './policy-category-export.interface.js';
 export * from './migration-config.interface.js';
 export * from './policy-tool-metadata.interface.js';
+export * from './sign-options.interface.js'
+export * from './owner.interface.js'

@@ -1,0 +1,242 @@
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>
+
+<div *ngIf="!newRole" class="container">
+
+    <div class="page-title">Roles</div>
+
+    <div class="actions">
+        <div class="actions-controls-container">
+            <div class="filters-container">
+                <div class="filter-container">
+                    <span class="search-input p-input-icon-right">
+                        <i class="pi pi-search"></i>
+                        <input [formControl]="searchFilter"
+                               class="p-inputtext-md"
+                               pInputText placeholder="Search by Role name"
+                               type="text"
+                               (change)="onFilter()"
+                        />
+                    </span>
+                </div>
+
+            </div>
+            <div class="actions-container">
+                <p-button
+                    *ngIf="user.PERMISSIONS_ROLE_CREATE"
+                    label="Add New Role"
+                    (click)="onCreate()"
+                    class="toolbar-btn-primary"
+                    [pTooltip]="'Create a Role'"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
+                </p-button>
+            </div>
+        </div>
+    </div>
+
+    <ng-container *ngIf="page && page.length > 0; else noData">
+        <div class="table-container">
+            <p-table [value]="page">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="header-cell-text cell-size-id">NAME</th>
+                        <th class="header-cell-text cell-size-default">SET AS DEFAULT</th>
+                        <th class="header-cell-text cell-size-operations">OPERATIONS</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template let-row pTemplate="body">
+                    <tr class="table-row" [attr.readonly]="row.readonly">
+                        <td class="cell-size-id">{{ row.name }}</td>
+                        <td class="cell-size-default">
+                            <div class="toggle-container" 
+                                *ngIf="user.PERMISSIONS_ROLE_CREATE || user.PERMISSIONS_ROLE_UPDATE">
+                                <label class="switch">
+                                    <input [ngModel]="row.default" type="checkbox" (change)="setDefault(row)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </td>
+                        <td class="cell-size-operations">
+                            <div class="flex flex-column-gap-20">
+                                <svg-icon 
+                                    *ngIf="user.PERMISSIONS_ROLE_MANAGE"
+                                    (click)="goToUsers(row)"
+                                    class="opacity-icon"
+                                    src="/assets/images/icons/group.svg"
+                                    [svgClass]="'primary-color'"></svg-icon>
+                                <svg-icon 
+                                    *ngIf="user.PERMISSIONS_ROLE_UPDATE"
+                                    (click)="onEdit(row)"
+                                    class="opacity-icon edit-btn"
+                                    src="/assets/images/icons/edit.svg"
+                                    [svgClass]="'primary-color'"></svg-icon>
+                                <svg-icon 
+                                    *ngIf="user.PERMISSIONS_ROLE_DELETE"
+                                    (click)="onDelete(row)"
+                                    class="opacity-icon delete-btn"
+                                    src="/assets/images/icons/delete.svg"
+                                    [svgClass]="'delete-color'"></svg-icon>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <app-paginator 
+            [pageIndex]="pageIndex" 
+            [pageSize]="pageSize" 
+            [length]="count"
+            (page)="onPage($event)"
+        ></app-paginator>
+    </ng-container>
+</div>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">There were no Roles created yet</span>
+        <span class="info-text">Please create new role to see the data</span>
+    </div>
+</ng-template>
+
+<div *ngIf="newRole" class="new-role-container">
+
+    <div>
+        <button (click)="goToPage()"
+                [iconPos]="'left'"
+                [icon]="'pi pi-chevron-left'"
+                class="button secondary height-40 margin-bottom-16"
+                label="Back to User Management"
+                pButton 
+                type="button"></button>
+    </div>
+
+    <div *ngIf="!newRole.value.id" class="page-title">New Role</div>
+    <div *ngIf="newRole.value.id" class="page-title">Edit Role</div>
+
+    <div class="role-content" [formGroup]="newRole">
+        <div class="role-nav">
+            <div class="categories">
+                <div *ngFor="let category of group.categories" 
+                    class="category" 
+                    [attr.selected]="category === selectedCategory"
+                    (click)="onSelectCategory(category)">
+                    <div class="category-header">
+                        <div class="category-icon">
+                            <svg-icon
+                                src="/assets/images/icons/right-arrow.svg"
+                                svgClass="icon-color">
+                            </svg-icon>
+                        </div>
+                        <div class="category-name">{{category.name}}</div>
+                        <div *ngIf="category.count" class="category-count">({{category.count}})</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="role-body" *ngIf="selectedCategory">
+            <div class="category-header">
+                <div class="category-name">{{selectedCategory.name}}</div>
+            </div>
+
+            <div *ngIf="selectedCategory.type === 'Role'" class="category-body">
+                <div class="category-details">
+                    <div class="p-field">
+                        <label class="p-field-label" for="name">* Role Name</label>
+                        <input class="p-field-input" formControlName="name" id="name" type="text"/>
+                        <small *ngIf="newRole.controls['name'].invalid" class="p-error">Role name is invalid</small>
+                    </div>
+                    <div class="p-field">
+                        <label class="p-field-label" for="description">Description</label>
+                        <input class="p-field-input" formControlName="description" id="description" type="text"/>
+                        <small *ngIf="newRole.controls['description'].invalid" class="p-error">Role description is invalid</small>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="selectedCategory.type === 'Permissions'" class="category-body">
+                <div class="category-actions">
+                    <div class="category-actions-header">ACTIONS</div>
+                    <div class="permissions">
+                        <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission perm-{{i}}">{{action}}</div>
+                    </div>
+                </div>
+                <div class="category-permission">
+                    <div *ngFor="let entity of selectedCategory.entities" class="entity">
+                        <div *ngIf="entity.canAll" class="entity-all" (click)="onAll(entity)">
+                            <mat-checkbox 
+                                color="primary" 
+                                [checked]="entity.all"></mat-checkbox>
+                        </div>
+                        <div class="entity-name" (click)="onAll(entity)">
+                            {{entity.name}}
+                        </div>
+                        <div class="permissions">
+                            <ng-container *ngIf="entity.type ==='all'">
+                                <div *ngFor="let action of entity.actions;" class="all-permission">
+                                    <mat-checkbox 
+                                        *ngIf="action"
+                                        color="primary"
+                                        (change)="onCheckAll(entity)"
+                                        [formControl]="action.control"></mat-checkbox>
+                                </div>
+                            </ng-container>
+                            <ng-container *ngIf="entity.type ==='checkbox'">
+                                <div *ngFor="let action of entity.actions; let i=index" class="permission perm-{{i}}">
+                                    <mat-checkbox 
+                                        *ngIf="action"
+                                        color="primary" 
+                                        (change)="onCheckAll(entity)"
+                                        [formControl]="action.control"></mat-checkbox>
+                                    <div *ngIf="!action" class="permission-background"></div>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="selectedCategory.type === 'Access'" class="category-body">
+                <div class="category-actions">
+                    <div class="category-actions-header">ACTIONS</div>
+                    <div class="permissions">
+                        <div *ngFor="let action of selectedCategory.actions; let i=index" class="permission big perm-{{i}}">{{action}}</div>
+                    </div>
+                </div>
+                <div class="category-permission">
+                    <div *ngFor="let entity of selectedCategory.entities" class="entity">
+                        <div class="entity-name" (click)="onAll(entity)">
+                            {{entity.name}}
+                        </div>
+                        <div class="permissions">
+                            <mat-radio-group  [formControl]="entity.control">
+                                <div *ngFor="let action of entity.actions; let i=index" class="permission big perm-{{i}}">
+                                    <mat-radio-button color="primary" [value]="action.permission"></mat-radio-button>
+                                </div>
+                            </mat-radio-group>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="role-footer">
+        <button (click)="goToPage()" 
+                class="button secondary" 
+                label="Close" 
+                pButton
+                type="button"></button>
+        <button (click)="onNext()" 
+                [disabled]="newRole.invalid"  
+                [label]="onNextLabel()" 
+                pButton
+                class="button" 
+                type="button"></button>
+    </div>
+</div>

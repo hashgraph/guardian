@@ -13,5 +13,5 @@ export enum UserRole {
 export type PolicyRole = 'NO_ROLE' | 'OWNER' | 'ANY_ROLE' | 'STANDARD_REGISTRY' | string;
 
 export enum ExternalProviders {
-  MEECO = 'MEECO',
+    MEECO = 'MEECO',
 }

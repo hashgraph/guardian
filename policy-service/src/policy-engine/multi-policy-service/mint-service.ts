@@ -1,9 +1,9 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
+import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, ISignOptions, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 
 /**
  * Token Config
@@ -283,28 +283,6 @@ export class MintService {
     }
 
     /**
-     * Send Synchronization Message
-     * @param ref
-     * @param multipleConfig
-     * @param root
-     * @param data
-     */
-    private static async sendMessage(
-        ref: AnyBlockType,
-        multipleConfig: MultiPolicy,
-        root: IHederaCredentials,
-        data: any
-    ) {
-        const message = new SynchronizationMessage(MessageAction.Mint);
-        message.setDocument(multipleConfig, data);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
-        await messageServer
-            .setTopicObject(topic)
-            .sendMessage(message);
-    }
-
-    /**
      * Mint
      * @param ref
      * @param token
@@ -318,7 +296,7 @@ export class MintService {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
-        documentOwner: IPolicyUser,
+        documentOwner: PolicyUser,
         root: IHederaCredentials,
         targetAccount: string,
         messageId: string,
@@ -328,6 +306,8 @@ export class MintService {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         const users = new Users();
         const documentOwnerUser = await users.getUserById(documentOwner.did);
+        const wallet = new Wallet();
+        const signOptions = await wallet.getUserSignOptions(documentOwnerUser);
         const policyOwner = await users.getUserById(ref.policyOwner);
         const notifier = NotificationHelper.init(
             [documentOwnerUser?.id, policyOwner?.id],
@@ -345,8 +325,8 @@ export class MintService {
                 tokenId: token.tokenId,
                 amount: tokenValue,
                 memo: transactionMemo,
-                target: targetAccount
-            });
+                target: targetAccount,
+            }, signOptions);
             if (multipleConfig.type === 'Main') {
                 const user = await PolicyUtils.getUserCredentials(ref, documentOwner.did);
                 await DatabaseServer.createMultiPolicyTransaction({
@@ -403,6 +383,30 @@ export class MintService {
                 memo: transactionMemo
             }
         );
+    }
+
+    /**
+     * Send Synchronization Message
+     * @param ref
+     * @param multipleConfig
+     * @param root
+     * @param data
+     * @param signOptions
+     */
+    private static async sendMessage(
+        ref: AnyBlockType,
+        multipleConfig: MultiPolicy,
+        root: IHederaCredentials,
+        data: any,
+        signOptions: ISignOptions
+    ) {
+        const message = new SynchronizationMessage(MessageAction.Mint);
+        message.setDocument(multipleConfig, data);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, signOptions, ref.dryRun);
+        const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message);
     }
 
     /**
@@ -576,7 +580,7 @@ export class MintService {
      * @param ref
      * @param documentOwner
      */
-    private static async getMultipleConfig(ref: AnyBlockType, documentOwner: IPolicyUser) {
+    private static async getMultipleConfig(ref: AnyBlockType, documentOwner: PolicyUser) {
         return await DatabaseServer.getMultiPolicy(ref.policyInstance.instanceTopicId, documentOwner.did);
     }
 

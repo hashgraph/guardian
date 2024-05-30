@@ -1,4 +1,3 @@
-
 import { AuthEvents, GenerateUUIDv4, IRootConfig, UserRole } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
 import { KeyType, Wallet } from './wallet.js';
@@ -134,6 +133,14 @@ export class Users extends NatsService {
     public async updateCurrentUser(username: string, item: any) {
         return await this.sendMessage(AuthEvents.UPDATE_USER, { username, item });
     }
+    /**
+     * Update current user entity
+     * @param req
+     * @param item
+     */
+    public async setDefaultRole(username: string, owner: string) {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_USER_ROLE, { username, owner });
+    }
 
     /**
      * Save user
@@ -157,7 +164,7 @@ export class Users extends NatsService {
      * @param password
      * @param role
      */
-    public async registerNewUser(username: string, password: string, role: string) {
+    public async registerNewUser(username: string, password: string, role: string): Promise<IAuthUser> {
         return await this.sendMessage(AuthEvents.REGISTER_NEW_USER, { username, password, role });
     }
 
@@ -209,10 +216,12 @@ export class Users extends NatsService {
             throw new Error('Hedera Account not found');
         }
         const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
+        const signOptions = await this.wallet.getUserSignOptions(userFull);
         return {
             did: userDID,
             hederaAccountId: userID,
-            hederaAccountKey: userKey
+            hederaAccountKey: userKey,
+            signOptions
         }
     }
 }
