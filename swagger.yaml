@@ -933,7 +933,7 @@ paths:
       description: Returns all contracts.
       parameters:
         - name: type
-          required: false
+          required: true
           in: query
           description: Contract type
           example: RETIRE
@@ -952,7 +952,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -1141,7 +1141,7 @@ paths:
         are allowed to make the request.
       parameters:
         - name: contractId
-          required: false
+          required: true
           in: query
           description: Contract identifier
           example: 0.0.1
@@ -1157,7 +1157,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -1663,7 +1663,7 @@ paths:
       description: Returns all retire requests.
       parameters:
         - name: contractId
-          required: false
+          required: true
           in: query
           description: Contract identifier
           example: 0.0.1
@@ -1679,7 +1679,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -1719,14 +1719,14 @@ paths:
       description: Returns all retire pools.
       parameters:
         - name: contractId
-          required: false
+          required: true
           in: query
           description: Contract identifier
           example: 0.0.1
           schema:
             type: string
         - name: tokens
-          required: false
+          required: true
           in: query
           description: Tokens
           example: 0.0.1,0.0.2,0.0.3
@@ -1742,7 +1742,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -2161,7 +2161,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -10688,7 +10688,7 @@ paths:
       parameters:
         - name: q
           required: true
-          in: query
+          in: path
           description: The question of choosing a methodology
           example: Find me large scale projects
           schema:
