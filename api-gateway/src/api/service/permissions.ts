@@ -254,11 +254,7 @@ export class PermissionsApi {
     }
 
     /**
-<<<<<<< HEAD
-     * Create role
-=======
      * Set default role
->>>>>>> develop
      */
     @Post('/roles/default')
     @Auth(

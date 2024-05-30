@@ -5,7 +5,7 @@ import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
 import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
-import { PREFIXES } from '../../constants';
+import { PREFIXES } from '#constants';
 
 @Controller('artifacts')
 @ApiTags('artifacts')

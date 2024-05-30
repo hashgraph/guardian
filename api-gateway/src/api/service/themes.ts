@@ -7,7 +7,6 @@ import { AuthUser, Auth } from '#auth';
 import { Examples, InternalServerErrorDTO, ThemeDTO } from '#middlewares';
 import { PREFIXES } from '#constants';
 
-
 @Controller('themes')
 @ApiTags('themes')
 export class ThemesApi {

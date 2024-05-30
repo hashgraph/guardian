@@ -828,12 +828,4 @@ export class PolicyEngine extends NatsService {
             owner,
         })
     }
-
-    /**
-     * Get policy
-     * @param filters
-     */
-    public async getAssignedPolicies(filters: any): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_ASSIGNED_POLICIES, filters);
-    }
 }

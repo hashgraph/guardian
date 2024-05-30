@@ -5,7 +5,7 @@ import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResp
 import { AuthUser, Auth } from '#auth';
 import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
 import { Guardians, SchemaUtils, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
-import { PREFIXES } from '../../constants';
+import { PREFIXES } from '#constants';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 

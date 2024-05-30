@@ -4,14 +4,11 @@ import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResp
 import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO } from '#middlewares';
 import { IAuthUser } from '@guardian/common';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, ONLY_SR, CacheService, UseCache } from '#helpers';
+import { Guardians, ONLY_SR } from '#helpers';
 
 @Controller('suggestions')
 @ApiTags('suggestions')
 export class SuggestionsApi {
-
-    constructor(private readonly cacheService: CacheService) {
-    }
 
     /**
      * Get next and nested suggested block types

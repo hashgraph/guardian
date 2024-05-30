@@ -7,7 +7,6 @@ import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDT
 import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import { CACHE, PREFIXES } from '#constants';
 
-
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
     const owner = new EntityOwner(user);
@@ -796,11 +795,6 @@ export class PolicyApi {
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
-// <<<<<<< HEAD
-//     @ApiOperation({
-//         summary: 'Returns a list of groups the user is a member of.',
-//         description: 'Returns a list of groups the user is a member of.',
-// =======
     @ApiOperation({
         summary: 'Returns a list of groups the user is a member of.',
         description: 'Returns a list of groups the user is a member of.',
