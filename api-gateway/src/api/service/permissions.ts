@@ -4,7 +4,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, InternalException, Users } from '#helpers';
+import { EntityOwner, Guardians, InternalException, Users } from '#helpers';
 import { WebSocketsService } from './websockets.js';
 
 @Controller('permissions')
@@ -141,7 +141,8 @@ export class PermissionsApi {
         @Body() body: RoleDTO
     ): Promise<RoleDTO> {
         try {
-            return await (new Users()).createRole(body, user.did);
+            const owner = new EntityOwner(user);
+            return await (new Users()).createRole(body, owner);
         } catch (error) {
             await InternalException(error);
         }
@@ -196,7 +197,8 @@ export class PermissionsApi {
             throw new HttpException('Role does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
-            const result = await userService.updateRole(id, role, user.did);
+            const owner = new EntityOwner(user);
+            const result = await userService.updateRole(id, role, owner);
             const users = await userService.refreshUserPermissions(id, user.did);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(users);
@@ -242,8 +244,9 @@ export class PermissionsApi {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const userService = new Users();
-            const result = await userService.deleteRole(id, user.did);
+            const result = await userService.deleteRole(id, owner);
             const users = await userService.refreshUserPermissions(id, user.did);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(users);
@@ -501,7 +504,8 @@ export class PermissionsApi {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
-            const result = await users.updateUserRole(username, body, user.did);
+            const owner = new EntityOwner(user);
+            const result = await users.updateUserRole(username, body, owner);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(result);
             return result;
@@ -712,7 +716,8 @@ export class PermissionsApi {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
         }
         try {
-            const result = await users.delegateUserRole(username, body, user.did);
+            const owner = new EntityOwner(user);
+            const result = await users.delegateUserRole(username, body, owner);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(result);
             return result;

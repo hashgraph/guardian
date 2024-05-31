@@ -21,6 +21,8 @@ import { ModuleMessage } from './module-message.js';
 import { TagMessage } from './tag-message.js';
 import { ToolMessage } from './tool-message.js';
 import { RoleMessage } from './role-message.js';
+import { GuardianRoleMessage } from './guardian-role-message.js';
+import { UserPermissionsMessage } from './user-permissions-message.js';
 
 /**
  * Message server
@@ -63,7 +65,7 @@ export class MessageServer {
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
-        signOptions: ISignOptions = {signType: SignType.INTERNAL},
+        signOptions: ISignOptions = { signType: SignType.INTERNAL },
         dryRun: string = null
     ) {
         this.clientOptions = { operatorId, operatorKey, dryRun };
@@ -312,6 +314,12 @@ export class MessageServer {
                 break;
             case MessageType.RoleDocument:
                 message = RoleMessage.fromMessageObject(json);
+                break;
+            case MessageType.GuardianRole:
+                message = GuardianRoleMessage.fromMessageObject(json);
+                break;
+            case MessageType.UserPermissions:
+                message = UserPermissionsMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':
