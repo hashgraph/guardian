@@ -1,0 +1,297 @@
+{
+    "title": "Indexer",
+    "landing": {
+        "overview": "Overview",
+        "project_locations": "Project locations"
+    },
+    "stat": {
+        "registries": "Registries",
+        "methodologies": "Methodologies",
+        "projects": "Total Documents",
+        "total_issuance": "Total Issuance",
+        "x": "Date and time",
+        "y": "Count"
+    },
+    "header": {
+        "header": "Guardian",
+        "name": "Indexer",
+        "accounts": "Accounts",
+        "registry_users": "Registry Users",
+        "methodologies": "Methodologies",
+        "messages": "Messages",
+        "standard_registries": "Standard Registries",
+        "topics": "Topics",
+        "tags": "Tags",
+        "roles": "Roles",
+        "events": "Events",
+        "contracts": "Contracts",
+        "tokens": "Tokens",
+        "tools": "Tools",
+        "modules": "Modules",
+        "schemas": "Schemas",
+        "instances": "Instances",
+        "policies": "Policies",
+        "documents": "Documents",
+        "nfts": "NFTs",
+        "vps": "Verifiable Presentation (VPs)",
+        "vcs": "Verifiable Credentials (VCs)",
+        "dids": "Decentralized Identifiers (DIDs)",
+        "others": "Others",
+        "search_placeholder": "Search by keyword"
+    },
+    "home": {
+        "header": "Indexer",
+        "description": "Guardian Indexer by",
+        "bold_description": "Managed Guardian Service"
+    },
+    "filter": {
+        "placeholder": "placeholder",
+        "clear": "clear",
+        "more": "more ( {{ current }} / {{ total }} )",
+        "header": "Filter by {{ label }}"
+    },
+    "grid": {
+        "id": "Id",
+        "token_id": "Token Id",
+        "symbol": "Symbol",
+        "treasury": "Treasury",
+        "parent_id": "Parent Topic Id",
+        "init_topic_id": "Init Topic Id",
+        "contract_id": "Contract Id",
+        "contract_type": "Contract Type",
+        "type": "Type",
+        "owner": "Owner",
+        "name": "Name",
+        "group": "Group",
+        "role": "Role",
+        "schema": "Schema",
+        "description": "Description",
+        "account_id": "Account Id",
+        "topic_id": "Topic Id",
+        "consensus_timestamp": "Message Id",
+        "serial_number": "Serial Number",
+        "metadata": "Metadata",
+        "uuid": "UUID",
+        "status": "Status",
+        "issuer": "Issuer",
+        "account": "Account",
+        "did": "DID",
+        "registrantTopicId": "User Topic Id",
+        "open": "Open",
+        "filter": {
+            "policy": "Policy",
+            "schema": "Schema",
+            "status": "Status",
+            "keyword": "Search by keyword",
+            "tool_id": "Tool Id",
+            "topic_id": "Topic Id",
+            "policy_id": "Policy Id",
+            "schema_id": "Schema Id",
+            "relationship": "Relationship"
+        },
+        "paginator": {
+            "items_per_page": "Items per page",
+            "of": "of"
+        },
+        "empty": {
+            "title": "Nothing matches your search",
+            "description": "Please change your search criteria and try again"
+        }
+    },
+    "details": {
+        "overview": "Overview",
+        "documents": "Document",
+        "history": "History",
+        "relationships": "Relationships",
+        "raw_data": "Raw data",
+        "tabs": {
+            "activity": "Activity"
+        },
+        "activity": {
+            "registries": "Registries",
+            "topics": "Topics",
+            "roles": "Roles",
+            "dids": "Decentralized Identifiers",
+            "schemas": "Schemas",
+            "tokens": "Tokens",
+            "contracts": "Contracts",
+            "users": "Users",
+            "policies": "Policies",
+            "tools": "Tools",
+            "modules": "Modules",
+            "vcs": "Verifiable Credentials",
+            "vps": "Veriaible Presentations"
+        },
+        "hedera": {
+            "topic_id": "Topic Id",
+            "consensus_timestamp": "Message Id",
+            "uuid": "UUID",
+            "type": "Type",
+            "action": "Action",
+            "status": "Status",
+            "status_reason": "Reason",
+            "issuer": "Issuer",
+            "transaction_id": "Transaction Id",
+            "sender_account_id": "Sender",
+            "receiver_account_id": "Receiver"
+        },
+        "ipfs": "IPFS",
+        "header": {
+            "registry": "Standard Registry",
+            "registry_user": "Registry User",
+            "vc": "Verifiable Credential",
+            "vp": "Verifiable Presentation"
+        },
+        "topic": {
+            "header": "Topic",
+            "tabs": {
+                "overview": "Overview",
+                "content": "Content",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "parent_id": "Parent Topic Id"
+            }
+        },
+        "registry": {
+            "header": "Standard Registry",
+            "tabs": {
+                "overview": "Overview",
+                "activity": "Activity",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "account_id": "Account Id",
+                "did": "DID",
+                "topic_id": "Topic Id",
+                "lang": "Language",
+                "registrant_topic_id": "User Topic Id"
+            }
+        },
+        "module": {
+            "header": "Module",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "name": "Name",
+                "description": "Desription",
+                "owner": "Owner"
+            }
+        },
+        "tool": {
+            "header": "Tool",
+            "tabs": {
+                "overview": "Overview",
+                "content": "Content",
+                "raw": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "name": "Name",
+                "description": "Desription",
+                "owner": "Owner",
+                "hash": "Hash"
+            }
+        },
+        "policy": {
+            "header": "Policy",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "instance_topic_id": "Instance Topic Id",
+                "name": "Name",
+                "description": "Desription",
+                "owner": "Owner",
+                "version": "Version",
+                "policy_tag": "Policy Tag",
+                "registry": "Standard Registry"
+            }
+        },
+        "schema": {
+            "header": "Schema",
+            "tabs": {
+                "overview": "Overview",
+                "document": "Document",
+                "tree": "Tree",
+                "activity": "Activity",
+                "raw": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "name": "Name",
+                "description": "Desription",
+                "owner": "Owner",
+                "version": "Version",
+                "policy": "Policy"
+            }
+        },
+        "role": {
+            "header": "Role",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "role": "Role",
+                "group": "Group",
+                "issuer": "Issuer",
+                "policy": "Policy"
+            }
+        },
+        "did": {
+            "header": "DID",
+            "tabs": {
+                "overview": "Overview",
+                "document": "Document",
+                "raw": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "did": "DID"
+            }
+        },
+        "vc": {
+            "header": "Verifiable Credential",
+            "overview": {
+                "topic_id": "Topic Id",
+                "issuer": "Issuer",
+                "policy": "Policy"
+            }
+        },
+        "nft": {
+            "header": "NFT",
+            "overview": {
+                "token_id": "Token Id",
+                "serial_number": "Serial Number",
+                "metadata": "Metadata"
+            }
+        },
+        "token": {
+            "header": "Token",
+            "tabs": {
+                "overview": "Overview"
+            },
+            "overview": {
+                "token_id": "Token Id",
+                "name": "Name",
+                "symbol": "Symbol",
+                "treasury": "Treasury",
+                "type": "Type",
+                "total_supply": "Total Supply",
+                "serial_number": "Serial Number",
+                "view_serials": "View serials"
+            }
+        },
+        "not_found": "Not found"
+    }
+}

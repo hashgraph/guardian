@@ -1,0 +1,49 @@
+<!-- <div>
+    <form class="example-form">
+        <mat-form-field class="full-width">
+            <mat-label>Item ID</mat-label>
+            <input matInput placeholder="Search by item id" [formControl]="searchControl">
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" (click)="onSearch()" [disabled]="searchControl.invalid">Search</button>
+    </form>
+
+    <div class="results">
+        @for (item of results; track item;) {
+        <div class="result">
+            <div class="result__type">{{item.type}}</div>
+            <div class="result__id">{{item.id}}</div>
+        </div>
+        }
+    </div>
+</div> -->
+
+<div class="container page-content">
+    <div class="main">
+        <div class="search-container">
+
+            <div class="search-label">
+                <div class="search-label__header">Search results
+                </div>
+            </div>
+
+            <div class="search-control">
+                <form class="search-control__form" (submit)="onSubmit()">
+                    <p-iconField iconPosition="right" class="search-control__input">
+                        <p-inputIcon styleClass="pi pi-search" (click)="search.focus()" />
+                        <input #search pInputText [placeholder]="'header.search_placeholder' | transloco" type="text"
+                            [formControl]="searchControl" />
+                    </p-iconField>
+                </form>
+
+            </div>
+        </div>
+    </div>
+    <div class="result">
+        <app-table (onPage)="onPage($event)" [total]="total" [data]="results" [columns]="columns"
+            [pageSizeOptions]="[10]" [pageIndex]="pageIndex" [pageSize]="10" [loading]="loading"></app-table>
+    </div>
+    <div class="overview">
+
+    </div>
+</div>
