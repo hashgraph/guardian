@@ -17,9 +17,14 @@
     "policy-service",
     "api-tests",
     "ai-service",
-    "notification-service"
+    "notification-service",
+    "indexer-interfaces",
+    "indexer-common",
+    "indexer-api-gateway",
+    "indexer-service",
+    "indexer-worker-service"
   ],
-  "version": "2.24.1",
+  "version": "2.25.0",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },

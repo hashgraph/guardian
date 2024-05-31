@@ -1,0 +1,56 @@
+<div class="page-content">
+    <div class="content">
+        <div class="header">
+            <h1>{{ 'details.schema.header' | transloco }} {{id}}</h1>
+        </div>
+        @if (loading) {
+        <div class="loading">
+            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+        </div>
+        } @else {
+        @if (row) {
+        <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
+            @if (target) {
+            <p-tabPanel [header]="'details.schema.tabs.overview' | transloco">
+                <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+            </p-tabPanel>
+            <p-tabPanel [header]="'details.schema.tabs.document' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="getDocument(first.documents[0])" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+            <p-tabPanel [header]="'details.schema.tabs.tree' | transloco">
+                @if (tree) {
+                <div class="schema-tree-container">
+                    <p-organizationChart [value]="[tree.root]">
+                        <ng-template let-node pTemplate="default">
+                            <div (click)="openSchema(node.data.id)" style="cursor: pointer;">
+                                <div class="schema-circle" [ngStyle]="{ 'background-color': node.data.color }"></div>
+                                <div>
+                                    {{ node.label }}
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-organizationChart>
+                </div>
+                }
+            </p-tabPanel>
+            }
+            <p-tabPanel [header]="'details.schema.tabs.activity' | transloco">
+                <app-activity [activity]="activityItems" [total]="totalActivity"></app-activity>
+            </p-tabPanel>
+            <p-tabPanel [header]="'details.schema.tabs.raw' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="row | json" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+
+        </p-tabView>
+        } @else {
+        <div>{{ 'details.not_found' | transloco }}</div>
+        }
+        }
+    </div>
+</div>

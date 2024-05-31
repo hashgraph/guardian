@@ -33,5 +33,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
-    "version": "2.24.1"
+  "version": "2.25.0"
 }

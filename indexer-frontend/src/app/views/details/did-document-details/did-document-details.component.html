@@ -1,0 +1,37 @@
+<div class="page-content">
+    <div class="content">
+        <div class="header">
+            <h1>{{ 'details.did.header' | transloco }} {{id}}</h1>
+        </div>
+        @if (loading) {
+        <div class="loading">
+            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+        </div>
+        } @else {
+        @if (row) {
+        <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
+            @if (target) {
+            <p-tabPanel [header]="'details.did.tabs.overview' | transloco">
+                <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+            </p-tabPanel>
+            <p-tabPanel [header]="'details.did.tabs.document' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="getDocument(first.documents[0])" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+            }
+            <p-tabPanel [header]="'details.schema.tabs.raw' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="row | json" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+
+        </p-tabView>
+        } @else {
+        <div>{{ 'details.not_found' | transloco }}</div>
+        }
+        }
+    </div>
+</div>

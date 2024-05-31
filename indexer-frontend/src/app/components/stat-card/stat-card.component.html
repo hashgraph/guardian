@@ -1,0 +1,23 @@
+<div class="card">
+    <div class="card-title">
+        <div class="card-title__label">{{cardLabel | transloco}}</div>
+        <div>
+            <p-selectButton [options]="stateOptions" [(ngModel)]="type" [unselectable]="true" optionLabel="label"
+                optionValue="value" />
+        </div>
+    </div>
+
+    <div class="card-value" (click)="onOpen()">
+        @switch (type) {
+        @case ('count') {
+        <div #counter class="card-value__value" [attr.data-target]="count">{{numberWithCommas(count)}}</div>
+        @if (upcount && upcount > 0) {
+        <div class="card-value__up-count">+{{upcount}}</div>
+        }
+        }
+        @case ('graph') {
+        <p-chart class="chart" type="line" [data]="data" [options]="options" />
+        }
+        }
+    </div>
+</div>
