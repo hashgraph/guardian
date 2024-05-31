@@ -265,7 +265,7 @@ export class AccountApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
-    @UseCache()
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAggregatedStandardRegistries(): Promise<any> {
         const engineService = new PolicyEngine();
