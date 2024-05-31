@@ -9,7 +9,6 @@ import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Pro
 import {
     AuditDefaultPermission,
     AuthEvents,
-    OldRoles,
     GenerateUUIDv4,
     IGenerateTokenMessage,
     IGenerateTokenResponse,
@@ -26,6 +25,7 @@ import {
     IStandardRegistryUserResponse,
     IUpdateUserMessage,
     IUser,
+    OldRoles,
     SRDefaultPermission,
     UserDefaultPermission,
     UserRole
@@ -125,14 +125,15 @@ export class AccountService extends NatsService {
                 }
 
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
+                const puser = setDefaultPermissions(user)
 
                 const userRequiredProps = {}
 
                 for (const prop of Object.values(USER_REQUIRED_PROPS)) {
-                    userRequiredProps[prop] = user[prop];
+                    userRequiredProps[prop] = puser[prop];
                 }
 
-                return new MessageResponse(setDefaultPermissions(user));
+                return new MessageResponse(userRequiredProps);
             } catch (error) {
                 return new MessageError(error);
             }

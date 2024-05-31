@@ -7,4 +7,5 @@ export const REQUIRED_PROPS = {
   HEDERA_ACCOUNT_ID: 'hederaAccountId',
   ROLE: 'role',
   ID: 'id',
+  PERMISSIONS: 'permissions',
 };
