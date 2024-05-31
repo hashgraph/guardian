@@ -355,7 +355,7 @@ async function createUserProfile(
             notifier
         );
         await checkAndPublishSchema(
-            SchemaEntity.USER,
+            SchemaEntity.RETIRE_TOKEN,
             topicConfig,
             userDID,
             srUser,

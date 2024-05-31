@@ -932,10 +932,6 @@
                     ],
                     "readOnly": true
                 },
-                "id": {
-                    "type": "string",
-                    "readOnly": true
-                },
                 "type": {
                     "oneOf": [{
                             "type": "string"
@@ -949,12 +945,16 @@
                     ],
                     "readOnly": true
                 },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
                 "uuid": {
                     "title": "Role UUID",
                     "description": "Role UUID",
                     "readOnly": false,
                     "type": "string",
-                    "$comment": "{\"term\":\"id\",\"@id\":\"https://www.schema.org/text\"}"
+                    "$comment": "{\"term\":\"uuid\",\"@id\":\"https://www.schema.org/text\"}"
                 },
                 "name": {
                     "title": "Role name",
@@ -970,29 +970,21 @@
                     "type": "string",
                     "$comment": "{\"term\":\"description\",\"@id\":\"https://www.schema.org/text\"}"
                 },
-                "status": {
-                    "title": "Status",
-                    "description": "Status",
-                    "readOnly": false,
-                    "type": "string",
-                    "$comment": "{\"term\":\"status\",\"@id\":\"https://www.schema.org/text\"}"
-                },
                 "permissions": {
-                    "title": "Group ID",
-                    "description": "Group ID",
+                    "title": "Permissions",
+                    "description": "Permissions",
                     "readOnly": false,
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "$comment": "{\"term\":\"groupId\",\"@id\":\"https://www.schema.org/text\"}"
+                    "$comment": "{\"term\":\"permissions\",\"@id\":\"https://www.schema.org/text\"}"
                 }
             },
             "required": [
                 "uuid",
                 "name",
                 "description",
-                "status",
                 "permissions"
             ],
             "additionalProperties": false

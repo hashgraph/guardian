@@ -142,7 +142,9 @@ export class PermissionsApi {
     ): Promise<RoleDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).createRole(body, owner);
+            const role = await (new Users()).createRole(body, owner);
+            await (new Guardians()).createRole(role, owner);
+            return role;
         } catch (error) {
             await InternalException(error);
         }
@@ -200,6 +202,7 @@ export class PermissionsApi {
             const owner = new EntityOwner(user);
             const result = await userService.updateRole(id, role, owner);
             const users = await userService.refreshUserPermissions(id, user.did);
+            await (new Guardians()).updateRole(result, owner);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(users);
             return result;
@@ -248,6 +251,7 @@ export class PermissionsApi {
             const userService = new Users();
             const result = await userService.deleteRole(id, owner);
             const users = await userService.refreshUserPermissions(id, user.did);
+            await (new Guardians()).deleteRole(result, owner);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(users);
             return result;
@@ -506,6 +510,7 @@ export class PermissionsApi {
         try {
             const owner = new EntityOwner(user);
             const result = await users.updateUserRole(username, body, owner);
+            await (new Guardians()).setRole(result, owner);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(result);
             return result;
@@ -718,6 +723,7 @@ export class PermissionsApi {
         try {
             const owner = new EntityOwner(user);
             const result = await users.delegateUserRole(username, body, owner);
+            await (new Guardians()).setRole(result, owner);
             const wsService = new WebSocketsService();
             wsService.updatePermissions(result);
             return result;

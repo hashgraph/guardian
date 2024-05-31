@@ -9,7 +9,6 @@ import {
 import { AuthEvents, DefaultRoles, GenerateUUIDv4, IGroup, IOwner, Permissions, PermissionsArray, UserRole } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
-import { createRoleMessage, deleteRoleMessage, setRoleMessage, updateRoleMessage } from './messages.js';
 
 const permissionList = PermissionsArray.filter((p) => !p.disabled).map((p) => {
     return {
@@ -220,12 +219,8 @@ export class RoleService extends NatsService {
                     role.permissions = ListPermissions.unique(role.permissions);
                     role.default = false;
                     role.readonly = false;
-
-                    await createRoleMessage(role, owner);
-
                     let item = new DataBaseHelper(DynamicRole).create(role);
                     item = await new DataBaseHelper(DynamicRole).save(item);
-
                     return new MessageResponse(item);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -260,9 +255,6 @@ export class RoleService extends NatsService {
                     item.name = role.name;
                     item.description = role.description;
                     item.permissions = ListPermissions.unique(role.permissions);
-
-                    await updateRoleMessage(role, owner);
-
                     const result = await new DataBaseHelper(DynamicRole).update(item);
                     return new MessageResponse(result);
                 } catch (error) {
@@ -314,11 +306,8 @@ export class RoleService extends NatsService {
                     if (!item || item.owner !== owner.creator) {
                         throw new Error('Invalid role');
                     }
-
-                    await deleteRoleMessage(item, owner);
-
                     await new DataBaseHelper(DynamicRole).remove(item);
-                    return new MessageResponse(true);
+                    return new MessageResponse(item);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -376,6 +365,7 @@ export class RoleService extends NatsService {
                     const defaultRole = await getDefaultRole(owner);
                     if (defaultRole) {
                         target.permissionsGroup = [{
+                            uuid: defaultRole.uuid,
                             roleId: defaultRole.id,
                             roleName: defaultRole.name,
                             owner
@@ -501,7 +491,7 @@ export class RoleService extends NatsService {
                         return new MessageError('User does not exist');
                     }
 
-                    const roleMap = new Map<string, [string, string]>();
+                    const roleMap = new Map<string, [string, string, string]>();
                     const permissions = new Set<string>();
                     const roles = await new DataBaseHelper(DynamicRole).find({ id: { $in: userRoles } });
                     for (const role of roles) {
@@ -509,7 +499,7 @@ export class RoleService extends NatsService {
                             (role.owner && role.owner === owner.creator) ||
                             (!role.owner && role.default)
                         ) {
-                            roleMap.set(role.id, [owner.creator, role.name]);
+                            roleMap.set(role.id, [owner.creator, role.name, role.uuid]);
                             for (const permission of role.permissions) {
                                 permissions.add(permission);
                             }
@@ -521,19 +511,21 @@ export class RoleService extends NatsService {
                     if (target.permissionsGroup) {
                         for (const group of target.permissionsGroup) {
                             if (roleMap.has(group.roleId)) {
-                                roleMap.set(group.roleId, [group.owner, group.roleName]);
+                                roleMap.set(group.roleId, [group.owner, group.roleName, group.uuid]);
                             }
                         }
                     }
 
                     target.permissionsGroup = [];
-                    for (const [roleId, [roleOwner, roleName]] of roleMap.entries()) {
-                        target.permissionsGroup.push({ roleId, roleName, owner: roleOwner });
+                    for (const [roleId, [roleOwner, roleName, uuid]] of roleMap.entries()) {
+                        target.permissionsGroup.push({
+                            uuid,
+                            roleId,
+                            roleName,
+                            owner: roleOwner
+                        });
                     }
                     target.permissions = Array.from(permissions);
-
-                    await setRoleMessage(target, owner);
-
                     const result = await new DataBaseHelper(User).update(target);
                     return new MessageResponse(result);
                 } catch (error) {
@@ -638,7 +630,12 @@ export class RoleService extends NatsService {
                     const permissionsGroup: IGroup[] = [];
                     for (const [roleOwner, role] of othersRoles.values()) {
                         if (role) {
-                            permissionsGroup.push({ roleId: role.id, roleName: role.name, owner: roleOwner });
+                            permissionsGroup.push({
+                                uuid: role.uuid,
+                                roleId: role.id,
+                                roleName: role.name,
+                                owner: roleOwner
+                            });
                             for (const permission of role.permissions) {
                                 permissions.add(permission);
                             }
@@ -648,9 +645,6 @@ export class RoleService extends NatsService {
                     target.permissionsGroup = permissionsGroup;
                     target.permissions = Array.from(permissions);
                     await new DataBaseHelper(User).update(target);
-
-                    await setRoleMessage(target, owner);
-
                     return new MessageResponse(target);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);

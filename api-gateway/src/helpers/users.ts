@@ -262,7 +262,7 @@ export class Users extends NatsService {
      * @param owner
      * @returns Operation Success
      */
-    public async deleteRole(id: string, owner: IOwner): Promise<boolean> {
+    public async deleteRole(id: string, owner: IOwner): Promise<any> {
         return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner });
     }
 

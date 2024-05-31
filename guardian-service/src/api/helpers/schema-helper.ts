@@ -134,6 +134,8 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.CHUNK]);
     await fn(map[SchemaEntity.ACTIVITY_IMPACT]);
     await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
+    await fn(map[SchemaEntity.ROLE]);
+    await fn(map[SchemaEntity.USER_PERMISSIONS]);
 }
 
 /**
