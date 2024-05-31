@@ -51,6 +51,8 @@
   * [➗ MRV Splitting Logic](guardian/architecture/mrv-splitting-logic.md)
   * [🔑 Internal (with Vault)Signing Sequence Diagram](guardian/architecture/internal-with-vault-signing-sequence-diagram.md)
   * [🔥 FireBlocks Signing Sequence Diagram](guardian/architecture/fireblocks-signing-sequence-diagram.md)
+* [📇 Global Indexer](guardian/global-indexer/README.md)
+  * [💻 Indexer User Guide](guardian/global-indexer/indexer-user-guide.md)
 * [🗄️ Standard Registry](guardian/standard-registry/README.md)
   * [🛠️ Schemas](guardian/standard-registry/schemas/README.md)
     * [📂 Available Schema Types](guardian/standard-registry/schemas/available-schema-types.md)
