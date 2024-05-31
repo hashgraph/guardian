@@ -12490,6 +12490,8 @@ components:
             - CHUNK
             - ACTIVITY_IMPACT
             - TOKEN_DATA_SOURCE
+            - ROLE
+            - USER_PERMISSIONS
           example: POLICY
         iri:
           type: string
