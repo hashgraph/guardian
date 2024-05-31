@@ -1113,7 +1113,7 @@ export class EntityService {
             await loadDocuments(item);
             let schema;
             const document = item.documents[0];
-            if (document && item.analytics.schemaId) {
+            if (document && item.analytics?.schemaId) {
                 const schemaMessage = await em.findOne(Message, {
                     type: MessageType.SCHEMA,
                     consensusTimestamp: item.analytics.schemaId,
