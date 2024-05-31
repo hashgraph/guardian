@@ -58,6 +58,7 @@ export enum IRefLvl {
     Default = 'Default', //Default
     None = 'None', //Don't compare
     Revert = 'Revert', //Revert
+    Direct = 'Direct', // Direct
     Merge = 'Merge' //Merge
 }
 
@@ -240,6 +241,12 @@ export class CompareOptions {
             case '3':
             case 3: {
                 this.refLvl = IRefLvl.Merge;
+                break;
+            }
+            case IRefLvl.Direct:
+            case '4':
+            case 4: {
+                this.refLvl = IRefLvl.Direct;
                 break;
             }
             default: {

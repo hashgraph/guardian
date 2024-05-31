@@ -135,6 +135,24 @@ export class Users extends NatsService {
     }
 
     /**
+     * Create default roles
+     * @param req
+     * @param item
+     */
+    public async createDefaultRole(username: string) {
+        return await this.sendMessage(AuthEvents.CREATE_DEFAULT_USER_ROLE, { username });
+    }
+
+    /**
+     * Update current user entity
+     * @param req
+     * @param item
+     */
+    public async setDefaultRole(username: string, owner: string) {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_USER_ROLE, { username, owner });
+    }
+
+    /**
      * Save user
      * @param user
      */
@@ -156,7 +174,7 @@ export class Users extends NatsService {
      * @param password
      * @param role
      */
-    public async registerNewUser(username: string, password: string, role: string) {
+    public async registerNewUser(username: string, password: string, role: string): Promise<IAuthUser> {
         return await this.sendMessage(AuthEvents.REGISTER_NEW_USER, { username, password, role });
     }
 

@@ -175,7 +175,7 @@ export class AggregateBlock {
         documents = await this.removeDocuments(ref, documents);
         if (documents.length || ref.options.emptyData) {
             const state: IPolicyEventState = { data: documents };
-            const user = PolicyUtils.getPolicyUserById(ref, userId);
+            const user = await PolicyUtils.getPolicyUserById(ref, userId);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             PolicyComponentsUtils.ExternalEventFn(
@@ -275,7 +275,7 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = PolicyUtils.getPolicyUser(ref, document.owner, document.group);
+            const user = await PolicyUtils.getDocumentOwner(ref, document);
             rawEntities = await this.removeDocuments(ref, rawEntities);
             const state: IPolicyEventState = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);

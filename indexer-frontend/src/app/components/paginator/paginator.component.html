@@ -1,0 +1,12 @@
+<div class="table-paginator">
+    <span>{{ 'grid.paginator.items_per_page' | transloco }}</span>
+    <p-dropdown appendTo="body" (onChange)="newOnSize()" [(ngModel)]="pageSize"
+        [options]="pageSizeOptions"></p-dropdown>
+    <span class="color-grey-6" class="table-paginator__pages">
+        {{ pageNumberMin }} – {{ pageNumberMax }} {{'grid.paginator.of' | transloco}} {{ length }}
+    </span>
+    <div class="flex" class="table-paginator__move">
+        <span class="pi pi-angle-left svg-btn svg-color" (click)="movePageIndex(-1)"></span>
+        <span class="pi pi-angle-right svg-btn svg-color" (click)="movePageIndex(+1)"></span>
+    </div>
+</div>

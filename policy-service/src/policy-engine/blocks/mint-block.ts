@@ -9,7 +9,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
 
@@ -189,7 +189,7 @@ export class MintBlock {
     private async createReportVC(
         ref: IPolicyTokenBlock,
         policyOwnerCred: UserCredentials,
-        user: IPolicyUser,
+        user: PolicyUser,
         documents: VcDocument[],
         messages: string[],
         additionalMessages: string[],
@@ -264,7 +264,7 @@ export class MintBlock {
     private async mintProcessing(
         token: TokenCollection,
         topicId: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         accountId: string,
         documents: VcDocument[],
         messages: string[],
@@ -379,7 +379,7 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -435,7 +435,7 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -453,7 +453,7 @@ export class MintBlock {
     private async run(
         ref: IPolicyTokenBlock,
         event: IPolicyEvent<IPolicyEventState>,
-        user: IPolicyUser,
+        user: PolicyUser,
         docs: IPolicyDocument[],
         additionalDocs?: IPolicyDocument[]
     ) {

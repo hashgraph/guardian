@@ -12,6 +12,7 @@ import { AppModule } from './app.module.js';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { MeecoAuthService } from './api/meeco-service.js';
 import { ApplicationEnvironment } from './environment.js';
+import { RoleService } from './api/role-service.js';
 
 Promise.all([
     Migration({
@@ -29,7 +30,7 @@ Promise.all([
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('AUTH_SERVICE'),
-    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.NATS,
         options: {
             queue: 'auth-service',
@@ -40,7 +41,7 @@ Promise.all([
         },
     }),
     InitializeVault(process.env.VAULT_PROVIDER)
-]).then(async ([_, db, cn,  app, vault]) => {
+]).then(async ([_, db, cn, app, vault]) => {
     DataBaseHelper.orm = db;
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
@@ -68,6 +69,9 @@ Promise.all([
         new WalletService().registerVault(vault);
         new WalletService().registerListeners();
 
+        await new RoleService().setConnection(cn).init();
+        new RoleService().registerListeners();
+
         if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
             await new MeecoAuthService().setConnection(cn).init();
             new MeecoAuthService().registerListeners();
@@ -79,10 +83,10 @@ Promise.all([
 
         await new OldSecretManager().setConnection(cn).init();
         const secretManager = SecretManager.New();
-        let {ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
+        let { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
         if (!ACCESS_TOKEN_SECRET) {
             ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-            await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET  });
+            await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET });
         }
 
         state.updateState(ApplicationStates.READY);

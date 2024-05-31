@@ -1,0 +1,32 @@
+<div class="card">
+    <p-meterGroup [value]="activity" labelPosition="start">
+        <ng-template pTemplate="label" let-value>
+            <div class="meter-label">
+                @for (meterItem of value; track $index) {
+                <p-card class="meter-card" (click)="meterItem.click()">
+                    <div class="meter-card-content">
+                        <div class="meter-card-content__info meter-card-info">
+                            <span class="meter-card-info__label">{{ meterItem.label | transloco }}</span>
+                            <span class="meter-card-info__count">{{ meterItem.count }}</span>
+                        </div>
+                        <span class="meter-card-content__icon"
+                            [style]="{ 'background-color': activityColors.get(meterItem.activity), color: '#ffffff' }">
+                            <span [class]="activityIcons.get(meterItem.activity)"></span>
+                        </span>
+                    </div>
+                </p-card>
+                }
+            </div>
+        </ng-template>
+        <ng-template pTemplate="meter" let-value let-class="class" let-width="size">
+            <span [class]="class"
+                [style]="{ 'background-color': activityColors.get(value.activity), width: width }"></span>
+        </ng-template>
+        <ng-template pTemplate="start">
+            <div class="meter-start">
+                <span>{{label | transloco}}</span>
+                <span class="font-medium">Total: {{ total }}</span>
+            </div>
+        </ng-template>
+    </p-meterGroup>
+</div>

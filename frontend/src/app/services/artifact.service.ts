@@ -21,11 +21,13 @@ export class ArtifactService {
     }
 
     public getArtifacts(policyId?: string, pageIndex?: any, pageSize?: any): Observable<HttpResponse<any[]>> {
-        const parameters = {
-            policyId,
+        const parameters: any = {
             pageIndex,
             pageSize
-        } as any;
+        };
+        if (policyId) {
+            parameters.policyId = policyId;
+        }
         return this.http.get<any>(`${this.url}`, {
             observe: 'response',
             params: parameters

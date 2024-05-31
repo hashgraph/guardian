@@ -72,6 +72,8 @@ import { SynchronizationTask } from './helpers/synchronization-task.js';
 import { recordAPI } from './api/record.service.js';
 import { projectsAPI } from './api/projects.service.js';
 import { AISuggestionsService } from './helpers/ai-suggestions.js';
+import { AssignedEntityAPI } from './api/assigned-entity.service.js';
+import { permissionAPI } from './api/permission.service.js';
 
 export const obj = {};
 
@@ -187,6 +189,8 @@ Promise.all([
         await brandingAPI(brandingRepository);
         await suggestionsAPI();
         await projectsAPI();
+        await AssignedEntityAPI()
+        await permissionAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);

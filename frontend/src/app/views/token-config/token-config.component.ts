@@ -3,7 +3,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, SchemaHelper, TagType, Token } from '@guardian/interfaces';
+import { ContractType, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
@@ -30,6 +30,7 @@ enum OperationMode {
 })
 export class TokenConfigComponent implements OnInit {
     public isConfirmed: boolean = false;
+    public user: UserPermissions = new UserPermissions();
     public tokens: any[] = [];
     public loading: boolean = true;
     public tokenId: string = '';
@@ -46,7 +47,6 @@ export class TokenConfigComponent implements OnInit {
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
     public operationMode: OperationMode = OperationMode.None;
-    public user: any;
     public currentPolicy: any = '';
     public policies: any[] | null = null;
     public tagEntity = TagType.Token;
@@ -75,6 +75,8 @@ export class TokenConfigComponent implements OnInit {
     public pageIndex: number;
     public pageSize: number;
     public contracts: any[] = [];
+
+    private selectedUser: any;
 
     constructor(
         public tagsService: TagsService,
@@ -106,26 +108,56 @@ export class TokenConfigComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.profileService.getProfile(),
-            this.policyEngineService.all(),
             this.tagsService.getPublishedSchemas()
-        ]).subscribe((value) => {
-            const profile = value[0];
-            const policies = value[1] || [];
-            const tagSchemas: any[] = value[2] || [];
-
+        ]).subscribe(([profile, tagSchemas]) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
-            this.policies = policies;
-            this.policies.unshift({ id: -1, name: 'All policies' });
-            if (this.currentPolicy) {
-                this.policyDropdownItem = policies.find(p => p.id === this.currentPolicy);
-            }
-            this.tagSchemas = SchemaHelper.map(tagSchemas);
-            this.queryChange();
+            this.user = new UserPermissions(profile);
+            this.tagSchemas = SchemaHelper.map(tagSchemas || []);
+            this.loadPolicies();
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
+    }
+
+    private loadPolicies() {
+        if (this.user.POLICIES_POLICY_READ) {
+            this.loading = true;
+            this.policyEngineService.all().subscribe((value) => {
+                const policies = value || [];
+                this.policies = policies;
+                this.policies.unshift({ id: -1, name: 'All policies' });
+                if (this.currentPolicy) {
+                    this.policyDropdownItem = policies.find(p => p.id === this.currentPolicy);
+                }
+                this.loadContracts();
+            }, ({ message }) => {
+                this.loading = false;
+                console.error(message);
+            });
+        } else {
+            this.policies = null;
+            this.loadContracts();
+        }
+    }
+
+    private loadContracts() {
+        if (this.user.CONTRACTS_CONTRACT_MANAGE) {
+            this.loading = true;
+            this.contractService.getContracts({
+                type: ContractType.WIPE
+            }).subscribe((value) => {
+                this.contracts = value?.body || [];
+                this.queryChange();
+            }, ({ message }) => {
+                this.loading = false;
+                console.error(message);
+            });
+        } else {
+            this.contracts = [];
+            this.queryChange();
+        }
     }
 
     private queryChange() {
@@ -152,19 +184,25 @@ export class TokenConfigComponent implements OnInit {
 
     private loadTokens() {
         this.loading = true;
-        forkJoin([
-            this.tokenService.getTokensPage(this.currentPolicy, this.pageIndex, this.pageSize),
-            this.contractService.getContracts({
-                type: ContractType.WIPE
-            })
-        ]).subscribe((value) => {
-            this.contracts = value[1] && value[1].body || [];
-            const tokensResponse = value[0];
-            const data = tokensResponse.body || [];
+        this.tokenService.getTokensPage(
+            this.currentPolicy,
+            this.pageIndex,
+            this.pageSize,
+            'All'
+        ).subscribe((tokensResponse) => {
+            const data = tokensResponse?.body || [];
             this.tokens = data.map((e: any) => new Token(e));
-            this.tokensCount =
-                tokensResponse.headers.get('X-Total-Count') ||
+            this.tokensCount = tokensResponse?.headers.get('X-Total-Count') ||
                 this.tokens.length;
+            this.loadTagsData();
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
+
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 for (const token of this.tokens) {
@@ -177,7 +215,11 @@ export class TokenConfigComponent implements OnInit {
                 console.error(e.error);
                 this.loading = false;
             });
-        });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     public onFilter() {
@@ -237,16 +279,16 @@ export class TokenConfigComponent implements OnInit {
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
                         const { result } = task;
-                        this.refreshUser(this.user, result);
-                        this.user = null;
+                        this.refreshUser(this.selectedUser, result);
+                        this.selectedUser = null;
                     });
                     break;
                 case OperationMode.Freeze:
                     this.taskService.get(taskId).subscribe((task) => {
                         this.loading = false;
                         const { result } = task;
-                        this.refreshUser(this.user, result);
-                        this.user = null;
+                        this.refreshUser(this.selectedUser, result);
+                        this.selectedUser = null;
                     });
                     break;
                 default:
@@ -319,7 +361,7 @@ export class TokenConfigComponent implements OnInit {
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Freeze;
-            this.user = user;
+            this.selectedUser = user;
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -333,7 +375,7 @@ export class TokenConfigComponent implements OnInit {
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
             this.operationMode = OperationMode.Kyc;
-            this.user = user;
+            this.selectedUser = user;
         }, (e) => {
             console.error(e.error);
             this.loading = false;

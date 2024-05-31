@@ -1,4 +1,4 @@
-# 🥇 Gold Standard Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate
+# 🥇 Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate
 
 ## Table of Contents
 
@@ -83,7 +83,7 @@ Carbon sequestration projects play a crucial role in addressing global climate c
 
 ### Policy Workflow  <a href="#toc157611386" id="toc157611386"></a>
 
-<figure><img src="../../../.gitbook/assets/0 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide  <a href="#toc157611387" id="toc157611387"></a>
 

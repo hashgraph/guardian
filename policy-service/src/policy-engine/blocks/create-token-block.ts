@@ -6,7 +6,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType, } from '../i
 import { ChildrenType, ControlType, } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { MessageAction, MessageServer, TokenMessage } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -58,7 +58,7 @@ export class CreateTokenBlock {
      * @param user
      * @param active
      */
-    private changeActive(user: IPolicyUser, active: boolean) {
+    private changeActive(user: PolicyUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         if (this.state.hasOwnProperty(user.id)) {
             this.state[user.id].active = active;
@@ -73,7 +73,7 @@ export class CreateTokenBlock {
      * Get active state
      * @param user
      */
-    private getActive(user: IPolicyUser) {
+    private getActive(user: PolicyUser) {
         if (!this.state.hasOwnProperty(user.id)) {
             this.state[user.id] = { active: true };
         } else {
@@ -88,7 +88,7 @@ export class CreateTokenBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const tokenTemplate = PolicyUtils.getTokenTemplate(ref, ref.options.template);
@@ -124,7 +124,7 @@ export class CreateTokenBlock {
             PolicyOutputEventType.RefreshEvent,
         ],
     })
-    async setData(user: IPolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`setData`);
 

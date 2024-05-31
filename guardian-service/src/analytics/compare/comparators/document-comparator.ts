@@ -464,6 +464,15 @@ export class DocumentComparator {
                 }
             }
             documentModel.setRelationships(relationshipModels);
+        } else if (options.refLvl === IRefLvl.Direct) {
+            const relationshipModels: DocumentModel[] = [];
+            for (const relationship of documentModel.relationshipIds) {
+                const item = await DocumentComparator.createDocument(cacheDocuments, cacheSchemas, relationship, options);
+                if (item) {
+                    relationshipModels.push(item);
+                }
+            }
+            documentModel.setRelationships(relationshipModels);
         } else if (options.refLvl === IRefLvl.Merge) {
             //Merge (old 2)
             const documents = await DocumentComparator.loadDocumentsByRef(documentModel.messageId, options);

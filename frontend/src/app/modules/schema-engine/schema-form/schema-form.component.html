@@ -132,7 +132,10 @@
                                                    [preset]="item.preset">
                             </app-sentinel-hub-type>
                             <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields" [private-fields]="hide"
-                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="item.preset" [isChildSchema]="true">
+                                             [conditions]="item.conditions" [delimiter-hide]="true"
+                                             [dryRun]="dryRun" [isChildSchema]="true"
+                                             [policyId]="policyId" [preset]="item.preset"
+                            >
                             </app-schema-form>
                         </ng-container>
                     </div>
@@ -274,7 +277,10 @@
                                                    [formGroup]="listItem.control" [preset]="listItem.preset">
                             </app-sentinel-hub-type>
                             <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields" [private-fields]="hide"
-                                [delimiter-hide]="true" [conditions]="item.conditions" [preset]="listItem.preset" [isChildSchema]="true">
+                                             [conditions]="item.conditions" [delimiter-hide]="true"
+                                             [dryRun]="dryRun" [isChildSchema]="true"
+                                             [policyId]="policyId" [preset]="listItem.preset"
+                            >
                             </app-schema-form>
                         </ng-container>
 
@@ -303,13 +309,16 @@
                     [fields]="condition.thenFields" [formGroup]="condition.conditionForm" [preset]="condition.preset"
                     [readonly-fields]="readonly"
                     (destroy)="removeConditionFields(condition.thenFields, condition)"
-                    [isChildSchema]="true"></app-schema-form>
+                    [dryRun]="dryRun"
+                    [isChildSchema]="true"
+                    [policyId]="policyId"
+                ></app-schema-form>
                 <ng-template #elseCondition>
                     <app-schema-form *ngIf="condition.elseFields && condition.elseFields.length > 0"
                         [readonly-fields]="readonly" [fields]="condition.elseFields"
                         [formGroup]="condition.conditionForm" [preset]="condition.preset"
                         (destroy)="removeConditionFields(condition.elseFields, condition)"
-                        [isChildSchema]="true">
+                                     [dryRun]="dryRun" [isChildSchema]="true" [policyId]="policyId">
                     </app-schema-form>
                 </ng-template>
             </div>

@@ -5,7 +5,7 @@ import { IImpactReport, IPolicyReport, IReport, IReportItem, IVCReport, SchemaEn
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { getVCField, VcDocument, VpDocument } from '@guardian/common';
@@ -395,7 +395,7 @@ export class ReportBlock {
      * @param user
      * @param uuid
      */
-    async getData(user: IPolicyUser, uuid: string): Promise<any> {
+    async getData(user: PolicyUser, uuid: string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.id] || {};
@@ -478,7 +478,7 @@ export class ReportBlock {
      * @param user
      * @param data
      */
-    async setData(user: IPolicyUser, data: any) {
+    async setData(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const value = data.filterValue;

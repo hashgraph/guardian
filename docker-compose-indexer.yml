@@ -1,0 +1,105 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6.0.13
+    command: "--setParameter allowDiskUseByDefault=true"
+    restart: always
+    expose:
+      - 27017
+
+  mongo-express:
+    image: mongo-express:1.0.2-20
+    expose:
+      - 8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin # default credentials: admin/pass
+    depends_on:
+      - mongo
+  
+  ipfs-node:
+    image: ipfs/kubo:latest
+    ports:
+      - "5001:5001"
+      - "4001:4001"
+      - "8080:8080"
+
+  message-broker:
+    image: nats:2.9.24
+    expose:
+      - 4222
+    ports:
+      - '8222:8222'
+    command: '--http_port 8222'
+
+  indexer-worker-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
+    build:
+      context: .
+      dockerfile: ./indexer-worker-service/Dockerfile
+    init: true    
+    depends_on:
+      - mongo
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+    volumes:
+      - ./indexer-worker-service/tls:/usr/local/indexer-worker-service/tls:ro
+      - ./indexer-worker-service/configs:/usr/local/indexer-worker-service/configs:ro
+    deploy:
+      replicas: 5
+
+  indexer-api-gateway:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
+    build:
+      context: .
+      dockerfile: ./indexer-api-gateway/Dockerfile
+    init: true    
+    expose:
+      - 3002
+      - 6555
+    depends_on:
+      - mongo
+      - message-broker
+      - indexer-service
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    volumes:
+      - ./indexer-api-gateway/configs:/usr/local/indexer-api-gateway/configs:ro
+
+  indexer-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
+    build:
+      context: .
+      dockerfile: ./indexer-service/Dockerfile
+    init: true    
+    ports:
+      - "5007:5007"
+    volumes:
+      - ./indexer-service/tls:/usr/local/indexer-service/tls:ro
+      - ./indexer-service/configs:/usr/local/indexer-service/configs:ro
+    depends_on:
+      - mongo
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+      - 5007
+
+  indexer-web-proxy:
+    build:
+      context: .
+      dockerfile: ./indexer-web-proxy/Dockerfile
+    init: true
+    ports:
+      - "3000:80"
+    depends_on:
+      - indexer-api-gateway
+      - indexer-service

@@ -36,6 +36,10 @@ body>.leader-line-areaAnchor {
     flex: 0 0 190px;
 }
 
+.mat-tooltip {
+    font-size: 14px;
+}
+
 .signed-in {
     &>.content {
         background: #fff;
@@ -423,7 +427,7 @@ input:not(:checked)+.slider:before {
     height: 10px;
     width: 10px;
     left: 3px;
-    bottom: 5px;
+    bottom: 4px;
     background-image: none;
     background-color: var(--color-grey-4, #B0B5BA);
 }

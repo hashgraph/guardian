@@ -1,0 +1,116 @@
+<main class="header" [attr.loading]="loading">
+
+    <div class="header-logo" routerLink="/" routerLinkActive="active">
+        <div class="header-logo__icon">
+            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.7304 13.631L21.7305 15.0966C21.7305 13.631 21.7304 13.631 21.7304 13.631Z"
+                    fill="#4169E2" />
+                <path d="M8.24981 8.30171L6.79161 8.28561C6.79161 8.28553 6.79161 8.28549 8.24981 8.30171Z"
+                    fill="#4169E2" />
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M5.83325 0.333008C2.79569 0.333008 0.333252 2.79544 0.333252 5.83301V24.1663C0.333252 27.2039 2.79569 29.6663 5.83325 29.6663H24.1666C27.2041 29.6663 29.6666 27.2039 29.6666 24.1663V5.83301C29.6666 2.79544 27.2041 0.333008 24.1666 0.333008H5.83325ZM23.1888 7.18516L14.9902 4.91634L6.80376 7.18176L6.79161 8.28561L6.78776 8.65399C6.78538 8.88883 6.78208 9.22527 6.77842 9.63194C6.77109 10.4451 6.7623 11.5399 6.75644 12.665C6.75058 13.7893 6.74763 14.9475 6.75205 15.8865C6.75626 16.7812 6.7667 17.5794 6.79852 17.9046C6.95785 19.5332 7.91501 20.7676 8.66989 21.5179C9.06239 21.908 9.44321 22.2101 9.72642 22.4156C9.86904 22.5191 9.9896 22.6 10.0781 22.6572C10.1224 22.6858 10.1589 22.7086 10.1863 22.7255L10.2206 22.7463L10.2324 22.7533L10.237 22.756L10.2398 22.7576C10.2402 22.7579 10.2406 22.7581 10.9746 21.4918L10.2406 22.7581L10.2832 22.7831L14.9045 25.083L15.4926 24.8661L14.9902 23.4903C15.4926 24.8661 15.4923 24.8662 15.4926 24.8661L15.4958 24.8649L15.501 24.863L15.5169 24.857L15.5703 24.8366C15.6153 24.8193 15.6787 24.7946 15.7581 24.7625C15.9168 24.6986 16.1405 24.6054 16.4101 24.4848C16.947 24.2447 17.6784 23.8905 18.4484 23.4356C19.2133 22.9836 20.0505 22.4124 20.7783 21.7301C21.4967 21.0566 22.1886 20.2005 22.538 19.1642C22.8314 18.2943 22.9885 17.271 23.0744 16.5235C23.1188 16.1379 23.1468 15.8012 23.1638 15.5598C23.1723 15.4388 23.1782 15.341 23.1819 15.272C23.1838 15.2375 23.1851 15.2102 23.1861 15.1908L23.1871 15.1676L23.1875 15.1582L23.1876 15.157C23.1876 15.1569 23.1876 15.1567 21.7305 15.0966L23.1876 15.157L23.2499 13.631H21.7304H14.5358V16.5621H20.1299C20.0495 17.1475 19.9337 17.7549 19.7757 18.2235C19.6396 18.6273 19.3178 19.0908 18.7889 19.5867C18.2694 20.0737 17.6256 20.5216 16.9703 20.9087C16.32 21.2929 15.6918 21.5978 15.2242 21.8069C15.1627 21.8344 15.1042 21.8602 15.0491 21.8841L11.6798 20.2073L11.6552 20.1915C11.6059 20.1597 11.5292 20.1084 11.4337 20.0391C11.2406 19.899 10.9817 19.6932 10.7207 19.4338C10.1686 18.8851 9.76336 18.2542 9.7011 17.6178C9.68611 17.4646 9.67316 16.8412 9.66859 15.8726C9.66424 14.9482 9.66714 13.8013 9.67298 12.6803C9.67882 11.5602 9.68758 10.4694 9.69488 9.65847L9.69704 9.42132L14.9902 7.95655L20.2722 9.41826V11.6325H23.1888V7.18516Z"
+                    fill="#4169E2" />
+            </svg>
+        </div>
+        <div class="header-logo__delimiter"></div>
+        <div class="header-logo__name">
+            {{ 'header.name' | transloco }}
+        </div>
+    </div>
+    <div class="header-nav">
+        <div class="header-nav-search">
+            <form (submit)="onSearch()" class="header-nav-search__form">
+                <p-iconField iconPosition="right" class="icon-field header-nav-search__field">
+                    <p-inputIcon styleClass="pi pi-search icon-field__icon" (click)="search.focus()" />
+                    <input #search class="icon-field__input" pInputText
+                        [placeholder]="'header.search_placeholder' | transloco" type="text"
+                        [formControl]="searchControl" />
+                </p-iconField>
+            </form>
+        </div>
+
+        <div class="header-nav-menu" (click)="accounts.toggle($event)">
+            <div class="header-nav-menu__label">
+                {{ 'header.accounts' | transloco }}
+            </div>
+            <div class="header-nav-menu__icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g opacity="0.6">
+                        <path d="M12 6.33301L8 10.333L4 6.33301H12Z" fill="#23252E" />
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="header-nav-menu" (click)="methodologies.toggle($event)">
+            <div class="header-nav-menu__label">
+                {{ 'header.methodologies' | transloco }}
+            </div>
+            <div class="header-nav-menu__icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g opacity="0.6">
+                        <path d="M12 6.33301L8 10.333L4 6.33301H12Z" fill="#23252E" />
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="header-nav-menu" (click)="documents.toggle($event)">
+            <div class="header-nav-menu__label">
+                {{ 'header.documents' | transloco }}
+            </div>
+            <div class="header-nav-menu__icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g opacity="0.6">
+                        <path d="M12 6.33301L8 10.333L4 6.33301H12Z" fill="#23252E" />
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <div class="header-nav-menu" (click)="others.toggle($event)">
+            <div class="header-nav-menu__label">
+                {{ 'header.others' | transloco }}
+            </div>
+            <div class="header-nav-menu__icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g opacity="0.6">
+                        <path d="M12 6.33301L8 10.333L4 6.33301H12Z" fill="#23252E" />
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <p-menu #accounts [popup]="true" [model]="accountsMenu">
+            <ng-template pTemplate="item" let-item>
+                <a pRipple class="flex align-items-center p-menuitem-link" [routerLink]="item.routerLink">
+                    <span>{{ item.label | transloco }}</span>
+                </a>
+            </ng-template>
+        </p-menu>
+
+        <p-menu #methodologies [popup]="true" [model]="methodologiesMenu">
+            <ng-template pTemplate="item" let-item>
+                <a pRipple class="flex align-items-center p-menuitem-link" [routerLink]="item.routerLink">
+                    <span>{{ item.label | transloco }}</span>
+                </a>
+            </ng-template>
+        </p-menu>
+
+        <p-menu #documents [popup]="true" [model]="documentsMenu">
+            <ng-template pTemplate="item" let-item>
+                <a pRipple class="flex align-items-center p-menuitem-link" [routerLink]="item.routerLink">
+                    <span>{{ item.label | transloco }}</span>
+                </a>
+            </ng-template>
+        </p-menu>
+
+        <p-menu #others [popup]="true" [model]="othersMenu">
+            <ng-template pTemplate="item" let-item>
+                <a pRipple class="flex align-items-center p-menuitem-link" [routerLink]="item.routerLink">
+                    <span>{{ item.label | transloco }}</span>
+                </a>
+            </ng-template>
+        </p-menu>
+    </div>
+</main>

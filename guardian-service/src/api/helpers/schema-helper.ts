@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import path from 'path';
 import fs from 'fs-extra';
 
@@ -97,6 +97,14 @@ export async function setDefaultSchema() {
         throw new Error(`You need to fill ${SchemaEntity.WIPE_TOKEN} field in system-schemas.json file`);
     }
 
+    if (!map.hasOwnProperty(SchemaEntity.ROLE)) {
+        throw new Error(`You need to fill ${SchemaEntity.ROLE} field in system-schemas.json file`);
+    }
+
+    if (!map.hasOwnProperty(SchemaEntity.USER_PERMISSIONS)) {
+        throw new Error(`You need to fill ${SchemaEntity.USER_PERMISSIONS} field in system-schemas.json file`);
+    }
+
     const fn = async (schema: any) => {
         const existingSchemas = await DatabaseServer.getSchema({
             uuid: schema.uuid,
@@ -126,6 +134,8 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.CHUNK]);
     await fn(map[SchemaEntity.ACTIVITY_IMPACT]);
     await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
+    await fn(map[SchemaEntity.ROLE]);
+    await fn(map[SchemaEntity.USER_PERMISSIONS]);
 }
 
 /**
@@ -212,14 +222,17 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
 /**
  * Increment schema version
  * @param iri
- * @param owner
+ * @param user
  */
-export async function incrementSchemaVersion(iri: string, owner: string): Promise<SchemaCollection> {
-    if (!owner || !iri) {
+export async function incrementSchemaVersion(
+    iri: string,
+    user: IOwner
+): Promise<SchemaCollection> {
+    if (!user || !iri) {
         throw new Error(`Invalid increment schema version parameter`);
     }
 
-    const schema = await DatabaseServer.getSchema({ iri, owner });
+    const schema = await DatabaseServer.getSchema({ iri, owner: user.owner });
 
     if (!schema) {
         return;
@@ -334,24 +347,34 @@ export async function sendSchemaMessage(
         .sendMessage(message);
 }
 
-export async function copyDefsSchemas(defs: any, owner: string, topicId: string, root: any) {
+export async function copyDefsSchemas(
+    defs: any,
+    user: IOwner,
+    topicId: string,
+    root: any
+) {
     if (!defs) {
         return;
     }
     const schemasIdsInDocument = Object.keys(defs);
     for (const schemaId of schemasIdsInDocument) {
-        await copySchemaAsync(schemaId, topicId, null, owner);
+        await copySchemaAsync(schemaId, topicId, null, user);
     }
 }
 
-export async function copySchemaAsync(iri: string, topicId: string, name: string, owner: string) {
+export async function copySchemaAsync(
+    iri: string,
+    topicId: string,
+    name: string,
+    user: IOwner
+) {
     const users = new Users();
-    const root = await users.getHederaAccount(owner);
+    const root = await users.getHederaAccount(user.creator);
 
     let item = await DatabaseServer.getSchema({ iri });
 
     const oldSchemaIri = item.iri;
-    await copyDefsSchemas(item.document?.$defs, owner, topicId, root);
+    await copyDefsSchemas(item.document?.$defs, user, topicId, root);
     item = await DatabaseServer.getSchema({ iri });
 
     let contextURL = null;
@@ -409,8 +432,8 @@ export async function copySchemaAsync(iri: string, topicId: string, name: string
  */
 export async function createSchemaAndArtifacts(
     category: SchemaCategory,
-    newSchema: any,
-    owner: string,
+    newSchema: ISchema,
+    user: IOwner,
     notifier: INotifier
 ) {
     let old: SchemaCollection;
@@ -420,7 +443,7 @@ export async function createSchemaAndArtifacts(
         if (!old) {
             throw new Error('Schema does not exist.');
         }
-        if (old.creator !== owner) {
+        if (old.owner !== user.owner) {
             throw new Error('Invalid creator.');
         }
         previousVersion = old.version;
@@ -437,7 +460,7 @@ export async function createSchemaAndArtifacts(
     }
 
     SchemaHelper.setVersion(newSchema, null, previousVersion);
-    const row = await createSchema(newSchema, newSchema.owner, notifier);
+    const row = await createSchema(newSchema, user, notifier);
 
     if (old) {
         const tags = await DatabaseServer.getTags({
@@ -456,7 +479,7 @@ export async function createSchemaAndArtifacts(
  */
 export async function createSchema(
     newSchema: ISchema,
-    owner: string,
+    user: IOwner,
     notifier: INotifier
 ): Promise<SchemaCollection> {
     if (checkForCircularDependency(newSchema)) {
@@ -467,11 +490,12 @@ export async function createSchema(
     delete newSchema._id;
     const users = new Users();
     notifier.start('Resolve Hedera account');
-    const root = await users.getHederaAccount(owner);
+    const root = await users.getHederaAccount(user.creator);
     notifier.completedAndStart('Save in DB');
     if (newSchema) {
         delete newSchema.status;
     }
+
     const schemaObject = DatabaseServer.createSchema(newSchema);
     notifier.completedAndStart('Resolve Topic');
     let topic: TopicConfig;
@@ -485,7 +509,7 @@ export async function createSchema(
             type: TopicType.SchemaTopic,
             name: TopicType.SchemaTopic,
             description: TopicType.SchemaTopic,
-            owner,
+            owner: user.creator,
             policyId: null,
             policyUUID: null
         });
@@ -523,7 +547,6 @@ export async function createSchema(
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
     }
-
     notifier.completedAndStart('Save to IPFS & Hedera');
     if (topic) {
         await sendSchemaMessage(
@@ -533,7 +556,6 @@ export async function createSchema(
             schemaObject
         );
     }
-
     notifier.completedAndStart('Update schema in DB');
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
     notifier.completed();
@@ -545,7 +567,11 @@ export async function createSchema(
  * @param schemaId Schema ID
  * @param notifier Notifier
  */
-export async function deleteSchema(schemaId: any, notifier: INotifier) {
+export async function deleteSchema(
+    schemaId: any,
+    owner: IOwner,
+    notifier: INotifier
+) {
     if (!schemaId) {
         return;
     }
@@ -563,7 +589,7 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
         if (topic) {
             const users = new Users();
-            const root = await users.getHederaAccount(item.owner);
+            const root = await users.getHederaAccount(owner.creator);
             await sendSchemaMessage(
                 root,
                 topic,

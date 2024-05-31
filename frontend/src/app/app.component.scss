@@ -31,6 +31,46 @@ body {
     font-size: 14px;
 }
 
+::ng-deep .toast-container {
+    max-height: 70vh;
+    overflow: auto;
+    padding-top: 210px;
+
+    &>div {
+        position: absolute !important;
+        bottom: 0px;
+    }
+
+    &>div:nth-last-child(6) {
+        position: absolute !important;
+        bottom: 200px;
+    }
+
+    &>div:nth-last-child(5) {
+        position: absolute !important;
+        bottom: 160px;
+    }
+
+    &>div:nth-last-child(4) {
+        position: absolute !important;
+        bottom: 120px;
+    }
+
+    &>div:nth-last-child(3) {
+        position: absolute !important;
+        bottom: 80px;
+    }
+
+    &>div:nth-last-child(2) {
+        position: absolute !important;
+        bottom: 40px;
+    }
+
+    &>div:nth-last-child(1) {
+        position: relative !important;
+    }
+}
+
 .app {
     width: 100vw;
     min-height: 100vh;

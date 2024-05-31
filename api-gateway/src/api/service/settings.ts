@@ -1,98 +1,135 @@
-import { Guardians } from '../../helpers/guardians.js';
-import { AboutInterface, CommonSettings, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/common';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { SettingsDTO } from '../../middlewares/validation/schemas/settings.js';
+import { AboutInterface, CommonSettings, Permissions } from '@guardian/interfaces';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
+import { Auth } from '#auth';
+import { Guardians, InternalException } from '#helpers';
 import process from 'process';
 
 @Controller('settings')
 @ApiTags('settings')
 export class SettingsApi {
+    /**
+     * Set settings
+     */
+    @Post('/')
+    @Auth(
+        Permissions.SETTINGS_SETTINGS_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Set settings.',
         description: 'Set settings. For users with the Standard Registry role only.',
+    })
+    @ApiBody({
+        description: 'Settings.',
+        required: true,
+        type: SettingsDTO,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
-    @Post('/')
+    @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async updateSettings(@Body() body: SettingsDTO, @Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async updateSettings(
+        @Body() body: SettingsDTO
+    ): Promise<any> {
         try {
             const settings = body as CommonSettings;
             const guardians = new Guardians();
-            await Promise.all([
-                guardians.updateSettings(settings)
-            ]);
-            return res.status(201).json(null);
+            await Promise.all([guardians.updateSettings(settings)]);
+            return null;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get settings
+     */
+    @Get('/')
+    @Auth(
+        Permissions.SETTINGS_SETTINGS_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Returns current settings.',
         description: 'Returns current settings. For users with the Standard Registry role only.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        type: SettingsDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
-    @Get('/')
+    @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getSettings(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async getSettings(): Promise<SettingsDTO> {
         try {
             const guardians = new Guardians();
-            const [guardiansSettings] = await Promise.all([
-                guardians.getSettings()
-            ]);
-            res.json({
-                ...guardiansSettings
-            });
+            const [guardiansSettings] = await Promise.all([guardians.getSettings()]);
+            return { ...guardiansSettings } as any;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get settings
+     */
     @Get('/environment')
+    @Auth()
+    @ApiOperation({
+        summary: 'Returns current environment name.',
+        description: 'Returns current environment name.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getEnvironment(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(req.user);
+    async getEnvironment(): Promise<string> {
         try {
             const guardians = new Guardians();
-            const environment = await guardians.getEnvironment();
-            return res.send(environment);
+            return await guardians.getEnvironment();
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Get about
+     */
     @Get('/about')
+    @Auth(
+        Permissions.SETTINGS_SETTINGS_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns package version.',
+        description: 'Returns package version. For users with the Standard Registry role only.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getAbout(@Req() req): Promise<AboutInterface> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-
-        return {
-            version: process.env.npm_package_version
-        }
+    async getAbout(): Promise<AboutInterface> {
+        return { version: process.env.npm_package_version };
     }
 }
