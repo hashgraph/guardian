@@ -151,7 +151,7 @@ Promise.all([
         const analytics = new SynchronizationTask(
             'analytics',
             syncAnalytics,
-            process.env.SYNC_ANALYTICS_MASK || '0 0 * * *'
+            process.env.SYNC_ANALYTICS_MASK || '0 * * * *'
         );
         analytics.start(
             process.env.START_SYNC_ANALYTICS?.toLowerCase() === 'true'
@@ -159,7 +159,7 @@ Promise.all([
         const modulesSync = new SynchronizationTask(
             'modules',
             syncModules,
-            process.env.SYNC_MODULES_MASK || '0 0 * * *'
+            process.env.SYNC_MODULES_MASK || '0 * * * *'
         );
         modulesSync.start(
             process.env.START_SYNC_MODULES?.toLowerCase() === 'true'
@@ -167,7 +167,7 @@ Promise.all([
         const registriesSync = new SynchronizationTask(
             'registries',
             syncRegistries,
-            process.env.SYNC_REGISTRIES_MASK || '0 0 * * *'
+            process.env.SYNC_REGISTRIES_MASK || '0 * * * *'
         );
         registriesSync.start(
             process.env.START_SYNC_REGISTRIES?.toLowerCase() === 'true'
@@ -175,19 +175,19 @@ Promise.all([
         const rolesSync = new SynchronizationTask(
             'roles',
             syncRoles,
-            process.env.SYNC_ROLES_MASK || '0 0 * * *'
+            process.env.SYNC_ROLES_MASK || '0 * * * *'
         );
         rolesSync.start(process.env.START_SYNC_ROLES?.toLowerCase() === 'true');
         const toolsSync = new SynchronizationTask(
             'tools',
             syncTools,
-            process.env.SYNC_TOOLS_MASK || '0 0 * * *'
+            process.env.SYNC_TOOLS_MASK || '0 * * * *'
         );
         toolsSync.start(process.env.START_SYNC_TOOLS?.toLowerCase() === 'true');
         const topicsSync = new SynchronizationTask(
             'topics',
             syncTopics,
-            process.env.SYNC_TOPICS_MASK || '0 0 * * *'
+            process.env.SYNC_TOPICS_MASK || '0 * * * *'
         );
         topicsSync.start(
             process.env.START_SYNC_TOPICS?.toLowerCase() === 'true'
@@ -195,7 +195,7 @@ Promise.all([
         const schemasSync = new SynchronizationTask(
             'schemas',
             sychronizeSchemas,
-            process.env.SYNC_SCHEMAS_MASK || '0 0 * * *'
+            process.env.SYNC_SCHEMAS_MASK || '0 * * * *'
         );
         schemasSync.start(
             process.env.START_SYNC_SCHEMAS?.toLowerCase() === 'true'
@@ -203,7 +203,7 @@ Promise.all([
         const didDocumentsSync = new SynchronizationTask(
             'dids',
             syncDidDocuments,
-            process.env.SYNC_DID_DOCUMENTS_MASK || '0 0 * * *'
+            process.env.SYNC_DID_DOCUMENTS_MASK || '0 * * * *'
         );
         didDocumentsSync.start(
             process.env.START_SYNC_DID_DOCUMENTS?.toLowerCase() === 'true'
@@ -211,7 +211,7 @@ Promise.all([
         const vcDocumentsSync = new SynchronizationTask(
             'vcs',
             sychronizeVCs,
-            process.env.SYNC_VC_DOCUMENTS_MASK || '0 0 * * *'
+            process.env.SYNC_VC_DOCUMENTS_MASK || '0 * * * *'
         );
         vcDocumentsSync.start(
             process.env.START_SYNC_VC_DOCUMENTS?.toLowerCase() === 'true'
@@ -219,7 +219,7 @@ Promise.all([
         const vpDocumentsSync = new SynchronizationTask(
             'vps',
             sychronizeVPs,
-            process.env.SYNC_VC_DOCUMENTS_MASK || '0 0 * * *'
+            process.env.SYNC_VC_DOCUMENTS_MASK || '0 * * * *'
         );
         vpDocumentsSync.start(
             process.env.START_SYNC_VP_DOCUMENTS?.toLowerCase() === 'true'
@@ -227,7 +227,7 @@ Promise.all([
         const policy = new SynchronizationTask(
             'policy',
             sychronizePolicies,
-            process.env.SYNC_POLICIES_MASK || '0 0 * * *'
+            process.env.SYNC_POLICIES_MASK || '0 * * * *'
         );
         policy.start(process.env.START_SYNC_POLICIES?.toLowerCase() === 'true');
     },
