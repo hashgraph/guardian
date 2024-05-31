@@ -8,4 +8,5 @@ export const REQUIRED_PROPS = {
   ROLE: 'role',
   ID: 'id',
   PERMISSIONS: 'permissions',
+  PERMISSION_GROUP: 'permissionsGroup'
 };
