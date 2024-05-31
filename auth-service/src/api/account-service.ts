@@ -128,7 +128,7 @@ export class AccountService extends NatsService {
 
                 const userRequiredProps = {}
 
-                for(const prop of Object.values(USER_REQUIRED_PROPS)) {
+                for (const prop of Object.values(USER_REQUIRED_PROPS)) {
                     userRequiredProps[prop] = user[prop];
                 }
 
@@ -473,7 +473,7 @@ export class AccountService extends NatsService {
                 const options: any = { parent };
                 if (filters) {
                     if (filters.role) {
-                        options.permissionsGroup = filters.role;
+                        options['permissionsGroup.roleId'] = filters.role;
                     }
                     if (filters.username) {
                         options.username = { $regex: '.*' + filters.username + '.*' };
@@ -482,9 +482,7 @@ export class AccountService extends NatsService {
                         options.did = filters.did;
                     }
                 }
-
                 const [items, count] = await new DataBaseHelper(User).findAndCount(options, otherOptions);
-
                 return new MessageResponse({ items, count });
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
