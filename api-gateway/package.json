@@ -4,8 +4,8 @@
         "@fastify/formbody": "^7.4.0",
         "@fastify/multipart": "^8.2.0",
         "@fastify/static": "^7.0.0",
-        "@guardian/common": "^2.24.1",
-        "@guardian/interfaces": "^2.24.1",
+        "@guardian/common": "^2.25.0",
+        "@guardian/interfaces": "^2.25.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/jwt": "^10.0.3",
@@ -87,5 +87,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "2.24.1"
+    "version": "2.25.0"
 }
