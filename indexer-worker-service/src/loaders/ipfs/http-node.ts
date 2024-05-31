@@ -16,10 +16,9 @@ export class HttpNode {
                     timeout: 60 * 1000,
                 }
             );
-            console.timeEnd(cid);
+            console.log('loaded: ' + cid);
             return items.data;
         } catch (error) {
-            console.timeEnd(cid);
             console.log(error);
             throw error;
         }

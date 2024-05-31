@@ -171,7 +171,11 @@ export class MessageService {
         return new Promise<string>((resolve, reject) => {
             try {
                 const fileStream = DataBaseHelper.gridFS.openUploadStream(cid);
-                fileStream.end(document, () => resolve(fileStream.id?.toString()));
+                fileStream.write(document);
+                fileStream.end(() => {
+                    console.log('wrote: ', fileStream.id);
+                    resolve(fileStream.id?.toString());
+                });
             } catch (error) {
                 console.log(error);
                 reject(error);
