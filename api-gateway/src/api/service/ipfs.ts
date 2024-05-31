@@ -1,10 +1,9 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response } from '@nestjs/common';
-import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOperation, ApiSecurity, ApiTags, ApiBody, ApiOkResponse, ApiParam } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, StreamableFile } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth } from '#auth';
-import { CACHE } from '../../constants/index.js';
 import { Examples, InternalServerErrorDTO } from '#middlewares';
-import { Guardians, UseCache, InternalException } from '#helpers';
+import { Guardians, InternalException } from '#helpers';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
@@ -114,7 +113,12 @@ export class IpfsApi {
      * Get file
      */
     @Get('/file/:cid')
-    @ApiSecurity('bearer')
+    @Auth(
+        Permissions.IPFS_FILE_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Get file from ipfs.',
         description: 'Get file from ipfs.',
@@ -137,27 +141,18 @@ export class IpfsApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
+    // @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFile(
-        @Req() req: any,
-        @Response() res: any
+        @Param('cid') cid: string
     ): Promise<any> {
-        if (!req.user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
         try {
             const guardians = new Guardians();
-            const result = await guardians.getFileIpfs(req.params.cid, 'raw');
+            const result = await guardians.getFileIpfs(cid, 'raw');
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
-            const resultBuffer = Buffer.from(result);
-            res.writeHead(200, {
-                'Content-Type': 'binary/octet-stream',
-                'Content-Length': resultBuffer.length,
-            });
-            return res.end(resultBuffer, 'binary');
+            return new StreamableFile(Buffer.from(result));
         } catch (error) {
             await InternalException(error);
         }
@@ -195,11 +190,10 @@ export class IpfsApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
+    // @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFileDryRun(
-        @Param('cid') cid: string,
-        @Response() res: any
+        @Param('cid') cid: string
     ): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -207,12 +201,7 @@ export class IpfsApi {
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
-            const resultBuffer = Buffer.from(result);
-            res.writeHead(200, {
-                'Content-Type': 'binary/octet-stream',
-                'Content-Length': resultBuffer.length,
-            });
-            return res.end(resultBuffer, 'binary');
+            return new StreamableFile(Buffer.from(result));
         } catch (error) {
             await InternalException(error);
         }
