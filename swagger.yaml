@@ -12490,6 +12490,8 @@ components:
             - CHUNK
             - ACTIVITY_IMPACT
             - TOKEN_DATA_SOURCE
+            - ROLE
+            - USER_PERMISSIONS
           example: POLICY
         iri:
           type: string
@@ -14246,12 +14248,15 @@ components:
     AssignPolicyDTO:
       type: object
       properties:
-        policyId:
-          type: string
-          example: '000000000000000000000001'
+        policyIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
         assign:
           type: boolean
           example: true
       required:
-        - policyId
+        - policyIds
         - assign

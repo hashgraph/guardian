@@ -28,13 +28,11 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }[];
     public group: PermissionsGroup;
     public permissions: any[] = [];
-
     public policyPage: any[] = [];
     public pageIndex: number = 0;
     public pageSize: number = 25;
     public policyCount: number = 0;
     public selectedIndex: number = 0;
-
     public statusFilterValue: any = 'ALL';
     public statusFilterOption = [{
         name: 'All',
@@ -63,9 +61,12 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         name: 'Published',
         value: 'PUBLISH',
         color: 'green'
-    }]
+    }];
+    public needSave: boolean = false;
+    public allPolicy: boolean = false;
 
     private subscription = new Subscription();
+    private oldGroups: Map<string, any>;
 
     constructor(
         private permissionsService: PermissionsService,
@@ -123,23 +124,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.permissionsService.getUser(this.username).subscribe((user) => {
             this.target = user;
-            this.roleIds = [];
-            this.roleGroups = [];
-            if (this.target.permissionsGroup) {
-                for (const group of this.target.permissionsGroup) {
-                    const item = {
-                        roleId: group.roleId,
-                        roleName: group.roleName,
-                        owner: group.owner,
-                        canEdit: group.owner === this.user.did || this.user.PERMISSIONS_ROLE_MANAGE,
-                        own: group.owner === this.user.did
-                    }
-                    this.roleGroups.push(item);
-                    if (item.canEdit) {
-                        this.roleIds.push(item.roleId);
-                    }
-                }
-            }
+            this.setControls();
             this.updateControls();
             setTimeout(() => {
                 this.loading = false;
@@ -160,6 +145,11 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         ).subscribe((response) => {
             this.policyPage = response.body || [];
             this.policyCount = parseInt(response.headers.get('X-Total-Count') as any, 10) || this.policyPage.length;
+            this.allPolicy = true;
+            for (const p of this.policyPage) {
+                this.allPolicy = this.allPolicy && p.assigned;
+                p._canAssign = !(p.assigned && p.assignedBy !== this.user.did && !this.user.PERMISSIONS_ROLE_MANAGE);
+            }
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -174,7 +164,58 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         console.error(error);
     }
 
+    private setControls() {
+        const oldGroups = new Map<string, any>();
+        const groups = this.target.permissionsGroup || [];
+        for (const group of groups) {
+            const item = {
+                roleId: group.roleId,
+                roleName: group.roleName,
+                owner: group.owner,
+                canEdit: group.owner === this.user.did || this.user.PERMISSIONS_ROLE_MANAGE,
+                own: group.owner === this.user.did
+            }
+            if (!item.canEdit) {
+                const role = this.roleMap.get(item.roleId);
+                if (role) {
+                    role.disabled = true;
+                }
+            }
+            if (oldGroups.has(item.roleId)) {
+                const old = oldGroups.get(item.roleId);
+                if (!old.own) {
+                    oldGroups.set(item.roleId, item);
+                }
+            } else {
+                oldGroups.set(item.roleId, item);
+            }
+        }
+        this.roleIds = Array.from(oldGroups.keys());
+        this.oldGroups = oldGroups;
+    }
+
     private updateControls() {
+        const roleGroups = new Map<string, any>();
+        for (const id of this.roleIds) {
+            const role = this.roleMap.get(id);
+            roleGroups.set(id, {
+                roleId: id,
+                roleName: role?.name || id,
+                owner: this.user.did,
+                canEdit: true,
+                own: true
+            })
+        }
+        for (const group of this.oldGroups.values()) {
+            if (group.canEdit && roleGroups.has(group.roleId)) {
+                roleGroups.set(group.roleId, group);
+            }
+            if (!group.canEdit) {
+                roleGroups.set(group.roleId, group);
+            }
+        }
+        this.roleGroups = Array.from(roleGroups.values());
+
         this.group.clearValue();
 
         for (const action of this.group.actions.values()) {
@@ -219,14 +260,13 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public onChangeRole() {
         this.updateControls();
-        this.onSave();
+        this.needSave = this.changed();
     }
 
     public onDeleteRole(roleId: string) {
         this.roleIds = this.roleIds.filter((id) => id !== roleId);
-        this.roleGroups = this.roleGroups.filter((group) => group.roleId !== roleId);
         this.updateControls();
-        this.onSave();
+        this.needSave = this.changed();
     }
 
     public goToPage() {
@@ -254,10 +294,13 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             });
         } else if (this.user.DELEGATION_ROLE_MANAGE) {
             this.loading = true;
-            this.permissionsService.delegateRole(
-                this.username,
-                this.roleIds
-            ).subscribe((response) => {
+            const ids = [];
+            for (const group of this.roleGroups) {
+                if (group.own) {
+                    ids.push(group.roleId);
+                }
+            }
+            this.permissionsService.delegateRole(this.username, ids).subscribe((response) => {
                 this.loadData();
             }, (e) => {
                 this.loading = false;
@@ -282,24 +325,18 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     public assignPolicy(policy: any) {
+        const ids = [policy.id];
+        const assign = !policy.assigned;
         if (this.user.PERMISSIONS_ROLE_MANAGE) {
             this.loading = true;
-            this.permissionsService.assignPolicy(
-                this.username,
-                policy.id,
-                !policy.assigned
-            ).subscribe((response) => {
+            this.permissionsService.assignPolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
             }, (e) => {
                 this.loadError(e);
             });
         } else if (this.user.DELEGATION_ROLE_MANAGE) {
             this.loading = true;
-            this.permissionsService.delegatePolicy(
-                this.username,
-                policy.id,
-                !policy.assigned
-            ).subscribe((response) => {
+            this.permissionsService.delegatePolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
             }, (e) => {
                 this.loadError(e);
@@ -342,5 +379,44 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public onFilter() {
         this.loadPolicies();
+    }
+
+    public onCancelRole() {
+        this.needSave = false;
+        this.setControls();
+        this.updateControls();
+    }
+
+    public onSaveRole() {
+        this.needSave = false;
+        this.onSave();
+    }
+
+    public assignAllPolicy() {
+        const ids: string[] = [];
+        const assign = !this.allPolicy;
+        for (const policy of this.policyPage) {
+            if (policy.assigned !== assign && policy._canAssign) {
+                ids.push(policy.id);
+            }
+        }
+        if (!ids.length) {
+            return;
+        }
+        if (this.user.PERMISSIONS_ROLE_MANAGE) {
+            this.loading = true;
+            this.permissionsService.assignPolicy(this.username, ids, assign).subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loadError(e);
+            });
+        } else if (this.user.DELEGATION_ROLE_MANAGE) {
+            this.loading = true;
+            this.permissionsService.delegatePolicy(this.username, ids, assign).subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loadError(e);
+            });
+        }
     }
 }

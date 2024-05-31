@@ -133,6 +133,16 @@ export class Users extends NatsService {
     public async updateCurrentUser(username: string, item: any) {
         return await this.sendMessage(AuthEvents.UPDATE_USER, { username, item });
     }
+
+    /**
+     * Create default roles
+     * @param req
+     * @param item
+     */
+    public async createDefaultRole(username: string) {
+        return await this.sendMessage(AuthEvents.CREATE_DEFAULT_USER_ROLE, { username });
+    }
+
     /**
      * Update current user entity
      * @param req

@@ -93,11 +93,11 @@ export class PermissionsService {
         return this.http.get<any>(`${this.url}/users/${username}/policies`, { observe: 'response', params });
     }
 
-    public assignPolicy(username: string, policyId: any, assign: boolean) {
-        return this.http.post<any>(`${this.url}/users/${username}/policies/assign`, { policyId, assign });
+    public assignPolicy(username: string, policyIds: string[], assign: boolean) {
+        return this.http.post<any>(`${this.url}/users/${username}/policies/assign`, { policyIds, assign });
     }
 
-    public delegatePolicy(username: string, policyId: any, assign: boolean) {
-        return this.http.post<any>(`${this.url}/users/${username}/policies/delegate`, { policyId, assign });
+    public delegatePolicy(username: string, policyIds: string[], assign: boolean) {
+        return this.http.post<any>(`${this.url}/users/${username}/policies/delegate`, { policyIds, assign });
     }
 }

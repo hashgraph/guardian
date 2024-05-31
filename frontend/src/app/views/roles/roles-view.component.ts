@@ -7,6 +7,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { CategoryGroup, EntityGroup, PermissionsGroup } from 'src/app/utils/index';
 import { ICategory, IEntity } from 'src/app/utils/permissions-interface';
+import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-roles-view',
@@ -33,7 +35,8 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         private profileService: ProfileService,
         private route: ActivatedRoute,
         private router: Router,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private dialog: MatDialog
     ) {
     }
 
@@ -121,11 +124,24 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     }
 
     public onDelete(row: any) {
-        this.loading = true;
-        this.permissionsService.deleteRole(row.id).subscribe((response) => {
-            this.loadData();
-        }, (e) => {
-            this.loadError(e);
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            data: {
+                dialogTitle: 'Delete role',
+                dialogText: 'Are you sure to delete role?'
+            },
+            disableClose: true,
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            if (!result) {
+                return;
+            }
+            this.loading = true;
+            this.permissionsService.deleteRole(row.id).subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loadError(e);
+            });
         });
     }
 
@@ -228,7 +244,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     }
 
     public setDefault(row: any) {
-        if(row.default) {
+        if (row.default) {
             return;
         }
         this.loading = true;

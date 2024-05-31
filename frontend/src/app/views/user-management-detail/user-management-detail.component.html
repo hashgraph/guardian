@@ -44,6 +44,7 @@
                             [options]="roles"
                             optionLabel="name"
                             optionValue="id"
+                            optionDisabled="disabled"
                             [(ngModel)]="roleIds"
                             emptyMessage="Search by Role name"
                             placeholder="Search by Role name"
@@ -121,6 +122,20 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="role-footer">
+                    <button (click)="onCancelRole()" 
+                            class="button secondary" 
+                            label="Cancel" 
+                            pButton
+                            type="button"></button>
+                    <button (click)="onSaveRole()" 
+                            [disabled]="!needSave"  
+                            label="Save" 
+                            pButton
+                            class="button" 
+                            type="button"></button>
+                </div>
             </div>
         </mat-tab>
         <mat-tab label="Assigned Policies">
@@ -155,7 +170,13 @@
                             <th class="header-cell-text cell-size-id">Description</th>
                             <th class="header-cell-text cell-size-id">Status</th>
                             <th class="header-cell-text cell-size-id">Version</th>
-                            <th class="header-cell-text cell-size-assigned">Assigned to This User</th>
+                            <th class="header-cell-text cell-size-assigned">
+                                <mat-checkbox 
+                                    color="primary" 
+                                    [checked]="allPolicy" 
+                                    (change)="assignAllPolicy()">Assigned to This User</mat-checkbox>
+                                
+                            </th>
                         </tr>
                         <tbody>
                             <ng-container *ngFor="let row of policyPage">
@@ -171,7 +192,7 @@
                                     <td class="row-cell-text cell-size-assigned">
                                         <mat-checkbox color="primary" 
                                             [checked]="row.assigned" 
-                                            [disabled]="row.assigned && row.assignedBy !== user.did && !user.PERMISSIONS_ROLE_MANAGE" 
+                                            [disabled]="!row._canAssign" 
                                             (change)="assignPolicy(row)"></mat-checkbox>
                                 </tr>
                             </ng-container>
@@ -187,8 +208,6 @@
             </div>
         </mat-tab>
     </mat-tab-group>
-
-
 
 </div>
 

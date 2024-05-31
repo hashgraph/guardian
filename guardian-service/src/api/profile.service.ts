@@ -123,7 +123,9 @@ async function setupUserProfile(
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
     });
+    await users.createDefaultRole(username);
     await users.setDefaultRole(username, profile.parent);
+
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
     if (profile.useFireblocksSigning) {
@@ -161,6 +163,37 @@ async function validateCommonDid(json: string | any, keys: IDidKey[]): Promise<C
         }
     }
     return document;
+}
+
+async function checkAndPublishSchema(
+    entity: SchemaEntity,
+    topicConfig: TopicConfig,
+    userDID: string,
+    srUser: IOwner,
+    messageServer: MessageServer,
+    logger: Logger,
+    notifier: INotifier
+): Promise<void> {
+    let schema = await new DataBaseHelper(SchemaCollection).findOne({
+        entity,
+        readonly: true,
+        topicId: topicConfig.topicId
+    });
+    if (!schema) {
+        schema = await new DataBaseHelper(SchemaCollection).findOne({
+            entity,
+            system: true,
+            active: true
+        });
+        if (schema) {
+            notifier.info(`Publish System Schema (${entity})`);
+            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE']);
+            schema.creator = userDID;
+            schema.owner = userDID;
+            const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
+            await new DataBaseHelper(SchemaCollection).save(item);
+        }
+    }
 }
 
 /**
@@ -303,73 +336,53 @@ async function createUserProfile(
     let schemaObject: Schema;
     try {
         const srUser: IOwner = EntityOwner.sr(userDID);
-        let schema: SchemaCollection = null;
-
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
-            entity: SchemaEntity.STANDARD_REGISTRY,
-            readonly: true,
-            topicId: topicConfig.topicId
-        });
-        if (!schema) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
-                entity: SchemaEntity.STANDARD_REGISTRY,
-                system: true,
-                active: true
-            });
-            if (schema) {
-                notifier.info('Publish System Schema (STANDARD_REGISTRY)');
-                logger.info('Publish System Schema (STANDARD_REGISTRY)', ['GUARDIAN_SERVICE']);
-                schema.creator = userDID;
-                schema.owner = userDID;
-                const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
-                await new DataBaseHelper(SchemaCollection).save(item);
-            }
-        }
-
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
-            entity: SchemaEntity.USER,
-            readonly: true,
-            topicId: topicConfig.topicId
-        });
-        if (!schema) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
-                entity: SchemaEntity.USER,
-                system: true,
-                active: true
-            });
-            if (schema) {
-                notifier.info('Publish System Schema (USER)');
-                logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
-                schema.creator = userDID;
-                schema.owner = userDID;
-                const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
-                await new DataBaseHelper(SchemaCollection).save(item);
-            }
-        }
-
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
-            entity: SchemaEntity.RETIRE_TOKEN,
-            readonly: true,
-            topicId: topicConfig.topicId,
-        });
-        if (!schema) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
-                entity: SchemaEntity.RETIRE_TOKEN,
-                system: true,
-                active: true
-            });
-            if (schema) {
-                notifier.info('Publish System Schema (RETIRE)');
-                logger.info('Publish System Schema (RETIRE)', ['GUARDIAN_SERVICE']);
-                schema.creator = userDID;
-                schema.owner = userDID;
-                const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
-                await new DataBaseHelper(SchemaCollection).save(item);
-            }
-        }
-
+        await checkAndPublishSchema(
+            SchemaEntity.STANDARD_REGISTRY,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.USER,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.RETIRE_TOKEN,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.ROLE,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.USER_PERMISSIONS,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
         if (entity) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
+            const schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity,
                 readonly: true,
                 topicId: topicConfig.topicId

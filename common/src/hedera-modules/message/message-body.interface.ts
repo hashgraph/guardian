@@ -467,6 +467,34 @@ export interface RoleMessageBody extends VcMessageBody {
 }
 
 /**
+ * Role message body
+ */
+export interface GuardianRoleMessageBody extends VcMessageBody {
+    /**
+     * UUID
+     */
+    uuid?: string;
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Description
+     */
+    description?: string;
+}
+
+/**
+ * Role message body
+ */
+export interface UserPermissionsMessageBody extends VcMessageBody {
+    /**
+     * User DID
+     */
+    user?: string;
+}
+
+/**
  * Tool message body
  */
 export interface ToolMessageBody extends MessageBody {

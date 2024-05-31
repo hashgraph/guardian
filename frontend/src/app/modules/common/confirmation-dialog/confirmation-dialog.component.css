@@ -1,5 +1,6 @@
 .content {
     overflow: visible;
+    min-width: 500px;
 }
 
 :host ::ng-deep {
@@ -18,11 +19,52 @@
     }
 
     .mat-dialog-actions {
-        margin-top: 16px;
-        padding: 0;
         display: flex;
         justify-content: end;
         gap: 16px;
+        border-top: 1px solid #E1E7EF;
+        padding: 20px 0px;
+        margin-top: 30px;
+    }
+
+    .toolbar-btn-primary .p-button {
+        background: var(--color-primary);
+        border: 1px solid var(--color-primary);
+        font-family: Inter, sans-serif;
+        font-size: 1px;
+        font-style: normal;
+        font-weight: 500;
+        margin-left: 10px;
+        height: 40px;
+        padding: 8px;
+        border-radius: 8px;
+        color: white;
+
+        .p-button-label {
+            font-size: 14px;
+            padding: 0px 10px;
+            color: white !important;
+        }
+    }
+
+    .toolbar-btn-outlined .p-button {
+        background: white;
+        border: 1px solid var(--color-primary);
+        font-family: Inter, sans-serif;
+        font-size: 1px;
+        font-style: normal;
+        font-weight: 500;
+        margin-left: 10px;
+        height: 40px;
+        padding: 8px;
+        border-radius: 8px;
+        color: var(--color-primary);
+
+        .p-button-label {
+            font-size: 14px;
+            padding: 0px 10px;
+            color: var(--color-primary) !important;
+        }
     }
 }
 

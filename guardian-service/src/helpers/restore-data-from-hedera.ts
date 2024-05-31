@@ -32,7 +32,9 @@ import {
     MessageAction,
     VcHelper,
     UrlType,
-    RoleMessage
+    RoleMessage,
+    GuardianRoleMessage,
+    UserPermissionsMessage
 } from '@guardian/common';
 import {
     DidDocumentStatus,
@@ -286,6 +288,16 @@ export class RestoreDataFromHedera {
                 }
 
                 case RoleMessage: {
+                    //Skip message
+                    break;
+                }
+
+                case GuardianRoleMessage: {
+                    //Skip message
+                    break;
+                }
+
+                case UserPermissionsMessage: {
                     //Skip message
                     break;
                 }
