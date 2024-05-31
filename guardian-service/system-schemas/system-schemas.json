@@ -999,12 +999,12 @@
         }
     },
     {
-        "uuid": "UserRole",
-        "name": "UserRole",
-        "entity": "USER_ROLE",
+        "uuid": "UserPermissions",
+        "name": "UserPermissions",
+        "entity": "USER_PERMISSIONS",
         "document": {
-            "$id": "#UserRole",
-            "$comment": "{ \"@id\": \"#UserRole\", \"term\": \"UserRole\" }",
+            "$id": "#UserPermissions",
+            "$comment": "{ \"@id\": \"#UserPermissions\", \"term\": \"UserPermissions\" }",
             "title": "User Role",
             "description": "User Role",
             "type": "object",
