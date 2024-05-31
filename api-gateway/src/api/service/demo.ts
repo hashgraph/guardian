@@ -3,8 +3,8 @@ import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
-import { AuthUser, Auth } from '#auth';
-import { ServiceError, NewTask, TaskManager, Users, Guardians, UseCache, InternalException } from '#helpers';
+import { Auth, AuthUser } from '#auth';
+import { Guardians, InternalException, NewTask, ServiceError, TaskManager, Users } from '#helpers';
 
 @Controller('demo')
 @ApiTags('demo')
@@ -26,7 +26,7 @@ export class DemoApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
-    @UseCache()
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
