@@ -1799,6 +1799,10 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GET_MODULES, { filters, owner });
     }
 
+    public async getModuleV2(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_MODULES_V2, { filters, owner });
+    }
+
     /**
      * Delete module
      * @param uuid

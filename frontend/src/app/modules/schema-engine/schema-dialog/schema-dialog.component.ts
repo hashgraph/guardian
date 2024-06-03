@@ -77,10 +77,6 @@ export class SchemaDialog {
         this.getSubSchemes()
     }
 
-    // ngAfterViewInit(): void {
-    //     this.getSubSchemes()
-    // }
-
     handleChangeTab(order: number): void {
         this.extended = order === 1;
     }

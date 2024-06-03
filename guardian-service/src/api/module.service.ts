@@ -247,6 +247,46 @@ export async function modulesAPI(): Promise<void> {
             }
         });
 
+    ApiResponse(MessageAPI.GET_MODULES_V2,
+        async (msg: { filters: any, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load modules parameter');
+                }
+
+                const { filters, owner } = msg;
+                const filter: any = {}
+                if (owner) {
+                    filter.owner = owner.owner;
+                }
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(filters?.pageSize, 10);
+                const _pageIndex = parseInt(filters?.pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+
+                const [items, count] = await DatabaseServer.getModulesAndCount(filter, otherOptions);
+
+                console.log('items', items);
+
+                for (const item of items) {
+                    delete item.config
+                }
+
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
     ApiResponse(MessageAPI.DELETE_MODULES,
         async (msg: { uuid: string, owner: IOwner }) => {
             try {
