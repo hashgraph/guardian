@@ -338,7 +338,7 @@ export async function tagsAPI(): Promise<void> {
                     if (tag.document && typeof tag.document === 'object') {
                         const vcHelper = new VcHelper();
                         let credentialSubject: any = { ...tag.document } || {};
-                        credentialSubject.id = owner;
+                        credentialSubject.id = owner.creator;
                         const tagSchema = await DatabaseServer.getSchema({ iri: tag.schema });
                         if (
                             tagSchema &&
