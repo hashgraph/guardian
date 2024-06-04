@@ -1,11 +1,4 @@
-import {
-    DataBaseHelper,
-    Logger,
-    MessageError,
-    MessageResponse,
-    NatsService,
-    Singleton
-} from '@guardian/common';
+import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { AuthEvents, DefaultRoles, GenerateUUIDv4, IGroup, IOwner, Permissions, PermissionsArray, UserRole } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
@@ -401,7 +394,7 @@ export class RoleService extends NatsService {
                     if (!user) {
                         return new MessageError('User does not exist');
                     }
-                    const db = new DataBaseHelper(User);
+                    const db = new DataBaseHelper(DynamicRole);
                     if (user.role === UserRole.STANDARD_REGISTRY) {
                         await db.save(db.create({
                             uuid: GenerateUUIDv4(),
