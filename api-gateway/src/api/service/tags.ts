@@ -5,6 +5,7 @@ import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, 
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner } from '#helpers';
+import { SCHEMA_REQUIRED_PROPS } from '#constants';
 
 @Controller('tags')
 @ApiTags('tags')
@@ -364,7 +365,9 @@ export class TagsApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const { items, count } = await guardians.getTagSchemasV2(owner, pageIndex, pageSize);
+            const fields: string[] = Object.values(SCHEMA_REQUIRED_PROPS)
+
+            const { items, count } = await guardians.getTagSchemasV2(fields, owner, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
             // res.locals.data = SchemaUtils.toOld(items)
             return res
@@ -374,7 +377,6 @@ export class TagsApi {
             await InternalException(error);
         }
     }
-
 
     /**
      * Create schema

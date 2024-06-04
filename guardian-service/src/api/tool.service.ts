@@ -421,6 +421,50 @@ export async function toolsAPI(): Promise<void> {
             }
         });
 
+    /**
+     * Create new tool V2 05.06.2024
+     *
+     * @param payload - tool
+     *
+     * @returns {PolicyTool} new tool
+     */
+    ApiResponse(MessageAPI.GET_TOOLS_V2,
+        async (msg: { fields: string[], filters: any, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const { fields, filters, owner } = msg;
+                const { pageIndex, pageSize } = filters;
+
+                const otherOptions: any = { fields };
+
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+
+                const [items, count] = await DatabaseServer.getToolsAndCount({
+                    $or: [{
+                        owner: owner.owner
+                    }, {
+                        status: ModuleStatus.PUBLISHED
+                    }]
+                }, otherOptions);
+
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
     ApiResponse(MessageAPI.DELETE_TOOL,
         async (msg: { id: string, owner: IOwner }) => {
             try {

@@ -5,6 +5,7 @@ import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResp
 import { AuthUser, Auth } from '#auth';
 import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
 import { Guardians, SchemaUtils, UseCache, InternalException, EntityOwner } from '#helpers';
+import { MODULE_REQUIRED_PROPS } from '#constants';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -157,10 +158,12 @@ export class ModulesApi {
     ): Promise<ModuleDTO[]> {
         try {
             const options: any = {
+                fields: Object.values(MODULE_REQUIRED_PROPS),
                 pageIndex,
                 pageSize
             };
             const guardians = new Guardians();
+
             const { items, count } = await guardians.getModuleV2(options, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {

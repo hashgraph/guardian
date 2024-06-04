@@ -45,6 +45,9 @@
             ],
             "@analytics": [
                 "analytics/index"
+            ],
+            "#constants": [
+              "constants/index.js"
             ]
         }
     },

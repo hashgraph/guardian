@@ -348,8 +348,6 @@ export async function schemaAPI(): Promise<void> {
                     }
                 }
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-
-                console.log('items', items);
                 return new MessageResponse({ items, count });
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -439,11 +437,8 @@ export async function schemaAPI(): Promise<void> {
                         filter.topicId = { $in: ids }
                     }
                 }
-                const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
 
-                for(const item of items) {
-                    delete item.document
-                }
+                const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
 
                 return new MessageResponse({ items, count });
             } catch (error) {
@@ -951,19 +946,19 @@ export async function schemaAPI(): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS_V2,
-        async (msg: { pageIndex?: any, pageSize?: any }) => {
+        async (msg: { fields: string[], pageIndex?: any, pageSize?: any }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
                 }
 
-                const { pageIndex, pageSize } = msg;
+                const {fields, pageIndex, pageSize } = msg;
                 const filter: any = {
                     where: {
                         system: true
                     }
                 }
-                const otherOptions: any = {};
+                const otherOptions: any = { fields };
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
@@ -975,10 +970,6 @@ export async function schemaAPI(): Promise<void> {
                     otherOptions.limit = 100;
                 }
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-
-                for(const item of items) {
-                    delete item.document
-                }
 
                 return new MessageResponse({
                     items,
@@ -1131,10 +1122,6 @@ export async function schemaAPI(): Promise<void> {
                 }
                 const otherOptions: any = getPageOptions(msg);
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
-
-                for(const item of items) {
-                    delete item.document
-                }
 
                 return new MessageResponse({ items, count });
             } catch (error) {

@@ -6,7 +6,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { AuthUser, Auth } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO, Examples, pageHeader } from '#middlewares';
-import { CACHE } from '../../constants/index.js';
+import { CACHE, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, EntityOwner } from '#helpers';
 import process from 'process';
 
@@ -410,6 +410,9 @@ export class SchemaApi {
             if (toolId) {
                 options.toolId = toolId;
             }
+
+            options.fields = Object.values(SCHEMA_REQUIRED_PROPS)
+
             const { items, count } = await guardians.getSchemasByOwnerV2(options, owner);
             SchemaHelper.updatePermission(items, owner);
             const schemas = SchemaUtils.toOld(items)
@@ -1860,14 +1863,15 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            const { items, count } = await guardians.getSystemSchemasV2(pageIndex, pageSize);
+            const fields: string[] = Object.values(SCHEMA_REQUIRED_PROPS)
+
+            const { items, count } = await guardians.getSystemSchemasV2(fields, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
         }
     }
-
 
     /**
      * Delete system schema

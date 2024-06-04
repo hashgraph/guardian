@@ -862,10 +862,12 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getSystemSchemasV2(
+        fields: string[],
         pageIndex?: any,
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS_V2, {
+            fields,
             pageIndex,
             pageSize
         });
@@ -947,6 +949,17 @@ export class Guardians extends NatsService {
      */
     public async getArtifacts(options: any): Promise<any> {
         return await this.sendMessage(MessageAPI.GET_ARTIFACTS, options);
+    }
+
+    /**
+     * Get Policy Artifacts V2 04.06.2024
+     *
+     * @param {any} options
+     *
+     * @returns - Artifact
+     */
+    public async getArtifactsV2(options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS_V2, options);
     }
 
     /**
@@ -1954,6 +1967,17 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return tools V2 05.06.2024
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getToolsV2(fields: string[], filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_TOOLS_V2, { fields, filters, owner });
+    }
+
+    /**
      * Delete tool
      * @param id
      * @param owner
@@ -2200,6 +2224,7 @@ export class Guardians extends NatsService {
 
     /**
      * Return tag schemas V2
+     * @param fields
      * @param {string} owner
      * @param {string} [pageIndex]
      * @param {string} [pageSize]
@@ -2207,11 +2232,13 @@ export class Guardians extends NatsService {
      * @returns {ISchema[]} - all schemas
      */
     public async getTagSchemasV2(
+        fields: string[],
         owner: IOwner,
         pageIndex?: any,
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS_V2, {
+            fields,
             owner,
             pageIndex,
             pageSize

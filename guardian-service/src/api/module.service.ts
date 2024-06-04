@@ -247,6 +247,9 @@ export async function modulesAPI(): Promise<void> {
             }
         });
 
+    /**
+     * Get Modules V2 06.06.2024
+     */
     ApiResponse(MessageAPI.GET_MODULES_V2,
         async (msg: { filters: any, owner: IOwner }) => {
             try {
@@ -255,14 +258,16 @@ export async function modulesAPI(): Promise<void> {
                 }
 
                 const { filters, owner } = msg;
+                const { fields, pageIndex, pageSize } = filters ?? {};
                 const filter: any = {}
                 if (owner) {
                     filter.owner = owner.owner;
                 }
 
-                const otherOptions: any = {};
-                const _pageSize = parseInt(filters?.pageSize, 10);
-                const _pageIndex = parseInt(filters?.pageIndex, 10);
+                const otherOptions: any = { fields };
+
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = _pageSize;
@@ -273,12 +278,6 @@ export async function modulesAPI(): Promise<void> {
                 }
 
                 const [items, count] = await DatabaseServer.getModulesAndCount(filter, otherOptions);
-
-                console.log('items', items);
-
-                for (const item of items) {
-                    delete item.config
-                }
 
                 return new MessageResponse({ items, count });
             } catch (error) {

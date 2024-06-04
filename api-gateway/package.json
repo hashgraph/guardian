@@ -64,7 +64,8 @@
     "imports": {
         "#auth": "./dist/auth/index.js",
         "#helpers": "./dist/helpers/index.js",
-        "#middlewares": "./dist/middlewares/index.js"
+        "#middlewares": "./dist/middlewares/index.js",
+        "#constants": "./dist/constants/index.js"
     },
     "license": "Apache-2.0",
     "main": "dist/index.js",
