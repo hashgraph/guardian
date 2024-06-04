@@ -611,14 +611,14 @@ export class MintService {
     public static log(message: string, ref?: AnyBlockType) {
         if (ref) {
             MintService.logger.info(message, [
-                'GUARDIAN_SERVICE',
+                'POLICY_SERVICE',
                 ref.uuid,
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
             ]);
         } else {
-            MintService.logger.info(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.info(message, ['POLICY_SERVICE']);
         }
     }
 
@@ -629,14 +629,14 @@ export class MintService {
     public static error(message: string, ref?: AnyBlockType) {
         if (ref) {
             MintService.logger.error(message, [
-                'GUARDIAN_SERVICE',
+                'POLICY_SERVICE',
                 ref.uuid,
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
             ]);
         } else {
-            MintService.logger.error(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.error(message, ['POLICY_SERVICE']);
         }
     }
 
@@ -647,14 +647,14 @@ export class MintService {
     public static warn(message: string, ref?: AnyBlockType) {
         if (ref) {
             MintService.logger.warn(message, [
-                'GUARDIAN_SERVICE',
+                'POLICY_SERVICE',
                 ref.uuid,
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
             ]);
         } else {
-            MintService.logger.warn(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.warn(message, ['POLICY_SERVICE']);
         }
     }
 }
