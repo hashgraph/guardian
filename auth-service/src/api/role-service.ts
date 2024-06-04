@@ -1,11 +1,4 @@
-import {
-    DataBaseHelper,
-    Logger,
-    MessageError,
-    MessageResponse,
-    NatsService,
-    Singleton
-} from '@guardian/common';
+import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { AuthEvents, DefaultRoles, GenerateUUIDv4, IGroup, IOwner, Permissions, PermissionsArray, UserRole } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
