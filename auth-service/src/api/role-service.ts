@@ -204,7 +204,6 @@ export class RoleService extends NatsService {
                         throw new Error('Invalid create role parameters');
                     }
                     const { role, owner } = msg;
-
                     delete role._id;
                     delete role.id;
                     role.owner = owner.creator;
@@ -354,6 +353,9 @@ export class RoleService extends NatsService {
                     })
                     if (!target) {
                         return new MessageError('User does not exist');
+                    }
+                    if(target.permissionsGroup && target.permissionsGroup.length) {
+                        return new MessageResponse(target);
                     }
                     const defaultRole = await getDefaultRole(owner);
                     if (defaultRole) {

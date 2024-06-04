@@ -332,7 +332,6 @@ export class AccountService extends NatsService {
             async (msg: { role: string, did: string, parent: string }) => {
                 try {
                     const { role, did, parent } = msg;
-
                     const username = `template_${Date.now()}${Math.round(Math.random() * 1000)}`;
                     const row = (new DataBaseHelper(User)).create({
                         username,
@@ -506,6 +505,7 @@ export class AccountService extends NatsService {
                         'role',
                         'permissionsGroup',
                         'permissions',
+                        'template'
                     ]
                 };
                 const _pageSize = parseInt(pageSize, 10);

@@ -129,6 +129,7 @@ export class RestoreDataFromHedera {
         for (const m of messages) {
             try {
                 const r = MessageServer.fromMessage<Message>(m.message);
+                r.setAccount(m.payer_account_id);
                 r.setTopicId(topicId);
                 r.setId(m.id);
                 result.push(r);
@@ -690,7 +691,7 @@ export class RestoreDataFromHedera {
             }
         }
 
-        const _owner = new EntityOwner(parent);
+        const _owner = EntityOwner.sr(parentDid);
         const _roleMap = new Map<string, any>();
         for (const message of _guardianRoles.values()) {
             await this.loadIPFS(message);
