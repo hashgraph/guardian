@@ -94,6 +94,12 @@ export class User extends BaseEntity implements IUser {
     permissions?: string[];
 
     /**
+     * Template
+     */
+    @Property({ nullable: true })
+    template?: boolean;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

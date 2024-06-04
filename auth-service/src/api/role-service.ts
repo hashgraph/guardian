@@ -401,7 +401,7 @@ export class RoleService extends NatsService {
                     if (!user) {
                         return new MessageError('User does not exist');
                     }
-                    const db = new DataBaseHelper(User);
+                    const db = new DataBaseHelper(DynamicRole);
                     if (user.role === UserRole.STANDARD_REGISTRY) {
                         await db.save(db.create({
                             uuid: GenerateUUIDv4(),
