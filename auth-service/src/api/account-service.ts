@@ -20,6 +20,7 @@ import {
     IGetUsersByAccountMessage,
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
+    IGroup,
     IRegisterNewUserMessage,
     ISaveUserMessage,
     IStandardRegistryUserResponse,
@@ -71,7 +72,12 @@ export async function createNewUser(
         default: true,
         readonly: true
     });
-    const permissionsGroup = defaultRole ? [defaultRole.id] : [];
+    const permissionsGroup: IGroup[] = defaultRole ? [{
+        uuid: defaultRole.uuid,
+        roleId: defaultRole.id,
+        roleName: defaultRole.name,
+        owner: parent
+    }] : [];
     const permissions = defaultRole ? defaultRole.permissions : [];
     const user = (new DataBaseHelper(User)).create({
         username,
