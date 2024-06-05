@@ -170,23 +170,27 @@ export class MintFT extends TypedMint {
         }
 
         if (!this._ref?.dryRun) {
-            const startTransactions = await workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TRANSACTIONS,
-                    data: {
-                        accountId: this._token.treasuryId,
-                        limit: 1,
-                        order: 'desc',
-                        transactiontype: 'TOKENMINT',
+            try {
+                const startTransactions = await workers.addRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_TRANSACTIONS,
+                        data: {
+                            accountId: this._token.treasuryId,
+                            limit: 1,
+                            order: 'desc',
+                            transactiontype: 'TOKENMINT',
+                        },
                     },
-                },
-                1,
-                10
-            );
+                    1,
+                    10
+                );
 
-            this._mintRequest.startTransaction =
-                startTransactions[0]?.consensus_timestamp;
-            await this._db.saveMintRequest(this._mintRequest);
+                this._mintRequest.startTransaction =
+                    startTransactions[0]?.consensus_timestamp;
+                await this._db.saveMintRequest(this._mintRequest);
+            } catch (error) {
+                this.error(error);
+            }
         }
 
         transaction.mintStatus = MintTransactionStatus.PENDING;
@@ -238,23 +242,26 @@ export class MintFT extends TypedMint {
         }
 
         if (!this._ref?.dryRun) {
-            const startTransactions = await workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TRANSACTIONS,
-                    data: {
-                        accountId: this._token.treasuryId,
-                        limit: 1,
-                        order: 'desc',
-                        transactiontype: 'CRYPTOTRANSFER',
+            try {
+                const startTransactions = await workers.addRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_TRANSACTIONS,
+                        data: {
+                            accountId: this._token.treasuryId,
+                            limit: 1,
+                            order: 'desc',
+                            transactiontype: 'CRYPTOTRANSFER',
+                        },
                     },
-                },
-                1,
-                10
-            );
-
-            this._mintRequest.startTransaction =
-                startTransactions[0]?.consensus_timestamp;
-            await this._db.saveMintRequest(this._mintRequest);
+                    1,
+                    10
+                );
+                this._mintRequest.startTransaction =
+                    startTransactions[0]?.consensus_timestamp;
+                await this._db.saveMintRequest(this._mintRequest);
+            } catch (error) {
+                this.error(error);
+            }
         }
 
         transaction.transferStatus = MintTransactionStatus.PENDING;
