@@ -159,7 +159,7 @@ export class Users extends NatsService {
      * @param username
      * @param owner
      */
-    public async setDefaultUserRole(username: string, owner: string) {
+    public async setDefaultUserRole(username: string, owner: string): Promise<IAuthUser> {
         return await this.sendMessage(AuthEvents.SET_DEFAULT_USER_ROLE, { username, owner });
     }
 

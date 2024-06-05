@@ -37,6 +37,7 @@ import { publishSystemSchema } from './helpers/schema-publish-helper.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { serDefaultRole } from './permission.service.js';
 
 interface IFireblocksConfig {
     fireBlocksVaultId: string;
@@ -124,7 +125,12 @@ async function setupUserProfile(
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
     });
-    await users.setDefaultUserRole(username, profile.parent);
+
+    notifier.completedAndStart('Update permissions');
+    if (user.role === UserRole.USER) {
+        const changeRole = await users.setDefaultUserRole(username, profile.parent);
+        await serDefaultRole(changeRole, EntityOwner.sr(profile.parent))
+    }
 
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);

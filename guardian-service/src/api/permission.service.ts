@@ -92,6 +92,43 @@ async function createMessageServer(owner: IOwner): Promise<MessageServer> {
     return messageServer;
 }
 
+export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<any> {
+    const roles: any[] = [];
+    for (const group of user.permissionsGroup) {
+        roles.push({
+            uuid: group.uuid,
+            name: group.roleName,
+            owner: group.owner
+        })
+    }
+    const data = {
+        user: user.did
+    }
+    const messageServer = await createMessageServer(owner);
+    const document = await createVc(SchemaEntity.USER_PERMISSIONS, {
+        id: GenerateUUIDv4(),
+        userId: user.did,
+        roles
+    }, owner, messageServer);
+    const message = new UserPermissionsMessage(MessageAction.SetRole);
+    message.setRole(data);
+    message.setDocument(document);
+    await messageServer.sendMessage(message);
+    const result = await new DataBaseHelper(VcDocumentCollection).save({
+        hash: message.hash,
+        owner: owner.owner,
+        creator: owner.creator,
+        document: message.document,
+        type: SchemaEntity.USER_PERMISSIONS,
+        documentFields: [
+            'credentialSubject.0.id',
+            'credentialSubject.0.roles',
+            'credentialSubject.0.userId'
+        ]
+    });
+    return result;
+}
+
 /**
  * Demo API
  * @param channel
@@ -210,39 +247,7 @@ export async function permissionAPI(): Promise<void> {
         async (msg: { user: IAuthUser, owner: IOwner }) => {
             try {
                 const { user, owner } = msg;
-                const roles: any[] = [];
-                for (const group of user.permissionsGroup) {
-                    roles.push({
-                        uuid: group.uuid,
-                        name: group.roleName,
-                        owner: group.owner
-                    })
-                }
-                const data = {
-                    user: user.did
-                }
-                const messageServer = await createMessageServer(owner);
-                const document = await createVc(SchemaEntity.USER_PERMISSIONS, {
-                    id: GenerateUUIDv4(),
-                    userId: user.did,
-                    roles
-                }, owner, messageServer);
-                const message = new UserPermissionsMessage(MessageAction.SetRole);
-                message.setRole(data);
-                message.setDocument(document);
-                await messageServer.sendMessage(message);
-                const result = await new DataBaseHelper(VcDocumentCollection).save({
-                    hash: message.hash,
-                    owner: owner.owner,
-                    creator: owner.creator,
-                    document: message.document,
-                    type: SchemaEntity.USER_PERMISSIONS,
-                    documentFields: [
-                        'credentialSubject.0.id',
-                        'credentialSubject.0.roles',
-                        'credentialSubject.0.userId'
-                    ]
-                });
+                const result = await serDefaultRole(user, owner);
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
