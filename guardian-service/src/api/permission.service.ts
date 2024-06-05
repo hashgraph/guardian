@@ -70,6 +70,9 @@ async function createVc(
             credentialSubject
         );
     }
+    for (const role of credentialSubject.roles) {
+        role.owner = role.owner || '';
+    }
     const didDocument = await vcHelper.loadDidDocument(owner.creator);
     return await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 }
