@@ -159,7 +159,7 @@
         </div>
         <div [ngSwitch]="!!(xlsx && errors?.length)">
             <p-button *ngSwitchCase="true" (click)="onImport()" label="Skip & Import"></p-button>
-            <p-button *ngSwitchCase="false" [disabled]="!toolForm?.valid" (click)="onImport()" label="Import"></p-button>
+            <p-button *ngSwitchCase="false" [disabled]="!valid" (click)="onImport()" label="Import"></p-button>
         </div>
     </div>
 </div>
