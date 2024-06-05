@@ -94,6 +94,14 @@ export async function createNewUser(
     return await (new DataBaseHelper(User)).save(user);
 }
 
+export function getRequiredProps(user: User): IUser {
+    const userRequiredProps: IUser = {}
+    for (const prop of Object.values(USER_REQUIRED_PROPS)) {
+        userRequiredProps[prop] = user[prop];
+    }
+    return userRequiredProps;
+}
+
 /**
  * Account service
  */
@@ -131,15 +139,7 @@ export class AccountService extends NatsService {
                 }
 
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
-                const puser = setDefaultPermissions(user)
-
-                const userRequiredProps = {}
-
-                for (const prop of Object.values(USER_REQUIRED_PROPS)) {
-                    userRequiredProps[prop] = puser[prop];
-                }
-
-                return new MessageResponse(userRequiredProps);
+                return new MessageResponse(getRequiredProps(setDefaultPermissions(user)));
             } catch (error) {
                 return new MessageError(error);
             }

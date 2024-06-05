@@ -2,6 +2,7 @@ import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Sin
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
+import { getRequiredProps } from './account-service.js';
 
 const permissionList = PermissionsArray.filter((p) => !p.disabled).map((p) => {
     return {
@@ -350,7 +351,7 @@ export class RoleService extends NatsService {
                         target.permissionsGroup.length &&
                         target.permissionsGroup[0].owner
                     ) {
-                        return new MessageResponse(target);
+                        return new MessageResponse(getRequiredProps(target));
                     }
                     const defaultRole = await getDefaultRole(owner);
                     if (defaultRole) {
@@ -366,7 +367,7 @@ export class RoleService extends NatsService {
                         target.permissions = [];
                     }
                     const result = await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(result);
+                    return new MessageResponse(getRequiredProps(result));
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -432,7 +433,7 @@ export class RoleService extends NatsService {
                     }
                     target.permissions = Array.from(permissions);
                     const result = await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(result);
+                    return new MessageResponse(getRequiredProps(result));
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -475,7 +476,8 @@ export class RoleService extends NatsService {
                         user.permissions = Array.from(permissions);
                         await new DataBaseHelper(User).update(user);
                     }
-                    return new MessageResponse(users);
+                    const result = users?.map((row) => getRequiredProps(row));
+                    return new MessageResponse(result);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -550,11 +552,26 @@ export class RoleService extends NatsService {
                     target.permissionsGroup = permissionsGroup;
                     target.permissions = Array.from(permissions);
                     await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(target);
+                    return new MessageResponse(getRequiredProps(target));
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
+
+        /**
+         * Get user by username
+         * @param username - username
+         */
+        this.getMessages(AuthEvents.GET_USER_PERMISSIONS, async (msg: any) => {
+            const { username } = msg;
+            try {
+                const user = await new DataBaseHelper(User).findOne({ username })
+                return new MessageResponse(getRequiredProps(user));
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
+            }
+        });
     }
 }
