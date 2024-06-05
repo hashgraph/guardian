@@ -48,19 +48,21 @@ import {
     ISignOptions,
 } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
-import { BlockStateLoader } from './policy-data/loaders/block-state.loader.js';
-import { RolesLoader } from './policy-data/loaders/roles.loader.js';
-import { DidLoader } from './policy-data/loaders/did.loader.js';
-import { MintRequestLoader } from './policy-data/loaders/mint-request.loader.js';
-import { MintTransactionLoader } from './policy-data/loaders/mint-transaction.loader.js';
-import { MultiSignDocumentLoader } from './policy-data/loaders/multi-sign-document.loader.js';
 import {
+    BlockStateLoader,
+    RolesLoader,
+    DidLoader,
+    MintRequestLoader,
     AggregateVCLoader,
+    MintTransactionLoader,
     DocumentStateLoader,
+    VcDocumentLoader,
+    VpDocumentLoader,
+    SplitDocumentLoader,
+    MultiSignDocumentLoader,
+    TokensLoader,
+    RetirePoolLoader
 } from './policy-data/loaders/index.js';
-import { SplitDocumentLoader } from './policy-data/loaders/split-document.loader.js';
-import { TokensLoader } from './policy-data/loaders/tokens.loader.js';
-import { RetirePoolLoader } from './policy-data/loaders/retire-pool.loader.js';
 import { createHederaToken } from '../../api/token.service.js';
 import { createContract } from '../../api/helpers/contract-api.js';
 import { setPoolContract } from '../../api/contract.service.js';
@@ -306,16 +308,28 @@ export class PolicyDataMigrator {
                     category: SchemaCategory.SYSTEM,
                     topicId: srcModel.topicId,
                 });
-                srcVCs = await DatabaseServer.getVCs({
-                    policyId: src,
+                srcVCs = await new VcDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModel.status === PolicyType.DRY_RUN
+                ).get({
                     id: { $in: vcs },
                 });
-                srcRoleVcs = await DatabaseServer.getVCs({
-                    policyId: src,
+                srcRoleVcs = await new VcDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModel.status === PolicyType.DRY_RUN
+                ).get({
                     schema: '#UserRole',
                 });
-                srcVPs = await DatabaseServer.getVPs({
-                    policyId: src,
+                srcVPs = await await new VpDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModel.status === PolicyType.DRY_RUN
+                ).get({
                     id: { $in: vps },
                 });
                 srcDids = await new DidLoader(
