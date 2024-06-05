@@ -1,4 +1,4 @@
-import { DidDocumentStatus, DocumentStatus, EntityOwner, IOwner, ISignOptions, MessageAPI, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { DefaultRoles, DidDocumentStatus, DocumentStatus, EntityOwner, GenerateUUIDv4, IOwner, ISignOptions, MessageAPI, Permissions, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
@@ -6,6 +6,7 @@ import {
     DidDocument as DidDocumentCollection,
     DIDMessage,
     Environment,
+    GuardianRoleMessage,
     HederaBBSMethod,
     HederaDid,
     HederaEd25519Method,
@@ -123,8 +124,7 @@ async function setupUserProfile(
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
     });
-    await users.createDefaultRole(username);
-    await users.setDefaultRole(username, profile.parent);
+    await users.setDefaultUserRole(username, profile.parent);
 
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
@@ -460,8 +460,123 @@ async function createUserProfile(
             .sendMessage(regMessage)
     }
 
+    // -----------------------
+    // Publish Role Document -->
+    // -----------------------
+    if (user.role === UserRole.STANDARD_REGISTRY) {
+        messageServer.setTopicObject(topicConfig);
+        await createDefaultRoles(userDID, currentDidDocument, messageServer, notifier);
+    }
+
     notifier.completed();
     return userDID;
+}
+
+/**
+ * Create default roles
+ * @param username
+ * @param notifier
+ */
+async function createDefaultRoles(
+    did: string,
+    didDocument: CommonDidDocument,
+    messageServer: MessageServer,
+    notifier: INotifier
+): Promise<void> {
+    notifier.completedAndStart('Create roles');
+    const owner = EntityOwner.sr(did);
+    const users = new Users();
+    const vcHelper = new VcHelper();
+    const roles = [{
+        name: 'Default policy user',
+        description: 'Default policy user',
+        permissions: DefaultRoles,
+    }, {
+        name: 'Policy Approver',
+        description: '',
+        permissions: [
+            Permissions.ANALYTIC_POLICY_READ,
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.ANALYTIC_MODULE_READ,
+            Permissions.ANALYTIC_TOOL_READ,
+            Permissions.ANALYTIC_SCHEMA_READ,
+            Permissions.POLICIES_POLICY_REVIEW,
+            Permissions.SCHEMAS_SCHEMA_READ,
+            Permissions.MODULES_MODULE_READ,
+            Permissions.TOOLS_TOOL_READ,
+            Permissions.TOKENS_TOKEN_READ,
+            Permissions.ARTIFACTS_FILE_READ,
+            Permissions.SETTINGS_THEME_READ,
+            Permissions.SETTINGS_THEME_CREATE,
+            Permissions.SETTINGS_THEME_UPDATE,
+            Permissions.SETTINGS_THEME_DELETE,
+            Permissions.TAGS_TAG_READ,
+            Permissions.TAGS_TAG_CREATE,
+            Permissions.SUGGESTIONS_SUGGESTIONS_READ,
+            Permissions.ACCESS_POLICY_ASSIGNED
+        ]
+    }, {
+        name: 'Policy Manager',
+        description: '',
+        permissions: [
+            Permissions.ANALYTIC_DOCUMENT_READ,
+            Permissions.POLICIES_POLICY_MANAGE,
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.TOKENS_TOKEN_MANAGE,
+            Permissions.TOKENS_TOKEN_READ,
+            Permissions.ACCOUNTS_ACCOUNT_READ,
+            Permissions.TAGS_TAG_READ,
+            Permissions.TAGS_TAG_CREATE,
+            Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+        ]
+    }, {
+        name: 'Policy User',
+        description: '',
+        permissions: DefaultRoles,
+    }];
+    const ids: string[] = [];
+    for (const config of roles) {
+        notifier.info(`Create role (${config.name})`);
+        const role = await users.createRole(config, owner);
+        let credentialSubject: any = {
+            id: GenerateUUIDv4(),
+            uuid: role.uuid,
+            name: role.name,
+            description: role.description,
+            permissions: role.permissions
+        }
+        const schema = await new DataBaseHelper(SchemaCollection).findOne({
+            entity: SchemaEntity.ROLE,
+            readonly: true,
+            topicId: messageServer.getTopic()
+        });
+        const schemaObject = new Schema(schema);
+        if (schemaObject) {
+            credentialSubject = SchemaHelper.updateObjectContext(
+                schemaObject,
+                credentialSubject
+            );
+        }
+        const document = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
+        const message = new GuardianRoleMessage(MessageAction.CreateRole);
+        message.setRole(credentialSubject);
+        message.setDocument(document);
+        await messageServer.sendMessage(message);
+        await new DataBaseHelper(VcDocumentCollection).save({
+            hash: message.hash,
+            owner: owner.owner,
+            creator: owner.creator,
+            document: message.document,
+            type: SchemaEntity.ROLE,
+            documentFields: [
+                'credentialSubject.0.id',
+                'credentialSubject.0.name',
+                'credentialSubject.0.uuid'
+            ],
+        });
+        ids.push(role.id);
+    }
+    await users.setDefaultRole(ids[0], owner.creator);
 }
 
 @Controller()

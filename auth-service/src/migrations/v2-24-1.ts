@@ -35,7 +35,7 @@ const policyManager = [
 ];
 
 /**
- * Migration to version 2.9.0
+ * Migration to version 2.25.0
  */
 export class ReleaseMigration extends Migration {
     /**

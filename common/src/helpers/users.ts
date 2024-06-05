@@ -135,11 +135,13 @@ export class Users extends NatsService {
     }
 
     /**
-     * Create default roles
-     * @param username
+     * Det default role
+     * @param id
+     * @param owner
+     * @returns Operation Success
      */
-    public async createDefaultRole(username: string) {
-        return await this.sendMessage(AuthEvents.CREATE_DEFAULT_USER_ROLE, { username });
+    public async setDefaultRole(id: string, owner: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner });
     }
 
     /**
@@ -157,7 +159,7 @@ export class Users extends NatsService {
      * @param username
      * @param owner
      */
-    public async setDefaultRole(username: string, owner: string) {
+    public async setDefaultUserRole(username: string, owner: string) {
         return await this.sendMessage(AuthEvents.SET_DEFAULT_USER_ROLE, { username, owner });
     }
 
