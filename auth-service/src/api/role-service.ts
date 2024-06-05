@@ -345,7 +345,11 @@ export class RoleService extends NatsService {
                     if (!target) {
                         return new MessageError('User does not exist');
                     }
-                    if (target.permissionsGroup && target.permissionsGroup.length) {
+                    if (
+                        target.permissionsGroup &&
+                        target.permissionsGroup.length &&
+                        target.permissionsGroup[0].owner
+                    ) {
                         return new MessageResponse(target);
                     }
                     const defaultRole = await getDefaultRole(owner);

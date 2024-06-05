@@ -76,7 +76,7 @@ export async function createNewUser(
         uuid: defaultRole.uuid,
         roleId: defaultRole.id,
         roleName: defaultRole.name,
-        owner: parent
+        owner: null
     }] : [];
     const permissions = defaultRole ? defaultRole.permissions : [];
     const user = (new DataBaseHelper(User)).create({

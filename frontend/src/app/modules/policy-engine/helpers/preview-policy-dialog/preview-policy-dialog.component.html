@@ -151,15 +151,29 @@
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
-            <p-button
-                    (click)="onClose()"
+            <button 
+                    (click)="onClose()" 
+                    class="button secondary"
                     label="Close"
-                    styleClass="p-button-outlined"
-            ></p-button>
+                    pButton
+            ></button>
         </div>
         <div [ngSwitch]="!!(xlsx && errors?.length)">
-            <p-button *ngSwitchCase="true" (click)="onImport()" label="Skip & Import"></p-button>
-            <p-button *ngSwitchCase="false" [disabled]="!valid" (click)="onImport()" label="Import"></p-button>
+            <button 
+                    *ngSwitchCase="true"
+                    (click)="onImport()" 
+                    class="button"
+                    label="Skip & Import"
+                    pButton
+            ></button>
+            <button 
+                    *ngSwitchCase="false"
+                    [disabled]="!valid"
+                    (click)="onImport()" 
+                    class="button"
+                    label="Import"
+                    pButton
+            ></button>
         </div>
     </div>
 </div>
