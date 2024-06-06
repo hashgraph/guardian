@@ -443,7 +443,7 @@ export class PermissionsApi {
         try {
             const owner = user.parent || user.did;
             const users = new Users();
-            const row = await users.getUser(username);
+            const row = await users.getUserPermissions(username);
             if (!row || row.parent !== owner || row.did === user.did) {
                 throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND);
             }
@@ -500,7 +500,7 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUser(username);
+            row = await users.getUserPermissions(username);
         } catch (error) {
             await InternalException(error);
         }
@@ -583,7 +583,7 @@ export class PermissionsApi {
         const owner = user.parent || user.did;
         let target: any;
         try {
-            target = await (new Users()).getUser(username);
+            target = await (new Users()).getUserPermissions(username);
         } catch (error) {
             await InternalException(error);
         }
@@ -648,7 +648,7 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUser(username);
+            row = await users.getUserPermissions(username);
         } catch (error) {
             await InternalException(error);
         }
@@ -713,7 +713,7 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUser(username);
+            row = await users.getUserPermissions(username);
         } catch (error) {
             await InternalException(error);
         }
@@ -773,7 +773,7 @@ export class PermissionsApi {
         let row: any;
         const users = new Users();
         try {
-            row = await users.getUser(username);
+            row = await users.getUserPermissions(username);
         } catch (error) {
             await InternalException(error);
         }
