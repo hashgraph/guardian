@@ -365,4 +365,12 @@ export abstract class TypedMint {
 
         return processed;
     }
+
+    /**
+     * Log error
+     * @param error Error
+     */
+    protected error(error: any) {
+        MintService.error(PolicyUtils.getErrorMessage(error), this._ref);
+    }
 }

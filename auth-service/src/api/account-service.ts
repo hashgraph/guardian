@@ -20,6 +20,7 @@ import {
     IGetUsersByAccountMessage,
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
+    IGroup,
     IRegisterNewUserMessage,
     ISaveUserMessage,
     IStandardRegistryUserResponse,
@@ -71,7 +72,12 @@ export async function createNewUser(
         default: true,
         readonly: true
     });
-    const permissionsGroup = defaultRole ? [defaultRole.id] : [];
+    const permissionsGroup: IGroup[] = defaultRole ? [{
+        uuid: defaultRole.uuid,
+        roleId: defaultRole.id,
+        roleName: defaultRole.name,
+        owner: null
+    }] : [];
     const permissions = defaultRole ? defaultRole.permissions : [];
     const user = (new DataBaseHelper(User)).create({
         username,
@@ -86,6 +92,14 @@ export async function createNewUser(
         permissions
     });
     return await (new DataBaseHelper(User)).save(user);
+}
+
+export function getRequiredProps(user: User): IUser {
+    const userRequiredProps: IUser = {}
+    for (const prop of Object.values(USER_REQUIRED_PROPS)) {
+        userRequiredProps[prop] = user[prop];
+    }
+    return userRequiredProps;
 }
 
 /**
@@ -125,15 +139,7 @@ export class AccountService extends NatsService {
                 }
 
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
-                const puser = setDefaultPermissions(user)
-
-                const userRequiredProps = {}
-
-                for (const prop of Object.values(USER_REQUIRED_PROPS)) {
-                    userRequiredProps[prop] = puser[prop];
-                }
-
-                return new MessageResponse(userRequiredProps);
+                return new MessageResponse(getRequiredProps(setDefaultPermissions(user)));
             } catch (error) {
                 return new MessageError(error);
             }
@@ -221,7 +227,7 @@ export class AccountService extends NatsService {
         this.getMessages<IGetUsersByIdMessage, IUser[]>(AuthEvents.GET_USERS_BY_ID, async (msg: any) => {
             const { dids } = msg;
             try {
-                return new MessageResponse(await new DataBaseHelper(User).find({ where: { did: { $in: dids } } }));
+                return new MessageResponse(await new DataBaseHelper(User).find({ did: { $in: dids } }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -247,11 +253,13 @@ export class AccountService extends NatsService {
          */
         this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS, async (_: any) => {
             try {
-                const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.USER })).map((e) => ({
-                    username: e.username,
-                    parent: e.parent,
-                    did: e.did
-                }));
+                const userAccounts = (await new DataBaseHelper(User)
+                    .find({ role: UserRole.USER }))
+                    .map((e) => ({
+                        username: e.username,
+                        parent: e.parent,
+                        did: e.did
+                    }));
                 return new MessageResponse(userAccounts);
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
@@ -264,10 +272,12 @@ export class AccountService extends NatsService {
          */
         this.getMessages<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, async (_) => {
             try {
-                const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.STANDARD_REGISTRY })).map((e) => ({
-                    username: e.username,
-                    did: e.did
-                }));
+                const userAccounts = (await new DataBaseHelper(User)
+                    .find({ role: UserRole.STANDARD_REGISTRY }))
+                    .map((e) => ({
+                        username: e.username,
+                        did: e.did
+                    }));
                 return new MessageResponse(userAccounts);
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
@@ -280,7 +290,9 @@ export class AccountService extends NatsService {
          */
         this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
             try {
-                const userAccounts = (await new DataBaseHelper(User).findAll()).map((e) => ({
+                const userAccounts = (await new DataBaseHelper(User).find({
+                    template: { $ne: true }
+                })).map((e) => ({
                     parent: e.parent,
                     did: e.did,
                     username: e.username,
@@ -322,10 +334,31 @@ export class AccountService extends NatsService {
             }
         });
 
+        this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_TEMPLATE,
+            async (msg: { role: string, did: string, parent: string }) => {
+                try {
+                    const { role, did, parent } = msg;
+                    const username = `template_${Date.now()}${Math.round(Math.random() * 1000)}`;
+                    const row = (new DataBaseHelper(User)).create({
+                        username,
+                        role,
+                        parent,
+                        did,
+                        template: true
+                    });
+                    const user = await (new DataBaseHelper(User)).save(row);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    new Logger().error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error)
+                }
+            });
+
         this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER,
             async (msg: ProviderAuthUser) => {
                 try {
-                    let user = await (new DataBaseHelper(User)).findOne({ username: msg.username });
+                    let user = await (new DataBaseHelper(User))
+                        .findOne({ username: msg.username, template: { $ne: true } });
                     if (!user) {
                         user = await createNewUser(
                             msg.username,
@@ -368,7 +401,10 @@ export class AccountService extends NatsService {
 
                 const REFRESH_TOKEN_UPDATE_INTERVAL = process.env.REFRESH_TOKEN_UPDATE_INTERVAL || '31536000000' // 1 year
 
-                const user = await new DataBaseHelper(User).findOne({ username });
+                const user = await new DataBaseHelper(User).findOne({
+                    username,
+                    template: { $ne: true }
+                });
                 if (user && passwordDigest === user.password) {
                     const tokenId = GenerateUUIDv4();
                     const refreshToken = sign({
@@ -405,7 +441,11 @@ export class AccountService extends NatsService {
                 return new MessageResponse({})
             }
 
-            const user = await new DataBaseHelper(User).findOne({ refreshToken: decryptedToken.id, username: decryptedToken.name });
+            const user = await new DataBaseHelper(User).findOne({
+                refreshToken: decryptedToken.id,
+                username: decryptedToken.name,
+                template: { $ne: true }
+            });
             if (!user) {
                 return new MessageResponse({})
             }
@@ -424,9 +464,22 @@ export class AccountService extends NatsService {
 
         this.getMessages<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER, async (msg) => {
             const { username, item } = msg;
-
             try {
-                return new MessageResponse(await new DataBaseHelper(User).update(item, { username }));
+                const user = await (new DataBaseHelper(User))
+                    .findOne({ username });
+                if (!user) {
+                    return new MessageResponse(null);
+                }
+                Object.assign(user, item);
+                const template = await (new DataBaseHelper(User))
+                    .findOne({ did: item.did, template: true });
+                if (template) {
+                    user.permissions = template.permissions;
+                    user.permissionsGroup = template.permissionsGroup;
+                    await new DataBaseHelper(User).delete(template);
+                }
+                const result = await new DataBaseHelper(User).update(user);
+                return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -435,7 +488,6 @@ export class AccountService extends NatsService {
 
         this.getMessages<ISaveUserMessage, IUser>(AuthEvents.SAVE_USER, async (msg) => {
             const { user } = msg;
-
             try {
                 return new MessageResponse(await new DataBaseHelper(User).save(user));
             } catch (error) {
@@ -459,6 +511,7 @@ export class AccountService extends NatsService {
                         'role',
                         'permissionsGroup',
                         'permissions',
+                        'template'
                     ]
                 };
                 const _pageSize = parseInt(pageSize, 10);

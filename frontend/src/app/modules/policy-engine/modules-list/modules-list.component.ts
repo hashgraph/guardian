@@ -161,7 +161,8 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     private importDetails(result: any) {
         const { type, data, module } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
-            width: '950px',
+            header: 'Import module',
+            width: '720px',
             closable: true,
             data: {
                 module,

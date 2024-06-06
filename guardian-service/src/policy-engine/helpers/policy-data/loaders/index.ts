@@ -11,3 +11,5 @@ export * from './schemas.loader.js';
 export * from './split-document.loader.js';
 export * from './vc-document.loader.js';
 export * from './vp-document.loader.js';
+export * from './tokens.loader.js';
+export * from './retire-pool.loader.js';

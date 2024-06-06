@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import {
+    SchemasLoader,
     BlockStateLoader,
     PolicyDataLoader,
     RolesLoader,
@@ -12,6 +13,8 @@ import {
     AggregateVCLoader,
     SplitDocumentLoader,
     DocumentStateLoader,
+    TokensLoader,
+    RetirePoolLoader
 } from './loaders/index.js';
 import { GuardiansService } from '../../../helpers/guardians.js';
 import { IOwner, PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
@@ -22,10 +25,7 @@ import {
     Users,
     findAllEntities,
 } from '@guardian/common';
-import { SchemasLoader } from './loaders/schemas.loader.js';
 import { ObjectId } from 'bson';
-import { TokensLoader } from './loaders/tokens.loader.js';
-import { RetirePoolLoader } from './loaders/retire-pool.loader.js';
 
 /**
  * Static loaders
