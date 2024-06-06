@@ -1,0 +1,129 @@
+*[loading='true'] * {
+    opacity: 0;
+}
+
+.header {
+    width: 100%;
+    height: var(--header-height);
+    padding: 26px 80px 26px 80px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: var(--color-primary-background);
+    display: flex;
+    flex-direction: row;
+
+    &[home='true'] {
+        background: var(--color-primary-background);
+        background-image: url('@assets/main.jfif');
+        background-size: 100% auto;
+    }
+
+    .header-logo {
+        height: 32px;
+        color: var(--color-primary-negative);
+        font-size: var(--font-size-header-1);
+        text-transform: uppercase;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        user-select: none;
+        cursor: pointer;
+
+        &__icon {
+            width: 32px;
+            height: 32px;
+            color: var(--primary-color);
+        }
+
+        &__header {
+            font-family: var(--font-family-archivo-black);
+            padding-left: 16px;
+        }
+
+        &__delimiter {
+            margin: 0 9px;
+            width: 2px;
+            height: 26px;
+            background-color: var(--color-gray-3);
+        }
+
+        &__name {
+            font-family: var(--font-family-bebas-neue);
+        }
+    }
+
+    .header-nav {
+        height: 32px;
+        align-items: center;
+        justify-content: end;
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+        color: var(--color-primary-negative);
+        font-size: var(--font-size-small-1);
+    }
+
+    .header-nav-menu {
+        user-select: none;
+        height: 32px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        cursor: pointer;
+        margin-right: 24px;
+
+        &:hover {
+            opacity: 0.9;
+        }
+
+        &__icon {
+            margin-left: 8px;
+        }
+    }
+
+    .header-nav-item {
+        user-select: none;
+        height: 32px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        cursor: pointer;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+}
+
+.icon-field {
+    &__input {
+        width: 12px;
+        transition: width 1s, box-shadow 1s;
+
+        &:focus,
+        &:not(:placeholder-shown) {
+            width: 80%;
+        }
+
+        &:not(:focus):placeholder-shown {
+            border: unset;
+            outline: unset;
+            pointer-events: none;
+        }
+    }
+
+    ::ng-deep {
+        .p-input-icon {
+            font-size: var(--font-size-small-1);
+            cursor: pointer;
+        }
+    }
+}
+
+.header-nav-search {
+    margin: 0 30px;
+    width: 100%;
+    text-align: right;
+}

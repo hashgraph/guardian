@@ -78,7 +78,7 @@
                 </tr>
                 <tbody>
                     <ng-container *ngFor="let row of page">
-                        <tr class="grid-row">
+                        <tr class="grid-row" [attr.template]="row.template">
                             <td class="row-cell-text cell-size-id">{{ row.username }}</td>
                             <td class="row-cell-text cell-size-role">
                                 <div *ngIf="row.__permissionsGroup" class="user-role-label">

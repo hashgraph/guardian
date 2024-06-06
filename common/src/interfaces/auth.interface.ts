@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import WebSocket from 'ws';
-import { UserRole } from '@guardian/interfaces';
+import { IGroup, UserRole } from '@guardian/interfaces';
 
 /**
  * Authenticated user interface
@@ -41,7 +41,7 @@ export interface IAuthUser {
     /**
      * Group name
      */
-    permissionsGroup?: string[];
+    permissionsGroup?: IGroup[];
     /**
      * Permissions
      */

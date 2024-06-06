@@ -93,7 +93,7 @@ Promise.all([
         if (Number.isInteger(maxPayload)) {
             new LargePayloadContainer().runServer();
         }
-        app.listen(PORT, async () => {
+        app.listen(PORT, '0.0.0.0', async () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {

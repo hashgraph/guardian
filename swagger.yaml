@@ -2385,6 +2385,10 @@ paths:
               schema:
                 type: string
                 format: binary
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
         '500':
           description: Internal server error.
           content:
@@ -11318,7 +11322,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.24.1
+  version: 2.25.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -12486,6 +12490,8 @@ components:
             - CHUNK
             - ACTIVITY_IMPACT
             - TOKEN_DATA_SOURCE
+            - ROLE
+            - USER_PERMISSIONS
           example: POLICY
         iri:
           type: string
@@ -14242,12 +14248,15 @@ components:
     AssignPolicyDTO:
       type: object
       properties:
-        policyId:
-          type: string
-          example: '000000000000000000000001'
+        policyIds:
+          example:
+            - '000000000000000000000001'
+          type: array
+          items:
+            type: string
         assign:
           type: boolean
           example: true
       required:
-        - policyId
+        - policyIds
         - assign

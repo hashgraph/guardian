@@ -1,5 +1,5 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
-import { ApplicationStates, AuthEvents, GenerateUUIDv4, MessageAPI, UserRole } from '@guardian/interfaces';
+import { ApplicationStates, AuthEvents, GenerateUUIDv4, IOwner, MessageAPI, UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '@guardian/common';
 import { Injectable } from '@nestjs/common';
 import { RoleDTO } from '#middlewares';
@@ -86,6 +86,14 @@ export class Users extends NatsService {
      */
     public async getUser(username: string): Promise<IAuthUser> {
         return await this.sendMessage(AuthEvents.GET_USER, { username });
+    }
+
+    /**
+     * Return user by username
+     * @param username
+     */
+    public async getUserPermissions(username: string): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER_PERMISSIONS, { username });
     }
 
     /**
@@ -241,7 +249,7 @@ export class Users extends NatsService {
      * @param owner
      * @returns Operation Success
      */
-    public async createRole(role: any, owner: string): Promise<any> {
+    public async createRole(role: any, owner: IOwner): Promise<any> {
         return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner });
     }
 
@@ -252,7 +260,7 @@ export class Users extends NatsService {
      * @param owner
      * @returns Operation Success
      */
-    public async updateRole(id: string, role: any, owner: string): Promise<any> {
+    public async updateRole(id: string, role: any, owner: IOwner): Promise<any> {
         return await this.sendMessage(AuthEvents.UPDATE_ROLE, { id, role, owner });
     }
 
@@ -262,7 +270,7 @@ export class Users extends NatsService {
      * @param owner
      * @returns Operation Success
      */
-    public async deleteRole(id: string, owner: string): Promise<boolean> {
+    public async deleteRole(id: string, owner: IOwner): Promise<any> {
         return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner });
     }
 
@@ -295,7 +303,7 @@ export class Users extends NatsService {
     public async updateUserRole(
         username: string,
         userRoles: string[],
-        owner: string
+        owner: IOwner
     ): Promise<any> {
         return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner });
     }
@@ -310,7 +318,7 @@ export class Users extends NatsService {
     public async delegateUserRole(
         username: string,
         userRoles: string[],
-        owner: string
+        owner: IOwner
     ): Promise<any> {
         return await this.sendMessage(AuthEvents.DELEGATE_USER_ROLE, { username, userRoles, owner });
     }

@@ -2596,12 +2596,12 @@ export class Guardians extends NatsService {
      */
     public async assignEntity(
         type: AssignedEntityType,
-        entityId: string,
+        entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.ASSIGN_ENTITY, { type, entityId, assign, did, owner });
+        return await this.sendMessage(MessageAPI.ASSIGN_ENTITY, { type, entityIds, assign, did, owner });
     }
 
     /**
@@ -2613,12 +2613,12 @@ export class Guardians extends NatsService {
      */
     public async delegateEntity(
         type: AssignedEntityType,
-        entityId: string,
+        entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.DELEGATE_ENTITY, { type, entityId, assign, did, owner });
+        return await this.sendMessage(MessageAPI.DELEGATE_ENTITY, { type, entityIds, assign, did, owner });
     }
 
     /**
@@ -2655,5 +2655,38 @@ export class Guardians extends NatsService {
      */
     public async getAssignedPolicies(options: any): Promise<any> {
         return await this.sendMessage(MessageAPI.GET_ASSIGNED_POLICIES, options);
+    }
+
+    /**
+     * Create role
+     * @param role
+     * @param owner
+     */
+    public async createRole(role: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_ROLE, { role, owner });
+    }
+    /**
+     * Update role
+     * @param role
+     * @param owner
+     */
+    public async updateRole(role: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_ROLE, { role, owner });
+    }
+    /**
+     * Delete role
+     * @param role
+     * @param owner
+     */
+    public async deleteRole(role: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.DELETE_ROLE, { role, owner });
+    }
+    /**
+     * Set role
+     * @param user
+     * @param owner
+     */
+    public async setRole(user: IAuthUser, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SET_ROLE, { user, owner });
     }
 }

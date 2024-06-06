@@ -77,4 +77,94 @@ Verified Emission Reductions (VER), each Gold Standard VER represents one metric
 
 ## Step by Step
 
-Coming Soon
+1. Log in as the Standard Registry and import the policy either by file or through IPFS timestamp by selecting the third button at the top right.
+
+<figure><img src="../../../.gitbook/assets/image (620).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (621).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (622).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (623).png" alt=""><figcaption></figcaption></figure>
+
+2. Once the policy has successfully imported, you will be redirected to the policy configurator. To start using the policy you must first change the status of the policy from “Draft” to “Dry Run” or “Publish”, then select the “Register” or “Go” button. This can be done through the policy configurator page or though the “Manage Policies” page.
+
+<figure><img src="../../../.gitbook/assets/image (624).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (625).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (626).png" alt=""><figcaption></figcaption></figure>
+
+3. Create additional users by clicking the “Create User” button.
+
+<figure><img src="../../../.gitbook/assets/image (627).png" alt=""><figcaption></figcaption></figure>
+
+4. Once the users have been created go to each one and assign the appropriate role (i.e. Project Proponent, VVB, Technical Advisory Committee and NGO Supporters).
+
+<figure><img src="../../../.gitbook/assets/image (629).png" alt=""><figcaption></figcaption></figure>
+
+5. The VVB can provide their name or the name they would like users to see when reviewing projects.
+
+<figure><img src="../../../.gitbook/assets/image (630).png" alt=""><figcaption></figcaption></figure>
+
+6. Log in as the SR and select the “Approve VVB” tab to view the documents submitted by the VVB. The SR can approve their request by clicking on the “Approve" button.
+
+<figure><img src="../../../.gitbook/assets/image (631).png" alt=""><figcaption></figcaption></figure>
+
+7. Log in as the Project Proponent and create a new project by clicking on the "New Project" button.
+
+<figure><img src="../../../.gitbook/assets/image (632).png" alt=""><figcaption></figcaption></figure>
+
+8. You can input all the project details and data associated with the project in the “New Project” form.
+
+<figure><img src="../../../.gitbook/assets/image (633).png" alt=""><figcaption></figcaption></figure>
+
+9. The next step is to access the SR profile and include the project in the ”Project pipeline”. This can be achieved by navigating to the "Project Pipeline" tab and clicking on the "List" option.
+
+<figure><img src="../../../.gitbook/assets/image (634).png" alt=""><figcaption></figcaption></figure>
+
+10. The Project Proponent assigns the VVB to verify it by navigating to the “Projects” tab and selecting the dropdown under “Assign”.
+
+<figure><img src="../../../.gitbook/assets/image (635).png" alt=""><figcaption></figcaption></figure>
+
+11. After successfully assigning the VVB to the project, the next step is to access the VVB profile and click on the "validate" option located in the "Projects" tab. After clicking on the "Validate" button, the VVb needs to add a comment.
+
+<figure><img src="../../../.gitbook/assets/image (636).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (637).png" alt=""><figcaption></figcaption></figure>
+
+12. Log in as Project Proponent and create a monitoring report by clicking on the “Add Report” button then fill out the monitoring report form.
+
+<figure><img src="../../../.gitbook/assets/image (638).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (639).png" alt=""><figcaption></figcaption></figure>
+
+13. Log in as the VVB and click the “Monitoring Reports” tab to review the document submitted by the Project Proponent. After reviewing the monitoring report by selecting “View Document”, the VVB can select “Verify”.
+
+<figure><img src="../../../.gitbook/assets/image (640).png" alt=""><figcaption></figcaption></figure>
+
+14. Log in as the SR to review the monitoring report by selecting the “View Document” button in the “Monitoring Reports” tab. The SR can approve the monitoring report by selecting “Approve”.
+
+<figure><img src="../../../.gitbook/assets/image (641).png" alt=""><figcaption></figcaption></figure>
+
+15. After reviewing the monitoring report, the Technical Advisory Committee can provide comments. Log in as theTechnical Advisory Committee and create a comment by clicking on the “Comment” button in the “Monitoring Reports” tab.
+
+<figure><img src="../../../.gitbook/assets/image (642).png" alt=""><figcaption></figcaption></figure>
+
+16. Similarly, you can leave comments for the “NGO supporter” profile. Log in as the NGO supporter and create a comment by clicking on the “Comment” button in the “Monitoring Reports” tab.
+
+<figure><img src="../../../.gitbook/assets/image (643).png" alt=""><figcaption></figcaption></figure>
+
+17. The SR after approval of the monitoring report can start the minting process by clicking on the “mint” button.
+
+<figure><img src="../../../.gitbook/assets/image (644).png" alt=""><figcaption></figcaption></figure>
+
+18. Once the minting process is completed, you can view the token amount by navigating to the “Token History” tab
+
+<figure><img src="../../../.gitbook/assets/image (645).png" alt=""><figcaption></figcaption></figure>
+
+19. The TrustChain can also be viewed by clicking on the “View TrustChain” button.
+
+<figure><img src="../../../.gitbook/assets/image (646).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (647).png" alt=""><figcaption></figcaption></figure>

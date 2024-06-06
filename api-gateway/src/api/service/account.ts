@@ -3,9 +3,9 @@ import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/inter
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO, InternalServerErrorDTO } from '#middlewares';
-import { AuthUser, checkPermission, Auth } from '#auth';
-import { Users, PolicyEngine, Guardians, UseCache, InternalException, EntityOwner } from '#helpers';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
+import { Auth, AuthUser, checkPermission } from '#auth';
+import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ApplicationEnvironment } from '../../environment.js';
@@ -231,7 +231,7 @@ export class AccountApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
-    @UseCache()
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async getStandardRegistries(): Promise<any> {
         try {
@@ -265,7 +265,7 @@ export class AccountApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
-    @UseCache()
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAggregatedStandardRegistries(): Promise<any> {
         const engineService = new PolicyEngine();
