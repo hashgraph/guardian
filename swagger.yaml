@@ -766,7 +766,7 @@ paths:
         - bearer: []
   /artifacts:
     get:
-      operationId: ArtifactApi_getArtifacts
+      operationId: ArtifactApi_getArtifactsV2
       summary: Returns all artifacts.
       description: Returns all artifacts.
       parameters:
@@ -2595,7 +2595,7 @@ paths:
       security:
         - bearer: []
     get:
-      operationId: ModulesApi_getModules
+      operationId: ModulesApi_getModulesV2
       summary: Return a list of all modules.
       description: >-
         Returns all modules. Only users with the Standard Registry role are
@@ -3208,7 +3208,7 @@ paths:
       security:
         - bearer: []
     get:
-      operationId: ToolsApi_getTools
+      operationId: ToolsApi_getToolsV2
       summary: Return a list of all tools.
       description: >-
         Returns all tools. Only users with the Standard Registry role are
@@ -4225,7 +4225,7 @@ paths:
         - bearer: []
   /policies:
     get:
-      operationId: PolicyApi_getPolicies
+      operationId: PolicyApi_getPoliciesV2
       summary: Return a list of all policies.
       description: Returns all policies.
       parameters:
@@ -6670,7 +6670,7 @@ paths:
         - bearer: []
   /schemas:
     get:
-      operationId: SchemaApi_getSchemasPage
+      operationId: SchemaApi_getSchemasPageV2
       summary: Return a list of all schemas.
       description: Returns all schemas.
       parameters:
@@ -6977,6 +6977,55 @@ paths:
           in: query
           description: Topic Id
           example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearer: []
+  /schemas/schema-with-sub-schemas:
+    get:
+      operationId: SchemaApi_getSchemaWithSubSchemas
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: category
+          required: false
+          in: query
+          description: Schema category
+          example: POLICY
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic Id
+          example: 0.0.1
+          schema:
+            type: string
+        - name: schemaId
+          required: true
+          in: query
           schema:
             type: string
       responses:
@@ -7634,7 +7683,7 @@ paths:
       security:
         - bearer: []
     get:
-      operationId: SchemaApi_getSystemSchema
+      operationId: SchemaApi_getSystemSchemaV2
       summary: Return a list of all system schemas.
       description: >-
         Returns all system schemas. Only users with the Standard Registry role
@@ -8278,7 +8327,7 @@ paths:
         - bearer: []
   /tags/schemas:
     get:
-      operationId: TagsApi_getSchemas
+      operationId: TagsApi_getSchemasV2
       summary: Return a list of all tag schemas.
       description: >-
         Returns all tag schemas. Only users with the Standard Registry role are
