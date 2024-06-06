@@ -150,8 +150,8 @@ export class Users extends NatsService {
      * @param did
      * @returns Operation Success
      */
-    public async createRole(role: any, owner: IOwner): Promise<any> {
-        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner });
+    public async createRole(role: any, owner: IOwner, restore = false): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner, restore });
     }
 
     /**

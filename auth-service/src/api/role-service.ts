@@ -190,19 +190,23 @@ export class RoleService extends NatsService {
          * @returns {any} new role
          */
         this.getMessages(AuthEvents.CREATE_ROLE,
-            async (msg: { role: DynamicRole, owner: IOwner }) => {
+            async (msg: { role: DynamicRole, owner: IOwner, restore: boolean }) => {
                 try {
                     if (!msg) {
                         throw new Error('Invalid create role parameters');
                     }
-                    const { role, owner } = msg;
+                    const { role, owner, restore } = msg;
                     delete role._id;
                     delete role.id;
                     role.owner = owner.creator;
-                    role.uuid = GenerateUUIDv4();
                     role.permissions = ListPermissions.unique(role.permissions);
                     role.default = false;
                     role.readonly = false;
+                    if (restore) {
+                        role.uuid = role.uuid || GenerateUUIDv4();
+                    } else {
+                        role.uuid = GenerateUUIDv4();
+                    }
                     let item = new DataBaseHelper(DynamicRole).create(role);
                     item = await new DataBaseHelper(DynamicRole).save(item);
                     return new MessageResponse(item);

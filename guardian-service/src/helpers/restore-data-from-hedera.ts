@@ -698,10 +698,11 @@ export class RestoreDataFromHedera {
             const vcDoc = VcDocument.fromJsonTree(message.document);
             const uuid = vcDoc.getField<string>('uuid');
             const role = await this.users.createRole({
+                uuid,
                 name: vcDoc.getField<string>('name'),
                 description: vcDoc.getField<string>('description'),
                 permissions: vcDoc.getField<string[]>('permissions')
-            }, _owner);
+            }, _owner, true);
             await new DataBaseHelper(VcDocumentCollection).save({
                 hash: vcDoc.toCredentialHash(),
                 owner: parentDid,
