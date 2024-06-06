@@ -192,6 +192,10 @@
             background: #fff;
         }
 
+        &[template="true"]>td {
+            background: #f7f7f7;
+        }
+
         &:first-child {
             .row-cell-text:first-child {
                 border-top-left-radius: 8px !important;

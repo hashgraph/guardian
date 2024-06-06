@@ -269,6 +269,8 @@ Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://github.com/hashgraph/guardian/issues/2921)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation)
+
 ### Full project data comparison as produced/captured by policies
 
 Introduce a comparison functionality where it'd be possible to 'diff' arbitrary sections or the entire trust-chains for different tokens, potentially issued by different policies such that the system would:
@@ -278,6 +280,8 @@ Introduce a comparison functionality where it'd be possible to 'diff' arbitrary 
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://github.com/hashgraph/guardian/issues/2704)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui)
+
 ### Global environmental/Guardian data search (indexer) component for Hedera and IPFS
 
 * Improve the data storage and indexing capabilities of Guardian for the data belonging to the local instance such that complex analytical queries could be run efficiently, such as 'search for data similar to this' and 'what is the possibility of this being a double entry for something submitted elsewhere'.
@@ -285,6 +289,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://gith
 * Extend [Block and policy discoverability/search #2281](https://github.com/hashgraph/guardian/issues/2281) for users to be able to preview the usage of the block without having to import "other SR's" policy into their Guardian instance
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://github.com/hashgraph/guardian/issues/2629)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide)
 
 ### Revamp Guardian user/roles and permissions model
 
@@ -303,55 +309,7 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://gith
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2844](https://github.com/hashgraph/guardian/issues/2844)
 
-### Development of AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
-
-1. Designing of the Schema and getting it approved.
-2. Development of the policy using Schema
-3.  Development of all the tools involved in the policy:
-
-    * Tool 01- Tool for the demonstration and assessment of additionality
-    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-    * Tool 04- Emissions from solid waste disposal sites
-    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-    * Tool 06- Project emissions from flaring
-    * Tool 12- Project and leakage emissions from transportation of freight
-    * Tool 13- Project and leakage emissions from composting
-    * Tool 14- Project and leakage emissions from anaerobic digesters
-    * Tool 16- Project and leakage emissions from biomass
-    * Tool 33- Default values for common parameters
-
-    Referral Link: [https://github.com/hashgraph/guardian/issues/2882](https://github.com/hashgraph/guardian/issues/2882)
-
-### Development of AMS-I.A.
-
-1. Designing of the Schema and getting it approved.
-2. Development of the policy using Schema
-3. Development of all the tools involved in the policy:
-   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-   * Tool 16- Project and leakage emissions from biomass
-   * Tool 21- Demonstration of additionality of small-scale project activities 
-   * Tool 33- Default values for common parameters
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://github.com/hashgraph/guardian/issues/2884)
-
-### Development of AMS-I.C.: Thermal Energy Production with or Without Electricity
-
-1. Designing the Schema for the methodology
-2. Development of the policy
-3.  Development of all the tools involved in this policy
-
-    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-    * Tool 06- Project emissions from flaring
-    * Tool 07- Tool to calculate the emission factor for an electricity system
-    * Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems
-    * Tool 12- Project and leakage emissions from transportation of freight
-    * Tool 16- Project and leakage emissions from biomas
-    * Tool 19- Demonstration of additionality of microscale project activities
-    * Tool 21- Demonstration of additionality of small-scale project activities 
-    * Tool 22- Leakage in biomass small-scale project activities
-
-    Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide](https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide)
 
 ## ---- June 2024----
 
@@ -398,6 +356,55 @@ Create a Guardian policy that quantifies and reports GHG emissions from HBAR, us
 {% embed url="https://ghgprotocol.org/sites/default/files/standards/Product-Life-Cycle-Accounting-Reporting-Standard_041613.pdfhttps://ghgprotocol.org/sites/default/files/GHGP-ICTSG%20-%20ALL%20Chapters.pdf" %}
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1667](https://github.com/hashgraph/guardian/issues/1667)
+
+### Development of AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
+
+1. Designing of the Schema and getting it approved.
+2. Development of the policy using Schema
+3. Development of all the tools involved in the policy:
+   * Tool 01- Tool for the demonstration and assessment of additionality
+   * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+   * Tool 04- Emissions from solid waste disposal sites
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 06- Project emissions from flaring
+   * Tool 12- Project and leakage emissions from transportation of freight
+   * Tool 13- Project and leakage emissions from composting
+   * Tool 14- Project and leakage emissions from anaerobic digesters
+   * Tool 16- Project and leakage emissions from biomass
+   * Tool 33- Default values for common parameters
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2882](https://github.com/hashgraph/guardian/issues/2882)
+
+### Development of AMS-I.A.
+
+1. Designing of the Schema and getting it approved.
+2. Development of the policy using Schema
+3. Development of all the tools involved in the policy:
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 16- Project and leakage emissions from biomass
+   * Tool 21- Demonstration of additionality of small-scale project activities 
+   * Tool 33- Default values for common parameters
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://github.com/hashgraph/guardian/issues/2884)
+
+### Development of AMS-I.C.: Thermal Energy Production with or Without Electricity
+
+1. Designing the Schema for the methodology
+2. Development of the policy
+3.  Development of all the tools involved in this policy
+
+    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+    * Tool 06- Project emissions from flaring
+    * Tool 07- Tool to calculate the emission factor for an electricity system
+    * Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems
+    * Tool 12- Project and leakage emissions from transportation of freight
+    * Tool 16- Project and leakage emissions from biomas
+    * Tool 19- Demonstration of additionality of microscale project activities
+    * Tool 21- Demonstration of additionality of small-scale project activities 
+    * Tool 22- Leakage in biomass small-scale project activities
+
+    Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
 
 ## ---- July 2024----
 

@@ -1,14 +1,8 @@
-import {
-    DataBaseHelper,
-    Logger,
-    MessageError,
-    MessageResponse,
-    NatsService,
-    Singleton
-} from '@guardian/common';
-import { AuthEvents, DefaultRoles, GenerateUUIDv4, IGroup, IOwner, Permissions, PermissionsArray, UserRole } from '@guardian/interfaces';
+import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
+import { getRequiredProps } from './account-service.js';
 
 const permissionList = PermissionsArray.filter((p) => !p.disabled).map((p) => {
     return {
@@ -159,16 +153,7 @@ export class RoleService extends NatsService {
                         otherOptions.limit = 100;
                     }
 
-                    const options: any = {
-                        $or: [
-                            { owner },
-                            {
-                                owner: null,
-                                default: true,
-                                readonly: true
-                            }
-                        ]
-                    };
+                    const options: any = { owner };
                     if (name) {
                         options.name = { $regex: '.*' + name + '.*' };
                     }
@@ -205,20 +190,23 @@ export class RoleService extends NatsService {
          * @returns {any} new role
          */
         this.getMessages(AuthEvents.CREATE_ROLE,
-            async (msg: { role: DynamicRole, owner: IOwner }) => {
+            async (msg: { role: DynamicRole, owner: IOwner, restore: boolean }) => {
                 try {
                     if (!msg) {
                         throw new Error('Invalid create role parameters');
                     }
-                    const { role, owner } = msg;
-
+                    const { role, owner, restore } = msg;
                     delete role._id;
                     delete role.id;
                     role.owner = owner.creator;
-                    role.uuid = GenerateUUIDv4();
                     role.permissions = ListPermissions.unique(role.permissions);
                     role.default = false;
                     role.readonly = false;
+                    if (restore) {
+                        role.uuid = role.uuid || GenerateUUIDv4();
+                    } else {
+                        role.uuid = GenerateUUIDv4();
+                    }
                     let item = new DataBaseHelper(DynamicRole).create(role);
                     item = await new DataBaseHelper(DynamicRole).save(item);
                     return new MessageResponse(item);
@@ -362,6 +350,13 @@ export class RoleService extends NatsService {
                     if (!target) {
                         return new MessageError('User does not exist');
                     }
+                    if (
+                        target.permissionsGroup &&
+                        target.permissionsGroup.length &&
+                        target.permissionsGroup[0].owner
+                    ) {
+                        return new MessageResponse(getRequiredProps(target));
+                    }
                     const defaultRole = await getDefaultRole(owner);
                     if (defaultRole) {
                         target.permissionsGroup = [{
@@ -376,92 +371,7 @@ export class RoleService extends NatsService {
                         target.permissions = [];
                     }
                     const result = await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(result);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        /**
-         * Set default role
-         *
-         * @param {any} msg - default role parameters
-         *
-         * @returns {boolean} - Operation success
-         */
-        this.getMessages(AuthEvents.CREATE_DEFAULT_USER_ROLE,
-            async (msg: { username: string }) => {
-                try {
-                    if (!msg) {
-                        return new MessageError('Invalid delete role parameters');
-                    }
-                    const { username } = msg;
-                    const user = await new DataBaseHelper(User).findOne({ username })
-                    if (!user) {
-                        return new MessageError('User does not exist');
-                    }
-                    const db = new DataBaseHelper(User);
-                    if (user.role === UserRole.STANDARD_REGISTRY) {
-                        await db.save(db.create({
-                            uuid: GenerateUUIDv4(),
-                            name: 'Policy Approver',
-                            description: '',
-                            owner: user.did,
-                            permissions: [
-                                Permissions.ANALYTIC_POLICY_READ,
-                                Permissions.POLICIES_POLICY_READ,
-                                Permissions.ANALYTIC_MODULE_READ,
-                                Permissions.ANALYTIC_TOOL_READ,
-                                Permissions.ANALYTIC_SCHEMA_READ,
-                                Permissions.POLICIES_POLICY_REVIEW,
-                                Permissions.SCHEMAS_SCHEMA_READ,
-                                Permissions.MODULES_MODULE_READ,
-                                Permissions.TOOLS_TOOL_READ,
-                                Permissions.TOKENS_TOKEN_READ,
-                                Permissions.ARTIFACTS_FILE_READ,
-                                Permissions.SETTINGS_THEME_READ,
-                                Permissions.SETTINGS_THEME_CREATE,
-                                Permissions.SETTINGS_THEME_UPDATE,
-                                Permissions.SETTINGS_THEME_DELETE,
-                                Permissions.TAGS_TAG_READ,
-                                Permissions.TAGS_TAG_CREATE,
-                                Permissions.SUGGESTIONS_SUGGESTIONS_READ,
-                                Permissions.ACCESS_POLICY_ASSIGNED
-                            ],
-                            default: false,
-                            readonly: false
-                        }))
-                        await db.save(db.create({
-                            uuid: GenerateUUIDv4(),
-                            name: 'Policy Manager',
-                            description: '',
-                            owner: user.did,
-                            permissions: [
-                                Permissions.ANALYTIC_DOCUMENT_READ,
-                                Permissions.POLICIES_POLICY_MANAGE,
-                                Permissions.POLICIES_POLICY_READ,
-                                Permissions.TOKENS_TOKEN_MANAGE,
-                                Permissions.TOKENS_TOKEN_READ,
-                                Permissions.ACCOUNTS_ACCOUNT_READ,
-                                Permissions.TAGS_TAG_READ,
-                                Permissions.TAGS_TAG_CREATE,
-                                Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
-                            ],
-                            default: false,
-                            readonly: false
-                        }))
-                        await db.save(db.create({
-                            uuid: GenerateUUIDv4(),
-                            name: 'Policy User',
-                            description: '',
-                            owner: user.did,
-                            permissions: DefaultRoles,
-                            default: false,
-                            readonly: false
-                        }))
-                    }
-                    return new MessageResponse(true);
+                    return new MessageResponse(getRequiredProps(result));
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -527,7 +437,7 @@ export class RoleService extends NatsService {
                     }
                     target.permissions = Array.from(permissions);
                     const result = await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(result);
+                    return new MessageResponse(getRequiredProps(result));
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -570,7 +480,8 @@ export class RoleService extends NatsService {
                         user.permissions = Array.from(permissions);
                         await new DataBaseHelper(User).update(user);
                     }
-                    return new MessageResponse(users);
+                    const result = users?.map((row) => getRequiredProps(row));
+                    return new MessageResponse(result);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -645,11 +556,26 @@ export class RoleService extends NatsService {
                     target.permissionsGroup = permissionsGroup;
                     target.permissions = Array.from(permissions);
                     await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(target);
+                    return new MessageResponse(getRequiredProps(target));
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
+
+        /**
+         * Get user by username
+         * @param username - username
+         */
+        this.getMessages(AuthEvents.GET_USER_PERMISSIONS, async (msg: any) => {
+            const { username } = msg;
+            try {
+                const user = await new DataBaseHelper(User).findOne({ username })
+                return new MessageResponse(getRequiredProps(user));
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
+            }
+        });
     }
 }
