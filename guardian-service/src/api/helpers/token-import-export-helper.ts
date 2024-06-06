@@ -1,5 +1,5 @@
 import { DataBaseHelper, Token } from '@guardian/common';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 
 /**
@@ -23,7 +23,7 @@ interface ImportResult {
  * @param notifier
  */
 export async function importTokensByFiles(
-    owner: string,
+    user: IOwner,
     tokens: any[] = [],
     notifier: INotifier
 ): Promise<ImportResult> {
@@ -46,7 +46,8 @@ export async function importTokensByFiles(
             enableFreeze: !!(token.enableFreeze || token.freezeKey),
             enableKYC: !!(token.enableKYC || token.kycKey),
             enableWipe: !!(token.enableWipe || token.wipeKey),
-            owner,
+            owner: user.owner,
+            creator: user.creator,
             policyId: null,
             draftToken: true
         });

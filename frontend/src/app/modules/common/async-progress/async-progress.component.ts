@@ -159,9 +159,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
                 this.wsService.updateProfile();
-                this.router.navigate([
-                    this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ], {
+                const home = this.auth.home(this.userRole);
+                this.router.navigate([home], {
                     replaceUrl: true,
                 });
                 return;
@@ -182,7 +181,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 });
                 break;
             case TaskAction.CREATE_TOOL:
-                this.router.navigate(['policy-configuration'], {
+                this.router.navigate(['tool-configuration'], {
                     queryParams: {
                         toolId: result,
                     },
@@ -276,7 +275,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         );
                         this._configurationErrors.set(tool?.id, errors);
                     }
-                    this.router.navigate(['policy-configuration'], {
+                    this.router.navigate(['tool-configuration'], {
                         queryParams: {
                             toolId: tool?.id
                         },
@@ -328,9 +327,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
-                this.router.navigate([
-                    this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ], {
+                const home = this.auth.home(this.userRole);
+                this.router.navigate([home], {
                     replaceUrl: true,
                 });
                 break;

@@ -17,15 +17,21 @@
     "policy-service",
     "api-tests",
     "ai-service",
-    "notification-service"
+    "notification-service",
+    "indexer-interfaces",
+    "indexer-common",
+    "indexer-api-gateway",
+    "indexer-service",
+    "indexer-worker-service"
   ],
-  "version": "2.24.1",
+  "version": "2.25.1",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },
   "resolutions": {
     "@azure/core-rest-pipeline": "1.12.1",
-    "image-size": "1.0.2"
+    "image-size": "1.0.2",
+    "@azure/msal-node": "2.5.1"
   },
   "scripts": {
     "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",

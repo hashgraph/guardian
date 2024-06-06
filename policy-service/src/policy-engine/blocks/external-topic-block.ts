@@ -6,7 +6,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
-import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import {
     VcDocument as VcDocumentCollection,
@@ -166,7 +166,7 @@ export class ExternalTopicBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
+    protected async validateDocuments(user: PolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const error = await validator.run({
@@ -192,7 +192,7 @@ export class ExternalTopicBlock {
      * Update user state
      * @private
      */
-    private updateStatus(ref: AnyBlockType, item: ExternalDocument, user: IPolicyUser) {
+    private updateStatus(ref: AnyBlockType, item: ExternalDocument, user: PolicyUser) {
         ref.updateBlock({ status: item.status }, user);
     }
 
@@ -332,7 +332,7 @@ export class ExternalTopicBlock {
      * @param user
      * @private
      */
-    private async getUser(user: IPolicyUser): Promise<ExternalDocument> {
+    private async getUser(user: PolicyUser): Promise<ExternalDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
         if (!item) {
@@ -418,7 +418,7 @@ export class ExternalTopicBlock {
     private async addTopic(
         item: ExternalDocument,
         topicId: string,
-        user: IPolicyUser
+        user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         try {
@@ -466,7 +466,7 @@ export class ExternalTopicBlock {
     private async verificationSchema(
         item: ExternalDocument,
         schema: any,
-        user: IPolicyUser
+        user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         try {
@@ -492,7 +492,7 @@ export class ExternalTopicBlock {
     private async verificationSchemas(
         item: ExternalDocument,
         schemas: any[],
-        user: IPolicyUser
+        user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         try {
@@ -522,7 +522,7 @@ export class ExternalTopicBlock {
     private async setSchema(
         item: ExternalDocument,
         schema: any,
-        user: IPolicyUser
+        user: PolicyUser
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         try {
@@ -595,7 +595,7 @@ export class ExternalTopicBlock {
         ref: AnyBlockType,
         item: ExternalDocument,
         hederaAccount: IHederaCredentials,
-        user: IPolicyUser,
+        user: PolicyUser,
         message: VCMessage
     ): Promise<void> {
         const documentRef = await this.getRelationships(ref, user);
@@ -642,7 +642,7 @@ export class ExternalTopicBlock {
      * @param user
      * @private
      */
-    private async receiveData(item: ExternalDocument, user: IPolicyUser): Promise<void> {
+    private async receiveData(item: ExternalDocument, user: PolicyUser): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const documentOwnerCred = await PolicyUtils.getUserCredentials(ref, item.owner);
         const hederaCred = await documentOwnerCred.loadHederaCredentials(ref);
@@ -670,7 +670,7 @@ export class ExternalTopicBlock {
         item.status = TaskStatus.Processing;
         await ref.databaseServer.updateExternalTopic(item);
 
-        const user = await PolicyUtils.createPolicyUser(ref, item.owner);
+        const user = await PolicyComponentsUtils.GetPolicyUserByDID(item.owner, null, ref);
         this.updateStatus(ref, item, user);
         try {
             await this.receiveData(item, user);
@@ -690,7 +690,7 @@ export class ExternalTopicBlock {
      * @param ref
      * @param refId
      */
-    private async getRelationships(ref: AnyBlockType, user: IPolicyUser): Promise<VcDocumentCollection> {
+    private async getRelationships(ref: AnyBlockType, user: PolicyUser): Promise<VcDocumentCollection> {
         try {
             for (const child of ref.children) {
                 if (child.blockClassName === 'SourceAddon') {
@@ -731,7 +731,7 @@ export class ExternalTopicBlock {
             PolicyOutputEventType.RefreshEvent
         ]
     })
-    public async setData(user: IPolicyUser, data: any): Promise<any> {
+    public async setData(user: PolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         ref.log(`setData`);
 
@@ -895,7 +895,7 @@ export class ExternalTopicBlock {
      * Get block data
      * @param user
      */
-    public async getData(user: IPolicyUser): Promise<any> {
+    public async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const item = await ref.databaseServer.getExternalTopic(ref.policyId, ref.uuid, user.did);
         if (item) {

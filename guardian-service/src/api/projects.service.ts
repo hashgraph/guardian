@@ -81,62 +81,63 @@ export async function getProjectsData(documents: VcDocument[], allPolicies: Poli
  * Connect to the message broker methods of working with projects.
  */
 export async function projectsAPI(): Promise<void> {
-    ApiResponse(MessageAPI.SEARCH_PROJECTS, async (msg) => {
-        try {
-            const { categoryIds, policyIds } = msg;
+    ApiResponse(MessageAPI.SEARCH_PROJECTS,
+        async (msg: { categoryIds: string[], policyIds: string[] }) => {
+            try {
+                const { categoryIds, policyIds } = msg;
 
-            if (!categoryIds?.length && !policyIds?.length) {
-                return new MessageResponse([]);
-            }
-
-            let policies: Policy[] = [];
-            if (categoryIds?.length) {
-                policies = await DatabaseServer.getFilteredPolicies(categoryIds, '');
-            }
-
-            const fetchedPolicies = await DatabaseServer.getPolicies({
-                id: { $in: msg.policyIds },
-                status: { $eq: 'PUBLISH' }
-            });
-            const allPolicies = policies.concat(fetchedPolicies);
-
-            const resultSchemas: Set<string> = new Set<string>();
-            for (const policy of allPolicies) {
-                if (policy.projectSchema) {
-                    resultSchemas.add(policy.projectSchema);
+                if (!categoryIds?.length && !policyIds?.length) {
+                    return new MessageResponse([]);
                 }
-            }
 
-            const documents: VcDocument[] = await DatabaseServer.getVCs({
-                policyId: { $in: allPolicies.map((policy: Policy) => policy.id) },
-                schema: { $in: Array.from(resultSchemas) },
-                messageId: { $exists: true, $ne: null }
-            });
-
-            const documentIds: Set<string> = new Set<string>();
-            for (const vc of documents) {
-                documentIds.add(vc.messageId);
-            }
-            const filteredDocuments = documents.filter(vc => {
-                if (!vc.relationships) {
-                    return true;
+                let policies: Policy[] = [];
+                if (categoryIds?.length) {
+                    policies = await DatabaseServer.getFilteredPolicies(categoryIds, '');
                 }
-                for (const messageId of vc.relationships) {
-                    if (documentIds.has(messageId)) {
-                        return false;
+
+                const fetchedPolicies = await DatabaseServer.getPolicies({
+                    id: { $in: msg.policyIds },
+                    status: { $eq: 'PUBLISH' }
+                });
+                const allPolicies = policies.concat(fetchedPolicies);
+
+                const resultSchemas: Set<string> = new Set<string>();
+                for (const policy of allPolicies) {
+                    if (policy.projectSchema) {
+                        resultSchemas.add(policy.projectSchema);
                     }
                 }
-                return true;
-            })
 
-            const projects = await getProjectsData(filteredDocuments, allPolicies);
+                const documents: VcDocument[] = await DatabaseServer.getVCs({
+                    policyId: { $in: allPolicies.map((policy: Policy) => policy.id) },
+                    schema: { $in: Array.from(resultSchemas) },
+                    messageId: { $exists: true, $ne: null }
+                });
 
-            return new MessageResponse(projects);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+                const documentIds: Set<string> = new Set<string>();
+                for (const vc of documents) {
+                    documentIds.add(vc.messageId);
+                }
+                const filteredDocuments = documents.filter(vc => {
+                    if (!vc.relationships) {
+                        return true;
+                    }
+                    for (const messageId of vc.relationships) {
+                        if (documentIds.has(messageId)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+
+                const projects = await getProjectsData(filteredDocuments, allPolicies);
+
+                return new MessageResponse(projects);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 
     ApiResponse(MessageAPI.GET_POLICY_CATEGORIES, async () => {
         try {

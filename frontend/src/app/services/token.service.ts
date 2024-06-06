@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IToken, ITokenInfo, IUser } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -14,6 +14,26 @@ export class TokenService {
     constructor(
         private http: HttpClient
     ) {
+    }
+
+    public static getOptions(
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
+            }
+        }
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
     }
 
     public create(data: any): Observable<IToken[]> {
@@ -39,17 +59,14 @@ export class TokenService {
         return this.http.get<ITokenInfo[]>(`${this.url}`);
     }
 
-    public getTokensPage(policyId?: string, pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
-        if (policyId) {
-            if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-                return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}&pageIndex=${pageIndex}&pageSize=${pageSize}`, {observe: 'response'});
-            }
-            return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`, {observe: 'response'});
-        }
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<ITokenInfo[]>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, {observe: 'response'});
-        }
-        return this.http.get<ITokenInfo[]>(`${this.url}`, {observe: 'response'});
+    public getTokensPage(
+        policyId?: string,
+        pageIndex?: number,
+        pageSize?: number,
+        status?: string,
+    ): Observable<HttpResponse<any[]>> {
+        const params = TokenService.getOptions({ policyId, status }, pageIndex, pageSize);
+        return this.http.get<ITokenInfo[]>(`${this.url}`, { observe: 'response', params });
     }
 
     public associate(tokenId: string, associate: boolean): Observable<void> {
@@ -100,5 +117,9 @@ export class TokenService {
 
     public serials(tokenId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${tokenId}/serials`);
+    }
+
+    public menuList(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/menu/all`);
     }
 }

@@ -3,7 +3,7 @@ import { BlockActionError } from '../errors/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
@@ -61,7 +61,7 @@ export class DocumentsSourceAddon {
      * @param user
      * @param data
      */
-    public async setData(user: IPolicyUser, data: any): Promise<void> {
+    public async setData(user: PolicyUser, data: any): Promise<void> {
         const oldState = this.state || {};
         oldState[user.id] = data;
         this.state = oldState;
@@ -78,7 +78,7 @@ export class DocumentsSourceAddon {
      * @param countResult
      * @param otherOptions
      */
-    async getFromSource(user: IPolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any) {
+    async getFromSource(user: PolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = {};
@@ -224,7 +224,7 @@ export class DocumentsSourceAddon {
      * @param globalFilters Global filters
      * @returns Aggregation filter
      */
-    async getFromSourceFilters(user: IPolicyUser, globalFilters: any) {
+    async getFromSourceFilters(user: PolicyUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = [];

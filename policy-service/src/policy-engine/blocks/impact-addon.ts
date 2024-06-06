@@ -3,7 +3,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
 import { BlockActionError } from '../errors/index.js';
@@ -92,7 +92,7 @@ export class TokenOperationAddon {
     public async run(
         documents: VcDocument[],
         root: UserCredentials,
-        user: IPolicyUser
+        user: PolicyUser
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const policySchema = await this.getSchema();

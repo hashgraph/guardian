@@ -1,0 +1,48 @@
+<div class="page-content">
+    <div class="header"></div>
+    <div class="content">
+        <div class="header">
+            <h1>{{ 'details.header.vp' | transloco }}</h1>
+        </div>
+        @if (loading) {
+        <div class="loading">
+            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+        </div>
+        } @else {
+        @if (row) {
+        <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
+            @if (target) {
+            <p-tabPanel [header]="'details.overview' | transloco">
+                <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+            </p-tabPanel>
+
+            <p-tabPanel [header]="'details.documents' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="getDocument(first.documents[0])" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+
+            <p-tabPanel [header]="'details.history' | transloco">
+                <app-table [columns]="historyColumns" [data]="history" [paginator]="false"
+                    [loading]="false"></app-table>
+            </p-tabPanel>
+
+            <p-tabPanel [header]="'details.relationships' | transloco">
+                <div echarts [options]="chartOption" class="relationships-chart" (chartDblClick)="onSelect($event)">
+                </div>
+            </p-tabPanel>
+            }
+            <p-tabPanel [header]="'details.raw_data' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="row | json" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+        } @else {
+        <div>{{ 'details.not_found' | transloco }}</div>
+        }
+        }
+    </div>
+</div>

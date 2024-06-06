@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
@@ -35,6 +35,7 @@ enum OperationMode {
 })
 export class ModulesListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
+    public user: UserPermissions = new UserPermissions();
     public isConfirmed: boolean = false;
     public modules: any[] | null;
     public modulesCount: number;
@@ -98,6 +99,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.user = new UserPermissions(profile);
 
             if (this.isConfirmed) {
                 this.loadAllModules();
@@ -116,8 +118,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.modulesService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
             this.modules = policiesResponse.body || [];
             this.modulesCount = Number(policiesResponse.headers.get('X-Total-Count') || this.modules.length);
+            this.loadTagsData();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
 
-            const ids = this.modules.map(e => e.id);
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
+            const ids = this.modules?.map(e => e.id) || [];
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 if (this.modules) {
                     for (const policy of this.modules) {
@@ -131,9 +140,11 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 console.error(e.error);
                 this.loading = false;
             });
-        }, (e) => {
-            this.loading = false;
-        });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     public onPage(event: any) {
@@ -150,7 +161,8 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     private importDetails(result: any) {
         const { type, data, module } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
-            width: '950px',
+            header: 'Import module',
+            width: '720px',
             closable: true,
             data: {
                 module,
@@ -307,7 +319,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 }
                 this.informService.errorMessage(text.join(''), 'The module is invalid');
                 this._configurationErrors.set(element.uuid, errors);
-                this.router.navigate(['policy-configuration'], {
+                this.router.navigate(['module-configuration'], {
                     queryParams: {
                         moduleId: element.uuid,
                     },

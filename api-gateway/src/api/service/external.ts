@@ -1,60 +1,41 @@
-import { PolicyEngine } from '../../helpers/policy-engine.js';
-import { Logger } from '@guardian/common';
-import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiExtraModels, ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { InternalServerErrorDTO, ExternalDocumentDTO } from '#middlewares';
+import { PolicyEngine, InternalException } from '#helpers';
 
 @Controller('external')
 @ApiTags('external')
 export class ExternalApi {
+    /**
+     * Sends data from an external source
+     */
+    @Post('/')
     @ApiOperation({
         summary: 'Sends data from an external source.',
         description: 'Sends data from an external source.',
     })
     @ApiBody({
         description: 'Object that contains a VC Document.',
-        schema: {
-            'type': 'object',
-            'required': [
-                'owner',
-                'policyTag',
-                'document'
-            ],
-            'properties': {
-                'owner': {
-                    'type': 'string'
-                },
-                'policyTag': {
-                    'type': 'string'
-                },
-                'document': {
-                    'type': 'object'
-                }
-            }
-        }
+        type: ExternalDocumentDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'boolean'
-        }
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
-    @Post('/')
+    @ApiExtraModels(ExternalDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async receiveExternalData(@Req() req, @Response() res): Promise<any> {
-        const engineService = new PolicyEngine();
-
+    async receiveExternalData(
+        @Body() document: ExternalDocumentDTO
+    ): Promise<any> {
         try {
-            return res.send(await engineService.receiveExternalData(req.body));
+            const engineService = new PolicyEngine();
+            return await engineService.receiveExternalData(document);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

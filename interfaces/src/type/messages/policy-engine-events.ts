@@ -8,7 +8,7 @@ export enum PolicyEngineEvents {
     POLICY_IMPORT_MESSAGE = 'policy-engine-event-policy-import-message',
     POLICY_IMPORT_MESSAGE_ASYNC = 'policy-engine-event-policy-import-message-async',
     POLICY_IMPORT_XLSX = 'policy-engine-event-policy-import-xlsx',
-    POLICY_IMPORT_XLSX_ASYNC= 'policy-engine-event-policy-import-xlsx-async',
+    POLICY_IMPORT_XLSX_ASYNC = 'policy-engine-event-policy-import-xlsx-async',
     POLICY_IMPORT_MESSAGE_PREVIEW = 'policy-engine-event-policy-import-message-preview',
     POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC = 'policy-engine-event-policy-import-message-preview-async',
     POLICY_IMPORT_FILE_PREVIEW = 'policy-engine-event-policy-import-file-preview',
@@ -61,4 +61,6 @@ export enum PolicyEngineEvents {
     UPLOAD_POLICY_DATA = 'policy-engine-event-upload-policy-data',
     UPLOAD_VIRTUAL_KEYS = 'policy-engine-event-upload-virtual-keys',
     GET_TAG_BLOCK_MAP = 'policy-engine-event-get-tag-block-map',
+
+    ACCESS_POLICY = 'policy-engine-event-access-policy'
 }

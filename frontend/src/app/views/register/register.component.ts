@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
-import { UserRole } from '@guardian/interfaces';
+import { UserCategory, UserRole } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 
@@ -29,7 +29,7 @@ export class RegisterComponent implements OnInit {
     error?: string;
 
     loginForm = new FormGroup({
-        login: new FormControl(Math.random().toString(36).substring(2,10), [Validators.required, noWhitespaceValidator()]),
+        login: new FormControl(Math.random().toString(36).substring(2, 10), [Validators.required, noWhitespaceValidator()]),
         role: new FormControl('USER', [Validators.required]),
         password: new FormControl('test', [Validators.required, noWhitespaceValidator()]),
         confirmPassword: new FormControl('test', [Validators.required, noWhitespaceValidator()]),
@@ -55,7 +55,7 @@ export class RegisterComponent implements OnInit {
             const d = this.loginForm.value;
             this.loading = true;
             this.auth.createUser(d.login, d.password, d.confirmPassword, d.role).subscribe((result) => {
-                if(result.error) {
+                if (result.error) {
                     this.error = result.error;
                     this.loading = false;
                     return;
@@ -66,11 +66,8 @@ export class RegisterComponent implements OnInit {
                         this.auth.setAccessToken(_result);
                         this.auth.setUsername(d.login);
                         this.authState.updateState(true);
-                        if (result.role === UserRole.STANDARD_REGISTRY) {
-                            this.router.navigate(['/config']);
-                        } else {
-                            this.router.navigate(['/']);
-                        }
+                        const home = this.auth.home(result.role);
+                        this.router.navigate([home]);
                     }, () => {
                         this.loading = false;
                     })
@@ -85,7 +82,7 @@ export class RegisterComponent implements OnInit {
     }
 
     setRole(role: string): void {
-        this.loginForm.patchValue({role});
+        this.loginForm.patchValue({ role });
         this._isRoleSelected$.next(!!role);
     }
 
@@ -98,11 +95,11 @@ export class RegisterComponent implements OnInit {
     }
 
     togglePasswordShow(): void {
-        this.passFieldType = this.passFieldType === 'password' ? 'text': 'password';
+        this.passFieldType = this.passFieldType === 'password' ? 'text' : 'password';
     }
 
     toggleConfirmPasswordShow(): void {
-        this.confirmPassFieldType = this.confirmPassFieldType === 'password' ? 'text': 'password';
+        this.confirmPassFieldType = this.confirmPassFieldType === 'password' ? 'text' : 'password';
     }
 
     shouldShowRequiredError(controlName: string): boolean {

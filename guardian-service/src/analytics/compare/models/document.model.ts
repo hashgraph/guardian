@@ -485,6 +485,8 @@ export class DocumentModel implements IWeightModel {
             for (const schema of this._schemas) {
                 if (schema.description) {
                     titles.push(schema.description);
+                } else if (schema.name) {
+                    titles.push(schema.name);
                 } else if (schema.iri) {
                     titles.push(schema.iri);
                 }

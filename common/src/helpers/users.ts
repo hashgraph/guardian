@@ -1,4 +1,4 @@
-import { AuthEvents, GenerateUUIDv4, IRootConfig, UserRole } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4, IOwner, IRootConfig, UserRole } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
 import { KeyType, Wallet } from './wallet.js';
 import { NatsService } from '../mq/index.js';
@@ -127,11 +127,40 @@ export class Users extends NatsService {
 
     /**
      * Update current user entity
-     * @param req
+     * @param username
      * @param item
      */
     public async updateCurrentUser(username: string, item: any) {
         return await this.sendMessage(AuthEvents.UPDATE_USER, { username, item });
+    }
+
+    /**
+     * Det default role
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async setDefaultRole(id: string, owner: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner });
+    }
+
+    /**
+     * Create role
+     * @param role
+     * @param did
+     * @returns Operation Success
+     */
+    public async createRole(role: any, owner: IOwner, restore = false): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner, restore });
+    }
+
+    /**
+     * Update current user entity
+     * @param username
+     * @param owner
+     */
+    public async setDefaultUserRole(username: string, owner: string): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_USER_ROLE, { username, owner });
     }
 
     /**
@@ -156,7 +185,7 @@ export class Users extends NatsService {
      * @param password
      * @param role
      */
-    public async registerNewUser(username: string, password: string, role: string) {
+    public async registerNewUser(username: string, password: string, role: string): Promise<IAuthUser> {
         return await this.sendMessage(AuthEvents.REGISTER_NEW_USER, { username, password, role });
     }
 
@@ -188,6 +217,36 @@ export class Users extends NatsService {
      */
     public async getAllUserAccountsDemo() {
         return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO);
+    }
+
+    /**
+     * Generate new template
+     * @param role
+     * @param did
+     * @param parent
+     * @returns Operation Success
+     */
+    public async generateNewTemplate(
+        role: string,
+        did: string,
+        parent: string
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.REGISTER_NEW_TEMPLATE, { role, did, parent });
+    }
+
+    /**
+     * Update user role
+     * @param username
+     * @param user
+     * @param owner
+     * @returns Operation Success
+     */
+    public async updateUserRole(
+        username: string,
+        userRoles: string[],
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner });
     }
 
     /**

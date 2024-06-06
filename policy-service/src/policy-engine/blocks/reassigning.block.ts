@@ -5,7 +5,7 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
@@ -48,7 +48,7 @@ export class ReassigningBlock {
      * @param document
      * @param user
      */
-    async documentReassigning(document: IPolicyDocument, user: IPolicyUser): Promise<{
+    async documentReassigning(document: IPolicyDocument, user: PolicyUser): Promise<{
         /**
          * New Document
          */
@@ -56,11 +56,11 @@ export class ReassigningBlock {
         /**
          * New Actor
          */
-        actor: IPolicyUser
+        actor: PolicyUser
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const vcDocument = document.document;
-        const owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
+        const owner: PolicyUser = await PolicyUtils.getDocumentOwner(ref, document);
 
         let root: UserCredentials;
         let groupContext: any;
@@ -76,11 +76,11 @@ export class ReassigningBlock {
             groupContext = await PolicyUtils.getGroupContext(ref, user);
         }
 
-        let actor: IPolicyUser;
+        let actor: PolicyUser;
         if (ref.options.actor === 'owner') {
-            actor = PolicyUtils.getDocumentOwner(ref, document);
+            actor = await PolicyUtils.getDocumentOwner(ref, document);
         } else if (ref.options.actor === 'issuer') {
-            actor = PolicyUtils.getPolicyUser(ref, root.did, document.group);
+            actor = await PolicyUtils.getPolicyUser(ref, root.did, document.group);
         } else {
             actor = user;
         }
@@ -124,7 +124,7 @@ export class ReassigningBlock {
         const documents = event?.data?.data;
 
         let result: IPolicyDocument | IPolicyDocument[];
-        let user: IPolicyUser;
+        let user: PolicyUser;
         if (Array.isArray(documents)) {
             result = [];
             for (const doc of documents) {

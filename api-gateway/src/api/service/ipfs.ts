@@ -1,142 +1,209 @@
-import { Logger } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, Response } from '@nestjs/common';
-import { ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
-import { Auth } from '../../auth/auth.decorator.js';
-import { UserRole } from '@guardian/interfaces';
-import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, StreamableFile } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Permissions } from '@guardian/interfaces';
+import { Auth } from '#auth';
+import { Examples, InternalServerErrorDTO } from '#middlewares';
+import { Guardians, InternalException } from '#helpers';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
 export class IpfsApi {
+    /**
+     * Add file from ipfs
+     */
+    @Post('/file')
+    @Auth(
+        Permissions.IPFS_FILE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Add file from ipfs.',
         description: 'Add file from ipfs.',
     })
-    @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
-    )
-    @Post('/file')
+    @ApiBody({
+        description: 'Binary data.',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async postFile(@Body() body: any): Promise<string> {
+    async postFile(
+        @Body() body: any
+    ): Promise<string> {
         try {
             if (!Object.values(body).length) {
                 throw new HttpException('Body content in request is empty', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const guardians = new Guardians();
-            const {cid} = await guardians.addFileIpfs(body);
+            const { cid } = await guardians.addFileIpfs(body);
             if (!cid) {
                 throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
             }
 
             return JSON.stringify(cid);
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
     /**
-     * @param body
-     * @param policyId
+     * Add file from ipfs for dry run mode
      */
+    @Post('/file/dry-run/:policyId')
+    @Auth(
+        Permissions.IPFS_FILE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Add file from ipfs for dry run mode.',
         description: 'Add file from ipfs for dry run mode.',
     })
-    @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
-    )
-    @Post('/file/dry-run/:policyId')
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Binary data.',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async postFileDryRun(@Body() body: any, @Param('policyId') policyId: any): Promise<string> {
+    async postFileDryRun(
+        @Param('policyId') policyId: string,
+        @Body() body: any
+    ): Promise<string> {
         try {
             if (!Object.values(body).length) {
                 throw new HttpException('Body content in request is empty', HttpStatus.UNPROCESSABLE_ENTITY)
             }
 
             const guardians = new Guardians();
-            const {cid} = await guardians.addFileToDryRunStorage(body, policyId);
+            const { cid } = await guardians.addFileToDryRunStorage(body, policyId);
 
             return JSON.stringify(cid);
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
     /**
-     * @param req
-     * @param res
+     * Get file
      */
+    @Get('/file/:cid')
+    @Auth(
+        Permissions.IPFS_FILE_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Get file from ipfs.',
         description: 'Get file from ipfs.',
     })
-    @ApiSecurity('bearerAuth')
-    @Get('/file/:cid')
+    @ApiParam({
+        name: 'cid',
+        type: String,
+        description: 'File cid',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    // @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
-    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
-    async getFile(@Req() req, @Response() res): Promise<any> {
-        if (!req.user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
+    async getFile(
+        @Param('cid') cid: string
+    ): Promise<any> {
         try {
             const guardians = new Guardians();
-            const result = await guardians.getFileIpfs(req.params.cid, 'raw');
+            const result = await guardians.getFileIpfs(cid, 'raw');
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
-            const resultBuffer = Buffer.from(result);
-            res.writeHead(200, {
-                'Content-Type': 'binary/octet-stream',
-                'Content-Length': resultBuffer.length,
-            });
-            return res.end(resultBuffer, 'binary');
+            return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
     /**
-     * @param cid
-     * @param res
+     * Get file (dry run)
      */
+    @Get('/file/:cid/dry-run')
+    @Auth(
+        Permissions.IPFS_FILE_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Get file from ipfs for dry run mode.',
         description: 'Get file from ipfs for dry run mode.',
     })
-    @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
-    )
-    @Get('/file/:cid/dry-run')
+    @ApiParam({
+        name: 'cid',
+        type: String,
+        description: 'File cid',
+        required: true,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    // @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
-    @UseCache({ ttl: CACHE.LONG_TTL, isExpress: true })
-    async getFileDryRun(@Param('cid') cid: string, @Response() res): Promise<any> {
+    async getFileDryRun(
+        @Param('cid') cid: string
+    ): Promise<any> {
         try {
             const guardians = new Guardians();
             const result = await guardians.getFileFromDryRunStorage(cid, 'raw');
             if (result.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
-            const resultBuffer = Buffer.from(result);
-            res.writeHead(200, {
-                'Content-Type': 'binary/octet-stream',
-                'Content-Length': resultBuffer.length,
-            });
-            return res.end(resultBuffer, 'binary');
+            return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

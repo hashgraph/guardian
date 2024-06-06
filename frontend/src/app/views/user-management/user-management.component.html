@@ -1,0 +1,124 @@
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>
+
+<div class="container">
+
+    <div class="page-title">User Management</div>
+
+    <div class="actions">
+        <div class="actions-controls-container">
+            <div class="filters-container">
+                <div class="filter-container">
+                    <span class="search-input p-input-icon-right">
+                        <i class="pi pi-search"></i>
+                        <input [formControl]="searchFilter"
+                               class="p-inputtext-md"
+                               pInputText placeholder="Search by user name"
+                               type="text"
+                               (change)="onFilter()"
+                        />
+                    </span>
+                </div>
+                <div class="filter-container">
+                    <p-dropdown 
+                        (onChange)="onFilter()" 
+                        [(ngModel)]="roleFilterValue" 
+                        [options]="roleFilterOption">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="roleFilterValue">
+                                <span class="dropdown-label">Role</span> 
+                                <span class="dropdown-item">{{ roleFilterValue.name }}</span>
+                            </div>
+                        </ng-template>
+                        <ng-template let-option pTemplate="item">
+                            <div class="dropdown-item">
+                                {{ option?.name }}
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+                <div class="filter-container">
+                    <p-dropdown 
+                        (onChange)="onFilter()" 
+                        [(ngModel)]="statusFilterValue" 
+                        [options]="statusFilterOption">
+                        <ng-template pTemplate="selectedItem">
+                            <div *ngIf="statusFilterValue">
+                                <span class="dropdown-label">Status</span> 
+                                <span class="dropdown-item">
+                                    {{ statusFilterValue.name }}
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template let-option pTemplate="item">
+                            <div class="dropdown-item">
+                                {{ option.name }}
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
+
+                </div>
+            </div>
+            <div class="actions-container">
+
+            </div>
+        </div>
+    </div>
+
+    <ng-container *ngIf="page && page.length > 0; else noData">    
+        <div class="grid-container">
+            <table>
+                <tr class="grid-header">
+                    <th class="header-cell-text cell-size-id">NAME</th>
+                    <th class="header-cell-text cell-size-role">ROLES</th>
+                    <!-- <th class="header-cell-text cell-size-role">STATUS</th> -->
+                    <th class="header-cell-text cell-size-role">ASSIGNED POLICIES</th>
+                    <th class="header-cell-text cell-size-operations"></th>
+                </tr>
+                <tbody>
+                    <ng-container *ngFor="let row of page">
+                        <tr class="grid-row" [attr.template]="row.template">
+                            <td class="row-cell-text cell-size-id">{{ row.username }}</td>
+                            <td class="row-cell-text cell-size-role">
+                                <div *ngIf="row.__permissionsGroup" class="user-role-label">
+                                    {{row.__permissionsGroup}}
+                                </div>
+                                <div *ngIf="!row.__permissionsGroup" class="user-role-default-label">
+                                    No roles selected
+                                </div>
+                            </td>
+                            <!-- <td class="row-cell-text cell-size-role"></td> -->
+                            <td class="row-cell-text cell-size-role">
+                                <div class="user-role-label">
+                                    {{row.assignedEntities.length}}
+                                </div>
+                            </td>
+                            <td class="row-cell-text cell-size-operations">
+                                <div class="user-role-btn" (click)="onChangeRoles(row)">
+                                    <div class="user-role-icon">
+                                        <svg-icon src="/assets/images/icons/edit.svg" svgClass="primary-color"></svg-icon>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+            <app-paginator 
+                [pageIndex]="pageIndex" 
+                [pageSize]="pageSize" 
+                [length]="count"
+                (page)="onPage($event)"
+            ></app-paginator>
+        </div>
+    </ng-container>
+</div>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">There were no Users created yet</span>
+    </div>
+</ng-template>

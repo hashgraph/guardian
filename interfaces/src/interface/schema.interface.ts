@@ -10,11 +10,11 @@ export interface ISchema {
     /**
      * Id
      */
-    _id: any;
+    _id?: any;
     /**
      * Serialized Id
      */
-    id: string;
+    id?: string;
     /**
      * UUID
      */

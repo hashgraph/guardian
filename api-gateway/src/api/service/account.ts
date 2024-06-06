@@ -1,19 +1,15 @@
-import { Users } from '../../helpers/users.js';
 import { IAuthUser, Logger, NotificationHelper } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
-import { SchemaEntity, UserRole } from '@guardian/interfaces';
-import { PolicyEngine } from '../../helpers/policy-engine.js';
-import { PolicyListResponse } from '../../entities/policy.js';
-import { StandardRegistryAccountResponse } from '../../entities/account.js';
+import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, LoginUserDTO, RegisterUserDTO } from '../../middlewares/validation/schemas/accounts.js';
-import { ApiBearerAuth, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
+import { Auth, AuthUser, checkPermission } from '#auth';
+import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
+import { PolicyListResponse } from '../../entities/policy.js';
+import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ApplicationEnvironment } from '../../environment.js';
 import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
 
 /**
  * User account route
@@ -22,34 +18,33 @@ import { UseCache } from '../../helpers/decorators/cache.js';
 @ApiTags('accounts')
 export class AccountApi {
 
-  constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
-  }
+    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
+    }
 
     /**
      * getSession
      * @param headers
      */
+    @Get('/session')
+    @ApiBearerAuth()
     @ApiOperation({
         summary: 'Returns current session of the user.',
         description: 'Returns current user session.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(AccountsSessionResponseDTO),
-        },
+        type: AccountsSessionResponseDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @Get('/session')
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @UseCache()
-    async getSession(@Headers() headers: { [key: string]: string }): Promise<AccountsSessionResponseDTO> {
+    @HttpCode(HttpStatus.OK)
+    async getSession(
+        @Headers() headers: { [key: string]: string },
+    ): Promise<AccountsSessionResponseDTO> {
         const users = new Users();
         try {
             const authHeader = headers.authorization;
@@ -58,7 +53,6 @@ export class AccountApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             return null;
-            // throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -66,59 +60,47 @@ export class AccountApi {
      * register
      * @param body
      */
+    @Post('/register')
     @ApiOperation({
         summary: 'Registers a new user account.',
         description: 'Object that contain username, password and role (optional) fields.',
     })
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(AccountsResponseDTO),
-        },
+        type: AccountsResponseDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
-    @Post('/register')
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async register(@Body() body: RegisterUserDTO, @Req() req: any): Promise<AccountsResponseDTO> {
+    async register(
+        @Body() body: RegisterUserDTO,
+        @Req() req: any
+    ): Promise<AccountsResponseDTO> {
         const users = new Users();
         if (!ApplicationEnvironment.demoMode) {
             const authHeader = req.headers.authorization;
             const token = authHeader?.split(' ')[1];
-            let user;
+            let user: IAuthUser | null;
             try {
                 user = await users.getUserByToken(token) as IAuthUser;
             } catch (e) {
                 user = null;
             }
-
             if (!user) {
                 throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
             }
             try {
                 await checkPermission(UserRole.STANDARD_REGISTRY)(user);
             } catch (error) {
-                new Logger().error(error.message, ['API_GATEWAY']);
-                throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+                await InternalException(error);
             }
         }
         try {
-            const {username, password} = body;
-            let {role} = body;
-            // @deprecated 2022-10-01
-            if (role === 'ROOT_AUTHORITY') {
-                role = UserRole.STANDARD_REGISTRY;
-            }
-            const user = (await users.registerNewUser(
-                username,
-                password,
-                role
-            )) as any;
+            const { role, username, password } = body;
+            const user = (await users.registerNewUser(username, password, role));
             await NotificationHelper.info(
                 'Welcome to guardian',
                 'Next register your account in hedera',
@@ -128,7 +110,7 @@ export class AccountApi {
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error.message.includes('already exists')) {
-                throw new HttpException('An account with the same name already exists.', HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new HttpException(error.message, HttpStatus.CONFLICT);
             }
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -137,28 +119,26 @@ export class AccountApi {
     /**
      * Login
      */
+    @Post('/login')
     @ApiOperation({
         summary: 'Logs user into the system.',
     })
-    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(AccountsSessionResponseDTO),
-        },
+        type: AccountsSessionResponseDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/login')
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async login(@Body() body: LoginUserDTO): Promise<AccountsSessionResponseDTO> {
-        const users = new Users();
+    async login(
+        @Body() body: LoginUserDTO
+    ): Promise<AccountsSessionResponseDTO> {
         try {
-            const {username, password} = body;
+            const { username, password } = body;
+            const users = new Users();
             return await users.generateNewToken(username, password) as any;
         } catch (error) {
             new Logger().warn(error.message, ['API_GATEWAY']);
@@ -166,22 +146,24 @@ export class AccountApi {
         }
     }
 
+    /**
+     * Get Access Token
+     */
+    @Post('access-token')
     @ApiOperation({
         summary: 'Returns access token.',
         description: 'Returns access token.'
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        // schema: {
-        //     $ref: getSchemaPath(AccountsResponseDTO),
-        // },
+        description: 'Successful operation.'
     })
-    @Post('access-token')
-    async getAccessToken(@Body() body: any): Promise<any> {
+    async getAccessToken(
+        @Body() body: any
+    ): Promise<any> {
         try {
-            const {refreshToken} = body;
+            const { refreshToken } = body;
             const users = new Users();
-            const {accessToken} = await users.generateNewAccessToken(refreshToken);
+            const { accessToken } = await users.generateNewAccessToken(refreshToken);
             if (!accessToken) {
                 throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
             }
@@ -196,238 +178,169 @@ export class AccountApi {
     /**
      * Accounts
      */
+    @Get('/')
+    @Auth(
+        Permissions.ACCOUNTS_ACCOUNT_READ
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Returns a list of users, excluding Standard Registry and Auditors.',
         description: 'Returns all users except those with roles Standard ' +
             'Registry and Auditor. Only users with the Standard ' +
             'Registry role are allowed to make the request.',
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(AccountsResponseDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: AccountsResponseDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    // @UseGuards(AuthGuard)
-    @HttpCode(HttpStatus.OK)
-    @Get()
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @UseCache()
-    async getAllAccounts(@Req() req): Promise<AccountsResponseDTO[]> {
-        // await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const authHeader = req.headers.authorization;
-        const token = authHeader?.split(' ')[1];
-        const users = new Users();
-        let user;
+    @HttpCode(HttpStatus.OK)
+    async getAllAccounts(): Promise<AccountsResponseDTO[]> {
         try {
-            user = await users.getUserByToken(token) as IAuthUser;
-        } catch (e) {
-            user = null;
-        }
-
-        if (!user) {
-            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
-        }
-        try {
-            await checkPermission(UserRole.STANDARD_REGISTRY)(user);
-            return await users.getAllUserAccounts() as any[];
+            return await (new Users()).getAllUserAccounts();
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
     /**
-     * Get SAs
+     * Get Standard Registries
      */
+    @Get('/standard-registries')
+    @Auth(
+        Permissions.ACCOUNTS_STANDARD_REGISTRY_READ
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Returns all Standard Registries.',
         description: 'Returns all Standard Registries.'
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(AccountsResponseDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: AccountsResponseDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Get('/standard-registries')
+    @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
-    @UseCache()
-    async getStandatdRegistries(@Req() req): Promise<any> {
-        const authHeader = req.headers.authorization;
-        const token = authHeader?.split(' ')[1];
-        const users = new Users();
-        let user;
+    async getStandardRegistries(): Promise<any> {
         try {
-            user = await users.getUserByToken(token) as IAuthUser;
-        } catch (e) {
-            throw new HttpException(e.message, HttpStatus.UNAUTHORIZED);
-        }
-        if (!user) {
-            throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
-        }
-        try {
-            await checkPermission(UserRole.STANDARD_REGISTRY, UserRole.USER, UserRole.AUDITOR)(user);
-        } catch (e) {
-            throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-        }
-        try {
-            return await users.getAllStandardRegistryAccounts();
+            return await (new Users()).getAllStandardRegistryAccounts();
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
     /**
-     * Get aggregated SAs
+     * Get aggregated standard registries
      */
+    @Get('/standard-registries/aggregated')
+    @Auth(
+        Permissions.ACCOUNTS_STANDARD_REGISTRY_READ
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Returns all Standard Registries aggregated with polices and vcDocuments.',
         description: 'Returns all Standard Registries aggregated with polices and vcDocuments'
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'array',
-            items: {
-                '$ref': getSchemaPath(AggregatedDTOItem)
-            }
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        isArray: true,
+        type: AggregatedDTOItem
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Get('/standard-registries/aggregated')
+    @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
+    // @UseCache()
     @HttpCode(HttpStatus.OK)
-    @UseCache()
     async getAggregatedStandardRegistries(): Promise<any> {
         const engineService = new PolicyEngine();
         const guardians = new Guardians();
         try {
             const users = new Users();
             const standardRegistries = await users.getAllStandardRegistryAccounts() as StandardRegistryAccountResponse[];
-            const promises = standardRegistries.filter(({did, username}) => !!did && !!username)
-                .map(async ({did, username}) => {
-                let vcDocument = {};
-                const user = await users.getUser(username);
-                const vcDocuments = await guardians.getVcDocuments({
-                    owner: did,
-                    type: SchemaEntity.STANDARD_REGISTRY
-                });
-                if (vcDocuments && vcDocuments.length) {
-                    vcDocument = vcDocuments[vcDocuments.length - 1];
-                }
-                const { policies } = await engineService.getPolicies(
-                { filters: { owner: did }, userDid: did }
-                ) as PolicyListResponse;
-                return {
-                    did,
-                    vcDocument,
-                    policies,
-                    username,
-                    hederaAccountId: user.hederaAccountId
-                }
+            const promises = standardRegistries
+                .filter(({ did, username }) => !!did && !!username)
+                .map(async ({ did, username }) => {
+                    let vcDocument = {};
+                    const user = await users.getUser(username);
+                    const vcDocuments = await guardians.getVcDocuments({
+                        owner: did,
+                        type: SchemaEntity.STANDARD_REGISTRY
+                    });
+                    if (vcDocuments && vcDocuments.length) {
+                        vcDocument = vcDocuments[vcDocuments.length - 1];
+                    }
+
+                    const { policies } = await engineService.getPolicies(
+                        {
+                            filters: {
+                                status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] }
+                            },
+                            userDid: did
+                        },
+                        EntityOwner.sr(did)
+                    ) as PolicyListResponse;
+                    return {
+                        did,
+                        vcDocument,
+                        policies,
+                        username,
+                        hederaAccountId: user.hederaAccountId
+                    }
                 });
             return await Promise.all(promises);
         } catch (error) {
-            new Logger().error(error.message, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
     /**
-     * @param headers
+     * Get Hedera account balance
      */
+    @Get('/balance')
+    @Auth(
+        Permissions.PROFILES_BALANCE_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
+    )
     @ApiOperation({
         summary: 'Returns user\'s Hedera account balance.',
         description: 'Requests current Hedera account balance.'
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(BalanceResponseDTO)
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: BalanceResponseDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Get('/balance')
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(BalanceResponseDTO, InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
-    async getBalance(@Headers() headers): Promise<any> {
+    @HttpCode(HttpStatus.OK)
+    async getBalance(
+        @AuthUser() user: IAuthUser,
+    ): Promise<any> {
         try {
-            const authHeader = headers.authorization;
-            const users = new Users();
-            if (authHeader) {
-                const token = authHeader.split(' ')[1];
-                try {
-                    const user = await users.getUserByToken(token) as any;
-                    if (user) {
-                        const guardians = new Guardians();
-                        return await guardians.getBalance(user.username);
-                        // const balance = await this.client.send(MessageAPI.GET_BALANCE, { username: user.username }).toPromise()
-                        // return balance;
-                    }
-                    throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
-
-                } catch (error) {
-                    throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
-                }
-            }
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+            return await (new Guardians()).getBalance(user.username);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

@@ -40,3 +40,4 @@ export * from './mint-transaction.js';
 export * from './dry-run-files.js';
 export * from './policy-cache-data.js';
 export * from './policy-cache.js';
+export * from './assign-entity.js';

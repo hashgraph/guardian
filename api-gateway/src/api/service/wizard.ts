@@ -1,328 +1,87 @@
-import { Guardians } from '../../helpers/guardians.js';
-import { Logger, RunFunctionAsync, } from '@guardian/common';
-import { TaskManager } from '../../helpers/task-manager.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
-import { Controller, HttpCode, HttpStatus, Post, Req, Response } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
-import { TaskAction, UserRole } from '@guardian/interfaces';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
+import { Guardians, TaskManager, ServiceError, ONLY_SR, InternalException, EntityOwner } from '#helpers';
+import { IAuthUser, Logger, RunFunctionAsync, } from '@guardian/common';
+import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Permissions, TaskAction } from '@guardian/interfaces';
+import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiParam, ApiExtraModels } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, TaskDTO, WizardConfigAsyncDTO, WizardConfigDTO, WizardPreviewDTO, WizardResultDTO } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
 
 @Controller('wizard')
 @ApiTags('wizard')
 export class WizardApi {
+    /**
+     * Creates a new policy
+     */
+    @Post('/policy')
+    @Auth(
+        Permissions.POLICIES_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Creates a new policy.',
-        description: 'Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Creates a new policy by wizard.' + ONLY_SR,
     })
     @ApiBody({
-        schema: {
-            'type': 'object',
-            'required': [
-                'policy',
-                'roles',
-                'schemas',
-                'trustChain'
-            ],
-            'properties': {
-                'roles': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'string'
-                    }
-                },
-                'policy': {
-                    'type': 'object',
-                    'properties': {
-                        'name': {
-                            'type': 'string'
-                        },
-                        'description': {
-                            'type': 'string'
-                        },
-                        'topicDescription': {
-                            'type': 'string'
-                        },
-                        'policyTag': {
-                            'type': 'string'
-                        }
-                    }
-                },
-                'schemas': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'object',
-                        'properties': {
-                            'name': {
-                                'type': 'string'
-                            },
-                            'iri': {
-                                'type': 'string'
-                            },
-                            'isApproveEnable': {
-                                'type': 'boolean'
-                            },
-                            'isMintSchema': {
-                                'type': 'boolean'
-                            },
-                            'mintOptions': {
-                                'type': 'object',
-                                'properties': {
-                                    'tokenId': {
-                                        'type': 'string'
-                                    },
-                                    'rule': {
-                                        'type': 'string'
-                                    }
-                                }
-                            },
-                            'dependencySchemaIri': {
-                                'type': 'string'
-                            },
-                            'relationshipsSchemaIri': {
-                                'type': 'string'
-                            },
-                            'initialRolesFor': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            },
-                            'rolesConfig': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'role': {
-                                            'type': 'string'
-                                        },
-                                        'isApprover': {
-                                            'type': 'boolean'
-                                        },
-                                        'isCreator': {
-                                            'type': 'boolean'
-                                        },
-                                        'gridColumns': {
-                                            'type': 'array',
-                                            'items': {
-                                                'type': 'object',
-                                                'properties': {
-                                                    'field': {
-                                                        'type': 'string'
-                                                    },
-                                                    'title': {
-                                                        'type': 'string'
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                'trustChain': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'object',
-                        'properties': {
-                            'role': {
-                                'type': 'string'
-                            },
-                            'mintSchemaIri': {
-                                'type': 'string'
-                            },
-                            'viewOnlyOwnDocuments': {
-                                'type': 'boolean'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        description: 'Object that contains wizard configuration.',
+        type: WizardConfigDTO,
+        required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'boolean'
-        }
+        type: WizardResultDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/policy')
+    @ApiExtraModels(WizardConfigDTO, WizardResultDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async setPolicy(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async setPolicy(
+        @AuthUser() user: IAuthUser,
+        @Body() wizardConfig: WizardConfigDTO
+    ): Promise<WizardResultDTO> {
         try {
-            const wizardConfig = req.body;
-            const user = req.user;
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return res.status(201).json(
-                await guardians.wizardPolicyCreate(wizardConfig, user.did)
-            );
+            return await guardians.wizardPolicyCreate(wizardConfig, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 
+    /**
+     * Creates a new policy
+     */
+    @Post('/push/policy')
+    @Auth(
+        Permissions.POLICIES_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Creates a new policy.',
-        description: 'Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Creates a new policy by wizard.' + ONLY_SR,
     })
     @ApiBody({
-        schema: {
-            type: 'object',
-            properties: {
-                saveState: {
-                    type: 'boolean',
-                },
-                wizardConfig: {
-                    type: 'object',
-                    required: ['policy', 'roles', 'schemas', 'trustChain'],
-                    properties: {
-                        roles: {
-                            type: 'array',
-                            items: {
-                                type: 'string',
-                            },
-                        },
-                        policy: {
-                            type: 'object',
-                            properties: {
-                                name: {
-                                    type: 'string',
-                                },
-                                description: {
-                                    type: 'string',
-                                },
-                                topicDescription: {
-                                    type: 'string',
-                                },
-                                policyTag: {
-                                    type: 'string',
-                                },
-                            },
-                        },
-                        schemas: {
-                            type: 'array',
-                            items: {
-                                type: 'object',
-                                properties: {
-                                    name: {
-                                        type: 'string',
-                                    },
-                                    iri: {
-                                        type: 'string',
-                                    },
-                                    isApproveEnable: {
-                                        type: 'boolean',
-                                    },
-                                    isMintSchema: {
-                                        type: 'boolean',
-                                    },
-                                    mintOptions: {
-                                        type: 'object',
-                                        properties: {
-                                            tokenId: {
-                                                type: 'string',
-                                            },
-                                            rule: {
-                                                type: 'string',
-                                            },
-                                        },
-                                    },
-                                    dependencySchemaIri: {
-                                        type: 'string',
-                                    },
-                                    relationshipsSchemaIri: {
-                                        type: 'string',
-                                    },
-                                    initialRolesFor: {
-                                        type: 'array',
-                                        items: {
-                                            type: 'string',
-                                        },
-                                    },
-                                    rolesConfig: {
-                                        type: 'array',
-                                        items: {
-                                            type: 'object',
-                                            properties: {
-                                                role: {
-                                                    type: 'string',
-                                                },
-                                                isApprover: {
-                                                    type: 'boolean',
-                                                },
-                                                isCreator: {
-                                                    type: 'boolean',
-                                                },
-                                                gridColumns: {
-                                                    type: 'array',
-                                                    items: {
-                                                        type: 'object',
-                                                        properties: {
-                                                            field: {
-                                                                type: 'string',
-                                                            },
-                                                            title: {
-                                                                type: 'string',
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        trustChain: {
-                            type: 'array',
-                            items: {
-                                type: 'object',
-                                properties: {
-                                    role: {
-                                        type: 'string',
-                                    },
-                                    mintSchemaIri: {
-                                        type: 'string',
-                                    },
-                                    viewOnlyOwnDocuments: {
-                                        type: 'boolean',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        },
+        description: 'Object that contains wizard configuration.',
+        type: WizardConfigAsyncDTO,
+        required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'boolean'
-        }
+        type: TaskDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/push/policy')
+    @ApiExtraModels(WizardConfigAsyncDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async setPolicyAsync(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const { wizardConfig, saveState } = req.body;
-        const user = req.user;
+    async setPolicyAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() body: WizardConfigAsyncDTO
+    ): Promise<TaskDTO> {
+        const { wizardConfig, saveState } = body;
+        const owner = new EntityOwner(user);
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.WIZARD_CREATE_POLICY, user.id);
         RunFunctionAsync<ServiceError>(
@@ -330,7 +89,7 @@ export class WizardApi {
                 const guardians = new Guardians();
                 await guardians.wizardPolicyCreateAsyncNew(
                     wizardConfig,
-                    user.did,
+                    owner,
                     saveState,
                     task
                 );
@@ -343,171 +102,54 @@ export class WizardApi {
                 });
             }
         );
-        return res.status(202).send(task);
+        return task;
     }
 
+    /**
+     * Get config
+     */
+    @Post('/:policyId/config')
+    @Auth(
+        Permissions.POLICIES_POLICY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get policy config.',
-        description: 'Get policy config by wizard. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Get policy config by wizard.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
     })
     @ApiBody({
-        schema: {
-            'type': 'object',
-            'required': [
-                'policy',
-                'roles',
-                'schemas',
-                'trustChain'
-            ],
-            'properties': {
-                'roles': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'string'
-                    }
-                },
-                'policy': {
-                    'type': 'object',
-                    'properties': {
-                        'name': {
-                            'type': 'string'
-                        },
-                        'description': {
-                            'type': 'string'
-                        },
-                        'topicDescription': {
-                            'type': 'string'
-                        },
-                        'policyTag': {
-                            'type': 'string'
-                        }
-                    }
-                },
-                'schemas': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'object',
-                        'properties': {
-                            'name': {
-                                'type': 'string'
-                            },
-                            'iri': {
-                                'type': 'string'
-                            },
-                            'isApproveEnable': {
-                                'type': 'boolean'
-                            },
-                            'isMintSchema': {
-                                'type': 'boolean'
-                            },
-                            'mintOptions': {
-                                'type': 'object',
-                                'properties': {
-                                    'tokenId': {
-                                        'type': 'string'
-                                    },
-                                    'rule': {
-                                        'type': 'string'
-                                    }
-                                }
-                            },
-                            'dependencySchemaIri': {
-                                'type': 'string'
-                            },
-                            'relationshipsSchemaIri': {
-                                'type': 'string'
-                            },
-                            'initialRolesFor': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            },
-                            'rolesConfig': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'role': {
-                                            'type': 'string'
-                                        },
-                                        'isApprover': {
-                                            'type': 'boolean'
-                                        },
-                                        'isCreator': {
-                                            'type': 'boolean'
-                                        },
-                                        'gridColumns': {
-                                            'type': 'array',
-                                            'items': {
-                                                'type': 'object',
-                                                'properties': {
-                                                    'field': {
-                                                        'type': 'string'
-                                                    },
-                                                    'title': {
-                                                        'type': 'string'
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                'trustChain': {
-                    'type': 'array',
-                    'items': {
-                        'type': 'object',
-                        'properties': {
-                            'role': {
-                                'type': 'string'
-                            },
-                            'mintSchemaIri': {
-                                'type': 'string'
-                            },
-                            'viewOnlyOwnDocuments': {
-                                'type': 'boolean'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        description: 'Object that contains wizard configuration.',
+        type: WizardConfigDTO,
+        required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'boolean'
-        }
+        type: WizardPreviewDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO,
     })
-    @Post('/:policyId/config')
+    @ApiExtraModels(WizardConfigDTO, WizardPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async setPolicyConfig(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async setPolicyConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() wizardConfig: WizardConfigDTO
+    ): Promise<WizardPreviewDTO> {
         try {
-            const wizardConfig = req.body;
-            const user = req.user;
-            const {policyId} = req.params;
             const guardians = new Guardians();
-            return res.json(
-                await guardians.wizardGetPolicyConfig(
-                    policyId,
-                    wizardConfig,
-                    user.did
-                )
-            );
+            const owner = new EntityOwner(user);
+            return await guardians.wizardGetPolicyConfig(policyId, wizardConfig, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error);
         }
     }
 }

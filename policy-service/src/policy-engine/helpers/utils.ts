@@ -3,8 +3,9 @@ import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
-import { IHederaCredentials, IPolicyUser, PolicyUser, UserCredentials } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 import { DocumentType } from '../interfaces/document.type.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 
 /**
  * Policy engine utils
@@ -852,31 +853,16 @@ export class PolicyUtils {
     }
 
     /**
-     * Create Policy User
-     * @param ref
-     * @param did
-     */
-    public static async createPolicyUser(ref: AnyBlockType, did: string): Promise<IPolicyUser> {
-        const user = new PolicyUser(did);
-        if (ref.dryRun) {
-            const virtualUser = await ref.databaseServer.getVirtualUser(did);
-            user.setVirtualUser(virtualUser);
-        }
-        const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, did);
-        return user.setGroup(group);
-    }
-
-    /**
      * Get Policy User
      * @param ref
      * @param did
      */
-    public static getPolicyUser(ref: AnyBlockType, did: string, uuid: string): IPolicyUser {
-        const user = new PolicyUser(did, !!ref.dryRun);
+    public static async getPolicyUser(ref: AnyBlockType, did: string, uuid: string): Promise<PolicyUser> {
         if (uuid) {
-            return user.setGroup({ role: null, uuid });
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref);
+        } else {
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, null, ref);
         }
-        return user;
     }
 
     /**
@@ -884,13 +870,12 @@ export class PolicyUtils {
      * @param ref
      * @param userId
      */
-    public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
+    public static async getPolicyUserById(ref: AnyBlockType, userId: string): Promise<PolicyUser> {
         if (userId.startsWith('did:')) {
-            const did = userId;
-            return (new PolicyUser(did, !!ref.dryRun));
+            return await PolicyComponentsUtils.GetPolicyUserByDID(userId, null, ref);
         } else {
             const [uuid, did] = userId.split(/:(.*)/s, 2);
-            return (new PolicyUser(did, !!ref.dryRun)).setGroup({ role: null, uuid });
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref);
         }
     }
 
@@ -899,12 +884,8 @@ export class PolicyUtils {
      * @param ref
      * @param document
      */
-    public static getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): IPolicyUser {
-        const user = new PolicyUser(document.owner, !!ref.dryRun);
-        if (document.group) {
-            return user.setGroup({ role: null, uuid: document.group });
-        }
-        return user;
+    public static async getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
+        return await PolicyComponentsUtils.GetPolicyUserByDID(document.owner, document.group, ref);
     }
 
     /**
@@ -914,17 +895,7 @@ export class PolicyUtils {
      */
     public static async getUserByIssuer(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
         const did = PolicyUtils.getDocumentIssuer(document.document) || document.owner;
-        const user = new PolicyUser(did, !!ref.dryRun);
-        if (document.group) {
-            const group = await ref.databaseServer.getUserInGroup(ref.policyId, did, document.group);
-            return user.setGroup(group);
-        } else {
-            if (did !== ref.policyOwner) {
-                const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, did);
-                return user.setGroup(group);
-            }
-        }
-        return user;
+        return await PolicyComponentsUtils.GetPolicyUserByDID(did, document.group, ref);
     }
 
     /**
@@ -1107,7 +1078,7 @@ export class PolicyUtils {
      */
     public static createPolicyDocument(
         ref: AnyBlockType,
-        owner: IPolicyUser,
+        owner: PolicyUser,
         document: any
     ): IPolicyDocument {
         return {
@@ -1127,7 +1098,7 @@ export class PolicyUtils {
      */
     public static createDID(
         ref: AnyBlockType,
-        owner: IPolicyUser,
+        owner: PolicyUser,
         document: HederaDidDocument
     ): IPolicyDocument {
         return {
@@ -1149,7 +1120,7 @@ export class PolicyUtils {
      */
     public static createVP(
         ref: AnyBlockType,
-        owner: IPolicyUser,
+        owner: PolicyUser,
         document: VpDocument,
     ): IPolicyDocument {
         return {
@@ -1184,7 +1155,7 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createVC(ref: AnyBlockType, owner: IPolicyUser, document: VcDocument): IPolicyDocument {
+    public static createVC(ref: AnyBlockType, owner: PolicyUser, document: VcDocument): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
@@ -1242,7 +1213,7 @@ export class PolicyUtils {
      * @param ref
      * @param user
      */
-    public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
+    public static async getGroupContext(ref: AnyBlockType, user: PolicyUser): Promise<any> {
         const policyGroups = PolicyUtils.getGroupTemplates<any>(ref);
         if (policyGroups.length === 0) {
             return null;

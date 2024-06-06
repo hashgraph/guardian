@@ -107,7 +107,7 @@ export class HandleErrorsService implements HttpInterceptor {
                             <div>${result.text}</div>
                             <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
                         `;
-                        if (this.excludeErrorCodes.includes(body)) {
+                        if (!this.excludeErrorCodes.includes(String(error.status))) {
                             this.toastr.error(body, result.header, {
                                 timeOut: 100000,
                                 extendedTimeOut: 30000,
