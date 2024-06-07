@@ -2,7 +2,7 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@fastify/formbody": "^7.4.0",
-        "@fastify/multipart": "^8.2.0",
+        "@fastify/multipart": "^8.3.0",
         "@fastify/static": "^7.0.0",
         "@guardian/common": "^2.25.1",
         "@guardian/interfaces": "^2.25.1",
