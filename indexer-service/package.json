@@ -12,7 +12,7 @@
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
         "axios": "^1.7.2",
-        "axios-retry": "^3.2.4",
+        "axios-retry": "^4.4.0",
         "cron": "^3.1.7",
         "cross-blob": "^2.0.1",
         "dotenv": "^16.0.0",
