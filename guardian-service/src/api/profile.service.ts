@@ -328,8 +328,8 @@ async function createUserProfile(
         await new DataBaseHelper(DidDocumentCollection).update(didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE']);
-        didRow.status = DidDocumentStatus.FAILED;
-        await new DataBaseHelper(DidDocumentCollection).update(didRow);
+        // didRow.status = DidDocumentStatus.FAILED;
+        // await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
     // ------------------------
     // Publish DID Document -->
