@@ -5,7 +5,7 @@
         "@indexer/common": "^2.22.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
-        "@nestjs/microservices": "^9.4.1",
+        "@nestjs/microservices": "^10.3.9",
         "axios": "1.7.2",
         "axios-retry": "^3.2.4",
         "cross-blob": "^2.0.1",
