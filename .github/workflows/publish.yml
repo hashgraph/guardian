@@ -346,7 +346,7 @@ jobs:
 
       - name: indexer-worker-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-worker-service/Dockerfile
@@ -355,7 +355,7 @@ jobs:
  
       - name: indexer-worker-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-worker-service/Dockerfile
@@ -364,7 +364,7 @@ jobs:
 
       - name: indexer-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-service/Dockerfile
@@ -373,7 +373,7 @@ jobs:
  
       - name: indexer-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-service/Dockerfile
@@ -382,7 +382,7 @@ jobs:
 
       - name: indexer-api-gateway-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-api-gateway/Dockerfile
@@ -391,7 +391,7 @@ jobs:
  
       - name: indexer-api-gateway
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-api-gateway/Dockerfile
@@ -400,7 +400,7 @@ jobs:
 
       - name: indexer-web-proxy-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-web-proxy/Dockerfile
@@ -409,7 +409,7 @@ jobs:
  
       - name: indexer-web-proxy
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ./indexer-web-proxy/Dockerfile
