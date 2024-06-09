@@ -434,12 +434,14 @@ export class TokenConfigComponent implements OnInit {
     }
 
     public openEditDialog(token?: any) {
+        console.log('openEditDialog', token);
+        console.log('this.currentPolicy', this.currentPolicy);
         if (!token || !token.enableAdmin) {
             return;
         }
         this.currentTokenId = token.tokenId;
-        this.readonlyForm = !token.draftToken;
-        this.dataForm.patchValue(token);
+        // this.readonlyForm = !token.draftToken;
+        // this.dataForm.patchValue(token);
         this.dialog.open(TokenDialogComponent, {
             closable: true,
             modal: true,
@@ -450,7 +452,8 @@ export class TokenConfigComponent implements OnInit {
                 dataForm: this.dataForm,
                 contracts: this.contracts,
                 readonly: this.readonlyForm,
-                currentTokenId: this.currentTokenId
+                currentTokenId: this.currentTokenId,
+                policyId: this.currentPolicy
             }
         }).onClose.subscribe((result: any) => {
             if (!result) {

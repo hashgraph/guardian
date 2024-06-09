@@ -140,7 +140,7 @@ export class Guardians extends NatsService {
     /**
      * Return tokens
      *
-     * @param {string} [did]
+     * @param owner
      * @param {string} [pageIndex]
      * @param {string} [pageSize]
      *
@@ -152,6 +152,25 @@ export class Guardians extends NatsService {
         pageSize?: number
     ): Promise<ResponseAndCount<IToken>> {
         return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE, { owner, pageIndex, pageSize });
+    }
+
+    /**
+     * Return tokens V2 10.06.2024
+     *
+     * @param fields
+     * @param owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ResponseAndCount<IToken>} - tokens
+     */
+    public async getTokensPageV2(
+        fields: string[],
+        owner?: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<IToken>> {
+        return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE_V2, { fields, owner, pageIndex, pageSize });
     }
 
     /**
