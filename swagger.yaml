@@ -11787,6 +11787,24 @@ components:
           type: array
           items:
             type: string
+        policies:
+          properties:
+            type:
+              type: string
+              enum:
+                - id
+                - message
+                - file
+            value:
+              type: string
+          example:
+            - type: id
+              value: '000000000000000000000001'
+            - type: message
+              value: '0000000000.000000001'
+          type: array
+          items:
+            type: object
       required:
         - idLvl
         - eventsLvl
@@ -11795,6 +11813,7 @@ components:
         - policyId1
         - policyId2
         - policyIds
+        - policies
     ComparePoliciesDTO:
       type: object
       properties:
