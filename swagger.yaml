@@ -8593,7 +8593,7 @@ paths:
         - bearer: []
   /tokens:
     get:
-      operationId: TokensApi_getTokens
+      operationId: TokensApi_getTokensV2
       summary: Return a list of tokens.
       description: >-
         Returns all tokens. For the Standard Registry role it returns only the
@@ -8719,6 +8719,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_16
+      security:
+        - bearer: []
+  /tokens/{tokenId}:
+    get:
+      operationId: TokensApi_getTokenByIdWithPolicies
+      summary: Return a token by id.
+      description: Return the token.
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TokenDTO'
         '401':
           description: Unauthorized.
         '403':
