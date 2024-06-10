@@ -5,7 +5,7 @@ import { INotifier } from '../../helpers/notifier.js';
 import { DataBaseHelper, DatabaseServer, IPolicyComponents, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
 import { SchemaImportResult } from '../../api/helpers/schema-helper.js';
-import { HashComparator } from '../../analytics/index.js';
+import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 import { importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles } from '../../api/helpers/index.js';
 
 /**
@@ -390,7 +390,8 @@ export class PolicyImportExportHelper {
      * @param policy
      */
     public static async updatePolicyComponents(policy: Policy): Promise<Policy> {
-        policy = await HashComparator.saveHashMap(policy);
+        const raw = await PolicyLoader.loadById(policy.id.toString());
+        policy = await HashComparator.saveHashMap(policy, raw);
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);
         const tools = await DatabaseServer.getTools({

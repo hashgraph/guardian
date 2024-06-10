@@ -3,6 +3,7 @@ import { BlockModel } from './block.model.js';
 import { CompareOptions, IEventsLvl } from '../interfaces/compare-options.interface.js';
 import { IKeyMap } from '../interfaces/key-map.interface.js';
 import { IWeightItem } from '../interfaces/weight-item.interface.js';
+import { IBlockEventRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Event Model
@@ -84,7 +85,7 @@ export class EventModel {
      */
     private _hash: string;
 
-    constructor(json: any) {
+    constructor(json: IBlockEventRawData) {
         this.actor = json.actor;
         this.disabled = json.disabled;
         this.input = json.input;

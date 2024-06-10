@@ -888,22 +888,21 @@ export class PoliciesComponent implements OnInit {
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.policyIds) {
                 const policyIds: string[] = result.policyIds;
-                if (policyIds.length === 2) {
-                    this.router.navigate(['/compare'], {
-                        queryParams: {
-                            type: 'policy',
-                            policyId1: policyIds[0],
-                            policyId2: policyIds[1],
-                        },
-                    });
-                } else {
-                    this.router.navigate(['/compare'], {
-                        queryParams: {
-                            type: 'multi-policy',
-                            policyIds: policyIds,
-                        },
-                    });
-                }
+                const items = btoa(JSON.stringify({
+                    parent: null,
+                    items: policyIds.map((id) => {
+                        return {
+                            type: 'id',
+                            value: id
+                        }
+                    })
+                }));
+                this.router.navigate(['/compare'], {
+                    queryParams: {
+                        type: 'policy',
+                        items
+                    },
+                });
             }
         });
     }

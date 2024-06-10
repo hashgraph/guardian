@@ -1,7 +1,7 @@
-import { Token } from '@guardian/common';
 import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface.js';
 import MurmurHash3 from 'imurmurhash';
 import { IWeightItem } from '../interfaces/weight-item.interface.js';
+import { ITokenRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Token Model
@@ -85,7 +85,7 @@ export class TokenModel {
      */
     private readonly options: CompareOptions;
 
-    constructor(token: Token, options: CompareOptions) {
+    constructor(token: ITokenRawData, options: CompareOptions) {
         this.options = options;
         this.id = token.id;
         this.tokenId = token.tokenId;
@@ -185,5 +185,24 @@ export class TokenModel {
                 weight: this._weight
             }
         }
+    }
+
+    /**
+     * Create model
+     * @param raw
+     * @param options
+     * @public
+     * @static
+     */
+    public static fromEntity(
+        raw: ITokenRawData,
+        options: CompareOptions
+    ): TokenModel {
+        if (!raw) {
+            throw new Error('Unknown token');
+        }
+        const tokenModel = new TokenModel(raw, options);
+        tokenModel.update(options);
+        return tokenModel;
     }
 }

@@ -258,4 +258,29 @@ export class CompareOptions {
     }
 
     public static readonly default = new CompareOptions();
+
+    /**
+     * Create
+     * @param options
+     * @public
+     * @static
+     */
+    public static from(options: {
+        propLvl?: IPropertiesLvl | string | number | null | undefined,
+        childrenLvl?: IChildrenLvl | string | number | null | undefined,
+        eventsLvl?: IEventsLvl | string | number | null | undefined,
+        idLvl?: IIdLvl | string | number | null | undefined,
+        keyLvl?: IKeyLvl | string | number | null | undefined,
+        refLvl?: IRefLvl | string | number | null | undefined,
+    }, owner?: string | null | undefined): CompareOptions {
+        return new CompareOptions(
+            options.propLvl,
+            options.childrenLvl,
+            options.eventsLvl,
+            options.idLvl,
+            options.keyLvl,
+            options.refLvl,
+            owner
+        );
+    }
 }

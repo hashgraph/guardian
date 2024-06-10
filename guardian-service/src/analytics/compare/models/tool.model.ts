@@ -1,4 +1,3 @@
-import { PolicyTool } from '@guardian/common';
 import { CompareOptions } from '../interfaces/compare-options.interface.js';
 import { BlockModel } from './block.model.js';
 import { VariableModel } from './variable.model.js';
@@ -6,6 +5,7 @@ import { CompareUtils } from '../utils/utils.js';
 import { SchemaModel } from './schema.model.js';
 import { FileModel } from './file.model.js';
 import { IKeyMap } from '../interfaces/key-map.interface.js';
+import { IToolRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Tool Model
@@ -89,7 +89,7 @@ export class ToolModel {
      */
     private _artifacts: FileModel[];
 
-    constructor(tool: PolicyTool, options: CompareOptions) {
+    constructor(tool: IToolRawData, options: CompareOptions) {
         this.options = options;
 
         this.id = tool.id;

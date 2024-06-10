@@ -8,6 +8,13 @@ import BlockIcons from '../../policy-engine/services/block-icons';
 })
 export class ComparePolicyComponent implements OnInit {
     @Input('value') value!: any;
+    @Input() type: string = 'tree';
+    @Input() eventsLvl: string = '1';
+    @Input() propLvl: string = '2';
+    @Input() childrenLvl: string = '2';
+    @Input() idLvl: string = '1';
+
+    @Output() change = new EventEmitter<any>();
 
     panelOpenState = true;
 
@@ -20,14 +27,6 @@ export class ComparePolicyComponent implements OnInit {
     tokens!: any[];
     groups!: any[];
     roles!: any[];
-
-    @Input() type: string = 'tree';
-    @Input() eventsLvl: string = '1';
-    @Input() propLvl: string = '2';
-    @Input() childrenLvl: string = '2';
-    @Input() idLvl: string = '1';
-
-    @Output() change = new EventEmitter<any>();
 
     displayedColumns: string[] = [];
     columns: any[] = [];

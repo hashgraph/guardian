@@ -13,6 +13,7 @@ import { TokenModel } from './token.model.js';
 import { IWeightModel } from '../interfaces/weight-model.interface.js';
 import { CompareUtils } from '../utils/utils.js';
 import { IWeightBlock } from '../interfaces/weight-block.interface.js';
+import { IBlockRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Block Model
@@ -95,7 +96,7 @@ export class BlockModel implements IWeightModel {
      */
     private _hash: string;
 
-    constructor(json: any, index: number) {
+    constructor(json: IBlockRawData, index: number) {
         this.blockType = json.blockType;
         this.tag = json.tag;
         this.index = index;
@@ -113,7 +114,7 @@ export class BlockModel implements IWeightModel {
      * @param json
      * @private
      */
-    private createEvents(json: any): EventModel[] {
+    private createEvents(json: IBlockRawData): EventModel[] {
         if (Array.isArray(json.events)) {
             return json.events.map((e: any) => new EventModel(e));
         }
@@ -125,7 +126,7 @@ export class BlockModel implements IWeightModel {
      * @param json
      * @private
      */
-    private createArtifacts(json: any): ArtifactModel[] {
+    private createArtifacts(json: IBlockRawData): ArtifactModel[] {
         if (Array.isArray(json.artifacts)) {
             return json.artifacts.map((e: any) => new ArtifactModel(e));
         }

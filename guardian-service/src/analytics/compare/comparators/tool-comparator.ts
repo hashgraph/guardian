@@ -13,6 +13,7 @@ import { CompareUtils } from '../utils/utils.js';
 import { CSV } from '../../table/csv.js';
 import { IReportTable } from '../interfaces/report-table.interface.js';
 import { MultiCompareUtils } from '../utils/multi-compare-utils.js';
+import { IArtifactRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Component for comparing tools
@@ -528,8 +529,9 @@ export class ToolComparator {
         const files = await DatabaseServer.getArtifacts({ toolId });
         const artifactsModels: FileModel[] = [];
         for (const file of files) {
-            const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
-            const f = new FileModel(file, data, options);
+            const artifact: IArtifactRawData = file;
+            artifact.data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
+            const f = new FileModel(artifact, options);
             f.update(options);
             artifactsModels.push(f);
         }

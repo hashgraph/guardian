@@ -1,6 +1,7 @@
 import MurmurHash3 from 'imurmurhash';
 import { CompareOptions, IEventsLvl } from '../interfaces/compare-options.interface.js';
 import { IWeightItem } from '../interfaces/weight-item.interface.js';
+import { IBlockArtifactRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Artifact Model
@@ -45,7 +46,7 @@ export class ArtifactModel {
      */
     private _hash: string;
 
-    constructor(json: any) {
+    constructor(json: IBlockArtifactRawData) {
         this.name = json.name;
         this.uuid = json.uuid;
         this.type = json.type;

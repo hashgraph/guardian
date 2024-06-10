@@ -9,6 +9,7 @@ import { SchemaModel } from '../models/schema.model.js';
 import { BlockModel } from '../models/block.model.js';
 import { BlockType } from '@guardian/interfaces';
 import { BlockToolModel } from '../models/block-tool.model.js';
+import { IBlockRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Compare Utils
@@ -202,7 +203,7 @@ export class CompareUtils {
      * @public
      * @static
      */
-    public static createBlockModel(json: any, index: number): BlockModel {
+    public static createBlockModel(json: IBlockRawData, index: number): BlockModel {
         if (json.blockType === BlockType.Tool) {
             return new BlockToolModel(json, index + 1);
         } else {
@@ -225,7 +226,7 @@ export class CompareUtils {
      * @public
      * @static
      */
-    public static createToolModel(json: any, index: number): BlockModel {
+    public static createToolModel(json: IBlockRawData, index: number): BlockModel {
         const block = new BlockModel(json, index + 1);
         if (Array.isArray(json.children)) {
             for (let i = 0; i < json.children.length; i++) {

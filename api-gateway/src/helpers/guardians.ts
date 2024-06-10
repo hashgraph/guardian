@@ -1103,22 +1103,27 @@ export class Guardians extends NatsService {
      * @param idLvl
      */
     public async comparePolicies(
-        user: IAuthUser,
+        user: IOwner,
         type: string,
-        ids: string[],
+        policies: {
+            type: 'id' | 'file' | 'message',
+            value: any
+        }[],
         eventsLvl: string | number,
         propLvl: string | number,
         childrenLvl: string | number,
         idLvl: string | number
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_POLICIES, {
-            type,
             user,
-            ids,
-            eventsLvl,
-            propLvl,
-            childrenLvl,
-            idLvl
+            type,
+            policies,
+            options: {
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl
+            }
         });
     }
 

@@ -1250,12 +1250,23 @@ export class SchemaConfigComponent implements OnInit {
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
+            if (result && result.schemaId1 && result.schemaId2) {
+                const items = btoa(JSON.stringify({
+                    parent: null,
+                    items: [
+                        result.schemaId1,
+                        result.schemaId2
+                    ].map((id) => {
+                        return {
+                            type: 'id',
+                            value: id
+                        }
+                    })
+                }));
                 this.router.navigate(['/compare'], {
                     queryParams: {
                         type: 'schema',
-                        schemaId1: result.schemaId1,
-                        schemaId2: result.schemaId2
+                        items
                     }
                 });
             }

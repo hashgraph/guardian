@@ -1,8 +1,8 @@
 import { CompareOptions, IIdLvl } from '../interfaces/compare-options.interface.js';
 import { FieldModel } from './field.model.js';
 import { SchemaDocumentModel } from './schema-document.model.js';
-import { Policy, PolicyTool, Schema as SchemaCollection } from '@guardian/common';
 import { HashUtils } from '../utils/hash-utils.js';
+import { IPolicyRawData, ISchemaRawData, IToolRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Schema Model
@@ -104,7 +104,7 @@ export class SchemaModel {
     private readonly _compareMap: Map<string, number> = new Map();
 
     constructor(
-        schema: SchemaCollection,
+        schema: ISchemaRawData,
         options: CompareOptions
     ) {
         this.options = options;
@@ -140,16 +140,6 @@ export class SchemaModel {
             this.document = SchemaDocumentModel.from(parsedDocument);
             this.document.update(this.options);
         }
-    }
-
-    public static from(data: any, options: CompareOptions): SchemaModel {
-        return new SchemaModel({
-            id: data.$id,
-            name: data.title,
-            description: data.description,
-            iri: data.$id,
-            document: data
-        } as any, options);
     }
 
     /**
@@ -212,7 +202,7 @@ export class SchemaModel {
      * @param policy
      * @public
      */
-    public setPolicy(policy: Policy): SchemaModel {
+    public setPolicy(policy: IPolicyRawData): SchemaModel {
         this._policyName = policy?.name;
         return this;
     }
@@ -222,7 +212,7 @@ export class SchemaModel {
      * @param tool
      * @public
      */
-    public setTool(tool: PolicyTool): SchemaModel {
+    public setTool(tool: IToolRawData): SchemaModel {
         this._toolName = tool?.name;
         return this;
     }
@@ -285,5 +275,36 @@ export class SchemaModel {
             version: this.version,
             iri: this.iri
         };
+    }
+
+    public static from(data: any, options: CompareOptions): SchemaModel {
+        return new SchemaModel({
+            id: data.$id,
+            name: data.title,
+            description: data.description,
+            iri: data.$id,
+            document: data
+        } as any, options);
+    }
+
+    /**
+     * Create model
+     * @param policy
+     * @param options
+     * @public
+     * @static
+     */
+    public static fromEntity(
+        schema: ISchemaRawData,
+        policy: IPolicyRawData,
+        options: CompareOptions
+    ): SchemaModel {
+        if (!schema) {
+            throw new Error('Unknown schema');
+        }
+        const schemaModel = new SchemaModel(schema, options);
+        schemaModel.setPolicy(policy);
+        schemaModel.update(options);
+        return schemaModel;
     }
 }

@@ -1,4 +1,3 @@
-import { Policy } from '@guardian/common';
 import { BlockModel } from './block.model.js';
 import { CompareOptions } from '../interfaces/compare-options.interface.js';
 import { SchemaModel } from './schema.model.js';
@@ -12,6 +11,7 @@ import { TemplateTokenModel } from './template-token.model.js';
 import { RoleModel } from './role.model.js';
 import { FileModel } from './file.model.js';
 import { CompareUtils } from '../utils/utils.js';
+import { IPolicyRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Policy Model
@@ -107,7 +107,7 @@ export class PolicyModel {
      */
     private _tokens: TokenModel[];
 
-    constructor(policy: Policy, options: CompareOptions) {
+    constructor(policy: IPolicyRawData, options: CompareOptions) {
         this.options = options;
 
         this.id = policy.id;
@@ -316,5 +316,19 @@ export class PolicyModel {
             prop = [...prop, ...block.getPropList(type)];
         }
         return prop;
+    }
+
+    /**
+     * Create model
+     * @param policy
+     * @param options
+     * @public
+     * @static
+     */
+    public static fromEntity(policy: IPolicyRawData, options: CompareOptions): PolicyModel {
+        if (!policy) {
+            throw new Error('Unknown policy');
+        }
+        return new PolicyModel(policy, options);
     }
 }

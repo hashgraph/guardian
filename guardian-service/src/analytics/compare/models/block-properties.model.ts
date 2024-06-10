@@ -1,3 +1,4 @@
+import { IBlockRawData } from '../interfaces/raw-data.interface.js';
 import { PropertiesModel } from './properties.model.js';
 
 /**
@@ -10,7 +11,7 @@ export class BlockPropertiesModel extends PropertiesModel {
      */
     private readonly permissions: string[];
 
-    constructor(json: any) {
+    constructor(json: IBlockRawData) {
         const prop = Object.assign({}, json, {
             id: undefined,
             blockType: undefined,

@@ -81,6 +81,34 @@ export class FilterPoliciesDTO extends Options {
     @IsOptional()
     @IsArray()
     policyIds?: string[];
+
+
+    @ApiProperty({
+        type: 'object',
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['id', 'message', 'file']
+            },
+            value: {
+                type: 'string'
+            }
+        },
+        isArray: true,
+        example: [{
+            type: 'id',
+            value: Examples.DB_ID
+        }, {
+            type: 'message',
+            value: Examples.MESSAGE_ID
+        }]
+    })
+    @IsOptional()
+    @IsArray()
+    policies?: {
+        type: 'id' | 'file' | 'message',
+        value: string
+    }[];
 }
 
 export class FilterModulesDTO extends Options {

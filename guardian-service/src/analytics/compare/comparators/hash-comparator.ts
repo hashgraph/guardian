@@ -8,6 +8,7 @@ import { IWeightItem } from '../interfaces/weight-item.interface.js';
 import { CompareUtils } from '../utils/utils.js';
 import { PolicyComparator } from './policy-comparator.js';
 import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface.js';
+import { IPolicyData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Weight Types
@@ -48,7 +49,7 @@ export class HashComparator {
      * @public
      * @static
      */
-    public static async createModelByFile(file: any): Promise<PolicyModel> {
+    public static async createModelByFile(file: IPolicyData): Promise<PolicyModel> {
         try {
             if (!file) {
                 throw new Error('Invalid file');
@@ -91,7 +92,7 @@ export class HashComparator {
 
             //Artifacts
             const artifactsModels = artifacts.map(artifact => {
-                const f = new FileModel(artifact, artifact.data, HashComparator.options);
+                const f = new FileModel(artifact, HashComparator.options);
                 f.update(HashComparator.options);
                 return f;
             });
@@ -160,12 +161,13 @@ export class HashComparator {
     /**
      * Create and save policy hash
      * @param policy
+     * @param raw
      * @public
      * @static
      */
-    public static async saveHashMap(policy: Policy): Promise<Policy> {
+    public static async saveHashMap(policy: Policy, raw: IPolicyData): Promise<Policy> {
         try {
-            const compareModel = await PolicyComparator.createModelById(policy.id.toString(), HashComparator.options);
+            const compareModel = await PolicyComparator.create(raw, HashComparator.options);
             const tree = HashComparator.createTree(compareModel);
             const hash = CompareUtils.sha256(JSON.stringify(tree));
             policy.hash = hash;

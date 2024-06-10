@@ -1,7 +1,26 @@
-import { CompareOptions, DocumentComparator, DocumentModel, HashComparator, IChildrenLvl, IEventsLvl, IPropertiesLvl, ModuleComparator, ModuleModel, PolicyComparator, PolicyModel, PolicySearchModel, RootSearchModel, SchemaComparator, SchemaModel, ToolComparator, ToolModel } from '../analytics/index.js';
+import {
+    PolicyLoader,
+    CompareOptions,
+    DocumentComparator,
+    DocumentModel,
+    HashComparator,
+    IChildrenLvl,
+    IEventsLvl,
+    IPropertiesLvl,
+    ModuleComparator,
+    ModuleModel,
+    PolicyComparator,
+    PolicyModel,
+    PolicySearchModel,
+    RootSearchModel,
+    SchemaComparator,
+    SchemaModel,
+    ToolComparator,
+    ToolModel
+} from '../analytics/index.js';
 import { DatabaseServer, IAuthUser, Logger, MessageError, MessageResponse, VpDocument } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { MessageAPI, PolicyType, UserRole } from '@guardian/interfaces';
+import { IOwner, MessageAPI, PolicyType, UserRole } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -17,60 +36,34 @@ export class AnalyticsController {
 export async function analyticsAPI(): Promise<void> {
     ApiResponse<any>(MessageAPI.COMPARE_POLICIES,
         async (msg: {
-            user: IAuthUser,
+            user: IOwner,
             type: string,
-            ids: string[],
-            eventsLvl: string | number,
-            propLvl: string | number,
-            childrenLvl: string | number,
-            idLvl: string | number
+            policies: {
+                type: 'id' | 'file' | 'message',
+                value: any
+            }[],
+            options: {
+                propLvl: string | number,
+                childrenLvl: string | number,
+                eventsLvl: string | number,
+                idLvl: string | number
+            }
         }) => {
             try {
-                const {
-                    type,
-                    ids,
-                    eventsLvl,
-                    propLvl,
-                    childrenLvl,
-                    idLvl
-                } = msg;
-                const options = new CompareOptions(
-                    propLvl,
-                    childrenLvl,
-                    eventsLvl,
-                    idLvl,
-                    null,
-                    null,
-                    null
-                );
+                const { user, type, policies, options } = msg;
+                const compareOptions = CompareOptions.from(options);
 
                 const compareModels: PolicyModel[] = [];
-                for (const policyId of ids) {
-                    const compareModel = await PolicyComparator.createModelById(policyId, options);
+                for (const policy of policies) {
+                    const rawData = await PolicyLoader.load(policy, user);
+                    const compareModel = await PolicyComparator.create(rawData, compareOptions);
                     compareModels.push(compareModel);
                 }
 
-                const comparator = new PolicyComparator(options);
+                const comparator = new PolicyComparator(compareOptions);
                 const results = comparator.compare(compareModels);
-                if (results.length === 1) {
-                    if (type === 'csv') {
-                        const file = comparator.tableToCsv(results);
-                        return new MessageResponse(file);
-                    } else {
-                        const result = results[0];
-                        return new MessageResponse(result);
-                    }
-                } else if (results.length > 1) {
-                    if (type === 'csv') {
-                        const file = comparator.tableToCsv(results)
-                        return new MessageResponse(file);
-                    } else {
-                        const result = comparator.mergeCompareResults(results);
-                        return new MessageResponse(result);
-                    }
-                } else {
-                    throw new Error('Invalid size');
-                }
+                const result = comparator.to(results, type);
+                return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

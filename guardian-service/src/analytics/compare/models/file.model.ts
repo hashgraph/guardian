@@ -1,7 +1,7 @@
-import { Artifact } from '@guardian/common';
 import { CompareOptions } from '../interfaces/compare-options.interface.js';
 import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'crypto';
+import { IArtifactRawData } from '../interfaces/raw-data.interface.js';
 
 /**
  * File Model
@@ -31,12 +31,12 @@ export class FileModel {
      */
     private readonly options: CompareOptions;
 
-    constructor(artifact: Artifact, buffer: Buffer, options: CompareOptions) {
+    constructor(raw: IArtifactRawData, options: CompareOptions) {
         this.options = options;
-        this.uuid = artifact.uuid;
+        this.uuid = raw.uuid;
         this.data = crypto
             .createHash('sha256')
-            .update(buffer || '')
+            .update(raw.data || '')
             .digest()
             .toString();
         this.update(this.options);
@@ -84,5 +84,24 @@ export class FileModel {
         hashState.hash(String(this.uuid));
         hashState.hash(String(this.data));
         this._weight = String(hashState.result());
+    }
+
+    /**
+     * Create model
+     * @param raw
+     * @param options
+     * @public
+     * @static
+     */
+    public static fromEntity(
+        raw: IArtifactRawData,
+        options: CompareOptions
+    ): FileModel {
+        if (!raw) {
+            throw new Error('Unknown artifact');
+        }
+        const artifactsModel = new FileModel(raw, options);
+        artifactsModel.update(options);
+        return artifactsModel;
     }
 }

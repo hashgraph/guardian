@@ -1,10 +1,39 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
-import { Permissions } from '@guardian/interfaces';
+import { EntityOwner, Permissions } from '@guardian/interfaces';
 import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
 import { Guardians, ONLY_SR, InternalException } from '#helpers';
+
+function getPolicyId(filters: FilterPoliciesDTO): {
+    type: 'id' | 'file' | 'message',
+    value: any
+}[] {
+    if (!filters) {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    if (Array.isArray(filters.policies) && filters.policies.length > 1) {
+        return filters.policies;
+    } else if (Array.isArray(filters.policyIds) && filters.policyIds.length > 1) {
+        return filters.policyIds.map((id) => {
+            return {
+                type: 'id',
+                value: id
+            }
+        })
+    } else if (filters.policyId1 && filters.policyId2) {
+        return [{
+            type: 'id',
+            value: filters.policyId1
+        }, {
+            type: 'id',
+            value: filters.policyId2
+        }];
+    } else {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+}
 
 @Controller('analytics')
 @ApiTags('analytics')
@@ -111,34 +140,18 @@ export class AnalyticsApi {
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterPoliciesDTO
     ): Promise<ComparePoliciesDTO> {
-        const policyId1 = filters ? filters.policyId1 : null;
-        const policyId2 = filters ? filters.policyId2 : null;
-        const policyIds = filters ? filters.policyIds : null;
-        const eventsLvl = filters ? filters.eventsLvl : null;
-        const propLvl = filters ? filters.propLvl : null;
-        const childrenLvl = filters ? filters.childrenLvl : null;
-        const idLvl = filters ? filters.idLvl : null;
-
-        let ids: string[];
-        if (policyId1 && policyId2) {
-            ids = [policyId1, policyId2];
-        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
-            ids = policyIds;
-        }
-
-        if (!ids) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const policies = getPolicyId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
             return await guardians.comparePolicies(
-                user,
+                owner,
                 null,
-                ids,
-                eventsLvl,
-                propLvl,
-                childrenLvl,
-                idLvl
+                policies,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
             );
         } catch (error) {
             await InternalException(error);
@@ -485,33 +498,18 @@ export class AnalyticsApi {
         @Body() filters: FilterPoliciesDTO,
         @Query('type') type: string
     ): Promise<string> {
-        const policyId1 = filters ? filters.policyId1 : null;
-        const policyId2 = filters ? filters.policyId2 : null;
-        const policyIds = filters ? filters.policyIds : null;
-        const eventsLvl = filters ? filters.eventsLvl : null;
-        const propLvl = filters ? filters.propLvl : null;
-        const childrenLvl = filters ? filters.childrenLvl : null;
-        const idLvl = filters ? filters.idLvl : null;
-
-        let ids: string[];
-        if (policyId1 && policyId2) {
-            ids = [policyId1, policyId2];
-        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
-            ids = policyIds;
-        }
-        if (!ids) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const policies = getPolicyId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
             return await guardians.comparePolicies(
-                user,
+                owner,
                 type,
-                ids,
-                eventsLvl,
-                propLvl,
-                childrenLvl,
-                idLvl
+                policies,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
             );
         } catch (error) {
             await InternalException(error);

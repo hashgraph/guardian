@@ -1,4 +1,4 @@
-import { DatabaseServer } from '@guardian/common';
+import { Artifact, DatabaseServer } from '@guardian/common';
 import { CSV } from '../../table/csv.js';
 import { ReportTable } from '../../table/report-table.js';
 import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IPropertiesLvl, IRefLvl } from '../interfaces/compare-options.interface.js';
@@ -11,10 +11,10 @@ import { PolicyModel } from '../models/policy.model.js';
 import { SchemaModel } from '../models/schema.model.js';
 import { TokenModel } from '../models/token.model.js';
 import { BlocksRate } from '../rates/blocks-rate.js';
-import { PropertyType } from '../types/property.type.js';
 import { ComparePolicyUtils } from '../utils/compare-policy-utils.js';
 import { MultiCompareUtils } from '../utils/multi-compare-utils.js';
 import { CompareUtils } from '../utils/utils.js';
+import { IPolicyData } from '../interfaces/raw-data.interface.js';
 
 /**
  * Component for comparing two policies
@@ -40,6 +40,22 @@ export class PolicyComparator {
                 null
             );
         }
+    }
+
+    /**
+     * Compare policies
+     * @param policies
+     * @public
+     */
+    public compare(policies: PolicyModel[]): ICompareResult<any>[] {
+        const left = policies[0];
+        const rights = policies.slice(1);
+        const results: ICompareResult<any>[] = [];
+        for (const right of rights) {
+            const result = this.compareTwoPolicies(left, right);
+            results.push(result);
+        }
+        return results;
     }
 
     /**
@@ -105,12 +121,7 @@ export class PolicyComparator {
         const groupRate = CompareUtils.total(groups);
         const topicRate = CompareUtils.total(topics);
         const tokenRate = CompareUtils.total(tokens);
-        const otherRate = CompareUtils.calcTotalRate(
-            roleRate,
-            groupRate,
-            topicRate,
-            tokenRate
-        );
+        const otherRate = CompareUtils.calcTotalRate(roleRate, groupRate, topicRate, tokenRate);
         const total = CompareUtils.calcTotalRate(otherRate, blockRate);
 
         const result: ICompareResult<any> = {
@@ -139,22 +150,6 @@ export class PolicyComparator {
             }
         }
         return result;
-    }
-
-    /**
-     * Compare policies
-     * @param policies
-     * @public
-     */
-    public compare(policies: PolicyModel[]): ICompareResult<any>[] {
-        const left = policies[0];
-        const rights = policies.slice(1);
-        const results: ICompareResult<any>[] = [];
-        for (const right of rights) {
-            const result = this.compareTwoPolicies(left, right);
-            results.push(result);
-        }
-        return results;
     }
 
     /**
@@ -511,58 +506,55 @@ export class PolicyComparator {
     }
 
     /**
-     * Create policy model
-     * @param policyId
+     * Convert result
+     * @param result
+     * @public
+     */
+    public to(results: ICompareResult<any>[], type: string): any {
+        if (results.length === 1) {
+            if (type === 'csv') {
+                return this.tableToCsv(results);
+            } else {
+                return results[0];
+            }
+        } else if (results.length > 1) {
+            if (type === 'csv') {
+                return this.tableToCsv(results)
+            } else {
+                return this.mergeCompareResults(results);
+            }
+        } else {
+            throw new Error('Invalid size');
+        }
+    }
+
+    /**
+     * Create model
+     * @param data
      * @param options
      * @public
      * @static
      */
-    public static async createModelById(policyId: string, options: CompareOptions): Promise<PolicyModel> {
+    public static async create(
+        data: IPolicyData,
+        options: CompareOptions
+    ): Promise<PolicyModel> {
         //Policy
-        const policy = await DatabaseServer.getPolicyById(policyId);
-
-        if (!policy) {
-            throw new Error('Unknown policy');
-        }
-
-        const policyModel = new PolicyModel(policy, options);
+        const policyModel = PolicyModel.fromEntity(data.policy, options);
 
         //Schemas
-        const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
-
-        const schemaModels: SchemaModel[] = [];
-        for (const schema of schemas) {
-            const m = new SchemaModel(schema, options);
-            m.setPolicy(policy);
-            m.update(options);
-            schemaModels.push(m);
-        }
+        const schemaModels = data.schemas
+            .map((schema) => SchemaModel.fromEntity(schema, data.policy, options));
         policyModel.setSchemas(schemaModels);
 
         //Tokens
-        const tokensIds = policyModel.getAllProp<string>(PropertyType.Token)
-            .filter(t => t.value)
-            .map(t => t.value);
-
-        const tokens = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds } } });
-
-        const tokenModels: TokenModel[] = [];
-        for (const token of tokens) {
-            const t = new TokenModel(token, options);
-            t.update(options);
-            tokenModels.push(t);
-        }
+        const tokenModels = data.tokens
+            .map((token) => TokenModel.fromEntity(token, options));
         policyModel.setTokens(tokenModels);
 
         //Artifacts
-        const files = await DatabaseServer.getArtifacts({ policyId });
-        const artifactsModels: FileModel[] = [];
-        for (const file of files) {
-            const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
-            const f = new FileModel(file, data, options);
-            f.update(options);
-            artifactsModels.push(f);
-        }
+        const artifactsModels = data.artifacts
+            .map((artifact) => FileModel.fromEntity(artifact, options));
         policyModel.setArtifacts(artifactsModels);
 
         //Compare
