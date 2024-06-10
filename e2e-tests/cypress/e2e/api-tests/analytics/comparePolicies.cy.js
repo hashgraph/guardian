@@ -8,7 +8,10 @@ context("Analytics",  { tags: '@analytics' },() => {
             method: METHOD.POST,
             url: API.ApiServer + API.PolicisImportMsg,
             body: {
-                "messageId": Cypress.env('policy_for_compare1')//iRec 4
+                messageId: Cypress.env('policy_for_compare1'),//iRec 4
+                metadata: {
+                    "tools": {}
+                  }
             },
             headers: {
                 authorization,
@@ -21,7 +24,10 @@ context("Analytics",  { tags: '@analytics' },() => {
                     method: METHOD.POST,
                     url: API.ApiServer + API.PolicisImportMsg,
                     body: {
-                        "messageId": Cypress.env('policy_for_compare2')//iRec 5
+                        "messageId": Cypress.env('policy_for_compare2'),//iRec 5
+                        metadata: {
+                            "tools": {}
+                          }
                     },
                     headers: {
                         authorization,

@@ -3,8 +3,7 @@ import API from "../../../support/ApiUrls";
 
 context("Contracts", { tags: '@contracts' },() => {
     const authorization = Cypress.env("authorization");
-    //const username = Math.floor(Math.random() * 999) + "User";
-    const username = "4User";
+    const username = Math.floor(Math.random() * 999) + "User";
     const contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
     const contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
     const optionKey = "option"
@@ -191,11 +190,11 @@ context("Contracts", { tags: '@contracts' },() => {
             headers: {
                 authorization,
             },
-            timeout: 180000
+            timeout: 360000
         })
             .then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(-1).id;
+                policyId = response.body.at(0).id;
             })
 
         //Get token(Irec token) draft id to update it

@@ -1,8 +1,8 @@
-import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Profiles', {tags: '@profiles'}, () => {
+context('Profiles', { tags: '@profiles' }, () => {
     const authorization = Cypress.env("authorization");
     let did
 
@@ -54,18 +54,35 @@ context('Profiles', {tags: '@profiles'}, () => {
                         }).then((response) => {
                             let accessToken = 'Bearer ' + response.body.accessToken
                             cy.request({
-                                method: 'PUT',
-                                url: API.ApiServer + 'profiles/' + name,
-                                headers: {
-                                    authorization: accessToken
-                                },
-                                body: {
-                                    hederaAccountId: "0.0.2954463",
-                                    hederaAccountKey: "3030020100300706052b8104000a042204200501fd610df433a7dd202faa6864d5f270dbb129ccc6455ab5cb1ee44838cab8",
-                                    parent: did
-                                },
-                                timeout: 200000
-                            })
+                                method: METHOD.GET,
+                                url: API.ApiServer + API.RandomKey,
+                                headers: { authorization },
+                            }).then((resp) => {
+                                expect(resp.status).eql(STATUS_CODE.OK);
+                                expect(resp.body).to.have.property("id");
+                                expect(resp.body).to.have.property("key");
+                                cy.request({
+                                    method: 'PUT',
+                                    url: API.ApiServer + 'profiles/' + name,
+                                    headers: {
+                                        authorization: accessToken
+                                    },
+                                    body: {
+                                        fireblocksConfig: {
+                                            fireBlocksVaultId: "",
+                                            fireBlocksAssetId: "",
+                                            fireBlocksApiKey: "",
+                                            fireBlocksPrivateiKey: ""
+                                        },
+                                        hederaAccountId: resp.body.id,
+                                        hederaAccountKey: resp.body.key,
+                                        parent: did,
+                                        useFireblocksSigning: false,
+                                        vcDocument: { field0: "" }
+                                    },
+                                    timeout: 200000
+                                })
+                            });
                         })
                     })
             })

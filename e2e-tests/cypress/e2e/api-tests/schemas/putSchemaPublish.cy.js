@@ -13,7 +13,7 @@ context("Schemas", { tags: '@schemas' }, () => {
                 authorization,
             },
         }).then((resp) => {
-            const topicUid = resp.body.at(-1).topicId;
+            const topicUid = resp.body.at(0).topicId;
             //Create new schema
             cy.request({
                 method: "POST",
@@ -21,15 +21,83 @@ context("Schemas", { tags: '@schemas' }, () => {
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
+                    name: "test",
                     description: "new",
-                    hash: "",
+                    entity: "VC",
                     status: "DRAFT",
                     readonly: false,
-                    name: "test",
-                    entity: "NONE",
-                    document:
-                        '{"$id":"#${schemaUUID}","$comment":"{\\"term\\": \\"${schemaUUID}\\", \\"@id\\": \\"https://localhost/schema#${schemaUUID}\\"}","title":"test","description":" test","type":"object","properties":{"@context":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"type":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"id":{"type":"string","readOnly":true},"field0":{"title":"test field","description":"test field","readOnly":false,"$comment":"{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}","type":"string"}},"required":["@context","type"],"additionalProperties":false}',
-                },
+                    document: {
+                      "$id": "#${schemaUUID}",
+                      "$comment": "{ \"@id\": \"schema:${schemaUUID}#${schemaUUID}\", \"term\": \"${schemaUUID}\" }",
+                      "title": "wqe",
+                      "description": "",
+                      "type": "object",
+                      "properties": {
+                        "@context": {
+                          "oneOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          ],
+                          "readOnly": true
+                        },
+                        "type": {
+                          "oneOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          ],
+                          "readOnly": true
+                        },
+                        "id": {
+                          "type": "string",
+                          "readOnly": true
+                        },
+                        "policyId": {
+                          "title": "policyId",
+                          "description": "policyId",
+                          "readOnly": true,
+                          "type": "string",
+                          "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+                        },
+                        "ref": {
+                          "title": "ref",
+                          "description": "ref",
+                          "readOnly": true,
+                          "type": "string",
+                          "$comment": "{\"term\":\"ref\",\"@id\":\"https://www.schema.org/text\"}"
+                        }
+                      },
+                      "required": [
+                        "@context",
+                        "type",
+                        "policyId"
+                      ],
+                      "additionalProperties": false,
+                      "$defs": {}
+                    },
+                    context: null,
+                    topicId: topicUid,
+                    contextURL: "schema:${schemaUUID}",
+                    fields: [],
+                    conditions: [],
+                    active: false,
+                    system: false,
+                    category: "POLICY",
+                    errors: [],
+                  },
             }).then((response) => {
          
             });

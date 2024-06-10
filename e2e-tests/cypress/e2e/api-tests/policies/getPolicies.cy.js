@@ -9,15 +9,20 @@ context('Policies', {tags: '@policies'}, () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'policies/import/message',
-            body: {messageId: (Cypress.env('irec_policy'))},
+            body: {
+                messageId: (Cypress.env('irec_policy')),
+                metadata: {
+                    "tools": {}
+                  }
+            },
             headers: {
                 authorization,
             },
             timeout: 180000
         }).then(response => {
             expect(response.status).to.eq(201);
-            let firstPolicyId = response.body.at(-1).id
-            let firstPolicyStatus = response.body.at(-1).status
+            let firstPolicyId = response.body.at(0).id
+            let firstPolicyStatus = response.body.at(0).status
             expect(firstPolicyStatus).to.equal('DRAFT')
             cy.request({
                 method: 'PUT',
@@ -27,8 +32,8 @@ context('Policies', {tags: '@policies'}, () => {
                 timeout: 600000
             })
                 .should((response) => {
-                    let secondPolicyId = response.body.policies.at(-1).id
-                    let policyStatus = response.body.policies.at(-1).status
+                    let secondPolicyId = response.body.policies.at(0).id
+                    let policyStatus = response.body.policies.at(0).status
                     expect(response.status).to.eq(200)
                     expect(firstPolicyId).to.equal(secondPolicyId)
                     expect(policyStatus).to.equal('PUBLISH')

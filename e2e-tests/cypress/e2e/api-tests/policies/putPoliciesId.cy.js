@@ -16,7 +16,7 @@ context("Policies", { tags: '@policies' }, () => {
 
         cy.request(urlPolicies).then((response) => {
             expect(response.status).to.eq(200);
-            const policyId = response.body.at(-1).id;
+            const policyId = response.body.at(0).id;
 
             const urlPoliciesId = {
                 method: "PUT",
