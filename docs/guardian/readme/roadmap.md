@@ -343,12 +343,6 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2706](https://gith
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3296](https://github.com/hashgraph/guardian/issues/3296)
 
-### Guardian Oracle service to verify token trust chain from within Hedera smart contracts
-
-Develop a Guardian 'Oracle' service to produce (at least) a verifiable binary valid/not valid answer for a given token or group of tokens reachable from within the smart contract, which can then form the basis conditional operation inside the smart contract.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1040](https://github.com/hashgraph/guardian/issues/1040)
-
 ### HBAR GHG Policy Research
 
 Create a Guardian policy that quantifies and reports GHG emissions from HBAR, using the GHGP product Standard and ICT Sector Guidance for guidance and requirements mapping.
@@ -408,6 +402,48 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://githu
 
 ## ---- July 2024----
 
+### Indexer API
+
+Add suitable API facilities which would allow programmatic access to the indexed data and analytics, which include policy structure data (such as formulas used in the various elements - e.g. Tools) as well as project data.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3637](https://github.com/hashgraph/guardian/issues/3637)
+
+### Filtering data for blocks is stateful API, introduce stateless data filters for API usage
+
+I don't necessarily think there is a hard requirement to remove the stateful nature of guardian filtering, as we cannot predict, what are the downstream API consumers are using this functionality or affects, they will be without some kind of deprecation notice.
+
+So, the recommendation would be:
+
+* Add ability to filter using a GET request for a filter, so data can be fetched and filtered in one action
+* (As an alternative - preferred) It would be preferable to enable filtering at the block level when retrieving data so a API consumer does not need to add explicit filter blocks in block can use the Guardian API to be more RESTful by default.
+* Post a six month deprecation notice for stateful usage of the filter (revert if hard requirement for others)
+
+An example, code enhancement could be implemented like this (tags are easier to reason about):
+
+From old version:
+
+```
+  public function filterByTag(string $policyId, string $tag, string $uuid): object
+  {
+      return (object) $this->httpClient->post("policies/{$policyId}/tag/{$tag}/blocks", [
+          'filterValue' => $uuid
+      ], true);
+  }
+```
+
+to:
+
+```
+public function filterByTag(string $policyId, string $tag, string $uuid): object
+{
+    return (object) $this->httpClient->get("policies/{$policyId}/tag/{$tag}/blocks?filterValue={$uuid}");
+}
+```
+
+Or provide/document clearly a mechanism to filter on an [interface document block](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/interfacedocumentssourceblock) itself, which would be **preferred**.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3610](https://github.com/hashgraph/guardian/issues/3610)
+
 ### Development of AMS-I.E: Switch from Non-Renewable Biomass for Thermal Applications by the User – v.13.0
 
 Designing of the Schema and getting it approved.&#x20;
@@ -418,28 +454,12 @@ Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2923](https://github.com/hashgraph/guardian/issues/2923)
 
-### Conform Guardian generated NFTs with HIP412 for better ecosystem-wide compatibility for NFTs and wallets
-
-1. Define senisble defaults for all NFT Guardian assets that is the minimum implementation of HIP412 ([@mattsmithies](https://github.com/mattsmithies) can advise on tooling or a method to support)
-2. Move the generated of the current metadata to the _"properties"_ field of the [HIP412 Specification](https://hips.hedera.com/hip/hip-412#specification)
-3. Allow marketplaces to change the defaults for their specific needs on the creation of tokens and more importantly the mint of assets.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1672](https://github.com/hashgraph/guardian/issues/1672)
-
 ### Auto-testing community submitted policies
 
 * Relying on the [Policy equivalence assessment based on their execution results for the same data #1886](https://github.com/hashgraph/guardian/issues/1886) and [Full project data comparison as produced/captured by policies #2704](https://github.com/hashgraph/guardian/issues/2704) introduce capability to automatically and repeatably test policies
 * Introduce a hook into the new policy merge and release build events which triggers execution of the community policies regression test cycle
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2847](https://github.com/hashgraph/guardian/issues/2847)
-
-### Code audit: support and resolution of issues
-
-* Define scope and organise code audit and application penetration testing by a reputable 3rd party security firm.
-* Support audit team with Q\&A and setting up environments etc
-* Resolve critical issues found.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2989](https://github.com/hashgraph/guardian/issues/2989)
 
 ### Development of GS Methodology for Emission Reductions from Safe Drinking Water Supply v.1.0
 
