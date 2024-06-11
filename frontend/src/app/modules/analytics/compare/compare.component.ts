@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { CompareStorage } from 'src/app/services/compare-storage.service';
 
 enum ItemType {
     Document = 'document',
@@ -78,7 +79,8 @@ export class CompareComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private analyticsService: AnalyticsService
+        private analyticsService: AnalyticsService,
+        private compareStorage: CompareStorage
     ) {
     }
 
@@ -120,7 +122,7 @@ export class CompareComponent implements OnInit {
             const parent = params.parent;
             const items = params.items;
             this.parent = parent;
-            this.items = items;
+            this.items = items || [];
         } catch (error) {
             console.error(error)
         }
@@ -131,7 +133,25 @@ export class CompareComponent implements OnInit {
     }
 
     private getItems(): any[] {
-        return this.items;
+        const items = [];
+        for (const item of this.items) {
+            if (item.type === 'file') {
+                const file = this.compareStorage.getFile(item.value);
+                if(!file) {
+                    return []
+                }
+                items.push({
+                    type: item.type,
+                    value: file.value
+                })
+            } else {
+                items.push({
+                    type: item.type,
+                    value: item.value
+                })
+            }
+        }
+        return items;
     }
 
     private loadDocument() {

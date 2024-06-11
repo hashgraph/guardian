@@ -1,12 +1,14 @@
 
 
 import { Injectable } from '@angular/core';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Subject, Subscription } from 'rxjs';
 
 @Injectable()
 export class CompareStorage {
     private readonly name: string = 'COMPARE_IDS';
     private subject: Subject<unknown>;
+    private readonly files: any[] = [];
 
     constructor() {
         this.subject = new Subject();
@@ -51,5 +53,16 @@ export class CompareStorage {
         let ids = this.load();
         ids = ids.filter(i => i !== id);
         this.save(ids);
+    }
+
+    public saveFile(name: string, arrayBuffer: ArrayBuffer): string {
+        const id = GenerateUUIDv4();
+        const value = btoa(new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+        this.files.push({ id, name, value });
+        return id;
+    }
+
+    public getFile(id: string): any {
+        return this.files.find((f) => f.id === id);
     }
 }

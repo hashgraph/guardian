@@ -273,21 +273,22 @@ export class PoliciesComponent implements OnInit {
     private loadAllPolicy() {
         this.loading = true;
         this.tagOptions = [];
-        this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
-            this.policies = policiesResponse.body?.map(policy => {
-                if (policy.discontinuedDate) {
-                    policy.discontinuedDate = new Date(policy.discontinuedDate);
-                }
-                return policy;
-            }) || [];
-            this.policiesCount =
-                policiesResponse.headers.get('X-Total-Count') ||
-                this.policies.length;
+        this.policyEngineService.page(this.pageIndex, this.pageSize)
+            .subscribe((policiesResponse) => {
+                this.policies = policiesResponse.body?.map(policy => {
+                    if (policy.discontinuedDate) {
+                        policy.discontinuedDate = new Date(policy.discontinuedDate);
+                    }
+                    return policy;
+                }) || [];
+                this.policiesCount =
+                    policiesResponse.headers.get('X-Total-Count') ||
+                    this.policies.length;
 
-            this.loadPolicyTags(this.policies);
-        }, (e) => {
-            this.loading = false;
-        });
+                this.loadPolicyTags(this.policies);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
     private loadPolicyTags(policies: any[]) {
@@ -877,25 +878,18 @@ export class PoliciesComponent implements OnInit {
     public comparePolicy(policyId?: any) {
         const item = this.policies?.find((e) => e.id === policyId);
         const dialogRef = this.dialogService.open(ComparePolicyDialog, {
-            header: 'Compare Policy',
-            width: '650px',
+            header: 'Policy Comparison',
+            width: '900px',
             styleClass: 'custom-dialog',
             data: {
-                policy: item,
-                policies: this.policies,
+                policy: item
             },
         });
         dialogRef.onClose.subscribe(async (result) => {
-            if (result && result.policyIds) {
-                const policyIds: string[] = result.policyIds;
+            if (result) {
                 const items = btoa(JSON.stringify({
                     parent: null,
-                    items: policyIds.map((id) => {
-                        return {
-                            type: 'id',
-                            value: id
-                        }
-                    })
+                    items: result
                 }));
                 this.router.navigate(['/compare'], {
                     queryParams: {
@@ -918,7 +912,11 @@ export class PoliciesComponent implements OnInit {
                     styleClass: 'custom-dialog',
                     data: {
                         policy: item,
-                        policies: this.policies?.filter(item => [PolicyType.PUBLISH, PolicyType.DISCONTINUED, PolicyType.DRY_RUN].includes(item.status)),
+                        policies: this.policies?.filter(item => [
+                            PolicyType.PUBLISH,
+                            PolicyType.DISCONTINUED,
+                            PolicyType.DRY_RUN
+                        ].includes(item.status)),
                         contracts: res.body
                     },
                 });

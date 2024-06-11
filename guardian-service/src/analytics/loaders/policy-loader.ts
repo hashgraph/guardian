@@ -65,10 +65,8 @@ export class PolicyLoader {
         return { policy, schemas, tokens, artifacts };
     }
 
-    public static async loadByFile(
-        zip: any
-    ): Promise<IPolicyData> {
-        const result = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
+    public static async loadByFile(b64string: any): Promise<IPolicyData> {
+        const result = await PolicyImportExport.parseZipFile(Buffer.from(b64string, 'base64'), true);
         result.policy.id = 'file';
         return result;
     }
