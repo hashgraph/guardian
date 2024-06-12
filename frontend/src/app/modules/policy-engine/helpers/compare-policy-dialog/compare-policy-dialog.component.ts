@@ -20,6 +20,7 @@ export class ComparePolicyDialog {
     public first: IItem | undefined;
     public items: IItem[] = [];
     public localItems: any[] = [];
+    public localItemsFiltered: any[] = [];
     public fixed: boolean = false;
     public type: string = 'id';
     public messageForm = new FormGroup({
@@ -39,6 +40,9 @@ export class ComparePolicyDialog {
         };
     });
     public localIds: any[] = [];
+    public policyName: string = '';
+    public messageIdError: boolean = false;
+    private policyMap: Set<string> = new Set<string>();
 
     constructor(
         public ref: DynamicDialogRef,
@@ -61,7 +65,12 @@ export class ComparePolicyDialog {
         this.loading = true;
         this.policyEngineService.all()
             .subscribe((policies) => {
-                this.localItems = policies;
+                this.localItems = policies || [];
+                for (const policy of this.localItems) {
+                    policy._selected = false;
+                    policy._search = (policy.name || '').toLowerCase();
+                }
+                this.onFilterPolicy();
                 setTimeout(() => {
                     this.loading = false;
                 });
@@ -70,6 +79,9 @@ export class ComparePolicyDialog {
                     this.loading = false;
                 });
             });
+        this.messageForm.valueChanges.subscribe(() => {
+            this.messageIdError = false;
+        })
     }
 
     public onDelete(item: IItem, first: boolean) {
@@ -78,6 +90,44 @@ export class ComparePolicyDialog {
         } else {
             this.items = this.items.filter((e) => e.value !== item.value);
         }
+        this.updateMap();
+    }
+
+    private addItem(item: IItem): boolean {
+        let result = false;
+        if (this.first) {
+            if (this.first.value === item.value) {
+                result = false;
+            } else if (this.items.length) {
+                const old = this.items.find((e) => e.value === item.value);
+                if (old) {
+                    result = false;
+                } else {
+                    this.items.push(item);
+                    result = true;
+                }
+            } else {
+                this.items.push(item);
+                result = true;
+            }
+        } else {
+            this.first = item;
+            result = true;
+        }
+        this.updateMap();
+        return result;
+    }
+
+    private updateMap() {
+        this.policyMap.clear();
+        if (this.first && this.first.type === 'id') {
+            this.policyMap.add(this.first.value);
+        }
+        for (const item of this.items) {
+            if (item.type === 'id') {
+                this.policyMap.add(item.value);
+            }
+        }
     }
 
     public onChangeType(type: string) {
@@ -85,16 +135,33 @@ export class ComparePolicyDialog {
     }
 
     public addMessage() {
+        if (this.messageForm.invalid) {
+            return;
+        }
         const messageId = this.messageForm.value.messageId
             .replace(/^([0-9]{10})(\.?)([0-9]{9})$/, '$1.$3');
-        const item: IItem = {
-            name: messageId,
-            type: 'message',
-            value: messageId
-        }
-        if (this.addItem(item)) {
-            this.messageForm.setValue({ messageId: '' });
-        }
+
+        this.loading = true;
+        this.policyEngineService.previewByMessage(messageId)
+            .subscribe((preview) => {
+                const item: IItem = {
+                    name: messageId,
+                    type: 'message',
+                    value: messageId
+                }
+                if (this.addItem(item)) {
+                    this.messageForm.setValue({ messageId: '' });
+                }
+                this.messageIdError = false;
+                setTimeout(() => {
+                    this.loading = false;
+                });
+            }, (e) => {
+                this.messageIdError = true;
+                setTimeout(() => {
+                    this.loading = false;
+                });
+            });
     }
 
     public importFromFile(file: any) {
@@ -113,36 +180,43 @@ export class ComparePolicyDialog {
     }
 
     public addLocal() {
-        for (const policy of this.localIds) {
-            const item: IItem = {
-                name: policy.name,
-                type: 'id',
-                value: policy.id
+        // for (const policy of this.localIds) {
+        //     const item: IItem = {
+        //         name: policy.name,
+        //         type: 'id',
+        //         value: policy.id
+        //     }
+        //     this.addItem(item);
+        // }
+        for (const policy of this.localItems) {
+            if (policy._selected) {
+                const item: IItem = {
+                    name: policy.name,
+                    type: 'id',
+                    value: policy.id
+                }
+                this.addItem(item);
+                policy._selected = false;
             }
-            this.addItem(item);
         }
         this.localIds = [];
+        this.onFilterPolicy();
     }
 
-    private addItem(item: IItem): boolean {
-        if (this.first) {
-            if (this.first.value === item.value) {
-                return false;
-            }
-            if (this.items.length) {
-                const old = this.items.find((e) => e.value === item.value);
-                if (old) {
-                    return false;
-                } else {
-                    this.items.push(item);
-                }
-            } else {
-                this.items.push(item);
-            }
+    public onSelectLocalItem(item: any) {
+        item._selected = !item._selected;
+        this.localIds = this.localItems.filter((p) => p._selected);
+    }
+
+    public onFilterPolicy() {
+        const text = (this.policyName?.toLowerCase() || '').trim();
+        if (text) {
+            this.localItemsFiltered = this.localItems
+                .filter((p) => p._search.indexOf(text) !== -1 && !this.policyMap.has(p.id));
         } else {
-            this.first = item;
+            this.localItemsFiltered = this.localItems
+                .filter((p) => !this.policyMap.has(p.id));
         }
-        return true;
     }
 
     public onClose(): void {
