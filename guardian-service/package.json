@@ -85,9 +85,6 @@
   "files": [
     "dist"
   ],
-  "imports": {
-    "#constants": "./dist/constants/index.js"
-  },
   "name": "guardian-service",
   "scripts": {
     "build": "tsc",

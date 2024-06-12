@@ -422,11 +422,7 @@ export async function toolsAPI(): Promise<void> {
         });
 
     /**
-     * Create new tool V2 05.06.2024
-     *
-     * @param payload - tool
-     *
-     * @returns {PolicyTool} new tool
+     * Get tools V2 05.06.2024
      */
     ApiResponse(MessageAPI.GET_TOOLS_V2,
         async (msg: { fields: string[], filters: any, owner: IOwner }) => {

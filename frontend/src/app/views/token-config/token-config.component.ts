@@ -11,7 +11,6 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { FormGroup } from '@angular/forms';
-// import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
 
@@ -54,21 +53,6 @@ export class TokenConfigComponent implements OnInit {
     public tagSchemas: any[] = [];
     public deleteTokenVisible: boolean = false;
     public currentTokenId: any;
-    // public dataForm = new FormGroup({
-    //     draftToken: new FormControl(true, [Validators.required]),
-    //     tokenName: new FormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
-    //     tokenSymbol: new FormControl('F', [Validators.required, noWhitespaceValidator()]),
-    //     tokenType: new FormControl('fungible', [Validators.required]),
-    //     decimals: new FormControl('2'),
-    //     initialSupply: new FormControl('0'),
-    //     enableAdmin: new FormControl(true, [Validators.required]),
-    //     changeSupply: new FormControl(true, [Validators.required]),
-    //     enableFreeze: new FormControl(false, [Validators.required]),
-    //     enableKYC: new FormControl(false, [Validators.required]),
-    //     enableWipe: new FormControl(true, [Validators.required]),
-    //     wipeContractId: new FormControl(),
-    // });
-    // public dataFormPristine: any = this.dataForm.value;
     public readonlyForm: boolean = false;
     public policyDropdownItem: any;
     public tokensCount: any;
@@ -240,7 +224,6 @@ export class TokenConfigComponent implements OnInit {
 
     public newToken() {
         this.readonlyForm = false;
-        // this.dataForm.patchValue(this.dataFormPristine);
         this.currentTokenId = null;
         this.dialog.open(TokenDialogComponent, {
             closable: true,
@@ -249,7 +232,6 @@ export class TokenConfigComponent implements OnInit {
             styleClass: 'custom-token-dialog',
             header: 'New Token',
             data: {
-                // dataForm: this.dataForm,
                 contracts: this.contracts,
                 readonly: this.readonlyForm,
                 currentTokenId: this.currentTokenId,
@@ -435,14 +417,11 @@ export class TokenConfigComponent implements OnInit {
     }
 
     public openEditDialog(token?: any) {
-        console.log('openEditDialog', token);
-        console.log('this.currentPolicy', this.currentPolicy);
         if (!token || !token.enableAdmin) {
             return;
         }
+
         this.currentTokenId = token.tokenId;
-        // this.readonlyForm = !token.draftToken;
-        // this.dataForm.patchValue(token);
         this.dialog.open(TokenDialogComponent, {
             closable: true,
             modal: true,
@@ -450,14 +429,11 @@ export class TokenConfigComponent implements OnInit {
             styleClass: 'custom-token-dialog',
             header: 'Edit Token',
             data: {
-                // dataForm: this.dataForm,
                 contracts: this.contracts,
-                // readonly: this.readonlyForm,
                 currentTokenId: this.currentTokenId,
                 policyId: this.currentPolicy
             }
         }).onClose.subscribe((dataForm: FormGroup) => {
-            console.log('dataForm', dataForm);
             if (!dataForm) {
                 return;
             }

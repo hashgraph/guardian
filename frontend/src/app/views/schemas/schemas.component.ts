@@ -546,7 +546,6 @@ export class SchemaConfigComponent implements OnInit {
             }
         }
         loader.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
-            // this.page = schemasResponse.body || [];
             this.page = SchemaHelper.map(schemasResponse.body || []);
             for (const element of this.page as any[]) {
                 element.__policyId = this.policyIdByTopic[element.topicId];

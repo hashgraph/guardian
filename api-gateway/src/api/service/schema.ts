@@ -1808,7 +1808,7 @@ export class SchemaApi {
     }
 
     /**
-     * Get system schemas page
+     * Get system schemas page V2 12.06
      */
     @Get('/system/:username')
     @Auth(

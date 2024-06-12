@@ -19,7 +19,6 @@ export class TokenDialogComponent implements OnInit {
     contracts: any[];
     currentTokenId?: string;
     policyId?: string;
-    public dataFormPristine: any;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -40,7 +39,6 @@ export class TokenDialogComponent implements OnInit {
             enableWipe: new FormControl(true, [Validators.required]),
             wipeContractId: new FormControl(),
         });
-        this.dataFormPristine = this.dataForm.value;
     }
 
     ngOnInit(): void {
@@ -49,7 +47,6 @@ export class TokenDialogComponent implements OnInit {
         this.contracts = this.dialogConfig.data?.contracts;
         this.currentTokenId = this.dialogConfig.data?.currentTokenId;
         this.policyId = this.dialogConfig.data?.policyId
-
 
         this.getTokenById(this.currentTokenId, this.policyId)
     }
