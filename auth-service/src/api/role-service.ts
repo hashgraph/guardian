@@ -3,6 +3,7 @@ import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@g
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
 import { getRequiredProps } from '#utils';
+
 import { USER_REQUIRED_PROPS } from '#constants';
 
 const permissionList = PermissionsArray.filter((p) => !p.disabled).map((p) => {
