@@ -17,8 +17,6 @@ context("Accounts", { tags: "@accounts" }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             expect(response.body).to.have.property("username", name);
-            // expect(response.body).to.have.property("did", null);
-            // expect(response.body).to.have.property("role", "USER");
             expect(response.body).to.have.property("id");
         })
             .then(() => {
