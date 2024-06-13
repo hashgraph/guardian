@@ -17,8 +17,21 @@ export class ISession {
 }
 
 export interface IGroup {
+    /**
+     * Role UUID
+     */
+    uuid: string,
+    /**
+     * Role ID
+     */
     roleId: string,
+    /**
+     * Role name
+     */
     roleName: string,
+    /**
+     * Owner DID
+     */
     owner: string
 }
 

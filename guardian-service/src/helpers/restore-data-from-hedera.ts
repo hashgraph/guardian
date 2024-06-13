@@ -32,13 +32,17 @@ import {
     MessageAction,
     VcHelper,
     UrlType,
-    RoleMessage
+    RoleMessage,
+    GuardianRoleMessage,
+    UserPermissionsMessage
 } from '@guardian/common';
 import {
     DidDocumentStatus,
+    EntityOwner,
     ISchema,
     PolicyType,
     SchemaCategory,
+    SchemaEntity,
     SchemaStatus,
     TopicType,
     UserRole,
@@ -125,6 +129,7 @@ export class RestoreDataFromHedera {
         for (const m of messages) {
             try {
                 const r = MessageServer.fromMessage<Message>(m.message);
+                r.setAccount(m.payer_account_id);
                 r.setTopicId(topicId);
                 r.setId(m.id);
                 result.push(r);
@@ -290,6 +295,16 @@ export class RestoreDataFromHedera {
                     break;
                 }
 
+                case GuardianRoleMessage: {
+                    //Skip message
+                    break;
+                }
+
+                case UserPermissionsMessage: {
+                    //Skip message
+                    break;
+                }
+
                 default:
                     console.error('Unknown message type', row);
             }
@@ -440,7 +455,7 @@ export class RestoreDataFromHedera {
      * @private
      */
     private findMessagesByType<T extends Message>(type: MessageType, messages: Message[]): T[] {
-        return messages.filter((m) => m.type === type) as T[];
+        return (messages?.filter((m) => m.type === type) || []) as T[];
     }
 
     /**
@@ -606,7 +621,8 @@ export class RestoreDataFromHedera {
             hederaAccountId: hederaAccountID,
         });
 
-        await this.restoreUsers(allMessages);
+        await this.restoreUsers(allMessages, did);
+        await this.restorePermissions(allMessages, did, user, hederaAccountID);
 
         await this.restoreTopic(
             {
@@ -643,21 +659,101 @@ export class RestoreDataFromHedera {
         }
     }
 
-    private async restoreUsers(messages: Message[]) {
+    private async restoreUsers(messages: Message[], owner: string) {
         const userDIDs = this.findMessagesByType<DIDMessage>(MessageType.DIDDocument, messages);
-        if (!userDIDs) {
-            return;
-        }
         userDIDs.shift();
+
         for (const message of userDIDs) {
             await this.loadIPFS(message);
+            const did = message.document.id;
             await new DataBaseHelper(DidDocumentCollection).save({
-                did: message.document.id,
+                did,
                 document: message.document,
                 status: DidDocumentStatus.CREATE,
                 messageId: message.id,
                 topicId: message.topicId,
             });
+            this.users.generateNewTemplate(UserRole.USER, did, owner);
+        }
+    }
+
+    private async restorePermissions(
+        messages: Message[],
+        parentDid: string,
+        parent: IAuthUser,
+        hederaAccountID: string
+    ) {
+        const guardianRoles = this.findMessagesByType<GuardianRoleMessage>(MessageType.GuardianRole, messages);
+        const _guardianRoles = new Map<string, GuardianRoleMessage>();
+        for (const message of guardianRoles) {
+            if (message.payer === hederaAccountID) {
+                _guardianRoles.set(message.uuid, message);
+            }
+        }
+
+        const _owner = EntityOwner.sr(parentDid);
+        const _roleMap = new Map<string, any>();
+        for (const message of _guardianRoles.values()) {
+            await this.loadIPFS(message);
+            const vcDoc = VcDocument.fromJsonTree(message.document);
+            const uuid = vcDoc.getField<string>('uuid');
+            const role = await this.users.createRole({
+                uuid,
+                name: vcDoc.getField<string>('name'),
+                description: vcDoc.getField<string>('description'),
+                permissions: vcDoc.getField<string[]>('permissions')
+            }, _owner, true);
+            await new DataBaseHelper(VcDocumentCollection).save({
+                hash: vcDoc.toCredentialHash(),
+                owner: parentDid,
+                messageId: message.id,
+                topicId: message.topicId,
+                document: vcDoc.toJsonTree(),
+                type: SchemaEntity.ROLE
+            });
+            _roleMap.set(uuid, role)
+        }
+
+        const permissions = this.findMessagesByType<UserPermissionsMessage>(MessageType.UserPermissions, messages);
+        const _permissions = new Map<string, UserPermissionsMessage>();
+        for (const message of permissions) {
+            if (message.payer === hederaAccountID) {
+                _permissions.set(message.user, message);
+            }
+        }
+
+        for (const message of _permissions.values()) {
+            await this.loadIPFS(message);
+            const vcDoc = VcDocument.fromJsonTree(message.document);
+            const userRoles = vcDoc.getField<{
+                uuid: string,
+                name: string,
+                owner: string
+            }[]>('roles');
+            const userDid = vcDoc.getField<string>('userId');
+            const template = await this.users.getUserById(userDid);
+            if (
+                template &&
+                template.role === UserRole.USER &&
+                template.parent === parentDid
+            ) {
+                const roleIds: string[] = [];
+                for (const item of userRoles) {
+                    const role = _roleMap.get(item.uuid);
+                    if (role) {
+                        roleIds.push(role.id);
+                        await this.users.updateUserRole(template.username, roleIds, _owner);
+                        await new DataBaseHelper(VcDocumentCollection).save({
+                            hash: vcDoc.toCredentialHash(),
+                            owner: parentDid,
+                            messageId: message.id,
+                            topicId: message.topicId,
+                            document: vcDoc.toJsonTree(),
+                            type: SchemaEntity.USER_PERMISSIONS
+                        });
+                    }
+                }
+            }
         }
     }
 }

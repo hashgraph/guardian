@@ -1,0 +1,50 @@
+<div>
+    <div *ngFor="let item of indexers" class="service" [attr.status]="item.status">
+        <div class="service-name">
+            <div class="service-name__label">Service name:</div>
+            <div class="service-name__value">{{item.name}}</div>
+        </div>
+        <div class="service-name">
+            <div class="service-name__label">Service status:</div>
+            <div class="service-name__value">{{item.status}}</div>
+        </div>
+    </div>
+
+    <div *ngFor="let item of workers" class="service" [attr.status]="item.status">
+        <div class="service-name">
+            <div class="service-name__label">Service name:</div>
+            <div class="service-name__value">{{item.name}}</div>
+        </div>
+        <div class="service-name">
+            <div class="service-name__label">Service status:</div>
+            <div class="service-name__value">{{item.status}}</div>
+        </div>
+        <div class="service-name">
+            <div class="service-name__label">Messages jobs:</div>
+        </div>
+        <div class="service-jobs">
+            <div *ngFor="let job of item.messages" class="service-job" [attr.active]="job.active">
+                <div class="processing" [attr.processing]="job.processing"></div>
+                <div class="job-status">{{job.status}}</div>
+            </div>
+        </div>
+        <div class="service-name">
+            <div class="service-name__label">Topics jobs:</div>
+        </div>
+        <div class="service-jobs">
+            <div *ngFor="let job of item.topics" class="service-job" [attr.active]="job.active">
+                <div class="processing" [attr.processing]="job.processing"></div>
+                <div class="job-status">{{job.status}}</div>
+            </div>
+        </div>
+        <div class="service-name">
+            <div class="service-name__label">Tokens jobs:</div>
+        </div>
+        <div class="service-jobs">
+            <div *ngFor="let job of item.tokens" class="service-job" [attr.active]="job.active">
+                <div class="processing" [attr.processing]="job.processing"></div>
+                <div class="job-status">{{job.status}}</div>
+            </div>
+        </div>
+    </div>
+</div>

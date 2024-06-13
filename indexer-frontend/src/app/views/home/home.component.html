@@ -1,0 +1,43 @@
+<div class="container page-content">
+    <div class="main">
+        <div class="search-container">
+
+            <div class="search-label">
+                <div class="search-label__header">{{ 'home.header' | transloco }}
+                </div>
+                <div class="search-label__description">{{ 'home.description' | transloco }} <b>{{
+                        'home.bold_description' | transloco}}</b></div>
+            </div>
+
+            <div class="search-control">
+
+                <form class="search-control__form" (submit)="onSearch()">
+                    <p-iconField iconPosition="right" class="search-control__input">
+                        <p-inputIcon styleClass="pi pi-search" (click)="search.focus()" />
+                        <input #search pInputText [placeholder]="'header.search_placeholder' | transloco" type="text"
+                            [formControl]="searchControl" />
+                    </p-iconField>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="result">
+        <h1>{{ 'landing.overview' | transloco }}</h1>
+        <div class="cards">
+            @for (stat of stats; track $index) {
+            <app-stat-card [cardLabel]="stat.label" [chartData]="{ labels: stat.labels, data: stat.data}"
+                [link]="stat.link" [count]="stat.count" [upcount]="stat.upcount"></app-stat-card>
+            }
+
+        </div>
+    </div>
+
+    <div class="overview">
+        <h1>{{'landing.project_locations' | transloco}}</h1>
+        <div class="map-container">
+            <app-project-locations [projectLocations]="projectLocations"></app-project-locations>
+        </div>
+    </div>
+</div>

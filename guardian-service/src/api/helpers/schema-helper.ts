@@ -97,6 +97,14 @@ export async function setDefaultSchema() {
         throw new Error(`You need to fill ${SchemaEntity.WIPE_TOKEN} field in system-schemas.json file`);
     }
 
+    if (!map.hasOwnProperty(SchemaEntity.ROLE)) {
+        throw new Error(`You need to fill ${SchemaEntity.ROLE} field in system-schemas.json file`);
+    }
+
+    if (!map.hasOwnProperty(SchemaEntity.USER_PERMISSIONS)) {
+        throw new Error(`You need to fill ${SchemaEntity.USER_PERMISSIONS} field in system-schemas.json file`);
+    }
+
     const fn = async (schema: any) => {
         const existingSchemas = await DatabaseServer.getSchema({
             uuid: schema.uuid,
@@ -126,6 +134,8 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.CHUNK]);
     await fn(map[SchemaEntity.ACTIVITY_IMPACT]);
     await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
+    await fn(map[SchemaEntity.ROLE]);
+    await fn(map[SchemaEntity.USER_PERMISSIONS]);
 }
 
 /**

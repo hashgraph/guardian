@@ -1,0 +1,62 @@
+{
+    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "dependencies": {
+        "@elastic/elasticsearch": "^8.12.2",
+        "@indexer/common": "^2.22.0",
+        "@indexer/interfaces": "^2.22.0",
+        "mongodb": "6.5.0",
+        "@mikro-orm/core": "6.2.2",
+        "@mikro-orm/mongodb": "6.2.2",
+        "@mikro-orm/migrations-mongodb": "6.2.2",
+        "@nestjs/common": "^9.4.1",
+        "@nestjs/core": "^9.4.1",
+        "@nestjs/microservices": "^9.4.1",
+        "axios": "^1.7.2",
+        "axios-retry": "^3.2.4",
+        "cron": "^3.1.7",
+        "cross-blob": "^2.0.1",
+        "dotenv": "^16.0.0",
+        "escape-string-regexp": "^5.0.0",
+        "jszip": "^3.10.1",
+        "module-alias": "^2.2.2",
+        "reflect-metadata": "^0.1.13",
+        "rxjs": "^7.8.1"
+    },
+    "description": "",
+    "devDependencies": {
+        "@types/gulp": "^4",
+        "@types/gulp-rename": "^2",
+        "@types/node": "^18.16.0",
+        "chai": "4.3.4",
+        "gulp": "^4.0.2",
+        "gulp-copy": "^4.0.1",
+        "gulp-rename": "^2.0.0",
+        "gulp-sourcemaps": "^3.0.0",
+        "gulp-typescript": "^6.0.0-alpha.1",
+        "mocha": "^9.2.0",
+        "mocha-junit-reporter": "^2.0.2",
+        "nodemon": "^2.0.12",
+        "rewire": "^6.0.0",
+        "tslint": "^6.1.3",
+        "typescript": "^4.5.5"
+    },
+    "files": [
+        "dist"
+    ],
+    "license": "Apache-2.0",
+    "main": "dist/index.js",
+    "name": "indexer-service",
+    "scripts": {
+        "build": "tsc",
+        "build:prod": "tsc --project tsconfig.production.json",
+        "debug": "nodemon dist/index.js",
+        "dev": "tsc -w",
+        "dev:docker": "nodemon .",
+        "lint": "tslint --config ../tslint.json --project .",
+        "start": "node dist/index.js",
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/indexer-service.xml --exit"
+    },
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "version": "2.22.0"
+}

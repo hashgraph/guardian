@@ -269,6 +269,8 @@ Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://github.com/hashgraph/guardian/issues/2921)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation)
+
 ### Full project data comparison as produced/captured by policies
 
 Introduce a comparison functionality where it'd be possible to 'diff' arbitrary sections or the entire trust-chains for different tokens, potentially issued by different policies such that the system would:
@@ -278,6 +280,8 @@ Introduce a comparison functionality where it'd be possible to 'diff' arbitrary 
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://github.com/hashgraph/guardian/issues/2704)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui)
+
 ### Global environmental/Guardian data search (indexer) component for Hedera and IPFS
 
 * Improve the data storage and indexing capabilities of Guardian for the data belonging to the local instance such that complex analytical queries could be run efficiently, such as 'search for data similar to this' and 'what is the possibility of this being a double entry for something submitted elsewhere'.
@@ -285,6 +289,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://gith
 * Extend [Block and policy discoverability/search #2281](https://github.com/hashgraph/guardian/issues/2281) for users to be able to preview the usage of the block without having to import "other SR's" policy into their Guardian instance
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://github.com/hashgraph/guardian/issues/2629)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide)
 
 ### Revamp Guardian user/roles and permissions model
 
@@ -303,55 +309,7 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://gith
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2844](https://github.com/hashgraph/guardian/issues/2844)
 
-### Development of AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
-
-1. Designing of the Schema and getting it approved.
-2. Development of the policy using Schema
-3.  Development of all the tools involved in the policy:
-
-    * Tool 01- Tool for the demonstration and assessment of additionality
-    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-    * Tool 04- Emissions from solid waste disposal sites
-    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-    * Tool 06- Project emissions from flaring
-    * Tool 12- Project and leakage emissions from transportation of freight
-    * Tool 13- Project and leakage emissions from composting
-    * Tool 14- Project and leakage emissions from anaerobic digesters
-    * Tool 16- Project and leakage emissions from biomass
-    * Tool 33- Default values for common parameters
-
-    Referral Link: [https://github.com/hashgraph/guardian/issues/2882](https://github.com/hashgraph/guardian/issues/2882)
-
-### Development of AMS-I.A.
-
-1. Designing of the Schema and getting it approved.
-2. Development of the policy using Schema
-3. Development of all the tools involved in the policy:
-   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-   * Tool 16- Project and leakage emissions from biomass
-   * Tool 21- Demonstration of additionality of small-scale project activities 
-   * Tool 33- Default values for common parameters
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://github.com/hashgraph/guardian/issues/2884)
-
-### Development of AMS-I.C.: Thermal Energy Production with or Without Electricity
-
-1. Designing the Schema for the methodology
-2. Development of the policy
-3.  Development of all the tools involved in this policy
-
-    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-    * Tool 06- Project emissions from flaring
-    * Tool 07- Tool to calculate the emission factor for an electricity system
-    * Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems
-    * Tool 12- Project and leakage emissions from transportation of freight
-    * Tool 16- Project and leakage emissions from biomas
-    * Tool 19- Demonstration of additionality of microscale project activities
-    * Tool 21- Demonstration of additionality of small-scale project activities 
-    * Tool 22- Leakage in biomass small-scale project activities
-
-    Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide](https://docs.hedera.com/guardian/guardian/standard-registry/roles-and-permissions/roles-and-permissions-user-guide)
 
 ## ---- June 2024----
 
@@ -385,12 +343,6 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2706](https://gith
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3296](https://github.com/hashgraph/guardian/issues/3296)
 
-### Guardian Oracle service to verify token trust chain from within Hedera smart contracts
-
-Develop a Guardian 'Oracle' service to produce (at least) a verifiable binary valid/not valid answer for a given token or group of tokens reachable from within the smart contract, which can then form the basis conditional operation inside the smart contract.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1040](https://github.com/hashgraph/guardian/issues/1040)
-
 ### HBAR GHG Policy Research
 
 Create a Guardian policy that quantifies and reports GHG emissions from HBAR, using the GHGP product Standard and ICT Sector Guidance for guidance and requirements mapping.
@@ -399,7 +351,98 @@ Create a Guardian policy that quantifies and reports GHG emissions from HBAR, us
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1667](https://github.com/hashgraph/guardian/issues/1667)
 
+### Development of AMS-I.F.: Renewable Electricity Generation for Captive Use and Mini-Grid
+
+1. Designing of the Schema and getting it approved.
+2. Development of the policy using Schema
+3. Development of all the tools involved in the policy:
+   * Tool 01- Tool for the demonstration and assessment of additionality
+   * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+   * Tool 04- Emissions from solid waste disposal sites
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 06- Project emissions from flaring
+   * Tool 12- Project and leakage emissions from transportation of freight
+   * Tool 13- Project and leakage emissions from composting
+   * Tool 14- Project and leakage emissions from anaerobic digesters
+   * Tool 16- Project and leakage emissions from biomass
+   * Tool 33- Default values for common parameters
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2882](https://github.com/hashgraph/guardian/issues/2882)
+
+### Development of AMS-I.A.
+
+1. Designing of the Schema and getting it approved.
+2. Development of the policy using Schema
+3. Development of all the tools involved in the policy:
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 16- Project and leakage emissions from biomass
+   * Tool 21- Demonstration of additionality of small-scale project activities 
+   * Tool 33- Default values for common parameters
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://github.com/hashgraph/guardian/issues/2884)
+
+### Development of AMS-I.C.: Thermal Energy Production with or Without Electricity
+
+1. Designing the Schema for the methodology
+2. Development of the policy
+3.  Development of all the tools involved in this policy
+
+    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+    * Tool 06- Project emissions from flaring
+    * Tool 07- Tool to calculate the emission factor for an electricity system
+    * Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems
+    * Tool 12- Project and leakage emissions from transportation of freight
+    * Tool 16- Project and leakage emissions from biomas
+    * Tool 19- Demonstration of additionality of microscale project activities
+    * Tool 21- Demonstration of additionality of small-scale project activities 
+    * Tool 22- Leakage in biomass small-scale project activities
+
+    Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
+
 ## ---- July 2024----
+
+### Indexer API
+
+Add suitable API facilities which would allow programmatic access to the indexed data and analytics, which include policy structure data (such as formulas used in the various elements - e.g. Tools) as well as project data.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3637](https://github.com/hashgraph/guardian/issues/3637)
+
+### Filtering data for blocks is stateful API, introduce stateless data filters for API usage
+
+I don't necessarily think there is a hard requirement to remove the stateful nature of guardian filtering, as we cannot predict, what are the downstream API consumers are using this functionality or affects, they will be without some kind of deprecation notice.
+
+So, the recommendation would be:
+
+* Add ability to filter using a GET request for a filter, so data can be fetched and filtered in one action
+* (As an alternative - preferred) It would be preferable to enable filtering at the block level when retrieving data so a API consumer does not need to add explicit filter blocks in block can use the Guardian API to be more RESTful by default.
+* Post a six month deprecation notice for stateful usage of the filter (revert if hard requirement for others)
+
+An example, code enhancement could be implemented like this (tags are easier to reason about):
+
+From old version:
+
+```
+  public function filterByTag(string $policyId, string $tag, string $uuid): object
+  {
+      return (object) $this->httpClient->post("policies/{$policyId}/tag/{$tag}/blocks", [
+          'filterValue' => $uuid
+      ], true);
+  }
+```
+
+to:
+
+```
+public function filterByTag(string $policyId, string $tag, string $uuid): object
+{
+    return (object) $this->httpClient->get("policies/{$policyId}/tag/{$tag}/blocks?filterValue={$uuid}");
+}
+```
+
+Or provide/document clearly a mechanism to filter on an [interface document block](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/interfacedocumentssourceblock) itself, which would be **preferred**.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3610](https://github.com/hashgraph/guardian/issues/3610)
 
 ### Development of AMS-I.E: Switch from Non-Renewable Biomass for Thermal Applications by the User – v.13.0
 
@@ -411,28 +454,12 @@ Development of all the tool involved in the policy
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2923](https://github.com/hashgraph/guardian/issues/2923)
 
-### Conform Guardian generated NFTs with HIP412 for better ecosystem-wide compatibility for NFTs and wallets
-
-1. Define senisble defaults for all NFT Guardian assets that is the minimum implementation of HIP412 ([@mattsmithies](https://github.com/mattsmithies) can advise on tooling or a method to support)
-2. Move the generated of the current metadata to the _"properties"_ field of the [HIP412 Specification](https://hips.hedera.com/hip/hip-412#specification)
-3. Allow marketplaces to change the defaults for their specific needs on the creation of tokens and more importantly the mint of assets.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/1672](https://github.com/hashgraph/guardian/issues/1672)
-
 ### Auto-testing community submitted policies
 
 * Relying on the [Policy equivalence assessment based on their execution results for the same data #1886](https://github.com/hashgraph/guardian/issues/1886) and [Full project data comparison as produced/captured by policies #2704](https://github.com/hashgraph/guardian/issues/2704) introduce capability to automatically and repeatably test policies
 * Introduce a hook into the new policy merge and release build events which triggers execution of the community policies regression test cycle
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2847](https://github.com/hashgraph/guardian/issues/2847)
-
-### Code audit: support and resolution of issues
-
-* Define scope and organise code audit and application penetration testing by a reputable 3rd party security firm.
-* Support audit team with Q\&A and setting up environments etc
-* Resolve critical issues found.
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2989](https://github.com/hashgraph/guardian/issues/2989)
 
 ### Development of GS Methodology for Emission Reductions from Safe Drinking Water Supply v.1.0
 

@@ -130,20 +130,24 @@ export class MintNFT extends TypedMint {
             !this._ref?.dryRun &&
             !Number.isInteger(this._mintRequest.startSerial)
         ) {
-            const startSerial = await new Workers().addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TOKEN_NFTS,
-                    data: {
-                        tokenId: this._token.tokenId,
-                        limit: 1,
-                        order: 'desc',
+            try {
+                const startSerial = await new Workers().addRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_TOKEN_NFTS,
+                        data: {
+                            tokenId: this._token.tokenId,
+                            limit: 1,
+                            order: 'desc',
+                        },
                     },
-                },
-                1,
-                10
-            );
-            this._mintRequest.startSerial = startSerial[0] || 0;
-            await this._db.saveMintRequest(this._mintRequest);
+                    1,
+                    10
+                );
+                this._mintRequest.startSerial = startSerial[0] || 0;
+                await this._db.saveMintRequest(this._mintRequest);
+            } catch (error) {
+                this.error(error);
+            }
         }
 
         let transactions = await this._db.getMintTransactions(

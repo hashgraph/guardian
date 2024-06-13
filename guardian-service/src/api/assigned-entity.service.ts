@@ -45,7 +45,7 @@ export async function AssignedEntityAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.ASSIGN_ENTITY, async (msg: {
         type: AssignedEntityType,
-        entityId: string,
+        entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
@@ -54,19 +54,22 @@ export async function AssignedEntityAPI(): Promise<void> {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
             }
-            const { type, entityId, assign, did, owner } = msg;
-            const target = await getTarget(type, entityId);
-            if (!target && target.owner !== owner) {
-                throw new Error('Entity not found');
+            const { type, entityIds, assign, did, owner } = msg;
+            for (const entityId of entityIds) {
+                const target = await getTarget(type, entityId);
+                if (!target && target.owner !== owner) {
+                    throw new Error('Entity not found');
+                }
+                if (assign) {
+                    const assigned = await DatabaseServer.getAssignedEntity(type, entityId, did);
+                    if (!assigned) {
+                        await DatabaseServer.assignEntity(type, entityId, true, did, owner);
+                    }
+                } else {
+                    await DatabaseServer.removeAssignEntity(type, entityId, did);
+                }
             }
-            if (assign) {
-                await DatabaseServer.assignEntity(type, entityId, true, did, owner);
-                return new MessageResponse(true);
-            } else {
-                await DatabaseServer.removeAssignEntity(type, entityId, did);
-                return new MessageResponse(false);
-            }
-
+            return new MessageResponse(assign);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -136,7 +139,7 @@ export async function AssignedEntityAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.DELEGATE_ENTITY, async (msg: {
         type: AssignedEntityType,
-        entityId: string,
+        entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
@@ -145,23 +148,26 @@ export async function AssignedEntityAPI(): Promise<void> {
             if (!msg) {
                 throw new Error('Invalid assign parameters');
             }
-            const { type, entityId, assign, did, owner } = msg;
-            const target = await getTarget(type, entityId);
-            if (!target) {
-                throw new Error('Entity not found');
+            const { type, entityIds, assign, did, owner } = msg;
+            for (const entityId of entityIds) {
+                const target = await getTarget(type, entityId);
+                if (!target) {
+                    throw new Error('Entity not found');
+                }
+                const own = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, entityId, owner);
+                if (!own) {
+                    throw new Error('Entity not found');
+                }
+                if (assign) {
+                    const assigned = await DatabaseServer.getAssignedEntity(type, entityId, did);
+                    if (!assigned) {
+                        await DatabaseServer.assignEntity(type, entityId, true, did, owner);
+                    }
+                } else {
+                    await DatabaseServer.removeAssignEntity(type, entityId, did, owner);
+                }
             }
-            const own = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, entityId, owner);
-            if (!own) {
-                throw new Error('Entity not found');
-            }
-            if (assign) {
-                await DatabaseServer.assignEntity(type, entityId, true, did, owner);
-                return new MessageResponse(true);
-            } else {
-                await DatabaseServer.removeAssignEntity(type, entityId, did, owner);
-                return new MessageResponse(false);
-            }
-
+            return new MessageResponse(assign);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

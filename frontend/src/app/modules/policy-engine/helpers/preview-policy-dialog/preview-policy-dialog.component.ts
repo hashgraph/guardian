@@ -29,6 +29,19 @@ export class PreviewPolicyDialog {
     public toolForm?: FormGroup;
     public isFile?: boolean;
 
+    public get valid(): boolean {
+        if (this.policy) {
+            return !!this.toolForm?.valid;
+        }
+        if (this.module) {
+            return true;
+        }
+        if (this.tool) {
+            return !!this.toolForm?.valid;
+        }
+        return false;
+    }
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig
@@ -115,14 +128,14 @@ export class PreviewPolicyDialog {
                 })
                 .join(', ');
 
-                const tools = this.xlsx.tools || [];
-                this.tools = tools
-                    .map((s: any) => {
-                        return s.name;
-                    })
-                    .join(', ');
+            const tools = this.xlsx.tools || [];
+            this.tools = tools
+                .map((s: any) => {
+                    return s.name;
+                })
+                .join(', ');
 
-                tools
+            tools
             this.errors = this.xlsx.errors || [];
             for (const error of this.errors) {
                 if (error.cell) {

@@ -1,4 +1,4 @@
-import { DidDocumentStatus, DocumentStatus, EntityOwner, IOwner, ISignOptions, MessageAPI, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { DefaultRoles, DidDocumentStatus, DocumentStatus, EntityOwner, GenerateUUIDv4, IOwner, ISignOptions, MessageAPI, Permissions, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
@@ -6,6 +6,7 @@ import {
     DidDocument as DidDocumentCollection,
     DIDMessage,
     Environment,
+    GuardianRoleMessage,
     HederaBBSMethod,
     HederaDid,
     HederaEd25519Method,
@@ -36,6 +37,7 @@ import { publishSystemSchema } from './helpers/schema-publish-helper.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { serDefaultRole } from './permission.service.js';
 
 interface IFireblocksConfig {
     fireBlocksVaultId: string;
@@ -123,7 +125,13 @@ async function setupUserProfile(
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
     });
-    await users.setDefaultRole(username, profile.parent);
+
+    notifier.completedAndStart('Update permissions');
+    if (user.role === UserRole.USER) {
+        const changeRole = await users.setDefaultUserRole(username, profile.parent);
+        await serDefaultRole(changeRole, EntityOwner.sr(profile.parent))
+    }
+
     notifier.completedAndStart('Set up wallet');
     await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
     if (profile.useFireblocksSigning) {
@@ -161,6 +169,37 @@ async function validateCommonDid(json: string | any, keys: IDidKey[]): Promise<C
         }
     }
     return document;
+}
+
+async function checkAndPublishSchema(
+    entity: SchemaEntity,
+    topicConfig: TopicConfig,
+    userDID: string,
+    srUser: IOwner,
+    messageServer: MessageServer,
+    logger: Logger,
+    notifier: INotifier
+): Promise<void> {
+    let schema = await new DataBaseHelper(SchemaCollection).findOne({
+        entity,
+        readonly: true,
+        topicId: topicConfig.topicId
+    });
+    if (!schema) {
+        schema = await new DataBaseHelper(SchemaCollection).findOne({
+            entity,
+            system: true,
+            active: true
+        });
+        if (schema) {
+            notifier.info(`Publish System Schema (${entity})`);
+            logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE']);
+            schema.creator = userDID;
+            schema.owner = userDID;
+            const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
+            await new DataBaseHelper(SchemaCollection).save(item);
+        }
+    }
 }
 
 /**
@@ -303,73 +342,53 @@ async function createUserProfile(
     let schemaObject: Schema;
     try {
         const srUser: IOwner = EntityOwner.sr(userDID);
-        let schema: SchemaCollection = null;
-
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
-            entity: SchemaEntity.STANDARD_REGISTRY,
-            readonly: true,
-            topicId: topicConfig.topicId
-        });
-        if (!schema) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
-                entity: SchemaEntity.STANDARD_REGISTRY,
-                system: true,
-                active: true
-            });
-            if (schema) {
-                notifier.info('Publish System Schema (STANDARD_REGISTRY)');
-                logger.info('Publish System Schema (STANDARD_REGISTRY)', ['GUARDIAN_SERVICE']);
-                schema.creator = userDID;
-                schema.owner = userDID;
-                const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
-                await new DataBaseHelper(SchemaCollection).save(item);
-            }
-        }
-
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
-            entity: SchemaEntity.USER,
-            readonly: true,
-            topicId: topicConfig.topicId
-        });
-        if (!schema) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
-                entity: SchemaEntity.USER,
-                system: true,
-                active: true
-            });
-            if (schema) {
-                notifier.info('Publish System Schema (USER)');
-                logger.info('Publish System Schema (USER)', ['GUARDIAN_SERVICE']);
-                schema.creator = userDID;
-                schema.owner = userDID;
-                const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
-                await new DataBaseHelper(SchemaCollection).save(item);
-            }
-        }
-
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
-            entity: SchemaEntity.RETIRE_TOKEN,
-            readonly: true,
-            topicId: topicConfig.topicId,
-        });
-        if (!schema) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
-                entity: SchemaEntity.RETIRE_TOKEN,
-                system: true,
-                active: true
-            });
-            if (schema) {
-                notifier.info('Publish System Schema (RETIRE)');
-                logger.info('Publish System Schema (RETIRE)', ['GUARDIAN_SERVICE']);
-                schema.creator = userDID;
-                schema.owner = userDID;
-                const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
-                await new DataBaseHelper(SchemaCollection).save(item);
-            }
-        }
-
+        await checkAndPublishSchema(
+            SchemaEntity.STANDARD_REGISTRY,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.USER,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.RETIRE_TOKEN,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.ROLE,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
+        await checkAndPublishSchema(
+            SchemaEntity.USER_PERMISSIONS,
+            topicConfig,
+            userDID,
+            srUser,
+            messageServer,
+            logger,
+            notifier
+        );
         if (entity) {
-            schema = await new DataBaseHelper(SchemaCollection).findOne({
+            const schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity,
                 readonly: true,
                 topicId: topicConfig.topicId
@@ -447,8 +466,123 @@ async function createUserProfile(
             .sendMessage(regMessage)
     }
 
+    // -----------------------
+    // Publish Role Document -->
+    // -----------------------
+    if (user.role === UserRole.STANDARD_REGISTRY) {
+        messageServer.setTopicObject(topicConfig);
+        await createDefaultRoles(userDID, currentDidDocument, messageServer, notifier);
+    }
+
     notifier.completed();
     return userDID;
+}
+
+/**
+ * Create default roles
+ * @param username
+ * @param notifier
+ */
+async function createDefaultRoles(
+    did: string,
+    didDocument: CommonDidDocument,
+    messageServer: MessageServer,
+    notifier: INotifier
+): Promise<void> {
+    notifier.completedAndStart('Create roles');
+    const owner = EntityOwner.sr(did);
+    const users = new Users();
+    const vcHelper = new VcHelper();
+    const roles = [{
+        name: 'Default policy user',
+        description: 'Default policy user',
+        permissions: DefaultRoles,
+    }, {
+        name: 'Policy Approver',
+        description: '',
+        permissions: [
+            Permissions.ANALYTIC_POLICY_READ,
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.ANALYTIC_MODULE_READ,
+            Permissions.ANALYTIC_TOOL_READ,
+            Permissions.ANALYTIC_SCHEMA_READ,
+            Permissions.POLICIES_POLICY_REVIEW,
+            Permissions.SCHEMAS_SCHEMA_READ,
+            Permissions.MODULES_MODULE_READ,
+            Permissions.TOOLS_TOOL_READ,
+            Permissions.TOKENS_TOKEN_READ,
+            Permissions.ARTIFACTS_FILE_READ,
+            Permissions.SETTINGS_THEME_READ,
+            Permissions.SETTINGS_THEME_CREATE,
+            Permissions.SETTINGS_THEME_UPDATE,
+            Permissions.SETTINGS_THEME_DELETE,
+            Permissions.TAGS_TAG_READ,
+            Permissions.TAGS_TAG_CREATE,
+            Permissions.SUGGESTIONS_SUGGESTIONS_READ,
+            Permissions.ACCESS_POLICY_ASSIGNED
+        ]
+    }, {
+        name: 'Policy Manager',
+        description: '',
+        permissions: [
+            Permissions.ANALYTIC_DOCUMENT_READ,
+            Permissions.POLICIES_POLICY_MANAGE,
+            Permissions.POLICIES_POLICY_READ,
+            Permissions.TOKENS_TOKEN_MANAGE,
+            Permissions.TOKENS_TOKEN_READ,
+            Permissions.ACCOUNTS_ACCOUNT_READ,
+            Permissions.TAGS_TAG_READ,
+            Permissions.TAGS_TAG_CREATE,
+            Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+        ]
+    }, {
+        name: 'Policy User',
+        description: '',
+        permissions: DefaultRoles,
+    }];
+    const ids: string[] = [];
+    for (const config of roles) {
+        notifier.info(`Create role (${config.name})`);
+        const role = await users.createRole(config, owner);
+        let credentialSubject: any = {
+            id: GenerateUUIDv4(),
+            uuid: role.uuid,
+            name: role.name,
+            description: role.description,
+            permissions: role.permissions
+        }
+        const schema = await new DataBaseHelper(SchemaCollection).findOne({
+            entity: SchemaEntity.ROLE,
+            readonly: true,
+            topicId: messageServer.getTopic()
+        });
+        const schemaObject = new Schema(schema);
+        if (schemaObject) {
+            credentialSubject = SchemaHelper.updateObjectContext(
+                schemaObject,
+                credentialSubject
+            );
+        }
+        const document = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
+        const message = new GuardianRoleMessage(MessageAction.CreateRole);
+        message.setRole(credentialSubject);
+        message.setDocument(document);
+        await messageServer.sendMessage(message);
+        await new DataBaseHelper(VcDocumentCollection).save({
+            hash: message.hash,
+            owner: owner.owner,
+            creator: owner.creator,
+            document: message.document,
+            type: SchemaEntity.ROLE,
+            documentFields: [
+                'credentialSubject.0.id',
+                'credentialSubject.0.name',
+                'credentialSubject.0.uuid'
+            ],
+        });
+        ids.push(role.id);
+    }
+    await users.setDefaultRole(ids[0], owner.creator);
 }
 
 @Controller()

@@ -1,0 +1,210 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import 'primeicons/primeicons.css';
+@import 'assets/primeng/lara-light-blue/theme.css';
+@import 'primeng/resources/primeng.css';
+
+html,
+body {
+    height: 100%;
+    font-size: 14px;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family-inter);
+}
+
+.page-content {
+    position: absolute;
+    left: 0px;
+    top: var(--header-height, 0px);
+    bottom: 0px;
+    right: 0px;
+    overflow: auto;
+}
+
+.content {
+    background-color: #f8f8f8;
+    display: flex;
+    flex-direction: column;
+    padding: 50px 100px;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.full-width {
+    width: 100%;
+}
+
+@font-face {
+    font-family: 'Archivo Black';
+    src: url('assets/fonts/Archivo_Black/ArchivoBlack-Regular.ttf')
+        format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Bebas Neue';
+    src: url('assets/fonts/Bebas_Neue/BebasNeue-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+h1 {
+    font-size: 32px !important;
+    color: var(--color-black) !important;
+    font-weight: 600 !important;
+    margin: 24px 0;
+}
+
+.p-button {
+    padding: 6px 16px;
+    .p-button-label {
+        font-weight: 500;
+    }
+    &.p-button-link {
+        user-select: all;
+        .p-button-label {
+            font-weight: 400;
+        }
+    }
+}
+
+.custom-spinner .p-progress-spinner-circle {
+    stroke: var(--primary-color);
+    animation: p-progress-spinner-dash 1.5s ease-in-out infinite,
+        custom-spin 6s ease-in-out infinite;
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+    border-bottom-width: 4px !important;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+    border-width: 0;
+    background: unset;
+    padding: 1rem;
+}
+
+.p-tabview .p-tabview-nav {
+    background: unset;
+}
+
+p-tabview {
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    height: 100%;
+    max-height: 100%;
+
+    p-tabpanel:has(.p-tabview-panel:not([hidden])) {
+        overflow: hidden;
+        flex: 1;
+    }
+}
+
+.p-tabview {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .p-tabview-title {
+        font-weight: 500;
+    }
+
+    .p-tabview-panels {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        margin-top: 48px;
+        background: unset;
+        padding: 0;
+
+        .p-tabview-panel {
+            height: 100%;
+        }
+    }
+}
+
+@keyframes custom-spin {
+    100%,
+    0% {
+        stroke: var(--primary-color);
+    }
+    40% {
+        stroke: var(--primary-color);
+    }
+    66% {
+        stroke: var(--primary-color);
+    }
+    80%,
+    90% {
+        stroke: var(--primary-color);
+    }
+}
+
+*::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: #babac0;
+    border-radius: 5px;
+}
+*::-webkit-scrollbar-button {
+    display: none;
+}
+
+@keyframes p-progress-spinner-color {
+    from {
+        stroke: var(--primary-color);
+    }
+
+    to {
+        stroke: var(--primary-color);
+    }
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.p-selectbutton {
+    .p-button {
+        border: 1px solid var(--color-gray-2);
+        .p-button-icon-left {
+            color: var(--color-gray-3);
+        }
+    }
+    .p-button:focus {
+        box-shadow: none;
+    }
+    .p-button.p-highlight {
+        background: var(--color-gray-2);
+        border-color: var(--color-gray-2);
+        .p-button-icon-left {
+            color: var(--color-gray-4);
+        }
+    }
+}
+
+.p-input-icon {
+    font-size: 12px;
+}
+
+.p-inputtextarea {
+    width: 100%;
+}
