@@ -25,6 +25,9 @@
             ],
             "#auth": [
                 "auth/index.js"
+            ],
+            "#constants": [
+              "constants/index.js"
             ]
         }
     },

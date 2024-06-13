@@ -372,6 +372,40 @@ export class PolicyEngineService {
                 }
             });
 
+        /**
+         * Get policies V2 05.06.2024
+         */
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES_V2,
+            async (msg: { options: any, owner: IOwner }) => {
+                try {
+                    const { options, owner } = msg;
+                    const {fields, filters, pageIndex, pageSize } = options;
+                    const _filters: any = { ...filters };
+
+                    const otherOptions: any = { fields };
+
+                    const _pageSize = parseInt(pageSize, 10);
+                    const _pageIndex = parseInt(pageIndex, 10);
+                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = _pageSize;
+                        otherOptions.offset = _pageIndex * _pageSize;
+                    } else {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = 100;
+                    }
+                    await this.policyEngine.addAccessFilters(_filters, owner);
+
+                    const [policies, count] = await DatabaseServer.getPoliciesAndCount(_filters, otherOptions);
+                    for (const policy of policies) {
+                        await PolicyComponentsUtils.GetPolicyInfo(policy, owner.creator);
+                    }
+                    return new MessageResponse({ policies, count });
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES,
             async (msg: { model: Policy, owner: IOwner }): Promise<IMessageResponse<Policy>> => {
                 try {

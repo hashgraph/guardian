@@ -1,10 +1,11 @@
 import { Logger, IAuthUser } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, Version } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
 import { Guardians, SchemaUtils, UseCache, InternalException, EntityOwner } from '#helpers';
+import { MODULE_REQUIRED_PROPS } from '#constants';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
 
@@ -104,6 +105,66 @@ export class ModulesApi {
             };
             const guardians = new Guardians();
             const { items, count } = await guardians.getModule(options, new EntityOwner(user));
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get list of all modules V2 03.06.2024
+     */
+    @Get('/')
+    @Auth(
+        Permissions.MODULES_MODULE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all modules.',
+        description: 'Returns all modules.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: ModuleDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getModulesV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<ModuleDTO[]> {
+        try {
+            const options: any = {
+                fields: Object.values(MODULE_REQUIRED_PROPS),
+                pageIndex,
+                pageSize
+            };
+            const guardians = new Guardians();
+
+            const { items, count } = await guardians.getModuleV2(options, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error);

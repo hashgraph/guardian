@@ -59,6 +59,24 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get policies V2 05.06.2024
+     * @param filters
+     * @param owner
+     */
+    public async getPoliciesV2<T extends {
+        /**
+         * Policies array
+         */
+        policies: PolicyDTO[],
+        /**
+         * Total count
+         */
+        count: number
+    }>(options: any, owner: IOwner): Promise<T> {
+        return await this.sendMessage<T>(PolicyEngineEvents.GET_POLICIES_V2, { options, owner });
+    }
+
+    /**
      * Get Tokens Map
      * @param owner
      * @param status
