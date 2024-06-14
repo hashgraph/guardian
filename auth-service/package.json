@@ -63,6 +63,10 @@
   "module": "dist/index.js",
   "name": "auth-service",
   "packageManager": "yarn@1.22.21",
+  "imports": {
+    "#constants": "./dist/constants/index.js",
+    "#utils": "./dist/utils/index.js"
+  },
   "scripts": {
     "build": "gulp build:demo",
     "build:prod": "gulp build:prod",

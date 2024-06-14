@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { ISchema } from '@guardian/interfaces';
+import { headersV2 } from '../constants';
 
 /**
  * Services for working from modules.
@@ -16,7 +17,10 @@ export class ModulesService {
 
     public page(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
+            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, {
+                observe: 'response'
+                , headers: headersV2,
+            });
         }
         return this.http.get<any>(`${this.url}`, { observe: 'response' });
     }
