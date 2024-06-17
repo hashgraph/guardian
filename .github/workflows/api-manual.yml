@@ -5,7 +5,8 @@ on:
 
 jobs:
     buildAndTest:
-        runs-on: ubuntu-latest
+        name: Build and Test (Manual)
+        runs-on: [self-hosted, Linux, medium, ephemeral]
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
@@ -21,13 +22,27 @@ jobs:
                 node-version: [ 20.x ]
                 mongodb-version: [ 7.0.5 ]
         steps:
-            - uses: actions/checkout@v1
+            - name: Harden Runner
+              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout Code
+              uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
+              uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 #v4.0.2
               with:
                   node-version: ${{ matrix.node-version }}
+
+            - name: Setup Yarn
+              uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
+              with:
+                  cmd: install
+
             - name: Install dependencies
-              run: yarn
+              run: yarn install
+
             - name: Build packages
               run: |
                   pushd interfaces
@@ -57,14 +72,17 @@ jobs:
                   pushd api-gateway
                   yarn run build
                   popd
+
             - name: Start NatsMQ
-              uses: onichandame/nats-action@master
+              uses: onichandame/nats-action@a8144f9009c5f67c39edd6a50f9de659c44bd135 # v0.0.0
               with:
                   port: "4222"
+
             - name: Start MongoDB
-              uses: supercharge/mongodb-github-action@1.7.0
+              uses: supercharge/mongodb-github-action@5a87bd81f88e2a8b195f8b7b656f5cda1350815a # v1.11.0
               with:
                   mongodb-version: ${{ matrix.mongodb-version }}
+
             - name: Run Guardian
               run: |
                   pushd notification-service
@@ -110,8 +128,9 @@ jobs:
                   npm install --force
                   npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" --spec cypress/e2e/api-tests/**/*.cy.js            
                   popd
+
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@v1
+              uses: EnricoMi/publish-unit-test-result-action@30eadd5010312f995f0d3b3cff7fe2984f69409e # v2.16.1
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml
