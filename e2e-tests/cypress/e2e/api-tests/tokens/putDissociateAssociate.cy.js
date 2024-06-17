@@ -2,19 +2,23 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 context("Tokens",{ tags: '@tokens' }, () => {
+    const username = "Installer";
     before(() => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'policies/import/message',
-            body: {messageId: (Cypress.env('irec_policy'))},
+            body: {messageId: (Cypress.env('irec_policy')),
+            metadata: {
+                "tools": {}
+              }},
             headers: {
                 authorization,
             },
             timeout: 180000
         })
             .then(response => {
-                let firstPolicyId = response.body.at(-1).id
-                let firstPolicyStatus = response.body.at(-1).status
+                let firstPolicyId = response.body.at(0).id
+                let firstPolicyStatus = response.body.at(0).status
                 expect(firstPolicyStatus).to.equal('DRAFT')
                 cy.request({
                     method: 'PUT',
@@ -25,6 +29,17 @@ context("Tokens",{ tags: '@tokens' }, () => {
                 })
                     .then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
+                        cy.request({
+                            method: 'POST',
+                            url: API.ApiServer + 'permissions/users/' + username + '/policies/assign',
+                            headers: {authorization},
+                            body: {
+                                policyIds: [
+                                    firstPolicyId
+                                ],
+                                assign: true
+                            }
+                        })
                     })
             })
     })
@@ -32,7 +47,6 @@ context("Tokens",{ tags: '@tokens' }, () => {
 
     const authorization = Cypress.env("authorization");
     it("Associate and disassociate the user with the provided Hedera token", () => {
-        let username = "Installer";
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'accounts/login',
