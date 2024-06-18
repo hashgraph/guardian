@@ -66,6 +66,14 @@ export class Message {
         policyIds?: string;
         textSearch?: string;
         childSchemas?: any[];
+        owner?: string;
+        tools?: any[];
+        tokens?: string[];
+        vcCount?: number;
+        vpCount?: number;
+        tokensCount?: number;
+        hash?: string;
+        hashMap?: any;
     };
 
     @Property({ nullable: true })

@@ -33,38 +33,33 @@
             <div class="policy-id-field">ID</div>
             <div>Name</div>
             <div>Tags</div>
+            <div class="search-extra-column">VC</div>
+            <div class="search-extra-column">VP</div>
+            <div class="search-extra-column">Tokens</div>
             <div>Rate</div>
         </div>
         <div *ngIf="policy" class="search-result disabled-result">
             <div>
                 <input class="prop-input" type="checkbox" checked="true" disabled="true">
             </div>
-            <div class="policy-id-field">
-                {{policy.id}}
-            </div>
-            <div>
-                {{policy.name}}
-            </div>
-            <div>
-                {{policy._tags}}
-            </div>
-            <div>
-                
-            </div>
+            <div class="policy-id-field">{{policy.messageId || policy.id}}</div>
+            <div>{{policy.name}}</div>
+            <div>{{policy._tags}}</div>
+            <div class="search-extra-column">{{policy.vcCount}}</div>
+            <div class="search-extra-column">{{policy.vpCount}}</div>
+            <div class="search-extra-column">{{policy.tokensCount}}</div>
+            <div></div>
         </div>
         <div *ngFor="let item of _list" class="search-result" (click)="select(item)">
             <div>
                 <input class="prop-input" type="checkbox" [checked]="item._select" (change)="onSelect()">
             </div>
-            <div class="policy-id-field">
-                {{item.id}}
-            </div>
-            <div>
-                {{item.name}}
-            </div>
-            <div>
-                {{item._tags}}
-            </div>
+            <div class="policy-id-field">{{item.messageId || item.id}}</div>
+            <div>{{item.name}}</div>
+            <div>{{item._tags}}</div>
+            <div class="search-extra-column">{{item.vcCount}}</div>
+            <div class="search-extra-column">{{item.vpCount}}</div>
+            <div class="search-extra-column">{{item.tokensCount}}</div>
             <div class="{{item._color}} color-field">
                 {{item.rate}}%
             </div>

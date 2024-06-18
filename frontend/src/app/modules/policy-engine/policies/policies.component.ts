@@ -1103,7 +1103,17 @@ export class PoliciesComponent implements OnInit {
 
     public searchPolicy(policyId: any) {
         this.loading = true;
-        this.analyticsService.searchPolicies({ policyId }).subscribe(
+        const options = {
+            policyId,
+            type: 'Global',
+            // text,
+            // owner,
+            // minVcCount,
+            // minVpCount,
+            // minTokensCount,
+            // threshold
+        }
+        this.analyticsService.searchPolicies(options).subscribe(
             (data) => {
                 this.loading = false;
                 if (!data || !data.result) {

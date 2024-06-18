@@ -81,7 +81,8 @@ export class ComparePolicyDialog {
             });
         this.messageForm.valueChanges.subscribe(() => {
             this.messageIdError = false;
-        })
+        });
+        this.updateMap();
     }
 
     public onDelete(item: IItem, first: boolean) {

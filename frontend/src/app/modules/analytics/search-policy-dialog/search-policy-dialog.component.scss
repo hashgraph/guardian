@@ -214,13 +214,17 @@
     width: 1000px;
 
     .search-header, .search-result {
-        grid-template-columns: 40px 220px 360px 270px 60px;
+        grid-template-columns: 40px 245px 230px 200px 60px 60px 60px 60px;
     }
 }
 
 @media screen and (max-width: 1500px) {
     .g-dialog-content {
         width: 800px;
+
+        .search-extra-column {
+            display: none;
+        }
 
         .search-header, .search-result {
             grid-template-columns: 40px 220px 325px 105px 60px;
@@ -231,6 +235,10 @@
 @media screen and (max-width: 1000px) {
     .g-dialog-content {
         width: 580px;
+
+        .search-extra-column {
+            display: none;
+        }
 
         .search-header, .search-result {
             grid-template-columns: 40px 325px 105px 60px;

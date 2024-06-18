@@ -1,6 +1,7 @@
-import { DatabaseServer, ImportExportUtils, MessageServer, MessageType, PolicyImportExport, PolicyMessage, Users } from "@guardian/common";
-import { IOwner } from "@guardian/interfaces";
-import { IArtifactRawData, IPolicyData } from "../compare/interfaces/raw-data.interface";
+import { DatabaseServer, ImportExportUtils, MessageServer, MessageType, PolicyImportExport, PolicyMessage, Users } from '@guardian/common';
+import { IOwner } from '@guardian/interfaces';
+import { CompareOptions, IArtifactRawData, IPolicyData } from '../compare/interfaces/index.js';
+import { FileModel, PolicyModel, SchemaModel, TokenModel } from '../compare/index.js';
 
 export interface ILocalPolicy {
     type: 'id',
@@ -95,5 +96,40 @@ export class PolicyLoader {
         const result = await PolicyImportExport.parseZipFile(message.document, true);
         result.policy.id = messageId;
         return result;
+    }
+
+    /**
+     * Create model
+     * @param data
+     * @param options
+     * @public
+     * @static
+     */
+    public static async create(
+        data: IPolicyData,
+        options: CompareOptions
+    ): Promise<PolicyModel> {
+        //Policy
+        const policyModel = PolicyModel.fromEntity(data.policy, options);
+
+        //Schemas
+        const schemaModels = data.schemas
+            .map((schema) => SchemaModel.fromEntity(schema, data.policy, options));
+        policyModel.setSchemas(schemaModels);
+
+        //Tokens
+        const tokenModels = data.tokens
+            .map((token) => TokenModel.fromEntity(token, options));
+        policyModel.setTokens(tokenModels);
+
+        //Artifacts
+        const artifactsModels = data.artifacts
+            .map((artifact) => FileModel.fromEntity(artifact, options));
+        policyModel.setArtifacts(artifactsModels);
+
+        //Compare
+        policyModel.update();
+
+        return policyModel;
     }
 }

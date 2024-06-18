@@ -1246,10 +1246,10 @@ export class Guardians extends NatsService {
      * @param policyId
      */
     public async searchPolicies(
-        user: IAuthUser,
-        policyId: string
+        user: IOwner,
+        filters: any
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, { user, policyId });
+        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, { user, filters });
     }
 
     //#region Contracts

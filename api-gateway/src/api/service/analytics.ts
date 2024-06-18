@@ -76,13 +76,10 @@ export class AnalyticsApi {
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSearchPoliciesDTO
     ): Promise<SearchPoliciesDTO> {
-        const policyId = filters ? filters.policyId : null;
-        if (!policyId) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.searchPolicies(user, policyId);
+            return await guardians.searchPolicies(owner, filters);
         } catch (error) {
             await InternalException(error);
         }

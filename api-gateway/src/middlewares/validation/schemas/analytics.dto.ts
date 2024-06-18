@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString, Validate, IsOptional, IsObject } from 'class-validator';
+import { IsArray, IsString, Validate, IsOptional, IsObject, IsNumber } from 'class-validator';
 import { Examples } from '../examples.js';
 import { IsNumberOrString } from '../string-or-number.js';
 
@@ -222,11 +222,74 @@ export class FilterToolsDTO extends Options {
 export class FilterSearchPoliciesDTO {
     @ApiProperty({
         type: 'string',
-        required: true,
         example: Examples.DB_ID
     })
+    @IsOptional()
     @IsString()
-    policyId: string;
+    policyId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        enum: [
+            'Owned',
+            'Local',
+            'Global'
+        ],
+        example: 'Local'
+    })
+    @IsOptional()
+    @IsString()
+    type?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    owner?: string;
+
+    @ApiProperty({
+        type: 'number',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    minVcCount?: number;
+
+    @ApiProperty({
+        type: 'number',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    minVpCount?: number;
+
+    @ApiProperty({
+        type: 'number',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    minTokensCount?: number;
+
+    @ApiProperty({
+        type: 'string',
+        example: 'Policy name'
+    })
+    @IsOptional()
+    @IsString()
+    text?: string;
+
+    @ApiProperty({
+        type: 'number',
+        minimum: 0,
+        maximum: 100,
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    threshold?: number;
 }
 
 export class FilterSearchBlocksDTO {
