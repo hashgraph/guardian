@@ -32,12 +32,12 @@ context("Artifacts", { tags: "@artifacts" }, () => {
             },
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.OK);
-            policyId = response.body.at(-1).id;
-            cy.fixture("remoteWorkGHGPolicy.policy", 'binary')
+            policyId = response.body.at(0).id;
+            cy.fixture("artifactsImport.policy", 'binary')
                 .then((file) => Cypress.Blob.binaryStringToBlob(file))
                 .then((blob) => {
                     var formdata = new FormData();
-                    formdata.append("artifacts", blob, "remoteWorkGHGPolicy.policy");
+                    formdata.append("artifacts", blob, "artifactsImport.policy");
                     cy.request({
                         url: API.ApiServer + API.Artifacts + policyId,
                         method: METHOD.POST,

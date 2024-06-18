@@ -1,5 +1,10 @@
 # 💻 Roles and Permissions User Guide
 
+1. [Step By Step Process](roles-and-permissions-user-guide.md#id-1.-step-by-step-process)
+2. [Demo Video](roles-and-permissions-user-guide.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 Roles and permissions allow for precise configuration of user access rights to Guardian functionality.
 
 1. **Permissions format: {category}\_{entity}\_{action}**
@@ -119,4 +124,8 @@ When the list of rules assigned to the user is updated, the following messages p
 }
 ```
 
-The messages are accompanied by assigned VC document with the list of permissions the role contains
+The messages are accompanied by assigned VC document with the list of permissions the role contains.
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/4bCrxd\_EbTs)

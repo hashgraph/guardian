@@ -16,8 +16,8 @@ context(" Policies", { tags: '@policies' }, () => {
           },
           timeout: 180000
         }).then(response => {
-          let firstPolicyId = response.body.at(-1).id
-          let firstPolicyStatus = response.body.at(-1).status
+          let firstPolicyId = response.body.at(0).id
+          let firstPolicyStatus = response.body.at(0).status
           expect(firstPolicyStatus).to.equal('DRAFT')
           cy.request({
             method: 'PUT',
@@ -27,8 +27,8 @@ context(" Policies", { tags: '@policies' }, () => {
             timeout: 600000
           })
             .then((response) => {
-              let secondPolicyId = response.body.policies.at(-1).id
-              let policyStatus = response.body.policies.at(-1).status
+              let secondPolicyId = response.body.policies.at(0).id
+              let policyStatus = response.body.policies.at(0).status
               expect(response.status).to.eq(200)
               expect(response.body).to.not.be.oneOf([null, ""])
               expect(firstPolicyId).to.equal(secondPolicyId)
