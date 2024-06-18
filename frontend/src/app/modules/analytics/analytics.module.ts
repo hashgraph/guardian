@@ -15,6 +15,12 @@ import { CompareDocumentComponent } from './compare-document/compare-document.co
 import { CompareComponent } from './compare/compare.component';
 import { CompareToolComponent } from './compare-tool/compare-tool.component';
 import { CompareRecordComponent } from './compare-record/compare-record.component';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @NgModule({
     declarations: [
@@ -35,7 +41,13 @@ import { CompareRecordComponent } from './compare-record/compare-record.componen
         MaterialModule,
         CommonComponentsModule,
         TagEngineModule,
-        AppRoutingModule
+        AppRoutingModule,
+        ButtonModule,
+        DropdownModule,
+        DynamicDialogModule,
+        CheckboxModule,
+        InputTextModule,
+        AngularSvgIconModule
     ],
     exports: [
         CompareComponent,
@@ -48,6 +60,9 @@ import { CompareRecordComponent } from './compare-record/compare-record.componen
         CompareDocumentComponent,
         CompareToolComponent,
         CompareRecordComponent
+    ],
+    providers: [
+        DialogService,
     ]
 })
 export class CompareModule { }

@@ -66,6 +66,15 @@
                 </p-button>
                 <p-button
                     *ngIf="user.ANALYTIC_POLICY_READ"
+                    (click)="searchPolicy()"
+                    [pTooltip]="'Search policies'"
+                    class="toolbar-btn-secondary"
+                    styleClass="p-button-outlined"
+                    tooltipPosition="bottom">
+                    <svg-icon src="/assets/images/icons/search.svg" svgClass="primary-color"></svg-icon>
+                </p-button>
+                <p-button
+                    *ngIf="user.ANALYTIC_POLICY_READ"
                     (click)="comparePolicy()"
                     [pTooltip]="'Compare'"
                     class="toolbar-btn-secondary"

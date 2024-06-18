@@ -185,7 +185,6 @@ export class PoliciesComponent implements OnInit {
         policyName: new FormControl(''),
         tag: new FormControl(''),
     }, (fg) => {
-
         for (const key in (fg as FormGroup).controls) {
             if (!fg.get(key)) {
                 continue;
@@ -1101,46 +1100,76 @@ export class PoliciesComponent implements OnInit {
         return this.tagOptions.length > 0;
     }
 
-    public searchPolicy(policyId: any) {
-        this.loading = true;
-        const options = {
-            policyId,
-            type: 'Global',
-            // text,
-            // owner,
-            // minVcCount,
-            // minVpCount,
-            // minTokensCount,
-            // threshold
-        }
-        this.analyticsService.searchPolicies(options).subscribe(
-            (data) => {
-                this.loading = false;
-                if (!data || !data.result) {
-                    return;
-                }
-                const { target, result } = data;
-                const list = result.sort((a: any, b: any) =>
-                    a.rate > b.rate ? -1 : 1
-                );
-                const policy = target;
-                this.dialog.open(SearchPolicyDialog, {
-                    panelClass: 'g-dialog',
-                    disableClose: true,
-                    autoFocus: false,
-                    data: {
-                        header: 'Result',
-                        policy,
-                        policyId,
-                        list,
+    public searchPolicy(policyId?: any) {
+        const item = this.policies?.find((e) => e.id === policyId);
+        const dialogRef = this.dialogService.open(SearchPolicyDialog, {
+            showHeader: false,
+            width: '1100px',
+            styleClass: 'custom-dialog custom-header-dialog',
+            data: {
+                policy: item
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                const items = btoa(JSON.stringify({
+                    parent: null,
+                    items: result
+                }));
+                this.router.navigate(['/compare'], {
+                    queryParams: {
+                        type: 'policy',
+                        items
                     },
                 });
-            },
-            ({ message }) => {
-                this.loading = false;
-                console.error(message);
             }
-        );
+        });
+
+
+
+
+
+
+
+        // this.loading = true;
+        // const options = {
+        //     policyId,
+        //     type: 'Global',
+        //     // text,
+        //     // owner,
+        //     // minVcCount,
+        //     // minVpCount,
+        //     // minTokensCount,
+        //     // threshold
+        // }
+        // this.analyticsService.searchPolicies(options).subscribe(
+        //     (data) => {
+        //         this.loading = false;
+        //         if (!data || !data.result) {
+        //             return;
+        //         }
+        //         const { target, result } = data;
+        //         const list = result.sort((a: any, b: any) =>
+        //             a.rate > b.rate ? -1 : 1
+        //         );
+        //         const policy = target;
+        //         this.dialog.open(SearchPolicyDialog, {
+        //             panelClass: 'g-dialog',
+        //             disableClose: true,
+        //             autoFocus: false,
+        //             data: {
+        //                 header: 'Result',
+        //                 policy,
+        //                 policyId,
+        //                 list,
+        //             },
+        //         });
+        //     },
+        //     ({ message }) => {
+        //         this.loading = false;
+        //         console.error(message);
+        //     }
+        // );
     }
 
     public openSuggestionsDialog() {
