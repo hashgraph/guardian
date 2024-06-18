@@ -11817,8 +11817,43 @@ components:
         policyId:
           type: string
           example: '000000000000000000000001'
+        type:
+          type: string
+          enum:
+            - Owned
+            - Local
+            - Global
+          example: Local
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        minVcCount:
+          type: number
+          example: 0
+        minVpCount:
+          type: number
+          example: 0
+        minTokensCount:
+          type: number
+          example: 0
+        text:
+          type: string
+          example: Policy name
+        threshold:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 0
       required:
         - policyId
+        - type
+        - owner
+        - minVcCount
+        - minVpCount
+        - minTokensCount
+        - text
+        - threshold
     SearchPoliciesDTO:
       type: object
       properties:
