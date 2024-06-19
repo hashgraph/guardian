@@ -50,7 +50,11 @@ export class ThemesApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
 
-            await this.cacheService.invalidate(getCacheKey([req.url], req.user));
+            const invalidedCacheKeys = [
+                `${PREFIXES.THEMES}`
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user));
 
             return await guardians.createTheme(theme, owner);
         } catch (error) {
@@ -110,7 +114,8 @@ export class ThemesApi {
             }
 
             const invalidedCacheKeys = [
-              `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
+                `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
+                `${PREFIXES.THEMES}`
             ];
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
@@ -163,7 +168,8 @@ export class ThemesApi {
             const guardians = new Guardians();
 
             const invalidedCacheKeys = [
-              `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
+                `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
+                `${PREFIXES.THEMES}`
             ];
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
@@ -197,7 +203,7 @@ export class ThemesApi {
     })
     @ApiExtraModels(ThemeDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    // @UseCache()
+    @UseCache()
     async getThemes(
         @AuthUser() user: IAuthUser
     ): Promise<ThemeDTO[]> {
@@ -249,7 +255,11 @@ export class ThemesApi {
         try {
             const owner = new EntityOwner(user);
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user))
+            const invalidedCacheKeys = [
+                `${PREFIXES.THEMES}`
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return await guardian.importThemeFile(zip, owner);
         } catch (error) {
