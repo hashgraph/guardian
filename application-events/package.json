@@ -30,7 +30,7 @@
         "express": "^4.17.3",
         "http-errors": "^2.0.0",
         "js-yaml": "^4.1.0",
-        "mongodb": "6.5.0",
+        "mongodb": "6.7.0",
         "mongoose": "^6.10.0",
         "morgan": "^1.10.0",
         "nats": "^2.12.1",
