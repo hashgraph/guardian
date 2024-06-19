@@ -197,7 +197,7 @@ export class ThemesApi {
     })
     @ApiExtraModels(ThemeDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    // @UseCache()
     async getThemes(
         @AuthUser() user: IAuthUser
     ): Promise<ThemeDTO[]> {
