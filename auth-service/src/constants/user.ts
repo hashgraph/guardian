@@ -10,3 +10,12 @@ export const REQUIRED_PROPS = {
   PERMISSIONS: 'permissions',
   PERMISSION_GROUP: 'permissionsGroup'
 };
+
+export const REGISTER_REQUIRED_PROPS = {
+    STATUS_CODE: 'status_code',
+    REASON: 'reason',
+    USER_NAME: 'username',
+    ID: 'id',
+    PERMISSIONS: 'permissions',
+    PERMISSION_GROUP: 'permissionsGroup'
+};

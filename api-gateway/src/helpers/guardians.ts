@@ -140,7 +140,7 @@ export class Guardians extends NatsService {
     /**
      * Return tokens
      *
-     * @param {string} [did]
+     * @param owner
      * @param {string} [pageIndex]
      * @param {string} [pageSize]
      *
@@ -152,6 +152,25 @@ export class Guardians extends NatsService {
         pageSize?: number
     ): Promise<ResponseAndCount<IToken>> {
         return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE, { owner, pageIndex, pageSize });
+    }
+
+    /**
+     * Return tokens V2 10.06.2024
+     *
+     * @param fields
+     * @param owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ResponseAndCount<IToken>} - tokens
+     */
+    public async getTokensPageV2(
+        fields: string[],
+        owner?: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<IToken>> {
+        return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE_V2, { fields, owner, pageIndex, pageSize });
     }
 
     /**
@@ -531,6 +550,16 @@ export class Guardians extends NatsService {
 
     /**
      * Return schemas
+     * @param {any} options
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getSchemasByOwnerV2(options: any, owner: IOwner): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS_V2, { options, owner });
+    }
+
+    /**
+     * Return schemas
      *
      * @param {Object} uuid - filters
      *
@@ -844,6 +873,26 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return schemas V2 03.06.2024
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getSystemSchemasV2(
+        fields: string[],
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS_V2, {
+            fields,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
      * Changing the status of a schema on active.
      *
      * @param {string} id - schema id
@@ -919,6 +968,17 @@ export class Guardians extends NatsService {
      */
     public async getArtifacts(options: any): Promise<any> {
         return await this.sendMessage(MessageAPI.GET_ARTIFACTS, options);
+    }
+
+    /**
+     * Get Policy Artifacts V2 04.06.2024
+     *
+     * @param {any} options
+     *
+     * @returns - Artifact
+     */
+    public async getArtifactsV2(options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS_V2, options);
     }
 
     /**
@@ -1771,6 +1831,10 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GET_MODULES, { filters, owner });
     }
 
+    public async getModuleV2(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_MODULES_V2, { filters, owner });
+    }
+
     /**
      * Delete module
      * @param uuid
@@ -1919,6 +1983,17 @@ export class Guardians extends NatsService {
      */
     public async getTools(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(MessageAPI.GET_TOOLS, { filters, owner });
+    }
+
+    /**
+     * Return tools V2 05.06.2024
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getToolsV2(fields: string[], filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_TOOLS_V2, { fields, filters, owner });
     }
 
     /**
@@ -2160,6 +2235,29 @@ export class Guardians extends NatsService {
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Return tag schemas V2
+     * @param fields
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getTagSchemasV2(
+        fields: string[],
+        owner: IOwner,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS_V2, {
+            fields,
             owner,
             pageIndex,
             pageSize

@@ -1,10 +1,11 @@
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
 import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, getCacheKey, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
+import { TOOL_REQUIRED_PROPS } from '#constants';
 
 @Controller('tools')
 @ApiTags('tools')
@@ -159,6 +160,66 @@ export class ToolsApi {
             const { items, count } = await guardians.getTools({
                 pageIndex,
                 pageSize
+            }, owner);
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get tools V2 05.06.2024
+     */
+    @Get('/')
+    @Auth(
+        Permissions.TOOLS_TOOL_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all tools.',
+        description: 'Returns all tools.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: ToolDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getToolsV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<ToolDTO[]> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const fields: string[] = Object.values(TOOL_REQUIRED_PROPS);
+
+            const { items, count } = await guardians.getToolsV2(fields, {
+                pageIndex,
+                pageSize,
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {

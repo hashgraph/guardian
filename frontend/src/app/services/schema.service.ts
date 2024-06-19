@@ -1,9 +1,10 @@
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
+import { headersV2 } from '../constants';
 
 type ITask = { taskId: string, expectation: number };
 
@@ -17,7 +18,7 @@ export class SchemaService {
 
     constructor(
         private http: HttpClient,
-        private auth: AuthService
+        private auth: AuthService,
     ) {
     }
 
@@ -53,19 +54,21 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
-    public getSubSchemas(
+    public getSchemaWithSubSchemas(
+        category: string,
+        schemaId?: string,
         topicId?: string,
-        category?: SchemaCategory
-    ): Observable<any[]> {
-        if (topicId && category) {
-            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}&category=${category}`);
-        } else if (topicId) {
-            return this.http.get<any[]>(`${this.url}/list/sub?topicId=${topicId}`);
-        } else if (category) {
-            return this.http.get<any[]>(`${this.url}/list/sub?category=${category}`);
-        } else {
-            return this.http.get<any[]>(`${this.url}/list/sub`);
+    ): Observable<Record<string, any>> {
+        let url = `${this.url}/schema-with-sub-schemas?category=${category}`;
+
+        if (schemaId) {
+            url += `&schemaId=${schemaId}`;
         }
+        if (topicId) {
+            url += `&topicId=${topicId}`;
+        }
+
+        return this.http.get<any[]>(url);
     }
 
     public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {
@@ -76,11 +79,11 @@ export class SchemaService {
         category?: SchemaCategory,
         topicId?: string,
         pageIndex?: number,
-        pageSize?: number
+        pageSize?: number,
     ): Observable<HttpResponse<ISchema[]>> {
         let url = `${this.url}`;
         if (topicId) {
-            url += `/${topicId}`
+            url += `/${topicId}`;
         }
         if (category) {
             url += `?category=${category}`;
@@ -88,7 +91,7 @@ export class SchemaService {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
             url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
         }
-        return this.http.get<any>(url, { observe: 'response' });
+        return this.http.get<any>(url, { observe: 'response', headers: headersV2 });
     }
 
     public getSchemasByType(type: string): Observable<ISchema> {
@@ -113,7 +116,7 @@ export class SchemaService {
 
     public exportInFile(id: string): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/${id}/export/file`, {
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
         });
     }
 
@@ -128,8 +131,8 @@ export class SchemaService {
     public pushImportByFile(schemasFile: any, topicId: any): Observable<ITask> {
         return this.http.post<ITask>(`${this.url}/push/${topicId}/import/file`, schemasFile, {
             headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
+                'Content-Type': 'binary/octet-stream',
+            },
         });
     }
 
@@ -144,8 +147,8 @@ export class SchemaService {
     public previewByFile(schemasFile: any): Observable<ISchema[]> {
         return this.http.post<any[]>(`${this.url}/import/file/preview`, schemasFile, {
             headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
+                'Content-Type': 'binary/octet-stream',
+            },
         });
     }
 
@@ -160,7 +163,7 @@ export class SchemaService {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
         }
-        return this.http.get<any>(url, { observe: 'response' });
+        return this.http.get<any>(url, { observe: 'response', headers: headersV2 });
     }
 
     public deleteSystemSchema(id: string): Observable<any> {
@@ -198,29 +201,29 @@ export class SchemaService {
 
     public exportToExcel(id: string): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/${id}/export/xlsx`, {
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
         });
     }
 
     public downloadExcelExample(): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/export/template`, {
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
         });
     }
 
     public previewByXlsx(file: any): Observable<any> {
         return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, file, {
             headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
+                'Content-Type': 'binary/octet-stream',
+            },
         });
     }
 
     public pushImportByXlsx(schemasFile: any, topicId: any): Observable<{ taskId: string, expectation: number }> {
         return this.http.post<ITask>(`${this.url}/push/${topicId}/import/xlsx`, schemasFile, {
             headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
+                'Content-Type': 'binary/octet-stream',
+            },
         });
     }
 }

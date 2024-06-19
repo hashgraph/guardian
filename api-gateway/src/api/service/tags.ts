@@ -1,10 +1,11 @@
 import { IAuthUser } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
+import { SCHEMA_REQUIRED_PROPS } from '#constants';
 
 @Controller('tags')
 @ApiTags('tags')
@@ -312,6 +313,68 @@ export class TagsApi {
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner.creator;
             });
+            // res.locals.data = SchemaUtils.toOld(items)
+            return res
+                .header('X-Total-Count', count)
+                .send(SchemaUtils.toOld(items));
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get list of all schemas V2 03.06.2024
+     */
+    @Get('/schemas')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all tag schemas.',
+        description: 'Returns all tag schemas.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: SchemaDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    // @UseCache({ isExpress: true })
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getSchemasV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const fields: string[] = Object.values(SCHEMA_REQUIRED_PROPS)
+
+            const { items, count } = await guardians.getTagSchemasV2(fields, owner, pageIndex, pageSize);
+            items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
             // res.locals.data = SchemaUtils.toOld(items)
             return res
                 .header('X-Total-Count', count)
