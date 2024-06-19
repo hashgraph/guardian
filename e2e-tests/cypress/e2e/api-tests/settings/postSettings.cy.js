@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 
 context('Settings', {tags: '@settings'}, () => {
     const authorization = Cypress.env("authorization");
-    it('Set settings', () => {
+    it('Set settings', { tags: ['smoke'] }, () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'settings',

@@ -108,7 +108,7 @@ context("Modules", { tags: "@modules" }, () => {
         });
     });
 
-    it("Deletes the module with the provided module ID", () => {
+    it("Deletes the module with the provided module ID", { tags: ['smoke'] }, () => {
         cy.request({
             url: API.ApiServer + API.ListOfAllModules + moduleId,
             method: METHOD.DELETE,

@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Modules", { tags: '@modules' },() => {
     const authorization = Cypress.env("authorization");
 
-    it("Import module from IPFS", () => {
+    it("Import module from IPFS", { tags: ['smoke'] }, () => {
         cy.fixture("module_1682969031678.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({

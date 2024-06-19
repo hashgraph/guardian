@@ -1,4 +1,4 @@
-import {STATUS_CODE} from "../../../support/api/api-const";
+import {STATUS_CODE, METHOD} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
@@ -89,7 +89,7 @@ context("Tags", {tags: '@tags'}, () => {
         });
     })
 
-    it("Get all schemas", () => {
+    it("Get all schemas", { tags: ['smoke'] }, () => {
         //get published tag schemas
         cy.request({
             method: METHOD.GET,

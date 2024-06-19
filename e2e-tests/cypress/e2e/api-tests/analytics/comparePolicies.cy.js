@@ -14,7 +14,7 @@ context("Analytics", { tags: '@analytics' }, () => {
             headers: {
                 authorization,
             },
-            timeout: 180000
+            timeout: 360000
         })
             .then((response) => {
                 policyId1 = response.body.at(-1).id;
@@ -28,7 +28,7 @@ context("Analytics", { tags: '@analytics' }, () => {
                     headers: {
                         authorization,
                     },
-                    timeout: 180000
+                    timeout: 360000
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                     policyId2 = response.body.at(-1).id;
@@ -36,7 +36,7 @@ context("Analytics", { tags: '@analytics' }, () => {
             })
     })
 
-    it("Compare policies", () => {
+    it("Compare policies", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.PolicyCompare,

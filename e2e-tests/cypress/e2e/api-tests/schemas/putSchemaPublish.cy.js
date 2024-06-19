@@ -95,7 +95,7 @@ context("Schemas", { tags: '@schemas' }, () => {
         });
     })
 
-    it("Publish the schema with the provided (internal) schema ID", () => {
+    it("Publish the schema with the provided (internal) schema ID", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas,

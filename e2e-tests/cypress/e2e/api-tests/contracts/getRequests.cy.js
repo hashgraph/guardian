@@ -3,8 +3,7 @@ import API from "../../../support/ApiUrls";
 
 context("Contracts", { tags: '@contracts' },() => {
     const authorization = Cypress.env("authorization");
-    //const username = Math.floor(Math.random() * 999) + "User";
-    const username = "4User";
+    const username = Math.floor(Math.random() * 999) + "User";
     const contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
     const contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
     const optionKey = "option"
@@ -140,7 +139,7 @@ context("Contracts", { tags: '@contracts' },() => {
     }
 
     const whileBalanceVerifying = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
+        if (attempts < 10) {
             attempts++
             let balance
             cy.wait(3000)
@@ -209,7 +208,7 @@ context("Contracts", { tags: '@contracts' },() => {
             })
                 .then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId = response.body.at(-1).id;
+                    policyId = response.body.at(0).id;
                 })
 
             //Get token(Irec token) draft id to update it
@@ -755,7 +754,42 @@ context("Contracts", { tags: '@contracts' },() => {
                             authorization: accessToken
                         }
                     }
+                    whileBalanceVerifying("10", requestForBalance, 0)
+                })
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.AccessToken,
+                    body: {
+                        refreshToken: response.body.refreshToken
+                    }
+                }).then((response) => {
+                    accessToken = "Bearer " + response.body.accessToken
 
+                    let requestForBalance = {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.ListOfTokens,
+                        headers: {
+                            authorization: accessToken
+                        }
+                    }
+                    whileBalanceVerifying("10", requestForBalance, 0)
+                })
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.AccessToken,
+                    body: {
+                        refreshToken: response.body.refreshToken
+                    }
+                }).then((response) => {
+                    accessToken = "Bearer " + response.body.accessToken
+
+                    let requestForBalance = {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.ListOfTokens,
+                        headers: {
+                            authorization: accessToken
+                        }
+                    }
                     whileBalanceVerifying("10", requestForBalance, 0)
                 })
             })
@@ -796,7 +830,7 @@ context("Contracts", { tags: '@contracts' },() => {
             whileWipeRequestCreating(wContractId, requestForWipeRequestCreationProgress, 0)
         })
 
-        it("Get wipe request", () => {
+        it("Get wipe request", { tags: ['smoke'] }, () => {
             cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.WipeRequests,
@@ -812,7 +846,7 @@ context("Contracts", { tags: '@contracts' },() => {
             });
         });
 
-        it("Get retire request", () => {
+        it("Get retire request", { tags: ['smoke'] }, () => {
             let wipeRequestId, poolId
             cy.request({
                 method: METHOD.GET,

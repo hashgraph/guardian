@@ -5,7 +5,7 @@ context("Tokens", { tags: "@tokens" }, () => {
     const authorization = Cypress.env("authorization");
     const user = "Installer";
 
-    it("Set and unset the KYC flag for the user", () => {
+    it("Set and unset the KYC flag for the user", { tags: ['smoke'] }, () => {
         //grant kyc
         cy.request({
             method: 'POST',

@@ -4,7 +4,7 @@ import API from "../../../support/ApiUrls";
 context("Modules", { tags: '@modules' },() => {
     const authorization = Cypress.env("authorization");
 
-    it("import module ipfs", () => {
+    it("import module ipfs", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,

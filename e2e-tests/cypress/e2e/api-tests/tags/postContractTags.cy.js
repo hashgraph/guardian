@@ -1,4 +1,4 @@
-import {STATUS_CODE} from "../../../support/api/api-const";
+import {STATUS_CODE, METHOD} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
@@ -27,7 +27,7 @@ context("Tags", {tags: '@tags'}, () => {
     });
 
 
-    it("Create new tag(contract)", () => {
+    it("Create new tag(contract)", { tags: ['smoke'] }, () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + API.Tags,

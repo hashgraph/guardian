@@ -5,7 +5,7 @@ context("Tokens", { tags: "@tokens" }, () => {
     const authorization = Cypress.env("authorization");
     const user = "Installer";
 
-    it("Freeze and unfreeze transfers of the specified token for the user", () => {
+    it("Freeze and unfreeze transfers of the specified token for the user", { tags: ['smoke'] }, () => {
         //associate token
         cy.request({
             method: 'POST',

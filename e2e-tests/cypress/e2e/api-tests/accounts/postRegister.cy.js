@@ -1,9 +1,8 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-
-context("Accounts", { tags: "@accounts" }, () => {
-    it("Register and login as new user", () => {
+context("Accounts", { tags: ['accounts'] }, () => {
+    it("Register and login as new user", { tags: ['smoke'] }, () => {
         const name = Math.floor(Math.random() * 999) + "PostRegTest";
         cy.request({
             method: METHOD.POST,

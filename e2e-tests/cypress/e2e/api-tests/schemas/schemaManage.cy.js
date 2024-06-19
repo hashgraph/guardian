@@ -49,7 +49,7 @@ context("Schemas", {tags: '@schemas'}, () => {
         });
     });
 
-    it("Delete the schema with the provided schema ID", () => {
+    it("Delete the schema with the provided schema ID", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Schemas + topicUid,

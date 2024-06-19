@@ -87,7 +87,7 @@ context("Policies", { tags: "@policies" }, () => {
         });
     });
 
-    it("Deletes the policy with the provided ID", () => {
+    it("Deletes the policy with the provided ID", { tags: ['smoke'] }, () => {
         cy.request({
             url: API.ApiServer + API.Policies + API.Async + policyId,
             method: METHOD.DELETE,

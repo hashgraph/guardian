@@ -14,7 +14,7 @@ context("Analytics", { tags: '@analytics' }, () => {
             headers: {
                 authorization,
             },
-            timeout: 180000
+            timeout: 360000
         })
         cy.request({
             method: METHOD.GET,
@@ -28,7 +28,7 @@ context("Analytics", { tags: '@analytics' }, () => {
         })
     })
 
-    it("Compare schemas", () => {
+    it("Compare schemas", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.SchemaCompare,

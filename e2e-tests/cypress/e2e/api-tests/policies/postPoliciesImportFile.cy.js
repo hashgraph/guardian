@@ -5,7 +5,7 @@ import API from "../../../support/ApiUrls";
 context('Policies', { tags: '@policies' }, () => {
     const authorization = Cypress.env('authorization');
 
-    it('Imports new policy and all associated artifacts from file', () => {
+    it('Imports new policy and all associated artifacts from file', { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.PolicisImportMsg,

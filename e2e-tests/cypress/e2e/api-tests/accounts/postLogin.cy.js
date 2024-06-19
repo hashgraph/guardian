@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 
 context('Accounts',  { tags: '@accounts' }, () => {
-    it('Login as Standard Registry', () => {
+    it('Login as Standard Registry', { tags: ['smoke'] }, () => {
         const username = "StandardRegistry";
         cy.request({
             method: METHOD.POST,

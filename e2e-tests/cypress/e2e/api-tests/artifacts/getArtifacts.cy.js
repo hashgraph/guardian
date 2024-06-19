@@ -22,7 +22,7 @@ context("Artifacts", { tags: '@artifacts' },() => {
             })
     })
 
-    it("Get list of artifacts", () => {
+    it("Get list of artifacts", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Artifacts,

@@ -34,7 +34,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
            })
     });
 
-    it("Delete artifact", () => {
+    it("Delete artifact", { tags: ['smoke'] }, () => {
         cy.request({
             url: API.ApiServer + API.Artifacts + artifactId,
             method: METHOD.DELETE,

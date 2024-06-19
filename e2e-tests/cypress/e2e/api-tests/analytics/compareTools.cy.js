@@ -36,7 +36,7 @@ context("Analytics", { tags: '@analytics' }, () => {
             })
     })
 
-    it("Compare tools", () => {
+    it("Compare tools", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare,

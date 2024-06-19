@@ -18,7 +18,8 @@ context("Analytics", { tags: '@analytics' }, () => {
                     timeout: 180000,
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    moduleId1 = response.body.id;
+                    let json = JSON.parse(new TextDecoder("utf-8").decode(response.body))
+                    moduleId1 = json.id;
                 });
             });
         cy.request({
@@ -37,7 +38,7 @@ context("Analytics", { tags: '@analytics' }, () => {
         });
     })
 
-    it("Compare modules", () => {
+    it("Compare modules", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ModuleCompare,

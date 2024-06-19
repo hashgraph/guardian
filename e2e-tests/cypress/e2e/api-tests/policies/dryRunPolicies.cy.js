@@ -19,7 +19,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         });
     });
 
-    it("Run policy without making any persistent changes or executing transaction", () => {
+    it("Run policy without making any persistent changes or executing transaction", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.GET,
             url:  API.ApiServer + API.Policies,
