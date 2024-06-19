@@ -435,6 +435,9 @@ export class ToolsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
 
+            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.publishTool(id, owner, tool);
         } catch (error) {
             await InternalException(error);
@@ -494,6 +497,9 @@ export class ToolsApi {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
+
+        const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         return task;
     }
@@ -790,9 +796,6 @@ export class ToolsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
 
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
-
             return await guardian.importToolFile(body, owner);
         } catch (error) {
             await InternalException(error);
@@ -860,9 +863,6 @@ export class ToolsApi {
                 metadata?.buffer && JSON.parse(metadata.buffer.toString())
             );
 
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
-
             return tool;
         } catch (error) {
             await InternalException(error);
@@ -912,9 +912,6 @@ export class ToolsApi {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
-
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return task;
         } catch (error) {
@@ -999,9 +996,6 @@ export class ToolsApi {
                     });
                 }
             );
-
-            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return task;
         } catch (error) {
