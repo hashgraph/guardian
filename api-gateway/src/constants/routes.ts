@@ -4,5 +4,5 @@ export const PREFIXES = {
   THEMES: '/themes/',
   SCHEMES: '/schemes/',
   TOOLS: '/tools/',
-  TOOLS_MENU_ALL: '/tools/menu/all/',
+  TOOLS_MENU_ALL: '/tools/menu/all',
 };

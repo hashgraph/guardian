@@ -113,7 +113,7 @@ export class ThemesApi {
               `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
             ];
 
-            await this.cacheService.invalidate(getCacheKey([req.url, invalidedCacheKeys], user))
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return await guardians.updateTheme(themeId, theme, owner);
         } catch (error) {
@@ -166,7 +166,7 @@ export class ThemesApi {
               `${PREFIXES.THEMES}${req.params.themeId}/export/file`,
             ];
 
-            await this.cacheService.invalidate(getCacheKey([req.url, invalidedCacheKeys], req.user))
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return await guardians.deleteTheme(themeId, owner);
         } catch (error) {
@@ -242,11 +242,15 @@ export class ThemesApi {
     @HttpCode(HttpStatus.CREATED)
     async importTheme(
         @AuthUser() user: IAuthUser,
-        @Body() zip: any
+        @Body() zip: any,
+        @Req() req
     ): Promise<ThemeDTO> {
         const guardian = new Guardians();
         try {
             const owner = new EntityOwner(user);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
+
             return await guardian.importThemeFile(zip, owner);
         } catch (error) {
             await InternalException(error);
