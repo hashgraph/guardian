@@ -21,6 +21,7 @@ import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @NgModule({
     declarations: [
@@ -47,7 +48,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         DynamicDialogModule,
         CheckboxModule,
         InputTextModule,
-        AngularSvgIconModule
+        AngularSvgIconModule,
+        InputNumberModule
     ],
     exports: [
         CompareComponent,

@@ -131,6 +131,7 @@ async function localSearch(
             }
         }
         policies = policies.filter((policy) => policy.rate >= options.blocks.threshold);
+        policies.sort((a, b) => a.rate > b.rate ? -1 : 1);
     }
     return policies.map((policy) => {
         return {

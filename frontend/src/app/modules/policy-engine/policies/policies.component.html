@@ -467,14 +467,6 @@
         </p-button>
 
         <p-button
-            [disabled]="true"
-            label="Search policies"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined">
-            <svg-icon src="/assets/images/icons/cloud.svg" svgClass="disabled-color"></svg-icon>
-        </p-button>
-
-        <p-button
             *ngIf="user.ANALYTIC_POLICY_READ"
             (click)="comparePolicy(id)"
             label="Compare policies"

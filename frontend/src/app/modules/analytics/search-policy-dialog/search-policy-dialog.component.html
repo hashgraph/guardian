@@ -29,7 +29,12 @@
                     optionLabel="name" 
                     optionValue="value"
                     placeholder="Type"
-                    (onChange)="load()"></p-dropdown>
+                    (onChange)="changeType()">
+                    <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+                        <span class="dropdown-type">Type:</span>
+                        <span>{{ filterSelectedProperty.name }}</span>
+                    </ng-template>
+                </p-dropdown>
                 <span class="p-input-icon-right">
                     <input
                         class="search-policy-input"
@@ -40,21 +45,101 @@
                     <i class="pi pi-search search-icon"></i>
                 </span>
                 <button (click)="clearFilters()"
+                    type="button"
                     [disabled]="!filtersForm.dirty"
                     class="button secondary"
                     label="Clear filters"
                     pButton></button>
                 <button (click)="showFilters()"
+                    type="button"
                     class="button"
                     [class.secondary]="showMoreFilters"
                     label="Filters"
                     pButton></button>
             </div>
             <div class="filter-group" [hidden]="!showMoreFilters">
-                <div class="filter-row"></div>
-                <div class="filter-row"></div>
+                <div class="filter-row">
+                    <div class="filter">
+                        <p-dropdown
+                            [options]="options"
+                            appendTo="body"
+                            class="type-dropdown"
+                            formControlName="tokens"
+                            optionLabel="name" 
+                            optionValue="value"
+                            placeholder="Tokens">
+                            <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+                                <span class="dropdown-type">Minted Tokens:</span>
+                                <span>{{ filterSelectedProperty.name }}</span>
+                            </ng-template>
+                        </p-dropdown>
+                        <p-inputNumber 
+                            [hidden]="!filtersForm.value.tokens"
+                            class="type-number"
+                            formControlName="tokensCount"
+                            mode="decimal" 
+                            [min]="0" ></p-inputNumber>
+                    </div>
+                    <div class="filter">
+                        <p-dropdown
+                            [options]="options"
+                            appendTo="body"
+                            class="type-dropdown"
+                            formControlName="vcDocuments"
+                            optionLabel="name" 
+                            optionValue="value"
+                            placeholder="VC Documents">
+                            <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+                                <span class="dropdown-type">VC Documents:</span>
+                                <span>{{ filterSelectedProperty.name }}</span>
+                            </ng-template>
+                        </p-dropdown>
+                        <p-inputNumber 
+                            [hidden]="!filtersForm.value.vcDocuments"
+                            class="type-number"
+                            formControlName="vcDocumentsCount"
+                            mode="decimal" 
+                            [min]="0" ></p-inputNumber>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter">
+                        <p-dropdown
+                            [options]="options"
+                            appendTo="body"
+                            class="type-dropdown"
+                            formControlName="vpDocuments"
+                            optionLabel="name" 
+                            optionValue="value"
+                            placeholder="VP Documents">
+                            <ng-template let-filterSelectedProperty pTemplate="selectedItem">
+                                <span class="dropdown-type">VP Documents:</span>
+                                <span>{{ filterSelectedProperty.name }}</span>
+                            </ng-template>
+                        </p-dropdown>
+                        <p-inputNumber 
+                            [hidden]="!filtersForm.value.vpDocuments"
+                            class="type-number"
+                            formControlName="vpDocumentsCount"
+                            mode="decimal" 
+                            [min]="0" ></p-inputNumber>
+                    </div>
+                    <div class="filter">
+                        <span class="p-input-icon-right">
+                            <input
+                                class="search-policy-input"
+                                formControlName="owner"
+                                pInputText
+                                placeholder="Policy Owner"
+                                type="text" />
+                            <i class="pi pi-search search-icon"></i>
+                        </span>
+                    </div>
+                </div>
                 <div class="filter-row" style="justify-content: flex-end">
                     <button (click)="applyFilters()"
+                        type="submit"
+                        [disabled]="!filtersForm.dirty"
                         class="button"
                         label="Apply Filters"
                         pButton></button>

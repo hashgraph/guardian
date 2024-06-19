@@ -17,12 +17,12 @@ export class AnalyticsService {
     async search(
         @Payload()
         msg: {
-            search: string;
-            minVC?: number;
-            minVP?: number;
-            minTokens?: number;
+            text: string;
+            minVcCount?: number;
+            minVpCount?: number;
+            minTokensCount?: number;
+            threshold?: number;
             owner?: string;
-            hash?: string;
             blocks?: {
                 hash: string;
                 hashMap: any;
@@ -32,10 +32,10 @@ export class AnalyticsService {
     ) {
         try {
             const {
-                search,
-                minVC,
-                minVP,
-                minTokens,
+                text,
+                minVcCount,
+                minVpCount,
+                minTokensCount,
                 owner,
                 blocks
             } = msg;
@@ -47,8 +47,8 @@ export class AnalyticsService {
                     analytics: { $exists: true }
                 }],
             };
-            if (search) {
-                const keywords = search.split(' ');
+            if (text) {
+                const keywords = text.split(' ');
                 for (const keyword of keywords) {
                     filter.$and.push({
                         'analytics.textSearch': {
@@ -58,19 +58,19 @@ export class AnalyticsService {
                     });
                 }
             }
-            if (minVC) {
+            if (minVcCount || minVcCount === 0) {
                 filter.$and.push({
-                    'analytics.vcCount': { $gte: minVC }
+                    'analytics.vcCount': { $gte: minVcCount }
                 });
             }
-            if (minVP) {
+            if (minVpCount || minVpCount === 0) {
                 filter.$and.push({
-                    'analytics.vpCount': { $gte: minVP }
+                    'analytics.vpCount': { $gte: minVpCount }
                 });
             }
-            if (minTokens) {
+            if (minTokensCount || minTokensCount === 0) {
                 filter.$and.push({
-                    'analytics.tokensCount': { $gte: minTokens }
+                    'analytics.tokensCount': { $gte: minTokensCount }
                 });
             }
             if (owner) {
@@ -83,7 +83,7 @@ export class AnalyticsService {
             if (blocks) {
                 for (const policy of policies) {
                     try {
-                        policy.rate = HashComparator.compare(blocks, policy.analytics); 
+                        policy.rate = HashComparator.compare(blocks, policy.analytics);
                     } catch (error) {
                         policy.rate = -1;
                     }

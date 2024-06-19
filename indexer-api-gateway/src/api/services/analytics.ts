@@ -14,7 +14,6 @@ export class AnalyticsApi extends ApiClient {
             minVcCount?: number;
             minVpCount?: number;
             minTokensCount?: number;
-            threshold?: number;
             owner?: string;
             block?: any;
         }
