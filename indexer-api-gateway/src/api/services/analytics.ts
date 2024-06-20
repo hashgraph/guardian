@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpStatus, Get, Query, Body, Post } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Body, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';

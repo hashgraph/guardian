@@ -37,7 +37,6 @@ import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guard
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
-import axios from 'axios';
 
 interface ISearchResult {
     type: string,

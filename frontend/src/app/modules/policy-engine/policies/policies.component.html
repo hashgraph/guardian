@@ -110,11 +110,6 @@
         <div [hidden]="noFilterResults">
             <ng-container *ngIf="policiesList && policiesList.length > 0; else noData">
 
-
-
-                
-
-
                 <div class="grid-table-container">
                     <p-table 
                         [value]="policiesList" 
@@ -361,13 +356,6 @@
                         </ng-template>
                     </p-table>
                 </div>
-
-
-
-
-
-
-
 
                 <app-paginator
                     class="grid-table-paginator"

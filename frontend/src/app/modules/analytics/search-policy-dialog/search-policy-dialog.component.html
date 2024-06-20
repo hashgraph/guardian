@@ -175,6 +175,7 @@
                 <div class="col-80 search-extra-column">VP</div>
                 <div class="col-80 search-extra-column">Tokens</div>
                 <div *ngIf="policy" class="col-80">Rate</div>
+                <div *ngIf="globalType" class="col-120"></div>
             </div>
             <div class="grid-body">
                 <div *ngFor="let item of list" class="grid-row" (click)="onSelect(item)">
@@ -192,11 +193,18 @@
                     <div class="col-80 search-extra-column">{{item.vpCount}}</div>
                     <div class="col-80 search-extra-column">{{item.tokensCount}}</div>
                     <div *ngIf="policy" class="col-80 {{item._color}} color-field">{{item.rate}}%</div>
+                    <div *ngIf="globalType" class="col-120 toolbars">
+                        <p-button
+                            (click)="importPolicy(item)"
+                            class="toolbar-btn-primary"
+                            [pTooltip]="'Import Policy'"
+                            tooltipPosition="bottom">
+                            <svg-icon src="/assets/images/icons/import.svg" svgClass="on-icon-color"></svg-icon>
+                        </p-button>
+                    </div>
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>
 <div class="dialog-footer">

@@ -22,6 +22,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     declarations: [
@@ -49,7 +50,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
         CheckboxModule,
         InputTextModule,
         AngularSvgIconModule,
-        InputNumberModule
+        InputNumberModule,
+        TooltipModule
     ],
     exports: [
         CompareComponent,

@@ -83,7 +83,6 @@ export class FilterPoliciesDTO extends Options {
     @IsArray()
     policyIds?: string[];
 
-
     @ApiProperty({
         type: 'object',
         properties: {

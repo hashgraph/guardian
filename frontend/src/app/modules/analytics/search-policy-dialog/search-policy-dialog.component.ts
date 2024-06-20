@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
 /**
  * Search policy dialog.
@@ -47,10 +49,16 @@ export class SearchPolicyDialog {
     public selectedAll: boolean = false;
     public count: number = 0;
 
+    public get globalType(): boolean {
+        return this.filtersForm.value.type === 'Global';
+    }
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private analyticsService: AnalyticsService
+        private analyticsService: AnalyticsService,
+        private policyEngineService: PolicyEngineService,
+        private router: Router
     ) {
         this.policy = this.config.data.policy;
     }
@@ -150,6 +158,7 @@ export class SearchPolicyDialog {
     }
 
     public changeType(): void {
+        this.loading = true;
         setTimeout(() => {
             this.selectedAll = false;
             this.select();
@@ -221,5 +230,23 @@ export class SearchPolicyDialog {
         if (this.policy) {
             this.count++;
         }
+    }
+
+    public importPolicy(item: any) {
+        this.loading = true;
+        this.policyEngineService
+            .pushImportByMessage(item.messageId)
+            .subscribe((result) => {
+                const { taskId, expectation } = result;
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href),
+                    },
+                });
+                this.loading = false;
+                this.ref.close(null);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

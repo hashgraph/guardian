@@ -71,12 +71,14 @@
                 & > *:nth-child(1) {
                     width: 100%;
                     max-width: 100%;
+                    margin-right: 0px;
                 }
 
                 & > *:nth-child(2) {
                     width: 56px;
                     min-width: 56px;
                     max-width: 56px;
+                    margin-left: 16px;
                 }
             }
         }
@@ -177,6 +179,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .col-120 {
+            width: 75px;
+            min-width: 75px;
+            max-width: 75px;
         }
 
         .col-80 {
@@ -382,4 +390,42 @@
 
 .icon2-btn {
     margin-right: 8px;
+}
+
+.toolbars {
+    display: flex;
+    flex-direction: row;
+    padding: 12px 6px !important;
+
+    .toolbar-btn-primary {
+        ::ng-deep .p-button {
+            background: var(--color-primary);
+            border: 1px solid var(--color-primary);
+            font-family: Inter, sans-serif;
+            font-size: 1px;
+            font-style: normal;
+            font-weight: 500;
+            margin-left: 10px;
+            height: 40px;
+            width: 40px;
+            padding: 8px;
+            border-radius: 6px;
+        }
+    }
+    
+    .toolbar-btn-secondary {
+        ::ng-deep .p-button {
+            background: #fff;
+            border: 1px solid var(--color-primary) !important;
+            font-family: Inter, sans-serif;
+            font-size: 1px;
+            font-style: normal;
+            font-weight: 500;
+            margin-left: 10px;
+            height: 40px;
+            width: 40px;
+            padding: 8px;
+            border-radius: 6px;
+        }
+    }
 }

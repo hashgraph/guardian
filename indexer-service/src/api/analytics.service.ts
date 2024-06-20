@@ -92,7 +92,6 @@ export class AnalyticsService {
                 policies.sort((a, b) => a.rate > b.rate ? -1 : 1);
             }
 
-
             const messageIds = policies.map(p => p.consensusTimestamp);
             const tags = await em.find(Message, {
                 type: MessageType.TAG,
