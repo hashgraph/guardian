@@ -92,8 +92,32 @@ export class AnalyticsService {
                 policies.sort((a, b) => a.rate > b.rate ? -1 : 1);
             }
 
+
+            const messageIds = policies.map(p => p.consensusTimestamp);
+            const tags = await em.find(Message, {
+                type: MessageType.TAG,
+                'options.target': { $in: messageIds }
+            } as any);
+            const mapTags = new Map<string, Set<string>>();
+            for (const tag of tags) {
+                if (mapTags.has(tag.options.target)) {
+                    mapTags.get(tag.options.target).add(tag.options.name);
+                } else {
+                    mapTags.set(tag.options.target, new Set([tag.options.name]));
+                }
+            }
+
             const results = policies.map((row) => {
-                return Object.assign({}, row.options, {
+                const policyTags = mapTags.has(row.consensusTimestamp) ?
+                    Array.from(mapTags.get(row.consensusTimestamp)) : [];
+                return {
+                    type: 'Global',
+                    topicId: row.topicId,
+                    uuid: row.options.uuid,
+                    name: row.options.name,
+                    description: row.options.description,
+                    version: row.options.version,
+                    status: 'PUBLISH',
                     messageId: row.consensusTimestamp,
                     owner: row.analytics.owner,
                     textSearch: row.analytics.textSearch,
@@ -102,8 +126,8 @@ export class AnalyticsService {
                     vpCount: row.analytics.vpCount,
                     tokensCount: row.analytics.tokensCount,
                     rate: row.rate,
-                    tags: row.analytics.tags,
-                });
+                    tags: policyTags
+                }
             }).slice(0, 100);
             return new MessageResponse(results);
         } catch (error) {

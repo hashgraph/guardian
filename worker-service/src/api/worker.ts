@@ -102,6 +102,12 @@ export class Worker extends NatsService {
      */
     //private readonly workerID: string;
 
+    /**
+     * Analytics Service
+     * @private
+     */
+    private readonly analyticsService: string;
+
     constructor(
         private w3cKey: string,
         private w3cProof: string,
@@ -117,6 +123,7 @@ export class Worker extends NatsService {
         );
         this.logger = new Logger();
 
+        this.analyticsService = process.env.ANALYTICS_SERVICE;
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
@@ -316,6 +323,17 @@ export class Worker extends NatsService {
                                 result.data = fileContent
                         }
                     }
+                    break;
+                }
+
+                case WorkerTaskType.ANALYTICS_SEARCH_POLICIES: {
+                    const { options } = task.data.payload;
+                    const response = await axios.post(
+                        `${this.analyticsService}/analytics/search/policy`,
+                        options,
+                        { responseType: 'json' }
+                    );
+                    result.data = response.data;
                     break;
                 }
 

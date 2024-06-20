@@ -39,7 +39,7 @@
                     pButton></button>
             </form>
 
-            <div style="margin-left: auto;">
+            <div class="actions-container-btns">
                 <p-button
                     *ngIf="user.POLICIES_POLICY_CREATE"
                     (click)="openPolicyWizardDialog()"
@@ -145,6 +145,9 @@
                                     *ngIf="canDisplayColumn('version')" 
                                     class="header-cell-text cell-140">Version</th>
                                 <th 
+                                    *ngIf="canDisplayColumn('status')" 
+                                    class="header-cell-text cell-150">Status</th>
+                                <th 
                                     *ngIf="canDisplayColumn('tags')" 
                                     class="header-cell-text cell-190">Tags</th>
                                 <th 
@@ -153,9 +156,6 @@
                                 <th 
                                     *ngIf="canDisplayColumn('schemas')" 
                                     class="header-cell-text cell-150">Schemas</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('status')" 
-                                    class="header-cell-text cell-150">Status</th>
                                 <th 
                                     *ngIf="canDisplayColumn('instance') && user.POLICIES_POLICY_MANAGE" 
                                     class="header-cell-text cell-150">Instance</th>
@@ -229,42 +229,6 @@
                                     class="cell-140"
                                 >{{ policy.version }}</td>
                                 <td 
-                                    *ngIf="canDisplayColumn('tags')" 
-                                    class="cell-190"
-                                >
-                                    <tags-explorer
-                                        *ngIf="user.TAGS_TAG_READ"
-                                        [user]="user"
-                                        [data]="policy._tags"
-                                        [entity]="tagEntity"
-                                        [owner]="owner"
-                                        [schemas]="tagSchemas"
-                                        [service]="tagsService"
-                                        [target]="policy.id"></tags-explorer>
-                                </td>
-                                <td 
-                                    *ngIf="canDisplayColumn('tokens')" 
-                                    class="cell-140"
-                                >
-                                    <a class="grid-link-block"
-                                        [queryParams]="{ policy: policy.id }"
-                                        [routerLink]="['/tokens']">
-                                        <button class="button secondary" label="Open Tokens" pButton></button>
-                                    </a>
-                                </td>
-                                <td 
-                                    *ngIf="canDisplayColumn('schemas')"
-                                    class="cell-150" 
-                                >
-                                    <a 
-                                        [queryParams]="{ type: 'policy', topic: policy.topicId }"
-                                        [routerLink]="['/schemas']"
-                                        class="grid-link-block"
-                                    >
-                                        <button class="button secondary" label="Open Schemas" pButton></button>
-                                    </a>
-                                </td>
-                                <td 
                                     *ngIf="canDisplayColumn('status')" 
                                     class="cell-150"
                                 >
@@ -315,6 +279,42 @@
                                             Discontinued
                                         </div>
                                     </div>
+                                </td>
+                                <td 
+                                    *ngIf="canDisplayColumn('tags')" 
+                                    class="cell-190"
+                                >
+                                    <tags-explorer
+                                        *ngIf="user.TAGS_TAG_READ"
+                                        [user]="user"
+                                        [data]="policy._tags"
+                                        [entity]="tagEntity"
+                                        [owner]="owner"
+                                        [schemas]="tagSchemas"
+                                        [service]="tagsService"
+                                        [target]="policy.id"></tags-explorer>
+                                </td>
+                                <td 
+                                    *ngIf="canDisplayColumn('tokens')" 
+                                    class="cell-140"
+                                >
+                                    <a class="grid-link-block"
+                                        [queryParams]="{ policy: policy.id }"
+                                        [routerLink]="['/tokens']">
+                                        <button class="button secondary" label="Open Tokens" pButton></button>
+                                    </a>
+                                </td>
+                                <td 
+                                    *ngIf="canDisplayColumn('schemas')"
+                                    class="cell-150" 
+                                >
+                                    <a 
+                                        [queryParams]="{ type: 'policy', topic: policy.topicId }"
+                                        [routerLink]="['/schemas']"
+                                        class="grid-link-block"
+                                    >
+                                        <button class="button secondary" label="Open Schemas" pButton></button>
+                                    </a>
                                 </td>
                                 <td 
                                     *ngIf="canDisplayColumn('instance') && user.POLICIES_POLICY_MANAGE" 

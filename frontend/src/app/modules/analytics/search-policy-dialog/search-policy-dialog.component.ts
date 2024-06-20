@@ -106,6 +106,7 @@ export class SearchPolicyDialog {
                     } else {
                         item._color = 'item-color-red';
                     }
+                    item._tags = item.tags.join(', ');
                 }
                 this.loading = false;
                 this.select();
@@ -150,6 +151,8 @@ export class SearchPolicyDialog {
 
     public changeType(): void {
         setTimeout(() => {
+            this.selectedAll = false;
+            this.select();
             this.filtersForm.setValue({
                 type: this.filtersForm.value.type,
                 policyName: '',
@@ -166,6 +169,7 @@ export class SearchPolicyDialog {
     }
 
     public clearFilters(): void {
+        this.selectedAll = false;
         this.filtersForm.setValue({
             policyName: '',
             type: this.filtersForm.value.type,
@@ -177,6 +181,7 @@ export class SearchPolicyDialog {
             vcDocumentsCount: 0,
             vpDocumentsCount: 0
         })
+        this.select();
         this.load();
     }
 
@@ -204,7 +209,7 @@ export class SearchPolicyDialog {
     }
 
     public select() {
-        this.count = 1;
+        this.count = 0;
         if (this.list) {
             for (const item of this.list) {
                 if (item._select) {
@@ -212,6 +217,9 @@ export class SearchPolicyDialog {
                 }
             }
         }
-        this.selectedAll = this.count === this.list.length;
+        this.selectedAll = this.count === this.list.length && this.list.length > 0;
+        if (this.policy) {
+            this.count++;
+        }
     }
 }

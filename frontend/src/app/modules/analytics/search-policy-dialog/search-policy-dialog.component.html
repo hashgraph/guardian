@@ -55,7 +55,20 @@
                     class="button"
                     [class.secondary]="showMoreFilters"
                     label="Filters"
-                    pButton></button>
+                    pButton>
+                    <svg-icon
+                        *ngIf="!showMoreFilters"
+                        class="icon-btn"
+                        src="/assets/images/icons/filter-on.svg"
+                        svgClass="on-icon-color">
+                    </svg-icon>
+                    <svg-icon
+                        *ngIf="showMoreFilters"
+                        class="icon-btn"
+                        src="/assets/images/icons/filter-off.svg"
+                        svgClass="off-icon-color">
+                    </svg-icon>
+                </button>
             </div>
             <div class="filter-group" [hidden]="!showMoreFilters">
                 <div class="filter-row">
@@ -150,7 +163,7 @@
             <div class="grid-header">
                 <div class="col-64">
                     <input 
-                        class="prop-input" 
+                        class="checkbox-input" 
                         type="checkbox" 
                         [checked]="selectedAll"  
                         (change)="onSelectAll()">
@@ -167,7 +180,7 @@
                 <div *ngFor="let item of list" class="grid-row" (click)="onSelect(item)">
                     <div class="col-64">
                         <input 
-                            class="prop-input" 
+                            class="checkbox-input" 
                             type="checkbox" 
                             [checked]="item._select" 
                             (change)="select()">
@@ -192,78 +205,13 @@
             <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
         </div>
         <div>
-            <button (click)="onCompare()" class="button" label="Compare ({{count}})" pButton></button>
+            <button (click)="onCompare()" class="button" label="Compare with selected ({{count}})" pButton>
+                <svg-icon
+                    class="icon2-btn"
+                    src="/assets/images/icons/compare.svg"
+                    svgClass="on-icon-color">
+                </svg-icon>
+            </button>
         </div>
     </div>
 </div>
-
-
-
-<!-- <div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-title">
-            {{header}}
-        </div>
-        <div mat-dialog-actions>
-            <div class="g-dialog-title-btn open-in-new" (click)="onNewPage()">
-                <mat-icon>open_in_new</mat-icon>
-            </div>
-            <div class="g-dialog-title-btn" (click)="onOk()">
-                <mat-icon>close</mat-icon>
-            </div>
-        </div>
-    </div>
-    <div class="g-dialog-body">
-        <div class="search-toolbar">
-            <div class="policy-filters">
-                <mat-form-field class="policy-filters__control" appearance="outline">
-                    <input matInput placeholder="Search" (change)="onSearch($event)">
-                </mat-form-field>
-            </div>
-            <div class="policy-actions">
-                <div class="compare-btn" [attr.disable]="count<2" (click)="onCompare()">
-                    <mat-icon>compare</mat-icon>
-                    <span>Compare ({{count}})</span>
-                </div>
-            </div>
-        </div>
-        <div class="search-header">
-            <div>
-                <input class="prop-input" type="checkbox" [checked]="selectedAll"  (change)="onSelectAll()">
-            </div>
-            <div class="policy-id-field">ID</div>
-            <div>Name</div>
-            <div>Tags</div>
-            <div class="search-extra-column">VC</div>
-            <div class="search-extra-column">VP</div>
-            <div class="search-extra-column">Tokens</div>
-            <div>Rate</div>
-        </div>
-        <div *ngIf="policy" class="search-result disabled-result">
-            <div>
-                <input class="prop-input" type="checkbox" checked="true" disabled="true">
-            </div>
-            <div class="policy-id-field">{{policy.messageId || policy.id}}</div>
-            <div>{{policy.name}}</div>
-            <div>{{policy._tags}}</div>
-            <div class="search-extra-column">{{policy.vcCount}}</div>
-            <div class="search-extra-column">{{policy.vpCount}}</div>
-            <div class="search-extra-column">{{policy.tokensCount}}</div>
-            <div></div>
-        </div>
-        <div *ngFor="let item of _list" class="search-result" (click)="select(item)">
-            <div>
-                <input class="prop-input" type="checkbox" [checked]="item._select" (change)="onSelect()">
-            </div>
-            <div class="policy-id-field">{{item.messageId || item.id}}</div>
-            <div>{{item.name}}</div>
-            <div>{{item._tags}}</div>
-            <div class="search-extra-column">{{item.vcCount}}</div>
-            <div class="search-extra-column">{{item.vpCount}}</div>
-            <div class="search-extra-column">{{item.tokensCount}}</div>
-            <div class="{{item._color}} color-field">
-                {{item.rate}}%
-            </div>
-        </div>
-    </div>
-</div> -->

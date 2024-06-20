@@ -1,7 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsString, Validate, IsOptional, IsObject, IsNumber } from 'class-validator';
 import { Examples } from '../examples.js';
 import { IsNumberOrString } from '../string-or-number.js';
+import { PolicyType } from '@guardian/interfaces';
 
 class Options {
     @ApiProperty({
@@ -307,4 +308,150 @@ export class FilterSearchBlocksDTO {
     })
     @IsObject()
     config: any;
+}
+
+export class SearchPolicyDTO {
+    @ApiProperty({
+        type: 'string',
+        enum: [
+            'Local',
+            'Global',
+        ],
+        example: 'Local'
+    })
+    @IsOptional()
+    @IsString()
+    type?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    topicId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    messageId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.UUID
+    })
+    @IsOptional()
+    @IsString()
+    uuid?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: 'Policy name'
+    })
+    @IsOptional()
+    @IsString()
+    name?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: 'Policy description'
+    })
+    @IsOptional()
+    @IsString()
+    description?: string;
+
+    @ApiProperty({
+        type: 'string',
+        example: '1.0.0'
+    })
+    @IsOptional()
+    @IsString()
+    version?: string;
+
+    @ApiProperty({
+        type: 'string',
+        enum: PolicyType,
+        example: PolicyType.DRAFT
+    })
+    @IsOptional()
+    @IsString()
+    status?: PolicyType;
+
+    @ApiProperty({
+        type: 'string',
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    owner?: string;
+
+    @ApiProperty({
+        type: 'object',
+        isArray: true
+    })
+    @IsOptional()
+    @IsArray()
+    tags?: any[];
+
+    @ApiProperty({
+        type: 'number',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    vcCount?: number;
+
+    @ApiProperty({
+        type: 'number',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    vpCount?: number;
+
+    @ApiProperty({
+        type: 'number',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    tokensCount?: number;
+
+    @ApiProperty({
+        type: 'number',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    rate?: number;
+}
+
+@ApiExtraModels(SearchPolicyDTO)
+export class SearchPoliciesDTO {
+    @ApiProperty({
+        type: 'object',
+        required: true
+    })
+    @IsOptional()
+    @IsObject()
+    target?: SearchPolicyDTO;
+
+    @ApiProperty({
+        type: () => SearchPolicyDTO,
+        required: true,
+        isArray: true,
+    })
+    @IsArray()
+    result: SearchPolicyDTO[];
 }

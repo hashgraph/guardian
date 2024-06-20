@@ -19,6 +19,10 @@
     flex-wrap: nowrap;
     z-index: 2;
     margin-top: 24px;
+
+    .actions-container-btns {
+        margin-left: auto;
+    }
 }
 
 .loading {
@@ -855,4 +859,20 @@
 
 .opacity-icon:hover {
     opacity: 1.0;
+}
+
+@media screen and (max-width: 1450px) {
+    .actions-container {
+        flex-direction: column !important;
+        align-items: flex-start !important;    
+    }
+
+    .actions-container-btns {
+        margin-left: 0px !important;
+        margin-top: 16px !important;
+
+        & > *:first-of-type {
+            margin-left: 0px !important;
+        }
+    }
 }

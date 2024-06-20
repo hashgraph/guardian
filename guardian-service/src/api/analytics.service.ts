@@ -30,9 +30,10 @@ import {
     Policy,
     VpDocument as VpDocumentCollection,
     VcDocument as VcDocumentCollection,
+    Workers,
 } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { IOwner, MessageAPI, PolicyType, UserRole } from '@guardian/interfaces';
+import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -133,7 +134,24 @@ async function localSearch(
         policies = policies.filter((policy) => policy.rate >= options.blocks.threshold);
         policies.sort((a, b) => a.rate > b.rate ? -1 : 1);
     }
+
+    const ids = policies.map(p => p.id.toString());
+    const tags = await DatabaseServer.getTags({
+        localTarget: { $in: ids }
+    }, {
+        fields: ['localTarget', 'name']
+    })
+    const mapTags = new Map<string, Set<string>>();
+    for (const tag of tags) {
+        if (mapTags.has(tag.localTarget)) {
+            mapTags.get(tag.localTarget).add(tag.name);
+        } else {
+            mapTags.set(tag.localTarget, new Set([tag.name]));
+        }
+    }
+
     return policies.map((policy) => {
+        const policyTags = mapTags.has(policy.id) ? Array.from(mapTags.get(policy.id)) : [];
         return {
             type: 'Local',
             id: policy.id,
@@ -149,42 +167,39 @@ async function localSearch(
             vpCount: policy.vpCount,
             tokensCount: policy.tokensCount,
             rate: policy.rate,
-            tags: []
+            tags: policyTags
         }
     })
 }
 
 async function globalSearch(options: any): Promise<ISearchResult[]> {
-    try {
-        console.log('globalSearch');
-        const res = await axios.post(
-            `http://localhost:3021/analytics/search/policy`,
-            options,
-            { responseType: 'json' }
-        );
-        const policies = res.data;
-        return policies.map((policy: any) => {
-            return {
-                type: 'Global',
-                topicId: policy.topicId,
-                messageId: policy.messageId,
-                uuid: policy.uuid,
-                name: policy.name,
-                description: policy.description,
-                version: policy.version,
-                status: 'PUBLISH',
-                owner: policy.owner,
-                vcCount: policy.vcCount,
-                vpCount: policy.vpCount,
-                tokensCount: policy.tokensCount,
-                rate: policy.rate,
-                tags: policy.tags,
-            }
-        })
-    } catch (error) {
-        console.log(error)
-        return [];
+    const policies = await new Workers().addNonRetryableTask({
+        type: WorkerTaskType.ANALYTICS_SEARCH_POLICIES,
+        data: {
+            payload: { options }
+        }
+    }, 2);
+    if (!policies) {
+        throw new Error('Invalid response');
     }
+    return policies.map((policy: any) => {
+        return {
+            type: 'Global',
+            topicId: policy.topicId,
+            messageId: policy.messageId,
+            uuid: policy.uuid,
+            name: policy.name,
+            description: policy.description,
+            version: policy.version,
+            status: 'PUBLISH',
+            owner: policy.owner,
+            vcCount: policy.vcCount,
+            vpCount: policy.vpCount,
+            tokensCount: policy.tokensCount,
+            rate: policy.rate,
+            tags: policy.tags,
+        }
+    })
 }
 
 @Controller()
