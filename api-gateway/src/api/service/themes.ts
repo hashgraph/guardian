@@ -5,7 +5,6 @@ import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiInternalServerErrorRe
 import { Permissions } from '@guardian/interfaces';
 import { AuthUser, Auth } from '#auth';
 import { Examples, InternalServerErrorDTO, ThemeDTO } from '#middlewares';
-
 import { PREFIXES } from '#constants';
 
 @Controller('themes')
