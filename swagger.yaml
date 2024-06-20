@@ -11854,13 +11854,90 @@ components:
         - minTokensCount
         - text
         - threshold
+    SearchPolicyDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Local
+            - Global
+          example: Local
+        id:
+          type: string
+          example: '000000000000000000000001'
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Policy name
+        description:
+          type: string
+          example: Policy description
+        version:
+          type: string
+          example: 1.0.0
+        status:
+          type: string
+          enum:
+            - DRY-RUN
+            - DRAFT
+            - PUBLISH_ERROR
+            - PUBLISH
+            - DISCONTINUED
+          example: DRAFT
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        tags:
+          type: array
+          items:
+            type: object
+        vcCount:
+          type: number
+          example: 0
+        vpCount:
+          type: number
+          example: 0
+        tokensCount:
+          type: number
+          example: 0
+        rate:
+          type: number
+          example: 0
+      required:
+        - type
+        - id
+        - topicId
+        - messageId
+        - uuid
+        - name
+        - description
+        - version
+        - status
+        - owner
+        - tags
+        - vcCount
+        - vpCount
+        - tokensCount
+        - rate
     SearchPoliciesDTO:
       type: object
       properties:
         target:
           type: object
         result:
-          type: object
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPolicyDTO'
       required:
         - target
         - result
