@@ -1,15 +1,19 @@
 import { IAuthUser } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, Version } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner } from '#helpers';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import { SCHEMA_REQUIRED_PROPS } from '#constants';
 
 @Controller('tags')
 @ApiTags('tags')
 export class TagsApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     /**
      * Create tag
      */
@@ -30,7 +34,7 @@ export class TagsApi {
     })
     @ApiOkResponse({
         description: 'Created tag.',
-        type: TagDTO
+        type: TagDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -40,7 +44,7 @@ export class TagsApi {
     @HttpCode(HttpStatus.CREATED)
     async setTags(
         @AuthUser() user: IAuthUser,
-        @Body() body: TagDTO
+        @Body() body: TagDTO,
     ): Promise<TagDTO> {
         try {
             const owner = new EntityOwner(user);
@@ -72,23 +76,23 @@ export class TagsApi {
             Single: {
                 value: {
                     entity: 'PolicyDocument',
-                    target: Examples.MESSAGE_ID
-                }
+                    target: Examples.MESSAGE_ID,
+                },
             },
             Multiple: {
                 value: {
                     entity: 'PolicyDocument',
                     targets: [
                         Examples.MESSAGE_ID,
-                        Examples.MESSAGE_ID
-                    ]
-                }
-            }
-        }
+                        Examples.MESSAGE_ID,
+                    ],
+                },
+            },
+        },
     })
     @ApiOkResponse({
         description: 'Created tag.',
-        type: TagMapDTO
+        type: TagMapDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -97,29 +101,29 @@ export class TagsApi {
     @ApiExtraModels(TagFilterDTO, TagMapDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async searchTags(
-        @Body() body: TagFilterDTO
+        @Body() body: TagFilterDTO,
     ): Promise<{ [localTarget: string]: TagMapDTO }> {
         try {
             const { entity, target, targets } = body;
 
             let _targets: string[];
             if (!entity) {
-                throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (target) {
                 if (typeof target !== 'string') {
-                    throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
+                    throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY);
                 } else {
                     _targets = [target];
                 }
             } else if (targets) {
                 if (!Array.isArray(targets)) {
-                    throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
+                    throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY);
                 } else {
                     _targets = targets;
                 }
             } else {
-                throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY);
             }
 
             const guardians = new Guardians();
@@ -140,8 +144,8 @@ export class TagsApi {
                         entity,
                         refreshDate: dateMap[tag.localTarget],
                         target: tag.localTarget,
-                        tags: [tag]
-                    }
+                        tags: [tag],
+                    };
                 }
             }
             return tagMap;
@@ -172,7 +176,7 @@ export class TagsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -186,7 +190,7 @@ export class TagsApi {
     ): Promise<boolean> {
         try {
             if (!uuid) {
-                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('Invalid uuid', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
@@ -217,14 +221,14 @@ export class TagsApi {
             Single: {
                 value: {
                     entity: 'PolicyDocument',
-                    target: Examples.MESSAGE_ID
-                }
-            }
-        }
+                    target: Examples.MESSAGE_ID,
+                },
+            },
+        },
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TagMapDTO
+        type: TagMapDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -233,15 +237,15 @@ export class TagsApi {
     @ApiExtraModels(TagMapDTO, TagFilterDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(
-        @Body() body: TagFilterDTO
+        @Body() body: TagFilterDTO,
     ): Promise<TagMapDTO> {
         try {
             const { entity, target } = body;
             if (!entity) {
-                throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('Invalid entity', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             if (typeof target !== 'string') {
-                throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('Invalid target', HttpStatus.UNPROCESSABLE_ENTITY);
             }
 
             const guardians = new Guardians();
@@ -251,7 +255,7 @@ export class TagsApi {
                 target,
                 tags,
                 refreshDate: (new Date()).toISOString(),
-            }
+            };
         } catch (error) {
             await InternalException(error);
         }
@@ -274,14 +278,14 @@ export class TagsApi {
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
         required: false,
-        example: 0
+        example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
         required: false,
-        example: 20
+        example: 20,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -300,13 +304,15 @@ export class TagsApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
     ): Promise<any> {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             const { items, count } = await guardians.getTagSchemas(owner, pageIndex, pageSize);
-            items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
+            items.forEach((s) => {
+                s.readonly = s.readonly || s.owner !== owner.creator;
+            });
             // res.locals.data = SchemaUtils.toOld(items)
             return res
                 .header('X-Total-Count', count)
@@ -406,11 +412,12 @@ export class TagsApi {
     @HttpCode(HttpStatus.CREATED)
     async postSchemas(
         @AuthUser() user: IAuthUser,
-        @Body() newSchema: SchemaDTO
+        @Body() newSchema: SchemaDTO,
+        @Req() req,
     ): Promise<SchemaDTO> {
         try {
             if (!newSchema) {
-                throw new HttpException('Schema does not exist.', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('Schema does not exist.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
 
             const guardians = new Guardians();
@@ -420,7 +427,10 @@ export class TagsApi {
             SchemaUtils.clearIds(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
 
+            await this.cacheService.invalidate(getCacheKey([req.url], user));
+
             const schemas = await guardians.createTagSchema(newSchema, owner);
+
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await InternalException(error);
@@ -437,7 +447,7 @@ export class TagsApi {
     )
     @ApiOperation({
         summary: 'Deletes the schema.',
-        description: 'Deletes the schema with the provided schema ID.' + ONLY_SR
+        description: 'Deletes the schema with the provided schema ID.' + ONLY_SR,
     })
     @ApiParam({
         name: 'schemaId',
@@ -466,7 +476,7 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(schemaId);
             const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN)
+                throw new HttpException(error, HttpStatus.FORBIDDEN);
             }
             await guardians.deleteSchema(schemaId, owner);
             return true;
@@ -501,7 +511,7 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -512,7 +522,7 @@ export class TagsApi {
     async updateSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
-        @Body() newSchema: SchemaDTO
+        @Body() newSchema: SchemaDTO,
     ): Promise<SchemaDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -520,7 +530,7 @@ export class TagsApi {
             const schema = await guardians.getSchemaById(newSchema.id);
             const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.TAG);
             if (error) {
-                throw new HttpException(error, HttpStatus.FORBIDDEN)
+                throw new HttpException(error, HttpStatus.FORBIDDEN);
             }
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);
@@ -553,7 +563,7 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -592,7 +602,7 @@ export class TagsApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',

@@ -1,11 +1,11 @@
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors, Version } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CACHE, POLICY_REQUIRED_PROPS } from '#constants';
+import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader, PoliciesValidationDTO } from '#middlewares';
-import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, EntityOwner } from '#helpers';
+import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, getCacheKey } from '#helpers';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -17,6 +17,9 @@ async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     /**
      * Return a list of all policies
      */
@@ -2017,11 +2020,17 @@ export class PolicyApi {
     async importPolicyFromFile(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId?: string
+        @Req() req,
+        @Query('versionOfTopicId') versionOfTopicId?: string,
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
+
             await engineService.importFile(file, new EntityOwner(user), versionOfTopicId);
+
+            const invalidedCacheTags = [PREFIXES.ARTIFACTS];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
             return await getOldResult(user);
         } catch (error) {
             await InternalException(error);

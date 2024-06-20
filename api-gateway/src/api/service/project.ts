@@ -2,7 +2,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Inject, Post, Version } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, Examples } from '#middlewares';
-import { CACHE } from '../../constants/index.js';
+import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
 
 /**

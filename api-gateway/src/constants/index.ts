@@ -1,6 +1,8 @@
 export { META_DATA } from './meta-data.js';
 
-export { CACHE } from './cache.js';
+export { CACHE, PREFIXES as CACHE_PREFIXES } from './cache.js';
+
+export { PREFIXES } from './routes.js';
 
 export { REQUIRED_PROPS as SCHEMA_REQUIRED_PROPS } from './schema.js';
 
