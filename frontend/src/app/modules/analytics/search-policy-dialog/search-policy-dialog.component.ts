@@ -148,8 +148,8 @@ export class SearchPolicyDialog {
                 } else {
                     items.push({
                         type: 'id',
-                        name: this.policy.name,
-                        value: this.policy.id
+                        name: item.name,
+                        value: item.id
                     })
                 }
             }
