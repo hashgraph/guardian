@@ -75,14 +75,6 @@
                 </div>
                 <div *ngIf="type==='id'" class="local-container">
                     <div class="message-form">
-                        <!-- <p-multiSelect
-                                class="multiSelect-policy-input"
-                                [(ngModel)]="localIds"
-                                [options]="localItems"
-                                appendTo="body"
-                                optionLabel="name"
-                                placeholder="Select Policy"
-                        ></p-multiSelect> -->
                         <span class="p-input-icon-right message-input">
                             <input
                                 class="search-policy-input"
@@ -112,39 +104,6 @@
             </div>
 
         </div>
-
-        <!-- <div class="policy-dropdown-container">
-            <label class="form-label" htmlFor="firstPolicy">First Policy</label>
-            <p-dropdown
-                    (onChange)="onChange()"
-                    [(ngModel)]="policyId1"
-                    [options]="list1"
-                    [showClear]="true"
-                    appendTo="body"
-                    id="firstPolicy"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Select Policy"
-            ></p-dropdown>
-        </div>
-
-        <div class="policy-dropdown-container">
-            <label class="form-label" htmlFor="firstPolicy"
-            >Secondary Policy</label
-            >
-            <p-multiSelect
-                    (onChange)="onChange()"
-                    [(ngModel)]="policyId2"
-                    [options]="list2"
-                    appendTo="body"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Select Policy"
-            ></p-multiSelect>
-        </div> -->
-
-
-
     </div>
 </div>
 <div class="dialog-footer">
@@ -153,7 +112,17 @@
             <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
         </div>
         <div>
-            <button (click)="onCompare()" [disabled]="!items.length" class="button" label="Compare" pButton></button>
+            <button (click)="onCompare()" 
+                [disabled]="count < 2" 
+                class="button" 
+                label="Compare ({{count}})" 
+                pButton>
+                <svg-icon
+                    class="icon2-btn"
+                    src="/assets/images/icons/compare.svg"
+                    [svgClass]="count > 1 ? 'on-icon-color':'disabled-icon-color'">
+                </svg-icon>
+            </button>
         </div>
     </div>
 </div>

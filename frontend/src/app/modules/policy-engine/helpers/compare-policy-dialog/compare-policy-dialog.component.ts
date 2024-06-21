@@ -44,6 +44,13 @@ export class ComparePolicyDialog {
     public messageIdError: boolean = false;
     private policyMap: Set<string> = new Set<string>();
 
+    public get count(): number {
+        if (this.first) {
+            return this.items.length + 1;
+        }
+        return this.items.length;
+    }
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,

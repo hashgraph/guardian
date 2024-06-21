@@ -292,6 +292,19 @@
     color: #848FA9;
 }
 
+.icon2-btn {
+    margin-right: 8px;
+}
+
+.on-icon-color {
+    fill: #fff;
+    color: #fff;
+}
+
+.disabled-icon-color {
+    fill: var(--color-grey-5) !important;
+    color: var(--color-grey-5) !important;
+}
 
 // ::ng-deep {
 //     .p-button {
