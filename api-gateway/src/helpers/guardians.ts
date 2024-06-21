@@ -281,7 +281,7 @@ export class Guardians extends NatsService {
      * @param username
      * @param owner
      */
-    public async unfreezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+    public async unfreezeToken(tokenId: string, username: string, owner: IOwner): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.FREEZE_TOKEN, {
             tokenId,
             username,
