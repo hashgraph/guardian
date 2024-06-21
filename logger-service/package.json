@@ -43,6 +43,9 @@
   "main": "dist/index.js",
   "name": "logger-service",
   "packageManager": "yarn@1.22.21",
+  "imports": {
+    "#constants": "./dist/constants/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "build:prod": "tsc --project tsconfig.production.json",
