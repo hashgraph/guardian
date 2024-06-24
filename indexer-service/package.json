@@ -1,7 +1,7 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@elastic/elasticsearch": "^8.12.2",
+        "@elastic/elasticsearch": "^8.14.0",
         "@indexer/common": "^2.22.0",
         "@indexer/interfaces": "^2.22.0",
         "mongodb": "6.5.0",

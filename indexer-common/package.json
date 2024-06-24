@@ -1,7 +1,7 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@elastic/elasticsearch": "^8.12.2",
+        "@elastic/elasticsearch": "^8.14.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
