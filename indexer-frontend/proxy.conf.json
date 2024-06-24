@@ -1,6 +1,6 @@
 {
     "/api/v1/**": {
-        "target": "http://localhost:3002/",
+        "target": "http://localhost:3021/",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true,
@@ -10,7 +10,7 @@
         }
     },
     "/ws/*": {
-        "target": "http://localhost:3002/",
+        "target": "http://localhost:3021/",
         "secure": false,
         "ws": true,
         "logLevel": "debug",
@@ -20,7 +20,7 @@
         }
     },
     "/openai/*": {
-        "target": "http://localhost:3002/",
+        "target": "http://localhost:3021/",
         "secure": false,
         "ws": true,
         "logLevel": "debug",
