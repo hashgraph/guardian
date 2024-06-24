@@ -235,11 +235,15 @@
             <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
         </div>
         <div>
-            <button (click)="onCompare()" class="button" label="Compare with selected ({{count}})" pButton>
+            <button 
+                (click)="onCompare()" 
+                [disabled]="count<2"
+                class="button" 
+                label="Compare with selected ({{count}})" pButton>
                 <svg-icon
                     class="icon2-btn"
                     src="/assets/images/icons/compare.svg"
-                    svgClass="on-icon-color">
+                    [svgClass]="count > 1 ? 'on-icon-color':'disabled-icon-color'">
                 </svg-icon>
             </button>
         </div>
