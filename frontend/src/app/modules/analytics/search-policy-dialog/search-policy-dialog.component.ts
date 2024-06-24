@@ -48,6 +48,7 @@ export class SearchPolicyDialog {
     public list: any[] = [];
     public selectedAll: boolean = false;
     public count: number = 0;
+    public filtersCount: number = 0;
 
     public get globalType(): boolean {
         return this.filtersForm.value.type === 'Global';
@@ -71,6 +72,7 @@ export class SearchPolicyDialog {
         this.loading = true;
         this.count = this.policy ? 1 : 0;
 
+        this.filtersCount = 0;
         const filters = this.filtersForm.value;
         const options: any = {
             threshold: 0
@@ -81,18 +83,23 @@ export class SearchPolicyDialog {
         }
         if (filters.policyName) {
             options.text = filters.policyName;
+            this.filtersCount++;
         }
         if (filters.owner) {
             options.owner = filters.owner;
+            this.filtersCount++;
         }
         if (filters.tokens) {
             options.minTokensCount = filters.tokensCount || 0;
+            this.filtersCount++;
         }
         if (filters.vcDocuments) {
             options.minVcCount = filters.vcDocumentsCount || 0;
+            this.filtersCount++;
         }
         if (filters.vpDocuments) {
             options.minVpCount = filters.vpDocumentsCount || 0;
+            this.filtersCount++;
         }
         this.analyticsService.searchPolicies(options)
             .subscribe((data) => {

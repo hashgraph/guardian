@@ -149,6 +149,27 @@
         }
     }
 
+    .empty-grid {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        overflow: auto;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+        color: #848FA9;
+
+        .empty-grid-icon {
+            margin-bottom: 2px;
+        }
+
+        .empty-grid-header {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+    }
+
     .grid-container {
         margin-top: 16px;
         display: flex;
@@ -351,6 +372,11 @@
 .cancel-button {
     margin-left: auto;
     margin-right: 15px;
+}
+
+.empty-icon-color {
+    fill: #AAB7C4;
+    color: #AAB7C4;
 }
 
 .close-icon-color {

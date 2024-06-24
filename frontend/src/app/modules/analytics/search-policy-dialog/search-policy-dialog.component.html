@@ -51,22 +51,27 @@
                     label="Clear filters"
                     pButton></button>
                 <button (click)="showFilters()"
+                    *ngIf="showMoreFilters"
                     type="button"
-                    class="button"
-                    [class.secondary]="showMoreFilters"
-                    label="Filters"
+                    class="button secondary"
+                    label="Filters ({{filtersCount}})"
                     pButton>
                     <svg-icon
-                        *ngIf="!showMoreFilters"
-                        class="icon-btn"
-                        src="/assets/images/icons/filter-on.svg"
-                        svgClass="on-icon-color">
-                    </svg-icon>
-                    <svg-icon
-                        *ngIf="showMoreFilters"
                         class="icon-btn"
                         src="/assets/images/icons/filter-off.svg"
                         svgClass="off-icon-color">
+                    </svg-icon>
+                </button>
+                <button (click)="showFilters()"
+                    *ngIf="!showMoreFilters"
+                    type="button"
+                    class="button"
+                    label="Filters ({{filtersCount}})"
+                    pButton>
+                    <svg-icon
+                        class="icon-btn"
+                        src="/assets/images/icons/filter-on.svg"
+                        svgClass="on-icon-color">
                     </svg-icon>
                 </button>
             </div>
@@ -159,7 +164,7 @@
                 </div>
             </div>
         </form>
-        <div class="grid-container">
+        <div *ngIf="list && list.length" class="grid-container">
             <div class="grid-header">
                 <div class="col-64">
                     <input 
@@ -204,6 +209,17 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div *ngIf="!list || !list.length" class="empty-grid">
+            <div class="empty-grid-icon">
+                <svg-icon
+                    class="svg-icon-32"
+                    src="/assets/images/icons/32/search.svg"
+                    svgClass="empty-icon-color">
+                </svg-icon>
+            </div>
+            <div class="empty-grid-header">There are no policies</div>
+            <div class="empty-grid-text">Please try to change or clear filters</div>
         </div>
     </div>
 </div>
