@@ -24,7 +24,8 @@
             "@hedera-modules": ["hedera-modules/index"],
             "@database-modules": ["database-modules/index"],
             "@document-loader/*": ["document-loader/*"],
-            "@analytics": ["analytics/index"]
+            "@analytics": ["analytics/index"],
+            "#constants": ["constants/index.js"]
         }
     },
     "include": [
