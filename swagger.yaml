@@ -12112,6 +12112,25 @@ components:
         schemaId2:
           type: string
           example: '000000000000000000000001'
+        schemas:
+          properties:
+            type:
+              type: string
+              enum:
+                - id
+                - policy
+            value:
+              type: string
+            policy:
+              type: string
+          example:
+            - type: id
+              value: '000000000000000000000001'
+            - type: policy
+              value: 0000000000.000000001|00000000-0000-0000-0000-000000000000
+          type: array
+          items:
+            type: object
         idLvl:
           oneOf:
             - type: string
@@ -12123,6 +12142,7 @@ components:
       required:
         - schemaId1
         - schemaId2
+        - schemas
         - idLvl
     CompareSchemasDTO:
       type: object
