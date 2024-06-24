@@ -218,8 +218,14 @@
                     svgClass="empty-icon-color">
                 </svg-icon>
             </div>
-            <div class="empty-grid-header">There are no policies</div>
-            <div class="empty-grid-text">Please try to change or clear filters</div>
+            <ng-container *ngIf="error">
+                <div class="empty-grid-header">Not available</div>
+                <div class="empty-grid-text">{{error}}</div>
+            </ng-container>
+            <ng-container *ngIf="!error">
+                <div class="empty-grid-header">There are no policies</div>
+                <div class="empty-grid-text">Please try to change or clear filters</div>
+            </ng-container>
         </div>
     </div>
 </div>

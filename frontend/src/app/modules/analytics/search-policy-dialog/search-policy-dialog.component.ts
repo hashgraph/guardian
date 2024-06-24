@@ -49,6 +49,7 @@ export class SearchPolicyDialog {
     public selectedAll: boolean = false;
     public count: number = 0;
     public filtersCount: number = 0;
+    public error: string | null = null;
 
     public get globalType(): boolean {
         return this.filtersForm.value.type === 'Global';
@@ -101,6 +102,7 @@ export class SearchPolicyDialog {
             options.minVpCount = filters.vpDocumentsCount || 0;
             this.filtersCount++;
         }
+        this.error = null;
         this.analyticsService.searchPolicies(options)
             .subscribe((data) => {
                 this.loading = false;
@@ -125,9 +127,11 @@ export class SearchPolicyDialog {
                 }
                 this.loading = false;
                 this.select();
-            }, ({ message }) => {
+            }, (error) => {
+                this.error = error?.error?.message;
+                this.list = [];
                 this.loading = false;
-                console.error(message);
+                console.error(error);
             });
     }
 

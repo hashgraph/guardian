@@ -328,12 +328,20 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.ANALYTICS_SEARCH_POLICIES: {
                     const { options } = task.data.payload;
-                    const response = await axios.post(
-                        `${this.analyticsService}/analytics/search/policy`,
-                        options,
-                        { responseType: 'json' }
-                    );
-                    result.data = response.data;
+                    try {
+                        const response = await axios.post(
+                            `${this.analyticsService}/analytics/search/policy`,
+                            options,
+                            { responseType: 'json' }
+                        );
+                        result.data = response.data;
+                    } catch (error) {
+                        if (error.code === 'ECONNREFUSED') {
+                            result.error = 'Indexer service is not available';
+                        } else {
+                            result.error = error.message;
+                        }
+                    }
                     break;
                 }
 
