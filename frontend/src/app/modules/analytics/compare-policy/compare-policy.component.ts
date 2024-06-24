@@ -102,13 +102,30 @@ export class ComparePolicyComponent implements OnInit {
     onRender() {
     }
 
+    private getSchemaId(schema: any, policy: any): any {
+        if (policy?.type === 'message') {
+            return {
+                type: 'policy-message',
+                value: schema?.value,
+                policy: policy.id
+            }
+        } else if (policy?.type === 'file') {
+            return null
+        } else {
+            return {
+                type: 'id',
+                value: schema?.schemaId,
+            }
+        }
+    }
+
     compareSchema(prop: any) {
-        const schema1 = prop?.items[0];
-        const schema2 = prop?.items[1];
         this.change.emit({
             type: 'schema',
-            schemaId1: schema1?.schemaId,
-            schemaId2: schema2?.schemaId
+            schemaIds: [
+                this.getSchemaId(prop?.items[0], this.policy1),
+                this.getSchemaId(prop?.items[1], this.policy2)
+            ]
         })
     }
 

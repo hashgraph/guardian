@@ -63,13 +63,13 @@ export class PolicyLoader {
             });
         }
 
-        return { policy, schemas, tokens, artifacts };
+        return { policy, schemas, tokens, artifacts, type: 'id' };
     }
 
     public static async loadByFile(b64string: any): Promise<IPolicyData> {
         const result = await PolicyImportExport.parseZipFile(Buffer.from(b64string, 'base64'), true);
         result.policy.id = 'file';
-        return result;
+        return { ...result, type: 'file'};
     }
 
     public static async loadByMessage(
@@ -95,7 +95,7 @@ export class PolicyLoader {
 
         const result = await PolicyImportExport.parseZipFile(message.document, true);
         result.policy.id = messageId;
-        return result;
+        return { ...result, type: 'message'};
     }
 
     /**
@@ -128,6 +128,7 @@ export class PolicyLoader {
         policyModel.setArtifacts(artifactsModels);
 
         //Compare
+        policyModel.setType(data.type);
         policyModel.update();
 
         return policyModel;

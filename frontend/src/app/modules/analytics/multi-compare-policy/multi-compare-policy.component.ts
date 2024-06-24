@@ -455,7 +455,24 @@ export class MultiComparePolicyComponent implements OnInit {
         }
     }
 
-    public compareSchema(prop: any) {
+    private getSchemaId(schema: any, policy: any): any {
+        if (policy?.type === 'message') {
+            return {
+                type: 'policy-message',
+                value: schema?.value,
+                policy: policy.id
+            }
+        } else if (policy?.type === 'file') {
+            return null
+        } else {
+            return {
+                type: 'id',
+                value: schema?.schemaId,
+            }
+        }
+    }
+
+    public compareSchema(prop: any, data: any) {
         const schema1 = prop.left;
         const schema2 = prop.right;
         if (
@@ -464,10 +481,14 @@ export class MultiComparePolicyComponent implements OnInit {
             schema1.schemaId &&
             schema2.schemaId
         ) {
+            const left = this.policies[0]?.policy;
+            const right = this.policies[data?.index]?.policy;
             this.change.emit({
                 type: 'schema',
-                schemaId1: schema1.schemaId,
-                schemaId2: schema2.schemaId
+                schemaIds: [
+                    this.getSchemaId(schema1, left),
+                    this.getSchemaId(schema2, right)
+                ]
             })
         }
     }

@@ -105,6 +105,12 @@ export class PolicyModel {
      */
     private _tokens: TokenModel[];
 
+    /**
+     * Type
+     * @private
+     */
+    private _type: string;
+
     constructor(policy: IPolicyRawData, options: CompareOptions) {
         this.options = options;
 
@@ -125,6 +131,8 @@ export class PolicyModel {
         this.groups = this.createGroups(policy.policyGroups, this.options);
         this.topics = this.createTopics(policy.policyTopics, this.options);
         this.tokens = this.createTokens(policy.policyTokens, this.options);
+
+        this._type = 'id';
     }
 
     /**
@@ -257,6 +265,16 @@ export class PolicyModel {
     }
 
     /**
+     * Set source type
+     * @param type
+     * @public
+     */
+    public setType(type: string): PolicyModel {
+        this._type = type;
+        return this;
+    }
+
+    /**
      * Update all weight
      * @public
      */
@@ -299,7 +317,8 @@ export class PolicyModel {
             name: this.name,
             description: this.description,
             instanceTopicId: this.instanceTopicId,
-            version: this.version
+            version: this.version,
+            type: this._type
         };
     }
 

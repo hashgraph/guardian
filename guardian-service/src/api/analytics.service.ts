@@ -18,7 +18,8 @@ import {
     ToolComparator,
     ToolModel,
     ToolLoader,
-    DocumentLoader
+    DocumentLoader,
+    SchemaLoader
 } from '../analytics/index.js';
 import {
     DataBaseHelper,
@@ -308,17 +309,20 @@ export async function analyticsAPI(): Promise<void> {
 
     ApiResponse<any>(MessageAPI.COMPARE_SCHEMAS,
         async (msg: {
-            user: IAuthUser,
+            user: IOwner,
             type: string,
-            schemaId1: string,
-            schemaId2: string,
+            schemas: {
+                type: 'id' | 'policy-message',
+                value: any,
+                policy?: any
+            }[],
             idLvl: string | number
         }) => {
             try {
                 const {
+                    user,
                     type,
-                    schemaId1,
-                    schemaId2,
+                    schemas,
                     idLvl
                 } = msg;
                 const options = new CompareOptions(
@@ -331,20 +335,15 @@ export async function analyticsAPI(): Promise<void> {
                     null
                 );
 
-                const schema1 = await DatabaseServer.getSchemaById(schemaId1);
-                const schema2 = await DatabaseServer.getSchemaById(schemaId2);
+                const compareModels: SchemaModel[] = [];
+                for (const schema of schemas) {
+                    const rawData = await SchemaLoader.load(schema, user);
+                    const compareModel = await SchemaLoader.create(rawData, options);
+                    compareModels.push(compareModel);
+                }
 
-                const policy1 = await DatabaseServer.getPolicy({ topicId: schema1?.topicId });
-                const policy2 = await DatabaseServer.getPolicy({ topicId: schema2?.topicId });
-
-                const model1 = new SchemaModel(schema1, options);
-                const model2 = new SchemaModel(schema2, options);
-                model1.setPolicy(policy1);
-                model2.setPolicy(policy2);
-                model1.update(options);
-                model2.update(options);
                 const comparator = new SchemaComparator(options);
-                const result = comparator.compare(model1, model2);
+                const result = comparator.compare(compareModels[0], compareModels[1]);
                 if (type === 'csv') {
                     const csv = comparator.csv(result);
                     return new MessageResponse(csv);

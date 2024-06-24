@@ -132,19 +132,50 @@ export class FilterModulesDTO extends Options {
 export class FilterSchemasDTO {
     @ApiProperty({
         type: 'string',
-        required: true,
         example: Examples.DB_ID
     })
+    @IsOptional()
     @IsString()
-    schemaId1: string;
+    schemaId1?: string;
 
     @ApiProperty({
         type: 'string',
-        required: true,
         example: Examples.DB_ID
     })
+    @IsOptional()
     @IsString()
-    schemaId2: string;
+    schemaId2?: string;
+
+    @ApiProperty({
+        type: 'object',
+        properties: {
+            type: {
+                type: 'string',
+                enum: ['id', 'policy'],
+            },
+            value: {
+                type: 'string'
+            },
+            policy: {
+                type: 'string'
+            },
+        },
+        isArray: true,
+        example: [{
+            type: 'id',
+            value: Examples.DB_ID
+        }, {
+            type: 'policy',
+            value: `${Examples.MESSAGE_ID}|${Examples.UUID}`
+        }]
+    })
+    @IsOptional()
+    @IsArray()
+    schemas?: {
+        type: 'id' | 'policy-message',
+        value: string,
+        policy?: string
+    }[];
 
     @ApiProperty({
         oneOf: [

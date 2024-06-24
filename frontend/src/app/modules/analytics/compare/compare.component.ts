@@ -137,17 +137,16 @@ export class CompareComponent implements OnInit {
         for (const item of this.items) {
             if (item.type === 'file') {
                 const file = this.compareStorage.getFile(item.value);
-                if(!file) {
+                if (!file) {
                     return []
                 }
                 items.push({
-                    type: item.type,
+                    ...item,
                     value: file.value
                 })
             } else {
                 items.push({
-                    type: item.type,
-                    value: item.value
+                    ...item
                 })
             }
         }
@@ -253,7 +252,7 @@ export class CompareComponent implements OnInit {
     }
 
     private loadSchema() {
-        const ids = this.getIds();
+        const ids = this.getItems();
         if (!ids || ids.length < 2) {
             this.error = 'Invalid params';
             this.loading = false;
@@ -261,8 +260,7 @@ export class CompareComponent implements OnInit {
         }
         const options = {
             idLvl: this.idLvl,
-            schemaId1: ids[0],
-            schemaId2: ids[1],
+            schemas: ids
         }
         this.analyticsService.compareSchema(options).subscribe((value) => {
             this.result = value;
@@ -277,7 +275,7 @@ export class CompareComponent implements OnInit {
     }
 
     private downloadSchema() {
-        const ids = this.getIds();
+        const ids = this.getItems();
         if (!ids || ids.length < 2) {
             this.error = 'Invalid params';
             this.loading = false;
@@ -285,8 +283,7 @@ export class CompareComponent implements OnInit {
         }
         const options = {
             idLvl: this.idLvl,
-            schemaId1: ids[0],
-            schemaId2: ids[1],
+            schemas: ids
         }
         this.analyticsService.compareSchemaFile(options, 'csv').subscribe((data) => {
             if (data) {
@@ -417,19 +414,14 @@ export class CompareComponent implements OnInit {
         this.loadData();
     }
 
-    compareSchema(event: any) {
+    private compareSchema(event: any) {
+        const schemaIds = event.schemaIds;
         const params = {
             parent: {
                 parent: this.parent,
                 items: this.items
             },
-            items: [{
-                type: 'id',
-                value: event.schemaId1
-            }, {
-                type: 'id',
-                value: event.schemaId2
-            }]
+            items: schemaIds
         }
         const items = btoa(JSON.stringify(params));
         this.router.navigate(['/compare'], {

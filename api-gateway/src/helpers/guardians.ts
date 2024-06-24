@@ -1224,19 +1224,21 @@ export class Guardians extends NatsService {
      * Compare two schemas
      * @param user
      * @param type
-     * @param schemaId1
-     * @param schemaId2
+     * @param schemas
      * @param idLvl
      */
     public async compareSchemas(
-        user: IAuthUser,
+        user: IOwner,
         type: string,
-        schemaId1: string,
-        schemaId2: string,
+        schemas: {
+            type: 'id' | 'policy-message',
+            value: any,
+            policy?: any
+        }[],
         idLvl: string | number
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_SCHEMAS, {
-            user, type, schemaId1, schemaId2, idLvl
+            user, type, schemas, idLvl
         });
     }
 

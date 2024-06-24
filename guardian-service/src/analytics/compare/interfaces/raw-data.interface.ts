@@ -236,6 +236,7 @@ export interface ITokenRawData {
  * Policy data
  */
 export interface IPolicyData {
+    type: string;
     policy: IPolicyRawData;
     schemas: ISchemaRawData[];
     tokens: ITokenRawData[];
@@ -249,6 +250,14 @@ export interface IToolData {
     tool: IToolRawData;
     schemas: ISchemaRawData[];
     artifacts: IArtifactRawData[];
+}
+
+/**
+ * Tool data
+ */
+export interface ISchemaData {
+    schema: ISchemaRawData;
+    policy: IPolicyRawData;
 }
 
 /**

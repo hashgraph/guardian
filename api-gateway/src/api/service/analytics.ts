@@ -35,6 +35,29 @@ function getPolicyId(filters: FilterPoliciesDTO): {
     }
 }
 
+function getSchemaId(filters: FilterSchemasDTO): {
+    type: 'id' | 'policy-message',
+    value: any,
+    policy?: any
+}[] {
+    if (!filters) {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    if (Array.isArray(filters.schemas) && filters.schemas.length > 1) {
+        return filters.schemas;
+    } else if (filters.schemaId1 && filters.schemaId2) {
+        return [{
+            type: 'id',
+            value: filters.schemaId1
+        }, {
+            type: 'id',
+            value: filters.schemaId2
+        }];
+    } else {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+}
+
 @Controller('analytics')
 @ApiTags('analytics')
 export class AnalyticsApi {
@@ -263,15 +286,12 @@ export class AnalyticsApi {
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSchemasDTO
     ): Promise<CompareSchemasDTO> {
-        const schemaId1 = filters ? filters.schemaId1 : null;
-        const schemaId2 = filters ? filters.schemaId2 : null;
         const idLvl = filters ? filters.idLvl : null;
-        if (!schemaId1 || !schemaId2) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const schemas = getSchemaId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
-            return await guardians.compareSchemas(user, null, schemaId1, schemaId2, idLvl);
+            return await guardians.compareSchemas(owner, null, schemas, idLvl);
         } catch (error) {
             await InternalException(error);
         }
@@ -637,15 +657,12 @@ export class AnalyticsApi {
         @Body() filters: FilterSchemasDTO,
         @Query('type') type: string
     ): Promise<string> {
-        const schemaId1 = filters ? filters.schemaId1 : null;
-        const schemaId2 = filters ? filters.schemaId2 : null;
         const idLvl = filters ? filters.idLvl : null;
-        if (!schemaId1 || !schemaId2) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const schemas = getSchemaId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
-            return await guardians.compareSchemas(user, type, schemaId1, schemaId2, idLvl);
+            return await guardians.compareSchemas(owner, type, schemas, idLvl);
         } catch (error) {
             await InternalException(error);
         }

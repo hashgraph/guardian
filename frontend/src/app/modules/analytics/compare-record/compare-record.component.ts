@@ -450,12 +450,17 @@ export class CompareRecordComponent implements OnInit {
     }
 
     public compareSchema(prop: any) {
-        const schema1 = prop?.items[0];
-        const schema2 = prop?.items[1];
+        const schemaId1 = prop?.items[0]?.schemaId;
+        const schemaId2 = prop?.items[1]?.schemaId;
         this.change.emit({
             type: 'schema',
-            schemaId1: schema1?.schemaId,
-            schemaId2: schema2?.schemaId
+            schemaIds: [{
+                type: 'id',
+                value: schemaId1
+            }, {
+                type: 'id',
+                value: schemaId2
+            }]
         })
     }
 

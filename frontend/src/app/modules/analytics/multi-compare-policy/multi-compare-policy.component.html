@@ -411,7 +411,7 @@
                     {{prop.name}}:
                 </div>
                 <div class="prop-table-value" [attr.prop-type]="prop.propType">
-                    <div class="compare-btn" (click)="compareSchema(prop)">
+                    <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <mat-icon>search</mat-icon>
                     </div>
                     <span *ngIf="prop.propType" [title]="prop.value">
@@ -582,7 +582,7 @@
                     {{prop.name}}:
                 </div>
                 <div class="prop-table-value" [attr.prop-type]="prop.propType">
-                    <div class="compare-btn" (click)="compareSchema(prop)">
+                    <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <mat-icon>search</mat-icon>
                     </div>
                     <span *ngIf="prop.propType" [title]="prop.value">
