@@ -1,8 +1,9 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { IsArray, IsString, Validate, IsOptional, IsObject, IsNumber } from 'class-validator';
 import { Examples } from '../examples.js';
 import { IsNumberOrString } from '../string-or-number.js';
 import { PolicyType } from '@guardian/interfaces';
+import { IsStringOrObject } from '../string-or-object.js';
 
 class Options {
     @ApiProperty({
@@ -11,6 +12,7 @@ class Options {
             { type: 'number' },
         ],
         enum: [0, 1],
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -23,6 +25,7 @@ class Options {
             { type: 'number' },
         ],
         enum: [0, 1],
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -35,6 +38,7 @@ class Options {
             { type: 'number' },
         ],
         enum: [0, 1, 2],
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -47,6 +51,7 @@ class Options {
             { type: 'number' },
         ],
         enum: [0, 1, 2],
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -54,9 +59,74 @@ class Options {
     childrenLvl?: number | string;
 }
 
+export class CompareFileDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'File ID',
+        required: true,
+        example: Examples.UUID
+    })
+    @IsString()
+    id: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'File Name',
+        required: true,
+        example: 'File Name',
+    })
+    @IsString()
+    name: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Buffer',
+        required: true,
+        example: 'base64...'
+    })
+    @IsString()
+    value: string;
+}
+
+@ApiExtraModels(CompareFileDTO)
+export class FilterPolicyDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'Identifier type',
+        enum: ['id', 'message', 'file'],
+        required: true,
+        example: 'id'
+    })
+    @IsString()
+    type: 'id' | 'file' | 'message';
+
+    @ApiProperty({
+        oneOf: [
+            {
+                type: 'string',
+                description: 'Policy ID'
+            },
+            {
+                type: 'string',
+                description: 'Policy Message ID'
+            },
+            {
+                $ref: getSchemaPath(CompareFileDTO),
+                description: 'Policy File'
+            },
+        ],
+        required: true,
+        example: Examples.DB_ID
+    })
+    @IsString()
+    value: string | CompareFileDTO;
+}
+
+@ApiExtraModels(FilterPolicyDTO)
 export class FilterPoliciesDTO extends Options {
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -65,6 +135,7 @@ export class FilterPoliciesDTO extends Options {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -74,54 +145,17 @@ export class FilterPoliciesDTO extends Options {
     @ApiProperty({
         type: 'string',
         isArray: true,
-        example: [
-            Examples.DB_ID,
-            Examples.DB_ID
-        ]
+        required: false,
+        example: [Examples.DB_ID, Examples.DB_ID]
     })
     @IsOptional()
     @IsArray()
     policyIds?: string[];
 
     @ApiProperty({
-        type: 'object',
-        properties: {
-            type: {
-                type: 'string',
-                enum: ['id', 'message', 'file']
-            },
-            value: {
-                oneOf: [
-                    {
-                        description: 'Policy ID',
-                        type: 'string'
-                    },
-                    {
-                        description: 'Policy Message ID',
-                        type: 'string'
-                    },
-                    {
-                        description: 'Policy File',
-                        type: 'object',
-                        properties: {
-                            id: {
-                                description: 'File ID',
-                                type: 'string'
-                            },
-                            name: {
-                                description: 'File Name',
-                                type: 'string'
-                            },
-                            value: {
-                                description: 'Buffer',
-                                type: 'string'
-                            },
-                        }
-                    },
-                ],
-            }
-        },
+        type: () => FilterPolicyDTO,
         isArray: true,
+        required: false,
         example: [{
             type: 'id',
             value: Examples.DB_ID
@@ -139,14 +173,106 @@ export class FilterPoliciesDTO extends Options {
     })
     @IsOptional()
     @IsArray()
-    policies?: {
-        type: 'id' | 'file' | 'message',
-        value: string | {
-            id: string,
-            name: string,
-            value: string
-        }
-    }[];
+    policies?: FilterPolicyDTO[];
+}
+
+@ApiExtraModels(CompareFileDTO)
+export class FilterSchemaDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'Identifier type',
+        enum: ['id', 'policy-message', 'policy-file'],
+        required: true,
+        example: 'id'
+    })
+    @IsString()
+    type: 'id' | 'policy-message' | 'policy-file';
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Schema ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @IsString()
+    value: string;
+
+    @ApiProperty({
+        oneOf: [
+            {
+                description: 'Policy Message ID',
+                type: 'string'
+            },
+            {
+                $ref: getSchemaPath(CompareFileDTO),
+                description: 'Policy File'
+            },
+        ],
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @Validate(IsStringOrObject)
+    policy?: string | CompareFileDTO;
+}
+
+@ApiExtraModels(FilterSchemaDTO)
+export class FilterSchemasDTO {
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    schemaId1?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    schemaId2?: string;
+
+    @ApiProperty({
+        type: () => FilterSchemaDTO,
+        isArray: true,
+        required: false,
+        example: [{
+            type: 'id',
+            value: Examples.DB_ID
+        }, {
+            type: 'policy-message',
+            value: Examples.UUID,
+            policy: Examples.MESSAGE_ID
+        }, {
+            type: 'policy-file',
+            value: Examples.UUID,
+            policy: {
+                id: Examples.UUID,
+                name: 'File Name',
+                value: 'base64...'
+            }
+        }]
+    })
+    @IsOptional()
+    @IsArray()
+    schemas?: FilterSchemaDTO[];
+
+    @ApiProperty({
+        oneOf: [
+            { type: 'string' },
+            { type: 'number' },
+        ],
+        enum: [0, 1],
+        required: false,
+        example: 0
+    })
+    @IsOptional()
+    @Validate(IsNumberOrString)
+    idLvl?: number | string;
 }
 
 export class FilterModulesDTO extends Options {
@@ -167,103 +293,10 @@ export class FilterModulesDTO extends Options {
     moduleId2: string;
 }
 
-export class FilterSchemasDTO {
-    @ApiProperty({
-        type: 'string',
-        example: Examples.DB_ID
-    })
-    @IsOptional()
-    @IsString()
-    schemaId1?: string;
-
-    @ApiProperty({
-        type: 'string',
-        example: Examples.DB_ID
-    })
-    @IsOptional()
-    @IsString()
-    schemaId2?: string;
-
-    @ApiProperty({
-        type: 'object',
-        properties: {
-            type: {
-                type: 'string',
-                enum: [
-                    'id',
-                    'policy-message',
-                    'policy-file',
-                ],
-            },
-            value: {
-                description: 'Schema ID',
-                type: 'string'
-            },
-            policy: {
-                oneOf: [
-                    {
-                        description: 'Policy Message ID',
-                        type: 'string'
-                    },
-                    {
-                        description: 'Policy File',
-                        type: 'object',
-                        properties: {
-                            id: {
-                                description: 'File ID',
-                                type: 'string'
-                            },
-                            name: {
-                                description: 'File Name',
-                                type: 'string'
-                            },
-                            value: {
-                                description: 'Buffer',
-                                type: 'string'
-                            },
-                        }
-                    },
-                ],
-            },
-        },
-        isArray: true,
-        example: [{
-            type: 'id',
-            value: Examples.DB_ID
-        }, {
-            type: 'policy-message',
-            value: Examples.UUID,
-            policy: Examples.MESSAGE_ID
-        }]
-    })
-    @IsOptional()
-    @IsArray()
-    schemas?: {
-        type: 'id' | 'policy-message' | 'policy-file',
-        value: string,
-        policy?: string | {
-            id: string,
-            name: string,
-            value: string
-        }
-    }[];
-
-    @ApiProperty({
-        oneOf: [
-            { type: 'string' },
-            { type: 'number' },
-        ],
-        enum: [0, 1],
-        example: 0
-    })
-    @IsOptional()
-    @Validate(IsNumberOrString)
-    idLvl?: number | string;
-}
-
 export class FilterDocumentsDTO extends Options {
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -272,6 +305,7 @@ export class FilterDocumentsDTO extends Options {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -281,6 +315,7 @@ export class FilterDocumentsDTO extends Options {
     @ApiProperty({
         type: 'string',
         isArray: true,
+        required: false,
         example: [
             Examples.DB_ID,
             Examples.DB_ID
@@ -294,6 +329,7 @@ export class FilterDocumentsDTO extends Options {
 export class FilterToolsDTO extends Options {
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -302,6 +338,7 @@ export class FilterToolsDTO extends Options {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -311,6 +348,7 @@ export class FilterToolsDTO extends Options {
     @ApiProperty({
         type: 'string',
         isArray: true,
+        required: false,
         example: [
             Examples.DB_ID,
             Examples.DB_ID
@@ -324,6 +362,7 @@ export class FilterToolsDTO extends Options {
 export class FilterSearchPoliciesDTO {
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -337,6 +376,7 @@ export class FilterSearchPoliciesDTO {
             'Local',
             'Global'
         ],
+        required: false,
         example: 'Local'
     })
     @IsOptional()
@@ -345,6 +385,7 @@ export class FilterSearchPoliciesDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DID
     })
     @IsOptional()
@@ -353,6 +394,7 @@ export class FilterSearchPoliciesDTO {
 
     @ApiProperty({
         type: 'number',
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -361,6 +403,7 @@ export class FilterSearchPoliciesDTO {
 
     @ApiProperty({
         type: 'number',
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -369,6 +412,7 @@ export class FilterSearchPoliciesDTO {
 
     @ApiProperty({
         type: 'number',
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -377,6 +421,7 @@ export class FilterSearchPoliciesDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: 'Policy name'
     })
     @IsOptional()
@@ -387,6 +432,7 @@ export class FilterSearchPoliciesDTO {
         type: 'number',
         minimum: 0,
         maximum: 100,
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -418,6 +464,7 @@ export class SearchPolicyDTO {
             'Local',
             'Global',
         ],
+        required: false,
         example: 'Local'
     })
     @IsOptional()
@@ -426,6 +473,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
@@ -434,6 +482,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.ACCOUNT_ID
     })
     @IsOptional()
@@ -442,6 +491,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.MESSAGE_ID
     })
     @IsOptional()
@@ -450,6 +500,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.UUID
     })
     @IsOptional()
@@ -458,6 +509,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: 'Policy name'
     })
     @IsOptional()
@@ -466,6 +518,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: 'Policy description'
     })
     @IsOptional()
@@ -474,6 +527,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: '1.0.0'
     })
     @IsOptional()
@@ -483,6 +537,7 @@ export class SearchPolicyDTO {
     @ApiProperty({
         type: 'string',
         enum: PolicyType,
+        required: false,
         example: PolicyType.DRAFT
     })
     @IsOptional()
@@ -491,6 +546,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
         example: Examples.DID
     })
     @IsOptional()
@@ -499,7 +555,9 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'object',
-        isArray: true
+        isArray: true,
+        required: false,
+        example: 'Tag'
     })
     @IsOptional()
     @IsArray()
@@ -507,6 +565,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'number',
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -515,6 +574,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'number',
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -523,6 +583,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'number',
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -531,6 +592,7 @@ export class SearchPolicyDTO {
 
     @ApiProperty({
         type: 'number',
+        required: false,
         example: 0
     })
     @IsOptional()
@@ -542,7 +604,7 @@ export class SearchPolicyDTO {
 export class SearchPoliciesDTO {
     @ApiProperty({
         type: 'object',
-        required: true
+        required: false
     })
     @IsOptional()
     @IsObject()

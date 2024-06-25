@@ -151,6 +151,28 @@ export class AnalyticsApi {
                     childrenLvl: '0',
                     idLvl: '0'
                 }
+            },
+            Filter3: {
+                value: {
+                    policies: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'message',
+                        value: Examples.MESSAGE_ID
+                    }, {
+                        type: 'file',
+                        value: {
+                            id: Examples.UUID,
+                            name: 'File Name',
+                            value: 'base64...'
+                        }
+                    }],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
             }
         }
     })
@@ -500,6 +522,28 @@ export class AnalyticsApi {
             Filter2: {
                 value: {
                     policyIds: [Examples.DB_ID, Examples.DB_ID],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            Filter3: {
+                value: {
+                    policies: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'message',
+                        value: Examples.MESSAGE_ID
+                    }, {
+                        type: 'file',
+                        value: {
+                            id: Examples.UUID,
+                            name: 'File Name',
+                            value: 'base64...'
+                        }
+                    }],
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
