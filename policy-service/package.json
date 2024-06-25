@@ -84,6 +84,9 @@
         "dist"
     ],
     "name": "policy-service",
+    "imports": {
+      "#constants": "./dist/constants/index.js"
+    },
     "scripts": {
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",

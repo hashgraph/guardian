@@ -1,15 +1,18 @@
 import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body, Req } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { CACHE } from '../../constants/index.js';
-import { UseCache, InternalException, Guardians, TaskManager, ServiceError } from '#helpers';
+import { UseCache, InternalException, Guardians, TaskManager, ServiceError, CacheService, getCacheKey } from '#helpers';
+import { CACHE } from '#constants';
 
 @Controller('profiles')
 @ApiTags('profiles')
 export class ProfileApi {
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     /**
      * Get user profile.
      */
@@ -41,6 +44,7 @@ export class ProfileApi {
     })
     @ApiExtraModels(ProfileDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getProfile(
         @AuthUser() user: IAuthUser
     ): Promise<ProfileDTO> {
@@ -144,11 +148,14 @@ export class ProfileApi {
     @HttpCode(HttpStatus.NO_CONTENT)
     async setUserProfile(
         @AuthUser() user: IAuthUser,
-        @Body() profile: any
+        @Body() profile: any,
+        @Req() req
     ): Promise<void> {
         const username: string = user.username;
         const guardians = new Guardians();
         await guardians.createUserProfileCommon(username, profile);
+
+        await this.cacheService.invalidate(getCacheKey([req.url], req.user))
     }
 
     /**

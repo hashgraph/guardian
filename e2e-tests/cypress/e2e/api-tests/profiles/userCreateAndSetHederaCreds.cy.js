@@ -1,8 +1,8 @@
-import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Profiles', { tags: '@profiles' }, () => {
+context('Profiles', {tags: '@profiles'}, () => {
     const authorization = Cypress.env("authorization");
     let did
 
@@ -13,8 +13,8 @@ context('Profiles', { tags: '@profiles' }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            did = resp.body[0].did
+        }).then((response) => {
+            did = response.body[0].did
         });
     });
 
@@ -33,8 +33,9 @@ context('Profiles', { tags: '@profiles' }, () => {
         };
         cy.request(options)
             .then((response) => {
-                expect(response.status).to.eq(201)
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS)
                 expect(response.body.username).to.equal(name)
+                expect(response.body.permissionsGroup.at(0).roleName).to.equal('Default policy user')
                 cy.request({
                     method: 'POST',
                     url: API.ApiServer + 'accounts/login',
@@ -53,35 +54,18 @@ context('Profiles', { tags: '@profiles' }, () => {
                         }).then((response) => {
                             let accessToken = 'Bearer ' + response.body.accessToken
                             cy.request({
-                                method: METHOD.GET,
-                                url: API.ApiServer + API.RandomKey,
-                                headers: { authorization },
-                            }).then((resp) => {
-                                expect(resp.status).eql(STATUS_CODE.OK);
-                                expect(resp.body).to.have.property("id");
-                                expect(resp.body).to.have.property("key");
-                                cy.request({
-                                    method: 'PUT',
-                                    url: API.ApiServer + 'profiles/' + name,
-                                    headers: {
-                                        authorization: accessToken
-                                    },
-                                    body: {
-                                        fireblocksConfig: {
-                                            fireBlocksVaultId: "",
-                                            fireBlocksAssetId: "",
-                                            fireBlocksApiKey: "",
-                                            fireBlocksPrivateiKey: ""
-                                        },
-                                        hederaAccountId: resp.body.id,
-                                        hederaAccountKey: resp.body.key,
-                                        parent: did,
-                                        useFireblocksSigning: false,
-                                        vcDocument: { field0: "" }
-                                    },
-                                    timeout: 200000
-                                })
-                            });
+                                method: 'PUT',
+                                url: API.ApiServer + 'profiles/' + name,
+                                headers: {
+                                    authorization: accessToken
+                                },
+                                body: {
+                                    hederaAccountId: "0.0.2954463",
+                                    hederaAccountKey: "3030020100300706052b8104000a042204200501fd610df433a7dd202faa6864d5f270dbb129ccc6455ab5cb1ee44838cab8",
+                                    parent: did
+                                },
+                                timeout: 200000
+                            })
                         })
                     })
             })
@@ -102,11 +86,12 @@ context('Profiles', { tags: '@profiles' }, () => {
         };
         cy.request(options)
             .then((response) => {
-                let role = response.body.role
+                let role = response.body.permissionsGroup.at(0).roleName
                 let username = response.body.username
 
-                expect(response.status).to.eq(201)
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS)
                 expect(username).to.equal(name)
+                expect(role).to.equal('Default policy user')
 
                 cy.request({
                     method: 'POST',
@@ -118,7 +103,7 @@ context('Profiles', { tags: '@profiles' }, () => {
                     }
                 })
                     .then((response) => {
-                        expect(response.status).to.eq(200)
+                        expect(response.status).to.eq(STATUS_CODE.OK)
                         let accessToken = 'bearer ' + response.body.accessToken
                         cy.request({
                             method: 'PUT',
@@ -141,11 +126,9 @@ context('Profiles', { tags: '@profiles' }, () => {
                             timeout: 200000
                         })
                             .then((response) => {
-                                expect(response.status).to.eq(401)
+                                expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
                             })
                     })
             })
     })
 })
-
-

@@ -5,7 +5,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
     const authorization = Cypress.env("authorization");
     let artifactId;
 
-    before(() => {
+    beforeEach(() => {
         cy.fixture("remoteWorkGHGPolicy.policy", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
