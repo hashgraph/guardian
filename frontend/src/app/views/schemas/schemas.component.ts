@@ -945,11 +945,12 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onOpenForm(schema: Schema, example: boolean): void {
+        console.log('schema', schema);
         const dialogRef = this.dialog.open(SchemaFormDialog, {
             width: '950px',
             panelClass: 'g-dialog',
             disableClose: true,
-            data: { schema, example }
+            data: { schema, example, category: this.getCategory() },
         });
         dialogRef.afterClosed().subscribe(async (exampleDate: any) => {
             if (exampleDate) {
@@ -968,6 +969,9 @@ export class SchemaConfigComponent implements OnInit {
                 document: element?.document,
                 title: 'Schema',
                 type: 'JSON',
+                topicId: element.topicId,
+                schemaId: element.id,
+                category: this.getCategory()
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });
@@ -1132,7 +1136,8 @@ export class SchemaConfigComponent implements OnInit {
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
-                scheme: newDocument
+                scheme: newDocument,
+                category: this.getCategory()
             }
         });
         dialogRef.afterClosed().subscribe(async (copyInfo: any | null) => {
