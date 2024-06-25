@@ -8,38 +8,54 @@ export interface ILocalPolicy {
     value: string
 }
 
-export interface IPolicyFile {
-    type: 'file',
-    value: any
-}
-
 export interface IPolicyMessage {
     type: 'message',
     value: string
+}
+
+export interface IPolicyFile {
+    type: 'file',
+    value: {
+        id: string,
+        name: string,
+        value: string
+    }
+}
+
+export interface IAnyPolicy {
+    type: 'id' | 'file' | 'message',
+    value: string | {
+        id: string,
+        name: string,
+        value: string
+    }
 }
 
 /**
  * Loader
  */
 export class PolicyLoader {
-    public static async load(
-        policy: ILocalPolicy | IPolicyFile | IPolicyMessage,
-        user: IOwner
-    ) {
-        if (policy.type === 'id') {
-            return await PolicyLoader.loadById(policy.value);
-        } else if (policy.type === 'file') {
-            return await PolicyLoader.loadByFile(policy.value);
-        } else if (policy.type === 'message') {
-            return await PolicyLoader.loadByMessage(policy.value, user);
+    public static async load(policyId: string): Promise<IPolicyData>
+    public static async load(policy: IAnyPolicy, user: IOwner): Promise<IPolicyData>
+    public static async load(policy: IAnyPolicy | string, user?: IOwner): Promise<IPolicyData> {
+        if (typeof policy === 'string') {
+            return await PolicyLoader.loadById({ type: 'id', value: policy });
         } else {
-            throw new Error('Unknown policy');
+            if (policy.type === 'id') {
+                return await PolicyLoader.loadById(policy as ILocalPolicy);
+            } else if (policy.type === 'file') {
+                return await PolicyLoader.loadByFile(policy as IPolicyFile);
+            } else if (policy.type === 'message') {
+                return await PolicyLoader.loadByMessage(policy as IPolicyMessage, user);
+            } else {
+                throw new Error('Unknown policy');
+            }
         }
     }
 
-    public static async loadById(
-        policyId: string
-    ): Promise<IPolicyData> {
+    private static async loadById(item: ILocalPolicy): Promise<IPolicyData> {
+        const policyId = item.value;
+
         //Policy
         const policy = await DatabaseServer.getPolicyById(policyId);
 
@@ -66,16 +82,19 @@ export class PolicyLoader {
         return { policy, schemas, tokens, artifacts, type: 'id' };
     }
 
-    public static async loadByFile(b64string: any): Promise<IPolicyData> {
-        const result = await PolicyImportExport.parseZipFile(Buffer.from(b64string, 'base64'), true);
-        result.policy.id = 'file';
-        return { ...result, type: 'file'};
+    private static async loadByFile(item: IPolicyFile): Promise<IPolicyData> {
+        const file = item.value;
+        if (!file) {
+            throw new Error('File is empty');
+        }
+
+        const result = await PolicyImportExport.parseZipFile(Buffer.from(file.value, 'base64'), true);
+        result.policy.id = file.id;
+        return { ...result, type: 'file' };
     }
 
-    public static async loadByMessage(
-        messageId: string,
-        user: IOwner
-    ): Promise<IPolicyData> {
+    private static async loadByMessage(item: IPolicyMessage, user: IOwner): Promise<IPolicyData> {
+        const messageId = item.value;
         if (!messageId) {
             throw new Error('Policy ID in body is empty');
         }
@@ -95,7 +114,7 @@ export class PolicyLoader {
 
         const result = await PolicyImportExport.parseZipFile(message.document, true);
         result.policy.id = messageId;
-        return { ...result, type: 'message'};
+        return { ...result, type: 'message' };
     }
 
     /**

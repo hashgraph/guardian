@@ -8,7 +8,11 @@ import { Subject, Subscription } from 'rxjs';
 export class CompareStorage {
     private readonly name: string = 'COMPARE_IDS';
     private subject: Subject<unknown>;
-    private readonly files: any[] = [];
+    private readonly files: Map<string, {
+        id: string,
+        name: string,
+        value: string
+    }> = new Map();
 
     constructor() {
         this.subject = new Subject();
@@ -58,11 +62,11 @@ export class CompareStorage {
     public saveFile(name: string, arrayBuffer: ArrayBuffer): string {
         const id = GenerateUUIDv4();
         const value = btoa(new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-        this.files.push({ id, name, value });
+        this.files.set(id, { id, name, value });
         return id;
     }
 
-    public getFile(id: string): any {
-        return this.files.find((f) => f.id === id);
+    public getFile(id: string) {
+        return this.files.get(id);
     }
 }

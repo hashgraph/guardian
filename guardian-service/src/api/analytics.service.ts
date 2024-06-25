@@ -217,7 +217,11 @@ export async function analyticsAPI(): Promise<void> {
             type: string,
             policies: {
                 type: 'id' | 'file' | 'message',
-                value: any
+                value: string | {
+                    id: string,
+                    name: string,
+                    value: string
+                }
             }[],
             options: {
                 propLvl: string | number,
@@ -312,9 +316,13 @@ export async function analyticsAPI(): Promise<void> {
             user: IOwner,
             type: string,
             schemas: {
-                type: 'id' | 'policy-message',
-                value: any,
-                policy?: any
+                type: 'id' | 'policy-message' | 'policy-file',
+                value: string,
+                policy?: string | {
+                    id: string,
+                    name: string,
+                    value: string
+                }
             }[],
             idLvl: string | number
         }) => {

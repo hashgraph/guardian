@@ -1167,7 +1167,11 @@ export class Guardians extends NatsService {
         type: string,
         policies: {
             type: 'id' | 'file' | 'message',
-            value: any
+            value: string | {
+                id: string,
+                name: string,
+                value: string
+            }
         }[],
         eventsLvl: string | number,
         propLvl: string | number,
@@ -1231,9 +1235,13 @@ export class Guardians extends NatsService {
         user: IOwner,
         type: string,
         schemas: {
-            type: 'id' | 'policy-message',
-            value: any,
-            policy?: any
+            type: 'id' | 'policy-message' | 'policy-file',
+            value: string,
+            policy?: string | {
+                id: string,
+                name: string,
+                value: string
+            }
         }[],
         idLvl: string | number
     ): Promise<any> {

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import BlockIcons from '../../policy-engine/services/block-icons';
+import { CompareStorage } from 'src/app/services/compare-storage.service';
 
 @Component({
     selector: 'app-multi-compare-policy',
@@ -42,7 +43,7 @@ export class MultiComparePolicyComponent implements OnInit {
     public _scroll = 0;
     public _gridStyle = '';
 
-    constructor() {
+    constructor(private compareStorage: CompareStorage) {
     }
 
     ngOnInit() {
@@ -463,7 +464,11 @@ export class MultiComparePolicyComponent implements OnInit {
                 policy: policy.id
             }
         } else if (policy?.type === 'file') {
-            return null
+            return {
+                type: 'policy-file',
+                value: schema?.value,
+                policy: policy.id
+            }
         } else {
             return {
                 type: 'id',
@@ -514,5 +519,12 @@ export class MultiComparePolicyComponent implements OnInit {
         document.querySelectorAll('.left-tree').forEach(el => {
             el.scrollLeft = event.target.scrollLeft;
         })
+    }
+
+    public getPolicyId(policy: any): string {
+        if (policy.type === 'file') {
+            return this.compareStorage.getFile(policy.id)?.name || policy.id;
+        }
+        return policy.id;
     }
 }

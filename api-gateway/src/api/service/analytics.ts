@@ -8,7 +8,11 @@ import { Guardians, ONLY_SR, InternalException } from '#helpers';
 
 function getPolicyId(filters: FilterPoliciesDTO): {
     type: 'id' | 'file' | 'message',
-    value: any
+    value: string | {
+        id: string,
+        name: string,
+        value: string
+    }
 }[] {
     if (!filters) {
         throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -36,9 +40,13 @@ function getPolicyId(filters: FilterPoliciesDTO): {
 }
 
 function getSchemaId(filters: FilterSchemasDTO): {
-    type: 'id' | 'policy-message',
-    value: any,
-    policy?: any
+    type: 'id' | 'policy-message' | 'policy-file',
+    value: string,
+    policy?: string | {
+        id: string,
+        name: string,
+        value: string
+    }
 }[] {
     if (!filters) {
         throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);

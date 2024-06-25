@@ -91,7 +91,34 @@ export class FilterPoliciesDTO extends Options {
                 enum: ['id', 'message', 'file']
             },
             value: {
-                type: 'string'
+                oneOf: [
+                    {
+                        description: 'Policy ID',
+                        type: 'string'
+                    },
+                    {
+                        description: 'Policy Message ID',
+                        type: 'string'
+                    },
+                    {
+                        description: 'Policy File',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                description: 'File ID',
+                                type: 'string'
+                            },
+                            name: {
+                                description: 'File Name',
+                                type: 'string'
+                            },
+                            value: {
+                                description: 'Buffer',
+                                type: 'string'
+                            },
+                        }
+                    },
+                ],
             }
         },
         isArray: true,
@@ -101,13 +128,24 @@ export class FilterPoliciesDTO extends Options {
         }, {
             type: 'message',
             value: Examples.MESSAGE_ID
+        }, {
+            type: 'file',
+            value: {
+                id: Examples.UUID,
+                name: 'File Name',
+                value: 'base64...'
+            }
         }]
     })
     @IsOptional()
     @IsArray()
     policies?: {
         type: 'id' | 'file' | 'message',
-        value: string
+        value: string | {
+            id: string,
+            name: string,
+            value: string
+        }
     }[];
 }
 
@@ -151,13 +189,41 @@ export class FilterSchemasDTO {
         properties: {
             type: {
                 type: 'string',
-                enum: ['id', 'policy'],
+                enum: [
+                    'id',
+                    'policy-message',
+                    'policy-file',
+                ],
             },
             value: {
+                description: 'Schema ID',
                 type: 'string'
             },
             policy: {
-                type: 'string'
+                oneOf: [
+                    {
+                        description: 'Policy Message ID',
+                        type: 'string'
+                    },
+                    {
+                        description: 'Policy File',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                description: 'File ID',
+                                type: 'string'
+                            },
+                            name: {
+                                description: 'File Name',
+                                type: 'string'
+                            },
+                            value: {
+                                description: 'Buffer',
+                                type: 'string'
+                            },
+                        }
+                    },
+                ],
             },
         },
         isArray: true,
@@ -165,16 +231,21 @@ export class FilterSchemasDTO {
             type: 'id',
             value: Examples.DB_ID
         }, {
-            type: 'policy',
-            value: `${Examples.MESSAGE_ID}|${Examples.UUID}`
+            type: 'policy-message',
+            value: Examples.UUID,
+            policy: Examples.MESSAGE_ID
         }]
     })
     @IsOptional()
     @IsArray()
     schemas?: {
-        type: 'id' | 'policy-message',
+        type: 'id' | 'policy-message' | 'policy-file',
         value: string,
-        policy?: string
+        policy?: string | {
+            id: string,
+            name: string,
+            value: string
+        }
     }[];
 
     @ApiProperty({

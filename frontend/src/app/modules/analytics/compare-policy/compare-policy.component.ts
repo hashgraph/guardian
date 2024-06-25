@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import BlockIcons from '../../policy-engine/services/block-icons';
+import { CompareStorage } from 'src/app/services/compare-storage.service';
 
 @Component({
     selector: 'app-compare-policy',
     templateUrl: './compare-policy.component.html',
-    styleUrls: ['./compare-policy.component.css']
+    styleUrls: ['./compare-policy.component.scss']
 })
 export class ComparePolicyComponent implements OnInit {
     @Input('value') value!: any;
@@ -16,32 +17,31 @@ export class ComparePolicyComponent implements OnInit {
 
     @Output() change = new EventEmitter<any>();
 
-    panelOpenState = true;
+    public panelOpenState = true;
 
-    policy1: any;
-    policy2: any;
-    total!: any;
+    public policy1: any;
+    public policy2: any;
+    public total!: any;
 
-    blocks!: any[];
-    topics!: any[];
-    tokens!: any[];
-    groups!: any[];
-    roles!: any[];
+    public blocks!: any[];
+    public topics!: any[];
+    public tokens!: any[];
+    public groups!: any[];
+    public roles!: any[];
 
-    displayedColumns: string[] = [];
-    columns: any[] = [];
+    public displayedColumns: string[] = [];
+    public columns: any[] = [];
 
-    icons: any = Object.assign({}, BlockIcons);
+    public icons: any = Object.assign({}, BlockIcons);
 
-    type1 = true;
-    type2 = true;
-    type3 = true;
-    type4 = true;
+    public type1 = true;
+    public type2 = true;
+    public type3 = true;
+    public type4 = true;
 
-    _pOffset = 30;
-    _scroll = 0;
+    public _pOffset = 30;
 
-    constructor() {
+    constructor(private compareStorage: CompareStorage) {
     }
 
     ngOnInit() {
@@ -99,7 +99,7 @@ export class ComparePolicyComponent implements OnInit {
         this.onRender();
     }
 
-    onRender() {
+    private onRender() {
     }
 
     private getSchemaId(schema: any, policy: any): any {
@@ -110,7 +110,11 @@ export class ComparePolicyComponent implements OnInit {
                 policy: policy.id
             }
         } else if (policy?.type === 'file') {
-            return null
+            return {
+                type: 'policy-file',
+                value: schema?.value,
+                policy: policy.id
+            }
         } else {
             return {
                 type: 'id',
@@ -119,7 +123,7 @@ export class ComparePolicyComponent implements OnInit {
         }
     }
 
-    compareSchema(prop: any) {
+    public compareSchema(prop: any) {
         this.change.emit({
             type: 'schema',
             schemaIds: [
@@ -129,7 +133,7 @@ export class ComparePolicyComponent implements OnInit {
         })
     }
 
-    onCollapse(item: any) {
+    public onCollapse(item: any) {
         const hidden = item._collapse == 1;
         if (hidden) {
             item._collapse = 2;
@@ -146,9 +150,10 @@ export class ComparePolicyComponent implements OnInit {
         }
     }
 
-    onScroll(event: any) {
-        document.querySelectorAll('.left-tree').forEach(el => {
-            el.scrollLeft = event.target.scrollLeft;
-        })
+    public getPolicyId(policy: any): string {
+        if (policy.type === 'file') {
+            return this.compareStorage.getFile(policy.id)?.name || policy.id;
+        }
+        return policy.id;
     }
 }

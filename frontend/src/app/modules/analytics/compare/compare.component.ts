@@ -133,27 +133,29 @@ export class CompareComponent implements OnInit {
     }
 
     private getItems(): any[] {
-        const items = [];
+        const results = [];
         for (const item of this.items) {
+            const result = { ...item };
             if (item.type === 'file') {
                 const file = this.compareStorage.getFile(item.value);
                 if (!file) {
-                    return []
+                    continue;
                 }
-                items.push({
-                    ...item,
-                    value: file.value
-                })
-            } else {
-                items.push({
-                    ...item
-                })
+                result.value = file;
+            } else if (item.type === 'policy-file') {
+                const file = this.compareStorage.getFile(item.policy);
+                if (!file) {
+                    continue;
+                }
+                result.policy = file;
             }
+            results.push(result)
         }
-        return items;
+        return results;
     }
 
     private loadDocument() {
+        this.error = null;
         const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
@@ -179,6 +181,7 @@ export class CompareComponent implements OnInit {
     }
 
     private downloadDocuments() {
+        this.error = null;
         const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
@@ -203,6 +206,7 @@ export class CompareComponent implements OnInit {
     }
 
     private loadPolicy() {
+        this.error = null;
         const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
@@ -228,6 +232,7 @@ export class CompareComponent implements OnInit {
     }
 
     private downloadPolicy() {
+        this.error = null;
         const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
@@ -252,6 +257,7 @@ export class CompareComponent implements OnInit {
     }
 
     private loadSchema() {
+        this.error = null;
         const ids = this.getItems();
         if (!ids || ids.length < 2) {
             this.error = 'Invalid params';
@@ -275,6 +281,7 @@ export class CompareComponent implements OnInit {
     }
 
     private downloadSchema() {
+        this.error = null;
         const ids = this.getItems();
         if (!ids || ids.length < 2) {
             this.error = 'Invalid params';
@@ -297,6 +304,7 @@ export class CompareComponent implements OnInit {
     }
 
     private loadModule() {
+        this.error = null;
         const ids = this.getIds();
         if (!ids || ids.length < 2) {
             this.error = 'Invalid params';
@@ -324,6 +332,7 @@ export class CompareComponent implements OnInit {
     }
 
     private downloadModule() {
+        this.error = null;
         const ids = this.getIds();
         if (!ids || ids.length < 2) {
             this.error = 'Invalid params';
@@ -350,6 +359,7 @@ export class CompareComponent implements OnInit {
     }
 
     private loadTool() {
+        this.error = null;
         const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
@@ -375,6 +385,7 @@ export class CompareComponent implements OnInit {
     }
 
     private downloadTools() {
+        this.error = null;
         const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,

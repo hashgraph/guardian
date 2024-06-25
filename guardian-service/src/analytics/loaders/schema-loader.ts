@@ -8,27 +8,45 @@ export interface ILocalSchema {
     value: string
 }
 
-export interface IPolicySchema {
+export interface IPolicyMessageSchema {
     type: 'policy-message',
     value: any,
-    policy?: any
+    policy: string
+}
+
+export interface IPolicyFileSchema {
+    type: 'policy-file',
+    value: any,
+    policy: {
+        id: string,
+        name: string,
+        value: string
+    }
+}
+
+export interface IAnySchema {
+    type: 'id' | 'policy-message' | 'policy-file',
+    value: string,
+    policy?: string | {
+        id: string,
+        name: string,
+        value: string
+    }
 }
 
 /**
  * Loader
  */
 export class SchemaLoader {
-    public static async loadById(schemaId: string): Promise<ISchemaData> {
-        const schema = await DatabaseServer.getSchemaById(schemaId);
+    public static async loadById(item: ILocalSchema): Promise<ISchemaData> {
+        const schema = await DatabaseServer.getSchemaById(item.value);
         const policy = await DatabaseServer.getPolicy({ topicId: schema?.topicId });
         return { schema, policy };
     }
 
-    public static async loadByPolicy(
-        schemaId: string,
-        messageId: string,
-        user: IOwner
-    ): Promise<ISchemaData> {
+    public static async loadByPolicyMessage(item: IPolicyMessageSchema, user: IOwner): Promise<ISchemaData> {
+        const messageId = item.policy;
+        const schemaId = item.value;
         if (!messageId) {
             throw new Error('Policy ID in body is empty');
         }
@@ -57,14 +75,35 @@ export class SchemaLoader {
         return { policy, schema };
     }
 
+    public static async loadByPolicyFile(item: IPolicyFileSchema): Promise<ISchemaData> {
+        const file = item.policy;
+        const schemaId = item.value;
+
+        if (!file) {
+            throw new Error('File is empty');
+        }
+
+        const { policy, schemas } = await PolicyImportExport.parseZipFile(Buffer.from(file.value, 'base64'), true);
+        const schema = schemas.find((e) => e.iri === schemaId);
+        if (policy) {
+            policy.id = file.id;
+        }
+        if (schema) {
+            schema.id = schema.messageId || schema.iri;
+        }
+        return { policy, schema };
+    }
+
     public static async load(
-        schema: ILocalSchema | IPolicySchema,
+        schema: IAnySchema,
         user: IOwner
     ): Promise<ISchemaData> {
         if (schema.type === 'id') {
-            return await SchemaLoader.loadById(schema.value);
+            return await SchemaLoader.loadById(schema as ILocalSchema);
         } else if (schema.type === 'policy-message') {
-            return await SchemaLoader.loadByPolicy(schema.value, schema.policy, user);
+            return await SchemaLoader.loadByPolicyMessage(schema as IPolicyMessageSchema, user);
+        } else if (schema.type === 'policy-file') {
+            return await SchemaLoader.loadByPolicyFile(schema as IPolicyFileSchema);
         } else {
             throw new Error('Unknown policy');
         }

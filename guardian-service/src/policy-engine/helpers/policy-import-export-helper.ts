@@ -391,7 +391,7 @@ export class PolicyImportExportHelper {
      */
     public static async updatePolicyComponents(policy: Policy): Promise<Policy> {
         try {
-            const raw = await PolicyLoader.loadById(policy.id.toString());
+            const raw = await PolicyLoader.load(policy.id.toString());
             const compareModel = await PolicyLoader.create(raw, HashComparator.options);
             const { hash, hashMap } = await HashComparator.createHashMap(compareModel);
             policy.hash = hash;
