@@ -139,9 +139,9 @@ export class SchemaDialog {
             this.subSchemas = data.subSchemas;
 
             if(this.scheme && data.schema) {
-                this.scheme.fields = new Schema(data.schema).fields
+                this.scheme = new Schema(data.schema)
 
-                this.schemaControl.updateFormControls();
+                setTimeout(()=>this.schemaControl.updateFormControls(), 50)
             }
 
             const subSchemas = SchemaHelper.map(data.subSchemas || []);
