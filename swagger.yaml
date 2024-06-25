@@ -10816,7 +10816,7 @@ paths:
       parameters:
         - name: q
           required: true
-          in: path
+          in: query
           description: The question of choosing a methodology
           example: Find me large scale projects
           schema:
