@@ -12000,12 +12000,33 @@ components:
                 - message
                 - file
             value:
-              type: string
+              oneOf:
+                - description: Policy ID
+                  type: string
+                - description: Policy Message ID
+                  type: string
+                - description: Policy File
+                  type: object
+                  properties:
+                    id:
+                      description: File ID
+                      type: string
+                    name:
+                      description: File Name
+                      type: string
+                    value:
+                      description: Buffer
+                      type: string
           example:
             - type: id
               value: '000000000000000000000001'
             - type: message
               value: '0000000000.000000001'
+            - type: file
+              value:
+                id: 00000000-0000-0000-0000-000000000000
+                name: File Name
+                value: base64...
           type: array
           items:
             type: object
@@ -12118,16 +12139,33 @@ components:
               type: string
               enum:
                 - id
-                - policy
+                - policy-message
+                - policy-file
             value:
+              description: Schema ID
               type: string
             policy:
-              type: string
+              oneOf:
+                - description: Policy Message ID
+                  type: string
+                - description: Policy File
+                  type: object
+                  properties:
+                    id:
+                      description: File ID
+                      type: string
+                    name:
+                      description: File Name
+                      type: string
+                    value:
+                      description: Buffer
+                      type: string
           example:
             - type: id
               value: '000000000000000000000001'
-            - type: policy
-              value: 0000000000.000000001|00000000-0000-0000-0000-000000000000
+            - type: policy-message
+              value: 00000000-0000-0000-0000-000000000000
+              policy: '0000000000.000000001'
           type: array
           items:
             type: object
