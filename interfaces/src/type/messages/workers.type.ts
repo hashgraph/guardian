@@ -64,6 +64,26 @@ export interface IWorkerRequest {
  */
 export interface ITask {
     /**
+     * UserId
+     */
+    userId?: string | null | undefined;
+
+    /**
+     * Task ID
+     */
+    taskId?: string;
+
+    /**
+     * Attempts
+     */
+    attempts?: number;
+
+    /**
+     * Is retryable task
+     */
+    isRetryableTask?: boolean;
+
+    /**
      * Task ID
      */
     id?: string;
@@ -87,6 +107,11 @@ export interface ITask {
      * Sent
      */
     sent?: boolean;
+
+    /**
+     * attempt
+     */
+    attempt?: number
 
 }
 

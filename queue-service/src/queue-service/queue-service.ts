@@ -1,0 +1,184 @@
+import { DataBaseHelper, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
+import { TaskEntity } from '../entity/task';
+
+@Singleton
+export class QueueService extends NatsService{
+    public messageQueueName = 'queue-service';
+    public replySubject = 'reply-queue-service-' + GenerateUUIDv4();
+
+    private refreshInterval = 1 * 1000; // 1s
+
+    public async init() {
+        await super.init();
+
+        // worker job
+        setInterval(async () => {
+            await this.refreshAndReassignTasks();
+            await this.clearOldTasks();
+        }, this.refreshInterval);
+
+        this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, (task: ITask) => {
+            try {
+                this.addTaskToQueue(task);
+                return new MessageResponse({
+                    ok: true
+                });
+            } catch (error) {
+                return new MessageResponse({
+                    ok: false,
+                    reason: error.message,
+                })
+            }
+        });
+
+        this.getMessages(WorkerEvents.TASK_COMPLETE, async (data: any) => {
+            if (!data.error) {
+                await this.completeTaskInQueue(data.id, data.data);
+                return;
+            }
+            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.id});
+            if (task.isRetryableTask) {
+                if (task.attempts < task.attempt) {
+                    task.processedTime = null;
+                    task.sent = false;
+                    task.attempt = task.attempt + 1;
+                }
+            } else {
+                task.attempt = 0;
+                task.isError = true;
+                task.errorReason = data.error;
+            }
+            await new DataBaseHelper(TaskEntity).save(task);
+        });
+
+        this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: { userId: string, pageIndex: number, pageSize: number }) => {
+            const {userId, pageSize, pageIndex} = data;
+            const options =
+                typeof pageIndex === 'number' && typeof pageSize === 'number'
+                    ? {
+                        orderBy: {
+                            createDate: OrderDirection.DESC,
+                        },
+                        limit: pageSize,
+                        offset: pageIndex * pageSize,
+                    }
+                    : {
+                        orderBy: {
+                            processedTime: OrderDirection.DESC,
+                        },
+                    };
+            const result = await new DataBaseHelper(TaskEntity).findAndCount({userId}, options);
+            return new MessageResponse(result);
+        })
+
+        this.getMessages(QueueEvents.RESTART_TASK, async (data: { taskId: string }) => {
+            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.taskId});
+            task.isError = false;
+            task.attempt = 0;
+            task.sent = false;
+            task.processedTime = null;
+            task.errorReason = undefined;
+            await new DataBaseHelper(TaskEntity).save(task);
+        });
+
+        this.getMessages(QueueEvents.DELETE_TASK, async (data: { taskId: string }) => {
+            await new DataBaseHelper(TaskEntity).delete({taskId: data.taskId});
+        });
+    }
+
+    async addTaskToQueue(task: ITask): Promise<void> {
+        const te = new DataBaseHelper(TaskEntity).create(this.iTaskToTaskEntity(task));
+        te.processedTime = null;
+        await new DataBaseHelper(TaskEntity).save(te);
+    }
+
+    async completeTaskInQueue(taskId: string, data: any): Promise<void> {
+        const task = await new DataBaseHelper(TaskEntity).findOne({taskId});
+        console.log(task);
+        task.done = true;
+        await new DataBaseHelper(TaskEntity).save(task);
+
+        await this.publish(QueueEvents.TASK_COMPLETE, {
+            id: taskId,
+            data
+        });
+    }
+
+    private iTaskToTaskEntity(task: ITask): ITask {
+        task.taskId = task.id;
+        task.attempt = 0;
+        delete task.id;
+        return task;
+    }
+
+    private taskEntityToITask(task: TaskEntity): ITask {
+        return {
+            id: task.taskId,
+            priority: task.priority,
+            type: task.type,
+            data: task.data,
+        };
+    }
+
+    private async refreshAndReassignTasks() {
+        const workers = await this.getFreeWorkers();
+        for (const worker of workers) {
+            const task = await new DataBaseHelper(TaskEntity).findOne({
+                priority: {
+                    $gte: worker.minPriority,
+                    $lte: worker.maxPriority
+                },
+                processedTime: null
+            });
+            if (!task) {
+                continue;
+            }
+            const r = await this.sendMessage(worker.subject, this.taskEntityToITask(task)) as any;
+            if (r?.result) {
+                task.processedTime = new Date();
+                task.sent = true;
+                await new DataBaseHelper(TaskEntity).save(task);
+            } else {
+                console.log('task sent error')
+            }
+        }
+    }
+
+    private async clearOldTasks() {
+        await new DataBaseHelper(TaskEntity).delete({
+            processedTime: {
+                $lte: new Date(new Date().getTime() - 3 * 60000)
+            },
+            done: true
+        });
+    }
+
+    /**
+     * Get free workers
+     * @private
+     */
+    private getFreeWorkers(): Promise<any[]> {
+        const workers = [];
+
+        return new Promise((resolve) => {
+            this.publish(WorkerEvents.GET_FREE_WORKERS, {
+                replySubject: [this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('.')
+            });
+
+            const subscription = this.subscribe([this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('.'), (msg) => {
+                workers.push({
+                    subject: msg.subject,
+                    minPriority: msg.minPriority,
+                    maxPriority: msg.maxPriority
+                });
+            });
+
+            setTimeout(() => {
+                subscription.unsubscribe();
+                resolve(workers);
+            }, 300);
+        })
+    }
+
+}

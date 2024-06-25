@@ -1,6 +1,6 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
-import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
+import { IUser, MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 
 /**
@@ -22,8 +22,9 @@ interface DemoKey {
  * @param role
  * @param settingsRepository
  * @param notifier
+ * @param user
  */
-async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
+async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier, user: IUser): Promise<DemoKey> {
     notifier.start('Resolve settings');
 
     const secretManager = SecretManager.New();
@@ -48,7 +49,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
             operatorKey: OPERATOR_KEY,
             initialBalance
         }
-    }, 20);
+    }, 20, user);
 
     notifier.completed();
     return result;

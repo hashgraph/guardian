@@ -21,6 +21,7 @@ import {
     IVPDocument,
     MessageAPI,
     PolicyToolMetadata,
+    QueueEvents,
     RetireTokenPool,
     RetireTokenRequest,
     SchemaNode,
@@ -2786,5 +2787,27 @@ export class Guardians extends NatsService {
      */
     public async setRole(user: IAuthUser, owner: IOwner): Promise<any> {
         return await this.sendMessage(MessageAPI.SET_ROLE, { user, owner });
+    }
+
+    /**
+     * Get all worker tasks
+     * @param user
+     * @param pageIndex
+     * @param pageSize
+     */
+    public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, {userId: user.id.toString(), pageIndex, pageSize});
+    }
+
+    /**
+     * Restart task
+     * @param taskId
+     */
+    public async restartTask(taskId: string) {
+        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId});
+    }
+
+    public async deleteTask(taskId: string) {
+        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId});
     }
 }

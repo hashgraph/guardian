@@ -250,7 +250,7 @@ async function createUserProfile(
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE,
             data: { hederaAccountId, hederaAccountKey }
-        }, 20);
+        }, 20, user.id.toString());
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
@@ -617,7 +617,7 @@ export function profileAPI() {
                         hederaAccountId: user.hederaAccountId,
                         hederaAccountKey: key
                     }
-                }, 20);
+                }, 20, user.id.toString());
                 return new MessageResponse({
                     balance,
                     unit: 'Hbar',
@@ -659,7 +659,7 @@ export function profileAPI() {
                         hederaAccountId: user.hederaAccountId,
                         hederaAccountKey: key
                     }
-                }, 20);
+                }, 20, user.id.toString());
 
                 return new MessageResponse(balance);
             } catch (error) {
@@ -733,6 +733,8 @@ export function profileAPI() {
                     didKeys
                 } = profile;
 
+                const user = await new Users().getUser(username);
+
                 try {
                     const workers = new Workers();
                     AccountId.fromString(hederaAccountId);
@@ -740,7 +742,7 @@ export function profileAPI() {
                     await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
                         data: { hederaAccountId, hederaAccountKey }
-                    }, 20);
+                    }, 20, user.id.toString());
                 } catch (error) {
                     throw new Error(`Invalid Hedera account or key.`);
                 }
