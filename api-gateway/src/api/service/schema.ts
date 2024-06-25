@@ -5,7 +5,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Par
 import { AuthUser, Auth } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
 import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO, Examples, pageHeader } from '#middlewares';
-import { CACHE, SCHEMA_REQUIRED_PROPS } from '#constants';
+import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import process from 'process';
 
@@ -957,7 +957,9 @@ export class SchemaApi {
             const schemas = await guardians.updateSchema(newSchema, owner);
             SchemaHelper.updatePermission(schemas, owner);
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user))
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
