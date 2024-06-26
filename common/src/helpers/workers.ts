@@ -260,7 +260,6 @@ export class Workers extends NatsService {
      */
     private async addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true, userId?: string | null): Promise<any> {
         const taskId = task.id || GenerateUUIDv4();
-        console.log(userId, attempts);
         task.id = taskId;
         task.priority = priority;
         task.isRetryableTask = isRetryableTask;
@@ -275,7 +274,6 @@ export class Workers extends NatsService {
             }
         }
         await addTaskToQueue();
-        console.log('task added');
 
         return new Promise((resolve, reject) => {
             if (registerCallback) {
