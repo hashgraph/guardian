@@ -84,6 +84,8 @@ export class QueueService extends NatsService{
         });
 
         this.getMessages(QueueEvents.DELETE_TASK, async (data: { taskId: string }) => {
+            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.taskId});
+            await this.completeTaskInQueue(data.taskId, null, task.errorReason);
             await new DataBaseHelper(TaskEntity).delete({taskId: data.taskId});
         });
     }
