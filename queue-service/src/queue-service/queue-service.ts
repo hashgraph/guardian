@@ -159,7 +159,7 @@ export class QueueService extends NatsService{
     private async clearOldTasks() {
         await new DataBaseHelper(TaskEntity).delete({
             processedTime: {
-                $lte: new Date(new Date().getTime() - 3 * 60000)
+                $lte: new Date(new Date().getTime() - 30 * 60000)
             },
             done: true
         });
