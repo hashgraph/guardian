@@ -97,7 +97,7 @@ export class Workers extends NatsService {
      * Max Repetitions
      * @private
      */
-    private readonly maxRepetitions = 25;
+    // private readonly maxRepetitions = 25;
 
     private _wrapError(error, isTimeoutError?: boolean): any {
         if (isTimeoutError) {
