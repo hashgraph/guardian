@@ -37,6 +37,7 @@ export enum WorkerTaskType {
     GET_TOKEN_INFO = 'get-token-info',
     GET_CONTRACT_EVENTS = 'get-contract-events',
     GET_TRANSACTIONS = 'get-transaction',
+    ANALYTICS_SEARCH_POLICIES= 'analytics-search-policies',
 }
 
 /**

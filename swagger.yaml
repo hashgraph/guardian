@@ -266,6 +266,22 @@ paths:
                   propLvl: '0'
                   childrenLvl: '0'
                   idLvl: '0'
+              Filter3:
+                value:
+                  policies:
+                    - type: id
+                      value: '000000000000000000000001'
+                    - type: message
+                      value: '0000000000.000000001'
+                    - type: file
+                      value:
+                        id: 00000000-0000-0000-0000-000000000000
+                        name: File Name
+                        value: base64...
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
       responses:
         '200':
           description: Successful operation.
@@ -496,6 +512,22 @@ paths:
                   policyIds:
                     - '000000000000000000000001'
                     - '000000000000000000000001'
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              Filter3:
+                value:
+                  policies:
+                    - type: id
+                      value: '000000000000000000000001'
+                    - type: message
+                      value: '0000000000.000000001'
+                    - type: file
+                      value:
+                        id: 00000000-0000-0000-0000-000000000000
+                        name: File Name
+                        value: base64...
                   eventsLvl: '0'
                   propLvl: '0'
                   childrenLvl: '0'
@@ -10784,7 +10816,7 @@ paths:
       parameters:
         - name: q
           required: true
-          in: path
+          in: query
           description: The question of choosing a methodology
           example: Find me large scale projects
           schema:
@@ -11817,18 +11849,147 @@ components:
         policyId:
           type: string
           example: '000000000000000000000001'
-      required:
-        - policyId
+        type:
+          type: string
+          enum:
+            - Owned
+            - Local
+            - Global
+          example: Local
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        minVcCount:
+          type: number
+          example: 0
+        minVpCount:
+          type: number
+          example: 0
+        minTokensCount:
+          type: number
+          example: 0
+        text:
+          type: string
+          example: Policy name
+        threshold:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 0
+    SearchPolicyDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Local
+            - Global
+          example: Local
+        id:
+          type: string
+          example: '000000000000000000000001'
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Policy name
+        description:
+          type: string
+          example: Policy description
+        version:
+          type: string
+          example: 1.0.0
+        status:
+          type: string
+          enum:
+            - DRY-RUN
+            - DRAFT
+            - PUBLISH_ERROR
+            - PUBLISH
+            - DISCONTINUED
+          example: DRAFT
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        tags:
+          example: Tag
+          type: array
+          items:
+            type: object
+        vcCount:
+          type: number
+          example: 0
+        vpCount:
+          type: number
+          example: 0
+        tokensCount:
+          type: number
+          example: 0
+        rate:
+          type: number
+          example: 0
     SearchPoliciesDTO:
       type: object
       properties:
         target:
           type: object
         result:
-          type: object
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPolicyDTO'
       required:
-        - target
         - result
+    CompareFileDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: File ID
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          description: File Name
+          example: File Name
+        value:
+          type: string
+          description: Buffer
+          example: base64...
+      required:
+        - id
+        - name
+        - value
+    FilterPolicyDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Identifier type
+          enum:
+            - id
+            - message
+            - file
+          example: id
+        value:
+          oneOf:
+            - type: string
+              description: Policy ID
+            - type: string
+              description: Policy Message ID
+            - $ref: '#/components/schemas/CompareFileDTO'
+              description: Policy File
+          example: '000000000000000000000001'
+      required:
+        - type
+        - value
     FilterPoliciesDTO:
       type: object
       properties:
@@ -11879,14 +12040,20 @@ components:
           type: array
           items:
             type: string
-      required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
-        - policyId1
-        - policyId2
-        - policyIds
+        policies:
+          example:
+            - type: id
+              value: '000000000000000000000001'
+            - type: message
+              value: '0000000000.000000001'
+            - type: file
+              value:
+                id: 00000000-0000-0000-0000-000000000000
+                name: File Name
+                value: base64...
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterPolicyDTO'
     ComparePoliciesDTO:
       type: object
       properties:
@@ -11941,10 +12108,6 @@ components:
           type: string
           example: '000000000000000000000001'
       required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
         - moduleId1
         - moduleId2
     CompareModulesDTO:
@@ -11972,6 +12135,31 @@ components:
         - outputEvents
         - variables
         - total
+    FilterSchemaDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Identifier type
+          enum:
+            - id
+            - policy-message
+            - policy-file
+          example: id
+        value:
+          type: string
+          description: Schema ID
+          example: '000000000000000000000001'
+        policy:
+          oneOf:
+            - description: Policy Message ID
+              type: string
+            - $ref: '#/components/schemas/CompareFileDTO'
+              description: Policy File
+          example: '000000000000000000000001'
+      required:
+        - type
+        - value
     FilterSchemasDTO:
       type: object
       properties:
@@ -11981,6 +12169,22 @@ components:
         schemaId2:
           type: string
           example: '000000000000000000000001'
+        schemas:
+          example:
+            - type: id
+              value: '000000000000000000000001'
+            - type: policy-message
+              value: 00000000-0000-0000-0000-000000000000
+              policy: '0000000000.000000001'
+            - type: policy-file
+              value: 00000000-0000-0000-0000-000000000000
+              policy:
+                id: 00000000-0000-0000-0000-000000000000
+                name: File Name
+                value: base64...
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterSchemaDTO'
         idLvl:
           oneOf:
             - type: string
@@ -11989,10 +12193,6 @@ components:
             - 0
             - 1
           example: 0
-      required:
-        - schemaId1
-        - schemaId2
-        - idLvl
     CompareSchemasDTO:
       type: object
       properties:
@@ -12041,14 +12241,6 @@ components:
           type: array
           items:
             type: string
-      required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
-        - documentId1
-        - documentId2
-        - documentIds
     CompareDocumentsDTO:
       type: object
       properties:
@@ -12097,14 +12289,6 @@ components:
           type: array
           items:
             type: string
-      required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
-        - toolId1
-        - toolId2
-        - toolIds
     CompareToolsDTO:
       type: object
       properties:

@@ -1,4 +1,4 @@
-import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IRefLvl, IPropertiesLvl, RecordComparator } from '../analytics/index.js';
+import { CompareOptions, IChildrenLvl, IEventsLvl, IIdLvl, IKeyLvl, IRefLvl, IPropertiesLvl, RecordComparator, RecordLoader } from '../analytics/index.js';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     BinaryMessageResponse,
@@ -32,8 +32,9 @@ export async function compareResults(details: any): Promise<any> {
         const documents: IRecordResult[] = details.documents;
         const recorded: IRecordResult[] = details.recorded;
         const comparator = new RecordComparator(options);
-        const recordedModel = await RecordComparator.createModel(recorded, options);
-        const documentsModel = await RecordComparator.createModel(documents, options);
+        const loader = new RecordLoader(options);
+        const recordedModel = await loader.createModel(recorded);
+        const documentsModel = await loader.createModel(documents);
         const results = comparator.compare([recordedModel, documentsModel]);
         const result = results[0];
         return result;

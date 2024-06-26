@@ -19,6 +19,10 @@
     flex-wrap: nowrap;
     z-index: 2;
     margin-top: 24px;
+
+    .actions-container-btns {
+        margin-left: auto;
+    }
 }
 
 .loading {
@@ -204,6 +208,7 @@
 }
 
 .btn-icon-edit,
+.btn-icon-menu,
 .btn-icon-delete,
 .btn-icon-import,
 .btn-icon-delete-des {
@@ -214,15 +219,28 @@
     height: 30px;
     min-width: 25px;
     margin-left: 6px;
+    border-radius: 6px;
+    padding: 1px;
 }
 
 .btn-icon-import,
+.btn-icon-menu,
 .btn-icon-edit {
     color: #3f51b5;
 }
 
 .btn-icon-delete {
     color: #f44336;
+}
+
+.btn-icon-menu {
+    padding: 3px !important;
+}
+
+.btn-icon-edit:hover,
+.btn-icon-menu:hover {
+    background: #e1e7fa;
+    box-shadow: 0px 0px 0px 5px #e1e7fa;
 }
 
 .btn-icon-delete mat-icon,
@@ -375,7 +393,7 @@
 
 
 .commands-line>* {
-    margin-left: 20px;
+    margin-left: 0px;
 }
 
 .commands-line>*:not(:first-child) {
@@ -841,4 +859,20 @@
 
 .opacity-icon:hover {
     opacity: 1.0;
+}
+
+@media screen and (max-width: 1450px) {
+    .actions-container {
+        flex-direction: column !important;
+        align-items: flex-start !important;    
+    }
+
+    .actions-container-btns {
+        margin-left: 0px !important;
+        margin-top: 16px !important;
+
+        & > *:first-of-type {
+            margin-left: 0px !important;
+        }
+    }
 }

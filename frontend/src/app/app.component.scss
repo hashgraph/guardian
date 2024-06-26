@@ -310,3 +310,102 @@ body {
         width: auto;
     }
 }
+
+::ng-deep body .grid-table-container {
+    // overflow-x: auto;
+    padding: 12px 0px 0px 0px;
+
+    .grid-table {
+        .p-datatable-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .p-datatable-wrapper {
+            max-height: calc(-265px + 100vh);
+            box-shadow: 0px 50px 16px 0 rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .cell-last {
+            border-right: 1px solid #E1E7EF;
+        }
+    
+        .grid-table-header {
+            .header-cell-text {
+                color: #848fa9 !important;
+                font-family: Inter, sans-serif;
+                font-size: 12px;
+                text-transform: uppercase;
+                font-weight: 400 !important;
+                border: none !important;
+            }
+        }
+        .grid-table-row {
+            font-family: Inter, sans-serif;
+            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+            font-size: 14px;
+        }
+
+        .cell-310 {
+            min-width: 310px; 
+            width: 310px; 
+            max-width: 310px;   
+        }
+    
+        .cell-190 {
+            min-width: 190px; 
+            width: 190px; 
+            max-width: 190px;   
+        }
+
+        .cell-150 {
+            min-width: 150px; 
+            width: 150px; 
+            max-width: 150px;
+        }
+
+        .cell-140 {
+            min-width: 140px; 
+            width: 140px; 
+            max-width: 140px;
+        }
+
+        .cell-130 {
+            min-width: 130px; 
+            width: 130px; 
+            max-width: 130px;
+        }
+
+        .cell-120 {
+            min-width: 120px; 
+            width: 120px; 
+            max-width: 120px;
+        }
+
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}
+::ng-deep body .grid-table-paginator .table-paginator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    column-gap: 24px;
+    padding: 0 16px 0 0;
+    color: var(--color-grey-black-2, #23252e);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    height: 64px !important;
+    border-radius: 0px !important;
+    border-bottom-left-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+    background: #fff;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
+    position: relative;
+}

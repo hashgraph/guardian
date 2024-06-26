@@ -1,5 +1,3 @@
-
-
 export interface ElasticResponse {
     id: string;
     status: number;
