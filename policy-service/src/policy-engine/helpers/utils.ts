@@ -1022,7 +1022,10 @@ export class PolicyUtils {
                 documentRef = await ref.databaseServer.getVcDocument({
                     where: {
                         'policyId': { $eq: policyId },
-                        'document.credentialSubject.id': { $eq: refId }
+                        $or: [
+                            {'document.credentialSubject.id': {$eq: refId}},
+                            {'document.credentialSubject.0.id': {$eq: refId}}
+                        ]
                     }
                 });
             } else if (typeof (refId) === 'object') {

@@ -262,7 +262,8 @@ export class MintService {
                 rootUser?.id,
                 root,
                 documentOwnerUser?.id,
-                ref
+                ref,
+                user.id.toString()
             );
         }
 
@@ -279,9 +280,11 @@ export class MintService {
      * Retry mint request
      * @param request Mint request
      * @param userId User identifier
+     * @param rootId
      * @param root Root
      * @param ownerId Owner identifier
      * @param ref Block ref
+     * @param _userId
      * @returns Mint or transfer is processed
      */
     public static async retryRequest(
@@ -290,7 +293,8 @@ export class MintService {
         rootId: string,
         root: IRootConfig,
         ownerId: string,
-        ref?: any
+        ref?: any,
+        _userId?: string
     ) {
         if (!request) {
             throw new Error('There is no mint request');
@@ -346,7 +350,8 @@ export class MintService {
                             root,
                             tokenConfig,
                             ref,
-                            NotificationHelper.init([rootId, userId, ownerId])
+                            NotificationHelper.init([rootId, userId, ownerId]),
+                            _userId
                         )
                     ).mint();
                     break;
@@ -357,7 +362,8 @@ export class MintService {
                             root,
                             tokenConfig,
                             ref,
-                            NotificationHelper.init([rootId, userId, ownerId])
+                            NotificationHelper.init([rootId, userId, ownerId]),
+                            _userId
                         )
                     ).mint();
                     break;

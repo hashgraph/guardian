@@ -39,7 +39,8 @@
                         <td>{{ taskStatus(task) }}</td>
                         <td>
                             <div class="operations-container">
-                                <button (click)="restartTask(task)" [disabled]="!task.isError" class="p-button-raised p-button-rounded p-button-text" icon="pi pi-undo"
+                                <button (click)="restartTask(task)" [disabled]="!(task.isError && task.isRetryableTask)"
+                                        class="p-button-raised p-button-rounded p-button-text" icon="pi pi-undo"
                                         pButton type="button"></button>
                                 <button (click)="deleteTask(task)" [disabled]="!task.isError" class="p-button-raised p-button-rounded p-button-text" icon="pi pi-minus"
                                         pButton type="button"></button>

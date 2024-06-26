@@ -45,9 +45,10 @@ export class IPFS {
      * Return hash of added file
      * @param {ArrayBuffer} file file to upload on IPFS
      *
+     * @param userId
      * @returns {string} - hash
      */
-    public static async addFile(file: ArrayBuffer): Promise<{
+    public static async addFile(file: ArrayBuffer, userId: string = null): Promise<{
         /**
          * CID
          */
@@ -65,7 +66,7 @@ export class IPFS {
                     content: Buffer.from(file).toString('base64')
                 }
             }
-        }, 10);
+        }, 10, 0, userId);
         if (!res) {
             throw new Error('Invalid response');
         }

@@ -91,6 +91,22 @@ services:
     volumes:
       - ./logger-service/configs:/usr/local/logger-service/configs:ro
 
+  queue-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./queue-service/Dockerfile
+    init: true
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+
   worker-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
@@ -99,6 +115,8 @@ services:
       dockerfile: ./worker-service/Dockerfile
     init: true
     depends_on:
+      queue-service:
+        condition: service_started
       ipfs-node:
         condition: service_healthy
       auth-service:

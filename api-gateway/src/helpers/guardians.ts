@@ -526,17 +526,18 @@ export class Guardians extends NatsService {
      *
      * @returns {any} Demo Key
      */
-    public async generateDemoKey(role: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, { role });
+    public async generateDemoKey(role: string, userId: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, {role, userId});
     }
 
     /**
      * Async generate Demo Key
      * @param role
      * @param task
+     * @param userId
      */
-    public async generateDemoKeyAsync(role: string, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, task });
+    public async generateDemoKeyAsync(role: string, task: NewTask, userId: string): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, {role, task, userId});
     }
 
     /**

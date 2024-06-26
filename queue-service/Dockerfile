@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.yarn \
 FROM base as deps
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
-COPY --link worker-service/package.json worker-service/tsconfig*.json yarn.lock ./
+COPY --link queue-service/package.json queue-service/tsconfig*.json yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN apk add --no-cache git
 RUN --mount=type=cache,target=/root/.yarn,sharing=private \
@@ -38,7 +38,7 @@ FROM base as build
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
-COPY --link worker-service/src src/
+COPY --link queue-service/src src/
 RUN apk add --no-cache git
 RUN --mount=type=cache,target=/root/.yarn \
     yarn install --frozen-lockfile && yarn run build:prod

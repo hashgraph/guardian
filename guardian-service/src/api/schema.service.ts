@@ -561,7 +561,9 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -582,7 +584,9 @@ export async function schemaAPI(): Promise<void> {
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, notifier);
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, notifier, userId);
                 notifier.result(item.id);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -644,6 +648,10 @@ export async function schemaAPI(): Promise<void> {
                         ).join('\r\n')}`
                     );
                 }
+
+                const users = new Users();
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
 
                 await deleteSchema(id, owner, emptyNotifier());
 
@@ -1183,7 +1191,9 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

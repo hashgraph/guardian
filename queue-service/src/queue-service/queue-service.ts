@@ -16,6 +16,7 @@ export class QueueService extends NatsService{
         setInterval(async () => {
             await this.refreshAndReassignTasks();
             await this.clearOldTasks();
+            await this.clearLongPendingTasks();
         }, this.refreshInterval);
 
         this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, (task: ITask) => {
@@ -33,12 +34,12 @@ export class QueueService extends NatsService{
         });
 
         this.getMessages(WorkerEvents.TASK_COMPLETE, async (data: any) => {
-            if (!data.error) {
-                await this.completeTaskInQueue(data.id, data.data);
+            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.id});
+            if (!data.error || !task.isRetryableTask) {
+                await this.completeTaskInQueue(data.id, data.data, data.error);
                 return;
             }
-            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.id});
-            if (task.isRetryableTask) {
+            if (task.isRetryableTask && (task.attempts > 0)) {
                 if (task.attempts < task.attempt) {
                     task.processedTime = null;
                     task.sent = false;
@@ -93,15 +94,23 @@ export class QueueService extends NatsService{
         await new DataBaseHelper(TaskEntity).save(te);
     }
 
-    async completeTaskInQueue(taskId: string, data: any): Promise<void> {
+    async completeTaskInQueue(taskId: string, data: any, error: any): Promise<void> {
         const task = await new DataBaseHelper(TaskEntity).findOne({taskId});
-        console.log(task);
-        task.done = true;
+        if (!task) {
+            return;
+        }
+        if (error) {
+            task.isError = true;
+            task.errorReason = error;
+        } else {
+            task.done = true;
+        }
         await new DataBaseHelper(TaskEntity).save(task);
 
         await this.publish(QueueEvents.TASK_COMPLETE, {
             id: taskId,
-            data
+            data,
+            error
         });
     }
 
@@ -151,6 +160,14 @@ export class QueueService extends NatsService{
                 $lte: new Date(new Date().getTime() - 3 * 60000)
             },
             done: true
+        });
+    }
+
+    private async clearLongPendingTasks() {
+        await new DataBaseHelper(TaskEntity).delete({
+            $where: '(this.processedTime - this.createDate) > ( 1 * 60 * 60000)',
+            sent: true,
+            done: {$ne: true}
         });
     }
 

@@ -146,8 +146,9 @@ export class Workers extends NatsService {
      * @param task
      * @param priority
      * @param attempts
+     * @param userId
      */
-    public addRetryableTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
+    public addRetryableTask(task: ITask, priority: number, attempts: number = 0, userId: string = null): Promise<any> {
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
@@ -163,7 +164,7 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(task, priority, true, attempts, true, null);
+        return this.addTask(task, priority, true, attempts, true, userId);
     }
 
     /**
@@ -185,7 +186,6 @@ export class Workers extends NatsService {
             if (data.error) {
                 console.error(data);
             }
-            console.log(this.tasksCallbacks.has(data.id))
             if (this.tasksCallbacks.has(data.id)) {
                 const activeTask = this.tasksCallbacks.get(data.id);
                 activeTask.callback(data.data, data.error, data.isTimeoutError);
