@@ -151,7 +151,7 @@ th {
     .column-header {
         writing-mode: vertical-rl;
         transform: rotate(180deg);
-        justify-content: end;
+        justify-content: flex-end;
         gap: 20px;
 
         span {

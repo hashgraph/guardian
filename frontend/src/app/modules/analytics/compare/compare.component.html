@@ -3,11 +3,15 @@
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
 
+    <div *ngIf="error" class="error-message">
+        <div>{{error}}</div>
+    </div>
+
     <div *ngIf="result" class="merge-options">
         <div class="merge-back">
-            <div *ngIf="isSchemas && policyId1 && policyId2" (click)="onBack()">
+            <div *ngIf="parent" (click)="onBack()">
                 <mat-icon>chevron_left</mat-icon>
-                <span>Policies</span>
+                <span>Back</span>
             </div>
         </div>
         <div class="merge-lvl">
@@ -51,7 +55,8 @@
             </div>
         </div>
         <div class="merge-lvl-apply">
-            <div [attr.need-apple]="needApplyFilters"
+            <div 
+                [attr.need-apple]="needApplyFilters"
                 *ngIf="isApplyBtn"
                  class="merge-lvl-btn"
                 (click)="onApply()">Apply</div>
@@ -80,18 +85,18 @@
                 [childrenLvl]="childrenLvl"
                 [eventsLvl]="eventsLvl"
                 [idLvl]="idLvl"
-            [propLvl]="propLvl"
+                [propLvl]="propLvl"
                 [type]="visibleType"
                 [value]="result"
-            (change)="onChange($event)"></app-compare-policy>
+                (change)="onChange($event)"></app-compare-policy>
     </div>
 
     <div *ngIf="isSchemas" class="content-result">
         <app-compare-schema
                 [type]="visibleType"
                 [value]="result"
-            [idLvl]="idLvl"
-            (change)="onChange($event)"></app-compare-schema>
+                [idLvl]="idLvl"
+                (change)="onChange($event)"></app-compare-schema>
     </div>
 
     <div *ngIf="isModules" class="content-result">
@@ -99,10 +104,10 @@
                 [childrenLvl]="childrenLvl"
                 [eventsLvl]="eventsLvl"
                 [idLvl]="idLvl"
-            [propLvl]="propLvl"
+                [propLvl]="propLvl"
                 [type]="visibleType"
                 [value]="result"
-            (change)="onChange($event)"></app-compare-module>
+                (change)="onChange($event)"></app-compare-module>
     </div>
 
     <div *ngIf="isMultiPolicies" class="content-result">
@@ -110,10 +115,10 @@
                 [childrenLvl]="childrenLvl"
                 [eventsLvl]="eventsLvl"
                 [idLvl]="idLvl"
-            [propLvl]="propLvl"
+                [propLvl]="propLvl"
                 [type]="visibleType"
                 [value]="result"
-            (change)="onChange($event)"></app-multi-compare-policy>
+                (change)="onChange($event)"></app-multi-compare-policy>
     </div>
 
     <div *ngIf="isDocuments" class="content-result">
@@ -121,10 +126,10 @@
                 [childrenLvl]="childrenLvl"
                 [eventsLvl]="eventsLvl"
                 [idLvl]="idLvl"
-            [propLvl]="propLvl"
+                [propLvl]="propLvl"
                 [type]="visibleType"
                 [value]="result"
-            (change)="onChange($event)"></app-compare-document>
+                (change)="onChange($event)"></app-compare-document>
     </div>
 
     <div *ngIf="isTools" class="content-result">
@@ -132,9 +137,9 @@
                 [childrenLvl]="childrenLvl"
                 [eventsLvl]="eventsLvl"
                 [idLvl]="idLvl"
-            [propLvl]="propLvl"
+                [propLvl]="propLvl"
                 [type]="visibleType"
                 [value]="result"
-            (change)="onChange($event)"></app-compare-tool>
+                (change)="onChange($event)"></app-compare-tool>
     </div>
 </div>

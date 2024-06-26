@@ -181,6 +181,17 @@ export class PolicyEngineService {
         });
     }
 
+    private async createHashByFile(file: any): Promise<string> {
+        try {
+            const compareModel = await HashComparator.createModelByFile(file);
+            const hash = HashComparator.createHash(compareModel);
+            return hash
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
+            return null;
+        }
+    }
+
     /**
      * Register endpoints for policy engine
      * @private
@@ -379,7 +390,7 @@ export class PolicyEngineService {
             async (msg: { options: any, owner: IOwner }) => {
                 try {
                     const { options, owner } = msg;
-                    const {fields, filters, pageIndex, pageSize } = options;
+                    const { fields, filters, pageIndex, pageSize } = options;
                     const _filters: any = { ...filters };
 
                     const otherOptions: any = { fields };
@@ -945,8 +956,7 @@ export class PolicyEngineService {
                         throw new Error('file in body is empty');
                     }
                     const policyToImport: any = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
-                    const compareModel = await HashComparator.createModelByFile(policyToImport);
-                    const hash = HashComparator.createHash(compareModel);
+                    const hash = await this.createHashByFile(policyToImport);
 
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
@@ -1150,8 +1160,7 @@ export class PolicyEngineService {
                 try {
                     const { messageId, owner } = msg;
                     const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, owner, emptyNotifier());
-                    const compareModel = await HashComparator.createModelByFile(policyToImport);
-                    const hash = HashComparator.createHash(compareModel);
+                    const hash = await this.createHashByFile(policyToImport);
 
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
@@ -1170,8 +1179,7 @@ export class PolicyEngineService {
 
                 RunFunctionAsync(async () => {
                     const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, owner, notifier);
-                    const compareModel = await HashComparator.createModelByFile(policyToImport);
-                    const hash = HashComparator.createHash(compareModel);
+                    const hash = await this.createHashByFile(policyToImport);
 
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);

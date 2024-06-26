@@ -61,7 +61,7 @@ services:
       dockerfile: ./indexer-api-gateway/Dockerfile
     init: true    
     expose:
-      - 3002
+      - 3021
       - 6555
     depends_on:
       - mongo

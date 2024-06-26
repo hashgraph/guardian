@@ -68,4 +68,8 @@ export enum IndexerMessageAPI {
     GET_CONTRACTS = 'GET_CONTRACTS',
     GET_CONTRACT = 'GET_CONTRACT',
     // #endregion
+
+    // #region ANALYTICS
+    GET_ANALYTICS_SEARCH_POLICY = 'GET_ANALYTICS_SEARCH_POLICY'
+    // #endregion
 }

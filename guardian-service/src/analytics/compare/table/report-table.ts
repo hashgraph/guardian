@@ -1,5 +1,5 @@
 import { IKeyMap } from 'analytics/compare/interfaces/key-map.interface.js';
-import { IColumn } from './report-column.js';
+import { IColumn } from '../interfaces/report-column.js';
 import { ReportRow } from './report-row.js';
 
 /**

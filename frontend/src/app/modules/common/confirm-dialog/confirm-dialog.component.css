@@ -9,6 +9,6 @@
 
 .buttons {
     display: flex;
-    justify-content: end;
+    justify-content: flex-end;
     padding: 5px 0 20px 0;
 }

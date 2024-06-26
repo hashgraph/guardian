@@ -1145,8 +1145,9 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.unfreezeToken(tokenId, username, user.did);
+            return await guardians.unfreezeToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {

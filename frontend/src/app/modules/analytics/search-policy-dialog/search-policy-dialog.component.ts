@@ -1,14 +1,9 @@
-import {
-    AfterContentChecked, AfterContentInit,
-    AfterViewChecked,
-    AfterViewInit,
-    Component,
-    Inject,
-    OnInit,
-    ViewChild
-} from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
 /**
  * Search policy dialog.
@@ -18,116 +13,204 @@ import { Router } from '@angular/router';
     templateUrl: './search-policy-dialog.component.html',
     styleUrls: ['./search-policy-dialog.component.scss']
 })
-export class SearchPolicyDialog implements OnInit, AfterContentInit {
-    loading = false;
-    initDialog = false;
-    header: string;
-    policyId: string;
-    list: any[];
-    count: number = 0;
-    _list: any[];
-    policy: any;
-    selectedAll: boolean;
-    size: number;
+export class SearchPolicyDialog {
+    public loading = false;
+    public policy: any = null;
+    public filtersForm = new FormGroup({
+        policyName: new FormControl(''),
+        type: new FormControl('Owned'),
+        owner: new FormControl(''),
+        tokens: new FormControl(false),
+        vcDocuments: new FormControl(false),
+        vpDocuments: new FormControl(false),
+        tokensCount: new FormControl(0),
+        vcDocumentsCount: new FormControl(0),
+        vpDocumentsCount: new FormControl(0),
+    });
+    public types = [{
+        name: 'Search only imported',
+        value: 'Owned'
+    }, {
+        name: 'Local Guardian search',
+        value: 'Local'
+    }, {
+        name: 'Global search',
+        value: 'Global'
+    }];
+    public options = [{
+        name: 'Not selected',
+        value: false
+    }, {
+        name: 'Yes',
+        value: true
+    }];
+    public showMoreFilters = false;
+    public list: any[] = [];
+    public selectedAll: boolean = false;
+    public count: number = 0;
+    public filtersCount: number = 0;
+    public error: string | null = null;
+
+    public get globalType(): boolean {
+        return this.filtersForm.value.type === 'Global';
+    }
 
     constructor(
-        public dialogRef: MatDialogRef<SearchPolicyDialog>,
-        private router: Router,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
+        private analyticsService: AnalyticsService,
+        private policyEngineService: PolicyEngineService,
+        private router: Router
     ) {
-        this.header = data.header;
-        this.policy = data.policy;
-        this.policyId = data.policyId;
-        this.list = data.list || [];
-        this._list = this.list;
-        this.selectedAll = false;
-        this.size = this.list.length + 1;
+        this.policy = this.config.data.policy;
     }
 
     ngOnInit() {
-        this.count = 1;
-        if (this.list) {
-            for (const item of this.list) {
-                if (item.rate > 80) {
-                    item._color = 'item-color-green';
-                } else if (item.rate > 50) {
-                    item._color = 'item-color-yellow';
-                } else {
-                    item._color = 'item-color-red';
-                }
-                item._tags = item.tags.join(', ');
-                item._search = `${item.name} ${item._tags}`.toLowerCase();
-            }
-        }
+        this.load();
+    }
+
+    public load() {
+        this.loading = true;
+        this.count = this.policy ? 1 : 0;
+
+        this.filtersCount = 0;
+        const filters = this.filtersForm.value;
+        const options: any = {
+            threshold: 0
+        };
+        options.type = filters.type;
         if (this.policy) {
-            this.policy._tags = this.policy.tags?.join(', ');
+            options.policyId = this.policy.id;
         }
-        this.selectedAll = this.count === this.size;
-    }
-
-    ngAfterContentInit() {
-        setTimeout(() => {
-            this.initDialog = true;
-        }, 100);
-    }
-
-    public onOk(): void {
-        this.dialogRef.close();
-    }
-
-    public onSelect() {
-        this.count = 1;
-        if (this.list) {
-            for (const item of this.list) {
-                if (item._select) {
-                    this.count++;
+        if (filters.policyName) {
+            options.text = filters.policyName;
+            this.filtersCount++;
+        }
+        if (filters.owner) {
+            options.owner = filters.owner;
+            this.filtersCount++;
+        }
+        if (filters.tokens) {
+            options.minTokensCount = filters.tokensCount || 0;
+            this.filtersCount++;
+        }
+        if (filters.vcDocuments) {
+            options.minVcCount = filters.vcDocumentsCount || 0;
+            this.filtersCount++;
+        }
+        if (filters.vpDocuments) {
+            options.minVpCount = filters.vpDocumentsCount || 0;
+            this.filtersCount++;
+        }
+        this.error = null;
+        this.analyticsService.searchPolicies(options)
+            .subscribe((data) => {
+                this.loading = false;
+                if (!data || !data.result) {
+                    return;
                 }
-            }
-        }
-        this.selectedAll = this.count === this.size;
+                const { target, result } = data;
+                this.list = result;
+                for (const item of this.list) {
+                    if (item.rate) {
+                        if (item.rate >= 80) {
+                            item._color = 'item-color-green';
+                        } else if (item.rate >= 40) {
+                            item._color = 'item-color-yellow';
+                        } else {
+                            item._color = 'item-color-red';
+                        }
+                    } else {
+                        item._color = 'item-color-red';
+                    }
+                    item._tags = item.tags.join(', ');
+                }
+                this.loading = false;
+                this.select();
+            }, (error) => {
+                this.error = error?.error?.message;
+                this.list = [];
+                this.loading = false;
+                console.error(error);
+            });
+    }
+
+    public onClose(): void {
+        this.ref.close(null);
     }
 
     public onCompare() {
-        if (!this.list || this.count < 2) {
-            return;
+        const items = [];
+        if (this.policy) {
+            items.push({
+                type: 'id',
+                value: this.policy.id
+            })
         }
-        const policies = this.list.filter(item => item._select);
-        const policyIds = policies.map(p => p.id);
-        policyIds.unshift(this.policyId);
-        if (policyIds.length > 1) {
-            this.dialogRef.close();
-            if (policyIds.length === 2) {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'policy',
-                        policyId1: policyIds[0],
-                        policyId2: policyIds[1]
-                    }
-                });
-            } else {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'multi-policy',
-                        policyIds: policyIds,
-                    }
-                });
+        const type = this.filtersForm.value.type;
+        for (const item of this.list) {
+            if (item._select) {
+                if (type === 'Global') {
+                    items.push({
+                        type: 'message',
+                        name: item.messageId,
+                        value: item.messageId
+                    })
+                } else {
+                    items.push({
+                        type: 'id',
+                        name: item.name,
+                        value: item.id
+                    })
+                }
             }
         }
+        this.ref.close(items);
     }
 
-    public select(item: any) {
-        item._select = !item._select;
-        this.onSelect();
+    public changeType(): void {
+        this.loading = true;
+        setTimeout(() => {
+            this.selectedAll = false;
+            this.select();
+            this.filtersForm.setValue({
+                type: this.filtersForm.value.type,
+                policyName: '',
+                owner: '',
+                tokens: false,
+                vcDocuments: false,
+                vpDocuments: false,
+                tokensCount: 0,
+                vcDocumentsCount: 0,
+                vpDocumentsCount: 0
+            })
+            this.load();
+        }, 0);
     }
 
-    public onSearch(event: any) {
-        const value = (event?.target?.value || '').toLowerCase();
-        if (this.list && value) {
-            this._list = this.list
-                .filter(p => p._search.indexOf(value) !== -1);
-        } else {
-            this._list = this.list;
-        }
+    public clearFilters(): void {
+        this.selectedAll = false;
+        this.filtersForm.setValue({
+            policyName: '',
+            type: this.filtersForm.value.type,
+            owner: '',
+            tokens: false,
+            vcDocuments: false,
+            vpDocuments: false,
+            tokensCount: 0,
+            vcDocumentsCount: 0,
+            vpDocumentsCount: 0
+        })
+        this.select();
+        this.load();
+    }
+
+    public showFilters(): void {
+        this.showMoreFilters = !this.showMoreFilters;
+    }
+
+    public applyFilters(): void {
+        this.load();
     }
 
     public onSelectAll() {
@@ -137,16 +220,44 @@ export class SearchPolicyDialog implements OnInit, AfterContentInit {
                 item._select = this.selectedAll;
             }
         }
-        this.onSelect();
+        this.select();
     }
 
-    public onNewPage() {
-        this.dialogRef.close();
-        this.router.navigate(['/search'], {
-            queryParams: {
-                type: 'policy',
-                policyId: this.policyId,
+    public onSelect(item: any) {
+        item._select = !item._select;
+        this.select();
+    }
+
+    public select() {
+        this.count = 0;
+        if (this.list) {
+            for (const item of this.list) {
+                if (item._select) {
+                    this.count++;
+                }
             }
-        });
+        }
+        this.selectedAll = this.count === this.list.length && this.list.length > 0;
+        if (this.policy) {
+            this.count++;
+        }
+    }
+
+    public importPolicy(item: any) {
+        this.loading = true;
+        this.policyEngineService
+            .pushImportByMessage(item.messageId)
+            .subscribe((result) => {
+                const { taskId, expectation } = result;
+                this.router.navigate(['task', taskId], {
+                    queryParams: {
+                        last: btoa(location.href),
+                    },
+                });
+                this.loading = false;
+                this.ref.close(null);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

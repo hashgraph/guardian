@@ -21,7 +21,7 @@
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@hashgraph/sdk": "^2.43.0",
+    "@hashgraph/sdk": "^2.46.0",
     "axios": "^1.6.7",
     "commander": "^10.0.0",
     "solc": "0.8.11",
