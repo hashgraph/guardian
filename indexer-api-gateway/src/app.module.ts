@@ -12,6 +12,7 @@ import {
     FiltersApi,
     EntityApi,
     LandingApi,
+    AnalyticsApi
 } from './api/index.js';
 
 const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
@@ -37,6 +38,7 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
         FiltersApi,
         EntityApi,
         LandingApi,
+        AnalyticsApi
     ],
     providers: [
         // LoggerService,

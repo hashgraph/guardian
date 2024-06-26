@@ -1,6 +1,6 @@
 import { Controller, HttpCode, HttpStatus, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { IPage, IndexerMessageAPI, Message } from '@indexer/common';
+import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 
 @Controller('search')

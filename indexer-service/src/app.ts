@@ -20,12 +20,13 @@ import { SearchService } from './api/search.service.js';
 import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
+import { AnalyticsService } from './api/analytics.service.js';
 import { SynchronizationTask } from './helpers/synchronization-task.js';
 import {
     syncAnalytics,
     sychronizeSchemas,
     sychronizeVCs,
-    sychronizePolicies,
+    synchronizePolicies,
     syncDidDocuments,
     sychronizeVPs,
     syncModules,
@@ -60,9 +61,10 @@ const channelName = (
         EntityService,
         FiltersService,
         LandingService,
+        AnalyticsService
     ],
 })
-class AppModule {}
+class AppModule { }
 
 console.log(COMMON_CONNECTION_CONFIG);
 
@@ -226,10 +228,12 @@ Promise.all([
         );
         const policy = new SynchronizationTask(
             'policy',
-            sychronizePolicies,
+            synchronizePolicies,
             process.env.SYNC_POLICIES_MASK || '0 * * * *'
         );
         policy.start(process.env.START_SYNC_POLICIES?.toLowerCase() === 'true');
+
+        // synchronizePolicies()
     },
     (reason) => {
         console.log(reason);

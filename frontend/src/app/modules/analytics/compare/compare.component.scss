@@ -165,6 +165,20 @@
     pointer-events: none;
 }
 
+.error-message {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: #fff;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+}
+
 @media screen and (max-width: 1130px) {
     .merge-options {
         min-width: 670px;

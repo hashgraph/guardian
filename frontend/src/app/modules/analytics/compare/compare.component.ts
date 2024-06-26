@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { CompareStorage } from 'src/app/services/compare-storage.service';
 
 enum ItemType {
     Document = 'document',
-    MultiPolicy = 'multi-policy',
     Policy = 'policy',
     Module = 'module',
     Schema = 'schema',
@@ -14,44 +14,34 @@ enum ItemType {
 @Component({
     selector: 'app-compare',
     templateUrl: './compare.component.html',
-    styleUrls: ['./compare.component.css']
+    styleUrls: ['./compare.component.scss']
 })
 export class CompareComponent implements OnInit {
-    loading: boolean = true;
-    type: ItemType;
-    policyId1: any;
-    policyId2: any;
-    schemaId1: any;
-    schemaId2: any;
-    moduleId1: any;
-    moduleId2: any;
-    policyIds: any;
-    documentId1: any;
-    documentId2: any;
-    documentIds: any;
-    toolId1: any;
-    toolId2: any;
-    toolIds: any;
-    ids: any;
-    result: any;
-    eventsLvl = '1';
-    propLvl = '2';
-    childrenLvl = '2';
-    idLvl = '0';
-    visibleType = 'tree';
-    total: any;
-    needApplyFilters: any;
+    public loading: boolean = true;
+    public eventsLvl: string = '1';
+    public propLvl: string = '2';
+    public childrenLvl: string = '2';
+    public idLvl: string = '0';
+    public needApplyFilters: boolean = false;
+    public visibleType: 'tree' | 'table' = 'tree';
+    public result: any;
+    public total: any;
+
+    public type: ItemType;
+    public items: any[] = [];
+    public parent: any;
+    public error: any;
 
     public get isEventsLvl(): boolean {
-        return this.type === ItemType.Policy || this.type === ItemType.MultiPolicy;
+        return this.type === ItemType.Policy;
     }
 
     public get isPropertiesLvl(): boolean {
-        return this.type === ItemType.Policy || this.type === ItemType.MultiPolicy;
+        return this.type === ItemType.Policy;
     }
 
     public get isChildrenLvl(): boolean {
-        return this.type === ItemType.Policy || this.type === ItemType.MultiPolicy;
+        return this.type === ItemType.Policy;
     }
 
     public get isUUIDLvl(): boolean {
@@ -67,11 +57,11 @@ export class CompareComponent implements OnInit {
     }
 
     public get isMultiPolicies(): boolean {
-        return this.type === ItemType.MultiPolicy;
+        return this.type === ItemType.Policy && this.items.length > 2;
     }
 
     public get isPolicies(): boolean {
-        return this.type === ItemType.Policy;
+        return this.type === ItemType.Policy && this.items.length < 3;
     }
 
     public get isModules(): boolean {
@@ -89,7 +79,8 @@ export class CompareComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private analyticsService: AnalyticsService
+        private analyticsService: AnalyticsService,
+        private compareStorage: CompareStorage
     ) {
     }
 
@@ -104,20 +95,9 @@ export class CompareComponent implements OnInit {
         this.needApplyFilters = false;
         this.loading = true;
         this.type = this.route.snapshot.queryParams['type'] || '';
-        this.policyId1 = this.route.snapshot.queryParams['policyId1'] || '';
-        this.policyId2 = this.route.snapshot.queryParams['policyId2'] || '';
-        this.schemaId1 = this.route.snapshot.queryParams['schemaId1'] || '';
-        this.schemaId2 = this.route.snapshot.queryParams['schemaId2'] || '';
-        this.moduleId1 = this.route.snapshot.queryParams['moduleId1'] || '';
-        this.moduleId2 = this.route.snapshot.queryParams['moduleId2'] || '';
-        this.policyIds = this.route.snapshot.queryParams['policyIds'] || [];
-        this.documentId1 = this.route.snapshot.queryParams['documentId1'] || '';
-        this.documentId2 = this.route.snapshot.queryParams['documentId2'] || '';
-        this.documentIds = this.route.snapshot.queryParams['documentIds'] || [];
-        this.toolId1 = this.route.snapshot.queryParams['toolId1'] || '';
-        this.toolId2 = this.route.snapshot.queryParams['toolId2'] || '';
-        this.toolIds = this.route.snapshot.queryParams['toolIds'] || [];
-        this.ids = this.route.snapshot.queryParams['ids'] || [];
+        const config = this.route.snapshot.queryParams['items'] || '';
+        this.parsConfig(config);
+
         this.result = null;
 
         if (this.type === ItemType.Policy) {
@@ -126,8 +106,6 @@ export class CompareComponent implements OnInit {
             this.loadSchema();
         } else if (this.type === ItemType.Module) {
             this.loadModule();
-        } else if (this.type === ItemType.MultiPolicy) {
-            this.loadMultiPolicy();
         } else if (this.type === ItemType.Document) {
             this.loadDocument();
         } else if (this.type === ItemType.Tool) {
@@ -137,19 +115,56 @@ export class CompareComponent implements OnInit {
         }
     }
 
+    private parsConfig(config: string) {
+        try {
+            const json = atob(config);
+            const params = JSON.parse(json);
+            const parent = params.parent;
+            const items = params.items;
+            this.parent = parent;
+            this.items = items || [];
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    private getIds(): string[] {
+        return this.items.map((item) => item.value);
+    }
+
+    private getItems(): any[] {
+        const results = [];
+        for (const item of this.items) {
+            const result = { ...item };
+            if (item.type === 'file') {
+                const file = this.compareStorage.getFile(item.value);
+                if (!file) {
+                    continue;
+                }
+                result.value = file;
+            } else if (item.type === 'policy-file') {
+                const file = this.compareStorage.getFile(item.policy);
+                if (!file) {
+                    continue;
+                }
+                result.policy = file;
+            }
+            results.push(result)
+        }
+        return results;
+    }
+
     private loadDocument() {
-        const options: any = {
+        this.error = null;
+        const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
+            idLvl: this.idLvl,
+            documentIds: this.getIds()
         }
-        if (Array.isArray(this.documentIds) && this.documentIds.length > 1) {
-            options.documentIds = this.documentIds;
-        } else if (this.documentId1 && this.documentId2) {
-            options.documentId1 = this.documentId1;
-            options.documentId2 = this.documentId2;
-        } else {
+        if (!options.documentIds || options.documentIds.length < 2) {
+            this.error = 'Invalid params';
             this.loading = false;
             return;
         }
@@ -165,20 +180,25 @@ export class CompareComponent implements OnInit {
         });
     }
 
-    private loadMultiPolicy() {
+    private downloadDocuments() {
+        this.error = null;
         const options = {
-            policyIds: this.policyIds,
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
+            idLvl: this.idLvl,
+            documentIds: this.getIds()
         }
-        this.analyticsService.comparePolicy(options).subscribe((value) => {
-            this.result = value;
-            this.total = this.result?.total;
-            setTimeout(() => {
-                this.loading = false;
-            }, 1500);
+        if (!options.documentIds || options.documentIds.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
+        }
+        this.analyticsService.compareDocumentsFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
         }, ({ message }) => {
             this.loading = false;
             console.error(message);
@@ -186,13 +206,18 @@ export class CompareComponent implements OnInit {
     }
 
     private loadPolicy() {
+        this.error = null;
         const options = {
-            policyId1: this.policyId1,
-            policyId2: this.policyId2,
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
+            idLvl: this.idLvl,
+            policies: this.getItems()
+        }
+        if (!options.policies || options.policies.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
         }
         this.analyticsService.comparePolicy(options).subscribe((value) => {
             this.result = value;
@@ -206,14 +231,42 @@ export class CompareComponent implements OnInit {
         });
     }
 
-    private loadSchema() {
+    private downloadPolicy() {
+        this.error = null;
         const options = {
-            schemaId1: this.schemaId1,
-            schemaId2: this.schemaId2,
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
+            idLvl: this.idLvl,
+            policies: this.getItems()
+        }
+        if (!options.policies || options.policies.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
+        }
+        this.analyticsService.comparePolicyFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
+
+    private loadSchema() {
+        this.error = null;
+        const ids = this.getItems();
+        if (!ids || ids.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
+        }
+        const options = {
+            idLvl: this.idLvl,
+            schemas: ids
         }
         this.analyticsService.compareSchema(options).subscribe((value) => {
             this.result = value;
@@ -227,14 +280,44 @@ export class CompareComponent implements OnInit {
         });
     }
 
-    private loadModule() {
+    private downloadSchema() {
+        this.error = null;
+        const ids = this.getItems();
+        if (!ids || ids.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
+        }
         const options = {
-            moduleId1: this.moduleId1,
-            moduleId2: this.moduleId2,
+            idLvl: this.idLvl,
+            schemas: ids
+        }
+        this.analyticsService.compareSchemaFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
+
+    private loadModule() {
+        this.error = null;
+        const ids = this.getIds();
+        if (!ids || ids.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
+        }
+        const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
+            idLvl: this.idLvl,
+            moduleId1: ids[0],
+            moduleId2: ids[1]
         }
         this.analyticsService.compareModule(options).subscribe((value) => {
             this.result = value;
@@ -248,21 +331,44 @@ export class CompareComponent implements OnInit {
         });
     }
 
-    private loadTool() {
-        const options: any = {
+    private downloadModule() {
+        this.error = null;
+        const ids = this.getIds();
+        if (!ids || ids.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
+        }
+        const options = {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
+            idLvl: this.idLvl,
+            moduleId1: ids[0],
+            moduleId2: ids[1]
         }
-        if (Array.isArray(this.toolIds) && this.toolIds.length > 1) {
-            options.toolIds = this.toolIds;
-        } else if (Array.isArray(this.ids) && this.ids.length > 1) {
-            options.toolIds = this.ids;
-        } else if (this.toolId1 && this.toolId2) {
-            options.toolId1 = this.toolId1;
-            options.toolId2 = this.toolId2;
-        } else {
+        this.analyticsService.compareModuleFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
+
+    private loadTool() {
+        this.error = null;
+        const options = {
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl,
+            toolIds: this.getIds()
+        }
+        if (!options.toolIds || options.toolIds.length < 2) {
+            this.error = 'Invalid params';
             this.loading = false;
             return;
         }
@@ -278,6 +384,30 @@ export class CompareComponent implements OnInit {
         });
     }
 
+    private downloadTools() {
+        this.error = null;
+        const options = {
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl,
+            toolIds: this.getIds()
+        }
+        if (!options.toolIds || options.toolIds.length < 2) {
+            this.error = 'Invalid params';
+            this.loading = false;
+            return;
+        }
+        this.analyticsService.compareToolsFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
 
     onChange(event: any) {
         if (event.type === 'params') {
@@ -295,26 +425,30 @@ export class CompareComponent implements OnInit {
         this.loadData();
     }
 
-    compareSchema(event: any) {
+    private compareSchema(event: any) {
+        const schemaIds = event.schemaIds;
+        const params = {
+            parent: {
+                parent: this.parent,
+                items: this.items
+            },
+            items: schemaIds
+        }
+        const items = btoa(JSON.stringify(params));
         this.router.navigate(['/compare'], {
             queryParams: {
                 type: 'schema',
-                policyId1: this.policyId1,
-                policyId2: this.policyId2,
-                schemaId1: event.schemaId1,
-                schemaId2: event.schemaId2
+                items
             }
         });
     }
 
     onBack() {
+        const items = btoa(JSON.stringify(this.parent));
         this.router.navigate(['/compare'], {
             queryParams: {
                 type: 'policy',
-                policyId1: this.policyId1,
-                policyId2: this.policyId2,
-                schemaId1: undefined,
-                schemaId2: undefined
+                items
             }
         });
     }
@@ -330,148 +464,11 @@ export class CompareComponent implements OnInit {
             this.downloadSchema();
         } else if (this.type === ItemType.Module) {
             this.downloadModule();
-        } else if (this.type === ItemType.MultiPolicy) {
-            this.downloadMultiPolicy();
         } else if (this.type === ItemType.Tool) {
             this.downloadTools();
         } else if (this.type === ItemType.Document) {
             this.downloadDocuments();
         }
-    }
-
-    private downloadDocuments() {
-        const options: any = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
-        }
-        if (Array.isArray(this.documentIds) && this.documentIds.length > 1) {
-            options.documentIds = this.documentIds;
-        } else if (this.documentId1 && this.documentId2) {
-            options.documentId1 = this.documentId1;
-            options.documentId2 = this.documentId2;
-        } else {
-            this.loading = false;
-            return;
-        }
-        this.analyticsService.compareDocumentsFile(options, 'csv').subscribe((data) => {
-            if (data) {
-                this.downloadObjectAsJson(data, 'report');
-            }
-            this.loading = false;
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
-    }
-
-    private downloadMultiPolicy() {
-        const options = {
-            policyIds: this.policyIds,
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
-        }
-        this.analyticsService.comparePolicyFile(options, 'csv').subscribe((data) => {
-            if (data) {
-                this.downloadObjectAsJson(data, 'report');
-            }
-            this.loading = false;
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
-    }
-
-    private downloadPolicy() {
-        const options = {
-            policyId1: this.policyId1,
-            policyId2: this.policyId2,
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
-        }
-        this.analyticsService.comparePolicyFile(options, 'csv').subscribe((data) => {
-            if (data) {
-                this.downloadObjectAsJson(data, 'report');
-            }
-            this.loading = false;
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
-    }
-
-    private downloadModule() {
-        const options = {
-            moduleId1: this.moduleId1,
-            moduleId2: this.moduleId2,
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
-        }
-        this.analyticsService.compareModuleFile(options, 'csv').subscribe((data) => {
-            if (data) {
-                this.downloadObjectAsJson(data, 'report');
-            }
-            this.loading = false;
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
-    }
-
-    private downloadSchema() {
-        const options = {
-            schemaId1: this.schemaId1,
-            schemaId2: this.schemaId2,
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
-        }
-        this.analyticsService.compareSchemaFile(options, 'csv').subscribe((data) => {
-            if (data) {
-                this.downloadObjectAsJson(data, 'report');
-            }
-            this.loading = false;
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
-    }
-
-    private downloadTools() {
-        const options: any = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl
-        }
-        if (Array.isArray(this.toolIds) && this.toolIds.length > 1) {
-            options.toolIds = this.toolIds;
-        } else if (Array.isArray(this.ids) && this.ids.length > 1) {
-            options.toolIds = this.ids;
-        } else if (this.toolId1 && this.toolId2) {
-            options.toolId1 = this.toolId1;
-            options.toolId2 = this.toolId2;
-        } else {
-            this.loading = false;
-            return;
-        }
-        this.analyticsService.compareToolsFile(options, 'csv').subscribe((data) => {
-            if (data) {
-                this.downloadObjectAsJson(data, 'report');
-            }
-            this.loading = false;
-        }, ({ message }) => {
-            this.loading = false;
-            console.error(message);
-        });
     }
 
     downloadObjectAsJson(csvContent: any, exportName: string) {

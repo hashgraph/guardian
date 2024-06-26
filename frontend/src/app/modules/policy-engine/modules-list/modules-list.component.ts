@@ -219,12 +219,23 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
+            if (result && result.itemId1 && result.itemId2) {
+                const items = btoa(JSON.stringify({
+                    parent: null,
+                    items: [
+                        result.itemId1,
+                        result.itemId2
+                    ].map((id) => {
+                        return {
+                            type: 'id',
+                            value: id
+                        }
+                    })
+                }));
                 this.router.navigate(['/compare'], {
                     queryParams: {
                         type: 'module',
-                        moduleId1: result.itemId1,
-                        moduleId2: result.itemId2
+                        items
                     }
                 });
             }

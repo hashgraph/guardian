@@ -35,9 +35,8 @@
         <ng-container *ngFor="let barItem of barItems">
             <div class="item-block">
                 <div
-                    (click)="barItem.childItems ? barItem.active = !barItem.active : null"
+                    (click)="onRouter(barItem)"
                     [class.current]="isCurrent(barItem, activeLink)"
-                    [routerLink]="!barItem.childItems ? barItem.routerLink : null"
                     class="item clickable"
                 >
                     <img *ngIf="barItem.iconUrl" [src]="'/assets/images/icons/' + barItem.iconUrl + '.svg'" alt="">

@@ -282,7 +282,7 @@ export class Guardians extends NatsService {
      * @param username
      * @param owner
      */
-    public async unfreezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+    public async unfreezeToken(tokenId: string, username: string, owner: IOwner): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.FREEZE_TOKEN, {
             tokenId,
             username,
@@ -1165,22 +1165,31 @@ export class Guardians extends NatsService {
      * @param idLvl
      */
     public async comparePolicies(
-        user: IAuthUser,
+        user: IOwner,
         type: string,
-        ids: string[],
+        policies: {
+            type: 'id' | 'file' | 'message',
+            value: string | {
+                id: string,
+                name: string,
+                value: string
+            }
+        }[],
         eventsLvl: string | number,
         propLvl: string | number,
         childrenLvl: string | number,
         idLvl: string | number
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_POLICIES, {
-            type,
             user,
-            ids,
-            eventsLvl,
-            propLvl,
-            childrenLvl,
-            idLvl
+            type,
+            policies,
+            options: {
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl
+            }
         });
     }
 
@@ -1221,19 +1230,25 @@ export class Guardians extends NatsService {
      * Compare two schemas
      * @param user
      * @param type
-     * @param schemaId1
-     * @param schemaId2
+     * @param schemas
      * @param idLvl
      */
     public async compareSchemas(
-        user: IAuthUser,
+        user: IOwner,
         type: string,
-        schemaId1: string,
-        schemaId2: string,
+        schemas: {
+            type: 'id' | 'policy-message' | 'policy-file',
+            value: string,
+            policy?: string | {
+                id: string,
+                name: string,
+                value: string
+            }
+        }[],
         idLvl: string | number
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_SCHEMAS, {
-            user, type, schemaId1, schemaId2, idLvl
+            user, type, schemas, idLvl
         });
     }
 
@@ -1243,10 +1258,10 @@ export class Guardians extends NatsService {
      * @param policyId
      */
     public async searchPolicies(
-        user: IAuthUser,
-        policyId: string
+        user: IOwner,
+        filters: any
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, { user, policyId });
+        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, { user, filters });
     }
 
     //#region Contracts

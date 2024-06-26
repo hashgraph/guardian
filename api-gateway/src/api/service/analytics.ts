@@ -1,10 +1,70 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
-import { Permissions } from '@guardian/interfaces';
+import { EntityOwner, Permissions } from '@guardian/interfaces';
 import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser } from '@guardian/common';
 import { Guardians, ONLY_SR, InternalException } from '#helpers';
+
+function getPolicyId(filters: FilterPoliciesDTO): {
+    type: 'id' | 'file' | 'message',
+    value: string | {
+        id: string,
+        name: string,
+        value: string
+    }
+}[] {
+    if (!filters) {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    if (Array.isArray(filters.policies) && filters.policies.length > 1) {
+        return filters.policies;
+    } else if (Array.isArray(filters.policyIds) && filters.policyIds.length > 1) {
+        return filters.policyIds.map((id) => {
+            return {
+                type: 'id',
+                value: id
+            }
+        })
+    } else if (filters.policyId1 && filters.policyId2) {
+        return [{
+            type: 'id',
+            value: filters.policyId1
+        }, {
+            type: 'id',
+            value: filters.policyId2
+        }];
+    } else {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+}
+
+function getSchemaId(filters: FilterSchemasDTO): {
+    type: 'id' | 'policy-message' | 'policy-file',
+    value: string,
+    policy?: string | {
+        id: string,
+        name: string,
+        value: string
+    }
+}[] {
+    if (!filters) {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    if (Array.isArray(filters.schemas) && filters.schemas.length > 1) {
+        return filters.schemas;
+    } else if (filters.schemaId1 && filters.schemaId2) {
+        return [{
+            type: 'id',
+            value: filters.schemaId1
+        }, {
+            type: 'id',
+            value: filters.schemaId2
+        }];
+    } else {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+}
 
 @Controller('analytics')
 @ApiTags('analytics')
@@ -47,13 +107,10 @@ export class AnalyticsApi {
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSearchPoliciesDTO
     ): Promise<SearchPoliciesDTO> {
-        const policyId = filters ? filters.policyId : null;
-        if (!policyId) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
         try {
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.searchPolicies(user, policyId);
+            return await guardians.searchPolicies(owner, filters);
         } catch (error) {
             await InternalException(error);
         }
@@ -94,6 +151,28 @@ export class AnalyticsApi {
                     childrenLvl: '0',
                     idLvl: '0'
                 }
+            },
+            Filter3: {
+                value: {
+                    policies: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'message',
+                        value: Examples.MESSAGE_ID
+                    }, {
+                        type: 'file',
+                        value: {
+                            id: Examples.UUID,
+                            name: 'File Name',
+                            value: 'base64...'
+                        }
+                    }],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
             }
         }
     })
@@ -111,34 +190,18 @@ export class AnalyticsApi {
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterPoliciesDTO
     ): Promise<ComparePoliciesDTO> {
-        const policyId1 = filters ? filters.policyId1 : null;
-        const policyId2 = filters ? filters.policyId2 : null;
-        const policyIds = filters ? filters.policyIds : null;
-        const eventsLvl = filters ? filters.eventsLvl : null;
-        const propLvl = filters ? filters.propLvl : null;
-        const childrenLvl = filters ? filters.childrenLvl : null;
-        const idLvl = filters ? filters.idLvl : null;
-
-        let ids: string[];
-        if (policyId1 && policyId2) {
-            ids = [policyId1, policyId2];
-        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
-            ids = policyIds;
-        }
-
-        if (!ids) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const policies = getPolicyId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
             return await guardians.comparePolicies(
-                user,
+                owner,
                 null,
-                ids,
-                eventsLvl,
-                propLvl,
-                childrenLvl,
-                idLvl
+                policies,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
             );
         } catch (error) {
             await InternalException(error);
@@ -253,15 +316,12 @@ export class AnalyticsApi {
         @AuthUser() user: IAuthUser,
         @Body() filters: FilterSchemasDTO
     ): Promise<CompareSchemasDTO> {
-        const schemaId1 = filters ? filters.schemaId1 : null;
-        const schemaId2 = filters ? filters.schemaId2 : null;
         const idLvl = filters ? filters.idLvl : null;
-        if (!schemaId1 || !schemaId2) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const schemas = getSchemaId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
-            return await guardians.compareSchemas(user, null, schemaId1, schemaId2, idLvl);
+            return await guardians.compareSchemas(owner, null, schemas, idLvl);
         } catch (error) {
             await InternalException(error);
         }
@@ -467,6 +527,28 @@ export class AnalyticsApi {
                     childrenLvl: '0',
                     idLvl: '0'
                 }
+            },
+            Filter3: {
+                value: {
+                    policies: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'message',
+                        value: Examples.MESSAGE_ID
+                    }, {
+                        type: 'file',
+                        value: {
+                            id: Examples.UUID,
+                            name: 'File Name',
+                            value: 'base64...'
+                        }
+                    }],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
             }
         }
     })
@@ -485,33 +567,18 @@ export class AnalyticsApi {
         @Body() filters: FilterPoliciesDTO,
         @Query('type') type: string
     ): Promise<string> {
-        const policyId1 = filters ? filters.policyId1 : null;
-        const policyId2 = filters ? filters.policyId2 : null;
-        const policyIds = filters ? filters.policyIds : null;
-        const eventsLvl = filters ? filters.eventsLvl : null;
-        const propLvl = filters ? filters.propLvl : null;
-        const childrenLvl = filters ? filters.childrenLvl : null;
-        const idLvl = filters ? filters.idLvl : null;
-
-        let ids: string[];
-        if (policyId1 && policyId2) {
-            ids = [policyId1, policyId2];
-        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
-            ids = policyIds;
-        }
-        if (!ids) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const policies = getPolicyId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
             return await guardians.comparePolicies(
-                user,
+                owner,
                 type,
-                ids,
-                eventsLvl,
-                propLvl,
-                childrenLvl,
-                idLvl
+                policies,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
             );
         } catch (error) {
             await InternalException(error);
@@ -642,15 +709,12 @@ export class AnalyticsApi {
         @Body() filters: FilterSchemasDTO,
         @Query('type') type: string
     ): Promise<string> {
-        const schemaId1 = filters ? filters.schemaId1 : null;
-        const schemaId2 = filters ? filters.schemaId2 : null;
         const idLvl = filters ? filters.idLvl : null;
-        if (!schemaId1 || !schemaId2) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+        const schemas = getSchemaId(filters);
+        const owner = new EntityOwner(user);
         try {
             const guardians = new Guardians();
-            return await guardians.compareSchemas(user, type, schemaId1, schemaId2, idLvl);
+            return await guardians.compareSchemas(owner, type, schemas, idLvl);
         } catch (error) {
             await InternalException(error);
         }
