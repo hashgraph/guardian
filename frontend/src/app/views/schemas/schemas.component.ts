@@ -945,7 +945,6 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onOpenForm(schema: Schema, example: boolean): void {
-        console.log('schema', schema);
         const dialogRef = this.dialog.open(SchemaFormDialog, {
             width: '950px',
             panelClass: 'g-dialog',
@@ -1137,7 +1136,6 @@ export class SchemaConfigComponent implements OnInit {
                 tools: this.draftTools,
                 properties: this.properties,
                 scheme: newDocument,
-                category: this.getCategory()
             }
         });
         dialogRef.afterClosed().subscribe(async (copyInfo: any | null) => {

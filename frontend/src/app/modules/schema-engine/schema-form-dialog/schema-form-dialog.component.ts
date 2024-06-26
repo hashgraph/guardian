@@ -37,16 +37,6 @@ export class SchemaFormDialog {
 
     ngOnInit(): void {
         this.getSubSchemes()
-
-        setTimeout(() => {
-            if (this.example) {
-                this.presetDocument = DocumentGenerator.generateDocument(this.schema);
-            } else {
-                this.presetDocument = null
-            }
-
-            this.started = true;
-        }, 50);
     }
 
     onClose() {
@@ -64,6 +54,14 @@ export class SchemaFormDialog {
             if(this.schema && data.schema) {
                 this.schema = new Schema(data.schema)
             }
+
+            if (this.example) {
+                this.presetDocument = DocumentGenerator.generateDocument(this.schema);
+            } else {
+                this.presetDocument = null
+            }
+
+            this.started = true
         });
     }
 }
