@@ -1080,6 +1080,7 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
         @Body() option: VersionSchemaDTO,
+        @Req() req,
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
@@ -1116,6 +1117,11 @@ export class SchemaApi {
                 category: SchemaCategory.POLICY
             }, owner);
             SchemaHelper.updatePermission(items, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error);
@@ -1167,6 +1173,7 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
         @Body() option: VersionSchemaDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         const guardians = new Guardians();
         const owner = new EntityOwner(user);
@@ -1196,6 +1203,10 @@ export class SchemaApi {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
         return task;
     }
@@ -1990,6 +2001,7 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
         @Body() newSchema: SchemaDTO,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         try {
             const guardians = new Guardians();
@@ -2010,6 +2022,11 @@ export class SchemaApi {
             SchemaHelper.updateOwner(newSchema, owner);
             const schemas = await guardians.updateSchema(newSchema, owner);
             SchemaHelper.updatePermission(schemas, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return SchemaUtils.toOld(schemas);
         } catch (error) {
             await InternalException(error);
@@ -2045,7 +2062,9 @@ export class SchemaApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async activeSystemSchema(
-        @Param('schemaId') schemaId: string
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Req() req
     ): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -2060,6 +2079,11 @@ export class SchemaApi {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             await guardians.activeSchema(schemaId);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return null;
         } catch (error) {
             await InternalException(error);
