@@ -11406,6 +11406,115 @@ paths:
       tags: *ref_26
       security:
         - bearer: []
+  /worker-tasks:
+    get:
+      operationId: WorkerTasksController_getAllWorkerTasks
+      summary: Get all worker tasks
+      description: Returns all worker tasks.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation. Returns notifications and count.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_27
+        - worker-tasks
+      security:
+        - bearer: []
+  /worker-tasks/restart:
+    post:
+      operationId: WorkerTasksController_restartTask
+      summary: Restart task
+      description: Restart task
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation. Returns notifications.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+  /worker-tasks/delete/{taskId}:
+    delete:
+      operationId: WorkerTasksController_deleteTask
+      summary: Delete task
+      description: Delete task
+      parameters:
+        - name: taskId
+          required: true
+          in: path
+          description: Task Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Returns notifications.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
 info:
   title: Guardian
   description: >-
@@ -11766,19 +11875,19 @@ components:
           example: username
         role:
           type: string
-          enum: &ref_35
+          enum: &ref_36
             - STANDARD_REGISTRY
             - USER
             - AUDITOR
           example: USER
         permissionsGroup:
-          example: &ref_36
+          example: &ref_37
             - {}
           type: array
           items:
             type: string
         permissions:
-          example: &ref_37
+          example: &ref_38
             - POLICIES_POLICY_READ
           type: array
           items:
@@ -11833,35 +11942,35 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: &ref_27
+          oneOf: &ref_28
             - type: string
             - type: number
-          enum: &ref_28
+          enum: &ref_29
             - 0
             - 1
           example: 0
         eventsLvl:
-          oneOf: &ref_29
+          oneOf: &ref_30
             - type: string
             - type: number
-          enum: &ref_30
+          enum: &ref_31
             - 0
             - 1
           example: 0
         propLvl:
-          oneOf: &ref_31
+          oneOf: &ref_32
             - type: string
             - type: number
-          enum: &ref_32
+          enum: &ref_33
             - 0
             - 1
             - 2
           example: 0
         childrenLvl:
-          oneOf: &ref_33
+          oneOf: &ref_34
             - type: string
             - type: number
-          enum: &ref_34
+          enum: &ref_35
             - 0
             - 1
             - 2
@@ -11919,20 +12028,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_27
-          enum: *ref_28
+          oneOf: *ref_28
+          enum: *ref_29
           example: 0
         eventsLvl:
-          oneOf: *ref_29
-          enum: *ref_30
+          oneOf: *ref_30
+          enum: *ref_31
           example: 0
         propLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         childrenLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         moduleId1:
           type: string
@@ -12013,20 +12122,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_27
-          enum: *ref_28
+          oneOf: *ref_28
+          enum: *ref_29
           example: 0
         eventsLvl:
-          oneOf: *ref_29
-          enum: *ref_30
+          oneOf: *ref_30
+          enum: *ref_31
           example: 0
         propLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         childrenLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         documentId1:
           type: string
@@ -12069,20 +12178,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_27
-          enum: *ref_28
+          oneOf: *ref_28
+          enum: *ref_29
           example: 0
         eventsLvl:
-          oneOf: *ref_29
-          enum: *ref_30
+          oneOf: *ref_30
+          enum: *ref_31
           example: 0
         propLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         childrenLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         toolId1:
           type: string
@@ -12863,15 +12972,15 @@ components:
           example: username
         role:
           type: string
-          enum: *ref_35
+          enum: *ref_36
           example: USER
         permissionsGroup:
-          example: *ref_36
+          example: *ref_37
           type: array
           items:
             type: string
         permissions:
-          example: *ref_37
+          example: *ref_38
           type: array
           items:
             type: string
@@ -14173,7 +14282,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_38
+          enum: &ref_39
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -14240,7 +14349,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_38
+          enum: *ref_39
           example: ANALYTIC_POLICY_READ
         category:
           type: string
