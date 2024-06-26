@@ -51,7 +51,7 @@ Promise.all([
     await new QueueService().setConnection(cn).init();
 
     await state.updateState(ApplicationStates.READY);
-    logger.info('Queue service started', [])
+    logger.info('Queue service started', ['QUEUE_SERVICE'])
 
 }, (reason) => {
     console.log(reason);
