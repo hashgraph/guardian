@@ -82,11 +82,11 @@ export class SchemaService {
         pageSize?: number,
     ): Observable<HttpResponse<ISchema[]>> {
         let url = `${this.url}`;
-        if (topicId) {
-            url += `/${topicId}`;
-        }
         if (category) {
             url += `?category=${category}`;
+        }
+        if (topicId) {
+            url += `&topicId=${topicId}`;
         }
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
             url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
