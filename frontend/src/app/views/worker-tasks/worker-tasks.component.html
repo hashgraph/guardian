@@ -35,7 +35,10 @@
                 <ng-container *ngFor="let task of workerTasks">
                     <tr class="row-item">
                         <td style="min-width: 200px;">{{ task.createDate | date: 'yyyy-MM-dd h:mm a' }}</td>
-                        <td style="min-width: 200px;">{{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}</td>
+                        <td *ngIf="task.processedTime"
+                            style="min-width: 200px;">{{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}
+                        </td>
+                        <td *ngIf="!task.processedTime" style="min-width: 200px;">Not started yet</td>
                         <td style="min-width: 200px;">
                             <div>{{ task.type }}</div>
                         </td>
