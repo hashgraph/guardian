@@ -217,10 +217,10 @@ export class PolicyEngineService {
             }
         };
 
+        //#region Block endpoints
         this.channel.getMessages(PolicyEvents.BLOCK_UPDATE_BROADCAST,
             (msg: { type: string, data: any[] }) => {
                 const { type, data } = msg;
-
                 switch (type) {
                     case 'update': {
                         const [blocks, user] = data;
@@ -247,29 +247,261 @@ export class PolicyEngineService {
                 }
             })
 
-        this.channel.getMessages(PolicyEvents.RECORD_UPDATE_BROADCAST, async (msg: any) => {
-            const policy = await DatabaseServer.getPolicyById(msg?.policyId);
-            if (policy) {
-                msg.user = { did: policy.owner };
-                this.channel.publish('update-record', msg);
+        this.channel.getMessages(PolicyEvents.RECORD_UPDATE_BROADCAST,
+            async (msg: any) => {
+                const policy = await DatabaseServer.getPolicyById(msg?.policyId);
+                if (policy) {
+                    msg.user = { did: policy.owner };
+                    this.channel.publish('update-record', msg);
+                }
+            })
+
+        this.channel.getMessages<any, any>('mrv-data',
+            async (msg: any) => {
+                // await PolicyComponentsUtils.ReceiveExternalData(msg);
+                const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                if (policy) {
+                    const policyId = policy.id.toString();
+                    await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
+                            policyId,
+                            data: msg
+                        });
+                }
+                return new MessageResponse({})
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_BLOCKS,
+            async (msg: { policyId: string, user: IAuthUser }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId } = msg;
+                    const error = new PolicyEngine().getPolicyError(policyId);
+                    if (error) {
+                        throw new Error(error);
+                    }
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
+                            user,
+                            policyId
+                        }) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA,
+            async (msg: { user: IAuthUser, blockId: string, policyId: string }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, blockId, policyId } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
+                            user,
+                            blockId,
+                            policyId
+                        }) as any
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG,
+            async (msg: { user: IAuthUser, tag: string, policyId: string }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, tag, policyId } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
+                            user,
+                            tag,
+                            policyId
+                        }) as any
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_BLOCK_DATA,
+            async (msg: { user: IAuthUser, blockId: string, policyId: string, data: any }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, blockId, policyId, data } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
+                            user,
+                            blockId,
+                            policyId,
+                            data
+                        }) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG,
+            async (msg: { user: IAuthUser, tag: string, policyId: string, data: any }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, tag, policyId, data } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
+                            user,
+                            tag,
+                            policyId,
+                            data
+                        }) as any
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_BY_TAG,
+            async (msg: { user: IAuthUser, tag: string, policyId: string }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { tag, policyId } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.BLOCK_BY_TAG, policyId, {
+                            tag,
+                            policyId,
+                        }) as any
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS,
+            async (msg: { user: IAuthUser, blockId: string, policyId: string }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { blockId, policyId } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_PARENTS, policyId, { blockId });
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_NAVIGATION,
+            async (msg: { user: IAuthUser, policyId: string }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId } = msg;
+
+                    const navigationData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_POLICY_NAVIGATION, policyId, {
+                            user
+                        }) as any;
+                    return new MessageResponse(navigationData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS,
+            async (msg: { user: IAuthUser, policyId: string }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_POLICY_GROUPS, policyId, {
+                            user,
+                            policyId
+                        }) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SELECT_POLICY_GROUP,
+            async (msg: { user: IAuthUser, policyId: string, uuid: string }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, uuid } = msg;
+                    const blockData = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.SELECT_POLICY_GROUP, policyId, {
+                            user,
+                            policyId,
+                            uuid
+                        }) as any;
+                    return new MessageResponse(blockData);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA,
+            async (msg: any) => {
+                try {
+                    const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                    if (policy) {
+                        const policyId = policy.id.toString();
+                        new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
+                            policyId,
+                            data: msg
+                        });
+                    }
+                    return new MessageResponse(true);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TAG_BLOCK_MAP,
+            async (msg: { policyId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const userPolicy = await DatabaseServer.getPolicyCache({
+                        id: policyId,
+                        userId: owner.creator
+                    });
+                    if (userPolicy) {
+                        return new MessageResponse(userPolicy.blocks);
+                    }
+
+                    const policy = await DatabaseServer.getPolicy({
+                        id: policyId,
+                        status: {
+                            $in: [
+                                PolicyType.DRY_RUN,
+                                PolicyType.PUBLISH,
+                                PolicyType.DISCONTINUED,
+                            ],
+                        },
+                    });
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    const blocks =
+                        await new GuardiansService().sendPolicyMessage(
+                            PolicyEvents.GET_TAG_BLOCK_MAP,
+                            policyId,
+                            null
+                        );
+                    return new MessageResponse(blocks);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_ABOUT, async () => {
+            try {
+                return new MessageResponse(BlockAboutString);
+            } catch (error) {
+                return new MessageError(error);
             }
-        })
-
-        this.channel.getMessages<any, any>('mrv-data', async (msg) => {
-            // await PolicyComponentsUtils.ReceiveExternalData(msg);
-
-            const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
-            if (policy) {
-                const policyId = policy.id.toString();
-                await new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
-                    policyId,
-                    data: msg
-                });
-            }
-
-            return new MessageResponse({})
         });
+        //#endregion
 
+        //#region Policy endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY,
             async (msg: {
                 options: { filters: any, userDid: string },
@@ -279,58 +511,11 @@ export class PolicyEngineService {
                 const { filters, userDid } = options;
                 const policy = await DatabaseServer.getPolicy(filters);
                 await this.policyEngine.accessPolicy(policy, owner, 'read');
-
                 const result: any = policy;
                 if (policy) {
                     await PolicyComponentsUtils.GetPolicyInfo(policy, userDid);
                 }
-
                 return new MessageResponse(result);
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.ACCESS_POLICY,
-            async (msg: { policyId: string, owner: IOwner, action: string }) => {
-                try {
-                    const { policyId, owner, action } = msg;
-                    const policy = await DatabaseServer.getPolicyById(policyId);
-                    const code = await this.policyEngine.accessPolicyCode(policy, owner);
-                    if (code === 1) {
-                        return new MessageError('Policy does not exist.', 404);
-                    }
-                    if (code === 2) {
-                        return new MessageError(`Insufficient permissions to ${action} the policy.`, 403);
-                    }
-                    return new MessageResponse(policy);
-                } catch (error: any) {
-                    return new MessageError(error, 500);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TOKENS_MAP,
-            async (msg: { owner: IOwner, status: string }) => {
-                try {
-                    const { owner, status } = msg;
-                    const filters: any = {};
-                    if (status) {
-                        filters.status = status;
-                    }
-                    await this.policyEngine.addAccessFilters(filters, owner);
-                    const policies = await DatabaseServer.getPolicies(filters);
-                    const map: any = [];
-                    for (const policyObject of policies) {
-                        const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
-                        map.push({
-                            tokenIds,
-                            name: policyObject.name,
-                            version: policyObject.version,
-                            id: policyObject.id,
-                            status: policyObject.status
-                        });
-                    }
-                    return new MessageResponse(map);
-                } catch (error) {
-                    return new MessageError(error);
-                }
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES,
@@ -417,6 +602,155 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_PUBLISH_POLICIES,
+            async (): Promise<IMessageResponse<Policy[]>> => {
+                try {
+                    const publishPolicies = await DatabaseServer.getPublishPolicies();
+                    return new MessageResponse(publishPolicies);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_FIELDS_DESCRIPTIONS,
+            async (msg: { policiesData: any[] }): Promise<IMessageResponse<any[]>> => {
+                try {
+                    const { policiesData } = msg;
+                    const policySchemas = [];
+                    for (const policy of policiesData) {
+                        const policyId = policy.policyId;
+                        const topicId = policy.topicId;
+                        const dbSchemas = await DatabaseServer.getSchemas({ topicId });
+                        const schemas = dbSchemas.map((schema: SchemaCollection) => new Schema(schema));
+                        const nonSystemSchemas = schemas.filter(schema => !schema.system);
+                        const policyDescriptions: string[] = [];
+                        for (const schema of nonSystemSchemas) {
+                            const fields = schema?.fields;
+                            const descriptions = fields.map((field: SchemaField) => field?.description);
+                            policyDescriptions.push(...descriptions);
+                        }
+                        policySchemas.push({
+                            policyId,
+                            descriptions: Array.from(new Set(policyDescriptions))
+                        });
+                    }
+                    return new MessageResponse(policySchemas);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES_BY_CATEGORY,
+            async (msg: { categoryIds: string[], text: string }): Promise<IMessageResponse<Policy[]>> => {
+                try {
+                    const { categoryIds, text } = msg;
+                    const resultPolicies = await DatabaseServer.getFilteredPolicies(categoryIds, text);
+                    return new MessageResponse(resultPolicies);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MULTI_POLICY,
+            async (msg: { owner: IOwner, policyId: string }) => {
+                try {
+                    const { owner, policyId } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, owner.creator);
+                    if (item) {
+                        return new MessageResponse(item);
+                    } else {
+                        return new MessageResponse({
+                            uuid: null,
+                            instanceTopicId: policy.instanceTopicId,
+                            mainPolicyTopicId: policy.instanceTopicId,
+                            synchronizationTopicId: policy.synchronizationTopicId,
+                            owner: owner.creator,
+                            type: null
+                        });
+                    }
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MULTI_POLICY,
+            async (msg: { owner: IOwner, policyId: string, data: any }) => {
+                try {
+                    const { owner, policyId, data } = msg;
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+
+                    const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, owner.creator);
+                    const userAccount = await this.users.getHederaAccount(owner.creator);
+                    if (item) {
+                        return new MessageError(new Error('Policy is already bound'));
+                    } else {
+                        const root = await this.users.getHederaAccount(policy.creator);
+                        const result = await this.policyEngine.createMultiPolicy(policy, userAccount, root, data);
+                        return new MessageResponse(result);
+                    }
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TOKENS_MAP,
+            async (msg: { owner: IOwner, status: string }) => {
+                try {
+                    const { owner, status } = msg;
+                    const filters: any = {};
+                    if (status) {
+                        filters.status = status;
+                    }
+                    await this.policyEngine.addAccessFilters(filters, owner);
+                    const policies = await DatabaseServer.getPolicies(filters);
+                    const map: any = [];
+                    for (const policyObject of policies) {
+                        const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
+                        map.push({
+                            tokenIds,
+                            name: policyObject.name,
+                            version: policyObject.version,
+                            id: policyObject.id,
+                            status: policyObject.status
+                        });
+                    }
+                    return new MessageResponse(map);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.ACCESS_POLICY,
+            async (msg: { policyId: string, owner: IOwner, action: string }) => {
+                try {
+                    const { policyId, owner, action } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const code = await this.policyEngine.accessPolicyCode(policy, owner);
+                    if (code === 1) {
+                        return new MessageError('Policy does not exist.', 404);
+                    }
+                    if (code === 2) {
+                        return new MessageError(`Insufficient permissions to ${action} the policy.`, 403);
+                    }
+                    return new MessageResponse(policy);
+                } catch (error: any) {
+                    return new MessageError(error, 500);
+                }
+            });
+        //#endregion
+
+        //#region Actions endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES,
             async (msg: { model: Policy, owner: IOwner }): Promise<IMessageResponse<Policy>> => {
                 try {
@@ -669,227 +1003,9 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
+        //#endregion
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_BLOCKS,
-            async (msg: { policyId: string, user: IAuthUser }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, policyId } = msg;
-
-                    const error = new PolicyEngine().getPolicyError(policyId);
-                    if (error) {
-                        throw new Error(error);
-                    }
-
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
-                        user,
-                        policyId
-                    }) as any;
-                    return new MessageResponse(blockData);
-
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_PUBLISH_POLICIES,
-            async (): Promise<IMessageResponse<Policy[]>> => {
-                try {
-                    const publishPolicies = await DatabaseServer.getPublishPolicies();
-                    return new MessageResponse(publishPolicies);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_FIELDS_DESCRIPTIONS,
-            async (msg: { policiesData: any[] }): Promise<IMessageResponse<any[]>> => {
-                try {
-                    const { policiesData } = msg;
-                    const policySchemas = [];
-
-                    for (const policy of policiesData) {
-                        const policyId = policy.policyId;
-                        const topicId = policy.topicId;
-
-                        const dbSchemas = await DatabaseServer.getSchemas({ topicId });
-
-                        const schemas = dbSchemas.map((schema: SchemaCollection) => new Schema(schema));
-
-                        const nonSystemSchemas = schemas.filter(schema => !schema.system);
-
-                        const policyDescriptions: string[] = [];
-                        for (const schema of nonSystemSchemas) {
-                            const fields = schema?.fields;
-                            const descriptions = fields.map((field: SchemaField) => field?.description);
-                            policyDescriptions.push(...descriptions);
-                        }
-                        policySchemas.push({
-                            policyId,
-                            descriptions: Array.from(new Set(policyDescriptions))
-                        });
-                    }
-
-                    return new MessageResponse(policySchemas);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES_BY_CATEGORY,
-            async (msg: { categoryIds: string[], text: string }): Promise<IMessageResponse<Policy[]>> => {
-                try {
-                    const { categoryIds, text } = msg;
-                    const resultPolicies = await DatabaseServer.getFilteredPolicies(categoryIds, text);
-                    return new MessageResponse(resultPolicies);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA,
-            async (msg: { user: IAuthUser, blockId: string, policyId: string }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, blockId, policyId } = msg;
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
-                        user,
-                        blockId,
-                        policyId
-                    }) as any
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG,
-            async (msg: { user: IAuthUser, tag: string, policyId: string }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, tag, policyId } = msg;
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
-                        user,
-                        tag,
-                        policyId
-                    }) as any
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_BLOCK_DATA,
-            async (msg: { user: IAuthUser, blockId: string, policyId: string, data: any }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, blockId, policyId, data } = msg;
-
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
-                        user,
-                        blockId,
-                        policyId,
-                        data
-                    }) as any;
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG,
-            async (msg: { user: IAuthUser, tag: string, policyId: string, data: any }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, tag, policyId, data } = msg;
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
-                        user,
-                        tag,
-                        policyId,
-                        data
-                    }) as any
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_BY_TAG,
-            async (msg: { user: IAuthUser, tag: string, policyId: string }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { tag, policyId } = msg;
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.BLOCK_BY_TAG, policyId, {
-                        tag,
-                        policyId,
-                    }) as any
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS,
-            async (msg: { user: IAuthUser, blockId: string, policyId: string }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { blockId, policyId } = msg;
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_PARENTS, policyId, { blockId });
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_NAVIGATION,
-            async (msg: { user: IAuthUser, policyId: string }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, policyId } = msg;
-
-                    const navigationData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_POLICY_NAVIGATION, policyId, {
-                        user
-                    }) as any;
-                    return new MessageResponse(navigationData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS,
-            async (msg: { user: IAuthUser, policyId: string }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, policyId } = msg;
-
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_POLICY_GROUPS, policyId, {
-                        user,
-                        policyId
-                    }) as any;
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.SELECT_POLICY_GROUP,
-            async (msg: { user: IAuthUser, policyId: string, uuid: string }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { user, policyId, uuid } = msg;
-                    const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SELECT_POLICY_GROUP, policyId, {
-                        user,
-                        policyId,
-                        uuid
-                    }) as any;
-                    return new MessageResponse(blockData);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
+        //#region Export endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_EXPORT_FILE,
             async (msg: { policyId: string, owner: IOwner }): Promise<IMessageResponse<any>> => {
                 try {
@@ -947,7 +1063,9 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
+        //#endregion
 
+        //#region Import endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW,
             async (msg: { zip: any, owner: IOwner }): Promise<IMessageResponse<any>> => {
                 try {
@@ -955,12 +1073,11 @@ export class PolicyEngineService {
                     if (!zip) {
                         throw new Error('file in body is empty');
                     }
-                    const policyToImport: any = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
+                    const policyToImport = await PolicyImportExport.parseZipFile(Buffer.from(zip.data), true);
                     const hash = await this.createHashByFile(policyToImport);
-
                     const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
                     const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
-                    policyToImport.similar = similarPolicies;
+                    (policyToImport as any).similar = similarPolicies;
                     return new MessageResponse(policyToImport);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -969,7 +1086,12 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE,
-            async (msg: { zip: any, owner: IOwner, versionOfTopicId: string, metadata: any }): Promise<IMessageResponse<boolean>> => {
+            async (msg: {
+                zip: any,
+                owner: IOwner,
+                versionOfTopicId: string,
+                metadata: any
+            }): Promise<IMessageResponse<boolean>> => {
                 try {
                     const { zip, owner, versionOfTopicId, metadata } = msg;
                     if (!zip) {
@@ -998,7 +1120,13 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
-            async (msg: { zip: any, owner: IOwner, versionOfTopicId: string, metadata: any, task: any }): Promise<IMessageResponse<any>> => {
+            async (msg: {
+                zip: any,
+                owner: IOwner,
+                versionOfTopicId: string,
+                metadata: any,
+                task: any
+            }): Promise<IMessageResponse<any>> => {
                 const { zip, owner, versionOfTopicId, task, metadata } = msg;
                 const notifier = await initNotifier(task);
 
@@ -1032,7 +1160,112 @@ export class PolicyEngineService {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     notifier.error(error);
                 });
+                return new MessageResponse(task);
+            });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW,
+            async (msg: { messageId: string, owner: IOwner }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { messageId, owner } = msg;
+                    const policyToImport = await this.policyEngine
+                        .preparePolicyPreviewMessage(messageId, owner, emptyNotifier());
+                    const hash = await this.createHashByFile(policyToImport);
+                    const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
+                    const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
+                    policyToImport.similar = similarPolicies;
+                    return new MessageResponse(policyToImport);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC,
+            async (msg: {
+                messageId: string,
+                owner: IOwner,
+                task: any
+            }): Promise<IMessageResponse<any>> => {
+                const { messageId, owner, task } = msg;
+                const notifier = await initNotifier(task);
+
+                RunFunctionAsync(async () => {
+                    const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, owner, notifier);
+                    const hash = await this.createHashByFile(policyToImport);
+                    const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
+                    const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
+                    policyToImport.similar = similarPolicies;
+                    notifier.result(policyToImport);
+                }, async (error) => {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                });
+                return new MessageResponse(task);
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
+            async (msg: {
+                messageId: string,
+                owner: IOwner,
+                versionOfTopicId: string,
+                metadata: any
+            }): Promise<IMessageResponse<boolean>> => {
+                try {
+                    const { messageId, owner, versionOfTopicId, metadata } = msg;
+                    if (!messageId) {
+                        throw new Error('Policy ID in body is empty');
+                    }
+                    const root = await this.users.getHederaAccount(owner.creator);
+                    const result = await this.policyEngine
+                        .importPolicyMessage(messageId, owner, root, versionOfTopicId, emptyNotifier(), metadata);
+                    if (result?.errors?.length) {
+                        const message = PolicyImportExportHelper.errorsMessage(result.errors);
+                        new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                        return new MessageError(message);
+                    }
+                    return new MessageResponse(true);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
+            async (msg: {
+                messageId: string,
+                owner: IOwner,
+                versionOfTopicId: string,
+                metadata: any,
+                task: any
+            }): Promise<IMessageResponse<boolean>> => {
+                const { messageId, owner, versionOfTopicId, task, metadata } = msg;
+                const notifier = await initNotifier(task);
+
+                RunFunctionAsync(async () => {
+                    try {
+                        if (!messageId) {
+                            throw new Error('Policy ID in body is empty');
+                        }
+                        notifier.start('Resolve Hedera account');
+                        const root = await this.users.getHederaAccount(owner.creator);
+                        notifier.completed();
+                        const result = await this.policyEngine
+                            .importPolicyMessage(messageId, owner, root, versionOfTopicId, notifier, metadata);
+                        if (result?.errors?.length) {
+                            const message = PolicyImportExportHelper.errorsMessage(result.errors);
+                            notifier.error(message);
+                            new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                            return;
+                        }
+                        notifier.result({
+                            policyId: result.policy.id,
+                            errors: result.errors
+                        });
+                    } catch (error) {
+                        new Logger().error(error, ['GUARDIAN_SERVICE']);
+                        notifier.error(error);
+                    }
+                });
                 return new MessageResponse(task);
             });
 
@@ -1076,7 +1309,6 @@ export class PolicyEngineService {
                         throw new Error('file in body is empty');
                     }
                     const root = await this.users.getHederaAccount(owner.creator);
-
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                     const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier);
                     for (const tool of tools) {
@@ -1108,7 +1340,12 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_XLSX_ASYNC,
-            async (msg: { xlsx: any, policyId: string, owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
+            async (msg: {
+                xlsx: any,
+                policyId: string,
+                owner: IOwner,
+                task: any
+            }): Promise<IMessageResponse<any>> => {
                 const { xlsx, policyId, owner, task } = msg;
                 const notifier = await initNotifier(task);
 
@@ -1121,7 +1358,6 @@ export class PolicyEngineService {
                     new Logger().info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
                     const root = await this.users.getHederaAccount(owner.creator);
                     notifier.start('File parsing');
-
                     const xlsxResult = await XlsxToJson.parse(Buffer.from(xlsx.data));
                     const { tools, errors } = await importSubTools(root, xlsxResult.getToolIds(), owner, notifier);
                     for (const tool of tools) {
@@ -1142,7 +1378,6 @@ export class PolicyEngineService {
                         true
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy);
-
                     notifier.result({
                         policyId: policy.id,
                         errors: result.errors
@@ -1151,147 +1386,27 @@ export class PolicyEngineService {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     notifier.error(error);
                 });
-
                 return new MessageResponse(task);
             });
+        //#endregion
 
-        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW,
-            async (msg: { messageId: string, owner: IOwner }): Promise<IMessageResponse<any>> => {
-                try {
-                    const { messageId, owner } = msg;
-                    const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, owner, emptyNotifier());
-                    const hash = await this.createHashByFile(policyToImport);
-
-                    const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
-                    const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
-                    policyToImport.similar = similarPolicies;
-                    return new MessageResponse(policyToImport);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC,
-            async (msg: { messageId: string, owner: IOwner, task: any }): Promise<IMessageResponse<any>> => {
-                const { messageId, owner, task } = msg;
-                const notifier = await initNotifier(task);
-
-                RunFunctionAsync(async () => {
-                    const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, owner, notifier);
-                    const hash = await this.createHashByFile(policyToImport);
-
-                    const filters = await this.policyEngine.addAccessFilters({ hash }, owner);
-                    const similarPolicies = await DatabaseServer.getListOfPolicies(filters);
-                    policyToImport.similar = similarPolicies;
-                    notifier.result(policyToImport);
-                }, async (error) => {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    notifier.error(error);
-                });
-
-                return new MessageResponse(task);
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            async (msg: { messageId: string, owner: IOwner, versionOfTopicId: string, metadata: any }): Promise<IMessageResponse<boolean>> => {
-                try {
-                    const { messageId, owner, versionOfTopicId, metadata } = msg;
-                    if (!messageId) {
-                        throw new Error('Policy ID in body is empty');
-                    }
-
-                    const root = await this.users.getHederaAccount(owner.creator);
-                    const result = await this.policyEngine.importPolicyMessage(messageId, owner, root, versionOfTopicId, emptyNotifier(), metadata);
-                    if (result?.errors?.length) {
-                        const message = PolicyImportExportHelper.errorsMessage(result.errors);
-                        new Logger().warn(message, ['GUARDIAN_SERVICE']);
-                        return new MessageError(message);
-                    }
-                    return new MessageResponse(true);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            async (msg: { messageId: string, owner: IOwner, versionOfTopicId: string, metadata: any, task: any }): Promise<IMessageResponse<boolean>> => {
-                const { messageId, owner, versionOfTopicId, task, metadata } = msg;
-                const notifier = await initNotifier(task);
-
-                RunFunctionAsync(async () => {
-                    try {
-                        if (!messageId) {
-                            throw new Error('Policy ID in body is empty');
-                        }
-                        notifier.start('Resolve Hedera account');
-                        const root = await this.users.getHederaAccount(owner.creator);
-                        notifier.completed();
-                        const result = await this.policyEngine.importPolicyMessage(messageId, owner, root, versionOfTopicId, notifier, metadata);
-                        if (result?.errors?.length) {
-                            const message = PolicyImportExportHelper.errorsMessage(result.errors);
-                            notifier.error(message);
-                            new Logger().warn(message, ['GUARDIAN_SERVICE']);
-                            return;
-                        }
-                        notifier.result({
-                            policyId: result.policy.id,
-                            errors: result.errors
-                        });
-                    } catch (error) {
-                        new Logger().error(error, ['GUARDIAN_SERVICE']);
-                        notifier.error(error);
-                    }
-                });
-
-                return new MessageResponse(task);
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA,
-            async (msg: any) => {
-                try {
-                    const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
-                    if (policy) {
-                        const policyId = policy.id.toString();
-
-                        new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
-                            policyId,
-                            data: msg
-                        });
-                    }
-                    return new MessageResponse(true);
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_ABOUT, async () => {
-            try {
-                return new MessageResponse(BlockAboutString);
-            } catch (error) {
-                return new MessageError(error);
-            }
-        });
-
+        //#region DRY RUN endpoints
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_USERS,
             async (msg: { policyId: string, owner: IOwner }) => {
                 try {
                     const { policyId, owner } = msg;
-
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
                     if (model.status !== PolicyType.DRY_RUN) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-
                     const users = await DatabaseServer.getVirtualUsers(policyId);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
                 }
             });
+
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER,
             async (msg: { policyId: string, owner: IOwner }) => {
@@ -1404,18 +1519,177 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS,
-            async (msg: { policyId: string, type: string, owner: IOwner, pageIndex: string, pageSize: string }) => {
+            async (msg: {
+                policyId: string,
+                type: string,
+                owner: IOwner,
+                pageIndex: string,
+                pageSize: string
+            }) => {
                 try {
                     const { policyId, type, owner, pageIndex, pageSize } = msg;
-
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
                     if (model.status !== PolicyType.DRY_RUN) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-
-                    const documents = await DatabaseServer.getVirtualDocuments(policyId, type, pageIndex, pageSize);
+                    const documents = await DatabaseServer
+                        .getVirtualDocuments(policyId, type, pageIndex, pageSize);
                     return new MessageResponse(documents);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+        //#endregion
+
+        //#region Migrate data endpoints
+        this.channel.getMessages<any, any>(PolicyEngineEvents.MIGRATE_DATA,
+            async (msg: { migrationConfig: any, owner: IOwner }) => {
+                try {
+                    const { migrationConfig, owner } = msg;
+                    const migrationErrors = await PolicyDataMigrator.migrate(
+                        owner.owner,
+                        migrationConfig,
+                        emptyNotifier()
+                    );
+                    await this.policyEngine.regenerateModel(
+                        migrationConfig.policies.dst
+                    );
+                    if (migrationErrors.length > 0) {
+                        new Logger().warn(
+                            migrationErrors
+                                .map((error) => `${error.id}: ${error.message}`)
+                                .join('\r\n'),
+                            ['GUARDIAN_SERVICE']
+                        );
+                    }
+                    return new MessageResponse(migrationErrors);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.MIGRATE_DATA_ASYNC,
+            async (msg: { migrationConfig: any, owner: IOwner, task: any }) => {
+                try {
+                    const { migrationConfig, owner, task } = msg;
+                    const notifier = await initNotifier(task);
+                    RunFunctionAsync(
+                        async () => {
+                            const migrationErrors =
+                                await PolicyDataMigrator.migrate(
+                                    owner.owner,
+                                    migrationConfig,
+                                    notifier
+                                );
+                            await this.policyEngine.regenerateModel(
+                                migrationConfig.policies.dst
+                            );
+                            if (migrationErrors.length > 0) {
+                                new Logger().warn(
+                                    migrationErrors
+                                        .map(
+                                            (error) =>
+                                                `${error.id}: ${error.message}`
+                                        )
+                                        .join('\r\n'),
+                                    ['GUARDIAN_SERVICE']
+                                );
+                            }
+                            notifier.result(migrationErrors);
+                        },
+                        async (error) => {
+                            notifier.error(error);
+                        }
+                    );
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DOWNLOAD_VIRTUAL_KEYS,
+            async (msg: { policyId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicy({
+                        id: policyId,
+                        status: PolicyType.DRY_RUN,
+                    });
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    const zip = await PolicyDataImportExport.exportVirtualKeys(owner, policy.id);
+                    const zippedData = await zip.generateAsync({
+                        type: 'arraybuffer',
+                        compression: 'DEFLATE',
+                        compressionOptions: {
+                            level: 3,
+                        },
+                    });
+                    return new BinaryMessageResponse(zippedData);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.UPLOAD_VIRTUAL_KEYS,
+            async (msg: { policyId: string, data: any, owner: IOwner }) => {
+                try {
+                    const { policyId, data, owner } = msg;
+                    const policy = await DatabaseServer.getPolicy({
+                        id: policyId,
+                        status: PolicyType.DRY_RUN,
+                    });
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    await PolicyDataImportExport.importVirtualKeys(
+                        Buffer.from(data),
+                        policy.id
+                    );
+                    return new MessageResponse(null);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DOWNLOAD_POLICY_DATA,
+            async (msg: { policyId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicy({
+                        id: policyId,
+                        status: {
+                            $in: [
+                                PolicyType.DRY_RUN,
+                                PolicyType.PUBLISH,
+                                PolicyType.DISCONTINUED,
+                            ],
+                        },
+                    });
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    const policyDataExportHelper = new PolicyDataImportExport(policy);
+                    const zip = await policyDataExportHelper.exportData();
+                    const zippedData = await zip.generateAsync({
+                        type: 'arraybuffer',
+                        compression: 'DEFLATE',
+                        compressionOptions: {
+                            level: 3,
+                        },
+                    });
+                    return new BinaryMessageResponse(zippedData);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.UPLOAD_POLICY_DATA,
+            async (msg: { data: any, owner: IOwner }) => {
+                try {
+                    const { data, owner } = msg;
+                    if (!data) {
+                        throw new Error('Invalid policy data');
+                    }
+                    return new MessageResponse(
+                        await PolicyDataImportExport.importData(owner.owner, Buffer.from(msg?.data))
+                    );
                 } catch (error) {
                     return new MessageError(error);
                 }
@@ -1540,255 +1814,6 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TAG_BLOCK_MAP,
-            async (msg: { policyId: string, owner: IOwner }) => {
-                try {
-                    const { policyId, owner } = msg;
-                    const userPolicy = await DatabaseServer.getPolicyCache({
-                        id: policyId,
-                        userId: owner.creator
-                    });
-                    if (userPolicy) {
-                        return new MessageResponse(userPolicy.blocks);
-                    }
-
-                    const policy = await DatabaseServer.getPolicy({
-                        id: policyId,
-                        status: {
-                            $in: [
-                                PolicyType.DRY_RUN,
-                                PolicyType.PUBLISH,
-                                PolicyType.DISCONTINUED,
-                            ],
-                        },
-                    });
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
-
-                    const blocks =
-                        await new GuardiansService().sendPolicyMessage(
-                            PolicyEvents.GET_TAG_BLOCK_MAP,
-                            policyId,
-                            null
-                        );
-                    return new MessageResponse(blocks);
-                } catch (error) {
-                    return new MessageError(error);
-                }
-            }
-        );
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.DOWNLOAD_VIRTUAL_KEYS,
-            async (msg: { policyId: string, owner: IOwner }) => {
-                try {
-                    const { policyId, owner } = msg;
-                    const policy = await DatabaseServer.getPolicy({
-                        id: policyId,
-                        status: PolicyType.DRY_RUN,
-                    });
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
-                    const zip = await PolicyDataImportExport.exportVirtualKeys(owner, policy.id);
-                    const zippedData = await zip.generateAsync({
-                        type: 'arraybuffer',
-                        compression: 'DEFLATE',
-                        compressionOptions: {
-                            level: 3,
-                        },
-                    });
-                    return new BinaryMessageResponse(zippedData);
-                } catch (error) {
-                    return new MessageError(error);
-                }
-            }
-        );
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.DOWNLOAD_POLICY_DATA,
-            async (msg: { policyId: string, owner: IOwner }) => {
-                try {
-                    const { policyId, owner } = msg;
-                    const policy = await DatabaseServer.getPolicy({
-                        id: policyId,
-                        status: {
-                            $in: [
-                                PolicyType.DRY_RUN,
-                                PolicyType.PUBLISH,
-                                PolicyType.DISCONTINUED,
-                            ],
-                        },
-                    });
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
-                    // if (!policy) {
-                    //     throw new Error(`Policy doesn't exist`);
-                    // }
-                    const policyDataExportHelper = new PolicyDataImportExport(
-                        policy
-                    );
-                    const zip = await policyDataExportHelper.exportData();
-                    const zippedData = await zip.generateAsync({
-                        type: 'arraybuffer',
-                        compression: 'DEFLATE',
-                        compressionOptions: {
-                            level: 3,
-                        },
-                    });
-                    return new BinaryMessageResponse(zippedData);
-                } catch (error) {
-                    return new MessageError(error);
-                }
-            }
-        );
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.UPLOAD_POLICY_DATA,
-            async (msg: { data: any, owner: IOwner }) => {
-                try {
-                    const { data, owner } = msg;
-                    if (!data) {
-                        throw new Error('Invalid policy data');
-                    }
-                    return new MessageResponse(
-                        await PolicyDataImportExport.importData(owner.owner, Buffer.from(msg?.data))
-                    );
-                } catch (error) {
-                    return new MessageError(error);
-                }
-            }
-        );
-
-        this.channel.getMessages<any, any>(
-            PolicyEngineEvents.UPLOAD_VIRTUAL_KEYS,
-            async (msg: { policyId: string, data: any, owner: IOwner }) => {
-                try {
-                    const { policyId, data, owner } = msg;
-                    const policy = await DatabaseServer.getPolicy({
-                        id: policyId,
-                        status: PolicyType.DRY_RUN,
-                    });
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
-                    await PolicyDataImportExport.importVirtualKeys(
-                        Buffer.from(data),
-                        policy.id
-                    );
-                    return new MessageResponse(null);
-                } catch (error) {
-                    return new MessageError(error);
-                }
-            }
-        );
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.MIGRATE_DATA,
-            async (msg: { migrationConfig: any, owner: IOwner }) => {
-                try {
-                    const { migrationConfig, owner } = msg;
-                    const migrationErrors = await PolicyDataMigrator.migrate(
-                        owner.owner,
-                        migrationConfig,
-                        emptyNotifier()
-                    );
-                    await this.policyEngine.regenerateModel(
-                        migrationConfig.policies.dst
-                    );
-                    if (migrationErrors.length > 0) {
-                        new Logger().warn(
-                            migrationErrors
-                                .map((error) => `${error.id}: ${error.message}`)
-                                .join('\r\n'),
-                            ['GUARDIAN_SERVICE']
-                        );
-                    }
-                    return new MessageResponse(migrationErrors);
-                } catch (error) {
-                    return new MessageError(error);
-                }
-            }
-        );
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.MIGRATE_DATA_ASYNC,
-            async (msg: { migrationConfig: any, owner: IOwner, task: any }) => {
-                try {
-                    const { migrationConfig, owner, task } = msg;
-                    const notifier = await initNotifier(task);
-                    RunFunctionAsync(
-                        async () => {
-                            const migrationErrors =
-                                await PolicyDataMigrator.migrate(
-                                    owner.owner,
-                                    migrationConfig,
-                                    notifier
-                                );
-                            await this.policyEngine.regenerateModel(
-                                migrationConfig.policies.dst
-                            );
-                            if (migrationErrors.length > 0) {
-                                new Logger().warn(
-                                    migrationErrors
-                                        .map(
-                                            (error) =>
-                                                `${error.id}: ${error.message}`
-                                        )
-                                        .join('\r\n'),
-                                    ['GUARDIAN_SERVICE']
-                                );
-                            }
-                            notifier.result(migrationErrors);
-                        },
-                        async (error) => {
-                            notifier.error(error);
-                        }
-                    );
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MULTI_POLICY,
-            async (msg: { owner: IOwner, policyId: string }) => {
-                try {
-                    const { owner, policyId } = msg;
-
-                    const policy = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
-
-                    const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, owner.creator);
-                    if (item) {
-                        return new MessageResponse(item);
-                    } else {
-                        return new MessageResponse({
-                            uuid: null,
-                            instanceTopicId: policy.instanceTopicId,
-                            mainPolicyTopicId: policy.instanceTopicId,
-                            synchronizationTopicId: policy.synchronizationTopicId,
-                            owner: owner.creator,
-                            type: null
-                        });
-                    }
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
-        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MULTI_POLICY,
-            async (msg: { owner: IOwner, policyId: string, data: any }) => {
-                try {
-                    const { owner, policyId, data } = msg;
-
-                    const policy = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(policy, owner, 'read');
-
-                    const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, owner.creator);
-                    const userAccount = await this.users.getHederaAccount(owner.creator);
-                    if (item) {
-                        return new MessageError(new Error('Policy is already bound'));
-                    } else {
-                        const root = await this.users.getHederaAccount(policy.creator);
-                        const result = await this.policyEngine.createMultiPolicy(policy, userAccount, root, data);
-                        return new MessageResponse(result);
-                    }
-                } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
+        //#endregion
     }
 }
