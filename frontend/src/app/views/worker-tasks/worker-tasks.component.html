@@ -22,16 +22,19 @@
                     <col/>
                     <col/>
                     <col/>
+                    <col/>
                     <col style="width: 100px;"/>
                 </colgroup>
                 <tr class="row-header">
-                    <th>DATE & TIME</th>
+                    <th>CREATED</th>
+                    <th>STARTED</th>
                     <th>TYPE</th>
                     <th>STATUS</th>
                     <th></th>
                 </tr>
                 <ng-container *ngFor="let task of workerTasks">
                     <tr class="row-item">
+                        <td style="min-width: 200px;">{{ task.createDate | date: 'yyyy-MM-dd h:mm a' }}</td>
                         <td style="min-width: 200px;">{{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}</td>
                         <td style="min-width: 200px;">
                             <div>{{ task.type }}</div>
