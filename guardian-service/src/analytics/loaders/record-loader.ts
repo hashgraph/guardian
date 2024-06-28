@@ -63,12 +63,11 @@ export class RecordLoader {
         model.setDocuments(documents);
 
         const children: DocumentModel[] = [];
-        const cacheSchemas = new Map<string, SchemaModel>();
         for (const document of documents) {
             if (document.type === 'schema') {
                 const schemaModel = SchemaModel.from(document.document, this.options);
                 schemaModel.update(this.options);
-                cacheSchemas.set(document.id, schemaModel);
+                this.cacheSchemas.set(document.id, schemaModel);
             }
         }
         for (let index = 0; index < documents.length; index++) {
