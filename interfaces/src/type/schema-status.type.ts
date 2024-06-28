@@ -6,4 +6,5 @@ export enum SchemaStatus {
     PUBLISHED = 'PUBLISHED',
     UNPUBLISHED = 'UNPUBLISHED',
     ERROR = 'ERROR',
+    DEMO = 'DEMO'
 }

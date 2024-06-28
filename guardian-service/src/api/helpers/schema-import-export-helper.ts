@@ -2,7 +2,7 @@ import { GenerateUUIDv4, IOwner, ISchema, ModelHelper, ModuleStatus, Schema, Sch
 import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
-import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper.js';
+import { createSchema, fixSchemaDefsOnImport, getDefs, ImportSchemaResult, onlyUnique, ImportSchemaMap } from './schema-helper.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
 import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';
 
@@ -102,10 +102,10 @@ export async function loadSchema(messageId: string): Promise<any> {
  * @param topicId
  */
 export async function importTagsByFiles(
-    result: ImportResult,
+    result: ImportSchemaResult,
     files: Tag[],
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportSchemaResult> {
     const { schemasMap } = result;
     const idMap: Map<string, string> = new Map();
     for (const item of schemasMap) {
@@ -173,26 +173,27 @@ export async function getSchemaTarget(topicId: string): Promise<any> {
 
 /**
  * Import schema by files
- * @param category
- * @param user
  * @param files
- * @param topicId
+ * @param user
+ * @param options
  * @param notifier
- * @param skipGenerateId
- * @param outerSchemasMapping
  */
 export async function importSchemaByFiles(
-    category: SchemaCategory,
-    user: IOwner,
     files: ISchema[],
-    topicId: string,
-    notifier: INotifier,
-    skipGenerateId = false,
-    outerSchemasMapping?: { name: string, iri: string }[]
-): Promise<ImportResult> {
+    user: IOwner,
+    options: {
+        topicId: string,
+        category: SchemaCategory,
+        status?: SchemaStatus,
+        skipGenerateId?: boolean,
+        outerSchemas?: { name: string, iri: string }[]
+    },
+    notifier: INotifier
+): Promise<ImportSchemaResult> {
     notifier.start('Import schemas');
 
-    const schemasMap: SchemaImportResult[] = [];
+    const { topicId, category, status, skipGenerateId, outerSchemas } = options;
+    const schemasMap: ImportSchemaMap[] = [];
     const uuidMap: Map<string, string> = new Map();
 
     for (const file of files) {
@@ -219,13 +220,13 @@ export async function importSchemaByFiles(
         file.creator = user.creator;
         file.owner = user.owner;
         file.topicId = topicId || 'draft';
-        file.status = SchemaStatus.DRAFT;
-        if (file.document?.$defs && outerSchemasMapping) {
+        file.status = status || SchemaStatus.DRAFT;
+        if (file.document?.$defs && outerSchemas) {
             for (const def of Object.values(file.document.$defs)) {
                 if (!def || uuidMap.has(def.$id)) {
                     continue;
                 }
-                const subSchemaMapping = outerSchemasMapping.find(
+                const subSchemaMapping = outerSchemas.find(
                     (item) => item.name === def.title
                 );
                 if (subSchemaMapping) {
@@ -305,7 +306,7 @@ export async function importSchemasByMessages(
     messageIds: string[],
     topicId: string,
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportSchemaResult> {
     notifier.start('Load schema files');
     const schemas: ISchema[] = [];
 
@@ -361,10 +362,12 @@ export async function importSchemasByMessages(
     notifier.completed();
 
     let result = await importSchemaByFiles(
-        category,
-        user,
         schemas,
-        topicId,
+        user,
+        {
+            topicId,
+            category,
+        },
         notifier
     );
     result = await importTagsByFiles(result, tags, notifier);

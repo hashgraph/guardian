@@ -11,7 +11,7 @@ const { readJSON } = fs;
 /**
  * Import Result
  */
-export interface SchemaImportResult {
+export interface ImportSchemaMap {
     /**
      * Old schema id
      */
@@ -49,11 +49,11 @@ export interface SchemaImportResult {
 /**
  * Import Result
  */
-export interface ImportResult {
+export interface ImportSchemaResult {
     /**
      * New schema uuid
      */
-    schemasMap: SchemaImportResult[];
+    schemasMap: ImportSchemaMap[];
     /**
      * Errors
      */

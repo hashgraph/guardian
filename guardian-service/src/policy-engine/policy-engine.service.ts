@@ -1090,10 +1090,11 @@ export class PolicyEngineService {
                 zip: any,
                 owner: IOwner,
                 versionOfTopicId: string,
-                metadata: any
+                metadata: any,
+                demo: boolean
             }): Promise<IMessageResponse<boolean>> => {
                 try {
-                    const { zip, owner, versionOfTopicId, metadata } = msg;
+                    const { zip, owner, versionOfTopicId, metadata, demo } = msg;
                     if (!zip) {
                         throw new Error('file in body is empty');
                     }
@@ -1103,9 +1104,9 @@ export class PolicyEngineService {
                         policyToImport,
                         owner,
                         versionOfTopicId,
-                        emptyNotifier(),
-                        undefined,
-                        metadata
+                        null,
+                        metadata,
+                        demo
                     );
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
@@ -1125,9 +1126,10 @@ export class PolicyEngineService {
                 owner: IOwner,
                 versionOfTopicId: string,
                 metadata: any,
+                demo: boolean,
                 task: any
             }): Promise<IMessageResponse<any>> => {
-                const { zip, owner, versionOfTopicId, task, metadata } = msg;
+                const { zip, owner, versionOfTopicId, task, metadata, demo } = msg;
                 const notifier = await initNotifier(task);
 
                 RunFunctionAsync(async () => {
@@ -1142,9 +1144,10 @@ export class PolicyEngineService {
                         policyToImport,
                         owner,
                         versionOfTopicId,
-                        notifier,
-                        undefined,
-                        metadata
+                        null,
+                        metadata,
+                        demo,
+                        notifier
                     );
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
@@ -1208,16 +1211,17 @@ export class PolicyEngineService {
                 messageId: string,
                 owner: IOwner,
                 versionOfTopicId: string,
+                demo: boolean,
                 metadata: any
             }): Promise<IMessageResponse<boolean>> => {
                 try {
-                    const { messageId, owner, versionOfTopicId, metadata } = msg;
+                    const { messageId, owner, versionOfTopicId, metadata, demo } = msg;
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
                     const root = await this.users.getHederaAccount(owner.creator);
                     const result = await this.policyEngine
-                        .importPolicyMessage(messageId, owner, root, versionOfTopicId, emptyNotifier(), metadata);
+                        .importPolicyMessage(messageId, owner, root, versionOfTopicId, metadata, demo);
                     if (result?.errors?.length) {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
@@ -1236,9 +1240,10 @@ export class PolicyEngineService {
                 owner: IOwner,
                 versionOfTopicId: string,
                 metadata: any,
+                demo: boolean,
                 task: any
             }): Promise<IMessageResponse<boolean>> => {
-                const { messageId, owner, versionOfTopicId, task, metadata } = msg;
+                const { messageId, owner, versionOfTopicId, task, metadata, demo } = msg;
                 const notifier = await initNotifier(task);
 
                 RunFunctionAsync(async () => {
@@ -1250,7 +1255,7 @@ export class PolicyEngineService {
                         const root = await this.users.getHederaAccount(owner.creator);
                         notifier.completed();
                         const result = await this.policyEngine
-                            .importPolicyMessage(messageId, owner, root, versionOfTopicId, notifier, metadata);
+                            .importPolicyMessage(messageId, owner, root, versionOfTopicId, metadata, demo, notifier);
                         if (result?.errors?.length) {
                             const message = PolicyImportExportHelper.errorsMessage(result.errors);
                             notifier.error(message);
@@ -1321,12 +1326,14 @@ export class PolicyEngineService {
                     GenerateBlocks.generate(xlsxResult);
                     const category = await getSchemaCategory(policy.topicId);
                     const result = await importSchemaByFiles(
-                        category,
-                        owner,
                         xlsxResult.schemas,
-                        policy.topicId,
-                        notifier,
-                        true
+                        owner,
+                        {
+                            category,
+                            topicId: policy.topicId,
+                            skipGenerateId: true
+                        },
+                        notifier
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy);
                     return new MessageResponse({
@@ -1370,12 +1377,14 @@ export class PolicyEngineService {
                     GenerateBlocks.generate(xlsxResult);
                     const category = await getSchemaCategory(policy.topicId);
                     const result = await importSchemaByFiles(
-                        category,
-                        owner,
                         xlsxResult.schemas,
-                        policy.topicId,
-                        notifier,
-                        true
+                        owner,
+                        {
+                            category,
+                            topicId: policy.topicId,
+                            skipGenerateId: true
+                        },
+                        notifier
                     );
                     await PolicyImportExportHelper.updatePolicyComponents(policy);
                     notifier.result({
@@ -1406,7 +1415,6 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
-
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER,
             async (msg: { policyId: string, owner: IOwner }) => {

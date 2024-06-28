@@ -507,8 +507,10 @@ export class PolicyEngine extends NatsService {
             dataToCreate,
             user,
             null,
-            notifier,
-            data
+            data,
+            null,
+            false,
+            notifier
         );
     }
 
@@ -1093,8 +1095,9 @@ export class PolicyEngine extends NatsService {
         user: IOwner,
         hederaAccount: IRootConfig,
         versionOfTopicId: string,
-        notifier: INotifier,
-        metadata?: PolicyToolMetadata
+        metadata: PolicyToolMetadata = null,
+        demo: boolean = false,
+        notifier: INotifier = emptyNotifier()
     ): Promise<{
         /**
          * New Policy
@@ -1148,9 +1151,10 @@ export class PolicyEngine extends NatsService {
             policyToImport,
             user,
             versionOfTopicId,
-            notifier,
-            undefined,
-            metadata
+            null,
+            metadata,
+            demo,
+            notifier
         );
     }
 

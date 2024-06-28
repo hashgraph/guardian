@@ -30,10 +30,12 @@ async function createExistingPolicySchemas(
         user
     );
     const importResult = await importSchemaByFiles(
-        SchemaCategory.POLICY,
-        user,
         relationships,
-        policyTopicId,
+        user,
+        {
+            category: SchemaCategory.POLICY,
+            topicId: policyTopicId
+        },
         emptyNotifier()
     );
     const schemasMap = importResult.schemasMap;

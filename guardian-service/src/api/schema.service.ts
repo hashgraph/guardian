@@ -734,10 +734,12 @@ export async function schemaAPI(): Promise<void> {
 
                 const category = await getSchemaCategory(topicId);
                 let result = await importSchemaByFiles(
-                    category,
-                    owner,
                     schemas,
-                    topicId,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
                     notifier
                 );
                 result = await importTagsByFiles(result, tags, notifier);
@@ -766,10 +768,12 @@ export async function schemaAPI(): Promise<void> {
 
                 const category = await getSchemaCategory(topicId);
                 let result = await importSchemaByFiles(
-                    category,
-                    owner,
                     schemas,
-                    topicId,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
                     notifier
                 );
                 result = await importTagsByFiles(result, tags, notifier);
@@ -952,7 +956,7 @@ export async function schemaAPI(): Promise<void> {
                     return new MessageError('Invalid load schema parameter');
                 }
 
-                const {fields, pageIndex, pageSize } = msg;
+                const { fields, pageIndex, pageSize } = msg;
                 const filter: any = {
                     where: {
                         system: true
@@ -1269,12 +1273,14 @@ export async function schemaAPI(): Promise<void> {
                 GenerateBlocks.generate(xlsxResult);
 
                 const result = await importSchemaByFiles(
-                    category,
-                    owner,
                     xlsxResult.schemas,
-                    topicId,
-                    notifier,
-                    true
+                    owner,
+                    {
+                        category,
+                        topicId,
+                        skipGenerateId: true
+                    },
+                    notifier
                 );
 
                 if (category === SchemaCategory.TOOL) {
@@ -1327,12 +1333,14 @@ export async function schemaAPI(): Promise<void> {
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
                 const result = await importSchemaByFiles(
-                    category,
-                    owner,
                     xlsxResult.schemas,
-                    topicId,
-                    notifier,
-                    true
+                    owner,
+                    {
+                        category,
+                        topicId,
+                        skipGenerateId: true
+                    },
+                    notifier
                 );
 
                 if (category === SchemaCategory.TOOL) {

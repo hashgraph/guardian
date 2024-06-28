@@ -5,9 +5,19 @@ import { importTag } from './tag-import-export-helper.js';
 import { importSchemaByFiles } from './schema-import-export-helper.js';
 
 /**
+ * Import tool mapping
+ */
+export interface ImportToolMap {
+    oldMessageId: string;
+    messageId: string;
+    oldHash: string;
+    newHash?: string;
+}
+
+/**
  * Import Result
  */
-interface ImportResult {
+export interface ImportToolResult {
     /**
      * Tool
      */
@@ -21,7 +31,7 @@ interface ImportResult {
 /**
  * Import Results
  */
-interface ImportResults {
+export interface ImportToolResults {
     /**
      * Tool
      */
@@ -40,7 +50,7 @@ interface ImportResults {
 export async function replaceConfig(
     tool: PolicyTool,
     schemasMap: any[],
-    tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
+    tools: ImportToolMap[]
 ) {
     if (await DatabaseServer.getTool({ name: tool.name })) {
         tool.name = tool.name + '_' + Date.now();
@@ -74,7 +84,7 @@ export async function importSubTools(
     }[],
     user: IOwner,
     notifier: INotifier,
-): Promise<ImportResults> {
+): Promise<ImportToolResults> {
     if (!messages?.length) {
         return { tools: [], errors: [] };
     }
@@ -161,7 +171,7 @@ export async function importToolByMessage(
     messageId: string,
     user: IOwner,
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportToolResult> {
     notifier.completedAndStart('Load tool file');
 
     const messageServer = new MessageServer(
@@ -319,7 +329,7 @@ export async function importToolByFile(
     components: IToolComponents,
     notifier: INotifier,
     metadata?: PolicyToolMetadata
-): Promise<ImportResult> {
+): Promise<ImportToolResult> {
     notifier.start('Import tool');
 
     const {
@@ -424,13 +434,15 @@ export async function importToolByFile(
 
     // Import Schemas
     const schemasResult = await importSchemaByFiles(
-        SchemaCategory.TOOL,
-        user,
         schemas,
-        tool.topicId,
-        notifier,
-        false,
-        toolsSchemas
+        user,
+        {
+            category: SchemaCategory.TOOL,
+            topicId: tool.topicId,
+            skipGenerateId: false,
+            outerSchemas: toolsSchemas
+        },
+        notifier
     );
     const schemasMap = schemasResult.schemasMap;
 

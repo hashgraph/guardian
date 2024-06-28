@@ -1,12 +1,375 @@
-import { BlockType, ConfigType, GenerateUUIDv4, IOwner, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
+import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { publishSystemSchemas } from '../../api/helpers/schema-publish-helper.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
-import { INotifier } from '../../helpers/notifier.js';
-import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
+import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
-import { SchemaImportResult } from '../../api/helpers/schema-helper.js';
+import { ImportSchemaMap, ImportSchemaResult } from '../../api/helpers/schema-helper.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
-import { importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles } from '../../api/helpers/index.js';
+import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles } from '../../api/helpers/index.js';
+
+interface ImportResult {
+    /**
+     * New Policy
+     */
+    policy: Policy,
+    /**
+     * Errors
+     */
+    errors: any[]
+}
+
+class PolicyImport {
+    private readonly demo: boolean;
+    private readonly notifier: INotifier;
+
+    private root: IRootConfig;
+    private topicHelper: TopicHelper;
+    private messageServer: MessageServer;
+    private parentTopic: TopicConfig;
+    private topicRow: TopicConfig;
+    private toolsResult: ImportToolResults;
+    private toolsMapping: ImportToolMap[]
+    private tokensResult: ImportTokenResult;
+    private tokenMapping: ImportTokenMap[];
+    private artifactsResult: ImportArtifactResult;
+    private artifactsMapping: Map<string, string>;
+    private schemasResult: ImportSchemaResult;
+    private schemasMapping: ImportSchemaMap[];
+    private topicId: string;
+
+    constructor(demo: boolean, notifier: INotifier) {
+        this.demo = demo;
+        this.notifier = notifier;
+    }
+
+    private async resolveAccount(user: IOwner): Promise<IRootConfig> {
+        this.notifier.start('Resolve Hedera account');
+        const users = new Users();
+        this.root = await users.getHederaAccount(user.creator);
+        this.topicHelper = new TopicHelper(
+            this.root.hederaAccountId,
+            this.root.hederaAccountKey,
+            this.root.signOptions
+        );
+        this.messageServer = new MessageServer(
+            this.root.hederaAccountId,
+            this.root.hederaAccountKey,
+            this.root.signOptions
+        );
+        return this.root;
+    }
+
+    private async dataPreparation(
+        policy: Policy,
+        user: IOwner,
+        additionalPolicyConfig: Partial<Policy> | null
+    ): Promise<Policy> {
+        delete policy._id;
+        delete policy.id;
+        delete policy.messageId;
+        delete policy.version;
+        delete policy.previousVersion;
+        delete policy.createDate;
+        policy.uuid = GenerateUUIDv4();
+        policy.creator = user.creator;
+        policy.owner = user.owner;
+        policy.status = PolicyType.DRAFT;
+        policy.instanceTopicId = null;
+        policy.synchronizationTopicId = null;
+        policy.name = additionalPolicyConfig?.name || policy.name;
+        policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
+        policy.description = additionalPolicyConfig?.description || policy.description;
+        policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
+        return policy;
+    }
+
+    private async createPolicyTopic(policy: Policy, versionOfTopicId: string, user: IOwner) {
+        this.notifier.completedAndStart('Resolve topic');
+        this.parentTopic = await TopicConfig.fromObject(
+            await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic), true
+        );
+
+        if (this.demo) {
+            this.topicRow = new TopicConfig({
+                name: policy.name || TopicType.PolicyTopic,
+                description: policy.topicDescription || TopicType.PolicyTopic,
+                owner: user.creator,
+                policyId: null,
+                policyUUID: null,
+                topicId: GenerateUUIDv4()
+            }, null, null)
+        } else if (versionOfTopicId) {
+            this.topicRow = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicById(versionOfTopicId), true
+            );
+            this.notifier.completedAndStart('Skip publishing policy in Hedera');
+        } else {
+            this.notifier.completedAndStart('Publish Policy in Hedera');
+            const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
+            message.setDocument(policy);
+            const createPolicyMessage = await this.messageServer
+                .setTopicObject(this.parentTopic)
+                .sendMessage(message);
+
+            this.notifier.completedAndStart('Create policy topic');
+            this.topicRow = await this.topicHelper.create({
+                type: TopicType.PolicyTopic,
+                name: policy.name || TopicType.PolicyTopic,
+                description: policy.topicDescription || TopicType.PolicyTopic,
+                owner: user.creator,
+                policyId: null,
+                policyUUID: null
+            });
+            await this.topicRow.saveKeys();
+            await DatabaseServer.saveTopic(this.topicRow.toObject());
+
+            this.notifier.completedAndStart('Link topic and policy');
+            await this.topicHelper.twoWayLink(
+                this.topicRow,
+                this.parentTopic,
+                createPolicyMessage.getId()
+            );
+        }
+
+        policy.topicId = this.topicRow.topicId;
+        this.topicId = policy.topicId;
+    }
+
+    private async publishSystemSchemas(versionOfTopicId: string, user: IOwner) {
+        if (this.demo) {
+            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
+            this.schemasResult = await importSchemaByFiles(
+                systemSchemas,
+                user,
+                {
+                    category: SchemaCategory.SYSTEM,
+                    topicId: this.topicRow.topicId,
+                    skipGenerateId: false,
+                    status: SchemaStatus.DEMO
+                },
+                this.notifier
+            );
+        } else if (versionOfTopicId) {
+            this.notifier.completedAndStart('Skip publishing schemas');
+        } else {
+            this.notifier.completedAndStart('Publishing schemas');
+            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
+            this.notifier.info(`Found ${systemSchemas.length} schemas`);
+            this.messageServer.setTopicObject(this.topicRow);
+            await publishSystemSchemas(systemSchemas, this.messageServer, user, this.notifier);
+        }
+    }
+
+    private async importTools(
+        tools: PolicyTool[],
+        metadata: PolicyToolMetadata | null,
+        user: IOwner
+    ) {
+        this.notifier.completedAndStart('Import tools');
+        this.notifier.sub(true);
+
+        this.toolsMapping = [];
+        if (metadata?.tools) {
+            for (const tool of tools) {
+                if (
+                    metadata.tools[tool.messageId] &&
+                    tool.messageId !== metadata.tools[tool.messageId]
+                ) {
+                    this.toolsMapping.push({
+                        oldMessageId: tool.messageId,
+                        messageId: metadata.tools[tool.messageId],
+                        oldHash: tool.hash,
+                    });
+                    tool.messageId = metadata.tools[tool.messageId];
+                }
+            }
+        }
+
+        this.toolsResult = await importSubTools(this.root, tools, user, this.notifier);
+
+        for (const toolMapping of this.toolsMapping) {
+            const toolByMessageId = this.toolsResult.tools.find((tool) => tool.messageId === toolMapping.messageId);
+            toolMapping.newHash = toolByMessageId?.hash;
+        }
+
+        this.notifier.sub(false);
+    }
+
+    private async importTokens(tokens: Token[], user: IOwner) {
+        this.tokensResult = await importTokensByFiles(user, tokens, this.notifier);
+        this.tokenMapping = this.tokensResult.tokenMap;
+    }
+
+    private async importSchemas(schemas: Schema[], user: IOwner) {
+        const topicIds = this.toolsResult.tools.map((tool) => tool.topicId);
+        const toolsSchemas = (await DatabaseServer.getSchemas(
+            {
+                category: SchemaCategory.TOOL,
+                topicId: { $in: topicIds }
+            },
+            {
+                fields: ['name', 'iri'],
+            }
+        )) as { name: string; iri: string }[];
+
+        if (this.demo) {
+            this.schemasResult = await importSchemaByFiles(
+                schemas,
+                user,
+                {
+                    category: SchemaCategory.POLICY,
+                    topicId: this.topicRow.topicId,
+                    skipGenerateId: false,
+                    outerSchemas: toolsSchemas,
+                    status: SchemaStatus.DEMO
+                },
+                this.notifier
+            );
+        } else {
+            this.schemasResult = await importSchemaByFiles(
+                schemas,
+                user,
+                {
+                    category: SchemaCategory.POLICY,
+                    topicId: this.topicRow.topicId,
+                    skipGenerateId: false,
+                    outerSchemas: toolsSchemas
+                },
+                this.notifier
+            );
+        }
+        this.schemasMapping = this.schemasResult.schemasMap;
+    }
+
+    private async importArtifacts(artifacts: any[], user: IOwner) {
+        this.artifactsResult = await importArtifactsByFiles(user, artifacts, this.notifier);
+        this.artifactsMapping = this.artifactsResult.artifactsMap;
+    }
+
+    private async updateUUIDs(policy: Policy): Promise<Policy> {
+        await PolicyImportExportHelper.replaceConfig(
+            policy,
+            this.schemasMapping,
+            this.artifactsMapping,
+            this.tokenMapping,
+            this.toolsMapping
+        );
+        return policy;
+    }
+
+    private async savePolicy(policy: Policy): Promise<Policy> {
+        this.notifier.completedAndStart('Saving policy in DB');
+        const model = new DataBaseHelper(Policy).create(policy as Policy);
+        return await new DataBaseHelper(Policy).save(model);
+    }
+
+    private async saveTopic(policy: Policy) {
+        this.notifier.completedAndStart('Saving topic in DB');
+        const row = await new DataBaseHelper(Topic).findOne({ topicId: this.topicRow.topicId })
+        row.policyId = policy.id.toString();
+        row.policyUUID = policy.uuid;
+        await new DataBaseHelper(Topic).update(row);
+    }
+
+    private async saveArtifacts(policy: Policy) {
+        this.notifier.completedAndStart('Saving artifacts in DB');
+        for (const addedArtifact of this.artifactsResult.artifacts) {
+            addedArtifact.policyId = policy.id;
+            await DatabaseServer.saveArtifact(addedArtifact);
+        }
+    }
+
+    private async saveHash(policy: Policy) {
+        this.notifier.completedAndStart('Updating hash');
+        await PolicyImportExportHelper.updatePolicyComponents(policy);
+    }
+
+    private async setSuggestionsConfig(policy: Policy, user: IOwner) {
+        const suggestionsConfig = await DatabaseServer.getSuggestionsConfig(user.creator);
+        if (!suggestionsConfig) {
+            await DatabaseServer.setSuggestionsConfig({
+                user: user.creator,
+                items: [
+                    {
+                        id: policy.id,
+                        type: ConfigType.POLICY,
+                        index: 0,
+                    },
+                ],
+            });
+        }
+    }
+
+    private async importTags(policy: Policy, tags: Tag[]) {
+        this.notifier.completedAndStart('Import tags');
+        if (!tags || !tags.length) {
+            return;
+        }
+
+        const policyTags = tags.filter((t: any) => t.entity === TagType.Policy);
+        const tokenTags = tags.filter((t: any) => t.entity === TagType.Token);
+        const schemaTags = tags.filter((t: any) => t.entity === TagType.Schema);
+        await importTag(policyTags, policy.id.toString());
+        const tokenIdMap: Map<string, string> = new Map();
+        for (const item of this.tokenMapping) {
+            tokenIdMap.set(item.oldID, item.newID);
+            tokenIdMap.set(item.oldTokenID, item.newID);
+        }
+        await importTag(tokenTags, tokenIdMap);
+        const schemaIdMap: Map<string, string> = new Map();
+        for (const item of this.schemasMapping) {
+            schemaIdMap.set(item.oldID, item.newID);
+            schemaIdMap.set(item.oldMessageID, item.newID);
+        }
+        await importTag(schemaTags, schemaIdMap);
+        this.notifier.completed();
+    }
+
+    private async getErrors() {
+        const errors: any[] = [];
+        if (this.schemasResult.errors) {
+            for (const error of this.schemasResult.errors) {
+                errors.push(error);
+            }
+        }
+        if (this.toolsResult.errors) {
+            for (const error of this.toolsResult.errors) {
+                errors.push(error);
+            }
+        }
+        return errors;
+    }
+
+    public async import(
+        policyComponents: IPolicyComponents,
+        user: IOwner,
+        versionOfTopicId: string,
+        additionalPolicyConfig: Partial<Policy> | null,
+        metadata: PolicyToolMetadata | null,
+    ): Promise<ImportResult> {
+        const { policy, tokens, schemas, artifacts, tags, tools } = policyComponents;
+        await this.resolveAccount(user);
+        await this.dataPreparation(policy, user, additionalPolicyConfig);
+        await this.createPolicyTopic(policy, versionOfTopicId, user);
+        await this.publishSystemSchemas(versionOfTopicId, user);
+        await this.importTools(tools, metadata, user);
+        await this.importTokens(tokens, user);
+        await this.importSchemas(schemas, user);
+        await this.importArtifacts(artifacts, user);
+        await this.updateUUIDs(policy);
+
+        const row = await this.savePolicy(policy);
+        await this.saveTopic(row);
+        await this.saveArtifacts(row);
+        await this.saveHash(row);
+        await this.setSuggestionsConfig(row, user);
+        await this.importTags(row, tags);
+
+        const errors = await this.getErrors();
+        return { policy: row, errors };
+    }
+}
 
 /**
  * Policy import export helper
@@ -41,255 +404,32 @@ export class PolicyImportExportHelper {
     /**
      * Import policy
      * @param policyToImport
-     * @param policyOwner
+     * @param user
      * @param versionOfTopicId
-     * @param notifier
      * @param additionalPolicyConfig
+     * @param metadata
+     * @param demo
+     * @param notifier
      *
-     * @returns Policies by owner
+     * @returns import result
      */
     public static async importPolicy(
         policyToImport: IPolicyComponents,
         user: IOwner,
         versionOfTopicId: string,
-        notifier: INotifier,
-        additionalPolicyConfig?: Partial<Policy>,
-        metadata?: PolicyToolMetadata,
-    ): Promise<{
-        /**
-         * New Policy
-         */
-        policy: Policy,
-        /**
-         * Errors
-         */
-        errors: any[]
-    }> {
-        const {
-            policy,
-            tokens,
-            schemas,
-            artifacts,
-            tags,
-            tools
-        } = policyToImport;
-
-        const users = new Users();
-        notifier.start('Resolve Hedera account');
-        const root = await users.getHederaAccount(user.creator);
-
-        const toolsMapping: {
-            oldMessageId: string;
-            messageId: string;
-            oldHash: string;
-            newHash?: string;
-        }[] = [];
-        if (metadata?.tools) {
-            for (const tool of tools) {
-                if (
-                    metadata.tools[tool.messageId] &&
-                    tool.messageId !== metadata.tools[tool.messageId]
-                ) {
-                    toolsMapping.push({
-                        oldMessageId: tool.messageId,
-                        messageId: metadata.tools[tool.messageId],
-                        oldHash: tool.hash,
-                    });
-                    tool.messageId = metadata.tools[tool.messageId];
-                }
-            }
-        }
-
-        delete policy._id;
-        delete policy.id;
-        delete policy.messageId;
-        delete policy.version;
-        delete policy.previousVersion;
-        delete policy.createDate;
-
-        policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
-        policy.uuid = GenerateUUIDv4();
-        policy.creator = user.creator;
-        policy.owner = user.owner;
-        policy.status = PolicyType.DRAFT;
-        policy.instanceTopicId = null;
-        policy.synchronizationTopicId = null;
-        policy.name = additionalPolicyConfig?.name || policy.name;
-        policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
-        policy.description = additionalPolicyConfig?.description || policy.description;
-
-        notifier.completedAndStart('Resolve topic');
-        const parent = await TopicConfig.fromObject(
-            await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic), true
-        );
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-
-        let topicRow: TopicConfig;
-        if (versionOfTopicId) {
-            topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(versionOfTopicId), true);
-        } else {
-            topicRow = await topicHelper.create({
-                type: TopicType.PolicyTopic,
-                name: policy.name || TopicType.PolicyTopic,
-                description: policy.topicDescription || TopicType.PolicyTopic,
-                owner: user.creator,
-                policyId: null,
-                policyUUID: null
-            });
-            await topicRow.saveKeys();
-            await DatabaseServer.saveTopic(topicRow.toObject());
-        }
-
-        policy.topicId = topicRow.topicId;
-
-        if (!versionOfTopicId) {
-            notifier.completedAndStart('Publish Policy in Hedera');
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-            const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
-            message.setDocument(policy);
-            const messageStatus = await messageServer
-                .setTopicObject(parent)
-                .sendMessage(message);
-            notifier.completedAndStart('Link topic and policy');
-            await topicHelper.twoWayLink(
-                topicRow,
-                parent,
-                messageStatus.getId()
-            );
-
-            notifier.completedAndStart('Publishing schemas');
-            const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-            notifier.info(`Found ${systemSchemas.length} schemas`);
-            messageServer.setTopicObject(topicRow);
-            await publishSystemSchemas(systemSchemas, messageServer, user, notifier);
-        } else {
-            notifier.completedAndStart('Skip publishing policy in Hedera');
-            notifier.completedAndStart('Skip publishing schemas');
-        }
-
-        notifier.completed();
-
-        // Import Tools
-        notifier.completedAndStart('Import tools');
-        notifier.sub(true);
-        const toolsResult = await importSubTools(root, tools, user, notifier);
-        notifier.sub(false);
-
-        for (const toolMapping of toolsMapping) {
-            const toolByMessageId = toolsResult.tools.find(
-                // tslint:disable-next-line:no-shadowed-variable
-                (tool) => tool.messageId === toolMapping.messageId
-            );
-            toolMapping.newHash = toolByMessageId?.hash;
-        }
-
-        // Import Tokens
-        const tokensResult = await importTokensByFiles(user, tokens, notifier);
-        const tokenMap = tokensResult.tokenMap;
-
-        const toolsSchemas = (await DatabaseServer.getSchemas(
-            {
-                category: SchemaCategory.TOOL,
-                topicId: { $in: toolsResult.tools.map((tool) => tool.topicId) },
-            },
-            {
-                fields: ['name', 'iri'],
-            }
-        )) as { name: string; iri: string }[];
-
-        // Import Schemas
-        const schemasResult = await importSchemaByFiles(
-            SchemaCategory.POLICY,
+        additionalPolicyConfig: Partial<Policy> = null,
+        metadata: PolicyToolMetadata = null,
+        demo: boolean = false,
+        notifier: INotifier = emptyNotifier()
+    ): Promise<ImportResult> {
+        const helper = new PolicyImport(demo, notifier);
+        return helper.import(
+            policyToImport,
             user,
-            schemas,
-            topicRow.topicId,
-            notifier,
-            false,
-            toolsSchemas
-        );
-        const schemasMap = schemasResult.schemasMap;
-
-        // Import Artifacts
-        const artifactsResult = await importArtifactsByFiles(user, artifacts, notifier);
-        const artifactsMap = artifactsResult.artifactsMap;
-
-        notifier.completedAndStart('Saving in DB');
-
-        // Replace id
-        await PolicyImportExportHelper.replaceConfig(
-            policy,
-            schemasMap,
-            artifactsMap,
-            tokenMap,
-            toolsMapping
-        );
-
-        // Save
-        const model = new DataBaseHelper(Policy).create(policy as Policy);
-        const result = await new DataBaseHelper(Policy).save(model);
-
-        if (tags) {
-            notifier.start('Import tags');
-            const policyTags = tags.filter((t: any) => t.entity === TagType.Policy);
-            const tokenTags = tags.filter((t: any) => t.entity === TagType.Token);
-            const schemaTags = tags.filter((t: any) => t.entity === TagType.Schema);
-            await importTag(policyTags, result.id.toString());
-            const tokenIdMap: Map<string, string> = new Map();
-            for (const item of tokenMap) {
-                tokenIdMap.set(item.oldID, item.newID);
-                tokenIdMap.set(item.oldTokenID, item.newID);
-            }
-            await importTag(tokenTags, tokenIdMap);
-            const schemaIdMap: Map<string, string> = new Map();
-            for (const item of schemasMap) {
-                schemaIdMap.set(item.oldID, item.newID);
-                schemaIdMap.set(item.oldMessageID, item.newID);
-            }
-            await importTag(schemaTags, schemaIdMap);
-            notifier.completed();
-        }
-
-        const _topicRow = await new DataBaseHelper(Topic).findOne({ topicId: topicRow.topicId })
-        _topicRow.policyId = result.id.toString();
-        _topicRow.policyUUID = result.uuid;
-        await new DataBaseHelper(Topic).update(_topicRow);
-
-        for (const addedArtifact of artifactsResult.artifacts) {
-            addedArtifact.policyId = result.id;
-            await DatabaseServer.saveArtifact(addedArtifact);
-        }
-
-        const suggestionsConfig = await DatabaseServer.getSuggestionsConfig(user.creator);
-        if (!suggestionsConfig) {
-            await DatabaseServer.setSuggestionsConfig({
-                user: user.creator,
-                items: [
-                    {
-                        id: result.id,
-                        type: ConfigType.POLICY,
-                        index: 0,
-                    },
-                ],
-            });
-        }
-
-        notifier.completedAndStart('Updating hash');
-        await PolicyImportExportHelper.updatePolicyComponents(result);
-
-        const errors: any[] = [];
-        if (schemasResult.errors) {
-            for (const error of schemasResult.errors) {
-                errors.push(error);
-            }
-        }
-        if (toolsResult.errors) {
-            for (const error of toolsResult.errors) {
-                errors.push(error);
-            }
-        }
-
-        notifier.completed();
-        return { policy: result, errors };
+            versionOfTopicId,
+            additionalPolicyConfig,
+            metadata
+        )
     }
 
     /**
@@ -299,7 +439,7 @@ export class PolicyImportExportHelper {
      */
     public static async replaceConfig(
         policy: Policy,
-        schemasMap: SchemaImportResult[],
+        schemasMap: ImportSchemaMap[],
         artifactsMap: Map<string, string>,
         tokenMap: any[],
         tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
