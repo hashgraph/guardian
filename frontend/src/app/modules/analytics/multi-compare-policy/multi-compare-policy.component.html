@@ -322,9 +322,11 @@
 
 <ng-template #policyInfo let-policy="policy">
     <div class="policy-info">
-        <div class="policy-info-field">
-            <div class="policy-info-field-name">ID</div>
-            <div class="policy-info-field-value">{{policy.id}}</div>
+        <div [ngSwitch]="policy.type" class="policy-info-field">
+            <div *ngSwitchCase="'message'" class="policy-info-field-name">Message ID</div>
+            <div *ngSwitchCase="'file'" class="policy-info-field-name">File</div>
+            <div *ngSwitchDefault class="policy-info-field-name">ID</div>
+            <div class="policy-info-field-value">{{getPolicyId(policy)}}</div>
         </div>
         <div class="policy-info-field">
             <div class="policy-info-field-name">Name</div>
@@ -411,7 +413,7 @@
                     {{prop.name}}:
                 </div>
                 <div class="prop-table-value" [attr.prop-type]="prop.propType">
-                    <div class="compare-btn" (click)="compareSchema(prop)">
+                    <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <mat-icon>search</mat-icon>
                     </div>
                     <span *ngIf="prop.propType" [title]="prop.value">
@@ -582,7 +584,7 @@
                     {{prop.name}}:
                 </div>
                 <div class="prop-table-value" [attr.prop-type]="prop.propType">
-                    <div class="compare-btn" (click)="compareSchema(prop)">
+                    <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <mat-icon>search</mat-icon>
                     </div>
                     <span *ngIf="prop.propType" [title]="prop.value">

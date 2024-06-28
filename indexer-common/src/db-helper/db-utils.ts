@@ -16,7 +16,8 @@ export class DataBaseUtils {
             otherOptions.orderBy = {};
             otherOptions.orderBy[orderField] = orderDir;
         }
-        let _pageSize: number, _pageIndex: number;
+        let _pageSize: number;
+        let _pageIndex: number;
         if (typeof pageSize === 'number') {
             _pageSize = pageSize;
         } else if (typeof pageSize === 'string') {

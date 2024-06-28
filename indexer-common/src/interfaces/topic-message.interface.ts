@@ -1,4 +1,4 @@
-import { ChunkInfo } from "./chunk-info.js";
+import { ChunkInfo } from './chunk-info.js';
 
 export interface TopicMessage {
     chunk_info: ChunkInfo;

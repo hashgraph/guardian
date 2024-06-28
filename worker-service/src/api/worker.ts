@@ -102,6 +102,12 @@ export class Worker extends NatsService {
      */
     //private readonly workerID: string;
 
+    /**
+     * Analytics Service
+     * @private
+     */
+    private readonly analyticsService: string;
+
     constructor(
         private w3cKey: string,
         private w3cProof: string,
@@ -117,6 +123,7 @@ export class Worker extends NatsService {
         );
         this.logger = new Logger();
 
+        this.analyticsService = process.env.ANALYTICS_SERVICE;
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
@@ -166,22 +173,10 @@ export class Worker extends NatsService {
 
             }
 
-            const completeTask = (data) => {
-                // let count = 0;
-                const fn = async () => {
-                    await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), data);
-                    // if (count < 5) {
-                    //     setTimeout(async () => {
-                    //         await fn()
-                    //     })
-                    //     count++
-                    // }
-                }
-                fn();
+            const completeTask = async (data) => {
+                await this.publish(WorkerEvents.TASK_COMPLETE, data)
             }
-
             await completeTask(result);
-            // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), result);
             await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
@@ -314,6 +309,25 @@ export class Worker extends NatsService {
 
                             default:
                                 result.data = fileContent
+                        }
+                    }
+                    break;
+                }
+
+                case WorkerTaskType.ANALYTICS_SEARCH_POLICIES: {
+                    const { options } = task.data.payload;
+                    try {
+                        const response = await axios.post(
+                            `${this.analyticsService}/analytics/search/policy`,
+                            options,
+                            { responseType: 'json' }
+                        );
+                        result.data = response.data;
+                    } catch (error) {
+                        if (error.code === 'ECONNREFUSED') {
+                            result.error = 'Indexer service is not available';
+                        } else {
+                            result.error = error.message;
                         }
                     }
                     break;

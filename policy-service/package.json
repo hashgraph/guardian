@@ -15,9 +15,9 @@
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "2.25.1",
-        "@guardian/interfaces": "2.25.1",
-        "@hashgraph/sdk": "2.34.1",
+        "@guardian/common": "2.26.0",
+        "@guardian/interfaces": "2.26.0",
+        "@hashgraph/sdk": "2.46.0",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "2.0.2",
         "@mikro-orm/core": "6.2.2",
@@ -84,6 +84,9 @@
         "dist"
     ],
     "name": "policy-service",
+    "imports": {
+      "#constants": "./dist/constants/index.js"
+    },
     "scripts": {
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",
@@ -97,5 +100,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "2.25.1"
+    "version": "2.26.0"
 }

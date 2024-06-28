@@ -893,8 +893,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const row of history) {
-                await loadDocuments(row);
+            for (const historyItem of history) {
+                await loadDocuments(historyItem);
             }
             return new MessageResponse<IDetailsResults>({
                 id: messageId,
@@ -1005,8 +1005,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const row of history) {
-                await loadDocuments(row);
+            for (const historyItem of history) {
+                await loadDocuments(historyItem);
             }
             return new MessageResponse<IDetailsResults>({
                 id: messageId,
@@ -1137,8 +1137,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const row of history) {
-                await loadDocuments(row);
+            for (const historyItem of history) {
+                await loadDocuments(historyItem);
             }
             return new MessageResponse<IDetailsResults>({
                 id: messageId,

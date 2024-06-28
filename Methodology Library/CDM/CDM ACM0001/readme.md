@@ -10,6 +10,7 @@
 - Available Roles
 - Key Documents & Schemas
 - Token (Carbon Emisison Reduction)
+- Policy Guide
 - Workflow
 - Step-by-Step
   
@@ -84,6 +85,10 @@ Monitoring Report – The monitoring report is to be filled out based on the m
 ## Token (Carbon Emission Reduction)
 
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2. 
+
+## Policy Guide
+
+Policy IPFS Timestamp: 1719335230.464978003
 
 ## Policy Workflow
 
@@ -176,32 +181,4 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 ![image](https://github.com/hashgraph/guardian/assets/79293833/ce3f60f3-be3d-4fbe-a729-1fadb7fde8ab)
 
 ![image](https://github.com/hashgraph/guardian/assets/79293833/c452e666-f789-4e90-a109-052ab83bd194)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

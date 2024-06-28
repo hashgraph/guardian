@@ -18,7 +18,7 @@ import path from 'path';
 export class ElasticService {
     public static async updateElastic() {
         const filePath = path.join(process.cwd(), 'certificates', 'http_ca.crt');
-        const http_ca = await readFile(filePath);
+        const httpCA = await readFile(filePath);
         const elastic = new ElasticHelper({
             node: process.env.ELASTIC_NODE,
             auth: {
@@ -26,7 +26,7 @@ export class ElasticService {
                 password: process.env.ELASTIC_PASSWORD
             },
             tls: {
-                ca: http_ca,
+                ca: httpCA,
                 rejectUnauthorized: false
             }
         });
@@ -46,7 +46,6 @@ export class ElasticService {
         const collection = em.getCollection(Message);
         const messages = collection.find({});
 
-        let i = 1;
         while (await messages.hasNext()) {
             const message = await messages.next();
             const status = elasticCache.get(message.consensusTimestamp);
@@ -102,9 +101,7 @@ export class ElasticService {
         await elastic.close();
     }
 
-
     /**
-     * 
      * @param msg options
      */
     @MessagePattern(IndexerMessageAPI.ELASTIC_UPDATE_DATA)

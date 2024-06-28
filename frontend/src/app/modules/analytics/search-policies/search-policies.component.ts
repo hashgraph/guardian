@@ -133,7 +133,7 @@ export class SearchPoliciesComponent implements OnInit {
             return;
         }
         const ids = this.policies.map(e => e.id);
-        if(this.policy) {
+        if (this.policy) {
             ids.unshift(this.policy.id);
         }
         this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
@@ -142,7 +142,7 @@ export class SearchPoliciesComponent implements OnInit {
                     policy._tags = data[policy.id];
                 }
             }
-            if(this.policy) {
+            if (this.policy) {
                 this.policy._tags = data[this.policy.id];
             }
             setTimeout(() => {
@@ -279,22 +279,21 @@ export class SearchPoliciesComponent implements OnInit {
             .map(p => p.id);
         policyIds.unshift(this.policyId);
         if (policyIds.length > 1) {
-            if (policyIds.length === 2) {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'policy',
-                        policyId1: policyIds[0],
-                        policyId2: policyIds[1]
+            const items = btoa(JSON.stringify({
+                parent: null,
+                items: policyIds.map((id) => {
+                    return {
+                        type: 'id',
+                        value: id
                     }
-                });
-            } else {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'multi-policy',
-                        policyIds: policyIds,
-                    }
-                });
-            }
+                })
+            }));
+            this.router.navigate(['/compare'], {
+                queryParams: {
+                    type: 'policy',
+                    items
+                }
+            });
         }
     }
 }

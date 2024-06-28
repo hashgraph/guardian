@@ -160,6 +160,83 @@ export async function artifactAPI(): Promise<void> {
     });
 
     /**
+     * Get artifacts V2 04.06.2024
+     *
+     * @param {any} msg - Get artifact parameters
+     *
+     * @returns {any} Artifacts and count
+     */
+    ApiResponse(MessageAPI.GET_ARTIFACTS_V2, async (msg: {
+        fields: string[],
+        type: string,
+        id: string,
+        toolId: string,
+        policyId: string,
+        pageIndex: string,
+        pageSize: string,
+        owner: IOwner
+    }) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid get artifact parameters');
+            }
+
+            const {
+                fields,
+                type,
+                id,
+                toolId,
+                policyId,
+                pageIndex,
+                pageSize,
+                owner
+            } = msg;
+            const filter: any = {};
+
+            if (owner) {
+                filter.owner = owner.owner;
+            }
+
+            if (policyId) {
+                filter.category = 'policy';
+                filter.policyId = policyId;
+            } else if (toolId) {
+                filter.category = 'tool';
+                filter.policyId = toolId;
+            } else if (id) {
+                filter.policyId = id;
+            } else if (type) {
+                filter.category = type;
+            }
+            if (filter.category === 'policy') {
+                filter.category = { $in: ['policy', undefined] }
+            }
+
+            const otherOptions: any = { fields };
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = 100;
+            }
+
+            const [artifacts, count] = await DatabaseServer.getArtifactsAndCount(filter, otherOptions);
+
+            return new MessageResponse({
+                artifacts,
+                count
+            });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
      * Delete artifact
      *
      * @param {any} msg - Delete artifact parameters

@@ -19,7 +19,7 @@
 <ng-template #actionsContainer>
     <div class="actions-container">
         <div class="dropdown-block">
-            <p-dropdown (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="policies!">
+            <p-dropdown (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="filterOptions!">
                 <ng-template pTemplate="selectedItem">
                     <div *ngIf="currentPolicy">
                         <span class="dropdown-label">Policy</span> 

@@ -3,25 +3,7 @@ import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import {
-    checkForCircularDependency,
-    copySchemaAsync,
-    createSchemaAndArtifacts,
-    deleteSchema,
-    exportSchemas,
-    findAndPublishSchema,
-    getPageOptions,
-    getSchemaCategory,
-    getSchemaTarget,
-    importSchemaByFiles,
-    importSchemasByMessages,
-    importSubTools,
-    importTagsByFiles,
-    prepareSchemaPreview,
-    previewToolByMessage,
-    updateSchemaDefs,
-    updateToolConfig
-} from './helpers/index.js';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -356,6 +338,98 @@ export async function schemaAPI(): Promise<void> {
         });
 
     /**
+     * Return schemas without document 31.05.2024 V2
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SCHEMAS_V2,
+        async (msg: { options: any, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+                const { options, owner } = msg;
+                const otherOptions: any = getPageOptions(options);
+                const filter: any = {
+                    readonly: false,
+                    system: false
+                }
+                if (owner) {
+                    filter.owner = owner.owner;
+                }
+                if (Array.isArray(options.category)) {
+                    filter.category = { $in: options.category };
+                } else if (typeof options.category === 'string') {
+                    filter.category = options.category;
+                }
+                if (options.policyId) {
+                    filter.category = SchemaCategory.POLICY;
+                    const userPolicy = await DatabaseServer.getPolicyCache({
+                        id: options.policyId,
+                        userId: owner.owner
+                    });
+                    if (userPolicy) {
+                        filter.cacheCollection = 'schemas';
+                        filter.cachePolicyId = options.policyId;
+                        // tslint:disable-next-line:no-shadowed-variable
+                        const [items, count] =
+                            await DatabaseServer.getAndCountPolicyCacheData(
+                                filter,
+                                otherOptions
+                            );
+                        return new MessageResponse({ items, count });
+                    }
+                    const policy = await DatabaseServer.getPolicyById(options.policyId);
+                    filter.topicId = policy?.topicId;
+                } else if (options.moduleId) {
+                    filter.category = SchemaCategory.MODULE;
+                    const module = await DatabaseServer.getModuleById(options.moduleId);
+                    filter.topicId = module?.topicId;
+                } else if (options.toolId) {
+                    filter.category = SchemaCategory.TOOL;
+                    const tool = await DatabaseServer.getToolById(options.toolId);
+                    filter.topicId = tool?.topicId;
+                    if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                        delete filter.owner;
+                    }
+                }
+                if (options.topicId) {
+                    filter.topicId = options.topicId;
+                    if (filter.category === SchemaCategory.TOOL) {
+                        const tool = await DatabaseServer.getTool({ topicId: options.topicId });
+                        if (tool && tool.status === ModuleStatus.PUBLISHED) {
+                            delete filter.owner;
+                        }
+                    }
+                } else {
+                    if (filter.category === SchemaCategory.TOOL) {
+                        const tools = await DatabaseServer.getTools({
+                            $or: [{
+                                owner: owner.owner
+                            }, {
+                                status: ModuleStatus.PUBLISHED
+                            }]
+                        }, {
+                            fields: ['topicId']
+                        });
+                        const ids = tools.map(t => t.topicId);
+                        delete filter.owner;
+                        filter.topicId = { $in: ids }
+                    }
+                }
+
+                const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
      * Return schemas
      *
      * @param {Object} [payload] - filters
@@ -469,7 +543,9 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -490,7 +566,9 @@ export async function schemaAPI(): Promise<void> {
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, notifier);
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, notifier, userId);
                 notifier.result(item.id);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -553,7 +631,11 @@ export async function schemaAPI(): Promise<void> {
                     );
                 }
 
-                await deleteSchema(id, owner, emptyNotifier());
+                // const users = new Users();
+                // const userAccount = await users.getUser(owner.username);
+                // const userId = userAccount.id.toString();
+                //
+                // await deleteSchema(id, owner, emptyNotifier());
 
                 if (needResult) {
                     const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
@@ -847,6 +929,49 @@ export async function schemaAPI(): Promise<void> {
         });
 
     /**
+     * Return schemas V2 03.06.2024
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS_V2,
+        async (msg: { fields: string[], pageIndex?: any, pageSize?: any }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+
+                const {fields, pageIndex, pageSize } = msg;
+                const filter: any = {
+                    where: {
+                        system: true
+                    }
+                }
+                const otherOptions: any = { fields };
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+
+                return new MessageResponse({
+                    items,
+                    count
+                });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
      * Delete a schema.
      *
      * @param {Object} payload - filters
@@ -966,6 +1091,36 @@ export async function schemaAPI(): Promise<void> {
         });
 
     /**
+     * Return schemas V2 03.06.2024
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    ApiResponse(MessageAPI.GET_TAG_SCHEMAS_V2,
+        async (msg: { owner: IOwner, pageIndex?: any, pageSize?: any }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+                const filter: any = {
+                    system: false,
+                    category: SchemaCategory.TAG
+                }
+                if (msg.owner) {
+                    filter.owner = msg.owner.owner;
+                }
+                const otherOptions: any = getPageOptions(msg);
+                const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
      * Create schema
      *
      * @param {Object} [payload] - schema
@@ -1018,7 +1173,9 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

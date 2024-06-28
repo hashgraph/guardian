@@ -1,4 +1,4 @@
-import { TopicMessage } from "./topic-message.interface.js";
+import { TopicMessage } from './topic-message.interface.js';
 
 export interface TopicInfo {
     links: {

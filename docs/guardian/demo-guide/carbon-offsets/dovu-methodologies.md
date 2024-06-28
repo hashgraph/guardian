@@ -52,7 +52,7 @@ for Cool Farm, we see below form:
 
 8. Once filled and clicked on OK, Registrant waits for approval from Standard Registry:
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 9. Now we login as Standard Registry and click on Farm Projects tab, we can see the Request being submitted by Registrant for Approve/Reject
 
@@ -62,7 +62,7 @@ For testing purpose, we will approve the farm project.
 
 10. Once SR approves, we login back as Registrant and submit AgreCalc Document by filling out the form:
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 For Cool Farm Tool methodology, you will see the below request form:
 

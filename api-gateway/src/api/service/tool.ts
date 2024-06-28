@@ -1,14 +1,17 @@
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, TaskDTO, ToolDTO, ToolPreviewDTO, ToolValidationDTO, Examples, pageHeader } from '#middlewares';
-import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner } from '#helpers';
+import { UseCache, ServiceError, TaskManager, Guardians, InternalException, ONLY_SR, MultipartFile, UploadedFiles, AnyFilesInterceptor, EntityOwner, getCacheKey, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
+import { PREFIXES, TOOL_REQUIRED_PROPS } from '#constants';
 
 @Controller('tools')
 @ApiTags('tools')
 export class ToolsApi {
+    constructor(private readonly cacheService: CacheService) {
+    }
     /**
      * Creates a new tool
      */
@@ -38,7 +41,8 @@ export class ToolsApi {
     @HttpCode(HttpStatus.CREATED)
     async createNewTool(
         @AuthUser() user: IAuthUser,
-        @Body() tool: ToolDTO
+        @Body() tool: ToolDTO,
+        @Req() req
     ): Promise<ToolDTO> {
         try {
             if (!tool.config || tool.config.blockType !== 'tool') {
@@ -46,6 +50,10 @@ export class ToolsApi {
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.createTool(tool, owner);
         } catch (error) {
             await InternalException(error);
@@ -80,7 +88,8 @@ export class ToolsApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async createNewToolAsync(
         @AuthUser() user: IAuthUser,
-        @Body() tool: ToolDTO
+        @Body() tool: ToolDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         try {
             if (!tool.config || tool.config.blockType !== 'tool') {
@@ -96,6 +105,10 @@ export class ToolsApi {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
+
+            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return task;
         } catch (error) {
             await InternalException(error);
@@ -140,6 +153,7 @@ export class ToolsApi {
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getTools(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
@@ -152,6 +166,66 @@ export class ToolsApi {
             const { items, count } = await guardians.getTools({
                 pageIndex,
                 pageSize
+            }, owner);
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get tools V2 05.06.2024
+     */
+    @Get('/')
+    @Auth(
+        Permissions.TOOLS_TOOL_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all tools.',
+        description: 'Returns all tools.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: ToolDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getToolsV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<ToolDTO[]> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const fields: string[] = Object.values(TOOL_REQUIRED_PROPS);
+
+            const { items, count } = await guardians.getToolsV2(fields, {
+                pageIndex,
+                pageSize,
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
@@ -190,7 +264,8 @@ export class ToolsApi {
     @HttpCode(HttpStatus.OK)
     async deleteTool(
         @AuthUser() user: IAuthUser,
-        @Param('id') id: string
+        @Param('id') id: string,
+        @Req() req
     ): Promise<boolean> {
         try {
             if (!id) {
@@ -198,6 +273,10 @@ export class ToolsApi {
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.deleteTool(id, owner);
         } catch (error) {
             await InternalException(error);
@@ -233,6 +312,7 @@ export class ToolsApi {
     })
     @ApiExtraModels(ToolDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getToolById(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string
@@ -286,7 +366,8 @@ export class ToolsApi {
     async updateTool(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() tool: ToolDTO
+        @Body() tool: ToolDTO,
+        @Req() req
     ): Promise<any> {
         if (!id) {
             throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -297,6 +378,10 @@ export class ToolsApi {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.updateTool(id, tool, owner);
         } catch (error) {
             await InternalException(error);
@@ -340,7 +425,8 @@ export class ToolsApi {
     async publishTool(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() tool: ToolDTO
+        @Body() tool: ToolDTO,
+        @Req() req
     ): Promise<ToolValidationDTO> {
         try {
             if (!id) {
@@ -348,6 +434,10 @@ export class ToolsApi {
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.publishTool(id, owner, tool);
         } catch (error) {
             await InternalException(error);
@@ -391,7 +481,8 @@ export class ToolsApi {
     async publishToolAsync(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() tool: ToolDTO
+        @Body() tool: ToolDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         if (!id) {
             throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -406,6 +497,10 @@ export class ToolsApi {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
+
+        const invalidedCacheTags = [PREFIXES.TOOLS_MENU_ALL];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         return task;
     }
 
@@ -621,6 +716,7 @@ export class ToolsApi {
         }
         const owner = new EntityOwner(user);
         const guardian = new Guardians();
+
         try {
             return await guardian.importToolMessage(messageId, owner);
         } catch (error) {
@@ -693,11 +789,13 @@ export class ToolsApi {
     @HttpCode(HttpStatus.CREATED)
     async toolImportFile(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<ToolDTO> {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
             return await guardian.importToolFile(body, owner);
         } catch (error) {
             await InternalException(error);
@@ -746,7 +844,8 @@ export class ToolsApi {
     @HttpCode(HttpStatus.CREATED)
     async toolImportFileWithMetadata(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: any
+        @UploadedFiles() files: any,
+        @Req() req
     ): Promise<ToolDTO> {
         try {
             const owner = new EntityOwner(user);
@@ -763,6 +862,7 @@ export class ToolsApi {
                 owner,
                 metadata?.buffer && JSON.parse(metadata.buffer.toString())
             );
+
             return tool;
         } catch (error) {
             await InternalException(error);
@@ -798,7 +898,8 @@ export class ToolsApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async toolImportFileAsync(
         @AuthUser() user: IAuthUser,
-        @Body() zip: any
+        @Body() zip: any,
+        @Req() req
     ): Promise<TaskDTO> {
         try {
             const owner = new EntityOwner(user);
@@ -811,6 +912,7 @@ export class ToolsApi {
                 new Logger().error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
+
             return task;
         } catch (error) {
             await InternalException(error);
@@ -861,7 +963,8 @@ export class ToolsApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async toolImportFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: MultipartFile[]
+        @UploadedFiles() files: MultipartFile[],
+        @Req() req
     ): Promise<TaskDTO> {
         try {
             const file = files.find(item => item.fieldname === 'file');
@@ -893,6 +996,7 @@ export class ToolsApi {
                     });
                 }
             );
+
             return task;
         } catch (error) {
             await InternalException(error);
