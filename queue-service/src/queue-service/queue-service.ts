@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DataBaseHelper, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
 import { TaskEntity } from '../entity/task';
 
@@ -55,7 +55,7 @@ export class QueueService extends NatsService{
 
         this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: { userId: string, pageIndex: number, pageSize: number }) => {
             const {userId, pageSize, pageIndex} = data;
-            const options =
+            const options: any =
                 typeof pageIndex === 'number' && typeof pageSize === 'number'
                     ? {
                         orderBy: {
@@ -70,11 +70,24 @@ export class QueueService extends NatsService{
                         },
                     };
             const result = await new DataBaseHelper(TaskEntity).findAndCount({userId}, options);
+            for (const task of result[0]) {
+                if (task.data) {
+                    delete task.data;
+                    delete task.userId;
+                    delete task.priority;
+                    delete task.attempt;
+                    delete task.attempts;
+                    delete task._id;
+                }
+            }
             return new MessageResponse(result);
         })
 
-        this.getMessages(QueueEvents.RESTART_TASK, async (data: { taskId: string }) => {
+        this.getMessages(QueueEvents.RESTART_TASK, async (data: { taskId: string, userId: string }) => {
             const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.taskId});
+            if (data.userId !== task.userId) {
+                throw new MessageError('Wrong user')
+            }
             task.isError = false;
             task.attempt = 0;
             task.sent = false;
@@ -83,8 +96,11 @@ export class QueueService extends NatsService{
             await new DataBaseHelper(TaskEntity).save(task);
         });
 
-        this.getMessages(QueueEvents.DELETE_TASK, async (data: { taskId: string }) => {
+        this.getMessages(QueueEvents.DELETE_TASK, async (data: { taskId: string, userId: string }) => {
             const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.taskId});
+            if (data.userId !== task.userId) {
+                throw new MessageError('Wrong user')
+            }
             await this.completeTaskInQueue(data.taskId, null, task.errorReason);
             await new DataBaseHelper(TaskEntity).delete({taskId: data.taskId});
         });

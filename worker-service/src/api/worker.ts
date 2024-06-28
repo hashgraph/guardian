@@ -271,6 +271,7 @@ export class Worker extends NatsService {
         try {
             switch (task.type) {
                 case WorkerTaskType.ADD_FILE: {
+                    throw new Error('test error')
                     let fileContent = Buffer.from(task.data.payload.content, 'base64');
                     const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, task.data.payload);
                     if (data && data.body) {

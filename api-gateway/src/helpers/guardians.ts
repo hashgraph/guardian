@@ -2818,12 +2818,18 @@ export class Guardians extends NatsService {
     /**
      * Restart task
      * @param taskId
+     * @param userId
      */
-    public async restartTask(taskId: string) {
-        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId});
+    public async restartTask(taskId: string, userId: string) {
+        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId, userId});
     }
 
-    public async deleteTask(taskId: string) {
-        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId});
+    /**
+     * Delete task
+     * @param taskId
+     * @param userId
+     */
+    public async deleteTask(taskId: string, userId: string) {
+        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId, userId});
     }
 }

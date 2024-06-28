@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Auth, AuthUser } from '#auth';
-import { Examples, InternalServerErrorDTO, NotificationDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, pageHeader, WorkersTasksDTO } from '#middlewares';
 import { IAuthUser } from '@guardian/common';
 import { Guardians, parseInteger } from '#helpers';
 
@@ -35,13 +35,13 @@ export class WorkerTasksController{
         description: 'Successful operation. Returns notifications and count.',
         isArray: true,
         headers: pageHeader,
-        type: NotificationDTO
+        type: WorkersTasksDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(NotificationDTO, InternalServerErrorDTO)
+    @ApiExtraModels(WorkersTasksDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getAllWorkerTasks(
         @AuthUser() user: IAuthUser,
@@ -62,7 +62,7 @@ export class WorkerTasksController{
     @ApiOkResponse({
         description: 'Successful operation. Returns notifications.',
         isArray: false,
-        type: NotificationDTO
+        type: null
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -74,7 +74,7 @@ export class WorkerTasksController{
         @Body() body: any
     ) {
         const guardians = new Guardians();
-        await guardians.restartTask(body.taskId);
+        await guardians.restartTask(body.taskId, user.id.toString());
     }
 
     @Auth()
@@ -85,7 +85,7 @@ export class WorkerTasksController{
     @ApiOkResponse({
         description: 'Successful operation. Returns notifications.',
         isArray: false,
-        type: NotificationDTO
+        type: null
     })
     @ApiParam({
         name: 'taskId',
@@ -104,6 +104,6 @@ export class WorkerTasksController{
         @Param('taskId') taskId: string,
     ) {
         const guardians = new Guardians();
-        await guardians.deleteTask(taskId);
+        await guardians.deleteTask(taskId, user.id.toString());
     }
 }
