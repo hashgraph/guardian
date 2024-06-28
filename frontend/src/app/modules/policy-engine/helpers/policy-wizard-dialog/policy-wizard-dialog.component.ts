@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnInit, TemplateRef, ViewChild, } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
-import { IWizardConfig, PolicyCategoryType, Schema, SchemaField, Token, } from '@guardian/interfaces';
+import { IWizardConfig, PolicyCategoryType, Schema, SchemaField, SchemaHelper, Token } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { takeUntil } from 'rxjs/operators';
@@ -9,6 +9,7 @@ import { GET_SCHEMA_NAME } from 'src/app/injectors/get-schema-name.injector';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyCategory } from '../../structures';
 import { PolicyEngineService } from '../../../../services/policy-engine.service';
+import { SchemaService } from '../../../../services/schema.service';
 
 @Component({
     selector: 'app-policy-wizard-dialog',
@@ -106,6 +107,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private policyEngineService: PolicyEngineService,
+        private schemaService: SchemaService,
     ) {
         this.schemas = this.config.data?.schemas || [];
         this.policies = this.config.data?.policies || [];
@@ -338,39 +340,58 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
             this.selectedSchemas = this.schemas.filter((item) =>
                 selectedSchemasIris.includes(item.iri as any)
             );
+
             for (const schemaConfig of data.schemas) {
                 const schema: any = this.schemas.find(
                     (item) => item.iri === schemaConfig.iri
                 );
-                const schemaNode: any = this.onSelectedSchemaChange(
-                    schema,
-                    schemasNode,
-                    schemaConfig.rolesConfig.map((item: any) => item.role)
-                );
-                for (const roleConfig of schemaConfig.rolesConfig) {
-                    const schemaRoleConfigControl = schemaNode.control.get(
-                        'rolesConfig'
-                    ) as FormArray;
-                    const initialRolesForControl: any = schemaNode.control.get(
-                        'initialRolesFor'
+
+                const { category, topicId, id } = schema;
+
+                const responseSchemaPromise: Promise<Schema> = new Promise<Schema>((resolve) => {
+                    this.schemaService.getSchemaWithSubSchemas(category, id, topicId).subscribe((data) => {
+                        let addedSchema = schema;
+
+                        if (schema && data.schema) {
+                            addedSchema = new Schema(data.schema);
+                        }
+
+                        resolve(addedSchema);
+                    });
+                });
+
+                responseSchemaPromise.then((responseSchema) => {
+                    const schemaNode: any = this.onSelectedSchemaChange(
+                        responseSchema,
+                        schemasNode,
+                        schemaConfig.rolesConfig.map((item: any) => item.role)
                     );
 
-                    const isApproveEnableControl: any = schemaNode.control.get(
-                        'isApproveEnable'
-                    );
-                    const dependencySchemaControl: any = schemaNode.control.get(
-                        'dependencySchemaIri'
-                    );
-                    this.onSchemaRoleConfigChange(
-                        roleConfig.role,
-                        schema.fields,
-                        schemaRoleConfigControl,
-                        initialRolesForControl,
-                        isApproveEnableControl,
-                        dependencySchemaControl,
-                        schemaNode
-                    );
-                }
+                    for (const roleConfig of schemaConfig.rolesConfig) {
+                        const schemaRoleConfigControl = schemaNode.control.get(
+                            'rolesConfig'
+                        ) as FormArray;
+                        const initialRolesForControl: any = schemaNode.control.get(
+                            'initialRolesFor'
+                        );
+
+                        const isApproveEnableControl: any = schemaNode.control.get(
+                            'isApproveEnable'
+                        );
+                        const dependencySchemaControl: any = schemaNode.control.get(
+                            'dependencySchemaIri'
+                        );
+                        this.onSchemaRoleConfigChange(
+                            roleConfig.role,
+                            responseSchema.fields,
+                            schemaRoleConfigControl,
+                            initialRolesForControl,
+                            isApproveEnableControl,
+                            dependencySchemaControl,
+                            schemaNode
+                        );
+                    }
+                })
             }
         }
         if (data.trustChain) {
@@ -637,6 +658,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                             deletedSchema.iri === schema.schema.iri
                     )
             ) || [];
+
         this.deleteControlsFromFormArray(
             this.policySchemasForm,
             this.policySchemasForm.controls.filter((control) =>
@@ -658,12 +680,29 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
             (item: any) =>
                 !this.selectedSchemas.some((schema) => item.iri === schema.iri)
         );
-        for (const schema of addedSchemas) {
-            this.onSelectedSchemaChange(schema, this.currentNode);
-        }
 
-        this.selectedSchemas = value;
-        this.matTree.refreshTree();
+        const schemaPromises = addedSchemas.map(async (schema: any) => {
+            const { category, topicId, id } = schema;
+
+            const resolvedSchema: Schema = await new Promise<Schema>((resolve) => {
+                this.schemaService.getSchemaWithSubSchemas(category, id, topicId).subscribe((data) => {
+                    let addedSchema = schema;
+
+                    if (schema && data.schema) {
+                        addedSchema = new Schema(data.schema);
+                    }
+
+                    resolve(addedSchema);
+                });
+            });
+
+            this.onSelectedSchemaChange(resolvedSchema, this.currentNode);
+        });
+
+        Promise.all(schemaPromises).then(() => {
+            this.selectedSchemas = value;
+            this.matTree.refreshTree();
+        });
     }
 
     onSelectedSchemaChange(

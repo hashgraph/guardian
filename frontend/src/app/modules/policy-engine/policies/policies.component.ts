@@ -969,13 +969,13 @@ export class PoliciesComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.tokenService.getTokens(),
-            this.schemaService.getSchemas(),
+            this.schemaService.getSchemasByPage(),
             this.policyEngineService.all(),
             this.policyEngineService.getPolicyCategories()
         ]).subscribe(
             (result) => {
                 const tokens = result[0].map((token) => new Token(token));
-                const schemas = result[1].map((schema) => new Schema(schema));
+                const schemas = result[1].body?.map((schema) => new Schema(schema)) ?? [];
                 const policies = result[2];
                 const categories = result[3];
                 this.wizardService.openPolicyWizardDialog(
