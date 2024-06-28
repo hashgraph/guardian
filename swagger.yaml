@@ -11473,7 +11473,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/NotificationDTO'
+                  $ref: '#/components/schemas/WorkersTasksDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -11497,10 +11497,6 @@ paths:
       responses:
         '200':
           description: Successful operation. Returns notifications.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -11530,10 +11526,6 @@ paths:
       responses:
         '200':
           description: Successful operation. Returns notifications.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotificationDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -14645,3 +14637,34 @@ components:
       required:
         - policyIds
         - assign
+    WorkersTasksDTO:
+      type: object
+      properties:
+        createDate:
+          type: string
+        done:
+          type: boolean
+        id:
+          type: string
+        isRetryableTask:
+          type: boolean
+        processedTime:
+          type: string
+        sent:
+          type: boolean
+        taskId:
+          type: string
+        type:
+          type: string
+        updateDate:
+          type: string
+      required:
+        - createDate
+        - done
+        - id
+        - isRetryableTask
+        - processedTime
+        - sent
+        - taskId
+        - type
+        - updateDate
