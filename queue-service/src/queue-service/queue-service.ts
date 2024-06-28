@@ -182,11 +182,16 @@ export class QueueService extends NatsService{
     }
 
     private async clearLongPendingTasks() {
-        await new DataBaseHelper(TaskEntity).delete({
+        const tasks = await new DataBaseHelper(TaskEntity).find({
             $where: '(this.processedTime - this.createDate) > ( 1 * 60 * 60000)',
             sent: true,
             done: {$ne: true}
         });
+        for (const task of tasks) {
+            task.processedTime = null;
+            task.sent = false;
+            await new DataBaseHelper(TaskEntity).save(task);
+        }
     }
 
     /**
