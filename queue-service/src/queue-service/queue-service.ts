@@ -44,15 +44,19 @@ export class QueueService extends NatsService{
                     task.processedTime = null;
                     task.sent = false;
                     task.attempt = task.attempt + 1;
+                } else {
+                    if (!task.userId) {
+                        await this.completeTaskInQueue(data.id, data.data, data.error);
+                    }
                 }
             } else {
                 task.attempt = 0;
                 task.isError = true;
                 task.errorReason = data.error;
-            }
 
-            if (!task.userId) {
-                await this.completeTaskInQueue(data.id, data.data, data.error);
+                if (!task.userId) {
+                    await this.completeTaskInQueue(data.id, data.data, data.error);
+                }
             }
 
             await new DataBaseHelper(TaskEntity).save(task);
