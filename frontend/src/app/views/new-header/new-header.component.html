@@ -34,7 +34,7 @@
     <ng-template #menuBarItem let-barItems="barItems">
         <ng-container *ngFor="let barItem of barItems">
             <div class="item-block">
-                <div 
+                <div
                     (click)="onRouter(barItem)"
                     [class.current]="isCurrent(barItem, activeLink)"
                     class="item clickable"
@@ -69,8 +69,24 @@
             </div>
         </div>
 
-        <div 
-            [class.current]="activeLink.startsWith('/notifications')" 
+        <div
+                [class.current]="activeLink.startsWith('/worker-tasks')"
+                [routerLink]="'/worker-tasks'"
+                class="item cursor-pointer"
+        >
+            <img alt="" src="assets/images/icons/table.svg">
+            <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
+                <!--                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>-->
+            </div>
+            <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
+                <span>Worker Tasks</span>
+                <!--                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>-->
+            </div>
+        </div>
+
+
+        <div
+                [class.current]="activeLink.startsWith('/notifications')"
             [routerLink]="'/notifications'"
             class="item cursor-pointer"
         >
@@ -86,14 +102,14 @@
 
         <app-compare-viewer
             [collapsed]="menuCollapsed"
-            [active]="activeLink.startsWith('/compare')" 
+            [active]="activeLink.startsWith('/compare')"
         ></app-compare-viewer>
 
         <div class="boundary-box">
-            <div 
+            <div
                 (click)="goToHomePage()"
-                [class.clickable]="!user.AUDITOR" 
-                [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')" 
+                [class.clickable]="!user.AUDITOR"
+                [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')"
                 class="item"
             >
                 <img alt="" src="assets/images/icons/user.svg">

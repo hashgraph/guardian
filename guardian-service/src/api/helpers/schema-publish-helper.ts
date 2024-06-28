@@ -1,4 +1,4 @@
-import { GeoJsonContext, SchemaHelper, SchemaStatus, SentinelHubContext, IOwner } from '@guardian/interfaces';
+import { GeoJsonContext, IOwner, SchemaHelper, SchemaStatus, SentinelHubContext } from '@guardian/interfaces';
 import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
@@ -40,15 +40,17 @@ export async function accessSchema(
 /**
  * Publish schema
  * @param item
- * @param version
+ * @param user
  * @param messageServer
  * @param type
+ * @param userId
  */
 export async function publishSchema(
     item: SchemaCollection,
     user: IOwner,
     messageServer: MessageServer,
-    type?: MessageAction
+    type?: MessageAction,
+    userId?: string
 ): Promise<SchemaCollection> {
     if (checkForCircularDependency(item)) {
         throw new Error(`There is circular dependency in schema: ${item.iri}`);
@@ -86,7 +88,7 @@ export async function publishSchema(
     message.setDocument(item);
     message.setRelationships(relationships);
     const result = await messageServer
-        .sendMessage(message);
+        .sendMessage(message, true, null, userId);
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
@@ -108,13 +110,15 @@ export async function publishSchema(
 /**
  * Publishing schemas in defs
  * @param defs Definitions
- * @param owner Owner
+ * @param user
  * @param root HederaAccount
+ * @param userId
  */
 export async function publishDefsSchemas(
     defs: any,
     user: IOwner,
-    root: IRootConfig
+    root: IRootConfig,
+    userId?: string
 ) {
     if (!defs) {
         return;
@@ -126,7 +130,7 @@ export async function publishDefsSchemas(
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.iri, user);
-            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier());
+            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), userId);
         }
     }
 }
@@ -135,16 +139,18 @@ export async function publishDefsSchemas(
  * Find and publish schema
  * @param id
  * @param version
- * @param owner
+ * @param user
  * @param root
  * @param notifier
+ * @param userId
  */
 export async function findAndPublishSchema(
     id: string,
     version: string,
     user: IOwner,
     root: IRootConfig,
-    notifier: INotifier
+    notifier: INotifier,
+    userId?: string
 ): Promise<SchemaCollection> {
     notifier.start('Load schema');
 
@@ -160,7 +166,7 @@ export async function findAndPublishSchema(
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaIri = item.iri;
-    await publishDefsSchemas(item.document?.$defs, user, root);
+    await publishDefsSchemas(item.document?.$defs, user, root, userId);
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
@@ -170,10 +176,10 @@ export async function findAndPublishSchema(
     notifier.completedAndStart('Publish schema');
 
     SchemaHelper.updateVersion(item, version);
-    item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema);
+    item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema, userId);
 
     notifier.completedAndStart('Publish tags');
-    await publishSchemaTags(item, root);
+    await publishSchemaTags(item, root, userId);
 
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);
@@ -185,16 +191,19 @@ export async function findAndPublishSchema(
 /**
  * Publish system schema
  * @param item
+ * @param user
  * @param messageServer
  * @param type
  * @param notifier
+ * @param userId
  */
 export async function publishSystemSchema(
     item: SchemaCollection,
     user: IOwner,
     messageServer: MessageServer,
     type?: MessageAction,
-    notifier?: INotifier
+    notifier?: INotifier,
+    userId?: string
 ): Promise<SchemaCollection> {
     delete item.id;
     delete item._id;
@@ -204,7 +213,7 @@ export async function publishSystemSchema(
     item.version = undefined;
     item.topicId = messageServer.getTopic();
     SchemaHelper.setVersion(item, undefined, undefined);
-    const result = await publishSchema(item, user, messageServer, type);
+    const result = await publishSchema(item, user, messageServer, type, userId);
     if (notifier) {
         notifier.info(`Schema ${result.name || '-'} published`);
     }
@@ -215,14 +224,16 @@ export async function publishSystemSchema(
  * Publish system schemas
  * @param systemSchemas
  * @param messageServer
- * @param owner
+ * @param user
  * @param notifier
+ * @param userId
  */
 export async function publishSystemSchemas(
     systemSchemas: SchemaCollection[],
     messageServer: MessageServer,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotifier,
+    userId?: string
 ): Promise<void> {
     const tasks = [];
     for (const schema of systemSchemas) {
@@ -234,7 +245,8 @@ export async function publishSystemSchemas(
                 user,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                notifier
+                notifier,
+                userId
             ));
         }
     }

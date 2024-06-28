@@ -573,15 +573,17 @@ export class PolicyEngine extends NatsService {
     /**
      * Policy schemas
      * @param model
-     * @param owner
+     * @param user
      * @param root
      * @param notifier
+     * @param userId
      */
     public async publishSchemas(
         model: Policy,
         user: IOwner,
         root: IRootConfig,
-        notifier: INotifier
+        notifier: INotifier,
+        userId?: string
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
@@ -599,7 +601,8 @@ export class PolicyEngine extends NatsService {
                 schema.version,
                 user,
                 root,
-                emptyNotifier()
+                emptyNotifier(),
+                userId
             );
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
             replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
@@ -641,7 +644,7 @@ export class PolicyEngine extends NatsService {
     /**
      * Publish policy
      * @param model
-     * @param owner
+     * @param user
      * @param version
      * @param notifier
      */
@@ -655,6 +658,8 @@ export class PolicyEngine extends NatsService {
         logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(user.creator);
+        const userAccount = await this.users.getUser(user.username);
+        const userId = userAccount.id.toString();
         notifier.completedAndStart('Find topic');
 
         model.version = version;
@@ -665,7 +670,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('Publish schemas');
         try {
-            model = await this.publishSchemas(model, user, root, notifier);
+            model = await this.publishSchemas(model, user, root, notifier, userId);
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
@@ -696,7 +701,7 @@ export class PolicyEngine extends NatsService {
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(_token);
                 await messageServer
-                    .sendMessage(tokenMessage);
+                    .sendMessage(tokenMessage, true, null, userId);
             }
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
 
@@ -763,11 +768,11 @@ export class PolicyEngine extends NatsService {
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
             message.setDocument(model, buffer);
             const result = await messageServer
-                .sendMessage(message);
+                .sendMessage(message, true, null, userId);
             model.messageId = result.getId();
 
             notifier.completedAndStart('Link topic and policy');
-            await topicHelper.twoWayLink(rootTopic, topic, result.getId());
+            await topicHelper.twoWayLink(rootTopic, topic, result.getId(), userId);
 
             notifier.completedAndStart('Create VC');
             const messageId = result.getId();
@@ -1085,10 +1090,11 @@ export class PolicyEngine extends NatsService {
     /**
      * Import policy by message
      * @param messageId
-     * @param owner
+     * @param user
      * @param hederaAccount
      * @param versionOfTopicId
      * @param notifier
+     * @param metadata
      */
     public async importPolicyMessage(
         messageId: string,

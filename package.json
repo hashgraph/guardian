@@ -11,6 +11,7 @@
     "logger-service",
     "mrv-sender",
     "topic-viewer",
+    "queue-service",
     "tree-viewer",
     "analytics-service",
     "worker-service",
@@ -24,7 +25,7 @@
     "indexer-service",
     "indexer-worker-service"
   ],
-  "version": "2.25.1",
+  "version": "2.26.0",
   "devDependencies": {
     "detect-secrets": "^1.0.6"
   },

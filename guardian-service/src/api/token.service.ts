@@ -476,7 +476,9 @@ async function grantKycToken(
             kycKey,
             grant
         }
-    }, 20);
+    }, 20, user.id.toString());
+
+    await new Promise(resolve => setTimeout(resolve, 15000));
 
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -485,7 +487,7 @@ async function grantKycToken(
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 20);
+    }, 20, user.id.toString());
 
     const result = getTokenInfo(info, token);
     notifier.completed();
@@ -544,7 +546,9 @@ async function freezeToken(
             token,
             freeze
         }
-    }, 20);
+    }, 20, user.id.toString());
+
+    await new Promise(resolve => setTimeout(resolve, 15000));
 
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -553,7 +557,7 @@ async function freezeToken(
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 20);
+    }, 20, user.id.toString());
 
     const result = getTokenInfo(info, token);
     notifier.completed();

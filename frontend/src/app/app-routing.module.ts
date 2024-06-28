@@ -1,7 +1,7 @@
 import { Injectable, NgModule } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterModule, RouterStateSnapshot, Routes, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterModule, RouterStateSnapshot, Routes, UrlTree } from '@angular/router';
 import { IUser, Permissions, UserRole } from '@guardian/interfaces';
-import { Observable, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuditComponent } from './views/audit/audit.component';
 import { HomeComponent } from './views/home/home.component';
@@ -18,7 +18,6 @@ import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
 import { SettingsViewComponent } from './views/admin/settings-view/settings-view.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
-import { WebSocketService } from './services/web-socket.service';
 import { BrandingComponent } from './views/branding/branding.component';
 import { SuggestionsConfigurationComponent } from './views/suggestions-configuration/suggestions-configuration.component';
 import { AsyncProgressComponent } from './modules/common/async-progress/async-progress.component';
@@ -43,7 +42,7 @@ import { ProjectsComparisonTableComponent } from './modules/project-comparison/c
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
-
+import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 
 @Injectable({
     providedIn: 'root'
@@ -113,6 +112,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
+    {path: 'worker-tasks', component: WorkerTasksComponent},
 
     {
         path: 'user-profile',

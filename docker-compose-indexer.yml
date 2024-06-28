@@ -17,13 +17,9 @@ services:
       ME_CONFIG_SITE_BASEURL: /mongo-admin # default credentials: admin/pass
     depends_on:
       - mongo
-  
+
   ipfs-node:
     image: ipfs/kubo:latest
-    ports:
-      - "5001:5001"
-      - "4001:4001"
-      - "8080:8080"
 
   message-broker:
     image: nats:2.9.24
@@ -39,7 +35,7 @@ services:
     build:
       context: .
       dockerfile: ./indexer-worker-service/Dockerfile
-    init: true    
+    init: true
     depends_on:
       - mongo
       - message-broker
@@ -59,7 +55,7 @@ services:
     build:
       context: .
       dockerfile: ./indexer-api-gateway/Dockerfile
-    init: true    
+    init: true
     expose:
       - 3021
       - 6555
@@ -78,9 +74,7 @@ services:
     build:
       context: .
       dockerfile: ./indexer-service/Dockerfile
-    init: true    
-    ports:
-      - "5007:5007"
+    init: true
     volumes:
       - ./indexer-service/tls:/usr/local/indexer-service/tls:ro
       - ./indexer-service/configs:/usr/local/indexer-service/configs:ro
@@ -99,7 +93,7 @@ services:
       dockerfile: ./indexer-web-proxy/Dockerfile
     init: true
     ports:
-      - "3000:80"
+      - "3005:80"
     depends_on:
       - indexer-api-gateway
       - indexer-service

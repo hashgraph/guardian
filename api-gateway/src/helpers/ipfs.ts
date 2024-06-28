@@ -1,11 +1,5 @@
 import { NatsService } from '@guardian/common';
-import {
-    ApplicationStates,
-    CommonSettings,
-    MessageAPI,
-    IFileResponse,
-    GenerateUUIDv4
-} from '@guardian/interfaces';
+import { ApplicationStates, CommonSettings, GenerateUUIDv4, IFileResponse, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from './decorators/singleton.js';
 
 /**
@@ -46,10 +40,11 @@ export class IPFS extends NatsService{
      * Returns file by IPFS CID
      * @param cid IPFS CID
      * @param responseType Response type
+     * @param userId
      * @returns File
      */
-    public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE, { cid, responseType }) as any;
+    public async getFile(cid: string, responseType: 'json' | 'raw' | 'str', userId?: string): Promise<any> {
+        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE, {cid, responseType, userId}) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -65,10 +60,11 @@ export class IPFS extends NatsService{
      * Async returns file by IPFS CID
      * @param cid IPFS CID
      * @param responseType Response type
+     * @param userId
      * @returns File
      */
-    public async getFileAsync(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE_ASYNC, { cid, responseType }) as any;
+    public async getFileAsync(cid: string, responseType: 'json' | 'raw' | 'str', userId?: string): Promise<any> {
+        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE_ASYNC, {cid, responseType, userId}) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }

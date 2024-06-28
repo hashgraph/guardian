@@ -370,7 +370,8 @@ export async function syncWipeContract(
                     timestamp: timestamp ? `gt:${timestamp}` : null,
                 },
             },
-            20
+            20,
+            null
         );
 
         if (!result || !result.length) {
@@ -565,7 +566,8 @@ export async function syncRetireContract(
                     timestamp: timestamp ? `gt:${timestamp}` : null,
                 },
             },
-            20
+            20,
+            null
         );
 
         if (!result || !result.length) {
@@ -849,7 +851,8 @@ async function isContractWiper(
                     order: 'desc',
                 },
             },
-            20
+            20,
+            null
         );
 
         if (!result || !result.length) {
@@ -1179,7 +1182,8 @@ export async function contractAPI(
                         hederaAccountKey: rootKey,
                     },
                 },
-                20
+                20,
+                null
             );
 
             const message = await workers.addRetryableTask(

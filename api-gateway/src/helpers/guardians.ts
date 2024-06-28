@@ -21,6 +21,7 @@ import {
     IVPDocument,
     MessageAPI,
     PolicyToolMetadata,
+    QueueEvents,
     RetireTokenPool,
     RetireTokenRequest,
     SchemaNode,
@@ -525,17 +526,18 @@ export class Guardians extends NatsService {
      *
      * @returns {any} Demo Key
      */
-    public async generateDemoKey(role: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, { role });
+    public async generateDemoKey(role: string, userId: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, {role, userId});
     }
 
     /**
      * Async generate Demo Key
      * @param role
      * @param task
+     * @param userId
      */
-    public async generateDemoKeyAsync(role: string, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, task });
+    public async generateDemoKeyAsync(role: string, task: NewTask, userId: string): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, {role, task, userId});
     }
 
     /**
@@ -1036,9 +1038,9 @@ export class Guardians extends NatsService {
      * @param responseType Response type
      * @returns File
      */
-    public async getFileIpfs(cid: string, responseType: any): Promise<any> {
+    public async getFileIpfs(cid: string, responseType: any, userId?: string): Promise<any> {
         return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
-            cid, responseType
+            cid, responseType, userId
         });
     }
 
@@ -2801,5 +2803,33 @@ export class Guardians extends NatsService {
      */
     public async setRole(user: IAuthUser, owner: IOwner): Promise<any> {
         return await this.sendMessage(MessageAPI.SET_ROLE, { user, owner });
+    }
+
+    /**
+     * Get all worker tasks
+     * @param user
+     * @param pageIndex
+     * @param pageSize
+     */
+    public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, {userId: user.id.toString(), pageIndex, pageSize});
+    }
+
+    /**
+     * Restart task
+     * @param taskId
+     * @param userId
+     */
+    public async restartTask(taskId: string, userId: string) {
+        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId, userId});
+    }
+
+    /**
+     * Delete task
+     * @param taskId
+     * @param userId
+     */
+    public async deleteTask(taskId: string, userId: string) {
+        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId, userId});
     }
 }
