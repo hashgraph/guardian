@@ -90,7 +90,7 @@ export async function ipfsAPI(): Promise<void> {
                 throw new Error('Invalid response type');
             }
 
-            return new MessageResponse(await IPFS.getFile(msg.cid, msg.responseType));
+            return new MessageResponse(await IPFS.getFile(msg.cid, msg.responseType, msg.userId));
         }
         catch (error) {
             new Logger().error(error, ['IPFS_CLIENT']);

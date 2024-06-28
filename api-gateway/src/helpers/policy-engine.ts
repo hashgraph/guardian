@@ -429,16 +429,18 @@ export class PolicyEngine extends NatsService {
      * @param owner
      * @param versionOfTopicId
      * @param metadata
+     * @param userId
      */
     public async importMessage(
         messageId: string,
         owner: IOwner,
         versionOfTopicId: string,
-        metadata?: PolicyToolMetadata
+        metadata?: PolicyToolMetadata,
+        userId?: string
     ): Promise<boolean> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            { messageId, owner, versionOfTopicId, metadata }
+            {messageId, owner, versionOfTopicId, metadata, userId}
         );
     }
 
@@ -449,17 +451,19 @@ export class PolicyEngine extends NatsService {
      * @param versionOfTopicId
      * @param task
      * @param metadata
+     * @param userId
      */
     public async importMessageAsync(
         messageId: string,
         owner: IOwner,
         versionOfTopicId: string,
         task: NewTask,
-        metadata?: PolicyToolMetadata
+        metadata?: PolicyToolMetadata,
+        userId?: string
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            { messageId, owner, versionOfTopicId, task, metadata }
+            {messageId, owner, versionOfTopicId, task, metadata, userId}
         );
     }
 

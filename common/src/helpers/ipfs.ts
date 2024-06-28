@@ -80,16 +80,17 @@ export class IPFS {
      * Returns file by IPFS CID
      * @param cid IPFS CID
      * @param responseType Response type
+     * @param userId
      * @returns File
      */
-    public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = await new Workers().addRetryableTask({
+    public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str', userId?: string): Promise<any> {
+        const res = await new Workers().addNonRetryableTask({
             type: WorkerTaskType.GET_FILE,
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
                 payload: { cid, responseType }
             }
-        }, 10);
+        }, 10, userId);
         if (!res) {
             throw new Error('Invalid response');
         }

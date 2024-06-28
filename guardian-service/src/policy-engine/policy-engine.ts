@@ -1088,10 +1088,11 @@ export class PolicyEngine extends NatsService {
     /**
      * Import policy by message
      * @param messageId
-     * @param owner
+     * @param user
      * @param hederaAccount
      * @param versionOfTopicId
      * @param notifier
+     * @param metadata
      */
     public async importPolicyMessage(
         messageId: string,

@@ -101,9 +101,10 @@ export class PolicyLoader {
 
         const users = new Users()
         const root = await users.getHederaAccount(user.creator);
+        const userAccount = await users.getUser(user.username);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        const message = await messageServer.getMessage<PolicyMessage>(messageId, null, userAccount.id.toString());
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

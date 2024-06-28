@@ -1,11 +1,11 @@
-import { AuthUser, Auth } from '#auth';
+import { Auth, AuthUser } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
-import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader, PoliciesValidationDTO } from '#middlewares';
-import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, getCacheKey } from '#helpers';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO, TaskDTO } from '#middlewares';
+import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -1820,7 +1820,8 @@ export class PolicyApi {
                 messageId,
                 new EntityOwner(user),
                 versionOfTopicId,
-                body.metadata
+                body.metadata,
+                user.id.toString()
             );
             return await getOldResult(user);
         } catch (error) {
@@ -1880,7 +1881,8 @@ export class PolicyApi {
                     new EntityOwner(user),
                     versionOfTopicId,
                     task,
-                    body.metadata
+                    body.metadata,
+                    user.id.toString()
                 );
             },
             async (error) => {
