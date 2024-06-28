@@ -3,25 +3,7 @@ import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import {
-    checkForCircularDependency,
-    copySchemaAsync,
-    createSchemaAndArtifacts,
-    deleteSchema,
-    exportSchemas,
-    findAndPublishSchema,
-    getPageOptions,
-    getSchemaCategory,
-    getSchemaTarget,
-    importSchemaByFiles,
-    importSchemasByMessages,
-    importSubTools,
-    importTagsByFiles,
-    prepareSchemaPreview,
-    previewToolByMessage,
-    updateSchemaDefs,
-    updateToolConfig
-} from './helpers/index.js';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -561,7 +543,9 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -582,7 +566,9 @@ export async function schemaAPI(): Promise<void> {
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, notifier);
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, notifier, userId);
                 notifier.result(item.id);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -645,7 +631,11 @@ export async function schemaAPI(): Promise<void> {
                     );
                 }
 
-                await deleteSchema(id, owner, emptyNotifier());
+                // const users = new Users();
+                // const userAccount = await users.getUser(owner.username);
+                // const userId = userAccount.id.toString();
+                //
+                // await deleteSchema(id, owner, emptyNotifier());
 
                 if (needResult) {
                     const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
@@ -1183,7 +1173,9 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+                const userAccount = await users.getUser(owner.username);
+                const userId = userAccount.id.toString();
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

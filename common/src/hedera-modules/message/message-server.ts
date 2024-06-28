@@ -75,22 +75,21 @@ export class MessageServer {
     }
 
     /**
-     * Save File
-     * @param file
-     * @virtual
-     * @private
+     * Send message
+     * @param message
+     * @param sendToIPFS
+     * @param memo
+     * @param userId
      */
-    private async addFile(file: ArrayBuffer) {
-        if (this.dryRun) {
-            const id = GenerateUUIDv4();
-            const result = {
-                cid: id,
-                url: id
-            }
-            await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
-            return result
+    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true, memo?: string, userId?: string): Promise<T> {
+        if (sendToIPFS) {
+            message = await this.sendIPFS(message, userId);
         }
-        return IPFS.addFile(file);
+        message = await this.sendHedera(message, memo, userId);
+        if (this.dryRun) {
+            await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
+        }
+        return message;
     }
 
     /**
@@ -166,26 +165,23 @@ export class MessageServer {
     }
 
     /**
-     * Send IPFS
-     * @param message
+     * Save File
+     * @param file
+     * @param userId
+     * @virtual
      * @private
      */
-    private async sendIPFS<T extends Message>(message: T): Promise<T> {
-        const buffers = await message.toDocuments(
-            this.clientOptions.operatorKey
-        );
-        if (buffers && buffers.length) {
-            const time = await this.messageStartLog('IPFS');
-            const promises = buffers.map(buffer => {
-                return this.addFile(buffer);
-            });
-            const urls = await Promise.all(promises);
-            await this.messageEndLog(time, 'IPFS');
-            message.setUrls(urls);
-        } else {
-            message.setUrls([]);
+    private async addFile(file: ArrayBuffer, userId: string = null) {
+        if (this.dryRun) {
+            const id = GenerateUUIDv4();
+            const result = {
+                cid: id,
+                url: id
+            }
+            await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
+            return result
         }
-        return message;
+        return IPFS.addFile(file, userId);
     }
 
     /**
@@ -223,36 +219,26 @@ export class MessageServer {
     }
 
     /**
-     * Send to hedera
+     * Send IPFS
      * @param message
+     * @param userId
      * @private
      */
-    private async sendHedera<T extends Message>(message: T, memo?: string): Promise<T> {
-        if (!this.topicId) {
-            throw new Error('Topic is not set');
+    private async sendIPFS<T extends Message>(message: T, userId: string = null): Promise<T> {
+        const buffers = await message.toDocuments(
+            this.clientOptions.operatorKey
+        );
+        if (buffers && buffers.length) {
+            const time = await this.messageStartLog('IPFS');
+            const promises = buffers.map(buffer => {
+                return this.addFile(buffer, userId);
+            });
+            const urls = await Promise.all(promises);
+            await this.messageEndLog(time, 'IPFS');
+            message.setUrls(urls);
+        } else {
+            message.setUrls([]);
         }
-
-        message.setLang(MessageServer.lang);
-        const time = await this.messageStartLog('Hedera');
-        const buffer = message.toMessage();
-        const timestamp = await new Workers().addRetryableTask({
-            type: WorkerTaskType.SEND_HEDERA,
-            data: {
-                topicId: this.topicId,
-                buffer,
-                submitKey: this.submitKey,
-                clientOptions: this.clientOptions,
-                network: Environment.network,
-                localNodeAddress: Environment.localNodeAddress,
-                localNodeProtocol: Environment.localNodeProtocol,
-                signOptions: this.signOptions,
-                memo: memo || MessageMemo.getMessageMemo(message),
-                dryRun: this.dryRun,
-            }
-        }, 10);
-        await this.messageEndLog(time, 'Hedera');
-        message.setId(timestamp);
-        message.setTopicId(this.topicId);
         return message;
     }
 
@@ -432,18 +418,38 @@ export class MessageServer {
     }
 
     /**
-     * Send message
+     * Send to hedera
      * @param message
-     * @param sendToIPFS
+     * @param memo
+     * @param userId
+     * @private
      */
-    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true, memo?: string): Promise<T> {
-        if (sendToIPFS) {
-            message = await this.sendIPFS(message);
+    private async sendHedera<T extends Message>(message: T, memo?: string, userId?: string): Promise<T> {
+        if (!this.topicId) {
+            throw new Error('Topic is not set');
         }
-        message = await this.sendHedera(message, memo);
-        if (this.dryRun) {
-            await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
-        }
+
+        message.setLang(MessageServer.lang);
+        const time = await this.messageStartLog('Hedera');
+        const buffer = message.toMessage();
+        const timestamp = await new Workers().addRetryableTask({
+            type: WorkerTaskType.SEND_HEDERA,
+            data: {
+                topicId: this.topicId,
+                buffer,
+                submitKey: this.submitKey,
+                clientOptions: this.clientOptions,
+                network: Environment.network,
+                localNodeAddress: Environment.localNodeAddress,
+                localNodeProtocol: Environment.localNodeProtocol,
+                signOptions: this.signOptions,
+                memo: memo || MessageMemo.getMessageMemo(message),
+                dryRun: this.dryRun,
+            }
+        }, 10, 0, userId);
+        await this.messageEndLog(time, 'Hedera');
+        message.setId(timestamp);
+        message.setTopicId(this.topicId);
         return message;
     }
 

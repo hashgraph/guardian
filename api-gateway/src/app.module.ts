@@ -39,6 +39,7 @@ import { AISuggestionsAPI } from './api/service/ai-suggestions.js';
 import { cacheProvider } from './helpers/cache-provider.js';
 import { CacheService } from './helpers/cache-service.js';
 import { PermissionsApi } from './api/service/permissions.js';
+import { WorkerTasksController } from './api/service/worker-tasks.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -88,7 +89,8 @@ import { PermissionsApi } from './api/service/permissions.js';
         ProjectsAPI,
         RecordApi,
         AISuggestionsAPI,
-        PermissionsApi
+        PermissionsApi,
+        WorkerTasksController
     ],
     providers: [
         LoggerService,

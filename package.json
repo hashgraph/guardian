@@ -11,6 +11,7 @@
     "logger-service",
     "mrv-sender",
     "topic-viewer",
+    "queue-service",
     "tree-viewer",
     "analytics-service",
     "worker-service",

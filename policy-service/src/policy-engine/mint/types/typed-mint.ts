@@ -1,17 +1,9 @@
-import {
-    DatabaseServer,
-    MintRequest,
-    NotificationHelper,
-} from '@guardian/common';
+import { DatabaseServer, MintRequest, NotificationHelper, } from '@guardian/common';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { MintService } from '../mint-service.js';
 import { PolicyUtils } from '../../helpers/utils.js';
-import {
-    MintTransactionStatus,
-    NotificationAction,
-    TokenType
-} from '@guardian/interfaces';
+import { MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
 
 /**
  * Typed mint
@@ -22,6 +14,8 @@ export abstract class TypedMint {
      */
     public readonly mintRequestId: string;
 
+    public readonly userId: string;
+
     /**
      * Initialize
      * @param _mintRequest Mint request
@@ -30,6 +24,7 @@ export abstract class TypedMint {
      * @param _db Database Server
      * @param _ref Block ref
      * @param _notifier Notifier
+     * @param _userId
      */
     protected constructor(
         protected _mintRequest: MintRequest,
@@ -38,8 +33,10 @@ export abstract class TypedMint {
         protected _db: DatabaseServer,
         protected _ref?: any,
         protected _notifier?: NotificationHelper,
+        protected _userId?: string
     ) {
         this.mintRequestId = this._mintRequest.id;
+        this.userId = _userId;
     }
 
     /**
@@ -49,6 +46,7 @@ export abstract class TypedMint {
      * @param token Token
      * @param ref Block ref
      * @param notifier Notifier
+     * @param userId
      * @returns Parameters
      */
     protected static async initRequest(
@@ -56,7 +54,8 @@ export abstract class TypedMint {
         root: IHederaCredentials,
         token: TokenConfig,
         ref?: any,
-        notifier?: NotificationHelper
+        notifier?: NotificationHelper,
+        userId?: string
     ): Promise<
         [
             MintRequest,
@@ -64,11 +63,12 @@ export abstract class TypedMint {
             TokenConfig,
             DatabaseServer,
             any,
-            NotificationHelper
+            NotificationHelper,
+            string
         ]
     > {
         const db = new DatabaseServer(ref?.dryRun);
-        return [mintRequest, root, token, db, ref, notifier];
+        return [mintRequest, root, token, db, ref, notifier, userId];
     }
 
     /**
@@ -226,9 +226,10 @@ export abstract class TypedMint {
     /**
      * Mint tokens
      * @param isProgressNeeded Is progress needed
+     * @param userId
      * @returns Processed
      */
-    protected async mint(isProgressNeeded: boolean): Promise<boolean> {
+    protected async mint(isProgressNeeded: boolean, userId?: string): Promise<boolean> {
         if (
             !this._mintRequest.isMintNeeded &&
             !this._mintRequest.isTransferNeeded
@@ -256,7 +257,7 @@ export abstract class TypedMint {
             try {
                 this._mintRequest.processDate = new Date();
                 await this._db.saveMintRequest(this._mintRequest);
-                await this.mintTokens(notifier);
+                await this.mintTokens(notifier, userId);
             } catch (error) {
                 const errorMessage = PolicyUtils.getErrorMessage(error);
                 notifier?.stop();

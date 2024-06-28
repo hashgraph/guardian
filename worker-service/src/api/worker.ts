@@ -173,22 +173,10 @@ export class Worker extends NatsService {
 
             }
 
-            const completeTask = (data) => {
-                // let count = 0;
-                const fn = async () => {
-                    await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), data);
-                    // if (count < 5) {
-                    //     setTimeout(async () => {
-                    //         await fn()
-                    //     })
-                    //     count++
-                    // }
-                }
-                fn();
+            const completeTask = async (data) => {
+                await this.publish(WorkerEvents.TASK_COMPLETE, data)
             }
-
             await completeTask(result);
-            // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), result);
             await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
