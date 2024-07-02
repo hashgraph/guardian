@@ -1,5 +1,5 @@
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
@@ -9,6 +9,9 @@ import { Guardians, InternalException, NewTask, ServiceError, TaskManager, Users
 @Controller('demo')
 @ApiTags('demo')
 export class DemoApi {
+    constructor(private readonly logger: Logger) {
+    }
+
     /**
      * Returns list of registered users
      */
@@ -137,7 +140,7 @@ export class DemoApi {
             const guardians = new Guardians();
             await guardians.generateDemoKeyAsync(user?.role, task, user.id.toString());
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;

@@ -27,7 +27,7 @@ import { ThemesApi } from './api/service/themes.js';
 import { BrandingApi } from './api/service/branding.js';
 import { SuggestionsApi } from './api/service/suggestions.js';
 import { MatchConstraint } from './helpers/decorators/match.validator.js';
-import { NotificationService } from '@guardian/common';
+import { Logger, NotificationService } from '@guardian/common';
 import { NotificationsApi } from './api/service/notifications.js';
 import { ApplicationEnvironment } from './environment.js';
 import { AuthGuard } from './auth/auth-guard.js';
@@ -101,7 +101,8 @@ import { WorkerTasksController } from './api/service/worker-tasks.js';
         UsersService,
         cacheProvider,
         CacheService,
-    ]
+        Logger
+    ],
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {

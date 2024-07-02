@@ -72,7 +72,8 @@ async function setDynamicTokenPolicy(
 @ApiTags('tokens')
 export class TokensApi {
 
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
+
     }
 
     /**
@@ -398,7 +399,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.setTokenAsync(token, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
 
@@ -523,7 +524,7 @@ export class TokensApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.updateTokenAsync(token, owner, task);
             }, async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
 
@@ -592,7 +593,7 @@ export class TokensApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteTokenAsync(tokenId, owner, task);
             }, async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
 
@@ -643,7 +644,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.associateToken(tokenId, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -698,7 +699,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.associateTokenAsync(tokenId, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
 
@@ -746,7 +747,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.dissociateToken(tokenId, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -800,7 +801,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.dissociateTokenAsync(tokenId, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -855,7 +856,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.grantKycToken(tokenId, username, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -917,7 +918,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.grantKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -972,7 +973,7 @@ export class TokensApi {
             const owner = new EntityOwner(user);
             return await guardians.revokeKycToken(tokenId, username, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not found.', HttpStatus.NOT_FOUND)
             }
@@ -1034,7 +1035,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.revokeKycTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -1089,7 +1090,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.freezeToken(tokenId, username, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
@@ -1149,7 +1150,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.unfreezeToken(tokenId, username, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
@@ -1211,7 +1212,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.freezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -1268,7 +1269,7 @@ export class TokensApi {
             const guardians = new Guardians();
             await guardians.unfreezeTokenAsync(tokenId, username, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -1323,7 +1324,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.getInfoToken(tokenId, username, owner);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }
@@ -1373,7 +1374,7 @@ export class TokensApi {
             const guardians = new Guardians();
             return await guardians.getTokenSerials(tokenId, user.did);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {
                 throw new HttpException('User not registered.', HttpStatus.NOT_FOUND);
             }

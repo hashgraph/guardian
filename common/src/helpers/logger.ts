@@ -2,9 +2,6 @@ import { ApplicationStates, GenerateUUIDv4, ILog, IPageParameters, LogType, Mess
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
 
-// import { createLogger, Logger as WinstonLogger, format } from 'winston';
-// import Transport from 'winston-transport';
-
 import { Writable } from 'stream';
 import pino from 'pino';
 
@@ -213,14 +210,6 @@ export class Logger {
             'debug',
             'silly',
         ];
-        // this.loggerInstance = createLogger({
-        //     level: levelTypeMapping[process.env.LOG_LEVEL] || 'info',
-        //     format: format.json(),
-        //     transports: [
-        //         new ConsoleTransport({ format: format.json() }),
-        //         this.messageTransport,
-        //     ],
-        // });
 
         this.loggerInstance = pino({
             level: levelTypeMapping[process.env.LOG_LEVEL] || 'info',
@@ -237,7 +226,6 @@ export class Logger {
         }, pino.multistream([
             { stream: this.consoleTransport },
             { stream: this.messageTransport },
-            // { stream: pino.destination(1) }
         ]));
     }
 

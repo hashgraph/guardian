@@ -17,7 +17,7 @@ async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
     }
 
     /**
@@ -281,7 +281,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.migrateDataAsync(new EntityOwner(user), body as any, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;
@@ -323,7 +323,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.createPolicyAsync(body, new EntityOwner(user), task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -373,7 +373,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.clonePolicyAsync(policyId, body, new EntityOwner(user), task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -418,7 +418,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.deletePolicyAsync(policyId, new EntityOwner(user), task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -623,7 +623,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.publishPolicyAsync(body, new EntityOwner(user), policyId, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
         return task;
@@ -1886,7 +1886,7 @@ export class PolicyApi {
                 );
             },
             async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, {
                     code: 500,
                     message: 'Unknown error: ' + error.message,
@@ -1978,7 +1978,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.importMessagePreviewAsync(messageId, new EntityOwner(user), task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;
@@ -2161,7 +2161,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.importFileAsync(file, new EntityOwner(user), versionOfTopicId, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;
@@ -2243,7 +2243,7 @@ export class PolicyApi {
                 );
             },
             async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, {
                     code: 500,
                     message: 'Unknown error: ' + error.message,
@@ -2395,7 +2395,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             await engineService.importXlsxAsync(file, new EntityOwner(user), policyId, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return task;

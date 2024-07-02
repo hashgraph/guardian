@@ -10,7 +10,7 @@ import { PREFIXES, TOOL_REQUIRED_PROPS } from '#constants';
 @Controller('tools')
 @ApiTags('tools')
 export class ToolsApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
     }
     /**
      * Creates a new tool
@@ -102,7 +102,7 @@ export class ToolsApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardian.createToolAsync(tool, owner, task);
             }, async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
 
@@ -494,7 +494,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             await guardian.publishToolAsync(id, owner, tool, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
 
@@ -909,7 +909,7 @@ export class ToolsApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardian.importToolFileAsync(zip, owner, task);
             }, async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
 
@@ -989,7 +989,7 @@ export class ToolsApi {
                     );
                 },
                 async (error) => {
-                    new Logger().error(error, ['API_GATEWAY']);
+                    await this.logger.error(error, ['API_GATEWAY']);
                     taskManager.addError(task.taskId, {
                         code: 500,
                         message: error.message,
@@ -1045,7 +1045,7 @@ export class ToolsApi {
             RunFunctionAsync<ServiceError>(async () => {
                 await guardian.importToolMessageAsync(messageId, owner, task);
             }, async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
             return task;

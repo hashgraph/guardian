@@ -9,6 +9,9 @@ import { AuthUser, Auth } from '#auth';
 @Controller('wizard')
 @ApiTags('wizard')
 export class WizardApi {
+    constructor(private readonly logger: Logger) {
+    }
+
     /**
      * Creates a new policy
      */
@@ -95,7 +98,7 @@ export class WizardApi {
                 );
             },
             async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, {
                     code: 500,
                     message: error.message,

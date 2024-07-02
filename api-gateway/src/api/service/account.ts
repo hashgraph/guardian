@@ -9,7 +9,7 @@ import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, User
 import { PolicyListResponse } from '../../entities/policy.js';
 import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ApplicationEnvironment } from '../../environment.js';
-import { CACHE } from '../../constants/index.js';
+import { CACHE } from '#constants';
 
 /**
  * User account route
@@ -18,7 +18,7 @@ import { CACHE } from '../../constants/index.js';
 @ApiTags('accounts')
 export class AccountApi {
 
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
+    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: Logger) {
     }
 
     /**
@@ -49,9 +49,10 @@ export class AccountApi {
         try {
             const authHeader = headers.authorization;
             const token = authHeader?.split(' ')[1];
+            await this.logger.warn("hello new logger", ['API_GATEWAY']);
             return await users.getUserByToken(token) as any;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             return null;
         }
     }
@@ -108,7 +109,7 @@ export class AccountApi {
             );
             return user;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error.message.includes('already exists')) {
                 throw new HttpException(error.message, HttpStatus.CONFLICT);
             }
@@ -141,7 +142,7 @@ export class AccountApi {
             const users = new Users();
             return await users.generateNewToken(username, password) as any;
         } catch (error) {
-            new Logger().warn(error.message, ['API_GATEWAY']);
+            await this.logger.warn(error.message, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
         }
     }

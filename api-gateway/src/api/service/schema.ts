@@ -171,7 +171,7 @@ export class SingleSchemaApi {
 @Controller('schemas')
 @ApiTags('schemas')
 export class SchemaApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
     }
 
     @Client({
@@ -838,7 +838,7 @@ export class SchemaApi {
             taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
             await guardians.copySchemaAsync(iri, topicId, name, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -897,7 +897,7 @@ export class SchemaApi {
 
             await guardians.createSchemaAsync(newSchema, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -1200,7 +1200,7 @@ export class SchemaApi {
             }
             await guardians.publishSchemaAsync(schemaId, version, owner, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
 
@@ -1309,7 +1309,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             await guardians.previewSchemasByMessagesAsync([messageId], task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -1481,7 +1481,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             await guardians.importSchemasByMessagesAsync([messageId], owner, topicId, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -1595,7 +1595,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             await guardians.importSchemasByFileAsync(files, owner, topicId, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;
@@ -2301,7 +2301,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             await guardians.importSchemasByXlsxAsync(owner, topicId, file, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
         return res.status(202).send(task);

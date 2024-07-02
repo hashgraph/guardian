@@ -12,7 +12,7 @@ const ONLY_SR = ' Only users with the Standard Registry role are allowed to make
 @Controller('modules')
 @ApiTags('modules')
 export class ModulesApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
     }
 
     /**
@@ -245,7 +245,7 @@ export class ModulesApi {
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -298,7 +298,7 @@ export class ModulesApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
 
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }

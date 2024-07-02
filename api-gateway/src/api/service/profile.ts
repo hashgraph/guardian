@@ -10,7 +10,7 @@ import { CACHE } from '#constants';
 @Controller('profiles')
 @ApiTags('profiles')
 export class ProfileApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
     }
 
     /**
@@ -208,7 +208,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.createUserProfileCommonAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -307,7 +307,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.restoreUserProfileCommonAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -358,7 +358,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.getAllUserTopicsAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
