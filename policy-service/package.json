@@ -47,7 +47,7 @@
         "imurmurhash": "^0.1.4",
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
-        "mathjs": "^10.1.0",
+        "mathjs": "^13.0.1",
         "module-alias": "^2.2.2",
         "moment": "^2.29.2",
         "mongodb": "6.5.0",
