@@ -12880,6 +12880,7 @@ components:
             - PUBLISHED
             - UNPUBLISHED
             - ERROR
+            - DEMO
           example: DRAFT
         topicId:
           type: string
