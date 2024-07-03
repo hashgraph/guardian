@@ -1,5 +1,5 @@
 import { Logger, RunFunctionAsync } from '@guardian/common';
-import { Controller, Get, HttpCode, HttpStatus, Inject } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
