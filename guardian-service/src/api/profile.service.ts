@@ -106,6 +106,9 @@ async function setupUserProfile(
 
     notifier.start('Get user');
     const user = await users.getUser(username);
+    if (user.did) {
+        throw new Error('User DID already exists');
+    }
     notifier.completed();
     let did: string;
     if (user.role === UserRole.STANDARD_REGISTRY) {
