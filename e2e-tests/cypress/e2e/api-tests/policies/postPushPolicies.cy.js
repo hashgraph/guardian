@@ -1,15 +1,13 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-
-
-context("Policies", { tags: '@policies' }, () => {
+context("Policies", { tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Create a new policy", () => {
         const nameTag = Math.floor(Math.random() * 999) + "test666";
         const urlPolicies = {
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + "policies/push",
             body: {
                 name: nameTag,

@@ -271,6 +271,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2921](https://gith
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation)
+
 ### Full project data comparison as produced/captured by policies
 
 Introduce a comparison functionality where it'd be possible to 'diff' arbitrary sections or the entire trust-chains for different tokens, potentially issued by different policies such that the system would:
@@ -282,6 +284,8 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2704](https://gith
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui)
 
+Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/project-comparison/project-comparison-using-ui)
+
 ### Global environmental/Guardian data search (indexer) component for Hedera and IPFS
 
 * Improve the data storage and indexing capabilities of Guardian for the data belonging to the local instance such that complex analytical queries could be run efficiently, such as 'search for data similar to this' and 'what is the possibility of this being a double entry for something submitted elsewhere'.
@@ -289,6 +293,8 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 * Extend [Block and policy discoverability/search #2281](https://github.com/hashgraph/guardian/issues/2281) for users to be able to preview the usage of the block without having to import "other SR's" policy into their Guardian instance
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2629](https://github.com/hashgraph/guardian/issues/2629)
+
+Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide)
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide](https://docs.hedera.com/guardian/guardian/global-indexer/indexer-user-guide)
 
@@ -380,7 +386,19 @@ Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbo
    * Tool 14- Project and leakage emissions from anaerobic digesters
    * Tool 16- Project and leakage emissions from biomass
    * Tool 33- Default values for common parameters
+3. Development of all the tools involved in the policy:
+   * Tool 01- Tool for the demonstration and assessment of additionality
+   * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+   * Tool 04- Emissions from solid waste disposal sites
+   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
+   * Tool 06- Project emissions from flaring
+   * Tool 12- Project and leakage emissions from transportation of freight
+   * Tool 13- Project and leakage emissions from composting
+   * Tool 14- Project and leakage emissions from anaerobic digesters
+   * Tool 16- Project and leakage emissions from biomass
+   * Tool 33- Default values for common parameters
 
+Referral Link: [https://github.com/hashgraph/guardian/issues/2882](https://github.com/hashgraph/guardian/issues/2882)
 Referral Link: [https://github.com/hashgraph/guardian/issues/2882](https://github.com/hashgraph/guardian/issues/2882)
 
 Documentation Link :  [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.f.-renewable-electricity-generation-for-captive-use-and-mini-grid)
@@ -420,6 +438,48 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://gith
 Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
 
 ## ---- July 2024----
+
+### Indexer API
+
+Add suitable API facilities which would allow programmatic access to the indexed data and analytics, which include policy structure data (such as formulas used in the various elements - e.g. Tools) as well as project data.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3637](https://github.com/hashgraph/guardian/issues/3637)
+
+### Filtering data for blocks is stateful API, introduce stateless data filters for API usage
+
+I don't necessarily think there is a hard requirement to remove the stateful nature of guardian filtering, as we cannot predict, what are the downstream API consumers are using this functionality or affects, they will be without some kind of deprecation notice.
+
+So, the recommendation would be:
+
+* Add ability to filter using a GET request for a filter, so data can be fetched and filtered in one action
+* (As an alternative - preferred) It would be preferable to enable filtering at the block level when retrieving data so a API consumer does not need to add explicit filter blocks in block can use the Guardian API to be more RESTful by default.
+* Post a six month deprecation notice for stateful usage of the filter (revert if hard requirement for others)
+
+An example, code enhancement could be implemented like this (tags are easier to reason about):
+
+From old version:
+
+```
+  public function filterByTag(string $policyId, string $tag, string $uuid): object
+  {
+      return (object) $this->httpClient->post("policies/{$policyId}/tag/{$tag}/blocks", [
+          'filterValue' => $uuid
+      ], true);
+  }
+```
+
+to:
+
+```
+public function filterByTag(string $policyId, string $tag, string $uuid): object
+{
+    return (object) $this->httpClient->get("policies/{$policyId}/tag/{$tag}/blocks?filterValue={$uuid}");
+}
+```
+
+Or provide/document clearly a mechanism to filter on an [interface document block](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/interfacedocumentssourceblock) itself, which would be **preferred**.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3610](https://github.com/hashgraph/guardian/issues/3610)
 
 ### Indexer API
 

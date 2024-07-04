@@ -124,7 +124,14 @@ export class PreviewPolicyDialog {
                     return s.name;
                 })
                 .join(', ');
+            const tools = this.xlsx.tools || [];
+            this.tools = tools
+                .map((s: any) => {
+                    return s.name;
+                })
+                .join(', ');
 
+            tools
             tools
             this.errors = this.xlsx.errors || [];
             for (const error of this.errors) {

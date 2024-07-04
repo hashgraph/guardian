@@ -1,4 +1,5 @@
 import { DefaultRoles, DidDocumentStatus, DocumentStatus, EntityOwner, GenerateUUIDv4, IOwner, ISignOptions, MessageAPI, Permissions, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { DefaultRoles, DidDocumentStatus, DocumentStatus, EntityOwner, GenerateUUIDv4, IOwner, ISignOptions, MessageAPI, Permissions, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     CommonDidDocument,
@@ -6,6 +7,7 @@ import {
     DidDocument as DidDocumentCollection,
     DIDMessage,
     Environment,
+    GuardianRoleMessage,
     GuardianRoleMessage,
     HederaBBSMethod,
     HederaDid,
@@ -37,6 +39,7 @@ import { publishSystemSchema } from './helpers/schema-publish-helper.js';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { serDefaultRole } from './permission.service.js';
 import { serDefaultRole } from './permission.service.js';
 
 interface IFireblocksConfig {
@@ -128,6 +131,13 @@ async function setupUserProfile(
         hederaAccountId: profile.hederaAccountId,
         useFireblocksSigning: profile.useFireblocksSigning
     });
+
+    notifier.completedAndStart('Update permissions');
+    if (user.role === UserRole.USER) {
+        const changeRole = await users.setDefaultUserRole(username, profile.parent);
+        await serDefaultRole(changeRole, EntityOwner.sr(profile.parent))
+    }
+
 
     notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
@@ -398,6 +408,7 @@ async function createUserProfile(
             user.id.toString()
         );
         if (entity) {
+            const schema = await new DataBaseHelper(SchemaCollection).findOne({
             const schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity,
                 readonly: true,

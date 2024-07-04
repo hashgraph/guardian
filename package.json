@@ -24,6 +24,12 @@
     "indexer-api-gateway",
     "indexer-service",
     "indexer-worker-service"
+    "notification-service",
+    "indexer-interfaces",
+    "indexer-common",
+    "indexer-api-gateway",
+    "indexer-service",
+    "indexer-worker-service"
   ],
   "version": "2.26.1",
   "devDependencies": {

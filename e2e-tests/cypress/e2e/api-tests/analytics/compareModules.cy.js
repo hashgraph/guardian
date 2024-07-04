@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Analytics", { tags: '@analytics' }, () => {
+context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     let moduleId1, moduleId2
     before(() => {
@@ -38,7 +38,7 @@ context("Analytics", { tags: '@analytics' }, () => {
         });
     })
 
-    it("Compare modules", () => {
+    it("Compare modules", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ModuleCompare,

@@ -2,7 +2,7 @@ import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context("Tags", {tags: '@tags'}, () => {
+context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const tagName = "moduleTagAPI" + Math.floor(Math.random() * 999999);
     const moduleName = "moduleNameAPI" + Math.floor(Math.random() * 999999);

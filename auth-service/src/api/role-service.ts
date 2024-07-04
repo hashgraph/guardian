@@ -1,5 +1,6 @@
 import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
 import { getRequiredProps } from '#utils';
@@ -155,6 +156,7 @@ export class RoleService extends NatsService {
                     }
 
                     const options: any = { owner };
+                    const options: any = { owner };
                     if (name) {
                         options.name = { $regex: '.*' + name + '.*' };
                     }
@@ -192,17 +194,25 @@ export class RoleService extends NatsService {
          */
         this.getMessages(AuthEvents.CREATE_ROLE,
             async (msg: { role: DynamicRole, owner: IOwner, restore: boolean }) => {
+            async (msg: { role: DynamicRole, owner: IOwner, restore: boolean }) => {
                 try {
                     if (!msg) {
                         throw new Error('Invalid create role parameters');
                     }
                     const { role, owner, restore } = msg;
+                    const { role, owner, restore } = msg;
                     delete role._id;
                     delete role.id;
+                    role.owner = owner.creator;
                     role.owner = owner.creator;
                     role.permissions = ListPermissions.unique(role.permissions);
                     role.default = false;
                     role.readonly = false;
+                    if (restore) {
+                        role.uuid = role.uuid || GenerateUUIDv4();
+                    } else {
+                        role.uuid = GenerateUUIDv4();
+                    }
                     if (restore) {
                         role.uuid = role.uuid || GenerateUUIDv4();
                     } else {
@@ -226,6 +236,7 @@ export class RoleService extends NatsService {
          */
         this.getMessages(AuthEvents.UPDATE_ROLE,
             async (msg: { id: string, role: any, owner: IOwner }) => {
+            async (msg: { id: string, role: any, owner: IOwner }) => {
                 try {
                     if (!msg) {
                         return new MessageError('Invalid update role parameters');
@@ -236,7 +247,12 @@ export class RoleService extends NatsService {
                         id,
                         owner: owner.creator
                     });
+                    const item = await new DataBaseHelper(DynamicRole).findOne({
+                        id,
+                        owner: owner.creator
+                    });
 
+                    if (!item || item.owner !== owner.creator) {
                     if (!item || item.owner !== owner.creator) {
                         throw new Error('Invalid role');
                     }
@@ -283,6 +299,7 @@ export class RoleService extends NatsService {
          */
         this.getMessages(AuthEvents.DELETE_ROLE,
             async (msg: { id: string, owner: IOwner }) => {
+            async (msg: { id: string, owner: IOwner }) => {
                 try {
                     if (!msg) {
                         return new MessageError('Invalid delete role parameters');
@@ -293,9 +310,15 @@ export class RoleService extends NatsService {
                         owner: owner.creator
                     });
                     if (!item || item.owner !== owner.creator) {
+                    const item = await new DataBaseHelper(DynamicRole).findOne({
+                        id,
+                        owner: owner.creator
+                    });
+                    if (!item || item.owner !== owner.creator) {
                         throw new Error('Invalid role');
                     }
                     await new DataBaseHelper(DynamicRole).remove(item);
+                    return new MessageResponse(item);
                     return new MessageResponse(item);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -362,6 +385,7 @@ export class RoleService extends NatsService {
                     if (defaultRole) {
                         target.permissionsGroup = [{
                             uuid: defaultRole.uuid,
+                            uuid: defaultRole.uuid,
                             roleId: defaultRole.id,
                             roleName: defaultRole.name,
                             owner
@@ -388,6 +412,7 @@ export class RoleService extends NatsService {
          */
         this.getMessages(AuthEvents.UPDATE_USER_ROLE,
             async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
+            async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
                 try {
                     if (!msg) {
                         return new MessageError('Invalid update user parameters');
@@ -398,18 +423,25 @@ export class RoleService extends NatsService {
                         username,
                         parent: owner.creator
                     });
+                    const target = await new DataBaseHelper(User).findOne({
+                        username,
+                        parent: owner.creator
+                    });
                     if (!target) {
                         return new MessageError('User does not exist');
                     }
 
+                    const roleMap = new Map<string, [string, string, string]>();
                     const roleMap = new Map<string, [string, string, string]>();
                     const permissions = new Set<string>();
                     const roles = await new DataBaseHelper(DynamicRole).find({ id: { $in: userRoles } });
                     for (const role of roles) {
                         if (
                             (role.owner && role.owner === owner.creator) ||
+                            (role.owner && role.owner === owner.creator) ||
                             (!role.owner && role.default)
                         ) {
+                            roleMap.set(role.id, [owner.creator, role.name, role.uuid]);
                             roleMap.set(role.id, [owner.creator, role.name, role.uuid]);
                             for (const permission of role.permissions) {
                                 permissions.add(permission);
@@ -423,11 +455,19 @@ export class RoleService extends NatsService {
                         for (const group of target.permissionsGroup) {
                             if (roleMap.has(group.roleId)) {
                                 roleMap.set(group.roleId, [group.owner, group.roleName, group.uuid]);
+                                roleMap.set(group.roleId, [group.owner, group.roleName, group.uuid]);
                             }
                         }
                     }
 
                     target.permissionsGroup = [];
+                    for (const [roleId, [roleOwner, roleName, uuid]] of roleMap.entries()) {
+                        target.permissionsGroup.push({
+                            uuid,
+                            roleId,
+                            roleName,
+                            owner: roleOwner
+                        });
                     for (const [roleId, [roleOwner, roleName, uuid]] of roleMap.entries()) {
                         target.permissionsGroup.push({
                             uuid,
@@ -498,12 +538,16 @@ export class RoleService extends NatsService {
          */
         this.getMessages(AuthEvents.DELEGATE_USER_ROLE,
             async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
+            async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
                 try {
                     if (!msg) {
                         return new MessageError('Invalid update user parameters');
                     }
                     const { username, userRoles, owner } = msg;
 
+                    const user = await new DataBaseHelper(User).findOne({
+                        did: owner.creator
+                    });
                     const user = await new DataBaseHelper(User).findOne({
                         did: owner.creator
                     });
@@ -517,6 +561,7 @@ export class RoleService extends NatsService {
                     const othersRoles = new Map<string, [string, DynamicRole]>();
                     target.permissionsGroup = target.permissionsGroup || [];
                     for (const group of target.permissionsGroup) {
+                        if (group.owner !== owner.creator) {
                         if (group.owner !== owner.creator) {
                             const role = await new DataBaseHelper(DynamicRole).findOne({ id: group.roleId });
                             if (role) {
@@ -532,6 +577,7 @@ export class RoleService extends NatsService {
                         if (ownRoles.includes(role.id)) {
                             if (!othersRoles.has(role.id)) {
                                 othersRoles.set(role.id, [owner.creator, role]);
+                                othersRoles.set(role.id, [owner.creator, role]);
                             }
                         } else {
                             throw new Error('Role does not exist');
@@ -542,6 +588,12 @@ export class RoleService extends NatsService {
                     const permissionsGroup: IGroup[] = [];
                     for (const [roleOwner, role] of othersRoles.values()) {
                         if (role) {
+                            permissionsGroup.push({
+                                uuid: role.uuid,
+                                roleId: role.id,
+                                roleName: role.name,
+                                owner: roleOwner
+                            });
                             permissionsGroup.push({
                                 uuid: role.uuid,
                                 roleId: role.id,
@@ -580,3 +632,4 @@ export class RoleService extends NatsService {
         });
     }
 }
+
