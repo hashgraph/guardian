@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas",{ tags: '@schemas' },  () => {
+context("Schemas",{ tags: ['schema', 'thirdPool'] },  () => {
     const authorization = Cypress.env("authorization");
 
     it("Get schema by schema ID", () => {

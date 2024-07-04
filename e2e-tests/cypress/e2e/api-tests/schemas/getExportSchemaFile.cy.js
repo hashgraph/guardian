@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schema", { tags: '@schemas' }, () => {
+context("Schema", { tags: ['schema', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Export schema file", () => {

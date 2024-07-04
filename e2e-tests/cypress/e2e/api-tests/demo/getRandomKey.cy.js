@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Demo", { tags: '@demo' }, () => {
+context("Demo", { tags: ['demo', 'secondPool'] }, () => {
     const authorization = Cypress.env("authorization");
     
     it("Generates a new Hedera account with a random private key", () => {

@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("External", { tags: '@external' }, () => {
+context("External", { tags: ['external', 'thirdPool'] }, () => {
 
     const authorization = Cypress.env("authorization");
     let policyTag, owner

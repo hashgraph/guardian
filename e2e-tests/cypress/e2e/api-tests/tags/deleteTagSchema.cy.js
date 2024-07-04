@@ -2,7 +2,7 @@ import {STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context("Tags", {tags: '@tags'}, () => {
+context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const tagName = "tagSchemaAPI" + Math.floor(Math.random() * 999999);
     const tagId = "d0e99e70-3511-486668e-bf6f-10041e9a0cb7" + Math.floor(Math.random() * 999999);

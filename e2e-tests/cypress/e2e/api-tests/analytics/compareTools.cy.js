@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Analytics", { tags: '@analytics' }, () => {
+context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     let toolId1, toolId2
     before(() => {

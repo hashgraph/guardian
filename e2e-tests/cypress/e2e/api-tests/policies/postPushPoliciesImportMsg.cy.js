@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context("Policy - Import", { tags: '@policies' }, () => {
+context("Policies", { tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Push import new policy and all associated artifacts from IPFS", () => {

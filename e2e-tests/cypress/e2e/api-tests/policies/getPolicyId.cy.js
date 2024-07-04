@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Policies', { tags: '@policies' }, () => {
+context('Policies', { tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env('authorization');
 
     it('Get policy configuration for the specified policy ID', () => {

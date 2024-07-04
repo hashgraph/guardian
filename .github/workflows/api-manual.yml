@@ -1,6 +1,11 @@
 name: Guardian CI API Tests(Manual)
 on:
     workflow_dispatch:
+        inputs:
+            tags:
+                type: string
+                description: Tags for run(smoke, accounts, firstPool and etc.)
+                default: 'all'
         description: 'Manual run'
 
 jobs:
@@ -108,7 +113,7 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install --force
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" --spec cypress/e2e/api-tests/**/*.cy.js            
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" grepTags=${{ inputs.tags }},grepFilterSpecs=true --spec cypress/e2e/api-tests/**/*.cy.js            
                   popd
             - name: Publish API Test Results
               uses: EnricoMi/publish-unit-test-result-action@v1

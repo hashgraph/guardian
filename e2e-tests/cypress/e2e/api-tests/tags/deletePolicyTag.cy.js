@@ -2,7 +2,7 @@ import {STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context("Tags", {tags: '@tags'}, () => {
+context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     const policyTag = "Tag_16850108144002" + Math.floor(Math.random() * 999999);
     const tagName = "policyTagAPI" + Math.floor(Math.random() * 999999);
     const policyName = "policyNameAPI" + Math.floor(Math.random() * 999999);

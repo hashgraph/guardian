@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Contracts", { tags: '@contracts' }, () => {
+context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const contractNameR = Math.floor(Math.random() * 999) + "RCon4GetPoolsTests";
     const contractNameW = Math.floor(Math.random() * 999) + "WCon4GetPoolsTests";

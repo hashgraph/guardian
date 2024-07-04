@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Trustchains",  { tags: '@trustchains' }, () => {
+context("Trustchains",  { tags: ['trustchains', 'thirdPool'] }, () => {
     let username = 'Auditor'
     before(() => {
         cy.request({

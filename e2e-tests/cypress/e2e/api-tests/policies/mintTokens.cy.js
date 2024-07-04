@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Checks from "../../../support/checkingMethods";
 
-context("Contracts", { tags: '@contracts' }, () => {
+context("Policies", { tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const optionKey = "option";
     let username = Math.floor(Math.random() * 99999) + "UserContReqTests";

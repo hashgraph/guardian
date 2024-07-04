@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 
 
-context('Policy - Import',{ tags: '@policies' }, () => {
+context('Policies', { tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env('authorization');
 
     it('Imports new policy and all associated artifacts from IPFS', () => {

@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Modules", { tags: '@modules' },() => {
+context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     const authorization = Cypress.env("authorization");
 
     it("Previews the module from IPFS without loading it into the local DB", () => {

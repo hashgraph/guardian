@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Accounts", { tags: '@accounts' }, () => {
+context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
     const authorization = Cypress.env("authorization");
     it("Get Standard Registry balance", () => {
         cy.request({

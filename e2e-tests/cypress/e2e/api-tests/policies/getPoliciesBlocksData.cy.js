@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 
 
-context("Policies",{ tags: '@policies' }, () => {
+context("Policies",{ tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
