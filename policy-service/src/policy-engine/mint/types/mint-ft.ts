@@ -191,12 +191,6 @@ export class MintFT extends TypedMint {
             } catch (error) {
                 this.error(error);
             }
-                this._mintRequest.startTransaction =
-                    startTransactions[0]?.consensus_timestamp;
-                await this._db.saveMintRequest(this._mintRequest);
-            } catch (error) {
-                this.error(error);
-            }
         }
 
         transaction.mintStatus = MintTransactionStatus.PENDING;

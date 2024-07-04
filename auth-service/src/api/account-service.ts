@@ -21,13 +21,11 @@ import {
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
     IGroup,
-    IGroup,
     IRegisterNewUserMessage,
     ISaveUserMessage,
     IStandardRegistryUserResponse,
     IUpdateUserMessage,
     IUser,
-    OldRoles,
     OldRoles,
     SRDefaultPermission,
     UserDefaultPermission,
@@ -81,12 +79,6 @@ export async function createNewUser(
         roleName: defaultRole.name,
         owner: null
     }] : [];
-    const permissionsGroup: IGroup[] = defaultRole ? [{
-        uuid: defaultRole.uuid,
-        roleId: defaultRole.id,
-        roleName: defaultRole.name,
-        owner: null
-    }] : [];
     const permissions = defaultRole ? defaultRole.permissions : [];
     const user = (new DataBaseHelper(User)).create({
         username,
@@ -101,14 +93,6 @@ export async function createNewUser(
         permissions
     });
     return await (new DataBaseHelper(User)).save(user);
-}
-
-export function getRequiredProps(user: User): IUser {
-    const userRequiredProps: IUser = {}
-    for (const prop of Object.values(USER_REQUIRED_PROPS)) {
-        userRequiredProps[prop] = user[prop];
-    }
-    return userRequiredProps;
 }
 
 /**
@@ -237,7 +221,6 @@ export class AccountService extends NatsService {
             const { dids } = msg;
             try {
                 return new MessageResponse(await new DataBaseHelper(User).find({ did: { $in: dids } }));
-                return new MessageResponse(await new DataBaseHelper(User).find({ did: { $in: dids } }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -270,13 +253,6 @@ export class AccountService extends NatsService {
                         parent: e.parent,
                         did: e.did
                     }));
-                const userAccounts = (await new DataBaseHelper(User)
-                    .find({ role: UserRole.USER }))
-                    .map((e) => ({
-                        username: e.username,
-                        parent: e.parent,
-                        did: e.did
-                    }));
                 return new MessageResponse(userAccounts);
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
@@ -295,12 +271,6 @@ export class AccountService extends NatsService {
                         username: e.username,
                         did: e.did
                     }));
-                const userAccounts = (await new DataBaseHelper(User)
-                    .find({ role: UserRole.STANDARD_REGISTRY }))
-                    .map((e) => ({
-                        username: e.username,
-                        did: e.did
-                    }));
                 return new MessageResponse(userAccounts);
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
@@ -313,9 +283,6 @@ export class AccountService extends NatsService {
          */
         this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
             try {
-                const userAccounts = (await new DataBaseHelper(User).find({
-                    template: { $ne: true }
-                })).map((e) => ({
                 const userAccounts = (await new DataBaseHelper(User).find({
                     template: { $ne: true }
                 })).map((e) => ({
@@ -385,8 +352,6 @@ export class AccountService extends NatsService {
                 try {
                     let user = await (new DataBaseHelper(User))
                         .findOne({ username: msg.username, template: { $ne: true } });
-                    let user = await (new DataBaseHelper(User))
-                        .findOne({ username: msg.username, template: { $ne: true } });
                     if (!user) {
                         user = await createNewUser(
                             msg.username,
@@ -433,10 +398,6 @@ export class AccountService extends NatsService {
                     username,
                     template: { $ne: true }
                 });
-                const user = await new DataBaseHelper(User).findOne({
-                    username,
-                    template: { $ne: true }
-                });
                 if (user && passwordDigest === user.password) {
                     const tokenId = GenerateUUIDv4();
                     const refreshToken = sign({
@@ -478,11 +439,6 @@ export class AccountService extends NatsService {
                 username: decryptedToken.name,
                 template: { $ne: true }
             });
-            const user = await new DataBaseHelper(User).findOne({
-                refreshToken: decryptedToken.id,
-                username: decryptedToken.name,
-                template: { $ne: true }
-            });
             if (!user) {
                 return new MessageResponse({})
             }
@@ -502,21 +458,6 @@ export class AccountService extends NatsService {
         this.getMessages<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER, async (msg) => {
             const { username, item } = msg;
             try {
-                const user = await (new DataBaseHelper(User))
-                    .findOne({ username });
-                if (!user) {
-                    return new MessageResponse(null);
-                }
-                Object.assign(user, item);
-                const template = await (new DataBaseHelper(User))
-                    .findOne({ did: item.did, template: true });
-                if (template) {
-                    user.permissions = template.permissions;
-                    user.permissionsGroup = template.permissionsGroup;
-                    await new DataBaseHelper(User).delete(template);
-                }
-                const result = await new DataBaseHelper(User).update(user);
-                return new MessageResponse(result);
                 const user = await (new DataBaseHelper(User))
                     .findOne({ username });
                 if (!user) {
@@ -564,7 +505,6 @@ export class AccountService extends NatsService {
                         'permissionsGroup',
                         'permissions',
                         'template'
-                        'template'
                     ]
                 };
                 const _pageSize = parseInt(pageSize, 10);
@@ -580,7 +520,6 @@ export class AccountService extends NatsService {
                 const options: any = { parent };
                 if (filters) {
                     if (filters.role) {
-                        options['permissionsGroup.roleId'] = filters.role;
                         options['permissionsGroup.roleId'] = filters.role;
                     }
                     if (filters.username) {

@@ -2421,10 +2421,6 @@ paths:
           description: Unauthorized.
         '403':
           description: Forbidden.
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
         '500':
           description: Internal server error.
           content:
@@ -12873,8 +12869,6 @@ components:
             - TOKEN_DATA_SOURCE
             - ROLE
             - USER_PERMISSIONS
-            - ROLE
-            - USER_PERMISSIONS
           example: POLICY
         iri:
           type: string
@@ -14637,17 +14631,10 @@ components:
           type: array
           items:
             type: string
-        policyIds:
-          example:
-            - '000000000000000000000001'
-          type: array
-          items:
-            type: string
         assign:
           type: boolean
           example: true
       required:
-        - policyIds
         - policyIds
         - assign
     WorkersTasksDTO:

@@ -2712,12 +2712,10 @@ export class Guardians extends NatsService {
     public async assignEntity(
         type: AssignedEntityType,
         entityIds: string[],
-        entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.ASSIGN_ENTITY, { type, entityIds, assign, did, owner });
         return await this.sendMessage(MessageAPI.ASSIGN_ENTITY, { type, entityIds, assign, did, owner });
     }
 
@@ -2731,12 +2729,10 @@ export class Guardians extends NatsService {
     public async delegateEntity(
         type: AssignedEntityType,
         entityIds: string[],
-        entityIds: string[],
         assign: boolean,
         did: string,
         owner: string
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.DELEGATE_ENTITY, { type, entityIds, assign, did, owner });
         return await this.sendMessage(MessageAPI.DELEGATE_ENTITY, { type, entityIds, assign, did, owner });
     }
 
