@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 
 
-context('Policy - Import',{ tags: '@policies' }, () => {
+context('Policies', { tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env('authorization');
 
     it('Imports new policy and all associated artifacts from IPFS', () => {
@@ -17,7 +17,7 @@ context('Policy - Import',{ tags: '@policies' }, () => {
             timeout: 180000
         })
             .then((response) => {
-                expect(response.status).to.eq(201);
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             })
     })
 

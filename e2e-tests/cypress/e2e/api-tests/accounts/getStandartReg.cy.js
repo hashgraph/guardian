@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Accounts",  { tags: '@accounts' }, () => {
+context("Accounts",  { tags: ['accounts', 'firstPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Get list of Standard Registries", () => {
@@ -11,9 +11,9 @@ context("Accounts",  { tags: '@accounts' }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body.at(0)).to.have.property("username");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body.at(0)).to.have.property("username");
         });
     });
 
@@ -40,9 +40,9 @@ context("Accounts",  { tags: '@accounts' }, () => {
                         authorization: "Bearer " + response.body.accessToken
                     },
                     failOnStatusCode: false,
-                }).then((resp) => {
-                    expect(resp.status).eql(STATUS_CODE.OK);
-                    expect(resp.body.at(0).username).eq("StandardRegistry");
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    expect(response.body.at(0).username).eq("StandardRegistry");
                 });
             });
         });
@@ -53,8 +53,8 @@ context("Accounts",  { tags: '@accounts' }, () => {
             method: METHOD.GET,
             url: API.ApiServer + API.StandartRegistries,
             failOnStatusCode:false,
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.UNAUTHORIZED);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
     it("Get list of Standard Registries with invalid auth token - Negative", () => {
@@ -65,8 +65,8 @@ context("Accounts",  { tags: '@accounts' }, () => {
                 authorization: "Bearer wqe",
             },
             failOnStatusCode:false,
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.UNAUTHORIZED);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
     it("Get list of Standard Registries with empty auth token - Negative", () => {
@@ -77,8 +77,8 @@ context("Accounts",  { tags: '@accounts' }, () => {
                 authorization: "",
             },
             failOnStatusCode:false,
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.UNAUTHORIZED);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 });

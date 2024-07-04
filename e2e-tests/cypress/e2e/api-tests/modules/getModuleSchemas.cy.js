@@ -1,19 +1,18 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Logs",  { tags: '@logs' }, () => {
+context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
-    it("Returns logs attributes", () => {
+    it("Get modules schemas", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.LogsAttributes,
+            url: API.ApiServer + API.ListOfAllModules + API.Schemas,
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).to.not.be.oneOf([null, ""]);
+        }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK);
         });
     });
 });

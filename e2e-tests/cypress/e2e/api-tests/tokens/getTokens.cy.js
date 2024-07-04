@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Tokens", { tags: '@tokens' },() => {
+context("Tokens", { tags: ['tokens', 'thirdPool'] },() => {
     const authorization = Cypress.env("authorization");
 
     it("Get all tokens", () => {
@@ -11,11 +11,11 @@ context("Tokens", { tags: '@tokens' },() => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body[0]).to.have.property("_id");
-            expect(resp.body[0]).to.have.property("tokenId");
-            expect(resp.body[0]).to.have.property("tokenName");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body[0]).to.have.property("_id");
+            expect(response.body[0]).to.have.property("tokenId");
+            expect(response.body[0]).to.have.property("tokenName");
         });
     });
 });
