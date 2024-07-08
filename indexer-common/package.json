@@ -4,7 +4,7 @@
         "@elastic/elasticsearch": "^8.12.2",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
-        "@nestjs/microservices": "^9.4.1",
+        "@nestjs/microservices": "^10.3.10",
         "cross-blob": "^2.0.1",
         "dotenv": "^16.0.0",
         "module-alias": "^2.2.2",

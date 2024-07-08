@@ -10,7 +10,7 @@
         "@mikro-orm/migrations-mongodb": "6.2.2",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
-        "@nestjs/microservices": "^9.4.1",
+        "@nestjs/microservices": "^10.3.10",
         "axios": "^1.7.2",
         "bs58": "^4.0.1",
         "axios-retry": "^3.2.4",
