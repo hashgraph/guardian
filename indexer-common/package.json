@@ -9,7 +9,7 @@
         "dotenv": "^16.0.0",
         "module-alias": "^2.2.2",
         "reflect-metadata": "^0.1.13",
-        "nats": "^2.6.1",
+        "nats": "^2.28.0",
         "mongodb": "6.5.0",
         "@mikro-orm/core": "6.2.2",
         "@mikro-orm/mongodb": "6.2.2",
