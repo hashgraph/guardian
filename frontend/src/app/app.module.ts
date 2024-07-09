@@ -122,6 +122,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
+import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { WorkerTasksService } from './services/worker-tasks.service';
 
 @NgModule({
     declarations: [
@@ -166,7 +168,8 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         UseWithServiceDirective,
         RolesViewComponent,
         UsersManagementComponent,
-        UsersManagementDetailComponent
+        UsersManagementDetailComponent,
+        WorkerTasksComponent
     ],
     imports: [
         BrowserModule,
@@ -237,6 +240,7 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         WizardService,
         SuggestionsService,
         NotificationService,
+        WorkerTasksService,
         AISearchService,
         RecordService,
         CompareStorage,

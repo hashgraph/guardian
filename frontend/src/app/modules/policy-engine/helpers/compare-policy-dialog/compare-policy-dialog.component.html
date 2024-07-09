@@ -4,48 +4,125 @@
             <div class="preloader-image preloader-image-l-size"></div>
         </div>
 
-        <div class="policy-dropdown-container">
-            <label class="form-label" htmlFor="firstPolicy">First Policy</label>
-            <p-dropdown
-                    (onChange)="onChange()"
-                    [(ngModel)]="policyId1"
-                    [options]="list1"
-                    [showClear]="true"
-                    appendTo="body"
-                    id="firstPolicy"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Select Policy"
-            ></p-dropdown>
+        <div class="left-container">
+            <div *ngIf="first" class="first-container">
+                <div class="policy-header">Base Policy</div>
+                <div class="policy-item">
+                    <div class="policy-name">{{first.name}}</div>
+                    <div *ngIf="!fixed" class="policy-delete" (click)="onDelete(first, true)">
+                        <svg-icon class="svg-icon" 
+                            src="/assets/images/icons/delete.svg" 
+                            svgClass="close-icon-color"></svg-icon>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="items?.length" class="other-container">
+                <div class="policy-header">Compare with</div>
+            </div>
+            <div class="policy-item" *ngFor="let item of items">
+                <div class="policy-name">{{item.name}}</div>
+                <div class="policy-delete" (click)="onDelete(item, false)">
+                    <svg-icon class="svg-icon" 
+                        src="/assets/images/icons/delete.svg" 
+                        svgClass="close-icon-color"></svg-icon>
+                </div>
+            </div>
         </div>
+        <div class="right-container">
+            <div class="right-header">Select Policy</div>
+            <div class="right-body">
+                <div class="type-selector">
+                    <div 
+                        class="selector-item" 
+                        [attr.selected]="type==='file'" 
+                        (click)="onChangeType('file')">Uploaded file</div>
+                    <div 
+                        class="selector-item" 
+                        [attr.selected]="type==='message'" 
+                        (click)="onChangeType('message')">Message ID</div>
+                    <div 
+                        class="selector-item" 
+                        [attr.selected]="type==='id'" 
+                        (click)="onChangeType('id')">Local Policies</div>
+                </div>
+                <div *ngIf="type==='file'" class="file-container">
+                    <app-file-drag-n-drop
+                            (onFileLoaded)="importFromFile($event)"
+                            dropZoneLabel="Import Policy .policy file"
+                            fileExtension="policy"
+                    ></app-file-drag-n-drop>
+                </div>
+                <div *ngIf="type==='message'" class="message-container">
+                    <form [formGroup]="messageForm" class="message-form">
+                        <span class="p-input-icon-right message-input">
+                            <input
+                                class="search-policy-input"
+                                formControlName="messageId"
+                                pInputMask
+                                placeholder="Enter Message ID to add it"
+                                mask="9999999999.999999999"
+                                type="text" />
+                            <i class="pi pi-search search-icon"></i>
+                            <small *ngIf="messageIdError" class="message-id-error">Nothing found, please check the ID and try again</small>
+                        </span>
+                        <button 
+                            (click)="addMessage()"
+                            [disabled]="messageForm.invalid"
+                            class="button add-item" 
+                            label="Check & Add" 
+                            pButton></button>
+                    </form>
+                </div>
+                <div *ngIf="type==='id'" class="local-container">
+                    <div class="message-form">
+                        <span class="p-input-icon-right message-input">
+                            <input
+                                class="search-policy-input"
+                                [(ngModel)]="policyName" 
+                                pInputText
+                                placeholder="Search by Policy name"
+                                type="text" 
+                                (change)="onFilterPolicy()"/>
+                            <i class="pi pi-search search-icon"></i>
+                        </span>
+                        <button 
+                            (click)="addLocal()"
+                            [disabled]="!localIds.length"
+                            class="button add-item" 
+                            label="Add" 
+                            pButton></button>
+                    </div>
+                    <div class="policy-list">
+                        <div *ngFor="let item of localItemsFiltered" class="policy-list-item" (click)="onSelectLocalItem(item)">
+                            <div class="policy-list-item__selected">
+                                <p-checkbox [ngModel]="item._selected" [binary]="true" ></p-checkbox>
+                            </div>
+                            <div class="policy-list-item__name">{{item.name}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="policy-dropdown-container">
-            <label class="form-label" htmlFor="firstPolicy"
-            >Secondary Policy</label
-            >
-            <p-multiSelect
-                    (onChange)="onChange()"
-                    [(ngModel)]="policyId2"
-                    [options]="list2"
-                    appendTo="body"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="Select Policy"
-            ></p-multiSelect>
         </div>
     </div>
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
-            <p-button
-                    (click)="onClose()"
-                    label="Cancel"
-                    styleClass="p-button-outlined"
-            ></p-button>
+            <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
         </div>
         <div>
-            <button (click)="onCompare()" class="button secondary" label="Compare" pButton></button>
+            <button (click)="onCompare()" 
+                [disabled]="count < 2" 
+                class="button" 
+                label="Compare ({{count}})" 
+                pButton>
+                <svg-icon
+                    class="icon2-btn"
+                    src="/assets/images/icons/compare.svg"
+                    [svgClass]="count > 1 ? 'on-icon-color':'disabled-icon-color'">
+                </svg-icon>
+            </button>
         </div>
     </div>
 </div>

@@ -3,7 +3,7 @@ import path from 'path'
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { DIDMessage, HederaDidDocument, MessageAction, MessageServer, VcHelper } from '@guardian/common';
 import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -84,7 +84,11 @@ export class CustomLogicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         try {
-            event.data.data = await this.execute(event.data, event.user);
+            const documents = await this.execute(event.data, event.user);
+            if (!documents) {
+                return;
+            }
+            event.data.data = documents;
             ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
@@ -94,6 +98,26 @@ export class CustomLogicBlock {
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
+    }
+
+    /**
+     * Get sources
+     * @param user
+     * @param globalFilters
+     * @protected
+     */
+    protected async getSources(user: PolicyUser): Promise<any[]> {
+        const data = [];
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+        for (const child of ref.children) {
+            if (child.blockClassName === 'SourceAddon') {
+                const childData = await (child as IPolicyAddonBlock).getFromSource(user, null);
+                for (const item of childData) {
+                    data.push(item);
+                }
+            }
+        }
+        return data;
     }
 
     /**
@@ -120,6 +144,10 @@ export class CustomLogicBlock {
                 }
 
                 const done = async (result: any | any[]) => {
+                    if (!result) {
+                        resolve(null);
+                        return;
+                    }
                     const processing = async (json: any): Promise<IPolicyDocument> => {
                         if (ref.options.unsigned) {
                             return await this.createUnsignedDocument(json, ref);
@@ -155,14 +183,17 @@ export class CustomLogicBlock {
                     artifacts.push(JSON.parse(artifactFile));
                 }
 
-                const importCode = `const [done, user, documents, mathjs, artifacts, formulajs] = arguments;\r\n`;
+                const sources: IPolicyDocument[] = await this.getSources(user);
+
+                const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources] = arguments;\r\n`;
                 const expression = ref.options.expression || '';
                 const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
                     workerData: {
                         execFunc: `${importCode}${execCode}${expression}`,
                         user,
                         documents,
-                        artifacts
+                        artifacts,
+                        sources
                     },
                 });
 

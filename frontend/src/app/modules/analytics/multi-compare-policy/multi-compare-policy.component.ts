@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import BlockIcons from '../../policy-engine/services/block-icons';
+import { CompareStorage } from 'src/app/services/compare-storage.service';
 
 @Component({
     selector: 'app-multi-compare-policy',
@@ -42,7 +43,7 @@ export class MultiComparePolicyComponent implements OnInit {
     public _scroll = 0;
     public _gridStyle = '';
 
-    constructor() {
+    constructor(private compareStorage: CompareStorage) {
     }
 
     ngOnInit() {
@@ -455,7 +456,28 @@ export class MultiComparePolicyComponent implements OnInit {
         }
     }
 
-    public compareSchema(prop: any) {
+    private getSchemaId(schema: any, policy: any): any {
+        if (policy?.type === 'message') {
+            return {
+                type: 'policy-message',
+                value: schema?.value,
+                policy: policy.id
+            }
+        } else if (policy?.type === 'file') {
+            return {
+                type: 'policy-file',
+                value: schema?.value,
+                policy: policy.id
+            }
+        } else {
+            return {
+                type: 'id',
+                value: schema?.schemaId,
+            }
+        }
+    }
+
+    public compareSchema(prop: any, data: any) {
         const schema1 = prop.left;
         const schema2 = prop.right;
         if (
@@ -464,10 +486,14 @@ export class MultiComparePolicyComponent implements OnInit {
             schema1.schemaId &&
             schema2.schemaId
         ) {
+            const left = this.policies[0]?.policy;
+            const right = this.policies[data?.index]?.policy;
             this.change.emit({
                 type: 'schema',
-                schemaId1: schema1.schemaId,
-                schemaId2: schema2.schemaId
+                schemaIds: [
+                    this.getSchemaId(schema1, left),
+                    this.getSchemaId(schema2, right)
+                ]
             })
         }
     }
@@ -493,5 +519,12 @@ export class MultiComparePolicyComponent implements OnInit {
         document.querySelectorAll('.left-tree').forEach(el => {
             el.scrollLeft = event.target.scrollLeft;
         })
+    }
+
+    public getPolicyId(policy: any): string {
+        if (policy.type === 'file') {
+            return this.compareStorage.getFile(policy.id)?.name || policy.id;
+        }
+        return policy.id;
     }
 }

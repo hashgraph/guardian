@@ -254,6 +254,24 @@ jobs:
           push: true
           tags: 'gcr.io/hedera-registry/worker-service:${{ steps.package-version.outputs.current-version}}'
 
+      - name: queue-service-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
+        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        with:
+          context: .
+          file: ./queue-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/queue-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/queue-service:latest'
+
+      - name: queue-service
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        with:
+          context: .
+          file: ./queue-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/queue-service:${{ steps.package-version.outputs.current-version}}'
+
       - name: topic-viewer-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
@@ -352,7 +370,7 @@ jobs:
           file: ./indexer-worker-service/Dockerfile
           push: true
           tags: 'gcr.io/hedera-registry/indexer-worker-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/indexer-worker-service:latest'
- 
+
       - name: indexer-worker-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
         uses: docker/build-push-action@v2
@@ -370,7 +388,7 @@ jobs:
           file: ./indexer-service/Dockerfile
           push: true
           tags: 'gcr.io/hedera-registry/indexer-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/indexer-service:latest'
- 
+
       - name: indexer-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
         uses: docker/build-push-action@v2
@@ -388,7 +406,7 @@ jobs:
           file: ./indexer-api-gateway/Dockerfile
           push: true
           tags: 'gcr.io/hedera-registry/indexer-api-gateway:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/indexer-api-gateway:latest'
- 
+
       - name: indexer-api-gateway
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
         uses: docker/build-push-action@v2
@@ -406,7 +424,7 @@ jobs:
           file: ./indexer-web-proxy/Dockerfile
           push: true
           tags: 'gcr.io/hedera-registry/indexer-web-proxy:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/indexer-web-proxy:latest'
- 
+
       - name: indexer-web-proxy
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
         uses: docker/build-push-action@v2

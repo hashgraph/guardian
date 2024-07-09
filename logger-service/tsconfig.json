@@ -15,7 +15,8 @@
         "baseUrl": "./src",
         "paths": {
             "@entity/*": ["entity/*"],
-            "@api/*": ["api/*"]
+            "@api/*": ["api/*"],
+            "#constants": ["constants/index.js"]
         }
     },
     "include": [

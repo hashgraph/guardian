@@ -2,10 +2,10 @@ import { BlockType, ConfigType, GenerateUUIDv4, IOwner, ModuleStatus, PolicyTool
 import { publishSystemSchemas } from '../../api/helpers/schema-publish-helper.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier } from '../../helpers/notifier.js';
-import { DataBaseHelper, DatabaseServer, IPolicyComponents, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
 import { SchemaImportResult } from '../../api/helpers/schema-helper.js';
-import { HashComparator } from '../../analytics/index.js';
+import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 import { importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles } from '../../api/helpers/index.js';
 
 /**
@@ -390,7 +390,15 @@ export class PolicyImportExportHelper {
      * @param policy
      */
     public static async updatePolicyComponents(policy: Policy): Promise<Policy> {
-        policy = await HashComparator.saveHashMap(policy);
+        try {
+            const raw = await PolicyLoader.load(policy.id.toString());
+            const compareModel = await PolicyLoader.create(raw, HashComparator.options);
+            const { hash, hashMap } = await HashComparator.createHashMap(compareModel);
+            policy.hash = hash;
+            policy.hashMap = hashMap;
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
+        }
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);
         const tools = await DatabaseServer.getTools({

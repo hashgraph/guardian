@@ -1,5 +1,5 @@
-import { MikroORM, EntityRepository, EntityName, GetRepository } from "@mikro-orm/core";
-import { MongoDriver, MongoEntityManager, MongoEntityRepository } from "@mikro-orm/mongodb";
+import { MikroORM, EntityRepository, EntityName, GetRepository } from '@mikro-orm/core';
+import { MongoDriver, MongoEntityManager, MongoEntityRepository } from '@mikro-orm/mongodb';
 import { GridFSBucket } from 'mongodb';
 
 /**
@@ -24,17 +24,17 @@ export class DataBaseHelper {
     }
 
     /**
-     * Set GridFS
-     */
-    public static set gridFS(gridFS: GridFSBucket) {
-        DataBaseHelper._gridFS = gridFS;
-    }
-
-    /**
      * Get ORM
      */
     public static get orm() {
         return DataBaseHelper._orm;
+    }
+
+    /**
+     * Set GridFS
+     */
+    public static set gridFS(gridFS: GridFSBucket) {
+        DataBaseHelper._gridFS = gridFS;
     }
 
     /**

@@ -1,11 +1,11 @@
-import { AuthUser, Auth } from '#auth';
+import { Auth, AuthUser } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response, UseInterceptors, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CACHE } from '../../constants/index.js';
-import { MigrationConfigDTO, PolicyCategoryDTO, InternalServerErrorDTO, PolicyDTO, TaskDTO, PolicyValidationDTO, BlockDTO, ExportMessageDTO, ImportMessageDTO, PolicyPreviewDTO, Examples, pageHeader, PoliciesValidationDTO } from '#middlewares';
-import { PolicyEngine, ProjectService, ServiceError, TaskManager, UseCache, InternalException, ONLY_SR, AnyFilesInterceptor, UploadedFiles, EntityOwner } from '#helpers';
+import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO, TaskDTO } from '#middlewares';
+import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -17,6 +17,9 @@ async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     /**
      * Return a list of all policies
      */
@@ -77,6 +80,74 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             const owner = new EntityOwner(user);
             const { policies, count } = await engineService.getPolicies(options, owner);
+            return res.header('X-Total-Count', count).send(policies);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Return a list of all policies V2 05.06.2024
+     */
+    @Get('/')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_AUDIT,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR,
+    )
+    @ApiOperation({
+        summary: 'Return a list of all policies.',
+        description: 'Returns all policies.',
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: PolicyDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getPoliciesV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<any> {
+        if (!user.did && user.role !== UserRole.AUDITOR) {
+            return res.header('X-Total-Count', 0).send([]);
+        }
+        try {
+            const options: any = {
+                fields: Object.values(POLICY_REQUIRED_PROPS),
+                filters: {},
+                pageIndex,
+                pageSize
+            };
+            const engineService = new PolicyEngine();
+            const owner = new EntityOwner(user);
+            const { policies, count } = await engineService.getPoliciesV2(options, owner);
             return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
             await InternalException(error);
@@ -1749,7 +1820,8 @@ export class PolicyApi {
                 messageId,
                 new EntityOwner(user),
                 versionOfTopicId,
-                body.metadata
+                body.metadata,
+                user.id.toString()
             );
             return await getOldResult(user);
         } catch (error) {
@@ -1809,7 +1881,8 @@ export class PolicyApi {
                     new EntityOwner(user),
                     versionOfTopicId,
                     task,
-                    body.metadata
+                    body.metadata,
+                    user.id.toString()
                 );
             },
             async (error) => {
@@ -1949,11 +2022,17 @@ export class PolicyApi {
     async importPolicyFromFile(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId?: string
+        @Req() req,
+        @Query('versionOfTopicId') versionOfTopicId?: string,
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
+
             await engineService.importFile(file, new EntityOwner(user), versionOfTopicId);
+
+            const invalidedCacheTags = [PREFIXES.ARTIFACTS];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
             return await getOldResult(user);
         } catch (error) {
             await InternalException(error);

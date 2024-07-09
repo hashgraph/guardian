@@ -5,7 +5,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
     const authorization = Cypress.env("authorization");
     let artifactId;
 
-    before(() => {
+    beforeEach(() => {
         cy.fixture("remoteWorkGHGPolicy.policy", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
             .then((file) => {
                 cy.request({
@@ -40,31 +40,12 @@ context("Artifacts", { tags: "@artifacts" }, () => {
                     authorization,
                 },
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.NO_CONTENT);
+                expect(response.status).eql(STATUS_CODE.OK);
             });
         });
     });
 
     it("Delete already deleted artifact - Negative", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Artifacts,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            artifactId = response.body.at(0).id;
-            cy.request({
-                url: API.ApiServer + API.Artifacts + artifactId,
-                method: METHOD.DELETE,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.NO_CONTENT);
-            });
-        });
         cy.request({
             url: API.ApiServer + API.Artifacts + artifactId,
             method: METHOD.DELETE,

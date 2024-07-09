@@ -14,6 +14,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - PWRM0001
    - PWRM0002
    - VM0041
+   - VMR0006 (Coming Soon)
 4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
@@ -44,10 +45,10 @@ This folder contains sub folders for each Methodology and their authors (with ma
 21. CDM AMS-III.AV - Envision
 22. CDM AMS-III.H - Envision
 23. CDM AMS-I.F - Envision
-24. CDM AMS-I.C (Coming Soon)
-25. CDM ACM0001 (Coming Soon)
-26. CDM ACM0018 (Coming Soon)
-27. CDM AMS-I.A (Coming Soon)
+24. CDM AMS-I.C - Envision
+25. CDM ACM0001 - Envision
+26. CDM ACM0018 - Envision
+27. CDM AMS-I.A - Envision
     
 ### Emission Policies
 

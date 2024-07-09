@@ -22,8 +22,9 @@ interface DemoKey {
  * @param role
  * @param settingsRepository
  * @param notifier
+ * @param userId
  */
-async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
+async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier, userId: string): Promise<DemoKey> {
     notifier.start('Resolve settings');
 
     const secretManager = SecretManager.New();
@@ -48,7 +49,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
             operatorKey: OPERATOR_KEY,
             initialBalance
         }
-    }, 20);
+    }, 20, userId);
 
     notifier.completed();
     return result;
@@ -63,10 +64,11 @@ export async function demoAPI(
     settingsRepository: DataBaseHelper<Settings>
 ): Promise<void> {
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY,
-        async (msg: { role: string }) => {
+        async (msg: { role: string, userId: string }) => {
             try {
                 const role = msg?.role;
-                const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
+                const userId = msg?.userId
+                const result = await generateDemoKey(role, settingsRepository, emptyNotifier(), userId);
                 return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -75,12 +77,12 @@ export async function demoAPI(
         });
 
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC,
-        async (msg: { role: string, task: any }) => {
-            const { role, task } = msg;
+        async (msg: { role: string, task: any, userId: string }) => {
+            const {role, task, userId} = msg;
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
-                const result = await generateDemoKey(role, settingsRepository, notifier);
+                const result = await generateDemoKey(role, settingsRepository, notifier, userId);
                 notifier.result(result);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

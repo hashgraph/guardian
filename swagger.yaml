@@ -266,6 +266,22 @@ paths:
                   propLvl: '0'
                   childrenLvl: '0'
                   idLvl: '0'
+              Filter3:
+                value:
+                  policies:
+                    - type: id
+                      value: '000000000000000000000001'
+                    - type: message
+                      value: '0000000000.000000001'
+                    - type: file
+                      value:
+                        id: 00000000-0000-0000-0000-000000000000
+                        name: File Name
+                        value: base64...
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
       responses:
         '200':
           description: Successful operation.
@@ -496,6 +512,22 @@ paths:
                   policyIds:
                     - '000000000000000000000001'
                     - '000000000000000000000001'
+                  eventsLvl: '0'
+                  propLvl: '0'
+                  childrenLvl: '0'
+                  idLvl: '0'
+              Filter3:
+                value:
+                  policies:
+                    - type: id
+                      value: '000000000000000000000001'
+                    - type: message
+                      value: '0000000000.000000001'
+                    - type: file
+                      value:
+                        id: 00000000-0000-0000-0000-000000000000
+                        name: File Name
+                        value: base64...
                   eventsLvl: '0'
                   propLvl: '0'
                   childrenLvl: '0'
@@ -766,7 +798,7 @@ paths:
         - bearer: []
   /artifacts:
     get:
-      operationId: ArtifactApi_getArtifacts
+      operationId: ArtifactApi_getArtifactsV2
       summary: Returns all artifacts.
       description: Returns all artifacts.
       parameters:
@@ -933,7 +965,7 @@ paths:
       description: Returns all contracts.
       parameters:
         - name: type
-          required: false
+          required: true
           in: query
           description: Contract type
           example: RETIRE
@@ -952,7 +984,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -1141,7 +1173,7 @@ paths:
         are allowed to make the request.
       parameters:
         - name: contractId
-          required: false
+          required: true
           in: query
           description: Contract identifier
           example: 0.0.1
@@ -1157,7 +1189,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -1663,7 +1695,7 @@ paths:
       description: Returns all retire requests.
       parameters:
         - name: contractId
-          required: false
+          required: true
           in: query
           description: Contract identifier
           example: 0.0.1
@@ -1679,7 +1711,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -1719,14 +1751,14 @@ paths:
       description: Returns all retire pools.
       parameters:
         - name: contractId
-          required: false
+          required: true
           in: query
           description: Contract identifier
           example: 0.0.1
           schema:
             type: string
         - name: tokens
-          required: false
+          required: true
           in: query
           description: Tokens
           example: 0.0.1,0.0.2,0.0.3
@@ -1742,7 +1774,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -2161,7 +2193,7 @@ paths:
           schema:
             type: number
         - name: pageSize
-          required: false
+          required: true
           in: query
           description: The numbers of items to return
           example: 20
@@ -2595,7 +2627,7 @@ paths:
       security:
         - bearer: []
     get:
-      operationId: ModulesApi_getModules
+      operationId: ModulesApi_getModulesV2
       summary: Return a list of all modules.
       description: >-
         Returns all modules. Only users with the Standard Registry role are
@@ -3208,7 +3240,7 @@ paths:
       security:
         - bearer: []
     get:
-      operationId: ToolsApi_getTools
+      operationId: ToolsApi_getToolsV2
       summary: Return a list of all tools.
       description: >-
         Returns all tools. Only users with the Standard Registry role are
@@ -4225,7 +4257,7 @@ paths:
         - bearer: []
   /policies:
     get:
-      operationId: PolicyApi_getPolicies
+      operationId: PolicyApi_getPoliciesV2
       summary: Return a list of all policies.
       description: Returns all policies.
       parameters:
@@ -6670,7 +6702,7 @@ paths:
         - bearer: []
   /schemas:
     get:
-      operationId: SchemaApi_getSchemasPage
+      operationId: SchemaApi_getSchemasPageV2
       summary: Return a list of all schemas.
       description: Returns all schemas.
       parameters:
@@ -6977,6 +7009,55 @@ paths:
           in: query
           description: Topic Id
           example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearer: []
+  /schemas/schema-with-sub-schemas:
+    get:
+      operationId: SchemaApi_getSchemaWithSubSchemas
+      summary: Returns a list of schemas.
+      description: >-
+        Returns a list of schemas. Only users with the Standard Registry role
+        are allowed to make the request.
+      parameters:
+        - name: category
+          required: false
+          in: query
+          description: Schema category
+          example: POLICY
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic Id
+          example: 0.0.1
+          schema:
+            type: string
+        - name: schemaId
+          required: true
+          in: query
           schema:
             type: string
       responses:
@@ -7634,7 +7715,7 @@ paths:
       security:
         - bearer: []
     get:
-      operationId: SchemaApi_getSystemSchema
+      operationId: SchemaApi_getSystemSchemaV2
       summary: Return a list of all system schemas.
       description: >-
         Returns all system schemas. Only users with the Standard Registry role
@@ -8278,7 +8359,7 @@ paths:
         - bearer: []
   /tags/schemas:
     get:
-      operationId: TagsApi_getSchemas
+      operationId: TagsApi_getSchemasV2
       summary: Return a list of all tag schemas.
       description: >-
         Returns all tag schemas. Only users with the Standard Registry role are
@@ -8544,7 +8625,7 @@ paths:
         - bearer: []
   /tokens:
     get:
-      operationId: TokensApi_getTokens
+      operationId: TokensApi_getTokensV2
       summary: Return a list of tokens.
       description: >-
         Returns all tokens. For the Standard Registry role it returns only the
@@ -8670,6 +8751,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_16
+      security:
+        - bearer: []
+  /tokens/{tokenId}:
+    get:
+      operationId: TokensApi_getTokenByIdWithPolicies
+      summary: Return a token by id.
+      description: Return the token.
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TokenDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -11314,6 +11438,107 @@ paths:
       tags: *ref_26
       security:
         - bearer: []
+  /worker-tasks:
+    get:
+      operationId: WorkerTasksController_getAllWorkerTasks
+      summary: Get all worker tasks
+      description: Returns all worker tasks.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation. Returns notifications and count.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkersTasksDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_27
+        - worker-tasks
+      security:
+        - bearer: []
+  /worker-tasks/restart:
+    post:
+      operationId: WorkerTasksController_restartTask
+      summary: Restart task
+      description: Restart task
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation. Returns notifications.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+  /worker-tasks/delete/{taskId}:
+    delete:
+      operationId: WorkerTasksController_deleteTask
+      summary: Delete task
+      description: Delete task
+      parameters:
+        - name: taskId
+          required: true
+          in: path
+          description: Task Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Returns notifications.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
 info:
   title: Guardian
   description: >-
@@ -11322,7 +11547,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.25.1
+  version: 2.26.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -11674,19 +11899,19 @@ components:
           example: username
         role:
           type: string
-          enum: &ref_35
+          enum: &ref_36
             - STANDARD_REGISTRY
             - USER
             - AUDITOR
           example: USER
         permissionsGroup:
-          example: &ref_36
+          example: &ref_37
             - {}
           type: array
           items:
             type: string
         permissions:
-          example: &ref_37
+          example: &ref_38
             - POLICIES_POLICY_READ
           type: array
           items:
@@ -11725,51 +11950,180 @@ components:
         policyId:
           type: string
           example: '000000000000000000000001'
-      required:
-        - policyId
+        type:
+          type: string
+          enum:
+            - Owned
+            - Local
+            - Global
+          example: Local
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        minVcCount:
+          type: number
+          example: 0
+        minVpCount:
+          type: number
+          example: 0
+        minTokensCount:
+          type: number
+          example: 0
+        text:
+          type: string
+          example: Policy name
+        threshold:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 0
+    SearchPolicyDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - Local
+            - Global
+          example: Local
+        id:
+          type: string
+          example: '000000000000000000000001'
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Policy name
+        description:
+          type: string
+          example: Policy description
+        version:
+          type: string
+          example: 1.0.0
+        status:
+          type: string
+          enum:
+            - DRY-RUN
+            - DRAFT
+            - PUBLISH_ERROR
+            - PUBLISH
+            - DISCONTINUED
+          example: DRAFT
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        tags:
+          example: Tag
+          type: array
+          items:
+            type: object
+        vcCount:
+          type: number
+          example: 0
+        vpCount:
+          type: number
+          example: 0
+        tokensCount:
+          type: number
+          example: 0
+        rate:
+          type: number
+          example: 0
     SearchPoliciesDTO:
       type: object
       properties:
         target:
           type: object
         result:
-          type: object
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchPolicyDTO'
       required:
-        - target
         - result
+    CompareFileDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: File ID
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          description: File Name
+          example: File Name
+        value:
+          type: string
+          description: Buffer
+          example: base64...
+      required:
+        - id
+        - name
+        - value
+    FilterPolicyDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Identifier type
+          enum:
+            - id
+            - message
+            - file
+          example: id
+        value:
+          oneOf:
+            - type: string
+              description: Policy ID
+            - type: string
+              description: Policy Message ID
+            - $ref: '#/components/schemas/CompareFileDTO'
+              description: Policy File
+          example: '000000000000000000000001'
+      required:
+        - type
+        - value
     FilterPoliciesDTO:
       type: object
       properties:
         idLvl:
-          oneOf: &ref_27
+          oneOf: &ref_28
             - type: string
             - type: number
-          enum: &ref_28
+          enum: &ref_29
             - 0
             - 1
           example: 0
         eventsLvl:
-          oneOf: &ref_29
+          oneOf: &ref_30
             - type: string
             - type: number
-          enum: &ref_30
+          enum: &ref_31
             - 0
             - 1
           example: 0
         propLvl:
-          oneOf: &ref_31
+          oneOf: &ref_32
             - type: string
             - type: number
-          enum: &ref_32
+          enum: &ref_33
             - 0
             - 1
             - 2
           example: 0
         childrenLvl:
-          oneOf: &ref_33
+          oneOf: &ref_34
             - type: string
             - type: number
-          enum: &ref_34
+          enum: &ref_35
             - 0
             - 1
             - 2
@@ -11787,14 +12141,20 @@ components:
           type: array
           items:
             type: string
-      required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
-        - policyId1
-        - policyId2
-        - policyIds
+        policies:
+          example:
+            - type: id
+              value: '000000000000000000000001'
+            - type: message
+              value: '0000000000.000000001'
+            - type: file
+              value:
+                id: 00000000-0000-0000-0000-000000000000
+                name: File Name
+                value: base64...
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterPolicyDTO'
     ComparePoliciesDTO:
       type: object
       properties:
@@ -11827,20 +12187,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_27
-          enum: *ref_28
+          oneOf: *ref_28
+          enum: *ref_29
           example: 0
         eventsLvl:
-          oneOf: *ref_29
-          enum: *ref_30
+          oneOf: *ref_30
+          enum: *ref_31
           example: 0
         propLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         childrenLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         moduleId1:
           type: string
@@ -11849,10 +12209,6 @@ components:
           type: string
           example: '000000000000000000000001'
       required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
         - moduleId1
         - moduleId2
     CompareModulesDTO:
@@ -11880,6 +12236,31 @@ components:
         - outputEvents
         - variables
         - total
+    FilterSchemaDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Identifier type
+          enum:
+            - id
+            - policy-message
+            - policy-file
+          example: id
+        value:
+          type: string
+          description: Schema ID
+          example: '000000000000000000000001'
+        policy:
+          oneOf:
+            - description: Policy Message ID
+              type: string
+            - $ref: '#/components/schemas/CompareFileDTO'
+              description: Policy File
+          example: '000000000000000000000001'
+      required:
+        - type
+        - value
     FilterSchemasDTO:
       type: object
       properties:
@@ -11889,6 +12270,22 @@ components:
         schemaId2:
           type: string
           example: '000000000000000000000001'
+        schemas:
+          example:
+            - type: id
+              value: '000000000000000000000001'
+            - type: policy-message
+              value: 00000000-0000-0000-0000-000000000000
+              policy: '0000000000.000000001'
+            - type: policy-file
+              value: 00000000-0000-0000-0000-000000000000
+              policy:
+                id: 00000000-0000-0000-0000-000000000000
+                name: File Name
+                value: base64...
+          type: array
+          items:
+            $ref: '#/components/schemas/FilterSchemaDTO'
         idLvl:
           oneOf:
             - type: string
@@ -11897,10 +12294,6 @@ components:
             - 0
             - 1
           example: 0
-      required:
-        - schemaId1
-        - schemaId2
-        - idLvl
     CompareSchemasDTO:
       type: object
       properties:
@@ -11921,20 +12314,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_27
-          enum: *ref_28
+          oneOf: *ref_28
+          enum: *ref_29
           example: 0
         eventsLvl:
-          oneOf: *ref_29
-          enum: *ref_30
+          oneOf: *ref_30
+          enum: *ref_31
           example: 0
         propLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         childrenLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         documentId1:
           type: string
@@ -11949,14 +12342,6 @@ components:
           type: array
           items:
             type: string
-      required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
-        - documentId1
-        - documentId2
-        - documentIds
     CompareDocumentsDTO:
       type: object
       properties:
@@ -11977,20 +12362,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_27
-          enum: *ref_28
+          oneOf: *ref_28
+          enum: *ref_29
           example: 0
         eventsLvl:
-          oneOf: *ref_29
-          enum: *ref_30
+          oneOf: *ref_30
+          enum: *ref_31
           example: 0
         propLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         childrenLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         toolId1:
           type: string
@@ -12005,14 +12390,6 @@ components:
           type: array
           items:
             type: string
-      required:
-        - idLvl
-        - eventsLvl
-        - propLvl
-        - childrenLvl
-        - toolId1
-        - toolId2
-        - toolIds
     CompareToolsDTO:
       type: object
       properties:
@@ -12771,15 +13148,15 @@ components:
           example: username
         role:
           type: string
-          enum: *ref_35
+          enum: *ref_36
           example: USER
         permissionsGroup:
-          example: *ref_36
+          example: *ref_37
           type: array
           items:
             type: string
         permissions:
-          example: *ref_37
+          example: *ref_38
           type: array
           items:
             type: string
@@ -14081,7 +14458,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_38
+          enum: &ref_39
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -14148,7 +14525,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_38
+          enum: *ref_39
           example: ANALYTIC_POLICY_READ
         category:
           type: string
@@ -14260,3 +14637,34 @@ components:
       required:
         - policyIds
         - assign
+    WorkersTasksDTO:
+      type: object
+      properties:
+        createDate:
+          type: string
+        done:
+          type: boolean
+        id:
+          type: string
+        isRetryableTask:
+          type: boolean
+        processedTime:
+          type: string
+        sent:
+          type: boolean
+        taskId:
+          type: string
+        type:
+          type: string
+        updateDate:
+          type: string
+      required:
+        - createDate
+        - done
+        - id
+        - isRetryableTask
+        - processedTime
+        - sent
+        - taskId
+        - type
+        - updateDate

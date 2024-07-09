@@ -9,6 +9,7 @@ import { Guardians, ONLY_SR } from '#helpers';
 @Controller('suggestions')
 @ApiTags('suggestions')
 export class SuggestionsApi {
+
     /**
      * Get next and nested suggested block types
      */

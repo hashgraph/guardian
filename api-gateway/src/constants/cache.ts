@@ -3,3 +3,8 @@ export const CACHE = {
   DEFAULT_TTL: 600,
   LONG_TTL: 3600,
 }
+
+export const PREFIXES = {
+  CACHE: 'cache',
+  TAG: 'tag'
+}
