@@ -6,14 +6,66 @@ import {
     Param,
     Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
+import { ApiPaginatedRequest } from '../../decorators/api-paginated-request.js';
+import { Page, Registry } from '@indexer/interfaces';
+import {
+    ApiDetailsRegistryResponse,
+    ApiPaginatedRegistryResponse,
+    ApiDetailsRegistryUserResponse,
+    ApiPaginatedRegistryUserResponse,
+    ApiDetailsPolicyResponse,
+    ApiPaginatedPolicyResponse,
+    ApiDetailsToolResponse,
+    ApiPaginatedToolResponse,
+    ApiDetailsModuleResponse,
+    ApiPaginatedModuleResponse,
+    ApiDetailsSchemaResponse,
+    ApiPaginatedSchemaResponse,
+    PageDTO,
+    RegistryDTO,
+} from '#dto';
+import {} from 'dto/details/tool.details.js';
 @Controller('entities')
 @ApiTags('entities')
 export class EntityApi extends ApiClient {
     //#region ACCOUNTS
     //#region STANDARD REGISTRIES
+    @ApiOperation({
+        summary: 'Get standard registries',
+        description: 'Returns standard registries',
+    })
+    @ApiPaginatedRequest
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search registries, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Global topic identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'options.did',
+        description: 'Registry did',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    @ApiQuery({
+        name: 'options.registrantTopicId',
+        description: 'Registry user topic identifier',
+        example: '0.0.4481265',
+    })
+    @ApiPaginatedRegistryResponse
     @Get('/registries')
     @HttpCode(HttpStatus.OK)
     async getRegistries(
@@ -25,29 +77,66 @@ export class EntityApi extends ApiClient {
         @Query('topicId') topicId?: string,
         @Query('options.did') did?: string,
         @Query('options.registrantTopicId') registrantTopicId?: string
-    ) {
-        return await this.send(IndexerMessageAPI.GET_REGISTRIES, {
-            pageIndex,
-            pageSize,
-            orderField,
-            orderDir,
-            keywords,
-            topicId,
-            'options.did': did,
-            'options.registrantTopicId': registrantTopicId,
-        });
+    ): Promise<PageDTO<RegistryDTO>> {
+        return await this.send<Page<Registry>>(
+            IndexerMessageAPI.GET_REGISTRIES,
+            {
+                pageIndex,
+                pageSize,
+                orderField,
+                orderDir,
+                keywords,
+                topicId,
+                'options.did': did,
+                'options.registrantTopicId': registrantTopicId,
+            }
+        );
     }
 
+    @ApiOperation({
+        summary: 'Get registry',
+        description: 'Returns registry',
+    })
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @ApiDetailsRegistryResponse
     @Get('/registries/:messageId')
     @HttpCode(HttpStatus.OK)
-    async getRegistry(@Param('messageId') messageId: string) {
-        return await this.send(IndexerMessageAPI.GET_REGISTRY, {
+    async getRegistry(
+        @Param('messageId') messageId: string
+    ): Promise<RegistryDTO> {
+        return await this.send<Registry>(IndexerMessageAPI.GET_REGISTRY, {
             messageId,
         });
     }
     //#endregion
     //#region REGISTRY USERS
+    @ApiOperation({
+        summary: 'Get registry users',
+        description: 'Returns registry users',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedRegistryUserResponse
     @Get('/registry-users')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search registry users, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'User topic identifier',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getRegistryUsers(
         @Query('pageIndex') pageIndex?: string,
@@ -66,7 +155,18 @@ export class EntityApi extends ApiClient {
             topicId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get registry user',
+        description: 'Returns registry user',
+    })
     @Get('/registry-users/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @ApiDetailsRegistryUserResponse
     @HttpCode(HttpStatus.OK)
     async getRegistryUser(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_REGISTRY_USER, {
@@ -78,7 +178,40 @@ export class EntityApi extends ApiClient {
 
     //#region METHODOLOGIES
     //#region POLICIES
+    @ApiOperation({
+        summary: 'Get policies',
+        description: 'Returns policies',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedPolicyResponse
     @Get('/policies')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search policies, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Policy topic identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'Policy owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    @ApiQuery({
+        name: 'analytics.tools',
+        description: 'Tool',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getPolicies(
         @Query('pageIndex') pageIndex?: string,
@@ -101,7 +234,18 @@ export class EntityApi extends ApiClient {
             'analytics.tools': tool,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get policy',
+        description: 'Returns policy',
+    })
+    @ApiDetailsPolicyResponse
     @Get('/policies/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getPolicy(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_POLICY, {
@@ -110,7 +254,35 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region TOOLS
+    @ApiOperation({
+        summary: 'Get tools',
+        description: 'Returns tools',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedToolResponse
     @Get('/tools')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search tools, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'Tool owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getTools(
         @Query('pageIndex') pageIndex?: string,
@@ -131,7 +303,18 @@ export class EntityApi extends ApiClient {
             'options.owner': owner,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get tool',
+        description: 'Returns tool',
+    })
+    @ApiDetailsToolResponse
     @Get('/tools/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getTool(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_TOOL, {
@@ -140,7 +323,35 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region MODULES
+    @ApiOperation({
+        summary: 'Get modules',
+        description: 'Returns modules',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedModuleResponse
     @Get('/modules')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search modules, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'Module owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getModules(
         @Query('pageIndex') pageIndex?: string,
@@ -161,7 +372,18 @@ export class EntityApi extends ApiClient {
             'options.owner': owner,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get module',
+        description: 'Returns module',
+    })
+    @ApiDetailsModuleResponse
     @Get('/modules/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getModule(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_MODULE, {
@@ -170,7 +392,35 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region SCHEMAS
+    @ApiOperation({
+        summary: 'Get schemas',
+        description: 'Returns schemas',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedSchemaResponse
     @Get('/schemas')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Policy topic identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'Schema owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
     @HttpCode(HttpStatus.OK)
     async getSchemas(
         @Query('pageIndex') pageIndex?: string,
@@ -191,13 +441,25 @@ export class EntityApi extends ApiClient {
             'options.owner': owner,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get schema',
+        description: 'Returns schema',
+    })
+    @ApiDetailsSchemaResponse
     @Get('/schemas/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getSchema(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_SCHEMA, {
             messageId,
         });
     }
+
     @Get('/schemas/:messageId/tree')
     @HttpCode(HttpStatus.OK)
     async getSchemaTree(@Param('messageId') messageId: string) {
@@ -207,6 +469,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region TOKENS
+    @ApiPaginatedRequest
     @Get('/tokens')
     @HttpCode(HttpStatus.OK)
     async getTokens(
@@ -235,6 +498,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region ROLES
+    @ApiPaginatedRequest
     @Get('/roles')
     @HttpCode(HttpStatus.OK)
     async getRoles(
@@ -270,6 +534,7 @@ export class EntityApi extends ApiClient {
 
     //#region DOCUMENTS
     //#region DIDS
+    @ApiPaginatedRequest
     @Get('/did-documents')
     @HttpCode(HttpStatus.OK)
     async getDidDocuments(
@@ -307,6 +572,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region VP DOCUMENTS
+    @ApiPaginatedRequest
     @Get('/vp-documents')
     @HttpCode(HttpStatus.OK)
     async getVpDocuments(
@@ -348,6 +614,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region VC DOCUMENTS
+    @ApiPaginatedRequest
     @Get('/vc-documents')
     @HttpCode(HttpStatus.OK)
     async getVcDocuments(
@@ -394,6 +661,7 @@ export class EntityApi extends ApiClient {
 
     //#region OTHERS
     //#region NFTS
+    @ApiPaginatedRequest
     @Get('/nfts')
     @HttpCode(HttpStatus.OK)
     async getNFTs(
@@ -424,6 +692,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region TOPICS
+    @ApiPaginatedRequest
     @Get('/topics')
     @HttpCode(HttpStatus.OK)
     async getTopics(
@@ -452,6 +721,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region CONTRACTS
+    @ApiPaginatedRequest
     @Get('/contracts')
     @HttpCode(HttpStatus.OK)
     async getContracts(

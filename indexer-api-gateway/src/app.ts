@@ -52,6 +52,7 @@ Promise.all([
                     }
                 ),
             });
+            console.log(document.toString())
             SwaggerModule.setup('api-docs', app, document);
 
             services.listen();

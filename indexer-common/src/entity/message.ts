@@ -63,9 +63,10 @@ export class Message {
         schemaId?: string;
         schemaName?: string;
         policyId?: string;
-        policyIds?: string;
+        policyIds?: string[];
         textSearch?: string;
         childSchemas?: any[];
+        properties?: string[];
     };
 
     @Property({ nullable: true })

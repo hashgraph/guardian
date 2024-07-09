@@ -1,20 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { LandingAnalytics, ProjectCoordinates } from '@indexer/interfaces';
 
 @Injectable()
 export class LandingService {
     private readonly url: string = `${API_BASE_URL}/landing`;
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient) {}
+
+    public getAnalytics() {
+        return this.http.get<LandingAnalytics[]>(`${this.url}/analytics`);
     }
 
-    public getAnalytics(): Observable<any> {
-        return this.http.get<any>(`${this.url}/analytics`) as any;
-    }
-
-    public getProjectsCoordinates(): Observable<any> {
-        return this.http.get<any>(`${this.url}/projects-coordinates`) as any;
+    public getProjectsCoordinates() {
+        return this.http.get<ProjectCoordinates[]>(
+            `${this.url}/projects-coordinates`
+        );
     }
 }

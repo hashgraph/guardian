@@ -1,6 +1,22 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Get, Param, Inject, Query } from '@nestjs/common';
-import { ClientProxy, EventPattern, MessagePattern } from '@nestjs/microservices';
-import { InternalServerErrorDTO, PageDTO } from '../../../middlewares/validation/schemas/index.js';
+import {
+    Body,
+    Controller,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Get,
+    Param,
+    Inject,
+    Query,
+} from '@nestjs/common';
+import {
+    ClientProxy,
+    EventPattern,
+    MessagePattern,
+} from '@nestjs/microservices';
+import {
+    InternalServerErrorDTO
+} from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
     ApiUnauthorizedResponse,
@@ -10,11 +26,11 @@ import {
     ApiOperation,
     ApiSecurity,
     ApiTags,
-    ApiQuery
+    ApiQuery,
 } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { firstValueFrom, timeout } from 'rxjs';
-import { AnyResponse, IPage, IndexerMessageAPI, responseFrom } from '@indexer/common';
+import { AnyResponse, IndexerMessageAPI, responseFrom } from '@indexer/common';
 import { ApiClient } from '../../api-client.js';
 
 @Controller('logs')
@@ -26,54 +42,53 @@ export class LogsApi extends ApiClient {
     @Get('/messages')
     @ApiOperation({
         summary: '.',
-        description: '.'
+        description: '.',
     })
     @ApiQuery({
         name: 'type',
         description: 'Document type.',
         type: String,
-        example: 'type'
+        example: 'type',
     })
     @ApiQuery({
         name: 'status',
         description: 'Document status.',
         type: String,
-        example: 'status'
+        example: 'status',
     })
     @ApiQuery({
         name: 'pageIndex',
         description: 'Page index.',
         type: Number,
-        example: 0
+        example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         description: 'Page size.',
         type: Number,
-        example: 20
+        example: 20,
     })
     @ApiQuery({
         name: 'orderField',
         description: 'Order field.',
         type: String,
-        example: 'topicId'
+        example: 'topicId',
     })
     @ApiQuery({
         name: 'orderDir',
         description: 'Order direction.',
         type: String,
-        example: 'DESC'
+        example: 'DESC',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PageDTO
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAllMessages(
@@ -83,20 +98,17 @@ export class LogsApi extends ApiClient {
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('orderField') orderField?: string,
-        @Query('orderDir') orderDir?: string,
-
+        @Query('orderDir') orderDir?: string
     ): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.GET_LOG_MESSAGES,
-            {
-                timestamp,
-                type,
-                status,
-                pageIndex,
-                pageSize,
-                orderField,
-                orderDir
-            }
-        );
+        return await this.send(IndexerMessageAPI.GET_LOG_MESSAGES, {
+            timestamp,
+            type,
+            status,
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+        });
     }
 
     /**
@@ -105,59 +117,55 @@ export class LogsApi extends ApiClient {
     @Get('/topics')
     @ApiOperation({
         summary: '.',
-        description: '.'
+        description: '.',
     })
     @ApiQuery({
         name: 'pageIndex',
         description: 'Page index.',
         type: Number,
-        example: 0
+        example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         description: 'Page size.',
         type: Number,
-        example: 20
+        example: 20,
     })
     @ApiQuery({
         name: 'orderField',
         description: 'Order field.',
         type: String,
-        example: 'topicId'
+        example: 'topicId',
     })
     @ApiQuery({
         name: 'orderDir',
         description: 'Order direction.',
         type: String,
-        example: 'DESC'
+        example: 'DESC',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PageDTO
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAllTopics(
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('orderField') orderField?: string,
-        @Query('orderDir') orderDir?: string,
-
+        @Query('orderDir') orderDir?: string
     ): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.GET_LOG_TOPICS,
-            {
-                pageIndex,
-                pageSize,
-                orderField,
-                orderDir
-            }
-        );
+        return await this.send(IndexerMessageAPI.GET_LOG_TOPICS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+        });
     }
 
     /**
@@ -166,42 +174,41 @@ export class LogsApi extends ApiClient {
     @Get('/documents')
     @ApiOperation({
         summary: '.',
-        description: '.'
+        description: '.',
     })
     @ApiQuery({
         name: 'pageIndex',
         description: 'Page index.',
         type: Number,
-        example: 0
+        example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         description: 'Page size.',
         type: Number,
-        example: 20
+        example: 20,
     })
     @ApiQuery({
         name: 'orderField',
         description: 'Order field.',
         type: String,
-        example: 'topicId'
+        example: 'topicId',
     })
     @ApiQuery({
         name: 'orderDir',
         description: 'Order direction.',
         type: String,
-        example: 'DESC'
+        example: 'DESC',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PageDTO
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAllDocuments(
@@ -212,21 +219,18 @@ export class LogsApi extends ApiClient {
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('orderField') orderField?: string,
-        @Query('orderDir') orderDir?: string,
-
+        @Query('orderDir') orderDir?: string
     ): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.GET_LOG_DOCUMENTS,
-            {
-                timestamp,
-                type,
-                status,
-                action,
-                pageIndex,
-                pageSize,
-                orderField,
-                orderDir
-            }
-        );
+        return await this.send(IndexerMessageAPI.GET_LOG_DOCUMENTS, {
+            timestamp,
+            type,
+            status,
+            action,
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+        });
     }
 
     /**
@@ -235,22 +239,21 @@ export class LogsApi extends ApiClient {
     @Get('/documents/filters')
     @ApiOperation({
         summary: '.',
-        description: '.'
+        description: '.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PageDTO
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getDocumentFilters(): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.GET_LOG_DOCUMENT_FILTERS, {});
+        return await this.send(IndexerMessageAPI.GET_LOG_DOCUMENT_FILTERS, {});
     }
 
     /**
@@ -259,42 +262,41 @@ export class LogsApi extends ApiClient {
     @Get('/tokens')
     @ApiOperation({
         summary: '.',
-        description: '.'
+        description: '.',
     })
     @ApiQuery({
         name: 'pageIndex',
         description: 'Page index.',
         type: Number,
-        example: 0
+        example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         description: 'Page size.',
         type: Number,
-        example: 20
+        example: 20,
     })
     @ApiQuery({
         name: 'orderField',
         description: 'Order field.',
         type: String,
-        example: 'topicId'
+        example: 'topicId',
     })
     @ApiQuery({
         name: 'orderDir',
         description: 'Order direction.',
         type: String,
-        example: 'DESC'
+        example: 'DESC',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PageDTO
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAllTokens(
@@ -304,18 +306,15 @@ export class LogsApi extends ApiClient {
         @Query('orderDir') orderDir?: string,
         @Query('type') type?: string,
         @Query('tokenId') tokenId?: string
-
     ): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.GET_LOG_TOKENS,
-            {
-                pageIndex,
-                pageSize,
-                orderField,
-                orderDir,
-                type,
-                tokenId
-            }
-        );
+        return await this.send(IndexerMessageAPI.GET_LOG_TOKENS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            type,
+            tokenId,
+        });
     }
 
     /**
@@ -324,42 +323,41 @@ export class LogsApi extends ApiClient {
     @Get('/nfts')
     @ApiOperation({
         summary: '.',
-        description: '.'
+        description: '.',
     })
     @ApiQuery({
         name: 'pageIndex',
         description: 'Page index.',
         type: Number,
-        example: 0
+        example: 0,
     })
     @ApiQuery({
         name: 'pageSize',
         description: 'Page size.',
         type: Number,
-        example: 20
+        example: 20,
     })
     @ApiQuery({
         name: 'orderField',
         description: 'Order field.',
         type: String,
-        example: 'topicId'
+        example: 'topicId',
     })
     @ApiQuery({
         name: 'orderDir',
         description: 'Order direction.',
         type: String,
-        example: 'DESC'
+        example: 'DESC',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PageDTO
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAllNfts(
@@ -370,18 +368,15 @@ export class LogsApi extends ApiClient {
         @Query('tokenId') tokenId?: string,
         @Query('serialNumber') serialNumber?: number,
         @Query('metadata') metadata?: string
-
     ): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.GET_LOG_NFTS,
-            {
-                pageIndex,
-                pageSize,
-                orderField,
-                orderDir,
-                tokenId,
-                serialNumber,
-                metadata
-            }
-        );
+        return await this.send(IndexerMessageAPI.GET_LOG_NFTS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            tokenId,
+            serialNumber,
+            metadata,
+        });
     }
 }

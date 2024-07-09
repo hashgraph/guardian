@@ -1,10 +1,11 @@
 {
     "packageManager": "yarn@1.22.21",
-    "_moduleAliases": {
-        "@api": "dist/api",
-        "@helpers": "dist/helpers",
-        "@auth": "dist/auth",
-        "@subscribers": "dist/subscribers"
+    "imports": {
+        "#api": "./dist/api",
+        "#helpers": "./dist/helpers",
+        "#auth": "./dist/auth",
+        "#subscribers": "./dist/subscribers",
+        "#dto": "./dist/dto/index.js"
     },
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",

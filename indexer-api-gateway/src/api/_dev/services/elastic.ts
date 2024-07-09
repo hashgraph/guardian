@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Param, Inject, Query } from '@nestjs/common';
 import { ClientProxy, EventPattern, MessagePattern } from '@nestjs/microservices';
-import { InternalServerErrorDTO, PageDTO } from '../../../middlewares/validation/schemas/index.js';
+import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
     ApiUnauthorizedResponse,
@@ -14,7 +14,7 @@ import {
 } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { firstValueFrom, timeout } from 'rxjs';
-import { AnyResponse, IPage, IndexerMessageAPI, responseFrom } from '@indexer/common';
+import { AnyResponse, IndexerMessageAPI, responseFrom } from '@indexer/common';
 import { ApiClient } from '../../api-client.js';
 
 @Controller('elastic')
@@ -29,8 +29,7 @@ export class ElasticApi extends ApiClient {
         description: '.'
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: PageDTO
+        description: 'Successful operation.'
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
@@ -41,6 +40,6 @@ export class ElasticApi extends ApiClient {
     })
     @HttpCode(HttpStatus.OK)
     async getAllMessages(): Promise<any> {
-        return await this.send<IPage<any>>(IndexerMessageAPI.ELASTIC_UPDATE_DATA, {});
+        return await this.send(IndexerMessageAPI.ELASTIC_UPDATE_DATA, {});
     }
 }
