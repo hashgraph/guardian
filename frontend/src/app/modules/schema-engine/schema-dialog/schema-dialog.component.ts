@@ -1,10 +1,11 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { Schema } from '@guardian/interfaces';
+import { ISchema, Schema, SchemaCategory, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
+import { SchemaService } from '../../../services/schema.service';
 
 /**
  * Dialog for creating and editing schemas.
@@ -34,13 +35,17 @@ export class SchemaDialog {
     public tools: any[];
     public properties: any[];
 
+    public category: string;
+    public subSchemas: ISchema[];
+
     items: MenuItem[] = [{label: 'Simplified'}, {label: 'Advanced'}];
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private fb: FormBuilder,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private schemaService: SchemaService,
     ) {
         this.schemasMap = this.config.data.schemasMap || {};
         this.scheme = this.config.data.scheme || null;
@@ -51,6 +56,8 @@ export class SchemaDialog {
         this.modules = this.config.data.modules || [];
         this.tools = this.config.data.tools || [];
         this.properties = this.config.data.properties || [];
+
+        this.category = this.config.data.category
     }
 
     ngOnInit(): void {
@@ -62,9 +69,12 @@ export class SchemaDialog {
                 this.restoreData = null;
             }
         }
+
         setTimeout(() => {
             this.started = true;
         });
+
+        this.getSubSchemes()
     }
 
     handleChangeTab(order: number): void {
@@ -83,7 +93,9 @@ export class SchemaDialog {
         if (!(this.valid && this.started)) {
             return;
         }
+
         const schema = this.schemaControl?.getSchema();
+
         try {
             localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
         } catch (error) {
@@ -118,5 +130,23 @@ export class SchemaDialog {
     onRestoreClick() {
         this.scheme = this.restoreData;
         this.restoreData = null;
+    }
+
+    getSubSchemes() {
+        const { topicId, id} = this.scheme ?? {};
+
+        this.schemaService.getSchemaWithSubSchemas(this.category, id, topicId).subscribe((data) => {
+            this.subSchemas = data.subSchemas;
+
+            if(this.scheme && data.schema) {
+                this.scheme = new Schema(data.schema)
+
+                setTimeout(()=>this.schemaControl.updateFormControls(), 50)
+            }
+
+            const subSchemas = SchemaHelper.map(data.subSchemas || []);
+
+            this.schemaControl.mappingSubSchemas(subSchemas, topicId);
+        });
     }
 }

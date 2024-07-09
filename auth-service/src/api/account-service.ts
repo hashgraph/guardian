@@ -31,7 +31,8 @@ import {
     UserDefaultPermission,
     UserRole
 } from '@guardian/interfaces';
-import { USER_REQUIRED_PROPS } from '../constants/index.js';
+import { getRequiredProps } from '#utils';
+import { REGISTER_REQUIRED_PROPS, USER_REQUIRED_PROPS } from '#constants';
 
 const { sign, verify } = pkg;
 
@@ -139,7 +140,7 @@ export class AccountService extends NatsService {
                 }
 
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
-                return new MessageResponse(getRequiredProps(setDefaultPermissions(user)));
+                return new MessageResponse(getRequiredProps(setDefaultPermissions(user), USER_REQUIRED_PROPS));
             } catch (error) {
                 return new MessageError(error);
             }
@@ -326,8 +327,8 @@ export class AccountService extends NatsService {
                     null,
                     null,
                 );
-                return new MessageResponse(user);
 
+                return new MessageResponse(getRequiredProps(user, REGISTER_REQUIRED_PROPS));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error)

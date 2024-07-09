@@ -20,7 +20,7 @@
 
     .mat-dialog-actions {
         display: flex;
-        justify-content: end;
+        justify-content: flex-end;
         gap: 16px;
         border-top: 1px solid #E1E7EF;
         padding: 20px 0px;

@@ -25,6 +25,7 @@
     "@bahmutov/cy-api": "^2.1.3",
     "@cypress/grep": "^4.1.0",
     "cypress-multi-reporters": "^1.6.4",
+    "cypress-tags": "^1.2.2",
     "mocha-junit-reporter": "^2.2.1",
     "util": "^0.12.4",
     "uuidv4": "^6.2.13"

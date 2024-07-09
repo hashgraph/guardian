@@ -12,16 +12,17 @@ import { PolicyType } from '@guardian/interfaces';
     styleUrls: ['./artifact-import-dialog.component.css']
 })
 export class ArtifactImportDialog {
-    policyId = this.fb.control('', [Validators.required]);
-    policies: any = [];
+    public policyId = this.fb.control('', [Validators.required]);
+    public policies: any = [];
 
     constructor(
         public dialogRef: MatDialogRef<ArtifactImportDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         if (data) {
-            this.policyId.patchValue(data.policyId || '');
             this.policies = data.policies?.filter((policy: any) => policy.status === PolicyType.DRAFT) || [];
+            const current = this.policies.find((policy: any) => policy.id === data.policyId);
+            this.policyId.patchValue(current?.id || '');
         }
     }
 

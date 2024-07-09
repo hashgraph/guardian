@@ -68,9 +68,9 @@
             <div class="field-value">{{ similar }}</div>
         </div>
 
-        <div *ngIf="toolConfigs && toolForm" class="fields-container">
+        <div *ngIf="toolConfigs" class="fields-container">
             <div class="field-name">Tools</div>
-            <form [formGroup]="toolForm!">
+            <form [formGroup]="toolForm">
                 <div class="field-input p-float-label" *ngFor="let toolConfig of toolConfigs">
                     <input id="float-input" class="input" type="text" pInputText [formControlName]="toolConfig.messageId">
                     <label for="float-input">{{toolConfig.name}}</label>
@@ -151,25 +151,25 @@
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
-            <button 
-                    (click)="onClose()" 
+            <button
+                    (click)="onClose()"
                     class="button secondary"
                     label="Close"
                     pButton
             ></button>
         </div>
         <div [ngSwitch]="!!(xlsx && errors?.length)">
-            <button 
+            <button
                     *ngSwitchCase="true"
-                    (click)="onImport()" 
+                    (click)="onImport()"
                     class="button"
                     label="Skip & Import"
                     pButton
             ></button>
-            <button 
+            <button
                     *ngSwitchCase="false"
                     [disabled]="!valid"
-                    (click)="onImport()" 
+                    (click)="onImport()"
                     class="button"
                     label="Import"
                     pButton

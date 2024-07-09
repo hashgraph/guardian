@@ -2,16 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsObject, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class SearchPoliciesDTO {
-    @ApiProperty()
-    @IsObject()
-    target: any;
-
-    @ApiProperty()
-    @IsObject()
-    result: any;
-}
-
 export class SearchBlocksDTO {
     @ApiProperty()
     @IsString()

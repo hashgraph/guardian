@@ -21,6 +21,7 @@ import {
     IVPDocument,
     MessageAPI,
     PolicyToolMetadata,
+    QueueEvents,
     RetireTokenPool,
     RetireTokenRequest,
     SchemaNode,
@@ -140,7 +141,7 @@ export class Guardians extends NatsService {
     /**
      * Return tokens
      *
-     * @param {string} [did]
+     * @param owner
      * @param {string} [pageIndex]
      * @param {string} [pageSize]
      *
@@ -152,6 +153,25 @@ export class Guardians extends NatsService {
         pageSize?: number
     ): Promise<ResponseAndCount<IToken>> {
         return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE, { owner, pageIndex, pageSize });
+    }
+
+    /**
+     * Return tokens V2 10.06.2024
+     *
+     * @param fields
+     * @param owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ResponseAndCount<IToken>} - tokens
+     */
+    public async getTokensPageV2(
+        fields: string[],
+        owner?: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<IToken>> {
+        return await this.sendMessage(MessageAPI.GET_TOKENS_PAGE_V2, { fields, owner, pageIndex, pageSize });
     }
 
     /**
@@ -262,7 +282,7 @@ export class Guardians extends NatsService {
      * @param username
      * @param owner
      */
-    public async unfreezeToken(tokenId: string, username: string, owner: string): Promise<ITokenInfo> {
+    public async unfreezeToken(tokenId: string, username: string, owner: IOwner): Promise<ITokenInfo> {
         return await this.sendMessage(MessageAPI.FREEZE_TOKEN, {
             tokenId,
             username,
@@ -506,17 +526,18 @@ export class Guardians extends NatsService {
      *
      * @returns {any} Demo Key
      */
-    public async generateDemoKey(role: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, { role });
+    public async generateDemoKey(role: string, userId: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, {role, userId});
     }
 
     /**
      * Async generate Demo Key
      * @param role
      * @param task
+     * @param userId
      */
-    public async generateDemoKeyAsync(role: string, task: NewTask): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, task });
+    public async generateDemoKeyAsync(role: string, task: NewTask, userId: string): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, {role, task, userId});
     }
 
     /**
@@ -527,6 +548,16 @@ export class Guardians extends NatsService {
      */
     public async getSchemasByOwner(options: any, owner: IOwner): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_SCHEMAS, { options, owner });
+    }
+
+    /**
+     * Return schemas
+     * @param {any} options
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getSchemasByOwnerV2(options: any, owner: IOwner): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMAS_V2, { options, owner });
     }
 
     /**
@@ -844,6 +875,26 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return schemas V2 03.06.2024
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getSystemSchemasV2(
+        fields: string[],
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_SYSTEM_SCHEMAS_V2, {
+            fields,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
      * Changing the status of a schema on active.
      *
      * @param {string} id - schema id
@@ -922,6 +973,17 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Get Policy Artifacts V2 04.06.2024
+     *
+     * @param {any} options
+     *
+     * @returns - Artifact
+     */
+    public async getArtifactsV2(options: any): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_ARTIFACTS_V2, options);
+    }
+
+    /**
      * Delete Artifact
      * @param artifactId Artifact Identifier
      * @param owner Owner
@@ -976,9 +1038,9 @@ export class Guardians extends NatsService {
      * @param responseType Response type
      * @returns File
      */
-    public async getFileIpfs(cid: string, responseType: any): Promise<any> {
+    public async getFileIpfs(cid: string, responseType: any, userId?: string): Promise<any> {
         return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
-            cid, responseType
+            cid, responseType, userId
         });
     }
 
@@ -1103,22 +1165,31 @@ export class Guardians extends NatsService {
      * @param idLvl
      */
     public async comparePolicies(
-        user: IAuthUser,
+        user: IOwner,
         type: string,
-        ids: string[],
+        policies: {
+            type: 'id' | 'file' | 'message',
+            value: string | {
+                id: string,
+                name: string,
+                value: string
+            }
+        }[],
         eventsLvl: string | number,
         propLvl: string | number,
         childrenLvl: string | number,
         idLvl: string | number
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_POLICIES, {
-            type,
             user,
-            ids,
-            eventsLvl,
-            propLvl,
-            childrenLvl,
-            idLvl
+            type,
+            policies,
+            options: {
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl
+            }
         });
     }
 
@@ -1159,19 +1230,25 @@ export class Guardians extends NatsService {
      * Compare two schemas
      * @param user
      * @param type
-     * @param schemaId1
-     * @param schemaId2
+     * @param schemas
      * @param idLvl
      */
     public async compareSchemas(
-        user: IAuthUser,
+        user: IOwner,
         type: string,
-        schemaId1: string,
-        schemaId2: string,
+        schemas: {
+            type: 'id' | 'policy-message' | 'policy-file',
+            value: string,
+            policy?: string | {
+                id: string,
+                name: string,
+                value: string
+            }
+        }[],
         idLvl: string | number
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.COMPARE_SCHEMAS, {
-            user, type, schemaId1, schemaId2, idLvl
+            user, type, schemas, idLvl
         });
     }
 
@@ -1181,10 +1258,10 @@ export class Guardians extends NatsService {
      * @param policyId
      */
     public async searchPolicies(
-        user: IAuthUser,
-        policyId: string
+        user: IOwner,
+        filters: any
     ): Promise<any> {
-        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, { user, policyId });
+        return await this.sendMessage(MessageAPI.SEARCH_POLICIES, { user, filters });
     }
 
     //#region Contracts
@@ -1771,6 +1848,10 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GET_MODULES, { filters, owner });
     }
 
+    public async getModuleV2(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_MODULES_V2, { filters, owner });
+    }
+
     /**
      * Delete module
      * @param uuid
@@ -1919,6 +2000,17 @@ export class Guardians extends NatsService {
      */
     public async getTools(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(MessageAPI.GET_TOOLS, { filters, owner });
+    }
+
+    /**
+     * Return tools V2 05.06.2024
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getToolsV2(fields: string[], filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_TOOLS_V2, { fields, filters, owner });
     }
 
     /**
@@ -2160,6 +2252,29 @@ export class Guardians extends NatsService {
         pageSize?: any
     ): Promise<ResponseAndCount<ISchema>> {
         return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Return tag schemas V2
+     * @param fields
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getTagSchemasV2(
+        fields: string[],
+        owner: IOwner,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS_V2, {
+            fields,
             owner,
             pageIndex,
             pageSize
@@ -2688,5 +2803,33 @@ export class Guardians extends NatsService {
      */
     public async setRole(user: IAuthUser, owner: IOwner): Promise<any> {
         return await this.sendMessage(MessageAPI.SET_ROLE, { user, owner });
+    }
+
+    /**
+     * Get all worker tasks
+     * @param user
+     * @param pageIndex
+     * @param pageSize
+     */
+    public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, {userId: user.id.toString(), pageIndex, pageSize});
+    }
+
+    /**
+     * Restart task
+     * @param taskId
+     * @param userId
+     */
+    public async restartTask(taskId: string, userId: string) {
+        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId, userId});
+    }
+
+    /**
+     * Delete task
+     * @param taskId
+     * @param userId
+     */
+    public async deleteTask(taskId: string, userId: string) {
+        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId, userId});
     }
 }

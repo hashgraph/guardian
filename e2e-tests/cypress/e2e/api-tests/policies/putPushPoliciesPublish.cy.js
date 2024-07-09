@@ -16,8 +16,8 @@ context('Policies', { tags: ['policies', 'secondPool'] },() => {
             timeout: 180000
         })
             .then(response => {
-                let firstPolicyId = response.body.at(-1).id
-                let firstPolicyStatus = response.body.at(-1).status
+                let firstPolicyId = response.body.at(0).id
+                let firstPolicyStatus = response.body.at(0).status
                 expect(firstPolicyStatus).to.equal('DRAFT')
                 cy.request({
                     method: 'PUT',

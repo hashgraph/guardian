@@ -1,91 +1,339 @@
-.context {
-  position: relative;
-  overflow-y: auto;
-  padding: 20px 0 20px 0;
-}
-
 .loading {
-  background: #fff;
-  position: absolute;
-  z-index: 99;
-  border-radius: 16px;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-items: center;
-  justify-content: center;
-  align-content: center;
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    border-radius: 16px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
 }
 
+.context {
+    position: relative;
+    overflow-y: auto;
+    padding: 5px 0 20px 0;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
 
-.action-buttons {
-  display: flex;
-}
+    .left-container {
+        min-width: 250px;
+        width: 250px;
+        height: 100%;
+        border: 1px solid #E1E7EF;
+        border-radius: 6px;
+        padding: 10px;
+        overflow: auto;
 
-.cancel-button {
-  margin-left: auto;
-  margin-right: 15px;
+        .policy-header {
+            font-family: Inter;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 14px;
+            text-align: left;
+            padding: 4px 0px;
+            color: #848FA9;
+            margin-bottom: 4px;
+        }
+
+        .other-container {
+            padding-top: 10px;
+        }
+
+        .policy-item {
+            display: flex;
+            flex-direction: row;
+            user-select: none;
+            padding: 8px 4px;
+
+            .policy-name {
+                width: 190px;
+                margin-right: 8px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                font-family: Inter;
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 16px;
+                text-align: left;
+            }
+
+            .policy-delete {
+                width: 20px;
+                height: 20px;
+                min-width: 20px;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .right-container {
+        width: 100%;
+        height: 100%;
+        padding: 0px 0px 0px 20px;
+        display: flex;
+        flex-direction: column;
+
+        .right-header {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .right-body {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #E1E7EF;
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+
+            .type-selector {
+                border-radius: 6px;
+                display: flex;
+                flex-direction: row;
+                margin-bottom: 20px;
+                border: 1px solid #C4D0E1;
+                background: #F9FAFC;
+                width: 100%;
+
+                .selector-item {
+                    padding: 5px;
+                    border-radius: 6px;
+                    margin: 3px;
+                    cursor: pointer;
+                    user-select: none;
+                    flex: 1;
+                    text-align: center;
+                    color: #AAB7C4;
+                    font-family: Inter;
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 24px;
+
+                    &[selected="true"] {
+                        background: var(--color-primary) !important;
+                        color: var(--color-grey-white) !important;
+                    }
+
+                    &:hover {
+                        background: #E1E7EF;
+                    }
+                }
+            }
+
+            .message-container,
+            .local-container,
+            .file-container {
+                display: flex;
+                width: 100%;
+                height: 100%;
+                flex-direction: column;
+                position: relative;
+            }
+
+            .search-policy-input {
+                width: 100%;
+                height: 40px;
+                border: 1px solid #e1e7ef;
+                border-radius: 8px;
+                padding-left: 16px;
+                position: relative;
+
+                &:hover {
+                    border-color: #2196F3;
+                }
+
+                &:focus {
+                    outline: 1px solid #2196F3;
+                }
+            }
+
+            .message-id-error {
+                font-family: Inter;
+                font-size: 12px;
+                font-weight: 400;
+                line-height: 14px;
+                text-align: left;
+                color: #FF432A;
+                position: absolute;
+                left: 4px;
+                top: 48px;
+            }
+
+            .multiSelect-policy-input {
+                max-width: 394px;
+                width: 100%;
+                height: 40px;
+                margin-right: 16px;
+
+                &::ng-deep {
+                    .p-multiselect {
+                        width: 100%;
+                        height: 40px;
+                        border: 1px solid #e1e7ef;
+                        border-radius: 8px;
+                    }
+                }
+            }
+
+            .search-icon {
+                margin-right: 6px;
+            }
+
+            .message-form {
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                height: 40px;
+
+                .message-input {
+                    width: 100%;
+                    margin-right: 18px;
+                }
+            }
+
+            .add-item {
+                width: 130px;
+                min-width: 130px;
+                max-width: 130px;
+                padding: 6px 18px;
+            }
+
+            .file-container>* {
+                width: 100%;
+            }
+
+            .policy-list {
+                position: absolute;
+                left: 0px;
+                top: 58px;
+                bottom: 0px;
+                right: 0px;
+                overflow: auto;
+                border: 1px solid #E1E7EF;
+                border-radius: 6px;
+                display: flex;
+                flex-direction: column;
+
+                .policy-list-item {
+                    display: flex;
+                    flex-direction: row;
+                    height: 48px;
+                    width: 100%;
+                    min-height: 48px;
+                    padding: 14px 10px 14px 18px;
+                    cursor: pointer;
+                    user-select: none;
+
+                    &__selected {
+                        margin-right: 12px;
+                    }
+
+                    &__name {
+                        width: 425px;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                    }
+                }
+            }
+        }
+    }
 }
 
 ::ng-deep {
-  .p-button {
-    border-radius: 8px;
-  }
+    .p-dialog-title {
+        font-family: Poppins, sans-serif;
+        font-size: 24px;
+        font-style: normal;
+        font-weight: 600;
+    }
 
-  .p-dropdown {
-    width: 100%;
-  }
+    .p-dialog {
+        box-shadow: none;
+    }
 
-  .p-multiselect {
-    width: 100%;
-  }
+    .p-dialog-header {
+        border-top-left-radius: 16px !important;
+        border-top-right-radius: 16px !important;
+    }
 
-  .p-focus {
-    box-shadow: none !important;
-  }
-}
-
-.policy-dropdown-container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 25px;
-}
-
-.form-label {
-  color: #181818;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 500;
+    .p-dialog-content {
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
 }
 
 .dialog-body {
-  height: 35vh;
-  overflow-y: auto;
+    height: 40vh;
+    overflow-y: auto;
 }
 
-::ng-deep {
-  .p-dialog-title {
-    font-family: Poppins, sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 600;
-  }
-
-  .p-dialog {
-    box-shadow: none;
-  }
-
-  .p-dialog-header {
-    border-top-left-radius: 16px !important;
-    border-top-right-radius: 16px !important;
-  }
-
-  .p-dialog-content {
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-  }
+.action-buttons {
+    display: flex;
 }
+
+.cancel-button {
+    margin-left: auto;
+    margin-right: 15px;
+}
+
+.close-icon-color {
+    fill: #848FA9;
+    color: #848FA9;
+}
+
+.icon2-btn {
+    margin-right: 8px;
+}
+
+.on-icon-color {
+    fill: #fff;
+    color: #fff;
+}
+
+.disabled-icon-color {
+    fill: var(--color-grey-5) !important;
+    color: var(--color-grey-5) !important;
+}
+
+// ::ng-deep {
+//     .p-button {
+//         border-radius: 8px;
+//     }
+
+//     .p-dropdown {
+//         width: 100%;
+//     }
+
+//     .p-multiselect {
+//         width: 100%;
+//     }
+
+//     .p-focus {
+//         box-shadow: none !important;
+//     }
+// }
+
+// .policy-dropdown-container {
+//     display: flex;
+//     flex-direction: column;
+//     margin-bottom: 25px;
+// }
+
+// .form-label {
+//     color: #181818;
+//     font-family: Inter, sans-serif;
+//     font-size: 12px;
+//     font-style: normal;
+//     font-weight: 500;
+// }

@@ -9,7 +9,12 @@ context('Policies', { tags: ['policies', 'secondPool'] }, () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'policies/import/message',
-            body: {messageId: (Cypress.env('irec_policy'))},
+            body: {
+                messageId: (Cypress.env('irec_policy')),
+                metadata: {
+                    "tools": {}
+                  }
+            },
             headers: {
                 authorization,
             },

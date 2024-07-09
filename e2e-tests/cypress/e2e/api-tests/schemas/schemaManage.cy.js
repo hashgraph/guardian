@@ -22,8 +22,9 @@ context("Schemas", { tags: ['schema', 'thirdPool'] }, () => {
                 headers: {authorization},
                 body: {
                     uuid: schemaUUID,
+                    name: "test",
                     description: "new",
-                    hash: "",
+                    entity: "VC",
                     status: "DRAFT",
                     readonly: false,
                     name: "test",

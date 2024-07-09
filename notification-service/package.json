@@ -5,8 +5,8 @@
       "image-size": "1.0.2"
   },
   "dependencies": {
-    "@guardian/common": "^2.25.1",
-    "@guardian/interfaces": "^2.25.1",
+    "@guardian/common": "^2.26.1",
+    "@guardian/interfaces": "^2.26.1",
     "@mikro-orm/core": "6.2.2",
     "@mikro-orm/mongodb": "6.2.2",
     "@nestjs/common": "^9.4.1",
@@ -42,6 +42,9 @@
   "main": "dist/index.js",
   "name": "notification-service",
   "packageManager": "yarn@1.22.21",
+  "imports": {
+    "#constants": "./dist/constants/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "build:prod": "tsc --project tsconfig.production.json",
@@ -53,5 +56,5 @@
     "watch": "nodemon src/index.ts"
   },
   "type": "module",
-  "version": "2.25.1"
+  "version": "2.26.1"
 }

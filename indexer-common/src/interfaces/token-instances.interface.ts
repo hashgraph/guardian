@@ -1,4 +1,4 @@
-import { NFT } from "./nft.interface.js";
+import { NFT } from './nft.interface.js';
 
 export interface TokenInstances {
     links: {

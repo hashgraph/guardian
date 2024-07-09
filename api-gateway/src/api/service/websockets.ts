@@ -105,6 +105,7 @@ export class WebSocketsService {
         if(!users) {
             return;
         }
+
         const usersMap = new Map<string, any>();
         if (Array.isArray(users)) {
             for (const user of users) {

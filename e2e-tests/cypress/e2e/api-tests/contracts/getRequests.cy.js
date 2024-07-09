@@ -194,22 +194,22 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                 wContractId = response.body.contractId;
             });
 
-            //Import policy and save id
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: {
-                    "messageId": Cypress.env('policy_for_compare1')//iRec 4
-                },
-                headers: {
-                    authorization,
-                },
-                timeout: 180000
+        //Import policy and save id
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.PolicisImportMsg,
+            body: {
+                "messageId": Cypress.env('policy_for_compare1')//iRec 4
+            },
+            headers: {
+                authorization,
+            },
+            timeout: 180000
+        })
+            .then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                policyId = response.body.at(-1).id;
             })
-                .then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId = response.body.at(0).id;
-                })
 
             //Get token(Irec token) draft id to update it
             cy.request({

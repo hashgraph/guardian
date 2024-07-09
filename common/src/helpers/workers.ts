@@ -1,5 +1,5 @@
 import { Singleton } from '../decorators/singleton.js';
-import { GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, TimeoutError, WorkerEvents, } from '@guardian/interfaces';
+import { GenerateUUIDv4, HederaResponseCode, IActiveTask, ITask, QueueEvents, TimeoutError, WorkerEvents, } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules/index.js';
 import { NatsService } from '../mq/index.js';
 
@@ -97,7 +97,7 @@ export class Workers extends NatsService {
      * Max Repetitions
      * @private
      */
-    private readonly maxRepetitions = 25;
+    // private readonly maxRepetitions = 25;
 
     private _wrapError(error, isTimeoutError?: boolean): any {
         if (isTimeoutError) {
@@ -120,8 +120,9 @@ export class Workers extends NatsService {
      * Add non retryable task
      * @param task
      * @param priority
+     * @param userId
      */
-    public addNonRetryableTask(task: ITask, priority: number): Promise<any> {
+    public addNonRetryableTask(task: ITask, priority: number, userId?: string | null): Promise<any> {
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
@@ -137,7 +138,7 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(task, priority, false);
+        return this.addTask(task, priority, false, 0, true, userId);
     }
 
     /**
@@ -145,8 +146,9 @@ export class Workers extends NatsService {
      * @param task
      * @param priority
      * @param attempts
+     * @param userId
      */
-    public addRetryableTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
+    public addRetryableTask(task: ITask, priority: number, attempts: number = 0, userId: string = null): Promise<any> {
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
@@ -162,63 +164,34 @@ export class Workers extends NatsService {
         if (!task.data.localNodeProtocol) {
             task.data.localNodeProtocol = Environment.localNodeProtocol;
         }
-        return this.addTask(task, priority, true, attempts);
+        return this.addTask(task, priority, true, attempts, true, userId);
     }
 
     /**
-     * Add retryable task
-     * @param task
-     * @param priority
-     * @param isRetryableTask
-     * @param attempts
-     * @param registerCallback
+     * Init listeners
      */
-    private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true): Promise<any> {
-        const taskId = task.id || GenerateUUIDv4();
-        task.id = taskId;
-        task.priority = priority;
-        attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
-        this.queue.add(task);
-
-        const result = new Promise((resolve, reject) => {
-            if (registerCallback) {
-                this.tasksCallbacks.set(taskId, {
-                    task,
-                    number: 0,
-                    callback: (data, error, isTimeoutError) => {
-                        if (error) {
-                            if (isRetryableTask && !Workers.isNotRetryableError(error)) {
-                                if (this.tasksCallbacks.has(taskId)) {
-                                    const callback = this.tasksCallbacks.get(taskId);
-                                    callback.number++;
-                                    if (callback.number > attempts) {
-                                        this.tasksCallbacks.delete(taskId);
-                                        this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
-                                        reject(this._wrapError(error, isTimeoutError));
-                                        return;
-                                    }
-                                }
-                                task.sent = false;
-                                this.queue.add(task);
-                            } else {
-                                this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId ,data, error });
-                                reject(this._wrapError(error, isTimeoutError));
-                            }
-                        } else {
-                            this.tasksCallbacks.delete(task.id);
-                            this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
-                            resolve(data);
-                        }
-                    }
-                });
-            } else {
-                resolve(null);
-            }
+    public initListeners() {
+        this.subscribe(WorkerEvents.WORKER_READY, async () => {
+            await this.searchAndUpdateTasks();
         });
 
-        this.searchAndUpdateTasks();
+        setInterval(async () => {
+            await this.searchAndUpdateTasks();
+        }, 1000);
 
-        return result;
+        this.subscribe(QueueEvents.TASK_COMPLETE, async (data: any) => {
+            if (!data.id) {
+                throw new Error('Message without id');
+            }
+            if (data.error) {
+                console.error(data);
+            }
+            if (this.tasksCallbacks.has(data.id)) {
+                const activeTask = this.tasksCallbacks.get(data.id);
+                activeTask.callback(data.data, data.error, data.isTimeoutError);
+            }
+
+        })
     }
 
     /**
@@ -269,39 +242,56 @@ export class Workers extends NatsService {
                 if (r?.result) {
                     queue[itemIndex].sent = true;
                     this.queue.delete(item);
-                    // this.queue.splice(itemIndex, 1);
                 } else {
                     queue[itemIndex].sent = false;
                 }
-                // this.queue = this.queue.filter(item => !item.sent)
             }
         }
     }
 
     /**
-     * Init listeners
+     * Add retryable task
+     * @param task
+     * @param priority
+     * @param isRetryableTask
+     * @param attempts
+     * @param registerCallback
+     * @param userId
      */
-    public initListeners() {
-        this.subscribe(WorkerEvents.WORKER_READY, async () => {
-            await this.searchAndUpdateTasks();
-        });
+    private async addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true, userId?: string | null): Promise<any> {
+        const taskId = task.id || GenerateUUIDv4();
+        task.id = taskId;
+        task.priority = priority;
+        task.isRetryableTask = isRetryableTask;
+        task.attempts = attempts;
+        task.userId = userId;
 
-        setInterval(async () => {
-            await this.searchAndUpdateTasks();
-        }, 1000);
+        const addTaskToQueue = async (): Promise<void> => {
+            const result = await this.sendMessage<any>(QueueEvents.ADD_TASK_TO_QUEUE, task);
+            if (!result?.ok) {
+                console.log(result);
+                await addTaskToQueue();
+            }
+        }
+        await addTaskToQueue();
 
-        this.subscribe([this.messageQueueName, WorkerEvents.TASK_COMPLETE].join('.'), async (msg: any) => {
-            if (!msg.id) {
-                throw new Error('Message without id');
+        return new Promise((resolve, reject) => {
+            if (registerCallback) {
+                this.tasksCallbacks.set(taskId, {
+                    task,
+                    number: 0,
+                    callback: async (data, error, isTimeoutError) => {
+                        if (error) {
+                            reject(this._wrapError(error, isTimeoutError));
+                            return;
+                        }
+                        resolve(data);
+                    }
+                })
+            } else {
+                resolve(null);
             }
-            if (msg.error) {
-                console.log(msg);
-            }
-            if (this.tasksCallbacks.has(msg.id)) {
-                const activeTask = this.tasksCallbacks.get(msg.id);
-                activeTask.callback(msg.data, msg.error, msg.isTimeoutError);
-            }
-        });
+        })
     }
 
     /**

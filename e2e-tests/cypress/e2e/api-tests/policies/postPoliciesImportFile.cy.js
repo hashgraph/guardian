@@ -9,7 +9,10 @@ context('Policies', { tags: ['policies', 'secondPool'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.PolicisImportMsg,
-            body: {messageId: (Cypress.env('policy_with_artifacts'))}, //Remote Work GHG Policy
+            body: {messageId: (Cypress.env('policy_with_artifacts')),
+            metadata: {
+                "tools": {}
+              }}, 
             headers: {
                 authorization,
             },

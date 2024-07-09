@@ -106,6 +106,9 @@ async function setupUserProfile(
 
     notifier.start('Get user');
     const user = await users.getUser(username);
+    if (user.did) {
+        throw new Error('User DID already exists');
+    }
     notifier.completed();
     let did: string;
     if (user.role === UserRole.STANDARD_REGISTRY) {
@@ -178,7 +181,8 @@ async function checkAndPublishSchema(
     srUser: IOwner,
     messageServer: MessageServer,
     logger: Logger,
-    notifier: INotifier
+    notifier: INotifier,
+    userId?: string
 ): Promise<void> {
     let schema = await new DataBaseHelper(SchemaCollection).findOne({
         entity,
@@ -206,6 +210,7 @@ async function checkAndPublishSchema(
  * Create user profile
  * @param profile
  * @param notifier
+ * @param user
  */
 async function createUserProfile(
     profile: ICredentials,
@@ -250,7 +255,7 @@ async function createUserProfile(
         await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_USER_BALANCE,
             data: { hederaAccountId, hederaAccountKey }
-        }, 20);
+        }, 20, user.id.toString());
     } catch (error) {
         throw new Error(`Invalid Hedera account or key.`);
     }
@@ -284,7 +289,7 @@ async function createUserProfile(
             policyId: null,
             policyUUID: null
         });
-        await topicHelper.oneWayLink(topicConfig, globalTopic, null);
+        await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
         newTopic = await new DataBaseHelper(Topic).save(topicConfig.toObject());
     }
     messageServer.setTopicObject(topicConfig);
@@ -321,15 +326,15 @@ async function createUserProfile(
         didMessage.setDocument(currentDidDocument);
         const didMessageResult = await messageServer
             .setTopicObject(topicConfig)
-            .sendMessage(didMessage)
+            .sendMessage(didMessage, true, null, user.id.toString())
         didRow.status = DidDocumentStatus.CREATE;
         didRow.messageId = didMessageResult.getId();
         didRow.topicId = didMessageResult.getTopicId();
         await new DataBaseHelper(DidDocumentCollection).update(didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE']);
-        didRow.status = DidDocumentStatus.FAILED;
-        await new DataBaseHelper(DidDocumentCollection).update(didRow);
+        // didRow.status = DidDocumentStatus.FAILED;
+        // await new DataBaseHelper(DidDocumentCollection).update(didRow);
     }
     // ------------------------
     // Publish DID Document -->
@@ -349,7 +354,8 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            user.id.toString()
         );
         await checkAndPublishSchema(
             SchemaEntity.USER,
@@ -358,7 +364,8 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            user.id.toString()
         );
         await checkAndPublishSchema(
             SchemaEntity.RETIRE_TOKEN,
@@ -367,7 +374,8 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            user.id.toString()
         );
         await checkAndPublishSchema(
             SchemaEntity.ROLE,
@@ -376,7 +384,8 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            user.id.toString()
         );
         await checkAndPublishSchema(
             SchemaEntity.USER_PERMISSIONS,
@@ -385,7 +394,8 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier
+            notifier,
+            user.id.toString()
         );
         if (entity) {
             const schema = await new DataBaseHelper(SchemaCollection).findOne({
@@ -430,7 +440,7 @@ async function createUserProfile(
         try {
             const vcMessageResult = await messageServer
                 .setTopicObject(topicConfig)
-                .sendMessage(vcMessage);
+                .sendMessage(vcMessage, true, null, user.id.toString());
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
             vcDoc.topicId = vcMessageResult.getTopicId();
@@ -463,7 +473,15 @@ async function createUserProfile(
         regMessage.setDocument(userDID, topicConfig?.topicId, attributes);
         await messageServer
             .setTopicObject(globalTopic)
-            .sendMessage(regMessage)
+            .sendMessage(regMessage, true, null, user.id.toString())
+    }
+
+    // -----------------------
+    // Publish Role Document -->
+    // -----------------------
+    if (user.role === UserRole.STANDARD_REGISTRY) {
+        messageServer.setTopicObject(topicConfig);
+        await createDefaultRoles(userDID, currentDidDocument, messageServer, notifier, user.id.toString());
     }
 
     // -----------------------
@@ -480,14 +498,18 @@ async function createUserProfile(
 
 /**
  * Create default roles
- * @param username
+ * @param did
+ * @param didDocument
+ * @param messageServer
  * @param notifier
+ * @param userId
  */
 async function createDefaultRoles(
     did: string,
     didDocument: CommonDidDocument,
     messageServer: MessageServer,
-    notifier: INotifier
+    notifier: INotifier,
+    userId?: string
 ): Promise<void> {
     notifier.completedAndStart('Create roles');
     const owner = EntityOwner.sr(did);
@@ -567,7 +589,7 @@ async function createDefaultRoles(
         const message = new GuardianRoleMessage(MessageAction.CreateRole);
         message.setRole(credentialSubject);
         message.setDocument(document);
-        await messageServer.sendMessage(message);
+        await messageServer.sendMessage(message, true, null, userId);
         await new DataBaseHelper(VcDocumentCollection).save({
             hash: message.hash,
             owner: owner.owner,
@@ -617,7 +639,7 @@ export function profileAPI() {
                         hederaAccountId: user.hederaAccountId,
                         hederaAccountKey: key
                     }
-                }, 20);
+                }, 20, user.id.toString());
                 return new MessageResponse({
                     balance,
                     unit: 'Hbar',
@@ -659,7 +681,7 @@ export function profileAPI() {
                         hederaAccountId: user.hederaAccountId,
                         hederaAccountKey: key
                     }
-                }, 20);
+                }, 20, user.id.toString());
 
                 return new MessageResponse(balance);
             } catch (error) {
@@ -733,6 +755,8 @@ export function profileAPI() {
                     didKeys
                 } = profile;
 
+                const user = await new Users().getUser(username);
+
                 try {
                     const workers = new Workers();
                     AccountId.fromString(hederaAccountId);
@@ -740,7 +764,7 @@ export function profileAPI() {
                     await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
                         data: { hederaAccountId, hederaAccountKey }
-                    }, 20);
+                    }, 20, user.id.toString());
                 } catch (error) {
                     throw new Error(`Invalid Hedera account or key.`);
                 }
