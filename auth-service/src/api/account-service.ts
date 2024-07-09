@@ -95,14 +95,6 @@ export async function createNewUser(
     return await (new DataBaseHelper(User)).save(user);
 }
 
-export function getRequiredProps(user: User): IUser {
-    const userRequiredProps: IUser = {}
-    for (const prop of Object.values(USER_REQUIRED_PROPS)) {
-        userRequiredProps[prop] = user[prop];
-    }
-    return userRequiredProps;
-}
-
 /**
  * Account service
  */
