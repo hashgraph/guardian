@@ -25,4 +25,5 @@ export * from './policy-category.js';
 export * from './policy-property.js';
 export * from './mongo-transport.js';
 export * from './pino-file-transport.js';
+export * from './console-transport.js';
 export * from './pino-logger.js';

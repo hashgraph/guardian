@@ -1,4 +1,4 @@
-import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiConsumes, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
@@ -10,7 +10,7 @@ import { PREFIXES, TOOL_REQUIRED_PROPS } from '#constants';
 @Controller('tools')
 @ApiTags('tools')
 export class ToolsApi {
-    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
     /**
      * Creates a new tool

@@ -43,3 +43,4 @@ export * from './permissions.type.js';
 export * from './document-category.type.js';
 export * from './assigned-entity.type.js';
 export * from './access.type.js';
+export * from './pino-log.type.js';

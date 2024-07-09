@@ -1,17 +1,32 @@
 import { Writable } from 'stream';
+import { Db, Collection } from 'mongodb';
 
+interface MongoTransportOptions {
+    collectionName: string;
+    client: Db;
+}
+
+/**
+ * MongoDB transport
+ */
 export class MongoTransport extends Writable {
-    private collectionName
-    private client
-    private collection
+    private readonly collectionName: string;
+    private readonly collection: Collection;
+    private client: Db;
 
-    constructor(options) {
+    constructor(options: MongoTransportOptions) {
         super({ objectMode: true });
         this.collectionName = options.collectionName;
         this.client = options.client;
         this.collection = this.client.collection(this.collectionName);
     }
 
+    /**
+     * Insert log into MongoDB
+     * @param log
+     * @param encoding
+     * @param callback
+     */
     async _write(log, encoding, callback) {
         try {
             const logObject = JSON.parse(log)

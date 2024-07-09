@@ -1,4 +1,4 @@
-import { Logger, RunFunctionAsync } from '@guardian/common';
+import { PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
@@ -9,7 +9,7 @@ import { Guardians, InternalException, NewTask, ServiceError, TaskManager, Users
 @Controller('demo')
 @ApiTags('demo')
 export class DemoApi {
-    constructor(private readonly logger: Logger) {
+    constructor(private readonly logger: PinoLogger) {
     }
 
     /**

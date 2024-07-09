@@ -1,15 +1,10 @@
 import { Entity, Enum, Property } from '@mikro-orm/core';
 
+//entities
 import { BaseEntity } from '@guardian/common';
 
-export enum LogType {
-    TRACE = 'trace',
-    DEBUG = 'debug',
-    INFO = 'info',
-    WARN = 'warn',
-    ERROR = 'error',
-    FATAL = 'fatal',
-}
+//types
+import { PinoLogType } from '@guardian/interfaces';
 
 @Entity()
 export class Log extends BaseEntity {
@@ -17,11 +12,5 @@ export class Log extends BaseEntity {
     message: string;
 
     @Enum()
-    type: LogType;
-
-    // @Property({ index: true })
-    // datetime: Date = new Date();
-
-    // @Property({ nullable: true, index: true })
-    // attributes?: string[];
+    type: PinoLogType;
 }

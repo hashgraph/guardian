@@ -1,6 +1,6 @@
 import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner, getCacheKey, CacheService } from '#helpers';
 import { IOwner, IToken, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
-import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
@@ -72,7 +72,7 @@ async function setDynamicTokenPolicy(
 @ApiTags('tokens')
 export class TokensApi {
 
-    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
 
     }
 

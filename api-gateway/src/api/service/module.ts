@@ -1,4 +1,4 @@
-import { Logger, IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
@@ -12,7 +12,7 @@ const ONLY_SR = ' Only users with the Standard Registry role are allowed to make
 @Controller('modules')
 @ApiTags('modules')
 export class ModulesApi {
-    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**

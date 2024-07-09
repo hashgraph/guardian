@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 //helpers
-import { CACHE_CLIENT, CacheClient } from './cache-provider.js';
+import { CACHE_CLIENT, CacheClient } from './providers/cache-provider.js';
 
 @Injectable()
 export class CacheService {

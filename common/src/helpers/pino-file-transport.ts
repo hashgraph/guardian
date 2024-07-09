@@ -2,15 +2,30 @@ import pino from 'pino';
 import path from 'path';
 import { existsSync, mkdirSync, openSync } from 'fs';
 
-export class PinoFileTransport {
-    private destination
+interface PinoFileTransportOptions {
+    filePath: string;
+}
 
-    constructor(options) {
-        this.ensureLogDirectoryExists(options.filePath);
+/**
+ * PinoFileTransport
+ */
+export class PinoFileTransport {
+    private destination: pino.DestinationStream
+
+    /**
+     * Creates an instance of PinoFileTransport.
+     * @param options
+     */
+    constructor(options: PinoFileTransportOptions) {
+        this.ensureLogFileExists(options.filePath);
         this.destination = pino.destination({ dest: options.filePath, sync: false });
     }
 
-    private ensureLogDirectoryExists(filePath: string) {
+    /**
+     * Ensures that the log directory and file exist.
+     * @param filePath
+     */
+    private ensureLogFileExists(filePath: string): void {
         const logDirectory = path.dirname(filePath);
 
         if (!existsSync(logDirectory)) {
@@ -22,7 +37,11 @@ export class PinoFileTransport {
         }
     }
 
-    write(log) {
+    /**
+     * Writes a log to the file.
+     * @param log
+     */
+    write(log: string): void {
         const logObject = JSON.parse(log);
 
         this.destination.write(JSON.stringify(logObject) + '\n')

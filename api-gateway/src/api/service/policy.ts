@@ -1,5 +1,5 @@
 import { Auth, AuthUser } from '#auth';
-import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
@@ -17,7 +17,7 @@ async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
 @Controller('policies')
 @ApiTags('policies')
 export class PolicyApi {
-    constructor(private readonly cacheService: CacheService, private readonly logger: Logger) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**

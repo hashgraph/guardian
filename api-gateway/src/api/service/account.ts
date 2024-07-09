@@ -11,8 +11,6 @@ import { StandardRegistryAccountResponse } from '../../entities/account';
 import { ApplicationEnvironment } from '../../environment.js';
 import { CACHE } from '#constants';
 
-
-
 /**
  * User account route
  */
@@ -42,7 +40,7 @@ export class AccountApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
-    // @UseCache({ttl: 30})
+    @UseCache()
     @HttpCode(HttpStatus.OK)
     async getSession(
         @Headers() headers: { [key: string]: string },
@@ -51,7 +49,6 @@ export class AccountApi {
         try {
             const authHeader = headers.authorization;
             const token = authHeader?.split(' ')[1];
-            await this.logger.warn('hello new logger', ['API_GATEWAY'])
             return await users.getUserByToken(token) as any;
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY']);

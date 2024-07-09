@@ -1,5 +1,5 @@
 import { Guardians, TaskManager, ServiceError, ONLY_SR, InternalException, EntityOwner } from '#helpers';
-import { IAuthUser, Logger, RunFunctionAsync, } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiParam, ApiExtraModels } from '@nestjs/swagger';
@@ -9,7 +9,7 @@ import { AuthUser, Auth } from '#auth';
 @Controller('wizard')
 @ApiTags('wizard')
 export class WizardApi {
-    constructor(private readonly logger: Logger) {
+    constructor(private readonly logger: PinoLogger) {
     }
 
     /**
