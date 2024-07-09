@@ -484,14 +484,6 @@ async function createUserProfile(
         await createDefaultRoles(userDID, currentDidDocument, messageServer, notifier, user.id.toString());
     }
 
-    // -----------------------
-    // Publish Role Document -->
-    // -----------------------
-    if (user.role === UserRole.STANDARD_REGISTRY) {
-        messageServer.setTopicObject(topicConfig);
-        await createDefaultRoles(userDID, currentDidDocument, messageServer, notifier);
-    }
-
     notifier.completed();
     return userDID;
 }
