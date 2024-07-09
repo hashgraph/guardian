@@ -23,3 +23,6 @@ export * from './wallet.js';
 export * from './workers.js';
 export * from './policy-category.js';
 export * from './policy-property.js';
+export * from './mongo-transport.js';
+export * from './pino-file-transport.js';
+export * from './pino-logger.js';

@@ -1,4 +1,4 @@
-import { IAuthUser, Logger, NotificationHelper } from '@guardian/common';
+import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
 import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
@@ -6,10 +6,12 @@ import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkRes
 import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
-import { PolicyListResponse } from '../../entities/policy.js';
-import { StandardRegistryAccountResponse } from '../../entities/account.js';
+import { PolicyListResponse } from '../../entities/policy';
+import { StandardRegistryAccountResponse } from '../../entities/account';
 import { ApplicationEnvironment } from '../../environment.js';
 import { CACHE } from '#constants';
+
+
 
 /**
  * User account route
@@ -18,7 +20,7 @@ import { CACHE } from '#constants';
 @ApiTags('accounts')
 export class AccountApi {
 
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: Logger) {
+    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -40,7 +42,7 @@ export class AccountApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
-    @UseCache()
+    // @UseCache({ttl: 30})
     @HttpCode(HttpStatus.OK)
     async getSession(
         @Headers() headers: { [key: string]: string },
@@ -49,6 +51,7 @@ export class AccountApi {
         try {
             const authHeader = headers.authorization;
             const token = authHeader?.split(' ')[1];
+            await this.logger.warn('hello new logger', ['API_GATEWAY'])
             return await users.getUserByToken(token) as any;
         } catch (error) {
             await this.logger.error(error, ['API_GATEWAY']);
