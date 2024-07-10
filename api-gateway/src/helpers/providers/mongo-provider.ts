@@ -10,6 +10,10 @@ import { DEFAULT_MONGO, MONGO_PROVIDER } from '#constants';
 export const mongoProvider = {
     provide: MONGO_PROVIDER,
     useFactory: async () => {
+        if (!process.env.DB_DATABASE) {
+            return null;
+        }
+
         return await MikroORM.init<MongoDriver>({
             ...COMMON_CONNECTION_CONFIG,
             driverOptions: {

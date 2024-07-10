@@ -10,7 +10,7 @@ interface PinoFileTransportOptions {
  * PinoFileTransport
  */
 export class PinoFileTransport {
-    private destination: pino.DestinationStream
+    private readonly destination: pino.DestinationStream
 
     /**
      * Creates an instance of PinoFileTransport.

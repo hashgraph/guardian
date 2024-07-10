@@ -8,17 +8,19 @@ import { MONGO_PROVIDER } from '#constants';
 
 //types
 import { PinoLogType } from '@guardian/interfaces';
+import process from 'process';
 
 export const pinoLoggerProvider = {
     provide: PinoLogger,
     useFactory: async (db: MikroORM<MongoDriver>) => {
         const loggerOptions = {
             logLevel: levelTypeMapping[process.env.LOG_LEVEL] ?? PinoLogType.INFO,
-            collectionName: process.env.LOG_COLLECTION ?? "log",
+            collectionName: process.env.LOG_COLLECTION ?? 'log',
             filePath: process.env.LOG_FILE_PATH ?? './logs/app.log',
-            client: db.em.getDriver().getConnection().getDb(),
+            client: db?.em.getDriver().getConnection().getDb(),
             transports: process.env.TRANSPORTS ?? '',
-            mapTransports: MAP_TRANSPORTS ?? []
+            mapTransports: MAP_TRANSPORTS ?? [],
+            seqUrl: process.env.SEQ_URL,
         };
 
         return new PinoLogger(loggerOptions);

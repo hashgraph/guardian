@@ -51,7 +51,8 @@
     "ws": "^8.2.1",
     "zlib": "^1.0.5",
     "@formulajs/formulajs": "^4.4.0",
-    "prom-client": "^14.1.1"
+    "prom-client": "^14.1.1",
+    "seq-logging": "^2.2.0"
   },
   "description": "Common package share cross all services",
   "devDependencies": {

@@ -12,7 +12,7 @@ interface MongoTransportOptions {
 export class MongoTransport extends Writable {
     private readonly collectionName: string;
     private readonly collection: Collection;
-    private client: Db;
+    private readonly client: Db;
 
     constructor(options: MongoTransportOptions) {
         super({ objectMode: true });

@@ -4,6 +4,7 @@ import pino from 'pino';
 import { MongoTransport } from './mongo-transport.js';
 import { PinoFileTransport } from './pino-file-transport.js';
 import { ConsoleTransport } from './console-transport.js';
+import { SeqTransport } from './seq-transport.js';
 
 //decorators
 import { Singleton } from '../decorators/singleton.js';
@@ -18,9 +19,10 @@ export const levelTypeMapping: PinoLogType[] = [
 ];
 
 export const MAP_TRANSPORTS: { [key: string]: any } = {
+    CONSOLE: ConsoleTransport,
     MONGO: MongoTransport,
     FILE: PinoFileTransport,
-    CONSOLE: ConsoleTransport
+    SEQ: SeqTransport,
 }
 
 interface LoggerOptions {
@@ -38,9 +40,9 @@ export class PinoLogger {
     private readonly options: LoggerOptions;
     private readonly logLevel: LogType;
     private readonly mapTransports: { [key: string]: any };
-    private transports: string;
-    private determinedTransports: (new (options: any) => any)[];
-    private logger: pino.Logger;
+    private readonly transports: string;
+    private readonly determinedTransports: (new (options: any) => any)[];
+    private readonly logger: pino.Logger;
 
     constructor(options: LoggerOptions) {
         this.options = options;
@@ -87,49 +89,49 @@ export class PinoLogger {
     /**
      * Create debug log message
      * @param message
-     * @param attr
+     * @param attributes
      */
-    public async debug(message: string, attr?: string[]): Promise<void> {
+    public async debug(message: string, attributes?: string[]): Promise<void> {
         this.logger.debug({
             message,
-            attributes: attr,
+            attributes,
         });
     }
 
     /**
      * Create info log message
      * @param message
-     * @param attr
+     * @param attributes
      */
-    public async info(message: string, attr?: string[]): Promise<void> {
+    public async info(message: string, attributes?: string[]): Promise<void> {
         this.logger.info({
             message,
-            attributes: attr,
+            attributes,
         });
     }
 
     /**
      * Create warning log message
      * @param message
-     * @param attr
+     * @param attributes
      */
-    public async warn(message: string, attr?: string[]): Promise<void> {
+    public async warn(message: string, attributes?: string[]): Promise<void> {
         this.logger.warn({
             message,
-            attributes: attr,
+            attributes,
         });
     }
 
     /**
      * Create error log message
      * @param error
-     * @param attr
+     * @param attributes
      */
-    public async error(error: string | Error, attr?: string[]): Promise<void> {
+    public async error(error: string | Error, attributes?: string[]): Promise<void> {
         const message = !error ? 'Unknown error' : (typeof error === 'string' ? error : error.stack);
         this.logger.error({
             message,
-            attributes: attr,
+            attributes,
         });
     }
 }
