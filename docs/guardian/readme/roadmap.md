@@ -313,16 +313,6 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 
 ## ---- June 2024----
 
-### Development of VMR0006: Energy Efficiency and Fuel Switch Measures in Thermal Applications, v1.2v
-
-Designing of the Schema and getting it approved.&#x20;
-
-Development of the policy using Schema&#x20;
-
-Development of all the tool involved in the policy
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2922](https://github.com/hashgraph/guardian/issues/2922)
-
 ### Hedera interactions resilience module
 
 Create a Guardian 'transaction execution' service which would assure orderly transaction execution and their status tracking, and provide intelligent retry and failure recovery functionality such that required transactions would be guaranteed to be asynchronously executed once, and only once, and in the right order.
@@ -399,6 +389,8 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2884](https://githu
 
 Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.a.-electricity-generation-by-the-user](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.a.-electricity-generation-by-the-user)
 
+## ---- July 2024----
+
 ### Development of AMS-I.C.: Thermal Energy Production with or Without Electricity
 
 1. Designing the Schema for the methodology
@@ -419,7 +411,15 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://gith
 
 Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
 
-## ---- July 2024----
+### Development of VMR0006: Energy Efficiency and Fuel Switch Measures in Thermal Applications, v1.2v
+
+Designing of the Schema and getting it approved.&#x20;
+
+Development of the policy using Schema&#x20;
+
+Development of all the tool involved in the policy
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2922](https://github.com/hashgraph/guardian/issues/2922)
 
 ### Indexer API
 
@@ -463,7 +463,7 @@ Or provide/document clearly a mechanism to filter on an [interface document bloc
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3610](https://github.com/hashgraph/guardian/issues/3610)
 
-### Development of AMS-I.E: Switch from Non-Renewable Biomass for Thermal Applications by the User – v.13.0
+### Development of AMS-I.E and Mass Comparison on Cookstove methodologies for the Webinar
 
 Designing of the Schema and getting it approved.&#x20;
 
@@ -479,16 +479,6 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2923](https://gith
 * Introduce a hook into the new policy merge and release build events which triggers execution of the community policies regression test cycle
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/2847](https://github.com/hashgraph/guardian/issues/2847)
-
-### Development of GS Methodology for Emission Reductions from Safe Drinking Water Supply v.1.0
-
-Designing of the Schema and getting it approved.&#x20;
-
-Development of the policy using Schema&#x20;
-
-Development of all the tool involved in the policy
-
-Referral Link : [https://github.com/hashgraph/guardian/issues/2924](https://github.com/hashgraph/guardian/issues/2924)
 
 ### GHG scorecards Research
 
