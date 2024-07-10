@@ -3,3 +3,8 @@ export * from './project-coordinates.dto.js';
 export * from './grid/page.dto.js';
 export * from './search-item.dto.js';
 export * from './details/index.js';
+export * from './raw-message.dto.js';
+export * from './raw-topic.dto.js';
+export * from './raw-nft.dto.js';
+export * from './raw-token.dto.js';
+export * from './decorators/index.js';

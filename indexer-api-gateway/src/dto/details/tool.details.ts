@@ -2,16 +2,18 @@ import {
     Tool,
     ToolActivity,
     ToolAnalytics,
+    ToolDetails,
     ToolOptions,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsActivityResponseWithDefinition,
     DetailsActivityDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class ToolOptionsDTO implements ToolOptions {
     @ApiProperty({
@@ -97,25 +99,30 @@ export const ApiPaginatedToolResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('Tools', ToolDtoDefinition)
 );
 
-export class ToolDetailsDTO extends DetailsActivityDTO<
-    ToolDTO,
-    ToolActivityDTO
-> {}
+export class ToolDetailsDTO
+    extends DetailsActivityDTO<ToolDTO, ToolActivityDTO>
+    implements ToolDetails {}
 export const ApiDetailsToolResponse = applyDecorators(
     ApiExtraModels(ToolDTO, ToolOptionsDTO, ToolAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition('Tool details', ToolActivityDTO, {
-        allOf: [
-            { $ref: getSchemaPath(ToolDTO) },
-            {
-                properties: {
-                    options: {
-                        $ref: getSchemaPath(ToolOptionsDTO),
-                    },
-                    analytics: {
-                        $ref: getSchemaPath(ToolAnalyticsDTO),
+    ApiDetailsActivityResponseWithDefinition(
+        ToolDetailsDTO,
+        RawMessageDTO,
+        'Tool details',
+        ToolActivityDTO,
+        {
+            allOf: [
+                { $ref: getSchemaPath(ToolDTO) },
+                {
+                    properties: {
+                        options: {
+                            $ref: getSchemaPath(ToolOptionsDTO),
+                        },
+                        analytics: {
+                            $ref: getSchemaPath(ToolAnalyticsDTO),
+                        },
                     },
                 },
-            },
-        ],
-    })
+            ],
+        }
+    )
 );

@@ -38,7 +38,13 @@ import {
     ApiPaginatedContractResponse,
     PageDTO,
     RegistryDTO,
+    NFTDetailsDTO,
+    NFTDTO,
+    TokenDTO,
+    TokenDetailsDTO,
 } from '#dto';
+import { ApiDetailsRawResponse } from '../../decorators/api-details-raw-response.js';
+import { ApiPaginatedResponse } from '../../decorators/api-paginated-response.js';
 
 @Controller('entities')
 @ApiTags('entities')
@@ -481,8 +487,23 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region TOKENS
+    @ApiOperation({
+        summary: 'Get tokens',
+        description: 'Returns tokens',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedResponse('Tokens', TokenDTO)
     @Get('/tokens')
+    @ApiQuery({
+        name: 'tokenId',
+        description: 'Token identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'treasury',
+        description: 'Treasury',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getTokens(
         @Query('pageIndex') pageIndex?: number,
@@ -501,7 +522,18 @@ export class EntityApi extends ApiClient {
             treasury,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get token',
+        description: 'Returns token',
+    })
+    @ApiDetailsRawResponse('NFTs', TokenDetailsDTO, TokenDTO)
     @Get('/tokens/:tokenId')
+    @ApiParam({
+        name: 'tokenId',
+        description: 'Token identifier',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getToken(@Param('tokenId') tokenId: string) {
         return await this.send(IndexerMessageAPI.GET_TOKEN, {
@@ -523,7 +555,7 @@ export class EntityApi extends ApiClient {
         examples: {
             '0.0.1960': {
                 description:
-                    'Search schemas, which are related to specific topic identifier',
+                    'Search roles, which are related to specific topic identifier',
                 value: '["0.0.1960"]',
             },
         },
@@ -602,7 +634,7 @@ export class EntityApi extends ApiClient {
         examples: {
             '0.0.1960': {
                 description:
-                    'Search schemas, which are related to specific topic identifier',
+                    'Search DIDs, which are related to specific topic identifier',
                 value: '["0.0.1960"]',
             },
         },
@@ -678,7 +710,7 @@ export class EntityApi extends ApiClient {
         examples: {
             '0.0.1960': {
                 description:
-                    'Search schemas, which are related to specific topic identifier',
+                    'Search VPs, which are related to specific topic identifier',
                 value: '["0.0.1960"]',
             },
         },
@@ -768,7 +800,7 @@ export class EntityApi extends ApiClient {
         examples: {
             '0.0.1960': {
                 description:
-                    'Search schemas, which are related to specific topic identifier',
+                    'Search VCs, which are related to specific topic identifier',
                 value: '["0.0.1960"]',
             },
         },
@@ -855,8 +887,18 @@ export class EntityApi extends ApiClient {
 
     //#region OTHERS
     //#region NFTS
+    @ApiOperation({
+        summary: 'Get NFTs',
+        description: 'Returns NFTs',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedResponse('NFTs', NFTDTO)
     @Get('/nfts')
+    @ApiQuery({
+        name: 'tokenId',
+        description: 'Token identifier',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getNFTs(
         @Query('pageIndex') pageIndex?: number,
@@ -873,7 +915,23 @@ export class EntityApi extends ApiClient {
             tokenId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get NFT',
+        description: 'Returns NFT',
+    })
+    @ApiDetailsRawResponse('NFTs', NFTDetailsDTO, NFTDTO)
     @Get('/nfts/:tokenId/:serialNumber')
+    @ApiParam({
+        name: 'tokenId',
+        description: 'Token identifier',
+        example: '0.0.1960',
+    })
+    @ApiParam({
+        name: 'serialNumber',
+        description: 'Serial number',
+        example: '1',
+    })
     @HttpCode(HttpStatus.OK)
     async getNFT(
         @Param('tokenId') tokenId: string,
@@ -899,7 +957,7 @@ export class EntityApi extends ApiClient {
         examples: {
             '0.0.1960': {
                 description:
-                    'Search schemas, which are related to specific topic identifier',
+                    'Search topics, which are related to specific topic identifier',
                 value: '["0.0.1960"]',
             },
         },
@@ -960,7 +1018,7 @@ export class EntityApi extends ApiClient {
         examples: {
             '0.0.1960': {
                 description:
-                    'Search schemas, which are related to specific topic identifier',
+                    'Search contracts, which are related to specific topic identifier',
                 value: '["0.0.1960"]',
             },
         },

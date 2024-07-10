@@ -2,16 +2,18 @@ import {
     Registry,
     RegistryActivity,
     RegistryAnalytics,
+    RegistryDetails,
     RegistryOptions,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsActivityResponseWithDefinition,
     DetailsActivityDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class RegistryOptionsDTO implements RegistryOptions {
     @ApiProperty({
@@ -84,10 +86,9 @@ export class RegistryActivityDTO implements RegistryActivity {
     users: number;
 }
 
-export class RegistryDTO extends MessageDTO<
-    RegistryOptionsDTO,
-    RegistryAnalyticsDTO
-> implements Registry {}
+export class RegistryDTO
+    extends MessageDTO<RegistryOptionsDTO, RegistryAnalyticsDTO>
+    implements Registry {}
 
 export const RegistryDtoDefinition = {
     allOf: [
@@ -110,13 +111,14 @@ export const ApiPaginatedRegistryResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('Registries', RegistryDtoDefinition)
 );
 
-export class RegistryDetailsDTO extends DetailsActivityDTO<
-    RegistryDTO,
-    RegistryActivityDTO
-> {}
+export class RegistryDetailsDTO
+    extends DetailsActivityDTO<RegistryDTO, RegistryActivityDTO>
+    implements RegistryDetails {}
 export const ApiDetailsRegistryResponse = applyDecorators(
     ApiExtraModels(RegistryDTO, RegistryOptionsDTO, RegistryAnalyticsDTO),
     ApiDetailsActivityResponseWithDefinition(
+        RegistryDetailsDTO,
+        RawMessageDTO,
         'Registry details',
         RegistryActivityDTO,
         {

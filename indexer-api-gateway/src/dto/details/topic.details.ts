@@ -2,17 +2,19 @@ import {
     Topic,
     TopicActivity,
     TopicAnalytics,
+    TopicDetails,
     TopicOptions,
     TopicType,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsActivityResponseWithDefinition,
     DetailsActivityDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawTopicDTO } from '../raw-topic.dto.js';
 
 export class TopicOptionsDTO implements TopicOptions {
     @ApiProperty({
@@ -148,13 +150,14 @@ export const ApiPaginatedTopicResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('Topics', TopicDtoDefinition)
 );
 
-export class TopicDetailsDTO extends DetailsActivityDTO<
-    TopicDTO,
-    TopicActivityDTO
-> {}
+export class TopicDetailsDTO
+    extends DetailsActivityDTO<TopicDTO, TopicActivityDTO, RawTopicDTO>
+    implements TopicDetails {}
 export const ApiDetailsTopicResponse = applyDecorators(
     ApiExtraModels(TopicDTO, TopicOptionsDTO, TopicAnalyticsDTO),
     ApiDetailsActivityResponseWithDefinition(
+        TopicDetailsDTO,
+        RawTopicDTO,
         'Topic details',
         TopicActivityDTO,
         {

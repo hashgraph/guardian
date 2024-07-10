@@ -10,7 +10,8 @@ import {
     ApiOperation,
     ApiSecurity,
     ApiTags,
-    ApiQuery
+    ApiQuery,
+    ApiExcludeController
 } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { firstValueFrom, timeout } from 'rxjs';
@@ -19,6 +20,7 @@ import { ApiClient } from '../../api-client.js';
 
 @Controller('elastic')
 @ApiTags('elastic')
+@ApiExcludeController()
 export class ElasticApi extends ApiClient {
     /**
      * Get

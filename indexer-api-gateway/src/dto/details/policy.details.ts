@@ -2,16 +2,18 @@ import {
     Policy,
     PolicyActivity,
     PolicyAnalytics,
+    PolicyDetails,
     PolicyOptions,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsActivityResponseWithDefinition,
     DetailsActivityDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class PolicyOptionsDTO implements PolicyOptions {
     @ApiProperty({
@@ -112,10 +114,9 @@ export class PolicyActivityDTO implements PolicyActivity {
     roles: number;
 }
 
-export class PolicyDTO extends MessageDTO<
-    PolicyOptionsDTO,
-    PolicyAnalyticsDTO
-> implements Policy {}
+export class PolicyDTO
+    extends MessageDTO<PolicyOptionsDTO, PolicyAnalyticsDTO>
+    implements Policy {}
 
 export const PolicyDtoDefinition = {
     allOf: [
@@ -138,13 +139,14 @@ export const ApiPaginatedPolicyResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('Policies', PolicyDtoDefinition)
 );
 
-export class PolicyDetailsDTO extends DetailsActivityDTO<
-    PolicyDTO,
-    PolicyActivityDTO
-> {}
+export class PolicyDetailsDTO
+    extends DetailsActivityDTO<PolicyDTO, PolicyActivityDTO>
+    implements PolicyDetails {}
 export const ApiDetailsPolicyResponse = applyDecorators(
     ApiExtraModels(PolicyDTO, PolicyOptionsDTO, PolicyAnalyticsDTO),
     ApiDetailsActivityResponseWithDefinition(
+        PolicyDetailsDTO,
+        RawMessageDTO,
         'Policy details',
         PolicyActivityDTO,
         {

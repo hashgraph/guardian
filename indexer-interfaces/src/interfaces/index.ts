@@ -5,3 +5,8 @@ export * from './relationships-results.interface.js';
 export * from './langing-analytics.interface.js';
 export * from './project-coordinates.interface.js';
 export * from './search-item.interface.js';
+export * from './message.interface.js';
+export * from './raw-message.interface.js';
+export * from './raw-nft.interface.js';
+export * from './raw-token.interface.js';
+export * from './raw-topic.interface.js';

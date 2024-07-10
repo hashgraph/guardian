@@ -1,12 +1,13 @@
-import { VP, VPAnalytics, VPOptions } from '@indexer/interfaces';
+import { VP, VPAnalytics, VPDetails, VPOptions } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsHistoryResponseWithDefinition,
     DetailsHistoryDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class VPOptionsDTO implements VPOptions {
     @ApiProperty({
@@ -69,22 +70,29 @@ export const ApiPaginatedVPResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('VPs', VPDtoDefinition)
 );
 
-export class VPDetailsDTO extends DetailsHistoryDTO<VPDTO> {}
+export class VPDetailsDTO
+    extends DetailsHistoryDTO<VPDTO>
+    implements VPDetails {}
 export const ApiDetailsVPResponse = applyDecorators(
     ApiExtraModels(VPDTO, VPOptionsDTO, VPAnalyticsDTO),
-    ApiDetailsHistoryResponseWithDefinition('VP details', {
-        allOf: [
-            { $ref: getSchemaPath(VPDTO) },
-            {
-                properties: {
-                    options: {
-                        $ref: getSchemaPath(VPOptionsDTO),
-                    },
-                    analytics: {
-                        $ref: getSchemaPath(VPAnalyticsDTO),
+    ApiDetailsHistoryResponseWithDefinition(
+        VPDetailsDTO,
+        RawMessageDTO,
+        'VP details',
+        {
+            allOf: [
+                { $ref: getSchemaPath(VPDTO) },
+                {
+                    properties: {
+                        options: {
+                            $ref: getSchemaPath(VPOptionsDTO),
+                        },
+                        analytics: {
+                            $ref: getSchemaPath(VPAnalyticsDTO),
+                        },
                     },
                 },
-            },
-        ],
-    })
+            ],
+        }
+    )
 );

@@ -3,16 +3,18 @@ import {
     ISchema,
     SchemaActivity,
     SchemaAnalytics,
+    SchemaDetails,
     SchemaOptions,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsActivityResponseWithDefinition,
     DetailsActivityDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class SchemaOptionsDTO implements SchemaOptions {
     @ApiProperty({
@@ -106,10 +108,9 @@ export class SchemaActivityDTO implements SchemaActivity {
     vps: number;
 }
 
-export class SchemaDTO extends MessageDTO<
-    SchemaOptionsDTO,
-    SchemaAnalyticsDTO
-> implements ISchema {}
+export class SchemaDTO
+    extends MessageDTO<SchemaOptionsDTO, SchemaAnalyticsDTO>
+    implements ISchema {}
 
 export const SchemaDtoDefinition = {
     allOf: [
@@ -132,13 +133,14 @@ export const ApiPaginatedSchemaResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('Schemas', SchemaDtoDefinition)
 );
 
-export class SchemaDetailsDTO extends DetailsActivityDTO<
-    SchemaDTO,
-    SchemaActivityDTO
-> {}
+export class SchemaDetailsDTO
+    extends DetailsActivityDTO<SchemaDTO, SchemaActivityDTO>
+    implements SchemaDetails {}
 export const ApiDetailsSchemaResponse = applyDecorators(
     ApiExtraModels(SchemaDTO, SchemaOptionsDTO, SchemaAnalyticsDTO),
     ApiDetailsActivityResponseWithDefinition(
+        SchemaDetailsDTO,
+        RawMessageDTO,
         'Schema details',
         SchemaActivityDTO,
         {

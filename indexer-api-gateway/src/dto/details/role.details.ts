@@ -2,16 +2,18 @@ import {
     Role,
     RoleActivity,
     RoleAnalytics,
+    RoleDetails,
     RoleOptions,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsActivityResponseWithDefinition,
     DetailsActivityDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class RoleOptionsDTO implements RoleOptions {
     @ApiProperty({
@@ -77,25 +79,30 @@ export const ApiPaginatedRoleResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('Roles', RoleDtoDefinition)
 );
 
-export class RoleDetailsDTO extends DetailsActivityDTO<
-    RoleDTO,
-    RoleActivityDTO
-> {}
+export class RoleDetailsDTO
+    extends DetailsActivityDTO<RoleDTO, RoleActivityDTO>
+    implements RoleDetails {}
 export const ApiDetailsRoleResponse = applyDecorators(
     ApiExtraModels(RoleDTO, RoleOptionsDTO, RoleAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition('Role details', RoleActivityDTO, {
-        allOf: [
-            { $ref: getSchemaPath(RoleDTO) },
-            {
-                properties: {
-                    options: {
-                        $ref: getSchemaPath(RoleOptionsDTO),
-                    },
-                    analytics: {
-                        $ref: getSchemaPath(RoleAnalyticsDTO),
+    ApiDetailsActivityResponseWithDefinition(
+        RoleDetailsDTO,
+        RawMessageDTO,
+        'Role details',
+        RoleActivityDTO,
+        {
+            allOf: [
+                { $ref: getSchemaPath(RoleDTO) },
+                {
+                    properties: {
+                        options: {
+                            $ref: getSchemaPath(RoleOptionsDTO),
+                        },
+                        analytics: {
+                            $ref: getSchemaPath(RoleAnalyticsDTO),
+                        },
                     },
                 },
-            },
-        ],
-    })
+            ],
+        }
+    )
 );

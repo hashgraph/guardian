@@ -31,7 +31,7 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
     @ApiProperty({
         description: 'Owner',
         example:
-            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+            '0.0.1',
     })
     owner: string;
     @ApiProperty({

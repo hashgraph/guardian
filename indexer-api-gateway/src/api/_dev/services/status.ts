@@ -9,7 +9,8 @@ import {
     ApiOkResponse,
     ApiOperation,
     ApiSecurity,
-    ApiTags
+    ApiTags,
+    ApiExcludeController
 } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { firstValueFrom, timeout } from 'rxjs';
@@ -17,6 +18,7 @@ import { IndexerMessageAPI } from '@indexer/common';
 
 @Controller('status')
 @ApiTags('status')
+@ApiExcludeController()
 export class StatusApi {
     private readonly workers: Map<string, any>;
     private readonly indexers: Map<string, any>;

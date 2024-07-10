@@ -2,12 +2,16 @@ import { applyDecorators, Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
 import { DetailsDTO, DetailsHistoryDTO, DetailsHistoryActivityDTO } from '#dto';
 
-export const ApiDetailsResponse = <TModel extends Type<any>>(
+export const ApiDetailsResponse = <
+    TModel extends Type<any>,
+    RT extends Type<any>
+>(
     description: string,
-    model: TModel
+    model: TModel,
+    rModel: RT
 ) => {
     return applyDecorators(
-        ApiExtraModels(DetailsDTO, model),
+        ApiExtraModels(DetailsDTO, model, rModel),
         ApiOkResponse({
             description,
             schema: {
@@ -17,6 +21,9 @@ export const ApiDetailsResponse = <TModel extends Type<any>>(
                         properties: {
                             item: {
                                 $ref: getSchemaPath(model),
+                            },
+                            row: {
+                                $ref: getSchemaPath(rModel),
                             },
                         },
                     },

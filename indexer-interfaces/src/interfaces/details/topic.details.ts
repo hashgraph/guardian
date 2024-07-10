@@ -1,6 +1,7 @@
 import { TopicType } from '../../types/index.js';
 import { DetailsActivity } from './details.interface.js';
-import { Message } from './message.details.js';
+import { Message } from '../message.interface.js';
+import { RawTopic } from '../raw-topic.interface.js';
 
 /**
  * Topic options
@@ -108,4 +109,4 @@ export type Topic = Message<TopicOptions, TopicAnalytics>;
 /**
  * Topic details
  */
-export type TopicDetails = DetailsActivity<Topic, TopicActivity>;
+export type TopicDetails = DetailsActivity<Topic, TopicActivity, RawTopic>;

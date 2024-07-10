@@ -1,12 +1,13 @@
-import { DID, DIDAnalytics, DIDOptions } from '@indexer/interfaces';
+import { DID, DIDAnalytics, DIDDetails, DIDOptions } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsHistoryResponseWithDefinition,
     DetailsHistoryDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class DIDOptionsDTO implements DIDOptions {
     @ApiProperty({
@@ -54,10 +55,12 @@ export const ApiPaginatedDIDResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('DIDs', DIDDtoDefinition)
 );
 
-export class DIDDetailsDTO extends DetailsHistoryDTO<DIDDTO> {}
+export class DIDDetailsDTO
+    extends DetailsHistoryDTO<DIDDTO>
+    implements DIDDetails {}
 export const ApiDetailsDIDResponse = applyDecorators(
     ApiExtraModels(DIDDTO, DIDOptionsDTO, DIDAnalyticsDTO),
-    ApiDetailsHistoryResponseWithDefinition('DID details', {
+    ApiDetailsHistoryResponseWithDefinition(DIDDetailsDTO, RawMessageDTO, 'DID details', {
         allOf: [
             { $ref: getSchemaPath(DIDDTO) },
             {

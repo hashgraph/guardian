@@ -1,5 +1,5 @@
 import { DetailsActivity } from './details.interface.js';
-import { Message } from './message.details.js';
+import { Message } from '../message.interface.js';
 
 /**
  * Schema options

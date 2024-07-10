@@ -1,12 +1,13 @@
-import { VC, VCAnalytics, VCOptions } from '@indexer/interfaces';
+import { VC, VCAnalytics, VCDetails, VCOptions } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsHistoryResponseWithDefinition,
     DetailsHistoryDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class VCOptionsDTO implements VCOptions {
     @ApiProperty({
@@ -78,22 +79,36 @@ export const ApiPaginatedVCResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('VCs', VCDtoDefinition)
 );
 
-export class VCDetailsDTO extends DetailsHistoryDTO<VCDTO> {}
+export class VCDetailsDTO
+    extends DetailsHistoryDTO<VCDTO>
+    implements VCDetails
+{
+    @ApiProperty({
+        description: 'VC Schema',
+        type: 'object',
+    })
+    schema?: any;
+}
 export const ApiDetailsVCResponse = applyDecorators(
     ApiExtraModels(VCDTO, VCOptionsDTO, VCAnalyticsDTO),
-    ApiDetailsHistoryResponseWithDefinition('VC details', {
-        allOf: [
-            { $ref: getSchemaPath(VCDTO) },
-            {
-                properties: {
-                    options: {
-                        $ref: getSchemaPath(VCOptionsDTO),
-                    },
-                    analytics: {
-                        $ref: getSchemaPath(VCAnalyticsDTO),
+    ApiDetailsHistoryResponseWithDefinition(
+        VCDetailsDTO,
+        RawMessageDTO,
+        'VC details',
+        {
+            allOf: [
+                { $ref: getSchemaPath(VCDTO) },
+                {
+                    properties: {
+                        options: {
+                            $ref: getSchemaPath(VCOptionsDTO),
+                        },
+                        analytics: {
+                            $ref: getSchemaPath(VCAnalyticsDTO),
+                        },
                     },
                 },
-            },
-        ],
-    })
+            ],
+        }
+    )
 );

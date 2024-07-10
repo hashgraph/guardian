@@ -3,15 +3,17 @@ import {
     ContractOptions,
     Contract,
     ContractType,
+    ContractDetails,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsResponseWithDefinition,
     DetailsDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class ContractOptionsDTO implements ContractOptions {
     @ApiProperty({
@@ -64,10 +66,12 @@ export const ApiPaginatedContractResponse = applyDecorators(
     ApiPaginatedResponseWithDefinition('Contracts', ContractDtoDefinition)
 );
 
-export class ContractDetailsDTO extends DetailsDTO<ContractDTO> {}
+export class ContractDetailsDTO
+    extends DetailsDTO<ContractDTO>
+    implements ContractDetails {}
 export const ApiDetailsContractResponse = applyDecorators(
     ApiExtraModels(ContractDTO, ContractOptionsDTO, ContractAnalyticsDTO),
-    ApiDetailsResponseWithDefinition('Contract details', {
+    ApiDetailsResponseWithDefinition(ContractDetailsDTO, RawMessageDTO, 'Contract details', {
         allOf: [
             { $ref: getSchemaPath(ContractDTO) },
             {

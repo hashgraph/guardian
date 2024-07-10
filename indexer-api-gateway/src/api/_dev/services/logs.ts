@@ -27,6 +27,7 @@ import {
     ApiSecurity,
     ApiTags,
     ApiQuery,
+    ApiExcludeController,
 } from '@nestjs/swagger';
 import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
 import { firstValueFrom, timeout } from 'rxjs';
@@ -35,6 +36,7 @@ import { ApiClient } from '../../api-client.js';
 
 @Controller('logs')
 @ApiTags('logs')
+@ApiExcludeController()
 export class LogsApi extends ApiClient {
     /**
      * Get

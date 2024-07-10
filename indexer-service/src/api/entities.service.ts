@@ -44,7 +44,11 @@ import {
     Contract,
     ContractDetails,
     Topic,
-    TopicDetails
+    TopicDetails,
+    TokenDetails,
+    Token,
+    NFTDetails,
+    NFT,
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -735,7 +739,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_TOKENS)
     async getTokens(
         @Payload() msg: PageFilters
-    ): Promise<AnyResponse<Page<TokenCache>>> {
+    ): Promise<AnyResponse<Page<Token>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
@@ -752,7 +756,7 @@ export class EntityService {
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Token>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -761,14 +765,14 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_TOKEN)
     async getToken(
         @Payload() msg: { tokenId: string }
-    ): Promise<AnyResponse<Details>> {
+    ): Promise<AnyResponse<TokenDetails>> {
         try {
             const { tokenId } = msg;
             const em = DataBaseHelper.getEntityManager();
             const row = await em.findOne(TokenCache, {
                 tokenId,
             });
-            return new MessageResponse<Details>({
+            return new MessageResponse<TokenDetails>({
                 id: tokenId,
                 row,
             });
@@ -1087,11 +1091,11 @@ export class EntityService {
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VC_DOCUMENT;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            ) as [VC[], number];
+            )) as [VC[], number];
             const result = {
                 items: rows.map((item) => {
                     if (item.analytics) {
@@ -1217,7 +1221,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_NFTS)
     async getNFTs(
         @Payload() msg: PageFilters
-    ): Promise<AnyResponse<Page<NftCache>>> {
+    ): Promise<AnyResponse<Page<NFT>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
@@ -1234,7 +1238,7 @@ export class EntityService {
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<NFT>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -1243,7 +1247,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_NFT)
     async getNFT(
         @Payload() msg: { tokenId: string; serialNumber: string }
-    ): Promise<AnyResponse<Details>> {
+    ): Promise<AnyResponse<NFTDetails>> {
         try {
             const { tokenId } = msg;
             const serialNumber = parseInt(msg.serialNumber, 10);
@@ -1255,8 +1259,7 @@ export class EntityService {
             const nftHistory: any = await axios.get(
                 `https://${process.env.HEDERA_NET}.mirrornode.hedera.com/api/v1/tokens/${tokenId}/nfts/${serialNumber}/transactions?limit=100`
             );
-            console.log(nftHistory);
-            return new MessageResponse<Details>({
+            return new MessageResponse<NFTDetails>({
                 id: tokenId,
                 row,
                 history: nftHistory.data?.transactions || [],
@@ -1278,11 +1281,11 @@ export class EntityService {
             filters.action = MessageAction.CreateTopic;
             filters['options.childId'] = null;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            ) as [Topic[], number];
+            )) as [Topic[], number];
             const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
@@ -1302,12 +1305,12 @@ export class EntityService {
         try {
             const { topicId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 type: MessageType.TOPIC,
                 action: MessageAction.CreateTopic,
                 'options.childId': null,
                 topicId,
-            } as any) as Topic;
+            } as any)) as Topic;
             const row = await em.findOne(TopicCache, {
                 topicId,
             });
@@ -1440,12 +1443,12 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 type: MessageType.CONTRACT,
                 action: MessageAction.CreateContract,
                 messageId,
-            } as any);
-            const row = await em.findOne(Message, {
+            } as any)) as Contract;
+            const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
             if (!item) {

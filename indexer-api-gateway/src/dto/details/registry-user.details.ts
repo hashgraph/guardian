@@ -2,16 +2,18 @@ import {
     RegistryUser,
     RegistryUserActivity,
     RegistryUserAnalytics,
+    RegistryUserDetails,
     RegistryUserOptions,
 } from '@indexer/interfaces';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { MessageDTO } from './message.details.js';
+import { MessageDTO } from '../message.dto.js';
 import {
     ApiDetailsActivityResponseWithDefinition,
     DetailsActivityDTO,
 } from './details.interface.js';
 import { applyDecorators } from '@nestjs/common';
 import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class RegistryUserOptionsDTO implements RegistryUserOptions {
     @ApiProperty({
@@ -47,10 +49,9 @@ export class RegistryUserActivityDTO implements RegistryUserActivity {
     roles: number;
 }
 
-export class RegistryUserDTO extends MessageDTO<
-    RegistryUserOptionsDTO,
-    RegistryUserAnalyticsDTO
-> implements RegistryUser {}
+export class RegistryUserDTO
+    extends MessageDTO<RegistryUserOptionsDTO, RegistryUserAnalyticsDTO>
+    implements RegistryUser {}
 
 export const RegistryUserDtoDefinition = {
     allOf: [
@@ -80,10 +81,9 @@ export const ApiPaginatedRegistryUserResponse = applyDecorators(
     )
 );
 
-export class RegistryUserDetailsDTO extends DetailsActivityDTO<
-    RegistryUserDTO,
-    RegistryUserActivityDTO
-> {}
+export class RegistryUserDetailsDTO
+    extends DetailsActivityDTO<RegistryUserDTO, RegistryUserActivityDTO>
+    implements RegistryUserDetails {}
 export const ApiDetailsRegistryUserResponse = applyDecorators(
     ApiExtraModels(
         RegistryUserDTO,
@@ -91,6 +91,8 @@ export const ApiDetailsRegistryUserResponse = applyDecorators(
         RegistryUserAnalyticsDTO
     ),
     ApiDetailsActivityResponseWithDefinition(
+        RegistryUserDetailsDTO,
+        RawMessageDTO,
         'Registry user details',
         RegistryUserActivityDTO,
         {
