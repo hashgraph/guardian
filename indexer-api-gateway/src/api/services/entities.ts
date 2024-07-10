@@ -24,10 +24,22 @@ import {
     ApiPaginatedModuleResponse,
     ApiDetailsSchemaResponse,
     ApiPaginatedSchemaResponse,
+    ApiDetailsRoleResponse,
+    ApiPaginatedRoleResponse,
+    ApiDetailsDIDResponse,
+    ApiPaginatedDIDResponse,
+    ApiDetailsVPResponse,
+    ApiPaginatedVPResponse,
+    ApiDetailsVCResponse,
+    ApiPaginatedVCResponse,
+    ApiDetailsTopicResponse,
+    ApiPaginatedTopicResponse,
+    ApiDetailsContractResponse,
+    ApiPaginatedContractResponse,
     PageDTO,
     RegistryDTO,
 } from '#dto';
-import {} from 'dto/details/tool.details.js';
+
 @Controller('entities')
 @ApiTags('entities')
 export class EntityApi extends ApiClient {
@@ -498,8 +510,40 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region ROLES
+    @ApiOperation({
+        summary: 'Get roles',
+        description: 'Returns roles',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedRoleResponse
     @Get('/roles')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'options.issuer',
+        description: 'Issuer',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'analytics.policyId',
+        description: 'Policy identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getRoles(
         @Query('pageIndex') pageIndex?: string,
@@ -522,7 +566,18 @@ export class EntityApi extends ApiClient {
             'analytics.policyId': policyId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get role',
+        description: 'Returns role',
+    })
+    @ApiDetailsRoleResponse
     @Get('/roles/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getRole(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_ROLE, {
@@ -534,8 +589,35 @@ export class EntityApi extends ApiClient {
 
     //#region DOCUMENTS
     //#region DIDS
+    @ApiOperation({
+        summary: 'Get DIDs',
+        description: 'Returns DIDs',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedDIDResponse
     @Get('/did-documents')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'options.did',
+        description: 'DID',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
     @HttpCode(HttpStatus.OK)
     async getDidDocuments(
         @Query('pageIndex') pageIndex?: number,
@@ -556,7 +638,18 @@ export class EntityApi extends ApiClient {
             'options.did': did,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get DID',
+        description: 'Returns DID',
+    })
+    @ApiDetailsDIDResponse
     @Get('/did-documents/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getDidDocument(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_DID_DOCUMENT, {
@@ -572,8 +665,45 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region VP DOCUMENTS
+    @ApiOperation({
+        summary: 'Get VPs',
+        description: 'Returns VPs',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedVPResponse
     @Get('/vp-documents')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'options.issuer',
+        description: 'Issuer',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    @ApiQuery({
+        name: 'analytics.policyId',
+        description: 'Policy identifier',
+        example: '1706823227.586179534',
+    })
+    @ApiQuery({
+        name: 'analytics.schemaIds',
+        description: 'Schema identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getVpDocuments(
         @Query('pageIndex') pageIndex?: number,
@@ -598,7 +728,18 @@ export class EntityApi extends ApiClient {
             'analytics.schemaIds': schemaId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get VP',
+        description: 'Returns VP',
+    })
+    @ApiDetailsVPResponse
     @Get('/vp-documents/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getVpDocument(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_VP_DOCUMENT, {
@@ -614,8 +755,50 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region VC DOCUMENTS
+    @ApiOperation({
+        summary: 'Get VCs',
+        description: 'Returns VCs',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedVCResponse
     @Get('/vc-documents')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+    })
+    @ApiQuery({
+        name: 'options.issuer',
+        description: 'Issuer',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    @ApiQuery({
+        name: 'analytics.policyId',
+        description: 'Policy identifier',
+        example: '1706823227.586179534',
+    })
+    @ApiQuery({
+        name: 'analytics.schemaId',
+        description: 'Schema identifier',
+        example: '1706823227.586179534',
+    })
+    @ApiQuery({
+        name: 'options.relationships',
+        description: 'Relationships',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getVcDocuments(
         @Query('pageIndex') pageIndex?: number,
@@ -642,7 +825,18 @@ export class EntityApi extends ApiClient {
             'options.relationships': relationship,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get VC',
+        description: 'Returns VC',
+    })
+    @ApiDetailsVCResponse
     @Get('/vc-documents/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getVcDocument(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_VC_DOCUMENT, {
@@ -692,8 +886,29 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region TOPICS
+    @ApiOperation({
+        summary: 'Get topics',
+        description: 'Returns topics',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedTopicResponse
     @Get('/topics')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'options.parentId',
+        description: 'Parent topic identifier',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getTopics(
         @Query('pageIndex') pageIndex?: number,
@@ -712,7 +927,18 @@ export class EntityApi extends ApiClient {
             'options.parentId': parentId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get topic',
+        description: 'Returns topic',
+    })
+    @ApiDetailsTopicResponse
     @Get('/topics/:topicId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getTopic(@Param('topicId') topicId: string) {
         return await this.send(IndexerMessageAPI.GET_TOPIC, {
@@ -721,8 +947,29 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region CONTRACTS
+    @ApiOperation({
+        summary: 'Get contracts',
+        description: 'Returns contracts',
+    })
     @ApiPaginatedRequest
+    @ApiPaginatedContractResponse
     @Get('/contracts')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search schemas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+    })
     @HttpCode(HttpStatus.OK)
     async getContracts(
         @Query('pageIndex') pageIndex?: string,
@@ -741,7 +988,18 @@ export class EntityApi extends ApiClient {
             topicId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get contract',
+        description: 'Returns contract',
+    })
+    @ApiDetailsContractResponse
     @Get('/contracts/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getContract(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_CONTRACT, {

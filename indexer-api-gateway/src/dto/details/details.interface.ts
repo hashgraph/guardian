@@ -63,7 +63,33 @@ export const ApiDetailsResponseWithDefinition = (
                     { $ref: getSchemaPath(DetailsActivityDTO) },
                     {
                         properties: {
-                            item: def
+                            item: def,
+                        },
+                    },
+                ],
+            },
+        })
+    );
+};
+
+export const ApiDetailsHistoryResponseWithDefinition = (
+    description: string,
+    def: any
+) => {
+    return applyDecorators(
+        ApiExtraModels(DetailsActivityDTO),
+        ApiOkResponse({
+            description,
+            schema: {
+                allOf: [
+                    { $ref: getSchemaPath(DetailsActivityDTO) },
+                    {
+                        properties: {
+                            item: def,
+                            history: {
+                                type: 'array',
+                                items: def,
+                            },
                         },
                     },
                 ],
