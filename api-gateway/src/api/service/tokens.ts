@@ -1,10 +1,11 @@
-import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner } from '#helpers';
-import { IOwner, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
+import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner, getCacheKey, CacheService } from '#helpers';
+import { IOwner, IToken, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { AuthUser, Auth } from '#auth';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
+import { TOKEN_REQUIRED_PROPS } from '#constants';
 
 /**
  * Connect policies to tokens
@@ -70,6 +71,10 @@ async function setDynamicTokenPolicy(
 @Controller('tokens')
 @ApiTags('tokens')
 export class TokensApi {
+
+    constructor(private readonly cacheService: CacheService) {
+    }
+
     /**
      * Return a list of tokens
      */
@@ -127,6 +132,7 @@ export class TokensApi {
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    // @UseCache()
     async getTokens(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
@@ -163,6 +169,144 @@ export class TokensApi {
     }
 
     /**
+     * Return a list of tokens V2 10.06.2024
+     */
+    @Get('/')
+    @Auth(
+        Permissions.TOKENS_TOKEN_READ
+        // UserRole.STANDARD_REGISTRY
+        // UserRole.USER
+    )
+    @ApiOperation({
+        summary: 'Return a list of tokens.',
+        description: 'Returns all tokens. For the Standard Registry role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role.',
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'status',
+        type: String,
+        enum: [
+            'Associated',
+            'All'
+        ],
+        description: 'Token status',
+        required: false,
+        example: 'All'
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: TokenDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getTokensV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('policyId') policyId?: string,
+        @Query('status') status?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<TokenDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const engineService = new PolicyEngine();
+
+            let tokensAndCount = { items: [], count: 0 };
+            const owner = new EntityOwner(user);
+            if (owner) {
+                if (UserPermissions.has(user, Permissions.TOKENS_TOKEN_EXECUTE) && status !== 'All') {
+                    tokensAndCount = await guardians.getAssociatedTokens(user.did, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner, 'PUBLISH');
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, true);
+                } else {
+                    const fields: string[] = Object.values(TOKEN_REQUIRED_PROPS)
+
+                    tokensAndCount = await guardians.getTokensPageV2(fields, owner, parseInteger(pageIndex), parseInteger(pageSize));
+                    const map = await engineService.getTokensMap(owner);
+                    tokensAndCount.items = await setDynamicTokenPolicy(tokensAndCount.items, owner);
+                    tokensAndCount.items = setTokensPolicies(tokensAndCount.items, map, policyId, false);
+                }
+            }
+            return res
+                .header('X-Total-Count', tokensAndCount.count)
+                .send(tokensAndCount.items);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    @Get('/:tokenId')
+    @Auth(
+        Permissions.TOKENS_TOKEN_READ
+    )
+    @ApiOperation({
+        summary: 'Return a token by id.',
+        description: 'Return the token.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: TokenDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getTokenByIdWithPolicies(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+        @Query('policyId') policyId?: string,
+    ): Promise<TokenDTO> {
+        try {
+            const guardians: Guardians = new Guardians();
+            const owner: EntityOwner = new EntityOwner(user);
+
+            const engineService: PolicyEngine = new PolicyEngine();
+            const map = await engineService.getTokensMap(owner);
+
+            const tokenById: IToken = await guardians.getTokenById(tokenId, owner);
+
+            const [dynamicTokenById] = await setDynamicTokenPolicy([tokenById], owner);
+            const [tokenByIdWithPolicies] = setTokensPolicies([dynamicTokenById], map, policyId, false);
+
+            return tokenByIdWithPolicies;
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
      * Creates a new token
      */
     @Post('/')
@@ -192,7 +336,8 @@ export class TokensApi {
     @HttpCode(HttpStatus.CREATED)
     async newToken(
         @AuthUser() user: IAuthUser,
-        @Body() token: TokenDTO
+        @Body() token: TokenDTO,
+        @Req() req
     ): Promise<TokenDTO[]> {
         try {
             const guardians = new Guardians();
@@ -203,6 +348,8 @@ export class TokensApi {
             tokens = await guardians.getTokens({}, owner);
             const map = await engineService.getTokensMap(owner);
             tokens = setTokensPolicies(tokens, map);
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
 
             return tokens;
         } catch (error) {
@@ -287,7 +434,8 @@ export class TokensApi {
     @HttpCode(HttpStatus.CREATED)
     async updateToken(
         @AuthUser() user: IAuthUser,
-        @Body() token: TokenDTO
+        @Body() token: TokenDTO,
+        @Req() req
     ): Promise<TokenDTO> {
         try {
             if (!user.did) {
@@ -309,6 +457,8 @@ export class TokensApi {
             if (tokenObject.owner !== owner.owner) {
                 throw new HttpException('Invalid creator.', HttpStatus.FORBIDDEN)
             }
+
+            await this.cacheService.invalidate(getCacheKey([req.url], user))
 
             return await guardians.updateToken(token, owner);
         } catch (error) {
@@ -995,8 +1145,9 @@ export class TokensApi {
             if (!user.did) {
                 throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+            const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.unfreezeToken(tokenId, username, user.did);
+            return await guardians.unfreezeToken(tokenId, username, owner);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             if (error?.message?.toLowerCase().includes('user not found')) {

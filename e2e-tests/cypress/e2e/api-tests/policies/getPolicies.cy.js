@@ -2,20 +2,25 @@ import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Policies', {tags: '@policies'}, () => {
+context('Policies', { tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env('authorization');
 
     before(() => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'policies/import/message',
-            body: {messageId: (Cypress.env('irec_policy'))},
+            body: {
+                messageId: (Cypress.env('irec_policy')),
+                metadata: {
+                    "tools": {}
+                  }
+            },
             headers: {
                 authorization,
             },
             timeout: 180000
         }).then(response => {
-            expect(response.status).to.eq(201);
+            expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             let firstPolicyId = response.body.at(-1).id
             let firstPolicyStatus = response.body.at(-1).status
             expect(firstPolicyStatus).to.equal('DRAFT')
@@ -29,7 +34,7 @@ context('Policies', {tags: '@policies'}, () => {
                 .should((response) => {
                     let secondPolicyId = response.body.policies.at(-1).id
                     let policyStatus = response.body.policies.at(-1).status
-                    expect(response.status).to.eq(200)
+                    expect(response.status).to.eq(STATUS_CODE.OK)
                     expect(firstPolicyId).to.equal(secondPolicyId)
                     expect(policyStatus).to.equal('PUBLISH')
                 })
@@ -47,7 +52,7 @@ context('Policies', {tags: '@policies'}, () => {
 
         cy.request(urlPolicies)
             .then((response) => {
-                expect(response.status).to.eq(200)
+                expect(response.status).to.eq(STATUS_CODE.OK)
                 let createDate = response.body.at(-1).createDate
                 let policyId = response.body.at(-1).id
                 let policyUuid = response.body.at(-1).uuid

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { IToken, ITokenInfo, IUser } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { headersV2 } from '../constants';
 
 /**
  * Services for working from Tokens.
@@ -66,7 +67,13 @@ export class TokenService {
         status?: string,
     ): Observable<HttpResponse<any[]>> {
         const params = TokenService.getOptions({ policyId, status }, pageIndex, pageSize);
-        return this.http.get<ITokenInfo[]>(`${this.url}`, { observe: 'response', params });
+        return this.http.get<ITokenInfo[]>(`${this.url}`, { observe: 'response', params, headers: headersV2 });
+    }
+
+    public getTokenById(tokenId: string, policyId?: string): Observable<HttpResponse<ITokenInfo>> {
+        const url: string = `${this.url}/${tokenId}`
+        const params: HttpParams = TokenService.getOptions({ policyId });
+        return this.http.get<ITokenInfo>(`${url}`, { observe: 'response', params });
     }
 
     public associate(tokenId: string, associate: boolean): Observable<void> {

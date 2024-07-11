@@ -10,10 +10,10 @@ function execute(): void {
         parentPort.postMessage(result);
     }
 
-    const { execFunc, user, documents, artifacts } = workerData;
+    const { execFunc, user, documents, artifacts, sources } = workerData;
 
     const func = Function(execFunc);
-    func.apply(documents, [done, user, documents, mathjs, artifacts, formulajs]);
+    func.apply(documents, [done, user, documents, mathjs, artifacts, formulajs, sources]);
 }
 
 execute();

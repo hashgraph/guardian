@@ -1,5 +1,5 @@
 import { DataBaseHelper } from '@indexer/common';
-import { MessageType, MessageAction } from '@indexer/interfaces';
+import { MessageType } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 
 function filter() {

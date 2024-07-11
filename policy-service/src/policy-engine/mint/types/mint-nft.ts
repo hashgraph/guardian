@@ -1,9 +1,4 @@
-import {
-    NotificationHelper,
-    Workers,
-    MintTransaction,
-    MintRequest,
-} from '@guardian/common';
+import { MintRequest, MintTransaction, NotificationHelper, Workers, } from '@guardian/common';
 import { MintTransactionStatus, TokenType, WorkerTaskType } from '@guardian/interfaces';
 import { PolicyUtils } from '../../helpers/utils.js';
 import { IHederaCredentials } from '../../policy-user.js';
@@ -27,6 +22,7 @@ export class MintNFT extends TypedMint {
      * @param token Token
      * @param ref Block ref
      * @param notifier Notifier
+     * @param userId
      * @returns Instance
      */
     public static async init(
@@ -34,7 +30,8 @@ export class MintNFT extends TypedMint {
         root: IHederaCredentials,
         token: TokenConfig,
         ref?: any,
-        notifier?: NotificationHelper
+        notifier?: NotificationHelper,
+        userId?: string
     ) {
         return new MintNFT(
             ...(await super.initRequest(
@@ -42,7 +39,8 @@ export class MintNFT extends TypedMint {
                 root,
                 token,
                 ref,
-                notifier
+                notifier,
+                userId
             ))
         );
     }
@@ -81,9 +79,11 @@ export class MintNFT extends TypedMint {
     /**
      * Mint tokens
      * @param notifier Notifier
+     * @param userId
      */
     protected override async mintTokens(
-        notifier?: NotificationHelper
+        notifier?: NotificationHelper,
+        userId?: string
     ): Promise<void> {
         const mintedTransactionsSerials =
             await this._db.getTransactionsSerialsCount(this._mintRequest.id);
@@ -141,7 +141,8 @@ export class MintNFT extends TypedMint {
                         },
                     },
                     1,
-                    10
+                    10,
+                    userId
                 );
                 this._mintRequest.startSerial = startSerial[0] || 0;
                 await this._db.saveMintRequest(this._mintRequest);
@@ -171,7 +172,7 @@ export class MintNFT extends TypedMint {
                 transaction.mintStatus = MintTransactionStatus.PENDING;
                 await this._db.saveMintTransaction(transaction);
                 try {
-                    const serials = await new Workers().addNonRetryableTask(
+                    const serials = await new Workers().addRetryableTask(
                         {
                             type: WorkerTaskType.MINT_NFT,
                             data: {
@@ -187,7 +188,7 @@ export class MintNFT extends TypedMint {
                                 transactionMemo: this._mintRequest.memo,
                             },
                         },
-                        1
+                        1, 0, userId
                     );
                     transaction.serials.push(...serials);
                     transaction.mintStatus = MintTransactionStatus.SUCCESS;
@@ -228,9 +229,11 @@ export class MintNFT extends TypedMint {
     /**
      * Transfer tokens
      * @param notifier Notifier
+     * @param userId
      */
     protected override async transferTokens(
-        notifier: NotificationHelper
+        notifier: NotificationHelper,
+        userId?: string
     ): Promise<void> {
         let transferCount = 0;
         const tokensToTransfer = await this._db.getTransactionsSerialsCount(
@@ -274,7 +277,8 @@ export class MintNFT extends TypedMint {
                             },
                         },
                         1,
-                        10
+                        10,
+                        userId
                     );
 
                     transaction.transferStatus = MintTransactionStatus.SUCCESS;

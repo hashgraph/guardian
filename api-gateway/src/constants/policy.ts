@@ -1,0 +1,31 @@
+export const REQUIRED_PROPS = {
+    DESCRIPTION: 'description',
+    INSTANCE_TOPIC_ID: 'instanceTopicId',
+    NAME: 'name',
+    STATUS: 'status',
+    TOPIC_ID: 'topicId',
+    UUID: 'uuid',
+    _ID: '_id',
+};
+
+export const UN_REQUIRED_PROPS = {
+    CODE_VERSION: 'codeVersion',
+    CREATE_DATE: 'createDate',
+    CREATOR: 'creator',
+    // DESCRIPTION: 'description',
+    ID: 'id',
+    // INSTANCE_TOPIC_ID: 'instanceTopicId',
+    // NAME: 'name',
+    OWNER: 'owner',
+    POLICY_ROLES: 'policyRoles',
+    POLICY_TAG: 'policyTag',
+    // STATUS: 'status',
+    TOOLS: 'tools',
+    // TOPIC_ID: 'topicId',
+    USER_GROUP: 'userGroup',
+    USER_GROUPS: 'userGroups',
+    USER_ROLE: 'userRole',
+    USER_ROLES: 'userRoles',
+    // UUID: 'uuid',
+    // _ID: '_id',
+};

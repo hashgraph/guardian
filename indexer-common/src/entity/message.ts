@@ -67,6 +67,14 @@ export class Message implements IMessage {
         policyIds?: string[];
         textSearch?: string;
         childSchemas?: any[];
+        owner?: string;
+        tools?: any[];
+        tokens?: string[];
+        vcCount?: number;
+        vpCount?: number;
+        tokensCount?: number;
+        hash?: string;
+        hashMap?: any;
         properties?: string[];
     };
 

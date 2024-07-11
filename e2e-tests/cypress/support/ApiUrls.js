@@ -1,5 +1,6 @@
 const API = {
     ApiServer: "http://localhost:" + Cypress.env("portApi") + "/",
+
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
@@ -11,6 +12,7 @@ const API = {
     Balance: "accounts/balance",
     AccountRegister: "accounts/register",
     AccountSession: "accounts/session",
+
     //Analytics
     PolicyCompare: "analytics/compare/policies/",
     SchemaCompare: "analytics/compare/schemas/",
@@ -18,58 +20,82 @@ const API = {
     ToolCompare: "analytics/compare/tools/",
     PolicySearch: "analytics/search/policies/",
     BlockSearch: "analytics/search/blocks/",
+
     //Profiles
     Profiles: "profiles/",
+
     //Tokens
     ListOfTokens: "tokens/",
+
     //Contracts
     ListOfContracts: "contracts/",
+    ImportContracts: "contracts/import/",
+    ContractPermissions: "permissions/",
     ListOfPairs: "contracts/pairs/",
     RetireRequests: "contracts/retire/requests/",
     WipeRequests: "contracts/wipe/requests/",
     RetireContract: "contracts/retire/",
+    WipeContract: "contracts/wipe/",
     PoolContract: "pools/",
+    Retire: "retire/",
+    RetirePools: "contracts/retire/pools/",
+    ManagerRole: "manager/",
+    WiperRole: "wiper/",
+    AdminRole: "admin/",
+    SyncPools: "pools/sync",
+
     //Modules
     ListOfAllModules: "modules/",
     ListOfModules: "modules/menu/",
     ExportMessage: "export/message/",
     ImportMessage: "import/message/",
     ImportFile: "import/file/",
+
     //Logs
     Logs: "logs",
     LogsAttributes: "logs/attributes/",
+
     //Schemas
     PolicySchemas: "schemas?category=POLICY",
     Schemas: "schemas/",
     Schema: "schema/",
     SchemasSystem: "schemas/system/",
     SchemasSystemEntity: "schemas/system/entity/",
-    SchemaImportMsgPreview:
-        "schemas/import/message/preview",
-    SchemaImportFilePreview:
-        "schemas/import/file/preview",
+    SchemaImportMsgPreview: "schemas/import/message/preview",
+    SchemaImportFilePreview: "schemas/import/file/preview",
     SchemaImport: "schemas/import/",
     SchemasType: "schemas/type",
+
     //Tools
     Tools: "tools",
     ToolsImportMsg: "tools/import/message",
+
     //TrustChains
     Trustchains: "trust-chains/",
+
     //Settings
     SettingsEnv: "settings/environment",
+
     //External
     External: "external",
+
     //ipfs
-    IPFSFile: "ipfs/file",
+    IPFSFile: "ipfs/file/",
+    IPFS: "ipfs/",
+
     //Demo
     RandomKey: "demo/random-key",
+    RegUsers: "demo/registered-users",
+
     //Policies
     Policies: "policies/",
     PolicisImportMsg: "policies/import/message/",
+    PolicisImportMsgPush: "policies/push/import/message/",
     PolicisImportFile: "policies/import/file/",
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     PolicyGroups: "groups/",
+    DryRun: "groups/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     CreateApplication: "tag/create_application/blocks",
     WaitForApproveApplication: "tag/wait_for_approve",
@@ -86,16 +112,23 @@ const API = {
     ApproveIssueRequestsBtn: "tag/approve_issue_requests_btn/blocks",
     CreateIssue: "tag/create_issue_request_form/blocks",
 
-
-
     //Artifacts
-        Artifacts: "artifacts/",
+    Artifacts: "artifacts/",
+
+    //Tags
     Tags: "tags/",
+
     //General
     ExportCSV: "export?type=csv",
     ExportFile: "export/file",
     Async: "push/",
     Publish: "publish/",
-    Blocks: "blocks/"
+    Blocks: "blocks/",
+    Approve: "approve/",
+    Reject: "reject/",
+    Cancel: "cancel/",
+    Requests: "requests/",
+    Disable: "disable/",
+    Enable: "enable/"
 };
 export default API;

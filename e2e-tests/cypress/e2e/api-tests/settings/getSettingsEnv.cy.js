@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Settings", { tags: '@settings' }, () => {
+context("Settings", { tags: ['settings', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Get current environment name", () => {
@@ -11,9 +11,9 @@ context("Settings", { tags: '@settings' }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).eql("testnet");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body).eql("testnet");
         });
     });
 });

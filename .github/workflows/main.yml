@@ -7,16 +7,33 @@ on:
       - 'dependabot/**'
 jobs:
   buildAndTest:
-    runs-on: ubuntu-latest
+    name: Build and Test (Manual - Main)
+    runs-on: [self-hosted, Linux, medium, ephemeral]
     strategy:
       matrix:
         node-version: [ 20.10.0 ]
     steps:
-      - uses: actions/checkout@v1
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Setup Yarn
+        uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
+        with:
+          cmd: install
+
+      - name: Install dependencies
+        run: yarn install
+
       - name: Build
         run: |
           yarn
@@ -56,12 +73,14 @@ jobs:
         env:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
+
       - name: Detect secrets
         run: |
           yarn run detect-secrets
         env:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
+
       - name: Lint
         run: |
           pushd interfaces
@@ -94,6 +113,7 @@ jobs:
         env:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
+
       - name: Test
         run: |
           pushd common
@@ -110,8 +130,9 @@ jobs:
           NODE_OPTIONS: --openssl-legacy-provider
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
+
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@30eadd5010312f995f0d3b3cff7fe2984f69409e # v2.16.1
         if: always()
         with:
           files: test_results/**/*.xml

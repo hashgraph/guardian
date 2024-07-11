@@ -9,7 +9,7 @@ import { json } from 'express';
 import process from 'process';
 import { Utils } from '@indexer/common';
 
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3021;
 const channelName = (
     process.env.SERVICE_CHANNEL ||
     `indexer-api-gateway.${Utils.GenerateUUIDv4(26)}`

@@ -476,7 +476,9 @@ async function grantKycToken(
             kycKey,
             grant
         }
-    }, 20);
+    }, 20, user.id.toString());
+
+    await new Promise(resolve => setTimeout(resolve, 15000));
 
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -485,7 +487,7 @@ async function grantKycToken(
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 20);
+    }, 20, user.id.toString());
 
     const result = getTokenInfo(info, token);
     notifier.completed();
@@ -544,7 +546,9 @@ async function freezeToken(
             token,
             freeze
         }
-    }, 20);
+    }, 20, user.id.toString());
+
+    await new Promise(resolve => setTimeout(resolve, 15000));
 
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -553,7 +557,7 @@ async function freezeToken(
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 20);
+    }, 20, user.id.toString());
 
     const result = getTokenInfo(info, token);
     notifier.completed();
@@ -906,6 +910,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
     ApiResponse(MessageAPI.GET_TOKENS_PAGE,
         async (msg: { owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
             const { owner, pageIndex, pageSize } = msg;
+
             const options =
                 (
                     typeof pageIndex === 'number' &&
@@ -923,6 +928,49 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                             createDate: OrderDirection.DESC,
                         },
                     };
+
+            const [tokens, count] = await tokenRepository.findAndCount({
+                $or: [
+                    { owner: { $eq: owner.owner } },
+                    { owner: { $exists: false } }
+                ]
+            }, options);
+            return new ArrayMessageResponse(tokens, count);
+        })
+
+    /**
+     * Return tokens V2 10.06.2024
+     *
+     * @param {Object} [payload] - filters
+     * @param {string} [payload.tokenId] - token id
+     * @param {string} [payload.did] - user did
+     *
+     * @returns {any[], number} - tokens and count
+     */
+    ApiResponse(MessageAPI.GET_TOKENS_PAGE_V2,
+        async (msg: {fields: string[], owner: IOwner, pageIndex: any, pageSize: any }): Promise<any> => {
+            const { fields, owner, pageIndex, pageSize } = msg;
+
+            const options =
+                (
+                    typeof pageIndex === 'number' &&
+                    typeof pageSize === 'number'
+                ) ?
+                    {
+                        orderBy: {
+                            createDate: OrderDirection.DESC,
+                        },
+                        limit: pageSize,
+                        offset: pageIndex * pageSize,
+                        fields
+                    }
+                    : {
+                        orderBy: {
+                            createDate: OrderDirection.DESC,
+                        },
+                        fields
+                    };
+
             const [tokens, count] = await tokenRepository.findAndCount({
                 $or: [
                     { owner: { $eq: owner.owner } },

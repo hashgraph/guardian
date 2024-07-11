@@ -4,12 +4,14 @@ import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, Schema, SchemaCategory
 
 /**
  * Publish schema tags
- * @param item
+ * @param schema
  * @param user
+ * @param userId
  */
 export async function publishSchemaTags(
     schema: SchemaCollection,
-    user: IRootConfig
+    user: IRootConfig,
+    userId?: string
 ): Promise<void> {
     const filter: any = {
         localTarget: schema.id,
@@ -25,7 +27,7 @@ export async function publishSchemaTags(
 
     for (const tag of tags) {
         tag.target = schema.messageId;
-        await publishTag(tag, messageServer);
+        await publishTag(tag, messageServer, userId);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -33,11 +35,13 @@ export async function publishSchemaTags(
 /**
  * Publish policy tags
  * @param policy
- * @param messageServer
+ * @param user
+ * @param userId
  */
 export async function publishPolicyTags(
     policy: PolicyCollection,
-    user: IRootConfig
+    user: IRootConfig,
+    userId?: string
 ): Promise<void> {
     const filter: any = {
         localTarget: policy.id,
@@ -53,7 +57,7 @@ export async function publishPolicyTags(
 
     for (const tag of tags) {
         tag.target = policy.messageId;
-        await publishTag(tag, messageServer);
+        await publishTag(tag, messageServer, userId);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -61,11 +65,13 @@ export async function publishPolicyTags(
 /**
  * Publish token tags
  * @param token
- * @param messageServer
+ * @param user
+ * @param userId
  */
 export async function publishTokenTags(
     token: TokenCollection,
-    user: IRootConfig
+    user: IRootConfig,
+    userId?: string
 ): Promise<void> {
     const filter: any = {
         localTarget: token.id,
@@ -81,7 +87,7 @@ export async function publishTokenTags(
 
     for (const tag of tags) {
         tag.target = token.tokenId;
-        await publishTag(tag, messageServer);
+        await publishTag(tag, messageServer, userId);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -89,11 +95,13 @@ export async function publishTokenTags(
 /**
  * Publish tool tags
  * @param tool
- * @param messageServer
+ * @param user
+ * @param userId
  */
 export async function publishToolTags(
     tool: PolicyToolCollection,
-    user: IRootConfig
+    user: IRootConfig,
+    userId?: string
 ): Promise<void> {
     const filter: any = {
         localTarget: tool.id,
@@ -107,7 +115,7 @@ export async function publishToolTags(
         .setTopicObject(topicConfig);
     for (const tag of tags) {
         tag.target = tool.tagsTopicId;
-        await publishTag(tag, messageServer);
+        await publishTag(tag, messageServer, userId);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -115,11 +123,13 @@ export async function publishToolTags(
 /**
  * Publish module tags
  * @param module
- * @param messageServer
+ * @param user
+ * @param userId
  */
 export async function publishModuleTags(
     module: ModuleCollection,
-    user: IRootConfig
+    user: IRootConfig,
+    userId?: string
 ): Promise<void> {
     const filter: any = {
         localTarget: module.id,
@@ -135,7 +145,7 @@ export async function publishModuleTags(
 
     for (const tag of tags) {
         tag.target = module.messageId;
-        await publishTag(tag, messageServer);
+        await publishTag(tag, messageServer, userId);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -144,10 +154,12 @@ export async function publishModuleTags(
  * Publish tag
  * @param item
  * @param messageServer
+ * @param userId
  */
 export async function publishTag(
     item: Tag,
-    messageServer: MessageServer
+    messageServer: MessageServer,
+    userId?: string
 ): Promise<any> {
     item.operation = 'Create';
     item.status = 'Published';
@@ -155,7 +167,7 @@ export async function publishTag(
     const message = new TagMessage(MessageAction.PublishTag);
     message.setDocument(item);
     const result = await messageServer
-        .sendMessage(message);
+        .sendMessage(message, true, null, userId);
     const messageId = result.getId();
     const topicId = result.getTopicId();
     item.messageId = messageId;
@@ -168,10 +180,12 @@ export async function publishTag(
  * Delete tag
  * @param item
  * @param messageServer
+ * @param userId
  */
 export async function deleteTag(
     item: Tag,
-    messageServer: MessageServer
+    messageServer: MessageServer,
+    userId?: string
 ): Promise<any> {
     item.operation = 'Delete';
     item.status = 'Published';
@@ -179,7 +193,7 @@ export async function deleteTag(
     const message = new TagMessage(MessageAction.DeleteTag);
     message.setDocument(item);
     const result = await messageServer
-        .sendMessage(message);
+        .sendMessage(message, true, null, userId);
     const messageId = result.getId();
     const topicId = result.getTopicId();
     item.messageId = messageId;
@@ -212,7 +226,8 @@ export async function exportTag(targets: string[], entity?: TagType): Promise<an
 
 /**
  * Get target
- * @param tag
+ * @param entity
+ * @param id
  */
 export async function getTarget(entity: TagType, id: string): Promise<{
     /**

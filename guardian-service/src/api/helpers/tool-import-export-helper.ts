@@ -397,14 +397,6 @@ export async function importToolByFile(
     tool.topicId = topic.topicId;
     await DatabaseServer.updateTool(tool);
 
-    if (Array.isArray(schemas)) {
-        for (const schema of schemas) {
-            const schemaObject = DatabaseServer.createSchema(schema);
-            schemaObject.category = SchemaCategory.TOOL;
-            await DatabaseServer.saveSchema(schemaObject);
-        }
-    }
-
     // Import Tools
     notifier.completedAndStart('Import sub-tools');
     notifier.sub(true);

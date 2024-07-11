@@ -32,12 +32,13 @@ export class ArtifactConfigComponent implements OnInit {
         'extention',
         'delete'
     ];
-    public policies: any[] | null;
     public currentPolicy: any | null = null;
     public pageIndex: number;
     public pageSize: number;
     public policyNameById: any = {};
     public deleteArtifactVisible: boolean = false;
+    public filterOptions: any[] = [];
+    public policies: any[] = [];
     private currentArtifact: any;
 
     constructor(
@@ -47,7 +48,8 @@ export class ArtifactConfigComponent implements OnInit {
         private router: Router,
         public dialog: MatDialog,
         private artifact: ArtifactService) {
-        this.policies = null;
+        this.policies = [];
+        this.filterOptions = [];
         this.pageIndex = 0;
         this.pageSize = 10;
     }
@@ -70,22 +72,24 @@ export class ArtifactConfigComponent implements OnInit {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.user = new UserPermissions(profile);
 
-            this.policies = [{
+            this.filterOptions = [{
                 name: 'All',
                 id: 'all'
             }];
+            this.policies = [];
             for (let i = 0; i < policies.length; i++) {
                 const policy = policies[i];
                 this.policyNameById[policy.id] = policy.name;
                 this.policies.push(policy);
+                this.filterOptions.push(policy);
             }
 
             const policyId = this.route.snapshot.queryParams['policyId'];
             if (policyId) {
-                this.currentPolicy = this.policies.find((p) => p.id === policyId);
+                this.currentPolicy = this.filterOptions.find((p) => p.id === policyId);
             }
             if (!this.currentPolicy) {
-                this.currentPolicy = this.policies[0];
+                this.currentPolicy = this.filterOptions[0];
             }
             this.pageIndex = 0;
             this.pageSize = 10;
@@ -107,7 +111,7 @@ export class ArtifactConfigComponent implements OnInit {
             this.pageSize
         ).subscribe((artifactResponse: HttpResponse<any[]>) => {
             this.artifacts = artifactResponse.body?.map(item => {
-                const policy = this.policies?.find(policy => policy.id === item.policyId)
+                const policy = this.filterOptions?.find(policy => policy.id === item.policyId)
                 return Object.assign(item, {
                     editable: !policy || policy.status === PolicyType.DRAFT
                 })

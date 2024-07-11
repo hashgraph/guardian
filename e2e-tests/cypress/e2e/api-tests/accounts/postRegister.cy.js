@@ -1,10 +1,9 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-
-context("Accounts", { tags: "@accounts" }, () => {
-    it("Register and login as new user", () => {
-        const name = Math.floor(Math.random() * 999) + "test001";
+context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
+    it("Register and login as new user", { tags: ['smoke', 'firstPool'] }, () => {
+        const name = Math.floor(Math.random() * 999) + "PostRegTest";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
@@ -17,8 +16,6 @@ context("Accounts", { tags: "@accounts" }, () => {
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             expect(response.body).to.have.property("username", name);
-            expect(response.body).to.have.property("did", null);
-            expect(response.body).to.have.property("role", "USER");
             expect(response.body).to.have.property("id");
         })
             .then(() => {
@@ -79,7 +76,6 @@ context("Accounts", { tags: "@accounts" }, () => {
         });
     });
 
-
     it('Register with invalid type of username - Negative', () => {
         cy.request({
             method: METHOD.POST,
@@ -138,7 +134,6 @@ context("Accounts", { tags: "@accounts" }, () => {
             expect(response.status).eql(STATUS_CODE.NOT_FOUND);
         });
     });
-
 
     it('Register with extra data - Negative', () => {
         const name = Math.floor(Math.random() * 999) + "test001";

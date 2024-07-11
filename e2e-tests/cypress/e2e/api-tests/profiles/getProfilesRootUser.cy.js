@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Profiles', { tags: '@profiles' },() => {
+context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
     const authorization = Cypress.env('authorization');
 
     it('Get user account information', () => {
@@ -14,7 +14,7 @@ context('Profiles', { tags: '@profiles' },() => {
             }};
         cy.request(options)
           .should((response) => {
-            expect(response.status).to.eq(200)
+            expect(response.status).to.eq(STATUS_CODE.OK)
             expect(response.body).to.have.property('confirmed')
             expect(response.body).to.have.property('failed')
             expect(response.body).to.have.property('username', Cypress.env('root_user'))

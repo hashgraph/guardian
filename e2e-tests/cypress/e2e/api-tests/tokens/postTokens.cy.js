@@ -1,12 +1,12 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Tokens",{ tags: '@tokens' }, () => {
+context("Tokens",{ tags: ['tokens', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Create a new token", () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.ListOfTokens,
             headers: { authorization },
             body: {

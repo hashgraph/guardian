@@ -57,8 +57,8 @@ export class LogService {
 
             const result: Page<MessageCache> = {
                 items: rows,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
+                pageIndex,
+                pageSize,
                 total: count,
                 order: options.orderBy
             }
@@ -67,7 +67,6 @@ export class LogService {
             return new MessageError(error);
         }
     }
-
 
     /**
      * Get all topics
@@ -97,8 +96,8 @@ export class LogService {
 
             const result: Page<TopicCache> = {
                 items: rows,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
+                pageIndex,
+                pageSize,
                 total: count,
                 order: options.orderBy
             }
@@ -174,8 +173,8 @@ export class LogService {
 
             const result: Page<Message> = {
                 items: rows,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
+                pageIndex,
+                pageSize,
                 total: count,
                 order: options.orderBy
             }
@@ -251,8 +250,8 @@ export class LogService {
 
             const result: Page<TokenCache> = {
                 items: rows,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
+                pageIndex,
+                pageSize,
                 total: count,
                 order: options.orderBy
             }
@@ -311,8 +310,8 @@ export class LogService {
 
             const result: Page<NftCache> = {
                 items: rows,
-                pageIndex: pageIndex,
-                pageSize: pageSize,
+                pageIndex,
+                pageSize,
                 total: count,
                 order: options.orderBy
             }

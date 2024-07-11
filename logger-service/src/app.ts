@@ -6,6 +6,7 @@ import { NestFactory } from '@nestjs/core';
 import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module.js';
+import { DEFAULT_MONGO } from '#constants';
 
 export class LoggerSerializer implements Serializer {
     serialize(value: any, options?: Record<string, any>): any {
@@ -31,9 +32,12 @@ Promise.all([
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
+            maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
+            maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
         },
-        ensureIndexes: true
+        ensureIndexes: true,
     }),
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{

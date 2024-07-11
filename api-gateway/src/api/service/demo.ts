@@ -78,7 +78,7 @@ export class DemoApi {
             const guardians = new Guardians();
             const role = user?.role;
 
-            return await guardians.generateDemoKey(role);
+            return await guardians.generateDemoKey(role, user.id.toString());
         } catch (error) {
             await InternalException(error);
         }
@@ -135,7 +135,7 @@ export class DemoApi {
         const task = taskManager.start(TaskAction.CREATE_RANDOM_KEY, user?.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.generateDemoKeyAsync(user?.role, task);
+            await guardians.generateDemoKeyAsync(user?.role, task, user.id.toString());
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });

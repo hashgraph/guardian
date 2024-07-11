@@ -4,8 +4,8 @@
         "@fastify/formbody": "^7.4.0",
         "@fastify/multipart": "^8.2.0",
         "@fastify/static": "^7.0.0",
-        "@guardian/common": "^2.25.1",
-        "@guardian/interfaces": "^2.25.1",
+        "@guardian/common": "^2.26.1",
+        "@guardian/interfaces": "^2.26.1",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/jwt": "^10.0.3",
@@ -64,7 +64,8 @@
     "imports": {
         "#auth": "./dist/auth/index.js",
         "#helpers": "./dist/helpers/index.js",
-        "#middlewares": "./dist/middlewares/index.js"
+        "#middlewares": "./dist/middlewares/index.js",
+        "#constants": "./dist/constants/index.js"
     },
     "license": "Apache-2.0",
     "main": "dist/index.js",
@@ -87,5 +88,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "2.25.1"
+    "version": "2.26.1"
 }

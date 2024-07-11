@@ -1,21 +1,14 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Param, Inject, Query } from '@nestjs/common';
-import { ClientProxy, EventPattern, MessagePattern } from '@nestjs/microservices';
+import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
-    ApiUnauthorizedResponse,
     ApiForbiddenResponse,
-    ApiBody,
     ApiOkResponse,
     ApiOperation,
-    ApiSecurity,
     ApiTags,
-    ApiQuery,
-    ApiExcludeController
+    ApiExcludeController,
 } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { firstValueFrom, timeout } from 'rxjs';
-import { AnyResponse, IndexerMessageAPI, responseFrom } from '@indexer/common';
+import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../../api-client.js';
 
 @Controller('elastic')

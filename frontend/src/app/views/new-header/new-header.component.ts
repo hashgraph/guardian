@@ -208,4 +208,12 @@ export class NewHeaderComponent implements OnInit {
             activeLink.startsWith(barItem.routerLink)
         );
     }
+
+    public onRouter(barItem: any) {
+        if(barItem.childItems) {
+            barItem.active = !barItem.active
+        } else {
+            this.router.navigate([barItem.routerLink]);
+        }
+    }
 }

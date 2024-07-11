@@ -1,11 +1,11 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Tokens", { tags: "@tokens" }, () => {
+context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const user = "Installer";
 
-    it("Freeze and unfreeze transfers of the specified token for the user", () => {
+    it("Freeze and unfreeze transfers of the specified token for the user", { tags: ['smoke'] }, () => {
         //associate token
         cy.request({
             method: 'POST',
@@ -50,11 +50,11 @@ context("Tokens", { tags: "@tokens" }, () => {
                             headers: {
                                 authorization,
                             },
-                        }).then((resp) => {
-                            expect(resp.status).eql(STATUS_CODE.OK);
+                        }).then((response) => {
+                            expect(response.status).eql(STATUS_CODE.OK);
 
-                            let token = resp.body.tokenId;
-                            let frozen = resp.body.frozen;
+                            let token = response.body.tokenId;
+                            let frozen = response.body.frozen;
 
                             expect(token).to.deep.equal(tokenId);
                             expect(frozen).to.be.true;
@@ -71,18 +71,18 @@ context("Tokens", { tags: "@tokens" }, () => {
                                 headers: {
                                     authorization,
                                 },
-                            }).then((resp) => {
-                                expect(resp.status).eql(STATUS_CODE.OK);
+                            }).then((response) => {
+                                expect(response.status).eql(STATUS_CODE.OK);
 
-                                let token = resp.body.tokenId;
-                                let frozen = resp.body.frozen;
+                                let token = response.body.tokenId;
+                                let frozen = response.body.frozen;
 
                                 expect(token).to.deep.equal(tokenId);
                                 expect(frozen).to.be.false;
                             });
                         });
 
-                    })
+                   })
                 })
             })
         })

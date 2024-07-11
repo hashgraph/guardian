@@ -116,8 +116,7 @@ export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors>
 /**
  * Publish tool
  * @param tool
- * @param owner
- * @param version
+ * @param user
  * @param notifier
  */
 export async function publishTool(
@@ -132,6 +131,8 @@ export async function publishTool(
         notifier.start('Resolve Hedera account');
         const users = new Users();
         const root = await users.getHederaAccount(user.creator);
+        const userAccount = await users.getUser(user.username);
+        const userId = userAccount.id.toString();
 
         notifier.completedAndStart('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
@@ -139,7 +140,7 @@ export async function publishTool(
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
-        tool = await publishSchemas(tool, user, root, notifier);
+        tool = await publishSchemas(tool, user, root, notifier, userId);
 
         notifier.completedAndStart('Create tags topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
@@ -171,11 +172,11 @@ export async function publishTool(
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
         message.setDocument(tool, buffer);
         const result = await messageServer
-            .sendMessage(message);
+            .sendMessage(message, true, null, userId);
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishToolTags(tool, root);
+            await publishToolTags(tool, root, userId);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }
@@ -203,12 +204,14 @@ export async function publishTool(
  * @param owner
  * @param root
  * @param notifier
+ * @param userId
  */
 export async function publishSchemas(
     tool: PolicyTool,
     owner: IOwner,
     root: IRootConfig,
-    notifier: INotifier
+    notifier: INotifier,
+    userId?: string
 ): Promise<PolicyTool> {
     const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
 
@@ -227,7 +230,8 @@ export async function publishSchemas(
             schema.version,
             owner,
             root,
-            emptyNotifier()
+            emptyNotifier(),
+            userId
         );
         if (Array.isArray(tool.config?.variables)) {
             for (const variable of tool.config?.variables) {
@@ -414,6 +418,46 @@ export async function toolsAPI(): Promise<void> {
                         status: ModuleStatus.PUBLISHED
                     }]
                 }, otherOptions);
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get tools V2 05.06.2024
+     */
+    ApiResponse(MessageAPI.GET_TOOLS_V2,
+        async (msg: { fields: string[], filters: any, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const { fields, filters, owner } = msg;
+                const { pageIndex, pageSize } = filters;
+
+                const otherOptions: any = { fields };
+
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+
+                const [items, count] = await DatabaseServer.getToolsAndCount({
+                    $or: [{
+                        owner: owner.owner
+                    }, {
+                        status: ModuleStatus.PUBLISHED
+                    }]
+                }, otherOptions);
+
                 return new MessageResponse({ items, count });
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

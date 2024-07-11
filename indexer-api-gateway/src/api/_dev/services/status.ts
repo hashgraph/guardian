@@ -1,19 +1,14 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Get, Param, Inject } from '@nestjs/common';
-import { ClientProxy, EventPattern, MessagePattern } from '@nestjs/microservices';
+import { Controller, HttpCode, HttpStatus, Get, Inject } from '@nestjs/common';
+import { ClientProxy, EventPattern } from '@nestjs/microservices';
 import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
-    ApiUnauthorizedResponse,
     ApiForbiddenResponse,
-    ApiBody,
     ApiOkResponse,
     ApiOperation,
-    ApiSecurity,
     ApiTags,
     ApiExcludeController
 } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { firstValueFrom, timeout } from 'rxjs';
 import { IndexerMessageAPI } from '@indexer/common';
 
 @Controller('status')
@@ -69,13 +64,13 @@ export class StatusApi {
         const indexers = [];
         const time = Date.now();
         for (const worker of this.workers.values()) {
-            if (time - worker.time > 2 * worker.delay) {
+            if ((time - worker.time) > (worker.delay * 2)) {
                 worker.status = 'SERVICE NOT AVAILABLE'
             }
             workers.push(worker);
         }
         for (const indexer of this.indexers.values()) {
-            if (time - indexer.time > 2 * indexer.delay) {
+            if ((time - indexer.time) > (indexer.delay * 2)) {
                 indexer.status = 'SERVICE NOT AVAILABLE'
             }
             indexers.push(indexer);

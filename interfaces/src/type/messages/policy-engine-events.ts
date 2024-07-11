@@ -32,6 +32,7 @@ export enum PolicyEngineEvents {
     SET_BLOCK_DATA_BY_TAG = 'policy-engine-event-set-block-data-by-tag',
     BLOCK_BY_TAG = 'policy-engine-event-get-block-by-tag',
     GET_POLICIES = 'policy-engine-event-get-policies',
+    GET_POLICIES_V2 = 'policy-engine-event-get-policies-V2',
     GET_POLICY = 'policy-engine-event-get-policy',
     GET_BLOCK_PARENTS = 'policy-engine-event-get-block-parents',
     BLOCK_ABOUT = 'policy-engine-event-block-about',

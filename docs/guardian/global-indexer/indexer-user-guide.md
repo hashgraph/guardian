@@ -1,10 +1,21 @@
 # 💻 Indexer User Guide
 
+1. [Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
+2. [Demo Video](indexer-user-guide.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 Indexer provides a global search facility on the landing page, and other pages’ headers. It allows users to find information by matching string values.&#x20;
 
 For example ‘Project Description’ will find all entities which include ‘Project’ word or ‘Description’ word.&#x20;
 
 To find an exact phrase you need to use double quotes, e.g. type something like ‘“Project Description”’. Words can be excluded by typing ‘-’ symbol in the request. All searched entities have metadata in Hedera messages, search looks at policy message IDs, schema names, schema message IDs, VC/VP document content/values, schema properties, schema field names, etc…
+
+To launch the Indexer, please run the following command in the root of the folder:
+
+```
+docker compose -f "docker-compose-indexer.yml" up -d --build
+```
 
 ### Landing page includes following information:
 
@@ -156,3 +167,7 @@ Topic details includes following tabs:
 * Raw Data - raw topic data.
 
 Synchronization of all entity data starts one time per hour, but it can be changed by changing environment variables.
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/TciXNvx1kcQ)

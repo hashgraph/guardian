@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Policy - Import', { tags: '@policies' },() => {
+context('Policies', { tags: ['policies', 'secondPool'] },() => {
     const authorization = Cypress.env('authorization');
 
     it('Push publish the policy with the specified (internal) policy ID', () => {
@@ -16,8 +16,8 @@ context('Policy - Import', { tags: '@policies' },() => {
             timeout: 180000
         })
             .then(response => {
-                let firstPolicyId = response.body.at(-1).id
-                let firstPolicyStatus = response.body.at(-1).status
+                let firstPolicyId = response.body.at(0).id
+                let firstPolicyStatus = response.body.at(0).status
                 expect(firstPolicyStatus).to.equal('DRAFT')
                 cy.request({
                     method: 'PUT',

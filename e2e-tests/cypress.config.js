@@ -12,7 +12,7 @@ module.exports = defineConfig({
             configFile: 'reporter-config.js',
         },
         setupNodeEvents(on, config) {
-            require('cypress-grep/src/plugin')(config);
+            require('@cypress/grep/src/plugin')(config);
             require('cypress-mochawesome-reporter/plugin')(on);
             on('task', verifyDownloadTasks);
             on('task', {

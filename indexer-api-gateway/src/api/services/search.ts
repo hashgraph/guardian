@@ -3,7 +3,6 @@ import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import { ApiPaginatedResponse } from '../../decorators/api-paginated-response.js';
-import { SearchItem } from '@indexer/interfaces';
 import { SearchItemDTO } from '#dto';
 
 @Controller('search')

@@ -2,7 +2,7 @@ import {STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context("Tags", {tags: '@tags'}, () => {
+context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const tagName = "tagSchemaAPI" + Math.floor(Math.random() * 999999);
     const tagId = "d0e99e70-3511-486668e-bf6f-10041e9a0cb7" + Math.floor(Math.random() * 999999);
@@ -11,7 +11,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create tag schema for edit
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Tags + "schemas",
             headers: {
                 authorization,
@@ -95,7 +95,7 @@ context("Tags", {tags: '@tags'}, () => {
     it("Update the schema with the provided schema ID", () => {
         //edit tag schema
         cy.request({
-            method: "PUT",
+            method: METHOD.PUT,
             url: API.ApiServer + API.Tags + "schemas/" + schemaId,
             headers: {
                 authorization,

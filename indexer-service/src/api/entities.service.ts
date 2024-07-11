@@ -920,8 +920,8 @@ export class EntityService {
                     },
                 }
             )) as DID[];
-            for (const row of history) {
-                await loadDocuments(row);
+            for (const historyItem of history) {
+                await loadDocuments(historyItem);
             }
             return new MessageResponse<DIDDetails>({
                 id: messageId,
@@ -1032,8 +1032,8 @@ export class EntityService {
                     },
                 }
             )) as VP[];
-            for (const row of history) {
-                await loadDocuments(row);
+            for (const historyItem of history) {
+                await loadDocuments(historyItem);
             }
             return new MessageResponse<VPDetails>({
                 id: messageId,
@@ -1164,8 +1164,8 @@ export class EntityService {
                     },
                 }
             )) as VC[];
-            for (const row of history) {
-                await loadDocuments(row);
+            for (const historyItem of history) {
+                await loadDocuments(historyItem);
             }
             return new MessageResponse<VCDetails>({
                 id: messageId,

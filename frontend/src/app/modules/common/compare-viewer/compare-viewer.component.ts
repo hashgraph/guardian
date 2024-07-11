@@ -79,10 +79,19 @@ export class CompareViewerComponent implements OnInit {
         }
         if (this.selectedCount > 1) {
             const ids = this.ids.filter(id => this.selected[id]);
+            const items = btoa(JSON.stringify({
+                parent: null,
+                items: ids.map((id) => {
+                    return {
+                        type: 'id',
+                        value: id
+                    }
+                })
+            }));
             this.router.navigate(['/compare'], {
                 queryParams: {
                     type: 'document',
-                    documentIds: ids
+                    items
                 }
             });
         }
@@ -93,10 +102,19 @@ export class CompareViewerComponent implements OnInit {
         if (this.collapsed) {
             $event.stopImmediatePropagation();
             const ids = this.ids.filter(id => this.selected[id]);
+            const items = btoa(JSON.stringify({
+                parent: null,
+                items: ids.map((id) => {
+                    return {
+                        type: 'id',
+                        value: id
+                    }
+                })
+            }));
             this.router.navigate(['/compare'], {
                 queryParams: {
                     type: 'document',
-                    documentIds: ids
+                    items
                 }
             });
             return;
