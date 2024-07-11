@@ -1801,6 +1801,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchPolicyResultDTO'
+        '422':
+          description: Unprocessable entity
         '500':
           description: Internal server error
           content:
