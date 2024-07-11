@@ -23,7 +23,7 @@ export interface SearchPolicyParams {
     /**
      * Text
      */
-    text: string;
+    text?: string;
     /**
      * Mint VC count
      */

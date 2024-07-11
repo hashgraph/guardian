@@ -36,7 +36,8 @@ export class SearchPolicyParamsDTO implements SearchPolicyParams {
         description: 'Text',
     })
     @IsString()
-    text: string;
+    @IsOptional()
+    text?: string;
     @ApiProperty({
         description: 'Mint VC count',
         example: 10,

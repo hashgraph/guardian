@@ -5,6 +5,7 @@ import {
     ApiOkResponse,
     ApiOperation,
     ApiTags,
+    ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
@@ -32,6 +33,9 @@ export class AnalyticsApi extends ApiClient {
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
         type: InternalServerErrorDTO,
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity',
     })
     @Post('/search/policy')
     @HttpCode(HttpStatus.OK)
