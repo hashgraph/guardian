@@ -55,7 +55,6 @@ import { toolsAPI } from './api/tool.service.js';
 import { GuardiansService } from './helpers/guardians.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';
-import { setDefaultSchema } from './api/helpers/schema-helper.js';
 import { demoAPI } from './api/demo.service.js';
 import { themeAPI } from './api/theme.service.js';
 import { brandingAPI } from './api/branding.service.js';
@@ -74,6 +73,7 @@ import { projectsAPI } from './api/projects.service.js';
 import { AISuggestionsService } from './helpers/ai-suggestions.js';
 import { AssignedEntityAPI } from './api/assigned-entity.service.js';
 import { permissionAPI } from './api/permission.service.js';
+import { setDefaultSchema } from './api/helpers/default-schemas.js';
 
 export const obj = {};
 

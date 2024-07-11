@@ -28,6 +28,7 @@ export class PreviewPolicyDialog {
     public errors!: any;
     public toolForm!: FormGroup;
     public isFile?: boolean;
+    public demo: boolean;
 
     public get valid(): boolean {
         return (this.policy || this.module || this.tool) && this.toolForm.valid;
@@ -156,6 +157,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
+            demo: this.demo
         });
     }
 

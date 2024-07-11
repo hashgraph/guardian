@@ -68,7 +68,7 @@
             <div class="field-value">{{ similar }}</div>
         </div>
 
-        <div *ngIf="toolConfigs" class="fields-container">
+        <div *ngIf="toolConfigs?.length" class="fields-container">
             <div class="field-name">Tools</div>
             <form [formGroup]="toolForm">
                 <div class="field-input p-float-label" *ngFor="let toolConfig of toolConfigs">
@@ -76,6 +76,13 @@
                     <label for="float-input">{{toolConfig.name}}</label>
                 </div>
             </form>
+        </div>
+
+        <div class="fields-container">
+            <div class="field-name">Demo mode</div>
+            <div class="field-value">
+                <p-checkbox [(ngModel)]="demo" [binary]="true" ></p-checkbox>
+            </div>
         </div>
     </div>
 

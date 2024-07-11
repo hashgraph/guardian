@@ -2,7 +2,7 @@ import { DatabaseServer, IToolComponents, MessageAction, MessageServer, MessageT
 import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 import { importTag } from './tag-import-export-helper.js';
-import { importSchemaByFiles } from './schema-import-export-helper.js';
+import { SchemaImportExportHelper } from './schema-import-export-helper.js';
 
 /**
  * Import tool mapping
@@ -433,7 +433,7 @@ export async function importToolByFile(
     )) as { name: string; iri: string }[];
 
     // Import Schemas
-    const schemasResult = await importSchemaByFiles(
+    const schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
         schemas,
         user,
         {

@@ -3,8 +3,8 @@ import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, u
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
 import { publishSchemaTags } from './../tag.service.js';
-import { exportSchemas } from './schema-import-export-helper.js';
 import { IRootConfig } from '../../interfaces/root-config.interface.js';
+import { SchemaImportExportHelper } from './schema-import-export-helper.js';
 
 /**
  * Check access
@@ -82,7 +82,7 @@ export async function publishSchema(
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
 
-    const relationships = await exportSchemas([item.id], user);
+    const relationships = await SchemaImportExportHelper.exportSchemas([item.id]);
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);

@@ -3,7 +3,7 @@ import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync
 import { IOwner, IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
-import { exportSchemas, importSchemaByFiles, } from './helpers/schema-import-export-helper.js';
+import { SchemaImportExportHelper } from './helpers/schema-import-export-helper.js';
 import { PolicyWizardHelper } from './helpers/policy-wizard-helper.js';
 
 /**
@@ -25,11 +25,10 @@ async function createExistingPolicySchemas(
             schema.topicId !== policyTopicId
     );
     const schemaToCreateIris = schemasToCreate.map((schema) => schema.iri);
-    const relationships = await exportSchemas(
-        schemasToCreate.map((schema) => schema.id),
-        user
+    const relationships = await SchemaImportExportHelper.exportSchemas(
+        schemasToCreate.map((schema) => schema.id)
     );
-    const importResult = await importSchemaByFiles(
+    const importResult = await SchemaImportExportHelper.importSchemaByFiles(
         relationships,
         user,
         {

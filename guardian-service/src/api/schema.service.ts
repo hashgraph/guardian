@@ -3,7 +3,7 @@ import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
+import { SchemaImportExportHelper, checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -667,8 +667,14 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
-                const schemasMap = await importSchemasByMessages(
-                    category, owner, messageIds, topicId, emptyNotifier()
+                const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
+                    messageIds,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
+                    emptyNotifier()
                 );
                 return new MessageResponse(schemasMap);
             } catch (error) {
@@ -691,8 +697,14 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
-                const schemasMap = await importSchemasByMessages(
-                    category, owner, messageIds, topicId, notifier
+                const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
+                    messageIds,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
+                    notifier
                 );
                 notifier.result(schemasMap);
             }, async (error) => {
@@ -723,7 +735,7 @@ export async function schemaAPI(): Promise<void> {
                 const notifier = emptyNotifier();
 
                 const category = await getSchemaCategory(topicId);
-                let result = await importSchemaByFiles(
+                let result = await SchemaImportExportHelper.importSchemaByFiles(
                     schemas,
                     owner,
                     {
@@ -757,7 +769,7 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
-                let result = await importSchemaByFiles(
+                let result = await SchemaImportExportHelper.importSchemaByFiles(
                     schemas,
                     owner,
                     {
@@ -850,8 +862,8 @@ export async function schemaAPI(): Promise<void> {
     ApiResponse(MessageAPI.EXPORT_SCHEMAS,
         async (msg: { ids: string[], owner: IOwner }) => {
             try {
-                const { ids, owner } = msg;
-                return new MessageResponse(await exportSchemas(ids, owner));
+                const { ids } = msg;
+                return new MessageResponse(await SchemaImportExportHelper.exportSchemas(ids));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -1224,8 +1236,8 @@ export async function schemaAPI(): Promise<void> {
     ApiResponse(MessageAPI.SCHEMA_EXPORT_XLSX,
         async (msg: { owner: IOwner, ids: string[] }) => {
             try {
-                const { owner, ids } = msg;
-                const schemas = await exportSchemas(ids, owner);
+                const { ids } = msg;
+                const schemas = await SchemaImportExportHelper.exportSchemas(ids);
                 const buffer = await JsonToXlsx.generate(schemas, [], []);
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
@@ -1264,7 +1276,7 @@ export async function schemaAPI(): Promise<void> {
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
 
-                const result = await importSchemaByFiles(
+                const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
                     owner,
                     {
@@ -1324,7 +1336,7 @@ export async function schemaAPI(): Promise<void> {
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
-                const result = await importSchemaByFiles(
+                const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
                     owner,
                     {

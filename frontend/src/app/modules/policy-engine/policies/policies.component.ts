@@ -580,44 +580,38 @@ export class PoliciesComponent implements OnInit {
                     return;
                 }
 
-                let versionOfTopicId = result.versionOfTopicId || null;
+                const versionOfTopicId = result.versionOfTopicId || null;
+                const demo = result.demo || false;
+                const tools = result.tools;
+                debugger;
+
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, {
-                            tools: result.tools
-                        })
-                        .subscribe(
-                            (result) => {
-                                const { taskId, expectation } = result;
-                                this.router.navigate(['task', taskId], {
-                                    queryParams: {
-                                        last: btoa(location.href),
-                                    },
-                                });
-                            },
-                            (e) => {
-                                this.loading = false;
-                            }
-                        );
+                        .pushImportByMessage(data, versionOfTopicId, { tools }, demo)
+                        .subscribe((result) => {
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
+                        }, (e) => {
+                            this.loading = false;
+                        });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, {
-                            tools: result.tools
-                        })
-                        .subscribe(
-                            (result) => {
-                                const { taskId, expectation } = result;
-                                this.router.navigate(['task', taskId], {
-                                    queryParams: {
-                                        last: btoa(location.href),
-                                    },
-                                });
-                            },
-                            (e) => {
-                                this.loading = false;
-                            }
-                        );
+                        .pushImportByFile(data, versionOfTopicId, { tools }, demo)
+                        .subscribe((result) => {
+                            const { taskId, expectation } = result;
+                            this.router.navigate(['task', taskId], {
+                                queryParams: {
+                                    last: btoa(location.href),
+                                },
+                            });
+                        }, (e) => {
+                            this.loading = false;
+                        });
                 }
             }
         });

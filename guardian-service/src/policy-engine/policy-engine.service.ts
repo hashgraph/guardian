@@ -46,7 +46,7 @@ import { NatsConnection } from 'nats';
 import { GuardiansService } from '../helpers/guardians.js';
 import { BlockAboutString } from './block-about.js';
 import { HashComparator } from '../analytics/index.js';
-import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMessage } from '../api/helpers/index.js';
+import { getSchemaCategory, SchemaImportExportHelper, importSubTools, previewToolByMessage } from '../api/helpers/index.js';
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
@@ -1326,7 +1326,7 @@ export class PolicyEngineService {
                     xlsxResult.addErrors(errors);
                     GenerateBlocks.generate(xlsxResult);
                     const category = await getSchemaCategory(policy.topicId);
-                    const result = await importSchemaByFiles(
+                    const result = await SchemaImportExportHelper.importSchemaByFiles(
                         xlsxResult.schemas,
                         owner,
                         {
@@ -1377,7 +1377,7 @@ export class PolicyEngineService {
                     xlsxResult.addErrors(errors);
                     GenerateBlocks.generate(xlsxResult);
                     const category = await getSchemaCategory(policy.topicId);
-                    const result = await importSchemaByFiles(
+                    const result = await SchemaImportExportHelper.importSchemaByFiles(
                         xlsxResult.schemas,
                         owner,
                         {

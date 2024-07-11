@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { MigrationConfig, PolicyToolMetadata } from '@guardian/interfaces';
@@ -120,41 +120,46 @@ export class PolicyEngineService {
     public pushImportByMessage(
         messageId: string,
         versionOfTopicId?: string,
-        metadata?: PolicyToolMetadata
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
-        var query = versionOfTopicId
-            ? `?versionOfTopicId=${versionOfTopicId}`
-            : '';
+        let params = new HttpParams();
+        if (versionOfTopicId) {
+            params = params.set('versionOfTopicId', versionOfTopicId);
+        }
+        if (demo) {
+            params = params.set('demo', demo);
+        }
         return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/push/import/message${query}`,
-            { messageId, metadata }
+            `${this.url}/push/import/message`,
+            { messageId, metadata },
+            { params }
         );
     }
 
     public pushImportByFile(
         policyFile: any,
         versionOfTopicId?: string,
-        metadata?: PolicyToolMetadata
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
-        var query = versionOfTopicId
-            ? `?versionOfTopicId=${versionOfTopicId}`
-            : '';
+        let params = new HttpParams();
+        if (versionOfTopicId) {
+            params = params.set('versionOfTopicId', versionOfTopicId);
+        }
+        if (demo) {
+            params = params.set('demo', demo);
+        }
+
         const formData = new FormData();
-        formData.append(
-            'policyFile',
-            new Blob([policyFile], { type: 'application/octet-stream' })
-        );
+        formData.append('policyFile', new Blob([policyFile], { type: 'application/octet-stream' }));
         if (metadata) {
-            formData.append(
-                'metadata',
-                new Blob([JSON.stringify(metadata)], {
-                    type: 'application/json',
-                })
-            );
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
         }
         return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/push/import/file-metadata${query}`,
-            formData
+            `${this.url}/push/import/file-metadata`,
+            formData,
+            { params }
         );
     }
 

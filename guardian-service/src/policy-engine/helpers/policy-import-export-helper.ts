@@ -1,11 +1,11 @@
 import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag } from '../../api/helpers/index.js';
+import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag, SchemaImportExportHelper } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 
-interface ImportResult {
+export interface ImportPolicyResult {
     /**
      * New Policy
      */
@@ -16,11 +16,12 @@ interface ImportResult {
     errors: any[]
 }
 
-class PolicyImport {
+export class PolicyImport {
     private readonly demo: boolean;
     private readonly notifier: INotifier;
 
     private root: IRootConfig;
+    private userId: string;
     private topicHelper: TopicHelper;
     private messageServer: MessageServer;
     private parentTopic: TopicConfig;
@@ -43,6 +44,7 @@ class PolicyImport {
     private async resolveAccount(user: IOwner): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
+        const userAccount = await users.getUser(user.username);
         this.root = await users.getHederaAccount(user.creator);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
@@ -54,6 +56,7 @@ class PolicyImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
+        this.userId = userAccount.id.toString();
         return this.root;
     }
 
@@ -125,7 +128,8 @@ class PolicyImport {
             await this.topicHelper.twoWayLink(
                 this.topicRow,
                 this.parentTopic,
-                createPolicyMessage.getId()
+                createPolicyMessage.getId(),
+                this.userId
             );
         }
 
@@ -136,14 +140,14 @@ class PolicyImport {
     private async publishSystemSchemas(versionOfTopicId: string, user: IOwner) {
         if (this.demo) {
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-            this.schemasResult = await importSchemaByFiles(
+            this.schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
                 systemSchemas,
                 user,
                 {
                     category: SchemaCategory.SYSTEM,
                     topicId: this.topicRow.topicId,
                     skipGenerateId: false,
-                    status: SchemaStatus.DEMO
+                    demo: this.demo
                 },
                 this.notifier
             );
@@ -209,7 +213,7 @@ class PolicyImport {
                 fields: ['name', 'iri'],
             }
         )) as { name: string; iri: string }[];
-        this.schemasResult = await importSchemaByFiles(
+        this.schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
             schemas,
             user,
             {
@@ -217,7 +221,7 @@ class PolicyImport {
                 topicId: this.topicRow.topicId,
                 skipGenerateId: false,
                 outerSchemas: toolsSchemas,
-                status: this.demo ? SchemaStatus.DEMO : undefined
+                demo: this.demo
             },
             this.notifier
         );
@@ -329,23 +333,40 @@ class PolicyImport {
         versionOfTopicId: string,
         additionalPolicyConfig: Partial<Policy> | null,
         metadata: PolicyToolMetadata | null,
-    ): Promise<ImportResult> {
+    ): Promise<ImportPolicyResult> {
+        console.log('---- import ---')
+
         const { policy, tokens, schemas, artifacts, tags, tools } = policyComponents;
+        console.log('---- resolveAccount ---')
         await this.resolveAccount(user);
+        console.log('---- dataPreparation ---')
         await this.dataPreparation(policy, user, additionalPolicyConfig);
+        console.log('---- createPolicyTopic ---')
         await this.createPolicyTopic(policy, versionOfTopicId, user);
+        console.log('---- publishSystemSchemas ---')
         await this.publishSystemSchemas(versionOfTopicId, user);
+        console.log('---- importTools ---')
         await this.importTools(tools, metadata, user);
+        console.log('---- importTokens ---')
         await this.importTokens(tokens, user);
+        console.log('---- importSchemas ---')
         await this.importSchemas(schemas, user);
+        console.log('---- importArtifacts ---')
         await this.importArtifacts(artifacts, user);
+        console.log('---- updateUUIDs ---')
         await this.updateUUIDs(policy);
 
+        console.log('---- savePolicy ---')
         const row = await this.savePolicy(policy);
+        console.log('---- saveTopic ---')
         await this.saveTopic(row);
+        console.log('---- saveArtifacts ---')
         await this.saveArtifacts(row);
+        console.log('---- saveHash ---')
         await this.saveHash(row);
+        console.log('---- setSuggestionsConfig ---')
         await this.setSuggestionsConfig(row, user);
+        console.log('---- importTags ---')
         await this.importTags(row, tags);
 
         const errors = await this.getErrors();
@@ -403,7 +424,7 @@ export class PolicyImportExportHelper {
         metadata: PolicyToolMetadata = null,
         demo: boolean = false,
         notifier: INotifier = emptyNotifier()
-    ): Promise<ImportResult> {
+    ): Promise<ImportPolicyResult> {
         const helper = new PolicyImport(demo, notifier);
         return helper.import(
             policyToImport,
