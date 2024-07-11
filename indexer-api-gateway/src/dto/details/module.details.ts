@@ -4,14 +4,9 @@ import {
     Module,
     ModuleDetails,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsResponseWithDefinition,
-    DetailsDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class ModuleOptionsDTO implements ModuleOptions {
@@ -52,47 +47,28 @@ export class ModuleAnalyticsDTO implements ModuleAnalytics {
 
 export class ModuleDTO
     extends MessageDTO<ModuleOptionsDTO, ModuleAnalyticsDTO>
-    implements Module {}
-
-export const ModuleDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(ModuleDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(ModuleOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(ModuleAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedModuleResponse = applyDecorators(
-    ApiExtraModels(ModuleDTO, ModuleOptionsDTO, ModuleAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('Modules', ModuleDtoDefinition)
-);
+    implements Module
+{
+    @ApiProperty({
+        type: ModuleOptionsDTO,
+    })
+    declare options: ModuleOptionsDTO;
+    @ApiProperty({
+        type: ModuleAnalyticsDTO,
+    })
+    declare analytics: ModuleAnalyticsDTO;
+}
 
 export class ModuleDetailsDTO
     extends DetailsDTO<ModuleDTO>
-    implements ModuleDetails {}
-export const ApiDetailsModuleResponse = applyDecorators(
-    ApiExtraModels(ModuleDTO, ModuleOptionsDTO, ModuleAnalyticsDTO),
-    ApiDetailsResponseWithDefinition(ModuleDetailsDTO, RawMessageDTO, 'Module details', {
-        allOf: [
-            { $ref: getSchemaPath(ModuleDTO) },
-            {
-                properties: {
-                    options: {
-                        $ref: getSchemaPath(ModuleOptionsDTO),
-                    },
-                    analytics: {
-                        $ref: getSchemaPath(ModuleAnalyticsDTO),
-                    },
-                },
-            },
-        ],
+    implements ModuleDetails
+{
+    @ApiProperty({
+        type: ModuleDTO,
     })
-);
+    declare item?: ModuleDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+}

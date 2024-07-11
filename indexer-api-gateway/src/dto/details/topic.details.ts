@@ -6,14 +6,9 @@ import {
     TopicOptions,
     TopicType,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsActivityResponseWithDefinition,
-    DetailsActivityDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsActivityDTO } from './details.interface.js';
 import { RawTopicDTO } from '../raw-topic.dto.js';
 
 export class TopicOptionsDTO implements TopicOptions {
@@ -127,53 +122,32 @@ export class TopicActivityDTO implements TopicActivity {
 
 export class TopicDTO
     extends MessageDTO<TopicOptionsDTO, TopicAnalyticsDTO>
-    implements Topic {}
-
-export const TopicDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(TopicDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(TopicOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(TopicAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedTopicResponse = applyDecorators(
-    ApiExtraModels(TopicDTO, TopicOptionsDTO, TopicAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('Topics', TopicDtoDefinition)
-);
+    implements Topic
+{
+    @ApiProperty({
+        type: TopicOptionsDTO,
+    })
+    declare options: TopicOptionsDTO;
+    @ApiProperty({
+        type: TopicAnalyticsDTO,
+    })
+    declare analytics: TopicAnalyticsDTO;
+}
 
 export class TopicDetailsDTO
     extends DetailsActivityDTO<TopicDTO, TopicActivityDTO, RawTopicDTO>
-    implements TopicDetails {}
-export const ApiDetailsTopicResponse = applyDecorators(
-    ApiExtraModels(TopicDTO, TopicOptionsDTO, TopicAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition(
-        TopicDetailsDTO,
-        RawTopicDTO,
-        'Topic details',
-        TopicActivityDTO,
-        {
-            allOf: [
-                { $ref: getSchemaPath(TopicDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(TopicOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(TopicAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements TopicDetails
+{
+    @ApiProperty({
+        type: TopicDTO,
+    })
+    declare item?: TopicDTO;
+    @ApiProperty({
+        type: RawTopicDTO,
+    })
+    declare row?: RawTopicDTO;
+    @ApiProperty({
+        type: TopicActivityDTO,
+    })
+    declare activity?: TopicActivityDTO;
+}

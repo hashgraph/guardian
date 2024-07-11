@@ -5,14 +5,9 @@ import {
     RegistryUserDetails,
     RegistryUserOptions,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsActivityResponseWithDefinition,
-    DetailsActivityDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsActivityDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class RegistryUserOptionsDTO implements RegistryUserOptions {
@@ -51,64 +46,32 @@ export class RegistryUserActivityDTO implements RegistryUserActivity {
 
 export class RegistryUserDTO
     extends MessageDTO<RegistryUserOptionsDTO, RegistryUserAnalyticsDTO>
-    implements RegistryUser {}
-
-export const RegistryUserDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(RegistryUserDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(RegistryUserOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(RegistryUserAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedRegistryUserResponse = applyDecorators(
-    ApiExtraModels(
-        RegistryUserDTO,
-        RegistryUserOptionsDTO,
-        RegistryUserAnalyticsDTO
-    ),
-    ApiPaginatedResponseWithDefinition(
-        'Registry users',
-        RegistryUserDtoDefinition
-    )
-);
+    implements RegistryUser
+{
+    @ApiProperty({
+        type: RegistryUserOptionsDTO,
+    })
+    declare options: RegistryUserOptionsDTO;
+    @ApiProperty({
+        type: RegistryUserAnalyticsDTO,
+    })
+    declare analytics: RegistryUserAnalyticsDTO;
+}
 
 export class RegistryUserDetailsDTO
     extends DetailsActivityDTO<RegistryUserDTO, RegistryUserActivityDTO>
-    implements RegistryUserDetails {}
-export const ApiDetailsRegistryUserResponse = applyDecorators(
-    ApiExtraModels(
-        RegistryUserDTO,
-        RegistryUserOptionsDTO,
-        RegistryUserAnalyticsDTO
-    ),
-    ApiDetailsActivityResponseWithDefinition(
-        RegistryUserDetailsDTO,
-        RawMessageDTO,
-        'Registry user details',
-        RegistryUserActivityDTO,
-        {
-            allOf: [
-                { $ref: getSchemaPath(RegistryUserDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(RegistryUserOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(RegistryUserAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements RegistryUserDetails
+{
+    @ApiProperty({
+        type: RegistryUserDTO,
+    })
+    declare item?: RegistryUserDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: RegistryUserActivityDTO,
+    })
+    declare activity?: RegistryUserActivityDTO;
+}

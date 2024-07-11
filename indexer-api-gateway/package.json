@@ -5,7 +5,8 @@
         "#helpers": "./dist/helpers",
         "#auth": "./dist/auth",
         "#subscribers": "./dist/subscribers",
-        "#dto": "./dist/dto/index.js"
+        "#dto": "./dist/dto/index.js",
+        "#decorators": "./dist/decorators/index.js"
     },
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",

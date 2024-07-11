@@ -7,4 +7,5 @@ export * from './raw-message.dto.js';
 export * from './raw-topic.dto.js';
 export * from './raw-nft.dto.js';
 export * from './raw-token.dto.js';
-export * from './decorators/index.js';
+export * from './relationships.dto.js';
+export * from './schema-tree.dto.js';

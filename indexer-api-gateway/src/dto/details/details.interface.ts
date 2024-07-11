@@ -5,15 +5,8 @@ import {
     DetailsHistoryActivity,
 } from '@indexer/interfaces';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiExtraModels,
-    ApiOkResponse,
-    ApiProperty,
-    getSchemaPath,
-} from '@nestjs/swagger';
-import { applyDecorators, Type } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { RawMessageDTO } from '../raw-message.dto.js';
-import { RawNFTDTO } from '../raw-nft.dto.js';
 import { TokenDTO } from './token.details.js';
 import { NFTDTO } from './nft.details.js';
 
@@ -61,102 +54,3 @@ export class DetailsHistoryActivityDTO<
     history?: T[];
     activity?: AT;
 }
-
-export const ApiDetailsResponseWithDefinition = <
-    DType extends Type<DetailsDTO<any, any>>,
-    RType extends Type<RawMessageDTO | RawNFTDTO>
->(
-    dType: DType,
-    rType: RType,
-    description: string,
-    def: any
-) => {
-    return applyDecorators(
-        ApiExtraModels(dType, rType),
-        ApiOkResponse({
-            description,
-            schema: {
-                allOf: [
-                    { $ref: getSchemaPath(dType) },
-                    {
-                        properties: {
-                            item: def,
-                            row: {
-                                $ref: getSchemaPath(rType),
-                            },
-                        },
-                    },
-                ],
-            },
-        })
-    );
-};
-
-export const ApiDetailsHistoryResponseWithDefinition = <
-    DType extends Type<DetailsHistoryDTO<any, any>>,
-    RType extends Type<RawMessageDTO>
->(
-    dType: DType,
-    rType: RType,
-    description: string,
-    def: any
-) => {
-    return applyDecorators(
-        ApiExtraModels(dType, rType),
-        ApiOkResponse({
-            description,
-            schema: {
-                allOf: [
-                    { $ref: getSchemaPath(dType) },
-                    {
-                        properties: {
-                            item: def,
-                            row: {
-                                $ref: getSchemaPath(rType),
-                            },
-                            history: {
-                                type: 'array',
-                                items: def,
-                            },
-                        },
-                    },
-                ],
-            },
-        })
-    );
-};
-
-export const ApiDetailsActivityResponseWithDefinition = <
-    DType extends Type<DetailsActivityDTO<any, any, any>>,
-    RType extends Type<any>,
-    ATModel extends Type<any>
->(
-    dType: DType,
-    rType: RType,
-    description: string,
-    activity: ATModel,
-    def: any
-) => {
-    return applyDecorators(
-        ApiExtraModels(dType, rType, activity),
-        ApiOkResponse({
-            description,
-            schema: {
-                allOf: [
-                    { $ref: getSchemaPath(dType) },
-                    {
-                        properties: {
-                            item: def,
-                            row: {
-                                $ref: getSchemaPath(rType),
-                            },
-                            activity: {
-                                $ref: getSchemaPath(activity),
-                            },
-                        },
-                    },
-                ],
-            },
-        })
-    );
-};

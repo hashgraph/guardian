@@ -1,12 +1,7 @@
 import { VC, VCAnalytics, VCDetails, VCOptions } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsHistoryResponseWithDefinition,
-    DetailsHistoryDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsHistoryDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class VCOptionsDTO implements VCOptions {
@@ -56,59 +51,36 @@ export class VCAnalyticsDTO implements VCAnalytics {
 
 export class VCDTO
     extends MessageDTO<VCOptionsDTO, VCAnalyticsDTO>
-    implements VC {}
-
-export const VCDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(VCDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(VCOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(VCAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedVCResponse = applyDecorators(
-    ApiExtraModels(VCDTO, VCOptionsDTO, VCAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('VCs', VCDtoDefinition)
-);
-
+    implements VC
+{
+    @ApiProperty({
+        type: VCOptionsDTO,
+    })
+    declare options: VCOptionsDTO;
+    @ApiProperty({
+        type: VCAnalyticsDTO,
+    })
+    declare analytics: VCAnalyticsDTO;
+}
 export class VCDetailsDTO
     extends DetailsHistoryDTO<VCDTO>
     implements VCDetails
 {
+    @ApiProperty({
+        type: VCDTO,
+    })
+    declare item?: VCDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: [VCDTO],
+    })
+    declare history?: VCDTO[];
     @ApiProperty({
         description: 'VC Schema',
         type: 'object',
     })
     schema?: any;
 }
-export const ApiDetailsVCResponse = applyDecorators(
-    ApiExtraModels(VCDTO, VCOptionsDTO, VCAnalyticsDTO),
-    ApiDetailsHistoryResponseWithDefinition(
-        VCDetailsDTO,
-        RawMessageDTO,
-        'VC details',
-        {
-            allOf: [
-                { $ref: getSchemaPath(VCDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(VCOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(VCAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);

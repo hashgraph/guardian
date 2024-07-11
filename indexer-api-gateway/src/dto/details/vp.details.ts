@@ -1,12 +1,7 @@
 import { VP, VPAnalytics, VPDetails, VPOptions } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsHistoryResponseWithDefinition,
-    DetailsHistoryDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsHistoryDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class VPOptionsDTO implements VPOptions {
@@ -47,52 +42,32 @@ export class VPAnalyticsDTO implements VPAnalytics {
 
 export class VPDTO
     extends MessageDTO<VPOptionsDTO, VPAnalyticsDTO>
-    implements VP {}
-
-export const VPDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(VPDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(VPOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(VPAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedVPResponse = applyDecorators(
-    ApiExtraModels(VPDTO, VPOptionsDTO, VPAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('VPs', VPDtoDefinition)
-);
+    implements VP
+{
+    @ApiProperty({
+        type: VPOptionsDTO,
+    })
+    declare options: VPOptionsDTO;
+    @ApiProperty({
+        type: VPAnalyticsDTO,
+    })
+    declare analytics: VPAnalyticsDTO;
+}
 
 export class VPDetailsDTO
     extends DetailsHistoryDTO<VPDTO>
-    implements VPDetails {}
-export const ApiDetailsVPResponse = applyDecorators(
-    ApiExtraModels(VPDTO, VPOptionsDTO, VPAnalyticsDTO),
-    ApiDetailsHistoryResponseWithDefinition(
-        VPDetailsDTO,
-        RawMessageDTO,
-        'VP details',
-        {
-            allOf: [
-                { $ref: getSchemaPath(VPDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(VPOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(VPAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements VPDetails
+{
+    @ApiProperty({
+        type: VPDTO,
+    })
+    declare item?: VPDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: [VPDTO],
+    })
+    declare history?: VPDTO[];
+}

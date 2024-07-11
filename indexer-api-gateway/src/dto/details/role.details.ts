@@ -5,14 +5,9 @@ import {
     RoleDetails,
     RoleOptions,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsActivityResponseWithDefinition,
-    DetailsActivityDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsActivityDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class RoleOptionsDTO implements RoleOptions {
@@ -56,53 +51,32 @@ export class RoleActivityDTO implements RoleActivity {
 
 export class RoleDTO
     extends MessageDTO<RoleOptionsDTO, RoleAnalyticsDTO>
-    implements Role {}
-
-export const RoleDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(RoleDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(RoleOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(RoleAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedRoleResponse = applyDecorators(
-    ApiExtraModels(RoleDTO, RoleOptionsDTO, RoleAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('Roles', RoleDtoDefinition)
-);
+    implements Role
+{
+    @ApiProperty({
+        type: RoleOptionsDTO,
+    })
+    declare options: RoleOptionsDTO;
+    @ApiProperty({
+        type: RoleAnalyticsDTO,
+    })
+    declare analytics: RoleAnalyticsDTO;
+}
 
 export class RoleDetailsDTO
     extends DetailsActivityDTO<RoleDTO, RoleActivityDTO>
-    implements RoleDetails {}
-export const ApiDetailsRoleResponse = applyDecorators(
-    ApiExtraModels(RoleDTO, RoleOptionsDTO, RoleAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition(
-        RoleDetailsDTO,
-        RawMessageDTO,
-        'Role details',
-        RoleActivityDTO,
-        {
-            allOf: [
-                { $ref: getSchemaPath(RoleDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(RoleOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(RoleAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements RoleDetails
+{
+    @ApiProperty({
+        type: RoleDTO,
+    })
+    declare item?: RoleDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: RoleActivityDTO,
+    })
+    declare activity?: RoleActivityDTO;
+}

@@ -4,7 +4,6 @@ import {
     IndexerMessageAPI,
     MessageResponse,
     MessageError,
-    IPage,
     DataBaseHelper,
     MessageCache,
     DataBaseUtils,
@@ -13,6 +12,7 @@ import {
     TokenCache,
     NftCache
 } from '@indexer/common';
+import { Page } from '@indexer/interfaces';
 
 @Controller()
 export class LogService {
@@ -55,7 +55,7 @@ export class LogService {
             const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
             const [rows, count] = await em.findAndCount(MessageCache, filters, options);
 
-            const result: IPage<MessageCache> = {
+            const result: Page<MessageCache> = {
                 items: rows,
                 pageIndex: pageIndex,
                 pageSize: pageSize,
@@ -95,7 +95,7 @@ export class LogService {
             const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
             const [rows, count] = await em.findAndCount(TopicCache, filters, options);
 
-            const result: IPage<TopicCache> = {
+            const result: Page<TopicCache> = {
                 items: rows,
                 pageIndex: pageIndex,
                 pageSize: pageSize,
@@ -172,7 +172,7 @@ export class LogService {
                 }
             }
 
-            const result: IPage<Message> = {
+            const result: Page<Message> = {
                 items: rows,
                 pageIndex: pageIndex,
                 pageSize: pageSize,
@@ -249,7 +249,7 @@ export class LogService {
             const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
             const [rows, count] = await em.findAndCount(TokenCache, filters, options);
 
-            const result: IPage<TokenCache> = {
+            const result: Page<TokenCache> = {
                 items: rows,
                 pageIndex: pageIndex,
                 pageSize: pageSize,
@@ -309,7 +309,7 @@ export class LogService {
             const options = DataBaseUtils.pageParams(pageSize, pageIndex, 100, orderField, orderDir);
             const [rows, count] = await em.findAndCount(NftCache, filters, options);
 
-            const result: IPage<NftCache> = {
+            const result: Page<NftCache> = {
                 items: rows,
                 pageIndex: pageIndex,
                 pageSize: pageSize,

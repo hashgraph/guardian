@@ -5,14 +5,9 @@ import {
     RegistryDetails,
     RegistryOptions,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsActivityResponseWithDefinition,
-    DetailsActivityDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsActivityDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class RegistryOptionsDTO implements RegistryOptions {
@@ -88,53 +83,32 @@ export class RegistryActivityDTO implements RegistryActivity {
 
 export class RegistryDTO
     extends MessageDTO<RegistryOptionsDTO, RegistryAnalyticsDTO>
-    implements Registry {}
-
-export const RegistryDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(RegistryDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(RegistryOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(RegistryAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedRegistryResponse = applyDecorators(
-    ApiExtraModels(RegistryDTO, RegistryOptionsDTO, RegistryAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('Registries', RegistryDtoDefinition)
-);
+    implements Registry
+{
+    @ApiProperty({
+        type: RegistryOptionsDTO,
+    })
+    declare options: RegistryOptionsDTO;
+    @ApiProperty({
+        type: RegistryAnalyticsDTO,
+    })
+    declare analytics: RegistryAnalyticsDTO;
+}
 
 export class RegistryDetailsDTO
     extends DetailsActivityDTO<RegistryDTO, RegistryActivityDTO>
-    implements RegistryDetails {}
-export const ApiDetailsRegistryResponse = applyDecorators(
-    ApiExtraModels(RegistryDTO, RegistryOptionsDTO, RegistryAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition(
-        RegistryDetailsDTO,
-        RawMessageDTO,
-        'Registry details',
-        RegistryActivityDTO,
-        {
-            allOf: [
-                { $ref: getSchemaPath(RegistryDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(RegistryOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(RegistryAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements RegistryDetails
+{
+    @ApiProperty({
+        type: RegistryDTO,
+    })
+    declare item?: RegistryDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: RegistryActivityDTO,
+    })
+    declare activity?: RegistryActivityDTO;
+}

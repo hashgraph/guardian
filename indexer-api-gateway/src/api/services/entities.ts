@@ -6,45 +6,48 @@ import {
     Param,
     Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+    ApiOkResponse,
+    ApiOperation,
+    ApiParam,
+    ApiQuery,
+    ApiTags,
+} from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
-import { ApiPaginatedRequest } from '../../decorators/api-paginated-request.js';
-import { Page, Registry } from '@indexer/interfaces';
+import { ApiPaginatedRequest, ApiPaginatedResponse } from '#decorators';
 import {
-    ApiDetailsRegistryResponse,
-    ApiPaginatedRegistryResponse,
-    ApiDetailsRegistryUserResponse,
-    ApiPaginatedRegistryUserResponse,
-    ApiDetailsPolicyResponse,
-    ApiPaginatedPolicyResponse,
-    ApiDetailsToolResponse,
-    ApiPaginatedToolResponse,
-    ApiDetailsModuleResponse,
-    ApiPaginatedModuleResponse,
-    ApiDetailsSchemaResponse,
-    ApiPaginatedSchemaResponse,
-    ApiDetailsRoleResponse,
-    ApiPaginatedRoleResponse,
-    ApiDetailsDIDResponse,
-    ApiPaginatedDIDResponse,
-    ApiDetailsVPResponse,
-    ApiPaginatedVPResponse,
-    ApiDetailsVCResponse,
-    ApiPaginatedVCResponse,
-    ApiDetailsTopicResponse,
-    ApiPaginatedTopicResponse,
-    ApiDetailsContractResponse,
-    ApiPaginatedContractResponse,
-    PageDTO,
     RegistryDTO,
     NFTDetailsDTO,
     NFTDTO,
     TokenDTO,
     TokenDetailsDTO,
+    ContractDTO,
+    ContractDetailsDTO,
+    TopicDTO,
+    VCDTO,
+    VPDTO,
+    DIDDTO,
+    RoleDTO,
+    SchemaDTO,
+    ModuleDTO,
+    ToolDTO,
+    PolicyDTO,
+    RegistryUserDTO,
+    TopicDetailsDTO,
+    VCDetailsDTO,
+    VPDetailsDTO,
+    DIDDetailsDTO,
+    RoleDetailsDTO,
+    SchemaDetailsDTO,
+    ModuleDetailsDTO,
+    ToolDetailsDTO,
+    PolicyDetailsDTO,
+    RegistryUserDetailsDTO,
+    RegistryDetailsDTO,
+    RelationshipsDTO,
+    SchemaTreeDTO
 } from '#dto';
-import { ApiDetailsRawResponse } from '../../decorators/api-details-raw-response.js';
-import { ApiPaginatedResponse } from '../../decorators/api-paginated-response.js';
 
 @Controller('entities')
 @ApiTags('entities')
@@ -83,7 +86,7 @@ export class EntityApi extends ApiClient {
         description: 'Registry user topic identifier',
         example: '0.0.4481265',
     })
-    @ApiPaginatedRegistryResponse
+    @ApiPaginatedResponse('Registries', RegistryDTO)
     @Get('/registries')
     @HttpCode(HttpStatus.OK)
     async getRegistries(
@@ -95,20 +98,17 @@ export class EntityApi extends ApiClient {
         @Query('topicId') topicId?: string,
         @Query('options.did') did?: string,
         @Query('options.registrantTopicId') registrantTopicId?: string
-    ): Promise<PageDTO<RegistryDTO>> {
-        return await this.send<Page<Registry>>(
-            IndexerMessageAPI.GET_REGISTRIES,
-            {
-                pageIndex,
-                pageSize,
-                orderField,
-                orderDir,
-                keywords,
-                topicId,
-                'options.did': did,
-                'options.registrantTopicId': registrantTopicId,
-            }
-        );
+    ) {
+        return await this.send(IndexerMessageAPI.GET_REGISTRIES, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            topicId,
+            'options.did': did,
+            'options.registrantTopicId': registrantTopicId,
+        });
     }
 
     @ApiOperation({
@@ -120,13 +120,16 @@ export class EntityApi extends ApiClient {
         description: 'Message identifier',
         example: '1706823227.586179534',
     })
-    @ApiDetailsRegistryResponse
+    @ApiOkResponse({
+        description: 'Registry details',
+        type: RegistryDetailsDTO,
+    })
     @Get('/registries/:messageId')
     @HttpCode(HttpStatus.OK)
     async getRegistry(
         @Param('messageId') messageId: string
     ): Promise<RegistryDTO> {
-        return await this.send<Registry>(IndexerMessageAPI.GET_REGISTRY, {
+        return await this.send(IndexerMessageAPI.GET_REGISTRY, {
             messageId,
         });
     }
@@ -137,7 +140,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns registry users',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedRegistryUserResponse
+    @ApiPaginatedResponse('Registry users', RegistryUserDTO)
     @Get('/registry-users')
     @ApiQuery({
         name: 'keywords',
@@ -184,7 +187,10 @@ export class EntityApi extends ApiClient {
         description: 'Message identifier',
         example: '1706823227.586179534',
     })
-    @ApiDetailsRegistryUserResponse
+    @ApiOkResponse({
+        description: 'Registry user details',
+        type: RegistryUserDetailsDTO,
+    })
     @HttpCode(HttpStatus.OK)
     async getRegistryUser(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_REGISTRY_USER, {
@@ -201,7 +207,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns policies',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedPolicyResponse
+    @ApiPaginatedResponse('Policies', PolicyDTO)
     @Get('/policies')
     @ApiQuery({
         name: 'keywords',
@@ -257,7 +263,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get policy',
         description: 'Returns policy',
     })
-    @ApiDetailsPolicyResponse
+    @ApiOkResponse({
+        description: 'Policy details',
+        type: PolicyDetailsDTO,
+    })
     @Get('/policies/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -277,7 +286,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns tools',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedToolResponse
+    @ApiPaginatedResponse('Tools', ToolDTO)
     @Get('/tools')
     @ApiQuery({
         name: 'keywords',
@@ -326,7 +335,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get tool',
         description: 'Returns tool',
     })
-    @ApiDetailsToolResponse
+    @ApiOkResponse({
+        description: 'Tool details',
+        type: ToolDetailsDTO,
+    })
     @Get('/tools/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -346,7 +358,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns modules',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedModuleResponse
+    @ApiPaginatedResponse('Modules', ModuleDTO)
     @Get('/modules')
     @ApiQuery({
         name: 'keywords',
@@ -395,7 +407,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get module',
         description: 'Returns module',
     })
-    @ApiDetailsModuleResponse
+    @ApiOkResponse({
+        description: 'Module details',
+        type: ModuleDetailsDTO,
+    })
     @Get('/modules/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -415,7 +430,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns schemas',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedSchemaResponse
+    @ApiPaginatedResponse('Schemas', SchemaDTO)
     @Get('/schemas')
     @ApiQuery({
         name: 'keywords',
@@ -464,7 +479,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get schema',
         description: 'Returns schema',
     })
-    @ApiDetailsSchemaResponse
+    @ApiOkResponse({
+        description: 'Schema details',
+        type: SchemaDetailsDTO,
+    })
     @Get('/schemas/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -478,7 +496,20 @@ export class EntityApi extends ApiClient {
         });
     }
 
+    @ApiOperation({
+        summary: 'Get schema tree',
+        description: 'Returns schema tree',
+    })
+    @ApiOkResponse({
+        description: 'Schema tree',
+        type: SchemaTreeDTO
+    })
     @Get('/schemas/:messageId/tree')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getSchemaTree(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_SCHEMA_TREE, {
@@ -527,7 +558,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get token',
         description: 'Returns token',
     })
-    @ApiDetailsRawResponse('NFTs', TokenDetailsDTO, TokenDTO)
+    @ApiOkResponse({
+        description: 'Token details',
+        type: TokenDetailsDTO,
+    })
     @Get('/tokens/:tokenId')
     @ApiParam({
         name: 'tokenId',
@@ -547,7 +581,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns roles',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedRoleResponse
+    @ApiPaginatedResponse('Roles', RoleDTO)
     @Get('/roles')
     @ApiQuery({
         name: 'keywords',
@@ -603,7 +637,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get role',
         description: 'Returns role',
     })
-    @ApiDetailsRoleResponse
+    @ApiOkResponse({
+        description: 'Role details',
+        type: RoleDetailsDTO,
+    })
     @Get('/roles/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -626,7 +663,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns DIDs',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedDIDResponse
+    @ApiPaginatedResponse('DIDs', DIDDTO)
     @Get('/did-documents')
     @ApiQuery({
         name: 'keywords',
@@ -675,7 +712,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get DID',
         description: 'Returns DID',
     })
-    @ApiDetailsDIDResponse
+    @ApiOkResponse({
+        description: 'DID details',
+        type: DIDDetailsDTO,
+    })
     @Get('/did-documents/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -688,7 +728,21 @@ export class EntityApi extends ApiClient {
             messageId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get DID relationships',
+        description: 'Returns DID relationships',
+    })
+    @ApiOkResponse({
+        description: 'DID relationships',
+        type: RelationshipsDTO,
+    })
     @Get('/did-documents/:messageId/relationships')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getDidRelationships(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_DID_RELATIONSHIPS, {
@@ -702,7 +756,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns VPs',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedVPResponse
+    @ApiPaginatedResponse('VPs', VPDTO)
     @Get('/vp-documents')
     @ApiQuery({
         name: 'keywords',
@@ -765,7 +819,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get VP',
         description: 'Returns VP',
     })
-    @ApiDetailsVPResponse
+    @ApiOkResponse({
+        description: 'VP details',
+        type: VPDetailsDTO,
+    })
     @Get('/vp-documents/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -778,7 +835,21 @@ export class EntityApi extends ApiClient {
             messageId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get VP relationships',
+        description: 'Returns VP relationships',
+    })
+    @ApiOkResponse({
+        description: 'VP relationships',
+        type: RelationshipsDTO,
+    })
     @Get('/vp-documents/:messageId/relationships')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getVpRelationships(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_VP_RELATIONSHIPS, {
@@ -792,7 +863,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns VCs',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedVCResponse
+    @ApiPaginatedResponse('VCs', VCDTO)
     @Get('/vc-documents')
     @ApiQuery({
         name: 'keywords',
@@ -862,7 +933,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get VC',
         description: 'Returns VC',
     })
-    @ApiDetailsVCResponse
+    @ApiOkResponse({
+        description: 'VC details',
+        type: VCDetailsDTO,
+    })
     @Get('/vc-documents/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -875,7 +949,21 @@ export class EntityApi extends ApiClient {
             messageId,
         });
     }
+
+    @ApiOperation({
+        summary: 'Get VC relationships',
+        description: 'Returns VC relationships',
+    })
+    @ApiOkResponse({
+        description: 'VC relationships',
+        type: RelationshipsDTO,
+    })
     @Get('/vc-documents/:messageId/relationships')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
     @HttpCode(HttpStatus.OK)
     async getVcRelationships(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_VC_RELATIONSHIPS, {
@@ -920,7 +1008,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get NFT',
         description: 'Returns NFT',
     })
-    @ApiDetailsRawResponse('NFTs', NFTDetailsDTO, NFTDTO)
+    @ApiOkResponse({
+        description: 'NFT details',
+        type: NFTDetailsDTO,
+    })
     @Get('/nfts/:tokenId/:serialNumber')
     @ApiParam({
         name: 'tokenId',
@@ -949,7 +1040,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns topics',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedTopicResponse
+    @ApiPaginatedResponse('Topics', TopicDTO)
     @Get('/topics')
     @ApiQuery({
         name: 'keywords',
@@ -990,7 +1081,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get topic',
         description: 'Returns topic',
     })
-    @ApiDetailsTopicResponse
+    @ApiOkResponse({
+        description: 'Topic details',
+        type: TopicDetailsDTO,
+    })
     @Get('/topics/:topicId')
     @ApiParam({
         name: 'messageId',
@@ -1010,7 +1104,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns contracts',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedContractResponse
+    @ApiPaginatedResponse('Contracts', ContractDTO)
     @Get('/contracts')
     @ApiQuery({
         name: 'keywords',
@@ -1051,7 +1145,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get contract',
         description: 'Returns contract',
     })
-    @ApiDetailsContractResponse
+    @ApiOkResponse({
+        description: 'Contract details',
+        type: ContractDetailsDTO,
+    })
     @Get('/contracts/:messageId')
     @ApiParam({
         name: 'messageId',

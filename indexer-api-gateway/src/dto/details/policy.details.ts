@@ -5,14 +5,9 @@ import {
     PolicyDetails,
     PolicyOptions,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsActivityResponseWithDefinition,
-    DetailsActivityDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsActivityDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class PolicyOptionsDTO implements PolicyOptions {
@@ -116,53 +111,32 @@ export class PolicyActivityDTO implements PolicyActivity {
 
 export class PolicyDTO
     extends MessageDTO<PolicyOptionsDTO, PolicyAnalyticsDTO>
-    implements Policy {}
-
-export const PolicyDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(PolicyDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(PolicyOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(PolicyAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedPolicyResponse = applyDecorators(
-    ApiExtraModels(PolicyDTO, PolicyOptionsDTO, PolicyAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('Policies', PolicyDtoDefinition)
-);
+    implements Policy
+{
+    @ApiProperty({
+        type: PolicyOptionsDTO,
+    })
+    declare options: PolicyOptionsDTO;
+    @ApiProperty({
+        type: PolicyAnalyticsDTO,
+    })
+    declare analytics: PolicyAnalyticsDTO;
+}
 
 export class PolicyDetailsDTO
     extends DetailsActivityDTO<PolicyDTO, PolicyActivityDTO>
-    implements PolicyDetails {}
-export const ApiDetailsPolicyResponse = applyDecorators(
-    ApiExtraModels(PolicyDTO, PolicyOptionsDTO, PolicyAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition(
-        PolicyDetailsDTO,
-        RawMessageDTO,
-        'Policy details',
-        PolicyActivityDTO,
-        {
-            allOf: [
-                { $ref: getSchemaPath(PolicyDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(PolicyOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(PolicyAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements PolicyDetails
+{
+    @ApiProperty({
+        type: PolicyDTO,
+    })
+    declare item?: PolicyDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: PolicyActivityDTO,
+    })
+    declare activity?: PolicyActivityDTO;
+}

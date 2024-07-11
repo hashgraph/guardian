@@ -5,14 +5,9 @@ import {
     ToolDetails,
     ToolOptions,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsActivityResponseWithDefinition,
-    DetailsActivityDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsActivityDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class ToolOptionsDTO implements ToolOptions {
@@ -76,53 +71,32 @@ export class ToolActivityDTO implements ToolActivity {
 
 export class ToolDTO
     extends MessageDTO<ToolOptionsDTO, ToolAnalyticsDTO>
-    implements Tool {}
-
-export const ToolDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(ToolDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(ToolOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(ToolAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedToolResponse = applyDecorators(
-    ApiExtraModels(ToolDTO, ToolOptionsDTO, ToolAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('Tools', ToolDtoDefinition)
-);
+    implements Tool
+{
+    @ApiProperty({
+        type: ToolOptionsDTO,
+    })
+    declare options: ToolOptionsDTO;
+    @ApiProperty({
+        type: ToolAnalyticsDTO,
+    })
+    declare analytics: ToolAnalyticsDTO;
+}
 
 export class ToolDetailsDTO
     extends DetailsActivityDTO<ToolDTO, ToolActivityDTO>
-    implements ToolDetails {}
-export const ApiDetailsToolResponse = applyDecorators(
-    ApiExtraModels(ToolDTO, ToolOptionsDTO, ToolAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition(
-        ToolDetailsDTO,
-        RawMessageDTO,
-        'Tool details',
-        ToolActivityDTO,
-        {
-            allOf: [
-                { $ref: getSchemaPath(ToolDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(ToolOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(ToolAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements ToolDetails
+{
+    @ApiProperty({
+        type: ToolDTO,
+    })
+    declare item?: ToolDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: ToolActivityDTO,
+    })
+    declare activity?: ToolActivityDTO;
+}

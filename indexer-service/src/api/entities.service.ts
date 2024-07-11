@@ -19,8 +19,6 @@ import {
     MessageAction,
     PageFilters,
     RegistryDetails,
-    IRelationshipsResults,
-    ISchemaTreeResult,
     Registry,
     Page,
     RegistryUser,
@@ -49,6 +47,8 @@ import {
     Token,
     NFTDetails,
     NFT,
+    SchemaTree,
+    Relationships as IRelationships
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -699,7 +699,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_SCHEMA_TREE)
     async getSchemaTree(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<ISchemaTreeResult>> {
+    ): Promise<AnyResponse<SchemaTree>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -711,9 +711,9 @@ export class EntityService {
                         MessageAction.PublishSystemSchema,
                     ],
                 },
-            });
+            }) as ISchema;
             if (!item) {
-                return new MessageResponse<ISchemaTreeResult>({
+                return new MessageResponse<SchemaTree>({
                     id: messageId,
                 });
             }
@@ -724,7 +724,7 @@ export class EntityService {
                 em
             );
             await root.loadChildren(item.analytics?.childSchemas || []);
-            return new MessageResponse<ISchemaTreeResult>({
+            return new MessageResponse<SchemaTree>({
                 id: messageId,
                 item,
                 root: root.toObject(),
@@ -937,7 +937,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_DID_RELATIONSHIPS)
     async getDidRelationships(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IRelationshipsResults>> {
+    ): Promise<AnyResponse<IRelationships>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -946,7 +946,7 @@ export class EntityService {
                 type: MessageType.DID_DOCUMENT,
             });
             if (!item) {
-                return new MessageResponse<IRelationshipsResults>({
+                return new MessageResponse<IRelationships>({
                     id: messageId,
                 });
             }
@@ -954,7 +954,7 @@ export class EntityService {
             const utils = new Relationships(item);
             const { target, relationships, links } = await utils.load();
 
-            return new MessageResponse<IRelationshipsResults>({
+            return new MessageResponse<IRelationships>({
                 id: messageId,
                 item,
                 target,
@@ -1049,7 +1049,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_VP_RELATIONSHIPS)
     async getVpRelationships(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IRelationshipsResults>> {
+    ): Promise<AnyResponse<IRelationships>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -1058,7 +1058,7 @@ export class EntityService {
                 type: MessageType.VP_DOCUMENT,
             });
             if (!item) {
-                return new MessageResponse<IRelationshipsResults>({
+                return new MessageResponse<IRelationships>({
                     id: messageId,
                 });
             }
@@ -1067,7 +1067,7 @@ export class EntityService {
             const { target, relationships, links, categories } =
                 await utils.load();
 
-            return new MessageResponse<IRelationshipsResults>({
+            return new MessageResponse<IRelationships>({
                 id: messageId,
                 item,
                 target,
@@ -1182,7 +1182,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_VC_RELATIONSHIPS)
     async getVcRelationships(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IRelationshipsResults>> {
+    ): Promise<AnyResponse<IRelationships>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -1191,7 +1191,7 @@ export class EntityService {
                 type: MessageType.VC_DOCUMENT,
             });
             if (!item) {
-                return new MessageResponse<IRelationshipsResults>({
+                return new MessageResponse<IRelationships>({
                     id: messageId,
                 });
             }
@@ -1200,7 +1200,7 @@ export class EntityService {
             const { target, relationships, links, categories } =
                 await utils.load();
 
-            return new MessageResponse<IRelationshipsResults>({
+            return new MessageResponse<IRelationships>({
                 id: messageId,
                 item,
                 target,

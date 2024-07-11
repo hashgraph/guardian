@@ -1,6 +1,6 @@
 import { DataBaseHelper, Message } from '@indexer/common';
 import { MongoDriver, MongoEntityManager } from '@mikro-orm/mongodb';
-import { MessageType } from '@indexer/interfaces';
+import { MessageType, Relationship, RELATIONSHIP_CATEGORIES } from '@indexer/interfaces';
 
 const categories = [
     MessageType.STANDARD_REGISTRY,
@@ -15,7 +15,7 @@ class RelationshipItem {
     public readonly id: string;
     public readonly uuid: string;
     public readonly item: Message;
-    public readonly type: string;
+    public readonly type: MessageType;
     public readonly topicId: string;
     public readonly ids: Set<string>;
 
@@ -33,7 +33,7 @@ class RelationshipItem {
             this.item = item;
             this.topicId = item.topicId;
             this.uuid = item.uuid;
-            this.type = item.type;
+            this.type = item.type as MessageType;
         }
 
         this.ids = new Set<string>();
@@ -81,7 +81,7 @@ class RelationshipItem {
         return this.ids.has(messageId);
     }
 
-    public toObject() {
+    public toObject(): Relationship {
         return {
             id: this.groupId,
             uuid: this.uuid,
@@ -115,26 +115,7 @@ export class Relationships {
                 message.toObject()
             ),
             links: this.links,
-            categories: [
-                {
-                    name: 'Registry',
-                },
-                {
-                    name: 'Policy',
-                },
-                {
-                    name: 'Schema',
-                },
-                {
-                    name: 'Role',
-                },
-                {
-                    name: 'VC',
-                },
-                {
-                    name: 'VP',
-                },
-            ],
+            categories: RELATIONSHIP_CATEGORIES,
         };
     }
 

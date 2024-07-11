@@ -1,12 +1,7 @@
 import { DID, DIDAnalytics, DIDDetails, DIDOptions } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsHistoryResponseWithDefinition,
-    DetailsHistoryDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsHistoryDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class DIDOptionsDTO implements DIDOptions {
@@ -32,47 +27,32 @@ export class DIDAnalyticsDTO implements DIDAnalytics {
 
 export class DIDDTO
     extends MessageDTO<DIDOptionsDTO, DIDAnalyticsDTO>
-    implements DID {}
-
-export const DIDDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(DIDDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(DIDOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(DIDAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedDIDResponse = applyDecorators(
-    ApiExtraModels(DIDDTO, DIDOptionsDTO, DIDAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('DIDs', DIDDtoDefinition)
-);
+    implements DID
+{
+    @ApiProperty({
+        type: DIDOptionsDTO,
+    })
+    declare options: DIDOptionsDTO;
+    @ApiProperty({
+        type: DIDAnalyticsDTO,
+    })
+    declare analytics: DIDAnalyticsDTO;
+}
 
 export class DIDDetailsDTO
     extends DetailsHistoryDTO<DIDDTO>
-    implements DIDDetails {}
-export const ApiDetailsDIDResponse = applyDecorators(
-    ApiExtraModels(DIDDTO, DIDOptionsDTO, DIDAnalyticsDTO),
-    ApiDetailsHistoryResponseWithDefinition(DIDDetailsDTO, RawMessageDTO, 'DID details', {
-        allOf: [
-            { $ref: getSchemaPath(DIDDTO) },
-            {
-                properties: {
-                    options: {
-                        $ref: getSchemaPath(DIDOptionsDTO),
-                    },
-                    analytics: {
-                        $ref: getSchemaPath(DIDAnalyticsDTO),
-                    },
-                },
-            },
-        ],
+    implements DIDDetails
+{
+    @ApiProperty({
+        type: DIDDTO,
     })
-);
+    declare item?: DIDDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: [DIDDTO],
+    })
+    declare history?: DIDDTO[];
+}

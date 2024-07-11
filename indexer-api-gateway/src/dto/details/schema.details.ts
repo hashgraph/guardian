@@ -6,14 +6,9 @@ import {
     SchemaDetails,
     SchemaOptions,
 } from '@indexer/interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import {
-    ApiDetailsActivityResponseWithDefinition,
-    DetailsActivityDTO,
-} from './details.interface.js';
-import { applyDecorators } from '@nestjs/common';
-import { ApiPaginatedResponseWithDefinition } from '../decorators/api-paginated-response.js';
+import { DetailsActivityDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
 
 export class SchemaOptionsDTO implements SchemaOptions {
@@ -80,7 +75,6 @@ export class SchemaAnalyticsDTO implements SchemaAnalytics {
     })
     policyIds: string[];
     @ApiProperty({
-        description: 'Child schemas',
         type: ChildSchemaDTO,
     })
     childSchemas: ChildSchema[];
@@ -110,53 +104,32 @@ export class SchemaActivityDTO implements SchemaActivity {
 
 export class SchemaDTO
     extends MessageDTO<SchemaOptionsDTO, SchemaAnalyticsDTO>
-    implements ISchema {}
-
-export const SchemaDtoDefinition = {
-    allOf: [
-        { $ref: getSchemaPath(SchemaDTO) },
-        {
-            properties: {
-                options: {
-                    $ref: getSchemaPath(SchemaOptionsDTO),
-                },
-                analytics: {
-                    $ref: getSchemaPath(SchemaAnalyticsDTO),
-                },
-            },
-        },
-    ],
-};
-
-export const ApiPaginatedSchemaResponse = applyDecorators(
-    ApiExtraModels(SchemaDTO, SchemaOptionsDTO, SchemaAnalyticsDTO),
-    ApiPaginatedResponseWithDefinition('Schemas', SchemaDtoDefinition)
-);
+    implements ISchema
+{
+    @ApiProperty({
+        type: SchemaOptionsDTO,
+    })
+    declare options: SchemaOptionsDTO;
+    @ApiProperty({
+        type: SchemaAnalyticsDTO,
+    })
+    declare analytics: SchemaAnalyticsDTO;
+}
 
 export class SchemaDetailsDTO
     extends DetailsActivityDTO<SchemaDTO, SchemaActivityDTO>
-    implements SchemaDetails {}
-export const ApiDetailsSchemaResponse = applyDecorators(
-    ApiExtraModels(SchemaDTO, SchemaOptionsDTO, SchemaAnalyticsDTO),
-    ApiDetailsActivityResponseWithDefinition(
-        SchemaDetailsDTO,
-        RawMessageDTO,
-        'Schema details',
-        SchemaActivityDTO,
-        {
-            allOf: [
-                { $ref: getSchemaPath(SchemaDTO) },
-                {
-                    properties: {
-                        options: {
-                            $ref: getSchemaPath(SchemaOptionsDTO),
-                        },
-                        analytics: {
-                            $ref: getSchemaPath(SchemaAnalyticsDTO),
-                        },
-                    },
-                },
-            ],
-        }
-    )
-);
+    implements SchemaDetails
+{
+    @ApiProperty({
+        type: SchemaDTO,
+    })
+    declare item?: SchemaDTO;
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+    @ApiProperty({
+        type: SchemaActivityDTO,
+    })
+    declare activity?: SchemaActivityDTO;
+}
