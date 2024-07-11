@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Profiles', { tags: '@profiles' },() => {
+context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
     const authorization = Cypress.env('authorization');
 
     it('Get Hedera account balance', () => {
@@ -15,7 +15,7 @@ context('Profiles', { tags: '@profiles' },() => {
            };
         cy.request(options)
           .should((response) => {
-            expect(response.status).to.eq(200)
+            expect(response.status).to.eq(STATUS_CODE.OK)
         })
     })
 })

@@ -17,6 +17,7 @@
 import "./commands";
 import "./api/api-helper";
 import "cypress-mochawesome-reporter/register";
+import { METHOD, STATUS_CODE } from "../support/api/api-const";
 
 import API from "./ApiUrls";
 
@@ -36,7 +37,7 @@ const authorization = Cypress.env("authorization");
 before(() => {
     let username = "StandardRegistry";
     cy.request({
-        method: "POST",
+        method: METHOD.POST,
         url: API.ApiServer + "accounts/login",
         body: {
             username: username,
@@ -44,14 +45,14 @@ before(() => {
         }
     }).then((responseWithRT) => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + "accounts/access-token",
             body: {
                 refreshToken: responseWithRT.body.refreshToken
             }
         }).then((responseWithAT) => {
             cy.request({
-                method: "GET",
+                method: METHOD.GET,
                 url: API.ApiServer + "profiles/" + username,
                 headers: {
                     authorization: "Bearer " + responseWithAT.body.accessToken,
@@ -59,7 +60,7 @@ before(() => {
             }).then((response) => {
                 if (response.body.confirmed === false) {
                     cy.request({
-                        method: "PUT",
+                        method: METHOD.PUT,
                         url: API.ApiServer + "profiles/" + username,
                         headers: {
                             authorization: authorization,
