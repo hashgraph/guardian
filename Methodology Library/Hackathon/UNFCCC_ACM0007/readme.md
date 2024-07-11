@@ -96,6 +96,14 @@ User Page:
  
 15) Finally the TrustChain contains all the important transaction data.
 ![image](https://github.com/ankurgupta007/guardian/assets/98680735/68322998-b1ef-4608-83e9-cad62a860402)
+
+## Comparison with a existing policy:
+1) ACM0007 already exists, this was created by Envision BlockChain.
+2) This is a improved version of the same, the differences are enlisted below:
+3) This enhanced version has a more complete documentation & a video presentation too.
+4) This enhanced version has more suggestive example fillouts.
+5) This enhanced version has a new role "Token Manager" which simplies the process of viewing and managing tokens.
+6) This enhanced version has a new token called CCPT (Combined Cycle Power Token).
  
 ## Epilogue:
 This project and documentation made by a contestant during the DLT Climate Hackathon. Therefore contains a few bugs. A few changes can be done to improve the system: 
