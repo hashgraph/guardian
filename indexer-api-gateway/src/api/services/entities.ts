@@ -7,6 +7,7 @@ import {
     Query,
 } from '@nestjs/common';
 import {
+    ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiOperation,
     ApiParam,
@@ -46,7 +47,8 @@ import {
     RegistryUserDetailsDTO,
     RegistryDetailsDTO,
     RelationshipsDTO,
-    SchemaTreeDTO
+    SchemaTreeDTO,
+    InternalServerErrorDTO
 } from '#dto';
 
 @Controller('entities')
@@ -59,6 +61,12 @@ export class EntityApi extends ApiClient {
         description: 'Returns standard registries',
     })
     @ApiPaginatedRequest
+    @ApiPaginatedResponse('Registries', RegistryDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/registries')
     @ApiQuery({
         name: 'keywords',
         description: 'Keywords to search',
@@ -86,8 +94,6 @@ export class EntityApi extends ApiClient {
         description: 'Registry user topic identifier',
         example: '0.0.4481265',
     })
-    @ApiPaginatedResponse('Registries', RegistryDTO)
-    @Get('/registries')
     @HttpCode(HttpStatus.OK)
     async getRegistries(
         @Query('pageIndex') pageIndex?: number,
@@ -115,16 +121,20 @@ export class EntityApi extends ApiClient {
         summary: 'Get registry',
         description: 'Returns registry',
     })
+    @ApiOkResponse({
+        description: 'Registry details',
+        type: RegistryDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/registries/:messageId')
     @ApiParam({
         name: 'messageId',
         description: 'Message identifier',
         example: '1706823227.586179534',
     })
-    @ApiOkResponse({
-        description: 'Registry details',
-        type: RegistryDetailsDTO,
-    })
-    @Get('/registries/:messageId')
     @HttpCode(HttpStatus.OK)
     async getRegistry(
         @Param('messageId') messageId: string
@@ -141,6 +151,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Registry users', RegistryUserDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/registry-users')
     @ApiQuery({
         name: 'keywords',
@@ -181,6 +195,10 @@ export class EntityApi extends ApiClient {
         summary: 'Get registry user',
         description: 'Returns registry user',
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/registry-users/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -208,6 +226,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Policies', PolicyDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/policies')
     @ApiQuery({
         name: 'keywords',
@@ -267,6 +289,10 @@ export class EntityApi extends ApiClient {
         description: 'Policy details',
         type: PolicyDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/policies/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -287,6 +313,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Tools', ToolDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/tools')
     @ApiQuery({
         name: 'keywords',
@@ -339,6 +369,10 @@ export class EntityApi extends ApiClient {
         description: 'Tool details',
         type: ToolDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/tools/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -359,6 +393,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Modules', ModuleDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/modules')
     @ApiQuery({
         name: 'keywords',
@@ -411,6 +449,10 @@ export class EntityApi extends ApiClient {
         description: 'Module details',
         type: ModuleDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/modules/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -431,6 +473,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Schemas', SchemaDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/schemas')
     @ApiQuery({
         name: 'keywords',
@@ -483,6 +529,10 @@ export class EntityApi extends ApiClient {
         description: 'Schema details',
         type: SchemaDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/schemas/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -504,6 +554,10 @@ export class EntityApi extends ApiClient {
         description: 'Schema tree',
         type: SchemaTreeDTO
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/schemas/:messageId/tree')
     @ApiParam({
         name: 'messageId',
@@ -524,6 +578,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Tokens', TokenDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/tokens')
     @ApiQuery({
         name: 'tokenId',
@@ -562,6 +620,10 @@ export class EntityApi extends ApiClient {
         description: 'Token details',
         type: TokenDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/tokens/:tokenId')
     @ApiParam({
         name: 'tokenId',
@@ -582,6 +644,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Roles', RoleDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/roles')
     @ApiQuery({
         name: 'keywords',
@@ -641,6 +707,10 @@ export class EntityApi extends ApiClient {
         description: 'Role details',
         type: RoleDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/roles/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -664,6 +734,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('DIDs', DIDDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/did-documents')
     @ApiQuery({
         name: 'keywords',
@@ -716,6 +790,10 @@ export class EntityApi extends ApiClient {
         description: 'DID details',
         type: DIDDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/did-documents/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -737,6 +815,10 @@ export class EntityApi extends ApiClient {
         description: 'DID relationships',
         type: RelationshipsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/did-documents/:messageId/relationships')
     @ApiParam({
         name: 'messageId',
@@ -757,6 +839,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('VPs', VPDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/vp-documents')
     @ApiQuery({
         name: 'keywords',
@@ -823,6 +909,10 @@ export class EntityApi extends ApiClient {
         description: 'VP details',
         type: VPDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/vp-documents/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -844,6 +934,10 @@ export class EntityApi extends ApiClient {
         description: 'VP relationships',
         type: RelationshipsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/vp-documents/:messageId/relationships')
     @ApiParam({
         name: 'messageId',
@@ -864,6 +958,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('VCs', VCDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/vc-documents')
     @ApiQuery({
         name: 'keywords',
@@ -937,6 +1035,10 @@ export class EntityApi extends ApiClient {
         description: 'VC details',
         type: VCDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/vc-documents/:messageId')
     @ApiParam({
         name: 'messageId',
@@ -957,6 +1059,10 @@ export class EntityApi extends ApiClient {
     @ApiOkResponse({
         description: 'VC relationships',
         type: RelationshipsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
     })
     @Get('/vc-documents/:messageId/relationships')
     @ApiParam({
@@ -981,6 +1087,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('NFTs', NFTDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/nfts')
     @ApiQuery({
         name: 'tokenId',
@@ -1012,6 +1122,10 @@ export class EntityApi extends ApiClient {
         description: 'NFT details',
         type: NFTDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/nfts/:tokenId/:serialNumber')
     @ApiParam({
         name: 'tokenId',
@@ -1041,6 +1155,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Topics', TopicDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/topics')
     @ApiQuery({
         name: 'keywords',
@@ -1085,6 +1203,10 @@ export class EntityApi extends ApiClient {
         description: 'Topic details',
         type: TopicDetailsDTO,
     })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/topics/:topicId')
     @ApiParam({
         name: 'topicId',
@@ -1105,6 +1227,10 @@ export class EntityApi extends ApiClient {
     })
     @ApiPaginatedRequest
     @ApiPaginatedResponse('Contracts', ContractDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
     @Get('/contracts')
     @ApiQuery({
         name: 'keywords',
@@ -1148,6 +1274,10 @@ export class EntityApi extends ApiClient {
     @ApiOkResponse({
         description: 'Contract details',
         type: ContractDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
     })
     @Get('/contracts/:messageId')
     @ApiParam({
