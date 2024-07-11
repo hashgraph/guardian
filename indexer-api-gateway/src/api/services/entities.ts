@@ -1087,7 +1087,7 @@ export class EntityApi extends ApiClient {
     })
     @Get('/topics/:topicId')
     @ApiParam({
-        name: 'messageId',
+        name: 'topicId',
         description: 'Message identifier',
         example: '1706823227.586179534',
     })
