@@ -3,9 +3,9 @@ import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO, TaskDTO } from '#middlewares';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
+import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
     const options: any = {};
@@ -1790,6 +1790,13 @@ export class PolicyApi {
         required: false,
         example: '0.0.00000001'
     })
+    @ApiQuery({
+        name: 'demo',
+        type: Boolean,
+        description: 'Import policy in demo mode.',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -1808,7 +1815,8 @@ export class PolicyApi {
     async importPolicyFromMessage(
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
-        @Query('versionOfTopicId') versionOfTopicId?: string
+        @Query('versionOfTopicId') versionOfTopicId?: string,
+        @Query('demo') demo?: boolean
     ): Promise<PolicyDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1821,7 +1829,7 @@ export class PolicyApi {
                 new EntityOwner(user),
                 versionOfTopicId,
                 body.metadata,
-                user.id.toString()
+                demo
             );
             return await getOldResult(user);
         } catch (error) {
@@ -1848,6 +1856,13 @@ export class PolicyApi {
         required: false,
         example: '0.0.00000001'
     })
+    @ApiQuery({
+        name: 'demo',
+        type: Boolean,
+        description: 'Import policy in demo mode.',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
@@ -1865,7 +1880,8 @@ export class PolicyApi {
     async importPolicyFromMessageAsync(
         @AuthUser() user: IAuthUser,
         @Body() body: ImportMessageDTO,
-        @Query('versionOfTopicId') versionOfTopicId?: string
+        @Query('versionOfTopicId') versionOfTopicId?: string,
+        @Query('demo') demo?: boolean
     ): Promise<any> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1879,10 +1895,10 @@ export class PolicyApi {
                 await engineService.importMessageAsync(
                     messageId,
                     new EntityOwner(user),
-                    versionOfTopicId,
                     task,
+                    versionOfTopicId,
                     body.metadata,
-                    user.id.toString()
+                    demo
                 );
             },
             async (error) => {
@@ -2003,6 +2019,13 @@ export class PolicyApi {
         required: false,
         example: '0.0.00000001'
     })
+    @ApiQuery({
+        name: 'demo',
+        type: Boolean,
+        description: 'Import policy in demo mode.',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'A zip file containing policy config.',
         required: true,
@@ -2024,11 +2047,11 @@ export class PolicyApi {
         @Body() file: any,
         @Req() req,
         @Query('versionOfTopicId') versionOfTopicId?: string,
+        @Query('demo') demo?: boolean
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
-
-            await engineService.importFile(file, new EntityOwner(user), versionOfTopicId);
+            await engineService.importFile(file, new EntityOwner(user), versionOfTopicId, null, demo);
 
             const invalidedCacheTags = [PREFIXES.ARTIFACTS];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
@@ -2057,6 +2080,13 @@ export class PolicyApi {
         description: 'The topic ID of policy version.',
         required: false,
         example: '0.0.00000001'
+    })
+    @ApiQuery({
+        name: 'demo',
+        type: Boolean,
+        description: 'Import policy in demo mode.',
+        required: false,
+        example: true
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -2090,25 +2120,24 @@ export class PolicyApi {
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromFileWithMetadata(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId?: string
+        @UploadedFiles() files: any[],
+        @Query('versionOfTopicId') versionOfTopicId?: string,
+        @Query('demo') demo?: boolean
     ): Promise<PolicyDTO[]> {
         try {
-            const policyFile = files.find(
-                (item) => item.fieldname === 'policyFile'
-            );
+            const policyFile = files.find((item) => item.fieldname === 'policyFile');
+            const metadataFile = files.find((item) => item.fieldname === 'metadata');
             if (!policyFile) {
                 throw new Error('There is no policy file');
             }
-            const metadata = files.find(
-                (item) => item.fieldname === 'metadata'
-            );
+            const metadata = metadataFile?.buffer && JSON.parse(metadataFile.buffer.toString());
             const engineService = new PolicyEngine();
             await engineService.importFile(
                 policyFile.buffer,
                 new EntityOwner(user),
                 versionOfTopicId,
-                metadata?.buffer && JSON.parse(metadata.buffer.toString())
+                metadata,
+                demo
             );
             return await getOldResult(user)
         } catch (error) {
@@ -2135,6 +2164,13 @@ export class PolicyApi {
         required: false,
         example: '0.0.00000001'
     })
+    @ApiQuery({
+        name: 'demo',
+        type: Boolean,
+        description: 'Import policy in demo mode.',
+        required: false,
+        example: true
+    })
     @ApiBody({
         description: 'A zip file containing policy config.',
         required: true,
@@ -2153,13 +2189,14 @@ export class PolicyApi {
     async importPolicyFromFileAsync(
         @AuthUser() user: IAuthUser,
         @Body() file: any,
-        @Query('versionOfTopicId') versionOfTopicId?: string
+        @Query('versionOfTopicId') versionOfTopicId?: string,
+        @Query('demo') demo?: boolean
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(async () => {
             const engineService = new PolicyEngine();
-            await engineService.importFileAsync(file, new EntityOwner(user), versionOfTopicId, task);
+            await engineService.importFileAsync(file, new EntityOwner(user), task, versionOfTopicId, null, demo);
         }, async (error) => {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
@@ -2185,6 +2222,13 @@ export class PolicyApi {
         description: 'The topic ID of policy version.',
         required: false,
         example: '0.0.00000001'
+    })
+    @ApiQuery({
+        name: 'demo',
+        type: Boolean,
+        description: 'Import policy in demo mode.',
+        required: false,
+        example: true
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -2217,29 +2261,28 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromFileWithMetadataAsync(
         @AuthUser() user: IAuthUser,
-        @UploadedFiles() files: any,
-        @Query('versionOfTopicId') versionOfTopicId?: string
+        @UploadedFiles() files: any[],
+        @Query('versionOfTopicId') versionOfTopicId?: string,
+        @Query('demo') demo?: boolean
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.IMPORT_POLICY_FILE, user.id);
         RunFunctionAsync<ServiceError>(
             async () => {
-                const policyFile = files.find(
-                    (item) => item.fieldname === 'policyFile'
-                );
+                const policyFile = files.find((item) => item.fieldname === 'policyFile');
+                const metadataFile = files.find((item) => item.fieldname === 'metadata');
                 if (!policyFile) {
                     throw new Error('There is no policy file');
                 }
-                const metadata = files.find(
-                    (item) => item.fieldname === 'metadata'
-                );
+                const metadata = metadataFile?.buffer && JSON.parse(metadataFile.buffer.toString());
                 const engineService = new PolicyEngine();
                 await engineService.importFileAsync(
                     policyFile.buffer,
                     new EntityOwner(user),
-                    versionOfTopicId,
                     task,
-                    metadata?.buffer && JSON.parse(metadata.buffer.toString())
+                    versionOfTopicId,
+                    metadata,
+                    demo
                 );
             },
             async (error) => {

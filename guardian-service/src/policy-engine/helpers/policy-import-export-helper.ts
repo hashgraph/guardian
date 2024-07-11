@@ -1,12 +1,9 @@
 import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
-import { publishSystemSchemas } from '../../api/helpers/schema-publish-helper.js';
+import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
-import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
-import { importTag } from '../../api/helpers/tag-import-export-helper.js';
-import { ImportSchemaMap, ImportSchemaResult } from '../../api/helpers/schema-helper.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
-import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, importArtifactsByFiles, importSchemaByFiles, importSubTools, importTokensByFiles } from '../../api/helpers/index.js';
 
 interface ImportResult {
     /**
@@ -212,33 +209,18 @@ class PolicyImport {
                 fields: ['name', 'iri'],
             }
         )) as { name: string; iri: string }[];
-
-        if (this.demo) {
-            this.schemasResult = await importSchemaByFiles(
-                schemas,
-                user,
-                {
-                    category: SchemaCategory.POLICY,
-                    topicId: this.topicRow.topicId,
-                    skipGenerateId: false,
-                    outerSchemas: toolsSchemas,
-                    status: SchemaStatus.DEMO
-                },
-                this.notifier
-            );
-        } else {
-            this.schemasResult = await importSchemaByFiles(
-                schemas,
-                user,
-                {
-                    category: SchemaCategory.POLICY,
-                    topicId: this.topicRow.topicId,
-                    skipGenerateId: false,
-                    outerSchemas: toolsSchemas
-                },
-                this.notifier
-            );
-        }
+        this.schemasResult = await importSchemaByFiles(
+            schemas,
+            user,
+            {
+                category: SchemaCategory.POLICY,
+                topicId: this.topicRow.topicId,
+                skipGenerateId: false,
+                outerSchemas: toolsSchemas,
+                status: this.demo ? SchemaStatus.DEMO : undefined
+            },
+            this.notifier
+        );
         this.schemasMapping = this.schemasResult.schemasMap;
     }
 

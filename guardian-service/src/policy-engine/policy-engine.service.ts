@@ -1211,8 +1211,9 @@ export class PolicyEngineService {
                 messageId: string,
                 owner: IOwner,
                 versionOfTopicId: string,
+                metadata: any,
                 demo: boolean,
-                metadata: any
+               
             }): Promise<IMessageResponse<boolean>> => {
                 try {
                     const { messageId, owner, versionOfTopicId, metadata, demo } = msg;
