@@ -16,21 +16,6 @@
         "moduleResolution": "node",
         "outDir": "dist/",
         "paths": {
-            "#api/*": [
-                "api/*"
-            ],
-            "#entities/*": [
-                "entities/*"
-            ],
-            "#helpers/*": [
-                "helpers/*"
-            ],
-            "#auth/*": [
-                "auth/*"
-            ],
-            "#middlewares/*": [
-                "middlewares/*"
-            ],
             "#dto": [
                 "dto/index"
             ],

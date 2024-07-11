@@ -16,20 +16,11 @@
         "moduleResolution": "node",
         "outDir": "dist/",
         "paths": {
-            "@api/*": [
-                "api/*"
+            "#dto": [
+                "dto/index"
             ],
-            "@entities/*": [
-                "entities/*"
-            ],
-            "@helpers/*": [
-                "helpers/*"
-            ],
-            "@auth/*": [
-                "auth/*"
-            ],
-            "@middlewares/*": [
-                "middlewares/*"
+            "#decorators": [
+                "decorators/index"
             ]
         },
         "target": "es2022"
