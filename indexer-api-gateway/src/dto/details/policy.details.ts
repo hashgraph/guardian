@@ -71,13 +71,54 @@ export class PolicyOptionsDTO implements PolicyOptions {
 
 export class PolicyAnalyticsDTO implements PolicyAnalytics {
     @ApiProperty({
+        description: 'Owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+    })
+    owner: string;
+    @ApiProperty({
+        description: 'Tokens',
+        example: ['0.0.4481265'],
+    })
+    tokens: string[];
+    @ApiProperty({
+        description: 'VC count',
+        example: 10,
+    })
+    vcCount: number;
+    @ApiProperty({
+        description: 'VP count',
+        example: 10,
+    })
+    vpCount: number;
+    @ApiProperty({
+        description: 'Tokens count',
+        example: 10,
+    })
+    tokensCount: number;
+    @ApiProperty({
+        description: 'Tags',
+        example: ['iRec'],
+    })
+    tags: string[];
+    @ApiProperty({
+        description: 'Hash',
+        example: 'DdQweGpEqbWgQUZcQjySQn2qYPd3yACGnSoRXiuLt5or',
+    })
+    hash: string;
+    @ApiProperty({
+        description: 'Hash map',
+        type: 'object',
+    })
+    hashMap: any;
+    @ApiProperty({
         description: 'Tools',
         example: ['1706823227.586179534'],
     })
     tools: string[];
     @ApiProperty({
         description: 'Registry identifier',
-        example: ['1706823227.586179534'],
+        example: '1706823227.586179534',
     })
     registryId: string;
     @ApiProperty({

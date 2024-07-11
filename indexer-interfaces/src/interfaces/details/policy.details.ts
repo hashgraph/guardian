@@ -67,6 +67,38 @@ export interface PolicyAnalytics {
      * Registry message identifier
      */
     registryId: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Tokens
+     */
+    tokens: string[];
+    /**
+     * VC count
+     */
+    vcCount: number;
+    /**
+     * VP count
+     */
+    vpCount: number;
+    /**
+     * Tokens count
+     */
+    tokensCount: number;
+    /**
+     * Tags
+     */
+    tags: string[];
+    /**
+     * Hash
+     */
+    hash: string;
+    /**
+     * Hash map
+     */
+    hashMap: any;
 }
 
 /**

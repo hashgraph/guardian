@@ -10,3 +10,4 @@ export * from './raw-token.dto.js';
 export * from './relationships.dto.js';
 export * from './schema-tree.dto.js';
 export * from './internal-server-error.dto.js';
+export * from './search-policy.dto.js';

@@ -10,3 +10,4 @@ export * from './raw-message.interface.js';
 export * from './raw-nft.interface.js';
 export * from './raw-token.interface.js';
 export * from './raw-topic.interface.js';
+export * from './search-policy.interface.js';
