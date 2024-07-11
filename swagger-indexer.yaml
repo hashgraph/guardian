@@ -1782,10 +1782,31 @@ paths:
   /analytics/search/policy:
     post:
       operationId: AnalyticsApi_search
+      summary: Search policy
+      description: Returns search policy result
       parameters: []
+      requestBody:
+        required: true
+        description: Search policy parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchPolicyParamsDTO'
       responses:
         '200':
-          description: ''
+          description: Search policy result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchPolicyResultDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
       tags:
         - analytics
 info:
@@ -2367,6 +2388,44 @@ components:
     PolicyAnalyticsDTO:
       type: object
       properties:
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        tokens:
+          description: Tokens
+          example:
+            - 0.0.4481265
+          type: array
+          items:
+            type: string
+        vcCount:
+          type: number
+          description: VC count
+          example: 10
+        vpCount:
+          type: number
+          description: VP count
+          example: 10
+        tokensCount:
+          type: number
+          description: Tokens count
+          example: 10
+        tags:
+          description: Tags
+          example:
+            - iRec
+          type: array
+          items:
+            type: string
+        hash:
+          type: string
+          description: Hash
+          example: DdQweGpEqbWgQUZcQjySQn2qYPd3yACGnSoRXiuLt5or
+        hashMap:
+          type: object
+          description: Hash map
         tools:
           description: Tools
           example:
@@ -2377,12 +2436,19 @@ components:
         registryId:
           type: string
           description: Registry identifier
-          example:
-            - '1706823227.586179534'
+          example: '1706823227.586179534'
         textSearch:
           type: string
           description: Text search
       required:
+        - owner
+        - tokens
+        - vcCount
+        - vpCount
+        - tokensCount
+        - tags
+        - hash
+        - hashMap
         - tools
         - registryId
         - textSearch
@@ -4662,3 +4728,147 @@ components:
       required:
         - coordinates
         - projectId
+    SearchPolicyBlocksDTO:
+      type: object
+      properties:
+        hash:
+          type: string
+          description: Hash
+          example: DdQweGpEqbWgQUZcQjySQn2qYPd3yACGnSoRXiuLt5or
+        hashMap:
+          type: object
+          description: Hash map
+        threshold:
+          type: number
+          description: Threshold
+          example: 10
+      required:
+        - hash
+        - hashMap
+        - threshold
+    SearchPolicyParamsDTO:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Text
+        minVcCount:
+          type: number
+          description: Mint VC count
+          example: 10
+        minVpCount:
+          type: number
+          description: Mint VP count
+          example: 10
+        minTokensCount:
+          type: number
+          description: Mint tokens count
+          example: 10
+        threshold:
+          type: number
+          description: Threshold
+          example: 10
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        blocks:
+          $ref: '#/components/schemas/SearchPolicyBlocksDTO'
+      required:
+        - text
+        - minVcCount
+        - minVpCount
+        - minTokensCount
+        - threshold
+        - owner
+        - blocks
+    SearchPolicyResultDTO:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type
+          example: Global
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        name:
+          type: string
+          description: Name
+          example: Verra REDD
+        description:
+          type: string
+          description: Description
+          example: Verra REDD Policy
+        version:
+          type: string
+          description: Version
+          example: 1.0.0
+        status:
+          type: string
+          description: Status
+          example: PUBLISH
+        messageId:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        textSearch:
+          type: string
+          description: Text search
+        registryId:
+          type: string
+          description: Registry identifier
+          example: '1706823227.586179534'
+        vcCount:
+          type: number
+          description: VC count
+          example: 10
+        vpCount:
+          type: number
+          description: VP count
+          example: 10
+        tokensCount:
+          type: number
+          description: Token count
+          example: 10
+        rate:
+          type: number
+          description: Rate
+          example: 50
+          minimum: 0
+          maximum: 100
+        tags:
+          description: tags
+          example:
+            - iRec
+          type: array
+          items:
+            type: string
+      required:
+        - type
+        - topicId
+        - uuid
+        - name
+        - description
+        - version
+        - status
+        - messageId
+        - owner
+        - textSearch
+        - registryId
+        - vcCount
+        - vpCount
+        - tokensCount
+        - rate
+        - tags
