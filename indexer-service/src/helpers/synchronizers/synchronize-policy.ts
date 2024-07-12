@@ -1,30 +1,16 @@
 import { DataBaseHelper, Message, TokenCache } from '@indexer/common';
-import { MessageType, MessageAction } from '@indexer/interfaces';
+import { MessageType, MessageAction, PolicyAnalytics } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { safetyRunning } from '../../utils/safety-running.js';
 import { parsePolicyFile } from '../parsers/policy.parser.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
-
-interface IAnalytics {
-    owner: string | undefined;
-    textSearch: string | undefined;
-    tools: any[] | undefined;
-    tokens: string[] | undefined;
-    registryId: string | undefined;
-    vcCount: number | undefined;
-    vpCount: number | undefined;
-    tokensCount: number | undefined;
-    tags: string[] | undefined;
-    hash: string | undefined;
-    hashMap: any | undefined;
-}
 
 enum TokenType {
     FT = 'FUNGIBLE_COMMON',
     NFT = 'NON_FUNGIBLE_UNIQUE',
 }
 
-async function findSR(policyRow: any, analytics: IAnalytics): Promise<IAnalytics> {
+async function findSR(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
     const em = DataBaseHelper.getEntityManager();
     const topicDescription = await em.findOne(Message, {
         type: MessageType.TOPIC,
@@ -50,7 +36,7 @@ async function findSR(policyRow: any, analytics: IAnalytics): Promise<IAnalytics
     analytics.owner = registry.options?.did;
 }
 
-async function findDocuments(policyRow: any, analytics: IAnalytics): Promise<IAnalytics> {
+async function findDocuments(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
     const em = DataBaseHelper.getEntityManager();
     const topics = new Set<string>();
     topics.add(policyRow.options?.instanceTopicId);
@@ -82,7 +68,7 @@ async function findDocuments(policyRow: any, analytics: IAnalytics): Promise<IAn
     return analytics;
 }
 
-async function findNFTs(policyRow: any, analytics: IAnalytics): Promise<IAnalytics> {
+async function findNFTs(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
     if (!analytics.tokens || !analytics.tokens.length) {
         analytics.tokensCount = 0;
         return analytics;
@@ -103,7 +89,7 @@ async function findNFTs(policyRow: any, analytics: IAnalytics): Promise<IAnalyti
     return analytics;
 }
 
-async function findTags(policyRow: any, analytics: IAnalytics): Promise<IAnalytics> {
+async function findTags(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
     analytics.tags = [];
     return analytics;
 }
@@ -121,7 +107,7 @@ export async function synchronizePolicies() {
         index++;
         console.log(`Sync policies: ${index}/${count}`);
         const policyRow = await policies.next();
-        const analytics: IAnalytics = {
+        const analytics: PolicyAnalytics = {
             owner: undefined,
             textSearch: textSearch(policyRow),
             tools: [],

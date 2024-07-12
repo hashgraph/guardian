@@ -5,10 +5,11 @@ import {
     MessageResponse,
     MessageError,
     DataBaseHelper,
-    Message
+    Message,
+    AnyResponse
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
-import { MessageAction, MessageType } from '@indexer/interfaces';
+import { MessageAction, MessageType, SearchPolicyParams, SearchPolicyResult } from '@indexer/interfaces';
 import { HashComparator } from '../analytics/index.js';
 
 @Controller()
@@ -16,20 +17,8 @@ export class AnalyticsService {
     @MessagePattern(IndexerMessageAPI.GET_ANALYTICS_SEARCH_POLICY)
     async search(
         @Payload()
-        msg: {
-            text: string;
-            minVcCount?: number;
-            minVpCount?: number;
-            minTokensCount?: number;
-            threshold?: number;
-            owner?: string;
-            blocks?: {
-                hash: string;
-                hashMap: any;
-                threshold: number;
-            };
-        }
-    ) {
+        msg: SearchPolicyParams
+    ): Promise<AnyResponse<SearchPolicyResult[]>> {
         try {
             const {
                 text,
@@ -126,9 +115,9 @@ export class AnalyticsService {
                     tokensCount: row.analytics.tokensCount,
                     rate: row.rate,
                     tags: policyTags
-                }
+                } as SearchPolicyResult
             }).slice(0, 100);
-            return new MessageResponse(results);
+            return new MessageResponse<SearchPolicyResult[]>(results);
         } catch (error) {
             return new MessageError(error);
         }
