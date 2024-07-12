@@ -11778,6 +11778,7 @@ components:
             - PUBLISH_ERROR
             - PUBLISH
             - DISCONTINUED
+            - DEMO
           example: DRAFT
         creator:
           type: string
@@ -12058,6 +12059,7 @@ components:
             - PUBLISH_ERROR
             - PUBLISH
             - DISCONTINUED
+            - DEMO
           example: DRAFT
         owner:
           type: string
