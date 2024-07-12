@@ -20,6 +20,7 @@ import { AISuggestions } from './helpers/ai-suggestions.js';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import fastifyFormbody from '@fastify/formbody'
 import fastifyMultipart from '@fastify/multipart';
+import { PinoLogger } from '@guardian/common';
 
 const PORT = process.env.PORT || 3002;
 
@@ -50,13 +51,15 @@ Promise.all([
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
 
+        const logger: PinoLogger= app.get(PinoLogger);
+
         await app.register(fastifyFormbody);
         await app.register(fastifyMultipart);
 
         app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
         app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
 
-        new Logger().setConnection(cn);
+        // new Logger().setConnection(cn);
         await new Guardians().setConnection(cn).init();
         await new IPFS().setConnection(cn).init();
         await new PolicyEngine().setConnection(cn).init();
@@ -94,7 +97,7 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
         app.listen(PORT, '0.0.0.0', async () => {
-            new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
+           await logger.info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {
         console.error(error.message);

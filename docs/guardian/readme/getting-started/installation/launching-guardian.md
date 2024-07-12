@@ -23,7 +23,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../../../.gitbook/assets/image (23) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (23) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -58,7 +58,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | Network    | INITIALIZATION\_TOPIC\_ID |
 | ---------- | ------------------------- |
 | Mainnet    | 0.0.1368856               |
-| Testnet    | 0.0.2411                  |
+| Testnet    | 0.0.1960                  |
 | Previewnet | 0.0.10071                 |
 
 ### RETIRE\_CONTRACT\_FILE\_ID and WIPE\_CONTRACT\_FILE\_ID for different Hedera Networks

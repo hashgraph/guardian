@@ -27,3 +27,4 @@ export * from './mongo-transport.js';
 export * from './pino-file-transport.js';
 export * from './console-transport.js';
 export * from './pino-logger.js';
+export * from './pino-logger-provider.js';

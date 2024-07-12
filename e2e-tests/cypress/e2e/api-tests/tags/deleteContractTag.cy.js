@@ -1,8 +1,8 @@
-import {STATUS_CODE} from "../../../support/api/api-const";
+import {STATUS_CODE, METHOD} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context("Tags", {tags: '@tags'}, () => {
+context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     const tagName = "contractTagAPI" + Math.floor(Math.random() * 999999);
     const contactName = "contractNameAPI" + Math.floor(Math.random() * 999999);
     const authorization = Cypress.env("authorization");
@@ -11,7 +11,7 @@ context("Tags", {tags: '@tags'}, () => {
 
     before(() => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.ListOfContracts,
             headers: {
                 authorization,
@@ -41,7 +41,7 @@ context("Tags", {tags: '@tags'}, () => {
         });
     });
 
-    it("Delete tag", () => {
+    it("Delete tag", { tags: ['smoke'] }, () => {
         cy.request({
             method: 'DELETE',
             url: API.ApiServer + API.Tags + tagId,

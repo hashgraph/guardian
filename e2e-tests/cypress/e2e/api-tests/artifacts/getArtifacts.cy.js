@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Artifacts", { tags: '@artifacts' },() => {
+context("Artifacts", { tags: ['artifacts', 'secondPool'] },() => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
@@ -22,7 +22,7 @@ context("Artifacts", { tags: '@artifacts' },() => {
             })
     })
 
-    it("Get list of artifacts", () => {
+    it("Get list of artifacts", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Artifacts,

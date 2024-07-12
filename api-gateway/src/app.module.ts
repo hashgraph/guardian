@@ -27,7 +27,7 @@ import { ThemesApi } from './api/service/themes.js';
 import { BrandingApi } from './api/service/branding.js';
 import { SuggestionsApi } from './api/service/suggestions.js';
 import { MatchConstraint } from './helpers/decorators/match.validator.js';
-import { Logger, NotificationService } from '@guardian/common';
+import { pinoLoggerProvider, NotificationService } from '@guardian/common';
 import { NotificationsApi } from './api/service/notifications.js';
 import { ApplicationEnvironment } from './environment.js';
 import { AuthGuard } from './auth/auth-guard.js';
@@ -40,7 +40,7 @@ import { cacheProvider } from './helpers/providers/cache-provider.js';
 import { CacheService } from './helpers/cache-service.js';
 import { PermissionsApi } from './api/service/permissions.js';
 import { WorkerTasksController } from './api/service/worker-tasks.js';
-import { mongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
+import { mongoProvider } from './helpers/providers/index.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -102,10 +102,10 @@ import { mongoProvider, pinoLoggerProvider } from './helpers/providers/index.js'
         UsersService,
         cacheProvider,
         CacheService,
-        Logger,
         mongoProvider,
         pinoLoggerProvider,
     ],
+    exports: [pinoLoggerProvider],
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {
