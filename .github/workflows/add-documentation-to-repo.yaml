@@ -60,10 +60,19 @@ jobs:
           pushd interfaces
           yarn run build
           popd
+          pushd indexer-interfaces
+          yarn run build
+          popd
           pushd common
           yarn run build
           popd
+          pushd indexer-common
+          yarn run build
+          popd
           pushd api-gateway
+          yarn run build
+          popd
+          pushd indexer-api-gateway
           yarn run build
           popd
           pushd analytics-service
@@ -77,6 +86,9 @@ jobs:
           pushd api-gateway
           yarn start &
           popd
+          pushd indexer-api-gateway
+          yarn start &
+          popd
           pushd analytics-service
           yarn start &
           popd
@@ -85,9 +97,12 @@ jobs:
       - name: Download file
         run: |
           rm -fv swagger.yaml
+          rm -fv swagger-indexer.yaml
           rm -fv swagger-analytics.yaml
           curl -o swagger.yaml http://localhost:3002/api-docs-yaml
+          curl -o swagger-indexer.yaml http://localhost:3021/api-docs-yaml
           curl -o swagger-analytics.yaml http://localhost:3020/api-docs-yaml
           git add swagger.yaml
+          git add swagger-indexer.yaml
           git add swagger-analytics.yaml
           git commit -m "[skip ci] Add swagger.yaml" && git push || exit 0

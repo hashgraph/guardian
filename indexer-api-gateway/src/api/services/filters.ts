@@ -1,10 +1,11 @@
 import { Controller, HttpCode, HttpStatus, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController, ApiTags } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 
 @Controller('filters')
 @ApiTags('filters')
+@ApiExcludeController()
 export class FiltersApi extends ApiClient {
     @Get('/vp-documents')
     @HttpCode(HttpStatus.OK)

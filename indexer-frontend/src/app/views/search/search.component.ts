@@ -17,6 +17,7 @@ import { ColumnType, TableComponent } from '@components/table/table.component';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
+import { SearchItem } from '@indexer/interfaces';
 
 @Component({
     selector: 'app-search',
@@ -41,7 +42,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 export class SearchViewComponent {
     public loading: boolean = true;
     public searchControl = new FormControl<string>('', [Validators.required]);
-    public results: { type: string; id: string }[] = [];
+    public results: SearchItem[] = [];
 
     pageIndex: number = 0;
     total: number = 0;

@@ -1,4 +1,4 @@
-import { SchemaCondition } from '../interfaces';
+import { SchemaCondition } from './schema-condition.interface.js';
 
 /**
  * Schema field
