@@ -615,3 +615,9 @@ svg-icon.svg-icon-32 {
 #ngx-colors-overlay .circle.button {
     padding: unset;
 }
+
+.p-datatable-scrollable .p-frozen-column {
+    position: sticky;
+    background: inherit;
+    z-index: 1;
+}

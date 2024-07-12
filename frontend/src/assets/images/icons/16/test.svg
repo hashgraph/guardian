@@ -1,0 +1,22 @@
+<svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+  <g
+     transform="matrix(0.5,0,0,0.5,0.1735,0.2)"
+     style="stroke-width:4">
+    <path
+       d="M 11.385,0 H 11.218 L 2.653,8.965 v 0.124 22.146 h 25.93 V 0 Z m 0.013,4.045 0.015,4.984 -4.794,0.033 z M 25.654,28.307 H 5.582 V 11.998 l 8.767,-0.06 -0.025,-9.009 h 11.332 v 25.377 h -0.002 z"
+       style="stroke-width:4" />
+    <rect
+       height="6.1700001"
+       width="5.8590002"
+       y="4.4419999"
+       x="17.042"
+       id="rect4"
+       style="stroke-width:4" />
+    <path
+       d="m 22.901,12.534 h -5.859 v 6.17 h 5.859 z m -1.463,4.705 h -2.932 v -3.242 h 2.932 z"
+       style="stroke-width:4" />
+    <path
+       d="m 22.901,20.625 h -5.859 v 6.17 h 5.859 z m -1.463,4.706 H 18.506 V 22.09 h 2.932 z"
+       style="stroke-width:4" />
+  </g>
+</svg>

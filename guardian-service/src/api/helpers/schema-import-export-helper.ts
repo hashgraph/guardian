@@ -337,7 +337,7 @@ export class SchemaImport {
                 owner: user.creator,
                 policyId: null,
                 policyUUID: null,
-                topicId: GenerateUUIDv4()
+                topicId
             }, null, null)
         } else if (topicId === 'draft') {
             this.topicRow = null;

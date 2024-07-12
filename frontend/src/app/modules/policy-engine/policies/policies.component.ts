@@ -207,6 +207,38 @@ export class PoliciesComponent implements OnInit {
         )
     }
 
+    public instanceLabel(policy: any): string {
+        if (this.user?.POLICIES_POLICY_MANAGE) {
+            if (policy.status === 'PUBLISH' || policy.status === 'DISCONTINUED') {
+                return 'Open';
+            } else if (policy.status === 'DEMO') {
+                return 'Demo';
+            } else {
+                return 'Dry run';
+            }
+        } else {
+            return 'Register'
+        }
+    }
+
+    public showStatus(policy: any): boolean {
+        return (
+            policy.status === 'DRAFT' ||
+            policy.status === 'DRY-RUN' ||
+            policy.status === 'PUBLISH_ERROR' ||
+            policy.status === 'PUBLISH'
+        )
+    }
+
+    public showInstance(policy: any): boolean {
+        return (
+            policy.status === 'DRY-RUN' ||
+            policy.status === 'DEMO' ||
+            policy.status === 'PUBLISH' ||
+            policy.status === 'DISCONTINUED'
+        )
+    }
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -1186,6 +1218,15 @@ export class PoliciesComponent implements OnInit {
         }
         if (policy.status == 'PUBLISH') {
             return `Published${!!policy.discontinuedDate ? '*' : ''}`;
+        }
+        if (policy.status == 'DISCONTINUED') {
+            return 'Discontinued';
+        }
+        if (policy.status == 'PUBLISH_ERROR') {
+            return 'Error';
+        }
+        if (policy.status == 'DEMO') {
+            return 'Demo';
         }
         return 'Not published';
     }

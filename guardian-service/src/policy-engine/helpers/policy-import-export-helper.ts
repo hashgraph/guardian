@@ -74,7 +74,7 @@ export class PolicyImport {
         policy.uuid = GenerateUUIDv4();
         policy.creator = user.creator;
         policy.owner = user.owner;
-        policy.status = PolicyType.DRAFT;
+        policy.status = this.demo ? PolicyType.DEMO : PolicyType.DRAFT;
         policy.instanceTopicId = null;
         policy.synchronizationTopicId = null;
         policy.name = additionalPolicyConfig?.name || policy.name;
@@ -251,11 +251,13 @@ export class PolicyImport {
     }
 
     private async saveTopic(policy: Policy) {
-        this.notifier.completedAndStart('Saving topic in DB');
-        const row = await new DataBaseHelper(Topic).findOne({ topicId: this.topicRow.topicId })
-        row.policyId = policy.id.toString();
-        row.policyUUID = policy.uuid;
-        await new DataBaseHelper(Topic).update(row);
+        if(!this.demo) {
+            this.notifier.completedAndStart('Saving topic in DB');
+            const row = await new DataBaseHelper(Topic).findOne({ topicId: this.topicRow.topicId })
+            row.policyId = policy.id.toString();
+            row.policyUUID = policy.uuid;
+            await new DataBaseHelper(Topic).update(row);
+        }
     }
 
     private async saveArtifacts(policy: Policy) {
@@ -356,7 +358,7 @@ export class PolicyImport {
         console.log('---- updateUUIDs ---')
         await this.updateUUIDs(policy);
 
-        console.log('---- savePolicy ---')
+        console.log('---- savePolicy ---', policy)
         const row = await this.savePolicy(policy);
         console.log('---- saveTopic ---')
         await this.saveTopic(row);
