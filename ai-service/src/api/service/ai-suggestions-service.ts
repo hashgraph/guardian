@@ -1,12 +1,12 @@
 import { ApiResponse } from '../../helpers/api-response.js';
 import { AIManager } from '../../ai-manager.js';
 import { MessageAPI } from '@guardian/interfaces';
-import { MessageError, MessageResponse } from '@guardian/common';
+import { MessageError, MessageResponse, PinoLogger } from '@guardian/common';
 
 /**
  * Connect to the message broker methods of working with artifacts.
  */
-export async function aiSuggestionsAPI(aiManager: AIManager): Promise<void> {
+export async function aiSuggestionsAPI(aiManager: AIManager, logger: PinoLogger): Promise<void> {
     /**
      * AI Suggestions
      *
@@ -24,7 +24,7 @@ export async function aiSuggestionsAPI(aiManager: AIManager): Promise<void> {
             if (aiManager.vector !== null && aiManager.chain !== null) {
                 result = await aiManager.ask(msg.question);
             } else {
-                aiManager = new AIManager();
+                aiManager = new AIManager(logger);
                 await aiManager.rebuildVector();
 
                 result = await aiManager.ask(msg.question);
@@ -38,7 +38,7 @@ export async function aiSuggestionsAPI(aiManager: AIManager): Promise<void> {
 
     ApiResponse(MessageAPI.VECTOR_REBUILD, async () => {
         try {
-            aiManager = new AIManager();
+            aiManager = new AIManager(logger);
             await aiManager.rebuildVector();
 
             return new MessageResponse(true);

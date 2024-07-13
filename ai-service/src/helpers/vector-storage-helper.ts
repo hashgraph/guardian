@@ -3,7 +3,8 @@ import { FaissStore } from 'langchain/vectorstores/faiss';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
 import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { Logger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common';
+
 
 export class VectorStorage {
 
@@ -13,7 +14,7 @@ export class VectorStorage {
         return vectorData;
     }
 
-    static async create(docPath: string, vectorPath: string) {
+    static async create(docPath: string, vectorPath: string, logger: PinoLogger): Promise<void> {
         try {
             if (docPath && vectorPath) {
                 const textLoader = new DirectoryLoader(docPath, {
@@ -33,14 +34,14 @@ export class VectorStorage {
                     const vectorstore = await FaissStore.fromDocuments(documents, embeddings);
                     await vectorstore.save(vectorPath);
 
-                    new Logger().info('vector has been successfully created', ['AI_SERVICE']);
+                   await logger.info('vector has been successfully created', ['AI_SERVICE']);
                 } else {
-                    new Logger().warn('there is no data for vector creation', ['AI_SERVICE']);
+                   await logger.warn('there is no data for vector creation', ['AI_SERVICE']);
                 }
 
             }
         } catch (e) {
-            new Logger().error(e.message, ['AI_SERVICE']);
+           await logger.error(e.message, ['AI_SERVICE']);
         }
     }
 }

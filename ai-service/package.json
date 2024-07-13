@@ -21,6 +21,9 @@
     "typescript": "^5.2.2",
     "rxjs": "^7.8.1"
   },
+  "imports": {
+    "#constants": "./dist/constants/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "build:prod": "tsc --project tsconfig.production.json",
