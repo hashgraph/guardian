@@ -1,12 +1,12 @@
-import { KeyType, Logger, Wallet } from '@guardian/common';
+import { KeyType, PinoLogger, Wallet } from '@guardian/common';
 import { MongoEntityManager } from '@mikro-orm/mongodb';
 
 /**
  * Migration function
  * @constructor
  */
-export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
-    const logger = new Logger();
+export async function sendKeysToVault(em: MongoEntityManager, logger: PinoLogger): Promise<void> {
+    // const logger = new Logger();
     const wallet = new Wallet();
     try {
         logger.info('Start send keys to vault', ['GUARDIAN_SERVICE']);
@@ -95,7 +95,7 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
             );
             updatedTokens++;
         }
-        logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE']);
+        await logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE']);
 
         const topicCollection = em.getCollection('Topic');
         const topics = topicCollection.find();

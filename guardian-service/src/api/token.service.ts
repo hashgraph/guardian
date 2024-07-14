@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { ArrayMessageResponse, DataBaseHelper, DatabaseServer, KeyType, Logger, MessageError, MessageResponse, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers, } from '@guardian/common';
+import { ArrayMessageResponse, DataBaseHelper, DatabaseServer, KeyType, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishTokenTags } from './tag.service.js';
@@ -196,13 +196,15 @@ async function createToken(
  * @param newToken
  * @param tokenRepository
  * @param notifier
+ * @param log
  */
 async function updateToken(
     oldToken: Token,
     newToken: Token,
     user: IOwner,
     tokenRepository: DataBaseHelper<Token>,
-    notifier: INotifier
+    notifier: INotifier,
+    log: PinoLogger
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
         notifier.start('Update token');
@@ -227,7 +229,7 @@ async function updateToken(
         try {
             await publishTokenTags(result, root);
         } catch (error) {
-            const log = new Logger();
+            // const log = new Logger();
             log.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }
 
@@ -569,7 +571,7 @@ async function freezeToken(
  *
  * @param tokenRepository - table with tokens
  */
-export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<void> {
+export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: PinoLogger): Promise<void> {
     /**
      * Create new token
      *
@@ -591,7 +593,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const tokens = await tokenRepository.findAll();
                 return new MessageResponse(tokens);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -608,7 +610,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await createToken(token, owner, tokenRepository, notifier);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -627,9 +629,9 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     throw new Error('Token not found');
                 }
 
-                return new MessageResponse(await updateToken(item, token, owner, tokenRepository, emptyNotifier()));
+                return new MessageResponse(await updateToken(item, token, owner, tokenRepository, emptyNotifier(), logger));
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -647,10 +649,10 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     throw new Error('Token not found');
                 }
 
-                const result = await updateToken(item, token, owner, tokenRepository, notifier);
+                const result = await updateToken(item, token, owner, tokenRepository, notifier, logger);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -672,7 +674,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await deleteToken(item, owner, tokenRepository, notifier);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -685,7 +687,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error, 400);
             }
         });
@@ -699,7 +701,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -713,7 +715,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error, 400);
             }
         });
@@ -727,7 +729,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -741,7 +743,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await associateToken(tokenId, owner, associate, tokenRepository, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error, 400);
             }
         })
@@ -755,7 +757,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                 const result = await associateToken(tokenId, owner, associate, tokenRepository, notifier);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -797,7 +799,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
 
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error, 400);
             }
         })
@@ -863,7 +865,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
 
                 return new ArrayMessageResponse(result, count);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error, 400);
             }
         })
@@ -1038,7 +1040,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     ));
                 return new MessageResponse(serials[tokenId] || []);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error, 400);
             }
         });

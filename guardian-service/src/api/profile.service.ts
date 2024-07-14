@@ -12,11 +12,10 @@ import {
     HederaEd25519Method,
     IAuthUser,
     KeyType,
-    Logger,
     MessageAction,
     MessageError,
     MessageResponse,
-    MessageServer,
+    MessageServer, PinoLogger,
     RegistrationMessage,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -29,7 +28,7 @@ import {
     VcHelper,
     VCMessage,
     Wallet,
-    Workers
+    Workers,
 } from '@guardian/common';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
@@ -95,11 +94,13 @@ async function getGlobalTopic(): Promise<TopicConfig | null> {
  * @param username
  * @param profile
  * @param notifier
+ * @param logger
  */
 async function setupUserProfile(
     username: string,
     profile: ICredentials,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ): Promise<string> {
     const users = new Users();
     const wallet = new Wallet();
@@ -113,10 +114,10 @@ async function setupUserProfile(
     let did: string;
     if (user.role === UserRole.STANDARD_REGISTRY) {
         profile.entity = SchemaEntity.STANDARD_REGISTRY;
-        did = await createUserProfile(profile, notifier, user);
+        did = await createUserProfile(profile, notifier, user, logger);
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
-        did = await createUserProfile(profile, notifier, user);
+        did = await createUserProfile(profile, notifier, user, logger);
     } else {
         throw new Error('Unknown user role.');
     }
@@ -180,7 +181,7 @@ async function checkAndPublishSchema(
     userDID: string,
     srUser: IOwner,
     messageServer: MessageServer,
-    logger: Logger,
+    logger: PinoLogger,
     notifier: INotifier,
     userId?: string
 ): Promise<void> {
@@ -211,13 +212,15 @@ async function checkAndPublishSchema(
  * @param profile
  * @param notifier
  * @param user
+ * @param logger
  */
 async function createUserProfile(
     profile: ICredentials,
     notifier: INotifier,
-    user: IAuthUser
+    user: IAuthUser,
+    logger: PinoLogger
 ): Promise<string> {
-    const logger = new Logger();
+    // const logger = new Logger();
     const {
         hederaAccountId,
         hederaAccountKey,
@@ -244,6 +247,7 @@ async function createUserProfile(
         }
     }
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
+    console.log('hederaAccountId', hederaAccountId);
 
     // ------------------------
     // <-- Check hedera key
@@ -606,7 +610,7 @@ export class ProfileController {
 /**
  * Connect to the message broker methods of working with Address books.
  */
-export function profileAPI() {
+export function profileAPI(logger: PinoLogger) {
     ApiResponse(MessageAPI.GET_BALANCE,
         async (msg: { username: string }) => {
             try {
@@ -641,7 +645,7 @@ export function profileAPI() {
                     } : null
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error, 500);
             }
@@ -677,7 +681,7 @@ export function profileAPI() {
 
                 return new MessageResponse(balance);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error, 500);
             }
@@ -695,10 +699,10 @@ export function profileAPI() {
                     return new MessageError('Invalid Hedera Account Key', 403);
                 }
 
-                const did = await setupUserProfile(username, profile, emptyNotifier());
+                const did = await setupUserProfile(username, profile, emptyNotifier(), logger);
                 return new MessageResponse(did);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error, 500);
             }
@@ -719,10 +723,10 @@ export function profileAPI() {
                     return;
                 }
 
-                const did = await setupUserProfile(username, profile, notifier);
+                const did = await setupUserProfile(username, profile, notifier, logger);
                 notifier.result(did);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -776,12 +780,13 @@ export function profileAPI() {
                     hederaAccountId,
                     hederaAccountKey,
                     topicId,
-                    oldDidDocument
+                    oldDidDocument,
+                    logger
                 )
                 notifier.completed();
                 notifier.result('did');
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -831,7 +836,7 @@ export function profileAPI() {
                 notifier.completed();
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -882,7 +887,7 @@ export function profileAPI() {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -911,7 +916,7 @@ export function profileAPI() {
                     return new MessageResponse(keys);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

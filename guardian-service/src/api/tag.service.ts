@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, Policy as PolicyCollection, PolicyModule as ModuleCollection, PolicyTool as PolicyToolCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper, } from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, Policy as PolicyCollection, PolicyModule as ModuleCollection, PolicyTool as PolicyToolCollection, Schema as SchemaCollection, Tag, TagMessage, Token as TokenCollection, TopicConfig, UrlType, Users, VcHelper } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 
 /**
@@ -324,7 +324,7 @@ export async function getTarget(entity: TagType, id: string): Promise<{
 /**
  * Connect to the message broker methods of working with tags.
  */
-export async function tagsAPI(): Promise<void> {
+export async function tagsAPI(logger: PinoLogger): Promise<void> {
     /**
      * Create new tag
      *
@@ -391,7 +391,7 @@ export async function tagsAPI(): Promise<void> {
                     throw new Error('Invalid target');
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -412,7 +412,7 @@ export async function tagsAPI(): Promise<void> {
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -433,7 +433,7 @@ export async function tagsAPI(): Promise<void> {
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -511,7 +511,7 @@ export async function tagsAPI(): Promise<void> {
                 const tags = await DatabaseServer.getTags(filter);
                 return new MessageResponse(tags);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -540,7 +540,7 @@ export async function tagsAPI(): Promise<void> {
 
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -566,7 +566,7 @@ export async function tagsAPI(): Promise<void> {
                 }
                 return new MessageResponse(items);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

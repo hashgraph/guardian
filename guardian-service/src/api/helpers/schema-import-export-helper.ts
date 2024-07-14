@@ -1,5 +1,5 @@
 import { GenerateUUIDv4, IOwner, ISchema, ModelHelper, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
-import { DatabaseServer, Logger, MessageAction, MessageServer, MessageType, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageServer, MessageType, PinoLogger, replaceValueRecursive, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, Tag, TagMessage, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
 import { createSchema, fixSchemaDefsOnImport, getDefs, ImportResult, onlyUnique, SchemaImportResult } from './schema-helper.js';
@@ -51,10 +51,10 @@ export class SchemaCache {
 /**
  * Load schema
  * @param messageId
- * @param owner
+ * @param log
  */
-export async function loadSchema(messageId: string): Promise<any> {
-    const log = new Logger();
+export async function loadSchema(messageId: string, log: PinoLogger): Promise<any> {
+    // const log = new Logger();
     try {
         let schemaToImport = SchemaCache.getSchema(messageId);
         if (!schemaToImport) {
@@ -298,20 +298,22 @@ export async function importSchemaByFiles(
  * @param messageIds
  * @param topicId
  * @param notifier
+ * @param logger
  */
 export async function importSchemasByMessages(
     category: SchemaCategory,
     user: IOwner,
     messageIds: string[],
     topicId: string,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger,
 ): Promise<ImportResult> {
     notifier.start('Load schema files');
     const schemas: ISchema[] = [];
 
     const relationships = new Set<string>();
     for (const messageId of messageIds) {
-        const newSchema = await loadSchema(messageId);
+        const newSchema = await loadSchema(messageId, logger);
         schemas.push(newSchema);
         for (const id of newSchema.relationships) {
             relationships.add(id);
@@ -321,7 +323,7 @@ export async function importSchemasByMessages(
         relationships.delete(messageId);
     }
     for (const messageId of relationships) {
-        const newSchema = await loadSchema(messageId);
+        const newSchema = await loadSchema(messageId, logger);
         schemas.push(newSchema);
     }
 
@@ -376,15 +378,17 @@ export async function importSchemasByMessages(
  * Prepare schema for preview
  * @param messageIds
  * @param notifier
+ * @param logger
  */
 export async function prepareSchemaPreview(
     messageIds: string[],
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ): Promise<any[]> {
     notifier.start('Load schema file');
     const schemas = [];
     for (const messageId of messageIds) {
-        const schema = await loadSchema(messageId);
+        const schema = await loadSchema(messageId, logger);
         schemas.push(schema);
     }
 

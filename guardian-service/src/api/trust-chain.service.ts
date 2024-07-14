@@ -1,6 +1,6 @@
 import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DidDocument, Logger, MessageError, MessageResponse, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument } from '@guardian/common';
+import { DataBaseHelper, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument } from '@guardian/common';
 
 /**
  * Get field
@@ -55,11 +55,13 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
  * @param vpDocumentRepository - table with VP Documents
+ * @param logger - pino logger
  */
 export async function trustChainAPI(
     didDocumentRepository: DataBaseHelper<DidDocument>,
     vcDocumentRepository: DataBaseHelper<VcDocument>,
-    vpDocumentRepository: DataBaseHelper<VpDocument>
+    vpDocumentRepository: DataBaseHelper<VpDocument>,
+    logger: PinoLogger,
 ): Promise<void> {
     /**
      * Search parent by VC or VP Document
@@ -277,7 +279,7 @@ export async function trustChainAPI(
             await getPolicyInfo(chain, null);
             return new MessageResponse(chain);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
             return new MessageError(error);
         }

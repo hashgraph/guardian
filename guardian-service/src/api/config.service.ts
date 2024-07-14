@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, Environment, Logger, MessageError, MessageResponse, SecretManager, Settings, Topic, ValidateConfiguration, Workers } from '@guardian/common';
+import { DataBaseHelper, Environment, MessageError, MessageResponse, PinoLogger, SecretManager, Settings, Topic, ValidateConfiguration, Workers } from '@guardian/common';
 import { CommonSettings, MessageAPI } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
@@ -9,6 +9,7 @@ import { AccountId, PrivateKey } from '@hashgraph/sdk';
 export async function configAPI(
     settingsRepository: DataBaseHelper<Settings>,
     topicRepository: DataBaseHelper<Topic>,
+    logger: PinoLogger,
 ): Promise<void> {
 
     ApiResponse(MessageAPI.GET_TOPIC, async (msg) => {
@@ -26,13 +27,13 @@ export async function configAPI(
             try {
                 AccountId.fromString(settings.operatorId);
             } catch (error) {
-                await new Logger().error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE']);
+                await logger.error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE']);
                 throw new Error('OPERATOR_ID: ' + error.message);
             }
             try {
                 PrivateKey.fromString(settings.operatorKey);
             } catch (error) {
-                await new Logger().error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE']);
+                await logger.error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE']);
                 throw new Error('OPERATOR_KEY: ' + error.message);
             }
 
@@ -48,7 +49,7 @@ export async function configAPI(
             return new MessageResponse(null);
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -69,7 +70,7 @@ export async function configAPI(
             });
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

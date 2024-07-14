@@ -2,18 +2,18 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     BinaryMessageResponse,
     DatabaseServer,
-    Logger,
     MessageError,
     MessageResponse,
+    PinoLogger,
     Theme,
-    ThemeImportExport
+    ThemeImportExport,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with themes.
  */
-export async function themeAPI(): Promise<void> {
+export async function themeAPI(logger: PinoLogger): Promise<void> {
     /**
      * Create new theme
      *
@@ -36,7 +36,7 @@ export async function themeAPI(): Promise<void> {
                 const item = await DatabaseServer.createTheme(theme);
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -70,7 +70,7 @@ export async function themeAPI(): Promise<void> {
                 const result = await DatabaseServer.updateTheme(item);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -92,7 +92,7 @@ export async function themeAPI(): Promise<void> {
                 const items = await DatabaseServer.getThemes({ owner: owner.creator });
                 return new MessageResponse(items);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -114,7 +114,7 @@ export async function themeAPI(): Promise<void> {
                 const item = await DatabaseServer.getTheme({ id: themeId, owner: owner.creator });
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -140,7 +140,7 @@ export async function themeAPI(): Promise<void> {
                 await DatabaseServer.removeTheme(item);
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -173,7 +173,7 @@ export async function themeAPI(): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -211,7 +211,7 @@ export async function themeAPI(): Promise<void> {
 
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

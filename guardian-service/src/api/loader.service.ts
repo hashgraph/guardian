@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DidDocument, DidURL, Logger, MessageError, MessageResponse, Schema, } from '@guardian/common';
+import { DataBaseHelper, DidDocument, DidURL, MessageError, MessageResponse, PinoLogger, Schema } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
@@ -7,10 +7,12 @@ import { MessageAPI } from '@guardian/interfaces';
  *
  * @param didDocumentLoader - DID Documents Loader
  * @param schemaDocumentLoader - Schema Documents Loader
+ * @param logger - pino logger
  */
 export async function loaderAPI(
     didDocumentRepository: DataBaseHelper<DidDocument>,
-    schemaRepository: DataBaseHelper<Schema>
+    schemaRepository: DataBaseHelper<Schema>,
+    logger: PinoLogger,
 ): Promise<void> {
     /**
      * Return DID Document
@@ -31,7 +33,7 @@ export async function loaderAPI(
             }
             return new MessageError('Document not found');
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -61,7 +63,7 @@ export async function loaderAPI(
             }
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -90,7 +92,7 @@ export async function loaderAPI(
             }
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

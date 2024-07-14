@@ -25,13 +25,13 @@ import {
     DataBaseHelper,
     DatabaseServer,
     IAuthUser,
-    Logger,
     MessageError,
     MessageResponse,
     Policy,
     VpDocument as VpDocumentCollection,
     VcDocument as VcDocumentCollection,
     Workers,
+    PinoLogger
 } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guardian/interfaces';
@@ -210,7 +210,7 @@ export class AnalyticsController {
  * API analytics
  * @constructor
  */
-export async function analyticsAPI(): Promise<void> {
+export async function analyticsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse<any>(MessageAPI.COMPARE_POLICIES,
         async (msg: {
             user: IOwner,
@@ -246,7 +246,7 @@ export async function analyticsAPI(): Promise<void> {
                 const result = comparator.to(results, type);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -306,7 +306,7 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -359,7 +359,7 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -446,7 +446,7 @@ export async function analyticsAPI(): Promise<void> {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -517,7 +517,7 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageError('Invalid size');
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -591,7 +591,7 @@ export async function analyticsAPI(): Promise<void> {
             return new MessageResponse(comparisonVpArray);
 
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -657,7 +657,7 @@ export async function analyticsAPI(): Promise<void> {
                 return new MessageError('Invalid size');
             }
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -683,7 +683,7 @@ export async function analyticsAPI(): Promise<void> {
                         const model = new PolicySearchModel(row);
                         policyModels.push(model);
                     } catch (error) {
-                        new Logger().error(error, ['GUARDIAN_SERVICE']);
+                        await logger.error(error, ['GUARDIAN_SERVICE']);
                     }
                 }
 
@@ -709,7 +709,7 @@ export async function analyticsAPI(): Promise<void> {
                 result.sort((a, b) => a.hash > b.hash ? -1 : 1);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
