@@ -5,7 +5,7 @@ import { User } from '../entity/user.js';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import * as util from 'util';
 import crypto from 'crypto';
-import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
+import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
 import {
     AuditDefaultPermission,
     AuthEvents,
@@ -115,7 +115,7 @@ export class AccountService extends NatsService {
     /**
      * Register listeners
      */
-    registerListeners(): void {
+    registerListeners(logger: PinoLogger): void {
 
         /**
          * Get user by access token
@@ -148,7 +148,7 @@ export class AccountService extends NatsService {
                 const user = await new DataBaseHelper(User).findOne({ did })
                 return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -163,7 +163,7 @@ export class AccountService extends NatsService {
                 const user = await new DataBaseHelper(User).findOne({ username })
                 return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -178,7 +178,7 @@ export class AccountService extends NatsService {
                 const user = await new DataBaseHelper(User).findOne({ hederaAccountId: account })
                 return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -194,7 +194,7 @@ export class AccountService extends NatsService {
                 const user = await new DataBaseHelper(User).findOne({ providerId, provider })
                 return new MessageResponse(setDefaultPermissions(user));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -208,7 +208,7 @@ export class AccountService extends NatsService {
                 const { did } = msg;
                 return new MessageResponse(await new DataBaseHelper(User).find({ parent: did }));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -222,7 +222,7 @@ export class AccountService extends NatsService {
             try {
                 return new MessageResponse(await new DataBaseHelper(User).find({ did: { $in: dids } }));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -236,7 +236,7 @@ export class AccountService extends NatsService {
             try {
                 return new MessageResponse(await new DataBaseHelper(User).find({ role }));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -255,7 +255,7 @@ export class AccountService extends NatsService {
                     }));
                 return new MessageResponse(userAccounts);
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -273,7 +273,7 @@ export class AccountService extends NatsService {
                     }));
                 return new MessageResponse(userAccounts);
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -293,7 +293,7 @@ export class AccountService extends NatsService {
                 }));
                 return new MessageResponse(userAccounts);
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -322,7 +322,7 @@ export class AccountService extends NatsService {
 
                 return new MessageResponse(getRequiredProps(user, REGISTER_REQUIRED_PROPS));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error)
             }
         });
@@ -342,7 +342,7 @@ export class AccountService extends NatsService {
                     const user = await (new DataBaseHelper(User)).save(row);
                     return new MessageResponse(user);
                 } catch (error) {
-                    new Logger().error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE']);
                     return new MessageError(error)
                 }
             });
@@ -378,7 +378,7 @@ export class AccountService extends NatsService {
                         accessToken
                     })
                 } catch (error) {
-                    new Logger().error(error, ['AUTH_SERVICE']);
+                    await logger.error(error, ['AUTH_SERVICE']);
                     return new MessageError(error)
                 }
             });
@@ -418,7 +418,7 @@ export class AccountService extends NatsService {
                 }
 
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -474,7 +474,7 @@ export class AccountService extends NatsService {
                 const result = await new DataBaseHelper(User).update(user);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -484,7 +484,7 @@ export class AccountService extends NatsService {
             try {
                 return new MessageResponse(await new DataBaseHelper(User).save(user));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -532,7 +532,7 @@ export class AccountService extends NatsService {
                 const [items, count] = await new DataBaseHelper(User).findAndCount(options, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

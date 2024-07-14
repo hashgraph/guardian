@@ -1,7 +1,6 @@
-import { DataBaseHelper, MessageResponse, NatsService, Singleton, Vc, VerifiableCredential } from '@guardian/common';
+import { DataBaseHelper, MessageResponse, NatsService, PinoLogger, Singleton, Vc, VerifiableCredential } from '@guardian/common';
 import { AuthEvents, ExternalProviders, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service.js';
-import { Logger } from '@nestjs/common';
 import { MeecoIssuerWhitelist } from '../entity/meeco-issuer-whitelist.js';
 
 const MeecoConfig = {
@@ -19,9 +18,7 @@ const MeecoPassphrase = process.env.MEECO_PASSPHRASE;
 
 @Singleton
 export class MeecoAuthService extends NatsService {
-  private readonly logger = new Logger('MeecoAuthService');
-
-  /**
+    /**
    * Message queue name
    */
   public messageQueueName = 'meeco-auth-queue';
@@ -64,7 +61,7 @@ export class MeecoAuthService extends NatsService {
   /**
    * Register listeners
    */
-  registerListeners(): void {
+  registerListeners(logger: PinoLogger): void {
     /**
      * Subscribe to MEECO_AUTH_START event
      * Request a new VP presentation request from Meeco and return the redirect URI
@@ -91,13 +88,13 @@ export class MeecoAuthService extends NatsService {
         const redirectUri = await this.meecoService.getVPSubmissionRedirectUri(signVPRequest.presentation_request.id);
 
         // start polling for VP submission
-        await this.getVPSubmissions(signVPRequest.presentation_request.id, msg.cid);
+        await this.getVPSubmissions(signVPRequest.presentation_request.id, msg.cid, logger);
 
         // return the redirect URI to client
         return new MessageResponse({redirectUri, cid: msg.cid});
       } catch(ex) {
         // return the error to client
-        this.logger.error(ex.message, ex.stack);
+        await logger.error(ex.message, ex.stack);
         return new MessageResponse({error: ex.message, cid: msg.cid});
       }
     });
@@ -127,8 +124,9 @@ export class MeecoAuthService extends NatsService {
    * getVPSubmission Queries the Meeco API for the Verifiable Presentation Submission if submitted by user.
    * @param requestId presentation request id
    * @param cid client connection id
+   * @param logger pino logger
    */
-  private async getVPSubmissions(requestId: string, cid: string): Promise<void> {
+  private async getVPSubmissions(requestId: string, cid: string, logger: PinoLogger): Promise<void> {
     // poll for VP submission for 60 seconds every 3 seconds
     let userProviderFound;
     let maxIterations = 20;
@@ -175,7 +173,7 @@ export class MeecoAuthService extends NatsService {
           clearInterval(interval);
         }
       } catch (ex) {
-        this.logger.error(ex);
+        await logger.error(ex);
         clearInterval(interval);
         this.sendMessage(
           AuthEvents.MEECO_VERIFY_VP_FAILED,

@@ -1,6 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration, OldSecretManager, SecretManager } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -49,6 +49,9 @@ Promise.all([
     DataBaseHelper.orm = db;
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
+
+    const logger: PinoLogger = await pinoLoggerInitialization(db);
+
     state.updateState(ApplicationStates.INITIALIZING);
     try {
         if (!ApplicationEnvironment.demoMode) {
@@ -66,23 +69,23 @@ Promise.all([
 
         app.listen();
 
-        new Logger().setConnection(cn);
+        // new Logger().setConnection(cn);
         await new AccountService().setConnection(cn).init();
-        new AccountService().registerListeners();
+        new AccountService().registerListeners(logger);
         await new WalletService().setConnection(cn).init();
         new WalletService().registerVault(vault);
-        new WalletService().registerListeners();
+        new WalletService().registerListeners(logger);
 
         await new RoleService().setConnection(cn).init();
-        new RoleService().registerListeners();
+        new RoleService().registerListeners(logger);
 
         if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
             await new MeecoAuthService().setConnection(cn).init();
-            new MeecoAuthService().registerListeners();
+            new MeecoAuthService().registerListeners(logger);
         }
 
         if (process.env.IMPORT_KEYS_FROM_DB) {
-            await ImportKeysFromDatabase(vault);
+            await ImportKeysFromDatabase(vault, logger);
         }
 
         await new OldSecretManager().setConnection(cn).init();
@@ -98,7 +101,7 @@ Promise.all([
         if (Number.isInteger(maxPayload)) {
             new LargePayloadContainer().runServer();
         }
-        new Logger().info('auth service started', ['AUTH_SERVICE']);
+        await logger.info('auth service started', ['AUTH_SERVICE']);
     } catch (error) {
         console.error(error.message);
         process.exit(1);

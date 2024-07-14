@@ -7,7 +7,7 @@ import process from 'process';
 import { PinoLogType } from '@guardian/interfaces';
 
 //helpers
-import { levelTypeMapping, MAP_TRANSPORTS, PinoLogger } from './pino-logger';
+import { levelTypeMapping, MAP_TRANSPORTS, PinoLogger } from './pino-logger.js';
 
 export async function pinoLoggerInitialization(db: MikroORM<MongoDriver> | null) {
     const loggerOptions = {
