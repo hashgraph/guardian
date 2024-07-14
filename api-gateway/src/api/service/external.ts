@@ -2,10 +2,14 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiExtraModels, ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { InternalServerErrorDTO, ExternalDocumentDTO } from '#middlewares';
 import { PolicyEngine, InternalException } from '#helpers';
+import { PinoLogger } from '@guardian/common';
 
 @Controller('external')
 @ApiTags('external')
 export class ExternalApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Sends data from an external source
      */
@@ -35,7 +39,7 @@ export class ExternalApi {
             const engineService = new PolicyEngine();
             return await engineService.receiveExternalData(document);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

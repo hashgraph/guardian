@@ -165,7 +165,7 @@ export class TokensApi {
                 .header('X-Total-Count', tokensAndCount.count)
                 .send(tokensAndCount.items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -260,7 +260,7 @@ export class TokensApi {
                 .header('X-Total-Count', tokensAndCount.count)
                 .send(tokensAndCount.items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -303,7 +303,7 @@ export class TokensApi {
 
             return tokenByIdWithPolicies;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -354,7 +354,7 @@ export class TokensApi {
 
             return tokens;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -463,7 +463,7 @@ export class TokensApi {
 
             return await guardians.updateToken(token, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -530,7 +530,7 @@ export class TokensApi {
 
             return task;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -599,7 +599,7 @@ export class TokensApi {
 
             return task;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1423,7 +1423,7 @@ export class TokensApi {
             items = setTokensPolicies(items, map, null, false);
             return items;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

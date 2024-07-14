@@ -6,6 +6,7 @@ import { Auth } from '#auth';
 import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares';
 import { UseCache, InternalException } from '#helpers';
 import axios from 'axios';
+import { PinoLogger } from '@guardian/common';
 
 @Injectable()
 export class LoggerService {
@@ -30,7 +31,7 @@ export class LoggerService {
 @Controller('logs')
 @ApiTags('logs')
 export class LoggerApi {
-    constructor(private readonly loggerService: LoggerService) {
+    constructor(private readonly loggerService: LoggerService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -103,7 +104,7 @@ export class LoggerApi {
                 logs: logs.data
             };
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -159,7 +160,7 @@ export class LoggerApi {
             }
             return await this.loggerService.getAttributes(escapeRegExp(name), attributes);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

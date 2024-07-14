@@ -1,4 +1,4 @@
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
@@ -11,7 +11,7 @@ import { SCHEMA_REQUIRED_PROPS } from '#constants';
 @ApiTags('tags')
 export class TagsApi {
 
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -51,7 +51,7 @@ export class TagsApi {
             const guardian = new Guardians();
             return await guardian.createTag(body, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -150,7 +150,7 @@ export class TagsApi {
             }
             return tagMap;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -196,7 +196,7 @@ export class TagsApi {
             const guardian = new Guardians();
             return await guardian.deleteTag(uuid, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -257,7 +257,7 @@ export class TagsApi {
                 refreshDate: (new Date()).toISOString(),
             };
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -318,7 +318,7 @@ export class TagsApi {
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -380,7 +380,7 @@ export class TagsApi {
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -433,7 +433,7 @@ export class TagsApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -481,7 +481,7 @@ export class TagsApi {
             await guardians.deleteSchema(schemaId, owner);
             return true;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -537,7 +537,7 @@ export class TagsApi {
             SchemaHelper.updateOwner(newSchema, owner);
             return await guardians.updateSchema(newSchema, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -586,7 +586,7 @@ export class TagsApi {
             const version = '1.0.0';
             return await guardians.publishTagSchema(schemaId, version, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -614,7 +614,7 @@ export class TagsApi {
             const guardians = new Guardians();
             return await guardians.getPublishedTagSchemas();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

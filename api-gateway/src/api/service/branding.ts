@@ -4,6 +4,7 @@ import { Auth } from '#auth';
 import { Permissions } from '@guardian/interfaces';
 import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
 import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheService } from '#helpers';
+import { PinoLogger } from '@guardian/common';
 
 /**
  * Branding route
@@ -11,7 +12,7 @@ import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheServ
 @Controller('branding')
 @ApiTags('branding')
 export class BrandingApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -71,7 +72,7 @@ export class BrandingApi {
 
             await this.cacheService.invalidate(getCacheKey([req.url], req.user))
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -96,7 +97,7 @@ export class BrandingApi {
             const brandingDataString = await guardians.getBranding();
             return JSON.parse(brandingDataString.config);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

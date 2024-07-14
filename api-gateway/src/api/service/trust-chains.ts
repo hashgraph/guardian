@@ -1,4 +1,4 @@
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Param, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam, ApiQuery } from '@nestjs/swagger';
@@ -9,6 +9,9 @@ import { Examples, InternalServerErrorDTO, VpDocumentDTO, pageHeader } from '#mi
 @Controller('trust-chains')
 @ApiTags('trust-chains')
 export class TrustChainsApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Get VP Document
      */
@@ -79,7 +82,7 @@ export class TrustChainsApi {
             const { items, count } = await guardians.getVpDocuments({ filters, pageIndex, pageSize });
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -205,7 +208,7 @@ export class TrustChainsApi {
 
             return { chain, userMap };
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

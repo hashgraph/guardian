@@ -47,7 +47,7 @@ export class DemoApi {
 
             return demoUsers
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -83,7 +83,7 @@ export class DemoApi {
 
             return await guardians.generateDemoKey(role, user.id.toString());
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         // try {
         //     const guardians = new Guardians();

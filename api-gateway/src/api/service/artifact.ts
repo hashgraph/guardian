@@ -2,7 +2,7 @@ import { Permissions } from '@guardian/interfaces';
 import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, Version, Req } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
 import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
@@ -11,7 +11,7 @@ import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 @ApiTags('artifacts')
 export class ArtifactApi {
 
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
     /**
      * Get artifacts
@@ -118,7 +118,7 @@ export class ArtifactApi {
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -227,7 +227,7 @@ export class ArtifactApi {
 
             return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -303,7 +303,7 @@ export class ArtifactApi {
 
             return uploadedArtifacts;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -348,7 +348,7 @@ export class ArtifactApi {
 
             return await guardian.deleteArtifact(artifactId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

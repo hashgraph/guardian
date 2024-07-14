@@ -1,7 +1,7 @@
 import WebSocket, { WebSocketServer } from 'ws'
 import { IncomingMessage, Server } from 'http';
 import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
-import { generateNumberFromString, IAuthUser, Logger, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, Singleton } from '@guardian/common';
+import { generateNumberFromString, IAuthUser, Logger, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
 // import { Injectable } from '@nestjs/common';
 import { MeecoAuth, Users } from '#helpers';
@@ -39,6 +39,9 @@ export class WebSocketsServiceChannel extends NatsService {
 // @Injectable()
 @Singleton
 export class WebSocketsService {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Channel
      * @private
@@ -488,7 +491,7 @@ export class WebSocketsService {
                     break;
             }
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
         }
     }
 
@@ -502,7 +505,7 @@ export class WebSocketsService {
         try {
             ws.send(JSON.stringify(message));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY', 'websocket', 'send']);
+            this.logger.error(error, ['API_GATEWAY', 'websocket', 'send']);
         }
     }
 
@@ -520,7 +523,7 @@ export class WebSocketsService {
             }
             return null;
         } catch (error) {
-            new Logger().warn(error.message || error, ['API_GATEWAY']);
+            await this.logger.warn(error.message || error, ['API_GATEWAY']);
             return null;
         }
     }

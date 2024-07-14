@@ -72,7 +72,7 @@ Promise.all([
         await new MeecoAuth().registerListeners();
 
         const server = app.getHttpServer();
-        const wsService = new WebSocketsService();
+        const wsService = new WebSocketsService(logger);
         wsService.setConnection(server, cn).init();
 
         new TaskManager().setDependencies(wsService, cn);

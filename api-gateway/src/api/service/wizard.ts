@@ -48,7 +48,7 @@ export class WizardApi {
             const guardians = new Guardians();
             return await guardians.wizardPolicyCreate(wizardConfig, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -152,7 +152,7 @@ export class WizardApi {
             const owner = new EntityOwner(user);
             return await guardians.wizardGetPolicyConfig(policyId, wizardConfig, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

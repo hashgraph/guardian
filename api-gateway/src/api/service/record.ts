@@ -1,6 +1,6 @@
 import { Permissions } from '@guardian/interfaces';
 import { EntityOwner, Guardians, InternalException, ONLY_SR, checkPolicy } from '#helpers';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
@@ -9,6 +9,9 @@ import { InternalServerErrorDTO, RecordActionDTO, RecordStatusDTO, RunningDetail
 @Controller('record')
 @ApiTags('record')
 export class RecordApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Get recording or running status
      */
@@ -48,7 +51,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordStatus(policyId, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -97,7 +100,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.startRecording(policyId, owner, options);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -153,7 +156,7 @@ export class RecordApi {
             res.header('Content-type', 'application/zip');
             return res.send(result);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -197,7 +200,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordedActions(policyId, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -247,7 +250,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.runRecord(policyId, owner, options);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -296,7 +299,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.stopRunning(policyId, owner, options);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -339,7 +342,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordResults(policyId, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -382,7 +385,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.getRecordDetails(policyId, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -431,7 +434,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.fastForward(policyId, owner, options);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -480,7 +483,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.retryStep(policyId, owner, options);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -529,7 +532,7 @@ export class RecordApi {
             const guardians = new Guardians();
             return await guardians.skipStep(policyId, owner, options);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

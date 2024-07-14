@@ -56,7 +56,7 @@ export class ToolsApi {
 
             return await guardian.createTool(tool, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -111,7 +111,7 @@ export class ToolsApi {
 
             return task;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -169,7 +169,7 @@ export class ToolsApi {
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -229,7 +229,7 @@ export class ToolsApi {
             }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -279,7 +279,7 @@ export class ToolsApi {
 
             return await guardian.deleteTool(id, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -325,7 +325,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             return await guardian.getToolById(id, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -384,7 +384,7 @@ export class ToolsApi {
 
             return await guardian.updateTool(id, tool, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -440,7 +440,7 @@ export class ToolsApi {
 
             return await guardian.publishTool(id, owner, tool);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -541,7 +541,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             return await guardian.validateTool(owner, tool);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -588,7 +588,7 @@ export class ToolsApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -633,7 +633,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             return await guardian.exportToolMessage(id, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -676,7 +676,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             return await guardian.previewToolMessage(messageId, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -720,7 +720,7 @@ export class ToolsApi {
         try {
             return await guardian.importToolMessage(messageId, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -758,7 +758,7 @@ export class ToolsApi {
             const guardian = new Guardians();
             return await guardian.previewToolFile(body, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -798,7 +798,7 @@ export class ToolsApi {
 
             return await guardian.importToolFile(body, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -865,7 +865,7 @@ export class ToolsApi {
 
             return tool;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -915,7 +915,7 @@ export class ToolsApi {
 
             return task;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -999,7 +999,7 @@ export class ToolsApi {
 
             return task;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1050,7 +1050,7 @@ export class ToolsApi {
             });
             return task;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1088,7 +1088,7 @@ export class ToolsApi {
             const guardians = new Guardians();
             return await guardians.getMenuTool(owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

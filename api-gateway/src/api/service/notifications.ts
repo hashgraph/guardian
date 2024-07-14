@@ -1,4 +1,4 @@
-import { IAuthUser, NotificationService } from '@guardian/common';
+import { IAuthUser, NotificationService, PinoLogger } from '@guardian/common';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, NotificationDTO, ProgressDTO, pageHeader } from '#middlewares';
@@ -8,7 +8,7 @@ import { InternalException, parseInteger } from '#helpers';
 @Controller('notifications')
 @ApiTags('notifications')
 export class NotificationsApi {
-    constructor(private readonly notifier: NotificationService) { }
+    constructor(private readonly notifier: NotificationService, private readonly logger: PinoLogger) { }
 
     /**
      * Get all notifications
@@ -59,7 +59,7 @@ export class NotificationsApi {
             );
             return res.header('X-Total-Count', count).send(notifications);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -92,7 +92,7 @@ export class NotificationsApi {
             }
             return await this.notifier.getNewNotifications(user.id);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -125,7 +125,7 @@ export class NotificationsApi {
             }
             return await this.notifier.getProgresses(user.id);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -158,7 +158,7 @@ export class NotificationsApi {
             }
             return await this.notifier.readAll(user.id);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -195,7 +195,7 @@ export class NotificationsApi {
         try {
             return await this.notifier.deleteUpTo(user.id, notificationId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

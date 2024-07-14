@@ -18,7 +18,7 @@ import {
     Environment,
     ExternalEventChannel,
     IPFS,
-    LargePayloadContainer,
+    LargePayloadContainer, Logger,
     MessageBrokerChannel,
     MessageServer,
     Migration,
@@ -130,13 +130,14 @@ Promise.all([
 
     const logger: PinoLogger = await pinoLoggerInitialization(db);
 
-    // await new Logger().setConnection(cn);
+    //Todo: need to remove this connection, but now it gives error
+    await new Logger().setConnection(cn);
+
     const state = new ApplicationState();
     await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
     const secretManager = SecretManager.New();
     await new OldSecretManager().setConnection(cn).init();
     let { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
-    console.log('OPERATOR_ID', OPERATOR_ID)
     if (!OPERATOR_ID) {
         OPERATOR_ID = process.env.OPERATOR_ID;
         OPERATOR_KEY = process.env.OPERATOR_KEY;

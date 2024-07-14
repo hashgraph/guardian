@@ -4,10 +4,14 @@ import { Permissions } from '@guardian/interfaces';
 import { Auth } from '#auth';
 import { Examples, InternalServerErrorDTO } from '#middlewares';
 import { Guardians, InternalException } from '#helpers';
+import { PinoLogger } from '@guardian/common';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
 export class IpfsApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Add file from ipfs
      */
@@ -52,7 +56,7 @@ export class IpfsApi {
 
             return JSON.stringify(cid);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -105,7 +109,7 @@ export class IpfsApi {
 
             return JSON.stringify(cid);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -154,7 +158,7 @@ export class IpfsApi {
             }
             return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -203,7 +207,7 @@ export class IpfsApi {
             }
             return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

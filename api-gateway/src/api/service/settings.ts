@@ -5,10 +5,14 @@ import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
 import { Auth } from '#auth';
 import { Guardians, InternalException } from '#helpers';
 import process from 'process';
+import { PinoLogger } from '@guardian/common';
 
 @Controller('settings')
 @ApiTags('settings')
 export class SettingsApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Set settings
      */
@@ -44,7 +48,7 @@ export class SettingsApi {
             await Promise.all([guardians.updateSettings(settings)]);
             return null;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -76,7 +80,7 @@ export class SettingsApi {
             const [guardiansSettings] = await Promise.all([guardians.getSettings()]);
             return { ...guardiansSettings } as any;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -104,7 +108,7 @@ export class SettingsApi {
             const guardians = new Guardians();
             return await guardians.getEnvironment();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 

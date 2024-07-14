@@ -95,7 +95,7 @@ export class AccountApi {
             try {
                 await checkPermission(UserRole.STANDARD_REGISTRY)(user);
             } catch (error) {
-                await InternalException(error);
+                await InternalException(error, this.logger);
             }
         }
         try {
@@ -204,7 +204,7 @@ export class AccountApi {
         try {
             return await (new Users()).getAllUserAccounts();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -237,7 +237,7 @@ export class AccountApi {
         try {
             return await (new Users()).getAllStandardRegistryAccounts();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -305,7 +305,7 @@ export class AccountApi {
                 });
             return await Promise.all(promises);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -340,7 +340,7 @@ export class AccountApi {
         try {
             return await (new Guardians()).getBalance(user.username);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

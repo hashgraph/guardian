@@ -3,8 +3,8 @@ import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, A
 import { EntityOwner, Permissions } from '@guardian/interfaces';
 import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { IAuthUser } from '@guardian/common';
-import { Guardians, ONLY_SR, InternalException } from '#helpers';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { Guardians, ONLY_SR, InternalException, CacheService } from '#helpers';
 
 function getPolicyId(filters: FilterPoliciesDTO): {
     type: 'id' | 'file' | 'message',
@@ -69,6 +69,9 @@ function getSchemaId(filters: FilterSchemasDTO): {
 @Controller('analytics')
 @ApiTags('analytics')
 export class AnalyticsApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Search policies
      */
@@ -112,7 +115,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.searchPolicies(owner, filters);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -204,7 +207,7 @@ export class AnalyticsApi {
                 filters.idLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -272,7 +275,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -323,7 +326,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.compareSchemas(owner, null, schemas, idLvl);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -404,7 +407,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -481,7 +484,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -581,7 +584,7 @@ export class AnalyticsApi {
                 filters.idLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -657,7 +660,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -716,7 +719,7 @@ export class AnalyticsApi {
             const guardians = new Guardians();
             return await guardians.compareSchemas(owner, type, schemas, idLvl);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -804,7 +807,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -888,7 +891,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -941,7 +944,7 @@ export class AnalyticsApi {
         try {
             return await guardians.searchBlocks(config, id, user);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

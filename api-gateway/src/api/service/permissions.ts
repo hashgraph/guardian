@@ -1,4 +1,4 @@
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { AssignedEntityType, Permissions, UserPermissions } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
@@ -10,6 +10,9 @@ import { WebSocketsService } from './websockets.js';
 @Controller('permissions')
 @ApiTags('permissions')
 export class PermissionsApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Return a list of all permissions
      */
@@ -37,7 +40,7 @@ export class PermissionsApi {
         try {
             return await (new Users()).getPermissions();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -106,7 +109,7 @@ export class PermissionsApi {
             const { items, count } = await (new Users()).getRoles(options);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -146,7 +149,7 @@ export class PermissionsApi {
             await (new Guardians()).createRole(role, owner);
             return role;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -193,7 +196,7 @@ export class PermissionsApi {
         try {
             row = await userService.getRoleById(id);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         if (!row) {
             throw new HttpException('Role does not exist.', HttpStatus.NOT_FOUND)
@@ -203,11 +206,11 @@ export class PermissionsApi {
             const result = await userService.updateRole(id, role, owner);
             const users = await userService.refreshUserPermissions(id, user.did);
             await (new Guardians()).updateRole(result, owner);
-            const wsService = new WebSocketsService();
+            const wsService = new WebSocketsService(this.logger);
             wsService.updatePermissions(users);
             return result;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -252,11 +255,11 @@ export class PermissionsApi {
             const result = await userService.deleteRole(id, owner);
             const users = await userService.refreshUserPermissions(id, user.did);
             await (new Guardians()).deleteRole(result, owner);
-            const wsService = new WebSocketsService();
+            const wsService = new WebSocketsService(this.logger);
             wsService.updatePermissions(users);
             return result;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -310,7 +313,7 @@ export class PermissionsApi {
         try {
             return await (new Users()).setDefaultRole(body?.id, user.did);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -402,7 +405,7 @@ export class PermissionsApi {
             }
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -449,7 +452,7 @@ export class PermissionsApi {
             }
             return row as any;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -502,7 +505,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         if (!row || row.parent !== user.did || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -511,11 +514,11 @@ export class PermissionsApi {
             const owner = new EntityOwner(user);
             const result = await users.updateUserRole(username, body, owner);
             await (new Guardians()).setRole(result, owner);
-            const wsService = new WebSocketsService();
+            const wsService = new WebSocketsService(this.logger);
             wsService.updatePermissions(result);
             return result;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -585,7 +588,7 @@ export class PermissionsApi {
         try {
             target = await (new Users()).getUserPermissions(username);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         if (!target || target.parent !== owner) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -603,7 +606,7 @@ export class PermissionsApi {
             const { policies, count } = await (new Guardians()).getAssignedPolicies(options);
             return res.header('X-Total-Count', count).send(policies);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -650,7 +653,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         if (!row || row.parent !== user.did || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -665,7 +668,7 @@ export class PermissionsApi {
                 user.did
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -715,7 +718,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         if (!row || row.parent !== user.parent || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -724,11 +727,11 @@ export class PermissionsApi {
             const owner = new EntityOwner(user);
             const result = await users.delegateUserRole(username, body, owner);
             await (new Guardians()).setRole(result, owner);
-            const wsService = new WebSocketsService();
+            const wsService = new WebSocketsService(this.logger);
             wsService.updatePermissions(result);
             return result;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -775,7 +778,7 @@ export class PermissionsApi {
         try {
             row = await users.getUserPermissions(username);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         if (!row || row.parent !== user.parent || row.did === user.did) {
             throw new HttpException('User does not exist.', HttpStatus.NOT_FOUND)
@@ -790,7 +793,7 @@ export class PermissionsApi {
                 user.did
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }
