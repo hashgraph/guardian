@@ -2,15 +2,15 @@
 
 **1.How can I get started with the Guardian?**
 
-We recommend spending some time and reading carefully through the docs here: https://docs.hedera.com/guardian/getting-started/readme. You will find setup instructions, a glossary of important terms, demo walk throughs, and more.
+We recommend spending some time and reading carefully through the docs here: [https://docs.hedera.com/guardian/getting-started/readme](https://docs.hedera.com/guardian/getting-started/readme). You will find setup instructions, a glossary of important terms, demo walk throughs, and more.
 
 **2. How can I create policies?**
 
-You can use the UI policy editor or APIs to create a policy workflow. Examples are found in the guardian docs here: https://docs.hedera.com/guardian/getting-started/readme
+You can use the UI policy editor or APIs to create a policy workflow. Examples are found in the guardian docs here: [https://docs.hedera.com/guardian/getting-started/readme](https://docs.hedera.com/guardian/getting-started/readme)
 
 **3. Is there a demo to create a policy without importing it?**
 
-{% embed url="https://docs.hedera.com/guardian/policy-workflow-creation-using-the-guardian-user-interface/getting-started-with-the-policy-workflows" %}
+[**https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows**](https://docs.hedera.com/guardian-dev-1/guardian/standard-registry/policies/policy-creation/creating-a-policy-through-policy-configurator/getting-started-with-the-policy-workflows)
 
 **4. Can I see the Guardian product roadmap and the current backlog?**
 
@@ -18,7 +18,7 @@ yes! just install the free chrome extension called zenhub https://www.zenhub.com
 
 **5. Where can I get notified of sprint updates and demos?**
 
-Every two weeks we publish sprint updates to this youtube playlist: [https://youtube.com/playlist?list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL/](https://youtube.com/playlist?list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL/)
+Every two weeks we publish sprint updates to this youtube playlist: [https://www.youtube.com/playlist?list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL](https://www.youtube.com/playlist?list=PLnld0e1pwLhqb69cELqQrW87JFVIDfocL)
 
 **6. Where can I see the most recent changes made to the Guardian?**
 
@@ -36,7 +36,7 @@ iREC Policy 2 is the up-to-date version of iREC Policy
 
 You can visit : http://localhost:3000/mrv-sender/
 
-**10. how I can avoid the field name being "off by one" ?**
+**10. How I can avoid the field name being "off by one" ?**
 
 Add an additional short name to the description in the schema configurator. If short name is not set then install field1...N.
 
@@ -46,11 +46,15 @@ Add an additional short name to the description in the schema configurator. If s
 
 **12. What is the difference between requestVcDocumentBlock and externalDataBlock to report data?**
 
-Both are for reporting data, both are producing VCs at the ‘exit.’ 1. requestVcDocumentBlock requires authorization, but the actual document is just json. 2. externalDataBlock does not require authorization, but the document must already be a VC and be correctly signed.
+Both are for reporting data, both are producing VCs at the ‘exit.’&#x20;
+
+1\. requestVcDocumentBlock requires authorization, but the actual document is just json.&#x20;
+
+2\. externalDataBlock does not require authorization, but the document must already be a VC and be correctly signed.
 
 **13. Why do I get the error INSUFFICENT\_TX\_FEE?**
 
-The fee in the transaction is too small and needs to be increased\*\*.\*\*
+The fee in the transaction is too small and needs to be increased changing setting of **MAX\_TRANSACTION\_FEE**
 
 **14. How are we linking topics to stored ipfs data after mongodb goes away? Is there somewhere I can read this?**
 
@@ -58,31 +62,20 @@ MongoDB does not go away, we will keep the local DB for drafts etc. Hedera messa
 
 **15. Is MRV an existing data architecture used in I-REC or Carbon Offset standards?**
 
-A standard registry is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. In this case iREC is a standards registry, however oftentimes folks implement the iREC standard in a voluntary way and leverage iREC certification for sign off. Some markets, like Dubai, make it a compliance standard\*\*.\*\*
+A standard registry is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. In this case iREC is a standards registry, however oftentimes folks implement the iREC standard in a voluntary way and leverage iREC certification for sign off. Some markets, like Dubai, make it a compliance standard.
 
 **16. How Guardian uses IPFS for Verifiable Presentation (VP) storage?**
 
-When a policy is published a message is sent to the policy topic (on the policies page) where the policy (VP) and schemas are stored.
-
-In the guardian a VP is a VP. It's just an object with schemas and dids inside of it.
+We are uploading Verifiable Presentation document to IPFS and CID will be attached in Hedera message which is linked to policy topic.
 
 **17. How does Guardian Provenance works?**
 
-Here are the steps you should follow to get a VP from a token mint transaction.
+(ONLY NFT) Open tokens page, click on appropriate token or open ledger works explorer manually https://explore.lworks.io/testnet/tokens/{tokenId} ([https://explore.lworks.io/testnet/tokens/0.0.4554172](https://explore.lworks.io/testnet/tokens/0.0.4554172)), open "NFT HOLDERS" tab and click on appropriate serial, click on "OVERVIEW" tab and in metadata you can get VP message identifier (1721049137.243457003). NEXT WE CAN KEEP "In our case it will be [https://testnet.mirrornode.hede](https://testnet.mirrornode.hede/)............"
 
-Look for a token mint transaction on [Ledger Works](https://explore.lworks.io/).\
-For the transaction `00341948921649942497135549961` the link will be [https://explore.lworks.io/testnet/transactions/0.0.34194892-1649942497-135549961](https://explore.lworks.io/testnet/transactions/0.0.34194892-1649942497-135549961)\
-Transaction data will contain data similar to this:
+\
+(FT, NFT) Open tokens page, copy appropriate token identifier, open dragonglass explorer https://testnet.dragonglass.me/tokens/{tokenId} ([https://testnet.dragonglass.me/tokens/0.0.4554298](https://testnet.dragonglass.me/tokens/0.0.4554298)), click on "All transactions" tab, click on appropriate mint transaction, in memo you can get VP message identifier (1721049808.933544003).&#x20;
 
-```
-TRANSACTION DETAILS 0.0.34194892@1649942497-135549961 (SUCCESS)
-TRANSACTION TYPE Mint Token
-TRANSACTION HASH 8ec781457fbd0ab6124eb04396cdcff153868f4f52b1836e42158fd3f23fc0139f1fd7b7ee18915124eab74d49c9d0ad
-PAYER 0.0.34194892
-MEMO 1649942508.776446488
-```
-
-Take the MEMO value (which is the Hedera message timestamp) and add it to the URL after the `/messages/` to get a message from a Hedera Mirror Node.\
+\
 In our case it will be [https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1649942508.776446488](https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1649942508.776446488)\
 You will get a message content:
 
@@ -232,7 +225,7 @@ You’ll have a VP of this token.
 
 **18. The VCs that are generated as part of the Guardian workflow, have you found any use cases where the status of the VC might change? For example, is there ever a time where a VC might be revoked or expires? If so, does the status get updated on the ledger?**
 
-there are many use-cases where the VCs and various other artefacts produced in the course of the policy functioning of the guardian might need to be revoked. One of the obvious examples of such situation is malfunctioning sensor generating invalid MRV data. But there are many others\*\*.\*\*
+There are many use-cases where the VCs and various other artefacts produced in the course of the policy functioning of the guardian might need to be revoked. One of the obvious examples of such situation is malfunctioning sensor generating invalid MRV data. But there are many others.
 
 **19. Is it possible to see a Guardian-minted token's value in hbar as well as its associated CO2e? If so, where does this information come from/how can we access it?**
 
@@ -244,14 +237,10 @@ DID is the the DID of the RA, i.e. is a globally unique reference linking to a D
 
 **21. How to identify data on Hedera after submitting data using sendToGuardianBlock?**
 
-When sending messages to the header, the Message Id and Topic Id are written to the database You can view them using the messageId and topicId fields
+You can find it in Project/Policy topic, it depends on sendToGuardianBlock configuration.&#x20;
 
-All messages in the topic can be viewed at the link [https://explore.lworks.io/testnet/topics/0.0.47802089](https://explore.lworks.io/testnet/topics/0.0.47802089)
+Open policies tab, click on policy topic or open it in ledger works explorer manually https://explore.lworks.io/testnet/topics/{topicId} ([https://explore.lworks.io/testnet/topics/0.0.4554074](https://explore.lworks.io/testnet/topics/0.0.4554074)), find appropriate INSTANCE\_POLICY\_TOPIC message and copy childId, then replace it in the url, find appropriate message or find appropriate DYNAMIC\_TOPIC message and do same thing with childId.&#x20;
 
-for example\*\*:\*\*
-
-[https://explore.lworks.io/testnet/topics/{topicId}](https://explore.lworks.io/testnet/topics/%7BtopicId%7D)
-
-Unfortunately, Ledger Works does not have a search by messageId, but messages can be obtained using mirrornode
+Unfortunately, Ledger Works does not have a search by messageId, but messages can be obtained using mirror node.
 
 for example https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1659539040.128851003
