@@ -8,6 +8,10 @@ on:
                 default: 'all'
         description: 'Manual run'
 
+    push:
+        branches-ignore:
+            - 'dependabot/**'
+
 jobs:
     buildAndTest:
         name: Build and Test (Manual)
@@ -128,6 +132,7 @@ jobs:
                   IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
 
             - name: Run tests with Cypress
+              uses: coactions/setup-xvfb@v1
               run: |
                   pushd e2e-tests
                   npm install --force
