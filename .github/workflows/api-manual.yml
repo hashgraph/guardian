@@ -128,10 +128,11 @@ jobs:
                   IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
 
             - name: Run tests with Cypress
+              uses: cypress/browsers:node-20.14.0-chrome-126.0.6478.114-1-ff-127.0.1-edge-126.0.2592.61-1
               run: |
                   pushd e2e-tests
                   npm install --force
-                  npx cypress run --headless --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
+                  npx cypress run --browser chrome --headless --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
                   popd
 
             - name: Publish API Test Results
