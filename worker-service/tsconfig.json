@@ -13,7 +13,9 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "baseUrl": "./src",
-        "paths": {}
+        "paths": {
+          "#constants": ["constants/index.js"]
+        }
     },
     "include": [
         "src/**/*",

@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, SecretManager, Users, } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, PinoLogger, SecretManager, Users } from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
 import { IpfsClientClass } from './ipfs-client-class.js';
@@ -23,11 +23,11 @@ function rejectTimeout(t: number): Promise<void> {
  * Worker class
  */
 export class Worker extends NatsService {
-    /**
-     * Logger instance
-     * @private
-     */
-    private readonly logger: Logger;
+    // /**
+    //  * Logger instance
+    //  * @private
+    //  */
+    // private readonly logger: Logger;
 
     /**
      * Message queue name
@@ -112,7 +112,8 @@ export class Worker extends NatsService {
         private w3cKey: string,
         private w3cProof: string,
         private readonly filebaseKey: string,
-        private readonly workerID: string
+        private readonly workerID: string,
+        private readonly logger: PinoLogger
     ) {
         super();
         //this.workerID = this._workerID;
@@ -121,7 +122,7 @@ export class Worker extends NatsService {
             this.w3cProof,
             this.filebaseKey
         );
-        this.logger = new Logger();
+        // this.logger = new Logger();
 
         this.analyticsService = process.env.ANALYTICS_SERVICE;
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);

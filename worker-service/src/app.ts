@@ -1,4 +1,4 @@
-import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, NotificationService, OldSecretManager, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, MessageBrokerChannel, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
@@ -6,6 +6,7 @@ import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { mongoInitialization } from './helpers/mongo-initialization.js';
 
 @Module({
     providers: [
@@ -27,12 +28,16 @@ Promise.all([
             ]
         },
     }),
+    mongoInitialization()
 ]).then(async values => {
-    const [cn, app] = values;
+    const [cn, app, db] = values;
     app.listen();
     const channel = new MessageBrokerChannel(cn, 'worker');
-    const logger = new Logger();
-    logger.setConnection(cn);
+
+    const logger: PinoLogger = await pinoLoggerInitialization(db);
+
+    // const logger = new Logger();
+    // logger.setConnection(cn);
     await new Users().setConnection(cn).init();
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();
@@ -48,7 +53,7 @@ Promise.all([
         }
 
         if (process.env.IPFS_PROVIDER === 'local' && !process.env.IPFS_NODE_ADDRESS) {
-            logger.error('IPFS_NODE_ADDRESS must be set if IPFS_PROVIDER is `local`', [channelName, 'WORKER']);
+            await logger.error('IPFS_NODE_ADDRESS must be set if IPFS_PROVIDER is `local`', [channelName, 'WORKER']);
             return false
         }
 
@@ -85,7 +90,7 @@ Promise.all([
         });
 
         await state.updateState(ApplicationStates.INITIALIZING);
-        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF, IPFS_STORAGE_API_KEY, channelName);
+        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF, IPFS_STORAGE_API_KEY, channelName, logger);
         await w.setConnection(cn).init();
 
         return true;
