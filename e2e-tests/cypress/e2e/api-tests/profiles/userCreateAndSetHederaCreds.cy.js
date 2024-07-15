@@ -1,4 +1,4 @@
-import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
@@ -21,7 +21,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
     it('Register a new user, login with it and set hedera credentials for it', () => {
         const userPassword = 'test'
         const name = (Math.floor(Math.random() * 999) + 'testUser')
-        const options = {
+        cy.request({
             method: 'POST',
             url: API.ApiServer + 'accounts/register',
             body: {
@@ -30,9 +30,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
                 password_confirmation: userPassword,
                 role: 'USER'
             }
-        };
-        cy.request(options)
-            .then((response) => {
+        }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS)
                 expect(response.body.username).to.equal(name)
                 expect(response.body.permissionsGroup.at(0).roleName).to.equal('Default policy user')
@@ -60,6 +58,13 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
                                     authorization: accessToken
                                 },
                                 body: {
+                                    useFireblocksSigning: false,
+                                    fireblocksConfig: {
+                                        fireBlocksVaultId: "",
+                                        fireBlocksAssetId: "",
+                                        fireBlocksApiKey: "",
+                                        fireBlocksPrivateiKey: ""
+                                    },
                                     hederaAccountId: "0.0.2954463",
                                     hederaAccountKey: "3030020100300706052b8104000a042204200501fd610df433a7dd202faa6864d5f270dbb129ccc6455ab5cb1ee44838cab8",
                                     parent: did

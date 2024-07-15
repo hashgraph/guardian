@@ -56,12 +56,19 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
-                            headers: {authorization},
+                            headers: { authorization },
                         }).then((response) => {
                             cy.request({
                                 method: METHOD.PUT,
                                 url: API.ApiServer + API.Profiles + username,
                                 body: {
+                                    useFireblocksSigning: false,
+                                    fireblocksConfig: {
+                                        fireBlocksVaultId: "",
+                                        fireBlocksAssetId: "",
+                                        fireBlocksApiKey: "",
+                                        fireBlocksPrivateiKey: ""
+                                    },
                                     hederaAccountId: response.body.id,
                                     hederaAccountKey: response.body.key,
                                     parent: SRDid
@@ -88,8 +95,8 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 })
             })
         })
-
     })
+
     it("Get balance without auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,

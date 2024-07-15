@@ -41,7 +41,14 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
                         cy.request({
                             method: 'PUT',
                             url: API.ApiServer + 'profiles/' + username,
-                            body: {
+                            body: { 
+                                useFireblocksSigning: false,
+                                fireblocksConfig: {
+                                    fireBlocksVaultId: "",
+                                    fireBlocksAssetId: "",
+                                    fireBlocksApiKey: "",
+                                    fireBlocksPrivateiKey: ""
+                                },
                                 hederaAccountId: hederaAccountId,
                                 hederaAccountKey: hederaAccountKey,
                                 parent: SRDid
