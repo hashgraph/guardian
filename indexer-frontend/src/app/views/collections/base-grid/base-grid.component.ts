@@ -2,11 +2,9 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
 import { PageEvent } from '@angular/material/paginator';
-import { IGridFilters, IGridResults } from '@services/search.service';
-import { Observer, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FormControl } from '@angular/forms';
-import { TablePageEvent } from 'primeng/table';
-import { SortEvent } from 'primeng/api';
+import { Page, PageFilters } from '@indexer/interfaces';
 
 export class Filter {
     public readonly label: string;
@@ -177,8 +175,8 @@ export abstract class BaseGridComponent {
         this.loadData();
     }
 
-    protected getFilters(): IGridFilters {
-        const filters: IGridFilters = {};
+    protected getFilters(): PageFilters {
+        const filters: PageFilters = {};
         for (const filter of this.filters) {
             if (filter.value) {
                 filters[filter.field] = filter.value;
@@ -197,7 +195,7 @@ export abstract class BaseGridComponent {
         return filters;
     }
 
-    protected setResult(result?: IGridResults): void {
+    protected setResult(result?: Page<any>): void {
         if (result) {
             this.items = result.items;
             this.total = result.total;

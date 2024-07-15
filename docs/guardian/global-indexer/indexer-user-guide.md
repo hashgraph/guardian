@@ -11,6 +11,12 @@ For example ‘Project Description’ will find all entities which include ‘Pr
 
 To find an exact phrase you need to use double quotes, e.g. type something like ‘“Project Description”’. Words can be excluded by typing ‘-’ symbol in the request. All searched entities have metadata in Hedera messages, search looks at policy message IDs, schema names, schema message IDs, VC/VP document content/values, schema properties, schema field names, etc…
 
+To launch the Indexer, please run the following command in the root of the folder:
+
+```
+docker compose -f "docker-compose-indexer.yml" up -d --build
+```
+
 ### Landing page includes following information:
 
 * _Registries_, _Methodologies_, _Total Documents_, _Total Issuance_. All cards are clickable. Also there is an ability to check charts with count and date.
