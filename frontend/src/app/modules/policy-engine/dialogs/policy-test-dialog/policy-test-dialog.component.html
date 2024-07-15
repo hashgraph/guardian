@@ -1,0 +1,29 @@
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="loading">
+            <div class="preloader-image preloader-image-l-size"></div>
+        </div>
+
+
+
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
+        </div>
+        <div>
+            <button (click)="onCompare()" 
+                class="button" 
+                pButton>
+                <svg-icon
+                    class="icon2-btn"
+                    src="/assets/images/icons/compare.svg"
+                    [svgClass]="'disabled-icon-color'">
+                </svg-icon>
+            </button>
+        </div>
+    </div>
+</div>

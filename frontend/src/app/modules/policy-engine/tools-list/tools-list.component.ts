@@ -8,11 +8,11 @@ import { InformService } from 'src/app/services/inform.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
-import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
-import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
-import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
-import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
+import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { ImportPolicyDialog } from '../dialogs/import-policy-dialog/import-policy-dialog.component';
+import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
 

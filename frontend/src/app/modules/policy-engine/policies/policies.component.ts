@@ -5,14 +5,14 @@ import { ContractType, IUser, PolicyType, Schema, SchemaHelper, TagType, Token, 
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
-import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
-import { NewPolicyDialog } from '../helpers/new-policy-dialog/new-policy-dialog.component';
-import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
-import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
+import { ImportPolicyDialog } from '../dialogs/import-policy-dialog/import-policy-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
-import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
-import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
+import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
+import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -23,12 +23,43 @@ import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-
 import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SuggestionsConfigurationComponent } from '../../../views/suggestions-configuration/suggestions-configuration.component';
-import { DeletePolicyDialogComponent } from '../helpers/delete-policy-dialog/delete-policy-dialog.component';
+import { DeletePolicyDialogComponent } from '../dialogs/delete-policy-dialog/delete-policy-dialog.component';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
 import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
+import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dialog.component';
+
+class MenuButton {
+    public readonly visible: boolean;
+    public readonly disabled: boolean;
+    public readonly tooltip: string;
+    public readonly icon: string;
+    public readonly color: string;
+    private readonly click: () => void;
+
+    constructor(option: {
+        visible: boolean,
+        disabled: boolean,
+        tooltip: string,
+        icon: string,
+        click: () => void;
+    }) {
+        this.visible = option.visible;
+        this.disabled = option.disabled;
+        this.tooltip = option.tooltip;
+        this.icon = option.icon;
+        this.click = option.click;
+        this.color = option.disabled ? 'disabled-color' : 'primary-color';
+    }
+
+    public onClick() {
+        if (!this.disabled) {
+            this.click();
+        }
+    }
+}
 
 const columns = [{
     id: 'name',
@@ -102,6 +133,8 @@ const columns = [{
     }
 }];
 
+
+
 /**
  * Component for choosing a policy and
  * display blocks of the selected policy
@@ -136,8 +169,7 @@ export class PoliciesComponent implements OnInit {
         {
             id: 'Dry-run',
             title: 'Dry Run',
-            description:
-                'Run without making any persistent \n changes or executing transaction.',
+            description: 'Run without making any persistent \n changes or executing transaction.',
             color: '#3f51b5',
         },
     ];
@@ -156,12 +188,6 @@ export class PoliciesComponent implements OnInit {
         },
     ];
     private publishErrorMenuOption = [
-        // {
-        //     id: 'Draft',
-        //     title: 'Stop',
-        //     description: 'Return to editing.',
-        //     color: '#9c27b0'
-        // },
         {
             id: 'Publish',
             title: 'Publish',
@@ -169,7 +195,6 @@ export class PoliciesComponent implements OnInit {
             color: '#4caf50',
         },
     ];
-
     private publishedMenuOption = [
         {
             id: 'Discontinue',
@@ -198,6 +223,23 @@ export class PoliciesComponent implements OnInit {
             policyName: 'At least one value must be set'
         };
     });
+
+    private get filters(): { policyName: string; tag: string } {
+        return {
+            policyName: this.filtersForm.value?.policyName?.trim(),
+            tag: this.filtersForm.value?.tag,
+        };
+    }
+
+    public get policiesList(): any[] {
+        return this.filteredPolicies.length > 0
+            ? this.filteredPolicies
+            : this.policies || [];
+    }
+
+    public get hasPolicies(): boolean {
+        return this.policiesList.length > 0;
+    }
 
     public checkMigrationStatus(status: string): boolean {
         return (
@@ -237,6 +279,204 @@ export class PoliciesComponent implements OnInit {
             policy.status === 'PUBLISH' ||
             policy.status === 'DISCONTINUED'
         )
+    }
+
+    public canDisplayColumn(columnName: string): boolean {
+        return !!this.columns.find((column) => column === columnName);
+    }
+
+    public getColor(status: string, expired: boolean = false) {
+        switch (status) {
+            case 'DRAFT':
+                return 'grey';
+            case 'DRY-RUN':
+                return 'grey';
+            case 'DISCONTINUED':
+            case 'PUBLISH_ERROR':
+                return 'red';
+            case 'PUBLISH':
+                return expired ? 'yellow' : 'green';
+            default:
+                return 'grey';
+        }
+    }
+
+    public getLabelStatus(status: string, expired: boolean = false) {
+        switch (status) {
+            case 'DRAFT':
+                return 'Draft';
+            case 'DRY-RUN':
+                return 'Dry Run';
+            case 'PUBLISH_ERROR':
+                return 'Publish Error';
+            case 'PUBLISH':
+                return `Published${expired ? '*' : ''}`;
+            case 'DISCONTINUED':
+                return `Discontinued`;
+            default:
+                return 'Incorrect status';
+        }
+    }
+
+    public getStatusName(policy: any): string {
+        if (policy.status == 'DRAFT') {
+            return 'Draft';
+        }
+        if (policy.status == 'DRY-RUN') {
+            return 'In Dry Run';
+        }
+        if (policy.status == 'PUBLISH') {
+            return `Published${!!policy.discontinuedDate ? '*' : ''}`;
+        }
+        if (policy.status == 'DISCONTINUED') {
+            return 'Discontinued';
+        }
+        if (policy.status == 'PUBLISH_ERROR') {
+            return 'Not published';
+        }
+        if (policy.status == 'DEMO') {
+            return 'Demo';
+        }
+        return 'Not published';
+    }
+
+    public getStatusOptions(policy: any) {
+        if (policy.status == 'DRAFT') {
+            return this.publishMenuOption;
+        }
+        if (policy.status == 'DRY-RUN') {
+            return this.draftMenuOption;
+        }
+        if (policy.status == 'PUBLISH') {
+            return this.publishedMenuOption;
+        } else {
+            return this.publishErrorMenuOption;
+        }
+    }
+
+    public getDiscontinuedTooltip(date: Date) {
+        return date ? `Discontinue date is ${date.toLocaleString()}` : '';
+    }
+
+    public getMenu(policy: any) {
+        return {
+            groups: [{
+                tooltip: 'Analytics',
+                group: false,
+                visible: this.user.ANALYTIC_POLICY_READ,
+                buttons: [
+                    new MenuButton({
+                        visible: this.user.ANALYTIC_POLICY_READ,
+                        disabled: false,
+                        tooltip: 'Search policies',
+                        icon: 'search',
+                        click: () => this.searchPolicy(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.ANALYTIC_POLICY_READ,
+                        disabled: false,
+                        tooltip: 'Compare policies',
+                        icon: 'compare',
+                        click: () => this.comparePolicy(policy)
+                    })
+                ]
+            }, {
+                tooltip: 'Test',
+                group: false,
+                visible: true,
+                buttons: [
+                    new MenuButton({
+                        visible: true,
+                        disabled: policy.status !== 'DRAFT' && policy.status !== 'DRY-RUN',
+                        tooltip: 'Add test',
+                        icon: 'add',
+                        click: () => this.addTest(policy)
+                    }),
+                    new MenuButton({
+                        visible: true,
+                        disabled: !policy.tests,
+                        tooltip: 'Run test',
+                        icon: 'check',
+                        click: () => this.runTest(policy)
+                    })
+                ]
+            }, {
+                tooltip: 'Export & Import',
+                group: false,
+                visible: true,
+                buttons: [
+                    new MenuButton({
+                        visible: true,
+                        disabled: false,
+                        tooltip: 'Export policy',
+                        icon: 'export-file',
+                        click: () => this.exportPolicy(policy)
+                    }),
+                    new MenuButton({
+                        visible: true,
+                        disabled: false,
+                        tooltip: 'Export schemas to Excel',
+                        icon: 'export-xls',
+                        click: () => this.exportToExcel(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.SCHEMAS_SCHEMA_UPDATE,
+                        disabled: policy.status !== 'DRAFT',
+                        tooltip: 'Import schemas from Excel',
+                        icon: 'import-xls',
+                        click: () => this.importFromExcel(policy)
+                    })
+                ]
+            }, {
+                tooltip: 'Migrate data',
+                group: true,
+                visible: true,
+                icon: 'import-data',
+                buttons: [
+                    new MenuButton({
+                        visible: this.user.POLICIES_MIGRATION_CREATE,
+                        disabled: !this.checkMigrationStatus(policy.status),
+                        tooltip: 'Export policy data',
+                        icon: 'export-data',
+                        click: () => this.exportPolicyData(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_MIGRATION_CREATE,
+                        disabled: false,
+                        tooltip: 'Migrate data',
+                        icon: 'import-data',
+                        click: () => this.migrateData(policy)
+                    }),
+                    new MenuButton({
+                        visible: policy.status === 'DRY-RUN' && this.user.POLICIES_MIGRATION_CREATE,
+                        disabled: false,
+                        tooltip: 'Export virtual keys',
+                        icon: 'export-key',
+                        click: () => this.exportVirtualKeys(policy)
+                    }),
+                    new MenuButton({
+                        visible: policy.status === 'DRY-RUN' && this.user.POLICIES_MIGRATION_CREATE,
+                        disabled: false,
+                        tooltip: 'Import virtual keys',
+                        icon: 'import-key',
+                        click: () => this.importVirtualKeys(policy)
+                    })
+                ]
+            }, {
+                tooltip: 'Delete',
+                group: false,
+                visible: true,
+                buttons: [
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_DELETE,
+                        disabled: policy.status !== 'DRAFT',
+                        tooltip: 'Delete Policy',
+                        icon: 'delete',
+                        click: () => this.deletePolicy(policy)
+                    })
+                ]
+            }]
+        }
     }
 
     constructor(
@@ -363,10 +603,6 @@ export class PoliciesComponent implements OnInit {
         this.loadPolicy();
     }
 
-    public canDisplayColumn(columnName: string): boolean {
-        return !!this.columns.find((column) => column === columnName);
-    }
-
     private dryRun(element: any) {
         this.loading = true;
         this.policyEngineService.dryRun(element.id).subscribe(
@@ -452,13 +688,13 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    public deletePolicy(policyId: any, previousVersion: any) {
+    public deletePolicy(policy?: any) {
         const dialogRef = this.dialogService.open(DeletePolicyDialogComponent, {
             header: 'Delete Policy',
             width: '720px',
             styleClass: 'custom-dialog',
             data: {
-                notificationText: !previousVersion
+                notificationText: !policy?.previousVersion
                     ? 'Are you sure want to delete policy with related schemas?'
                     : 'Are you sure want to delete policy?',
             },
@@ -469,7 +705,7 @@ export class PoliciesComponent implements OnInit {
             }
 
             this.loading = true;
-            this.policyEngineService.pushDelete(policyId).subscribe(
+            this.policyEngineService.pushDelete(policy?.id).subscribe(
                 (result) => {
                     const { taskId, expectation } = result;
                     this.router.navigate(['task', taskId], {
@@ -485,9 +721,9 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    public exportPolicy(policyId: any) {
+    public exportPolicy(policy?: any) {
         this.policyEngineService
-            .exportInMessage(policyId)
+            .exportInMessage(policy?.id)
             .subscribe((exportedPolicy) =>
                 this.dialogService.open(ExportPolicyDialog, {
                     header: 'Export',
@@ -500,9 +736,9 @@ export class PoliciesComponent implements OnInit {
             );
     }
 
-    public exportPolicyData(policyId: any) {
+    public exportPolicyData(policy: any) {
         this.policyEngineService
-            .exportPolicyData(policyId)
+            .exportPolicyData(policy?.id)
             .subscribe((response) => {
                 const fileName =
                     response.headers
@@ -518,9 +754,9 @@ export class PoliciesComponent implements OnInit {
             });
     }
 
-    public exportVirtualKeys(policyId: any) {
+    public exportVirtualKeys(policy?: any) {
         this.policyEngineService
-            .exportVirtualKeys(policyId)
+            .exportVirtualKeys(policy?.id)
             .subscribe((response) => {
                 const fileName =
                     response.headers
@@ -537,13 +773,13 @@ export class PoliciesComponent implements OnInit {
     }
 
     private _input?: any;
-    public importVirtualKeys(policyId: any) {
+    public importVirtualKeys(policy?: any) {
         const handler = () => {
             input.removeEventListener('change', handler);
             this._input = null;
             this.loading = true;
             this.policyEngineService
-                .importVirtualKeys(policyId, input.files![0])
+                .importVirtualKeys(policy?.id, input.files![0])
                 .subscribe({
                     complete: () => this.loading = false
                 });
@@ -696,9 +932,9 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    public exportToExcel(policyId: any) {
+    public exportToExcel(policy?: any) {
         this.policyEngineService
-            .exportToExcel(policyId)
+            .exportToExcel(policy?.id)
             .subscribe((fileBuffer) => {
                 let downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
@@ -722,7 +958,7 @@ export class PoliciesComponent implements OnInit {
             );
     }
 
-    public importFromExcel(policyId: any) {
+    public importFromExcel(policy?: any) {
         const dialogRef = this.dialogService.open(ImportPolicyDialog, {
             header: 'Select action',
             width: '720px',
@@ -733,7 +969,7 @@ export class PoliciesComponent implements OnInit {
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
-                this.importExcelDetails(result, policyId);
+                this.importExcelDetails(result, policy?.id);
             }
         });
     }
@@ -774,7 +1010,7 @@ export class PoliciesComponent implements OnInit {
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
-    onPublishedAction(event: any, element: any) {
+    private onPublishedAction(event: any, element: any) {
         if (event.value.id === 'Discontinue') {
             const dialogRef = this.dialogService.open(DiscontinuePolicy, {
                 header: 'Discontinue policy',
@@ -811,75 +1047,7 @@ export class PoliciesComponent implements OnInit {
         // else if (event.id === 'Draft') {
         //     this.draft(element);
         // }
-
         setTimeout(() => this.publishMenuSelector = null, 0);
-    }
-
-    public getColor(status: string, expired: boolean = false) {
-        switch (status) {
-            case 'DRAFT':
-                return 'grey';
-            case 'DRY-RUN':
-                return 'grey';
-            case 'DISCONTINUED':
-            case 'PUBLISH_ERROR':
-                return 'red';
-            case 'PUBLISH':
-                return expired ? 'yellow' : 'green';
-            default:
-                return 'grey';
-        }
-    }
-
-    public getLabelStatus(status: string, expired: boolean = false) {
-        switch (status) {
-            case 'DRAFT':
-                return 'Draft';
-            case 'DRY-RUN':
-                return 'Dry Run';
-            case 'PUBLISH_ERROR':
-                return 'Publish Error';
-            case 'PUBLISH':
-                return `Published${expired ? '*' : ''}`;
-            case 'DISCONTINUED':
-                return `Discontinued`;
-            default:
-                return 'Incorrect status';
-        }
-    }
-
-    private processPublishResult(taskId: string): void {
-        this.taskService.get(taskId).subscribe((task: any) => {
-            const { result } = task;
-            if (result) {
-                const { isValid, errors, policyId } = result;
-                if (!isValid) {
-                    let text = [];
-                    const blocks = errors.blocks;
-                    const invalidBlocks = blocks.filter(
-                        (block: any) => !block.isValid
-                    );
-                    for (let i = 0; i < invalidBlocks.length; i++) {
-                        const block = invalidBlocks[i];
-                        for (let j = 0; j < block.errors.length; j++) {
-                            const error = block.errors[j];
-                            if (block.id) {
-                                text.push(`<div>${block.id}: ${error}</div>`);
-                            } else {
-                                text.push(`<div>${error}</div>`);
-                            }
-                        }
-                    }
-                    this.informService.errorMessage(
-                        text.join(''),
-                        'The policy is invalid'
-                    );
-                } else {
-                    this.wizardService.removeWizardPreset(policyId);
-                }
-                this.loadAllPolicy();
-            }
-        });
     }
 
     public createMultiPolicy(element: any) {
@@ -900,8 +1068,8 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    public comparePolicy(policyId?: any) {
-        const item = this.policies?.find((e) => e.id === policyId);
+    public comparePolicy(policy?: any) {
+        const item = this.policies?.find((e) => e.id === policy?.id);
         const dialogRef = this.dialogService.open(ComparePolicyDialog, {
             header: 'Policy Comparison',
             width: '900px',
@@ -926,8 +1094,8 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    public migrateData(policyId?: any) {
-        const item = this.policies?.find((e) => e.id === policyId);
+    public migrateData(policy?: any) {
+        const item = this.policies?.find((e) => e.id === policy?.id);
         this.loading = true;
         this.contractSerivce.getContracts({ type: ContractType.RETIRE }).subscribe({
             next: (res) => {
@@ -1101,33 +1269,8 @@ export class PoliciesComponent implements OnInit {
         );
     }
 
-    private get filters(): { policyName: string; tag: string } {
-        return {
-            policyName: this.filtersForm.value?.policyName?.trim(),
-            tag: this.filtersForm.value?.tag,
-        };
-    }
-
-    get isFilterButtonDisabled(): boolean {
-        return this.filters.policyName.length === 0 && !this.filters.tag;
-    }
-
-    get policiesList(): any[] {
-        return this.filteredPolicies.length > 0
-            ? this.filteredPolicies
-            : this.policies || [];
-    }
-
-    get hasPolicies(): boolean {
-        return this.policiesList.length > 0;
-    }
-
-    get hasTagOptions(): boolean {
-        return this.tagOptions.length > 0;
-    }
-
-    public searchPolicy(policyId?: any) {
-        const item = this.policies?.find((e) => e.id === policyId);
+    public searchPolicy(policy?: any) {
+        const item = this.policies?.find((e) => e.id === policy?.id);
         const dialogRef = this.dialogService.open(SearchPolicyDialog, {
             showHeader: false,
             width: '1100px',
@@ -1150,52 +1293,6 @@ export class PoliciesComponent implements OnInit {
                 });
             }
         });
-
-
-
-
-
-
-
-        // this.loading = true;
-        // const options = {
-        //     policyId,
-        //     type: 'Global',
-        //     // text,
-        //     // owner,
-        //     // minVcCount,
-        //     // minVpCount,
-        //     // minTokensCount,
-        //     // threshold
-        // }
-        // this.analyticsService.searchPolicies(options).subscribe(
-        //     (data) => {
-        //         this.loading = false;
-        //         if (!data || !data.result) {
-        //             return;
-        //         }
-        //         const { target, result } = data;
-        //         const list = result.sort((a: any, b: any) =>
-        //             a.rate > b.rate ? -1 : 1
-        //         );
-        //         const policy = target;
-        //         this.dialog.open(SearchPolicyDialog, {
-        //             panelClass: 'g-dialog',
-        //             disableClose: true,
-        //             autoFocus: false,
-        //             data: {
-        //                 header: 'Result',
-        //                 policy,
-        //                 policyId,
-        //                 list,
-        //             },
-        //         });
-        //     },
-        //     ({ message }) => {
-        //         this.loading = false;
-        //         console.error(message);
-        //     }
-        // );
     }
 
     public openSuggestionsDialog() {
@@ -1207,28 +1304,6 @@ export class PoliciesComponent implements OnInit {
                 header: 'Suggestions',
             })
             .onClose.subscribe();
-    }
-
-    public getStatusName(policy: any): string {
-        if (policy.status == 'DRAFT') {
-            return 'Draft';
-        }
-        if (policy.status == 'DRY-RUN') {
-            return 'In Dry Run';
-        }
-        if (policy.status == 'PUBLISH') {
-            return `Published${!!policy.discontinuedDate ? '*' : ''}`;
-        }
-        if (policy.status == 'DISCONTINUED') {
-            return 'Discontinued';
-        }
-        if (policy.status == 'PUBLISH_ERROR') {
-            return 'Error';
-        }
-        if (policy.status == 'DEMO') {
-            return 'Demo';
-        }
-        return 'Not published';
     }
 
     public onChangeStatus(event: any, policy: any): void {
@@ -1247,21 +1322,21 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
-    public getStatusOptions(policy: any) {
-        if (policy.status == 'DRAFT') {
-            return this.publishMenuOption;
-        }
-        if (policy.status == 'DRY-RUN') {
-            return this.draftMenuOption;
-        }
-        if (policy.status == 'PUBLISH') {
-            return this.publishedMenuOption;
-        } else {
-            return this.publishErrorMenuOption;
-        }
+    public addTest(policy: any) {
+        const item = this.policies?.find((e) => e.id === policy?.id);
+        const dialogRef = this.dialogService.open(PolicyTestDialog, {
+            header: 'Policy Tests',
+            width: '900px',
+            styleClass: 'custom-dialog',
+            data: { policy: item }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+            }
+        });
     }
 
-    public getDiscontinuedTooltip(date: Date) {
-        return date ? `Discontinue date is ${date.toLocaleString()}` : '';
+    public runTest(policy: any) {
+
     }
 }

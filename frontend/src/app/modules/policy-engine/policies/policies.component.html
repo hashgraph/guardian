@@ -62,7 +62,7 @@
                     class="toolbar-btn-primary"
                     [pTooltip]="'Import'"
                     tooltipPosition="bottom">
-                    <svg-icon src="/assets/images/icons/import.svg" svgClass="color-white"></svg-icon>
+                    <svg-icon src="/assets/images/icons/import-cloud.svg" svgClass="color-white"></svg-icon>
                 </p-button>
                 <p-button
                     *ngIf="user.ANALYTIC_POLICY_READ"
@@ -233,7 +233,7 @@
                                             matTooltipPosition="above"
                                             matTooltipShowDelay="500"
                                             [matMenuTriggerFor]="policyMenu"
-                                            [matMenuTriggerData]="policy"
+                                            [matMenuTriggerData]="getMenu(policy)"
                                         >
                                             <svg-icon src="/assets/images/icons/menu-2.svg" svgClass="primary-color"></svg-icon>
                                         </div>
@@ -381,128 +381,68 @@
 </div>
 
 <mat-menu #policyMenu="matMenu">
-    <ng-template let-id="id" let-status="status" let-version="previousVersion" matMenuContent>
-        <p-button
-            (click)="exportPolicy(id)"
-            label="Export policy"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined"
-            [pTooltip]="'Export policy'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg" svgClass="primary-color"></svg-icon>
-        </p-button>
-
-        <p-button 
-            *ngIf="user.POLICIES_MIGRATION_CREATE"
-            (click)="checkMigrationStatus(status) && exportPolicyData(id)"
-            [disabled]="!checkMigrationStatus(status)" 
-            label="Export policy data"
-            class="policy-menu-btn" 
-            styleClass="p-button-outlined" 
-            [pTooltip]="'Export policy data'" 
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg" [svgClass]="checkMigrationStatus(status) ? 'primary-color' : 'disabled-color'"></svg-icon>
-        </p-button>
-
-        <p-button 
-            (click)="exportVirtualKeys(id)"
-            *ngIf="'DRY-RUN' === status && user.POLICIES_MIGRATION_CREATE"
-            label="Export virtual keys"
-            class="policy-menu-btn" 
-            styleClass="p-button-outlined" 
-            [pTooltip]="'Export virtual keys'" 
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg"
-                [svgClass]="'primary-color'"></svg-icon>
-        </p-button>
-
-        <p-button 
-            (click)="importVirtualKeys(id)"
-            *ngIf="'DRY-RUN' === status && user.POLICIES_MIGRATION_CREATE" 
-            label="Import virtual keys"
-            class="policy-menu-btn" 
-            styleClass="p-button-outlined" 
-            [pTooltip]="'Import virtual keys'" 
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg"
-                [svgClass]="'primary-color'"></svg-icon>
-        </p-button>
-
-        <p-button
-            (click)="exportToExcel(id)"
-            label="Export schemas to Excel"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined"
-            [pTooltip]="'Export schemas to Excel'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg" svgClass="primary-color"></svg-icon>
-        </p-button>
-
-        <p-button
-            *ngIf="user.POLICIES_POLICY_UPDATE && user.SCHEMAS_SCHEMA_UPDATE"
-            (click)="status === 'DRAFT' ? importFromExcel(id) : null"
-            [disabled]="status !=='DRAFT'"
-            label="Import schemas from Excel"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined"
-            [pTooltip]="'Import schemas from excel'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/import.svg"
-                [svgClass]="status === 'DRAFT' ? 'primary-color' : 'disabled-color'"></svg-icon>
-        </p-button>
-
-        <div class="policy-menu-delimiter"></div>
-
-        <p-button
-            *ngIf="user.ANALYTIC_POLICY_READ"
-            (click)="searchPolicy(id)"
-            label="Search policies"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined"
-            [pTooltip]="'Search policies'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/search.svg" svgClass="primary-color"></svg-icon>
-        </p-button>
-
-        <p-button
-            *ngIf="user.ANALYTIC_POLICY_READ"
-            (click)="comparePolicy(id)"
-            label="Compare policies"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined"
-            [pTooltip]="'Compare policies'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
-        </p-button>
-
-        <p-button
-            *ngIf="user.POLICIES_MIGRATION_CREATE"
-            (click)="migrateData(id)"
-            label="Migrate data"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined"
-            [pTooltip]="'Migrate policy data'"
-            tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
-        </p-button>
-
-        <div class="policy-menu-delimiter"></div>
-
-        <p-button
-            *ngIf="user.POLICIES_POLICY_DELETE"
-            (click)="status === 'DRAFT' ? deletePolicy(id, version) : null"
-            [disabled]="status !=='DRAFT'"
-            label="Delete Policy"
-            class="policy-menu-btn"
-            styleClass="p-button-outlined accent-color-red"
-            [pTooltip]="'Delete Policy'"
-            tooltipPosition="bottom">
-            <svg-icon
-                src="/assets/images/icons/delete.svg"
-                [svgClass]="status === 'DRAFT' ? 'accent-color-red' : 'disabled-color'"></svg-icon>
-        </p-button>
+    <ng-template 
+        let-groups="groups"
+        matMenuContent
+    >
+        <ng-container *ngFor="let group of groups; let last = last">
+            <ng-container *ngIf="group.visible">
+                <ng-container *ngIf="group.group">  
+                    <div
+                        class="policy-menu-btn sub-menu-button"
+                        mat-menu-item
+                        [matMenuTriggerFor]="policySubMenu"
+                        [matMenuTriggerData]="group">
+                        <div>
+                            <svg-icon src="/assets/images/icons/{{group.icon}}.svg" svgClass="primary-color"></svg-icon>
+                            <span>{{group.tooltip}}</span>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="!group.group">
+                    <ng-container *ngFor="let button of group.buttons">
+                        <p-button
+                            *ngIf="button.visible"
+                            (click)="button.onClick()"
+                            [disabled]="button.disabled"
+                            label="{{button.tooltip}}"
+                            class="policy-menu-btn"
+                            styleClass="p-button-outlined"
+                            [pTooltip]="button.tooltip"
+                            tooltipPosition="bottom">
+                            <svg-icon src="/assets/images/icons/{{button.icon}}.svg" 
+                                [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
+                        </p-button>
+                    </ng-container>
+                </ng-container>
+                <div *ngIf="!last" class="policy-menu-delimiter"></div>
+            </ng-container>
+        </ng-container>
     </ng-template>
 </mat-menu>
+
+<mat-menu #policySubMenu="matMenu">
+    <ng-template 
+        let-buttons="buttons"
+        matMenuContent
+    >
+        <ng-container *ngFor="let button of buttons">
+            <p-button
+                *ngIf="button.visible"
+                (click)="button.onClick()"
+                [disabled]="button.disabled"
+                label="{{button.tooltip}}"
+                class="policy-menu-btn"
+                styleClass="p-button-outlined"
+                [pTooltip]="button.tooltip"
+                tooltipPosition="bottom">
+                <svg-icon src="/assets/images/icons/{{button.icon}}.svg" 
+                    [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
+            </p-button>
+        </ng-container>
+    </ng-template>
+</mat-menu>
+
 
 <ng-template #noData>
     <div class="not-exist">

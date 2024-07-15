@@ -665,6 +665,32 @@
     }
 }
 
+.sub-menu-button {
+    color: var(--primary-color);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    background-color: #ffffff;
+    height: 40px;
+    border: none !important;
+    border-radius: 8px;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 1rem;
+
+    &:hover{
+        background: rgba(33, 150, 243, 0.04);
+        color: #2196F3;
+    }
+
+    &>div {
+        line-height: 24px;
+        display: grid;
+        grid-template-columns: 40px auto;
+    }
+}
+
 .table-container {
     overflow-x: auto;
 }

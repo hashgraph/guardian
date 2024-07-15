@@ -7,7 +7,7 @@ import { forkJoin } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { ViewerDialog } from '../../../helpers/viewer-dialog/viewer-dialog.component';
+import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 
 /**
