@@ -133,11 +133,12 @@ jobs:
 
             - name: Run tests with Cypress
               uses: coactions/setup-xvfb@v1
-              run: |
-                  pushd e2e-tests
-                  npm install --force
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
-                  popd
+              with:
+                  run: |
+                      pushd e2e-tests
+                      npm install --force
+                      npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
+                      popd
 
             - name: Publish API Test Results
               uses: EnricoMi/publish-unit-test-result-action@30eadd5010312f995f0d3b3cff7fe2984f69409e # v2.16.1
