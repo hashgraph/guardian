@@ -133,7 +133,7 @@ jobs:
                 cmd: pushd e2e-tests
                 build: npm install --force
                 start: npx cypress run --headless --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js
-                browser: cypress
+                browser: chrome
                 cmd: popd
 
             - name: Publish API Test Results
