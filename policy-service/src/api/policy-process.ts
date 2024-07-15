@@ -1,5 +1,5 @@
 import '../config.js'
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, NotificationService, OldSecretManager, Users, Workers } from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, Users, Workers } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
@@ -63,12 +63,14 @@ Promise.all([
 
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
 
+    const logger: PinoLogger = await pinoLoggerInitialization(db);
+
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
             Environment.setNodes(nodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
                 ['POLICY', policyConfig.name, policyId.toString()]
             );
@@ -82,7 +84,7 @@ Promise.all([
             );
             Environment.setMirrorNodes(mirrorNodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
                 error.message,
                 ['POLICY', policyConfig.name, policyId.toString()]
@@ -106,12 +108,12 @@ Promise.all([
     workersHelper.initListeners();
 
     // try {
-    new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
+    await logger.info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
 
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator);
+    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator, logger);
     if ((policyModel as { type: 'error', message: string }).type === 'error') {
         await generator.publish(PolicyEvents.POLICY_READY, {
             policyId: policyId.toString(),
@@ -121,7 +123,7 @@ Promise.all([
         // throw new Error((policyModel as {type: 'error', message: string}).message);
     }
 
-    const synchronizationService = new SynchronizationService(policyConfig);
+    const synchronizationService = new SynchronizationService(policyConfig, logger);
     synchronizationService.start();
 
     generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, () => {
@@ -139,7 +141,7 @@ Promise.all([
         new LargePayloadContainer().runServer();
     }
 
-    new Logger().info('Start policy', ['POLICY', policyConfig.name, policyId.toString()]);
+    await logger.info('Start policy', ['POLICY', policyConfig.name, policyId.toString()]);
     // } catch (e) {
     //     process.exit(500);
     // }

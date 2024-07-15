@@ -1,4 +1,4 @@
-import { Logger, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
 import { ChildProcess, execFile, fork } from 'node:child_process';
 import process from 'process';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
@@ -130,11 +130,11 @@ export class PolicyContainer extends NatsService {
         return this.container.size
     }
 
-    /**
-     * Logger instance
-     * @private
-     */
-    private readonly logger: Logger
+    // /**
+    //  * Logger instance
+    //  * @private
+    //  */
+    // private readonly logger: PinoLogger
 
     /**
      * Generate policy subscription
@@ -148,14 +148,14 @@ export class PolicyContainer extends NatsService {
      */
     private startNewPolicyServiceTriggered: boolean = false;
 
-    constructor() {
+    constructor(private readonly logger: PinoLogger) {
         super();
         this.container = new Map();
         this.maxPolicyInstances = (process.env.MAX_POLICY_INSTANCES) ? parseInt(process.env.MAX_POLICY_INSTANCES, 10) : 1000;
         this.runServiceScript = process.env.RUN_SERVICE_SCRIPT;
         this.stopServiceScript = process.env.RUN_SERVICE_SCRIPT;
         this.instanceId = GenerateUUIDv4();
-        this.logger = new Logger();
+        // this.logger = new Logger();
         this._policiInfoArrays = new Map();
     }
 

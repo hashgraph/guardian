@@ -1,14 +1,18 @@
-import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel } from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { startMetricsServer } from './utils/metrics.js';
+import { mongoInitialization } from './helpers/mongo-initialization.js';
 
 export const obj = {};
 
 Promise.all([
-    MessageBrokerChannel.connect('policy-service')
+    MessageBrokerChannel.connect('policy-service'),
+    mongoInitialization()
 ]).then(async values => {
-    const [cn] = values;
+    const [cn, db] = values;
+
+    const logger: PinoLogger = await pinoLoggerInitialization(db);
 
     new Logger().setConnection(cn);
     const state = new ApplicationState();
@@ -21,14 +25,14 @@ Promise.all([
 
     // await new PolicyContainer().setConnection(cn).init();
 
-    const c = new PolicyContainer();
+    const c = new PolicyContainer(logger);
     await c.setConnection(cn).init();
 
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     if (Number.isInteger(maxPayload)) {
         new LargePayloadContainer().runServer();
     }
-    await new Logger().info('Policy service started', ['POLICY_SERVICE']);
+    await logger.info('Policy service started', ['POLICY_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);
 
