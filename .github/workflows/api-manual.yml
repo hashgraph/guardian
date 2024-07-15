@@ -12,6 +12,9 @@ jobs:
     buildAndTest:
         name: Build and Test (Manual)
         runs-on: [self-hosted, Linux, medium, ephemeral]
+        container:
+          image: cypress/browsers:node-20.14.0-chrome-126.0.6478.114-1-ff-127.0.1-edge-126.0.2592.61-1
+          options: --user 1001
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
@@ -128,7 +131,6 @@ jobs:
                   IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
 
             - name: Run tests with Cypress
-              uses: cypress/browsers:node-20.14.0-chrome-126.0.6478.114-1-ff-127.0.1-edge-126.0.2592.61-1
               run: |
                   pushd e2e-tests
                   npm install --force
