@@ -175,14 +175,13 @@ export function fixSchemaDefsOnImport(
  * @param topic Topic
  * @param action
  * @param schema Schema
- * @param userId
  */
 export async function sendSchemaMessage(
+    owner: IOwner,
     root: IRootConfig,
     topic: TopicConfig,
     action: MessageAction,
     schema: SchemaCollection,
-    userId?: string
 ) {
     const messageServer = new MessageServer(
         root.hederaAccountId,
@@ -193,7 +192,7 @@ export async function sendSchemaMessage(
     message.setDocument(schema);
     await messageServer
         .setTopicObject(topic)
-        .sendMessage(message, true, null, userId);
+        .sendMessage(message, true, null, owner.id);
 }
 
 export async function copyDefsSchemas(
@@ -219,8 +218,6 @@ export async function copySchemaAsync(
 ) {
     const users = new Users();
     const root = await users.getHederaAccount(user.creator);
-    const userAccount = await users.getUser(user.username);
-    const userId = userAccount.id.toString();
 
     let item = await DatabaseServer.getSchema({ iri });
 
@@ -265,11 +262,11 @@ export async function copySchemaAsync(
 
     if (topic) {
         await sendSchemaMessage(
+            user,
             root,
             topic,
             MessageAction.CreateSchema,
-            item,
-            userId
+            item
         );
     }
     return item;
@@ -345,8 +342,7 @@ export async function createSchema(
     const users = new Users();
     notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(user.creator);
-    const userAccount = await users.getUser(user.username);
-    const userId = userAccount.id.toString();
+
     notifier.completedAndStart('Save in DB');
     if (newSchema) {
         delete newSchema.status;
@@ -371,7 +367,7 @@ export async function createSchema(
         });
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
-        await topicHelper.twoWayLink(topic, null, null, userId);
+        await topicHelper.twoWayLink(topic, null, null, user.id);
     }
 
     const errors = SchemaHelper.checkErrors(newSchema as Schema)
@@ -406,11 +402,11 @@ export async function createSchema(
     notifier.completedAndStart('Save to IPFS & Hedera');
     if (topic) {
         await sendSchemaMessage(
+            user,
             root,
             topic,
             MessageAction.CreateSchema,
-            schemaObject,
-            userId
+            schemaObject
         );
     }
     notifier.completedAndStart('Update schema in DB');
@@ -424,7 +420,6 @@ export async function createSchema(
  * @param schemaId Schema ID
  * @param owner
  * @param notifier Notifier
- * @param userId
  */
 export async function deleteSchema(
     schemaId: any,
@@ -449,14 +444,12 @@ export async function deleteSchema(
         if (topic) {
             const users = new Users();
             const root = await users.getHederaAccount(owner.creator);
-            const userAccount = await users.getUser(owner.username);
-            const userId = userAccount.id.toString();
             await sendSchemaMessage(
+                owner,
                 root,
                 topic,
                 MessageAction.DeleteSchema,
-                item,
-                userId
+                item
             );
         }
     }

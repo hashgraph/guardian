@@ -40,6 +40,11 @@ export interface IGroup {
  */
 export interface IUser {
     /**
+     * User ID
+     */
+    id?: string;
+    
+    /**
      * Was confirmed
      */
     confirmed?: boolean;

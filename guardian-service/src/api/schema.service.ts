@@ -543,9 +543,7 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const userAccount = await users.getUser(owner.username);
-                const userId = userAccount.id.toString();
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -566,9 +564,7 @@ export async function schemaAPI(): Promise<void> {
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const userAccount = await users.getUser(owner.username);
-                const userId = userAccount.id.toString();
-                const item = await findAndPublishSchema(id, version, owner, root, notifier, userId);
+                const item = await findAndPublishSchema(id, version, owner, root, notifier);
                 notifier.result(item.id);
             }, async (error) => {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1189,9 +1185,7 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const userAccount = await users.getUser(owner.username);
-                const userId = userAccount.id.toString();
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
                 return new MessageResponse(item);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

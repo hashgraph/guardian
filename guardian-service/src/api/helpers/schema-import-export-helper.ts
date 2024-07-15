@@ -283,7 +283,7 @@ export class SchemaImport {
     private root: IRootConfig;
     private topicHelper: TopicHelper;
     private messageServer: MessageServer;
-    private userId: string;
+    private owner: IOwner;
     private topicRow: TopicConfig;
     private topicId: string;
 
@@ -310,7 +310,6 @@ export class SchemaImport {
     private async resolveAccount(user: IOwner): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
-        const userAccount = await users.getUser(user.username);
         this.root = await users.getHederaAccount(user.creator);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
@@ -322,7 +321,7 @@ export class SchemaImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
-        this.userId = userAccount.id.toString();
+        this.owner = user;
         return this.root;
     }
 
@@ -354,7 +353,7 @@ export class SchemaImport {
             });
             await this.topicRow.saveKeys();
             await DatabaseServer.saveTopic(this.topicRow.toObject());
-            await this.topicHelper.twoWayLink(this.topicRow, null, null, this.userId);
+            await this.topicHelper.twoWayLink(this.topicRow, null, null, this.owner.id);
         }
         this.topicId = this.topicRow?.topicId || 'draft';
     }
@@ -521,7 +520,7 @@ export class SchemaImport {
                 message.setDocument(schemaObject);
                 await this.messageServer
                     .setTopicObject(this.topicRow)
-                    .sendMessage(message, true, null, this.userId);
+                    .sendMessage(message, true, null, this.owner.id);
             }
 
             this.notifier.info(`${label}: Update schema in DB`);

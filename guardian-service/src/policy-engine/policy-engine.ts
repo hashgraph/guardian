@@ -293,6 +293,7 @@ export class PolicyEngine extends NatsService {
             for (const dependencySchema of dependencySchemas) {
                 dependencySchema.topicId = policyTopicId;
                 await sendSchemaMessage(
+                    owner,
                     root,
                     topic,
                     MessageAction.CreateSchema,
@@ -301,6 +302,7 @@ export class PolicyEngine extends NatsService {
             }
             await DatabaseServer.updateSchemas(dependencySchemas);
             await sendSchemaMessage(
+                owner,
                 root,
                 topic,
                 MessageAction.CreateSchema,
@@ -576,14 +578,12 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param root
      * @param notifier
-     * @param userId
      */
     public async publishSchemas(
         model: Policy,
         user: IOwner,
         root: IRootConfig,
-        notifier: INotifier,
-        userId?: string
+        notifier: INotifier
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
@@ -601,8 +601,7 @@ export class PolicyEngine extends NatsService {
                 schema.version,
                 user,
                 root,
-                emptyNotifier(),
-                userId
+                emptyNotifier()
             );
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
             replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
@@ -658,8 +657,7 @@ export class PolicyEngine extends NatsService {
         logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(user.creator);
-        const userAccount = await this.users.getUser(user.username);
-        const userId = userAccount.id.toString();
+
         notifier.completedAndStart('Find topic');
 
         model.version = version;
@@ -670,7 +668,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('Publish schemas');
         try {
-            model = await this.publishSchemas(model, user, root, notifier, userId);
+            model = await this.publishSchemas(model, user, root, notifier);
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
@@ -701,7 +699,7 @@ export class PolicyEngine extends NatsService {
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(_token);
                 await messageServer
-                    .sendMessage(tokenMessage, true, null, userId);
+                    .sendMessage(tokenMessage, true, null, user.id);
             }
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
 
@@ -768,11 +766,11 @@ export class PolicyEngine extends NatsService {
             const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
             message.setDocument(model, buffer);
             const result = await messageServer
-                .sendMessage(message, true, null, userId);
+                .sendMessage(message, true, null, user.id);
             model.messageId = result.getId();
 
             notifier.completedAndStart('Link topic and policy');
-            await topicHelper.twoWayLink(rootTopic, topic, result.getId(), userId);
+            await topicHelper.twoWayLink(rootTopic, topic, result.getId(), user.id);
 
             notifier.completedAndStart('Create VC');
             const messageId = result.getId();
@@ -818,7 +816,7 @@ export class PolicyEngine extends NatsService {
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishPolicyTags(model, root);
+            await publishPolicyTags(model, user, root);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }

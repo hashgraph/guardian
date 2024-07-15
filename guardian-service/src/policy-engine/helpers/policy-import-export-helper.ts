@@ -21,7 +21,7 @@ export class PolicyImport {
     private readonly notifier: INotifier;
 
     private root: IRootConfig;
-    private userId: string;
+    private owner: IOwner;
     private topicHelper: TopicHelper;
     private messageServer: MessageServer;
     private parentTopic: TopicConfig;
@@ -56,7 +56,7 @@ export class PolicyImport {
             this.root.hederaAccountKey,
             this.root.signOptions
         );
-        this.userId = userAccount.id.toString();
+        this.owner = user;
         return this.root;
     }
 
@@ -129,7 +129,7 @@ export class PolicyImport {
                 this.topicRow,
                 this.parentTopic,
                 createPolicyMessage.getId(),
-                this.userId
+                this.owner.id
             );
         }
 

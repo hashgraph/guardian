@@ -131,8 +131,6 @@ export async function publishTool(
         notifier.start('Resolve Hedera account');
         const users = new Users();
         const root = await users.getHederaAccount(user.creator);
-        const userAccount = await users.getUser(user.username);
-        const userId = userAccount.id.toString();
 
         notifier.completedAndStart('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
@@ -140,7 +138,7 @@ export async function publishTool(
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
-        tool = await publishSchemas(tool, user, root, notifier, userId);
+        tool = await publishSchemas(tool, user, root, notifier);
 
         notifier.completedAndStart('Create tags topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
@@ -172,11 +170,11 @@ export async function publishTool(
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
         message.setDocument(tool, buffer);
         const result = await messageServer
-            .sendMessage(message, true, null, userId);
+            .sendMessage(message, true, null, user.id);
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishToolTags(tool, root, userId);
+            await publishToolTags(tool, user, root);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }
@@ -230,8 +228,7 @@ export async function publishSchemas(
             schema.version,
             owner,
             root,
-            emptyNotifier(),
-            userId
+            emptyNotifier()
         );
         if (Array.isArray(tool.config?.variables)) {
             for (const variable of tool.config?.variables) {

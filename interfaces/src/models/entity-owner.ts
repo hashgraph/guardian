@@ -6,6 +6,7 @@ import { Permissions } from '../type/permissions.type.js';
 import { UserRole } from '../type/user-role.type.js';
 
 export class EntityOwner implements IOwner {
+    public readonly id: string;
     public readonly parent: string;
     public readonly creator: string;
     public readonly owner: string;
@@ -14,8 +15,10 @@ export class EntityOwner implements IOwner {
 
     constructor(user?: IUser) {
         if (user) {
-            this.parent = this.parent;
+            this.parent = user.parent;
             this.username = user.username;
+            this.id = user.id?.toString();
+            console.log('this.id', this.id);
             if (user.role === UserRole.USER) {
                 this.creator = user.did;
                 this.owner = user.parent;
@@ -52,8 +55,9 @@ export class EntityOwner implements IOwner {
         }
     }
 
-    public static sr(did: string): IOwner {
+    public static sr(userId: string, did: string): IOwner {
         return {
+            id: userId,
             creator: did,
             owner: did,
             username: null,

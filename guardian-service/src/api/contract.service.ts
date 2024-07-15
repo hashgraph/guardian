@@ -30,7 +30,8 @@ import { ContractAPI, ContractParamType, ContractType, EntityOwner, IOwner, Reti
 import { AccountId, TokenId } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
-import { contractCall, contractQuery, createContract, customContractCall, publishSystemSchema, } from './helpers/index.js';
+import { contractCall, contractQuery, createContract, customContractCall, publishSystemSchema } from './helpers/index.js';
+import { emptyNotifier } from '../helpers/notifier.js';
 
 const retireAbi = new ethers.Interface([
     'function retire(tuple(address, int64, int64[])[])',
@@ -958,7 +959,8 @@ async function saveRetireVC(
                 schema,
                 owner,
                 messageServer,
-                MessageAction.PublishSystemSchema
+                MessageAction.PublishSystemSchema,
+                emptyNotifier()
             );
             await new DataBaseHelper(SchemaCollection).save(item);
         }
@@ -2723,7 +2725,7 @@ export async function contractAPI(
                 ])
             );
 
-            const srUser = EntityOwner.sr(sr.did);
+            const srUser = EntityOwner.sr(sr.id, sr.did);
             if (pool.immediately) {
                 await saveRetireVC(
                     contractRepository,
