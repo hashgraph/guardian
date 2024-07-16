@@ -5,10 +5,6 @@ export class RawToken {
     /**
      * Identifier
      */
-    _id: any;
-    /**
-     * Identifier
-     */
     id!: string;
     /**
      * Token identifier
