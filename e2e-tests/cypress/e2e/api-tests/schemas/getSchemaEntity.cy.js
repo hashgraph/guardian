@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas",  { tags: '@schemas' }, () => {
+context("Schemas",  { tags: ['schema', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Find the schema using the schema type", () => {
@@ -23,8 +23,8 @@ context("Schemas",  { tags: '@schemas' }, () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
         });
     });
 });

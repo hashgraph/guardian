@@ -1038,9 +1038,9 @@ export class Guardians extends NatsService {
      * @param responseType Response type
      * @returns File
      */
-    public async getFileIpfs(cid: string, responseType: any): Promise<any> {
+    public async getFileIpfs(cid: string, responseType: any, userId?: string): Promise<any> {
         return await this.sendMessage(MessageAPI.IPFS_GET_FILE, {
-            cid, responseType
+            cid, responseType, userId
         });
     }
 

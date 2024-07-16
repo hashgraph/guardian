@@ -40,16 +40,25 @@ export class QueueService extends NatsService{
                 return;
             }
             if (task.isRetryableTask && (task.attempts > 0)) {
-                if (task.attempts < task.attempt) {
+                if (task.attempts > task.attempt) {
                     task.processedTime = null;
                     task.sent = false;
                     task.attempt = task.attempt + 1;
+                } else {
+                    if (!task.userId) {
+                        await this.completeTaskInQueue(data.id, data.data, data.error);
+                    }
                 }
             } else {
                 task.attempt = 0;
                 task.isError = true;
                 task.errorReason = data.error;
+
+                if (!task.userId) {
+                    await this.completeTaskInQueue(data.id, data.data, data.error);
+                }
             }
+
             await new DataBaseHelper(TaskEntity).save(task);
         });
 

@@ -394,6 +394,7 @@
       * [(deprecated) Upload Artifacts](guardian/standard-registry/artifacts/artifacts-apis/upload-artifacts-1.md)
       * [Delete Artifact](guardian/standard-registry/artifacts/artifacts-apis/delete-artifact.md)
       * [(deprecated) Delete Artifact](guardian/standard-registry/artifacts/artifacts-apis/delete-artifact-1.md)
+  * [💻 Asynchronous Tasks Status](guardian/standard-registry/asynchronous-tasks-status.md)
   * [🔔 Notifications](guardian/standard-registry/notifications/README.md)
     * [💻 User Guide](guardian/standard-registry/notifications/user-guide.md)
     * [⚙️ APIs related to Notification](guardian/standard-registry/notifications/apis-related-to-notification/README.md)

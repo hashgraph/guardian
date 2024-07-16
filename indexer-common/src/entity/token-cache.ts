@@ -1,3 +1,4 @@
+import { RawToken } from '@indexer/interfaces';
 import { Entity, Property, PrimaryKey, SerializedPrimaryKey, Unique, Index } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -6,7 +7,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'last_update', properties: ['lastUpdate'] })
 @Index({ name: 'has_next', properties: ['hasNext'] })
-export class TokenCache {
+export class TokenCache implements RawToken {
     @PrimaryKey()
     _id: ObjectId;
 

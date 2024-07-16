@@ -2,12 +2,18 @@
 
 ### REQUESTS ALL VP DOCUMENTS
 
-{% swagger method="get" path="" baseUrl="/trust-chains" summary="Returns a list of all VP documents" %}
-{% swagger-description %}
-Requests all VP documents. Only users with the Auditor role are allowed to make the request
-{% endswagger-description %}
+{% hint style="info" %}
+**Note: This API is obsolete and will be deprecated in future releases. We would recommend to use policy based controlled API through policy configurator.**
+{% endhint %}
 
-{% swagger-response status="200: OK" description="" %}
+## Returns a list of all VP documents
+
+<mark style="color:blue;">`GET`</mark> `/trust-chains`
+
+Requests all VP documents. Only users with the Auditor role are allowed to make the request
+
+{% tabs %}
+{% tab title="200: OK " %}
 ```javascript
 {
     content:
@@ -18,25 +24,25 @@ Requests all VP documents. Only users with the Auditor role are allowed to make 
                   $ref: '#/components/schemas/VerifiablePresentation'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+{% tab title="401: Unauthorized Unauthorized" %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="" %}
+{% tab title="403: Forbidden " %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="" %}
+{% tab title="500: Internal Server Error " %}
 ```javascript
 {
     content:
@@ -45,5 +51,5 @@ Requests all VP documents. Only users with the Auditor role are allowed to make 
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

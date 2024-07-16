@@ -6,12 +6,14 @@ import {
     ApiForbiddenResponse,
     ApiOkResponse,
     ApiOperation,
-    ApiTags
+    ApiTags,
+    ApiExcludeController
 } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 
 @Controller('status')
 @ApiTags('status')
+@ApiExcludeController()
 export class StatusApi {
     private readonly workers: Map<string, any>;
     private readonly indexers: Map<string, any>;

@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 
 
-context("Policies",{ tags: '@policies' }, () => {
+context("Policies",{ tags: ['policies', 'secondPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
@@ -39,8 +39,8 @@ context("Policies",{ tags: '@policies' }, () => {
 
     it("Get block data", () => {
         const urlPolicies = {
-            method: "GET",
-            url: API.ApiServer + "policies",
+            method: METHOD.GET,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -53,7 +53,7 @@ context("Policies",{ tags: '@policies' }, () => {
 
             cy.request;
             const url = {
-                method: "GET",
+                method: METHOD.GET,
                 url:
                     API.ApiServer +
                     "policies/" +
@@ -66,7 +66,7 @@ context("Policies",{ tags: '@policies' }, () => {
                 timeout: 180000
             };
             cy.request(url).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
             });
         });
     });

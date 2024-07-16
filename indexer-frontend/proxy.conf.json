@@ -18,12 +18,5 @@
         "pathRewrite": {
             "/ws": ""
         }
-    },
-    "/openai/*": {
-        "target": "http://localhost:3021/",
-        "secure": false,
-        "ws": true,
-        "logLevel": "debug",
-        "changeOrigin": true
     }
 }

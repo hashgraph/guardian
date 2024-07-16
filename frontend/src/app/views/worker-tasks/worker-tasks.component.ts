@@ -73,7 +73,7 @@ export class WorkerTasksComponent implements OnInit{
         } else if (task.sent) {
             return 'PROCESSING'
         } else {
-            return 'ON QUEUE'
+            return 'IN QUEUE'
         }
     }
 

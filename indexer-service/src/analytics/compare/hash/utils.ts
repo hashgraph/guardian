@@ -1,6 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'crypto';
-import { Hashing } from '@guardian/common';
+import bs58 from 'bs58';
 
 /**
  * Hash Utils
@@ -72,7 +72,7 @@ export class Sha256 {
                 .createHash('sha256')
                 .update(data)
                 .digest();
-            return Hashing.base58.encode(sha256);
+            return bs58.encode(sha256);
         } catch (error) {
             return '';
         }
