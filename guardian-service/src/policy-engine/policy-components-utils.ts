@@ -41,14 +41,17 @@ export class PolicyComponentsUtils {
      * @param did
      */
     public static async GetPolicyInfo(policy: Policy, did: string): Promise<Policy> {
+        if (!policy) {
+            return policy;
+        }
         const result: any = policy;
-        if (policy && did) {
+        const policyId = policy.id.toString();
+        if (did) {
             result.userRoles = [];
             result.userGroups = [];
             result.userRole = null;
             result.userGroup = null;
 
-            const policyId = policy.id.toString();
             if (policy.status === PolicyType.DRY_RUN) {
                 const activeUser = await DatabaseServer.getVirtualUser(policyId);
                 if (activeUser) {
@@ -74,6 +77,11 @@ export class PolicyComponentsUtils {
                 }
             }
 
+            if (!result.userRole) {
+                result.userRoles = ['No role'];
+                result.userRole = 'No role';
+            }
+
             result.userGroups = groups;
             if (policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED) {
                 const multiPolicy = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, did);
@@ -86,10 +94,7 @@ export class PolicyComponentsUtils {
             result.userGroup = null;
         }
 
-        if (!result.userRole) {
-            result.userRoles = ['No role'];
-            result.userRole = 'No role';
-        }
+        result.tests = await DatabaseServer.getPolicyTests(policyId);
 
         return result;
     }

@@ -1213,7 +1213,7 @@ export class PolicyEngineService {
                 versionOfTopicId: string,
                 metadata: any,
                 demo: boolean,
-               
+
             }): Promise<IMessageResponse<boolean>> => {
                 try {
                     const { messageId, owner, versionOfTopicId, metadata, demo } = msg;
@@ -1819,6 +1819,62 @@ export class PolicyEngineService {
                         await loader.get(filters, otherOptions),
                         await loader.get(filters, null, true),
                     ]);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+        //#endregion
+
+        //#region Tests
+        this.channel.getMessages<any, any>(PolicyEngineEvents.ADD_POLICY_TEST,
+            async (msg: { policyId: string, zip: any, owner: IOwner }) => {
+                try {
+                    const { policyId, zip, owner } = msg;
+                    const buffer = Buffer.from(zip.data);
+                    const test = await DatabaseServer.createPolicyTest(
+                        GenerateUUIDv4(), owner.creator, policyId, 'NEW', null, buffer, null
+                    );
+                    return new MessageResponse(test);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.START_POLICY_TEST,
+            async (msg: { policyId: string, testId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, testId } = msg;
+                    const test = await DatabaseServer.getPolicyTest(policyId, testId);
+
+
+
+                    return new MessageResponse(test);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.STOP_POLICY_TEST,
+            async (msg: { policyId: string, testId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, testId } = msg;
+                    const test = await DatabaseServer.getPolicyTest(policyId, testId);
+
+
+
+                    return new MessageResponse(test);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_TEST,
+            async (msg: { policyId: string, testId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, testId } = msg;
+                    console.log(policyId, testId)
+                    await DatabaseServer.deletePolicyTest(policyId, testId);
+                    return new MessageResponse(true);
                 } catch (error) {
                     return new MessageError(error);
                 }

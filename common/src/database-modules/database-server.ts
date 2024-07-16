@@ -36,6 +36,7 @@ import {
     PolicyCacheData,
     RetirePool,
     AssignEntity,
+    PolicyTest,
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -53,6 +54,7 @@ import { Theme } from '../entity/theme.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { PolicyTool } from '../entity/tool.js';
 import { PolicyProperty } from '../entity/policy-property.js';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * Database server
@@ -3455,5 +3457,85 @@ export class DatabaseServer {
             await (new DataBaseHelper(AssignEntity)).remove(item);
         }
         return true;
+    }
+
+    /**
+     * Save file
+     * @param uuid
+     * @param buffer
+     * @returns file ID
+     */
+    public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
+                fileStream.write(buffer);
+                fileStream.end(() => {
+                    resolve(fileStream.id);
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Get policy tests
+     * @param policyId
+     * @returns tests
+     */
+    public static async getPolicyTests(policyId: string): Promise<PolicyTest[]> {
+        return await new DataBaseHelper(PolicyTest).find({ policyId });
+    }
+
+    /**
+     * Assign entity
+     * @param uuid
+     * @param policyId
+     * @param status
+     * @param date
+     * @param buffer
+     * @param result
+     */
+    public static async createPolicyTest(
+        uuid: string,
+        owner: string,
+        policyId: string,
+        status: string,
+        date: string,
+        buffer: Buffer,
+        result: any
+    ): Promise<PolicyTest> {
+        const file = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
+        const item = new DataBaseHelper(PolicyTest).create({
+            uuid,
+            owner,
+            policyId,
+            status,
+            date,
+            result,
+            file
+        });
+        return await new DataBaseHelper(PolicyTest).save(item);
+    }
+
+    /**
+     * Get policy tests
+     * @param policyId
+     * @param id
+     * @returns tests
+     */
+    public static async getPolicyTest(policyId: string, id: string): Promise<PolicyTest> {
+        return await new DataBaseHelper(PolicyTest).findOne({ id, policyId });
+    }
+
+    /**
+     * Get policy tests
+     * @param policyId
+     * @param id
+     * @returns tests
+     */
+    public static async deletePolicyTest(policyId: string, id: string): Promise<void> {
+        await new DataBaseHelper(PolicyTest).delete({ id, policyId });
     }
 }

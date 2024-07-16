@@ -534,7 +534,7 @@
     justify-content: left;
     border-radius: 6px;
     height: 28px;
-    padding: 4px 10px 4px 14px;
+    padding: 4px 14px 4px 14px;
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -909,7 +909,8 @@
     background: #fff;
     color: var(--color-primary);
     border: 1px solid var(--color-primary);
-    width: 130px;
+    width: auto;
+    max-width: 130px;
 
     .p-dropdown-trigger-icon {
         color: var(--color-primary);
@@ -921,7 +922,8 @@
     background: #edf0fb;
     color: var(--color-primary);
     border: 1px solid var(--color-primary);
-    width: 130px;
+    width: auto;
+    max-width: 130px;
 
     .p-dropdown-trigger-icon {
         color: var(--color-primary);
@@ -933,7 +935,8 @@
     background: var(--color-accent-green-2);
     color: var(--color-accent-green-1);
     border: 1px solid var(--color-accent-green-1);
-    width: 130px;
+    width: auto;
+    max-width: 130px;
 
     .p-dropdown-trigger-icon {
         color: var(--color-accent-green-1);
@@ -945,7 +948,8 @@
     background: #fff4f3;
     color: var(--color-accent-red-1);
     border: 1px solid var(--color-accent-red-1);
-    width: 130px;
+    width: auto;
+    max-width: 130px;
 
     .p-dropdown-trigger-icon {
         color: var(--color-accent-red-1);
@@ -957,7 +961,8 @@
     background: #fff4f3;
     color: var(--color-accent-red-1);
     border: 1px solid var(--color-accent-red-1);
-    width: 130px;
+    width: auto;
+    max-width: 130px;
 
     .p-dropdown-trigger-icon {
         color: var(--color-accent-red-1);
@@ -969,7 +974,8 @@
     background: #f7eef9;
     color: var(--pc-wizard-color);
     border: 1px solid var(--pc-wizard-color);
-    width: 130px;
+    width: auto;
+    max-width: 130px;
 
     .p-dropdown-trigger-icon {
         color: var(--pc-wizard-color);

@@ -29,6 +29,7 @@ export class PreviewPolicyDialog {
     public toolForm!: FormGroup;
     public isFile?: boolean;
     public demo: boolean;
+    public mode: string = 'new';
 
     public get valid(): boolean {
         return (this.policy || this.module || this.tool) && this.toolForm.valid;
@@ -166,5 +167,13 @@ export class PreviewPolicyDialog {
             messageId,
             tools: this.toolForm?.value,
         });
+    }
+
+    onChangeType() {
+
+    }
+
+    onSelectMode(mode:string) {
+        this.mode = mode;
     }
 }

@@ -131,6 +131,7 @@ import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { RadioButtonModule } from 'primeng/radiobutton';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
@@ -139,6 +140,7 @@ import { DiscontinuePolicy } from './dialogs/discontinue-policy/discontinue-poli
 import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
 import { JsonEditorDialogComponent } from './dialogs/json-editor-dialog/json-editor-dialog.component';
 import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialog.component';
+import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
 
 @NgModule({
     declarations: [
@@ -237,7 +239,8 @@ import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialo
         DiscontinuePolicy,
         MigrateData,
         JsonEditorDialogComponent,
-        PolicyTestDialog
+        PolicyTestDialog,
+        NewImportFileDialog
     ],
     imports: [
         CommonModule,
@@ -262,6 +265,7 @@ import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialo
         TooltipModule,
         SplitButtonModule,
         TabViewModule,
+        RadioButtonModule,
         InputSwitchModule,
         AppRoutingModule,
         DialogModule,

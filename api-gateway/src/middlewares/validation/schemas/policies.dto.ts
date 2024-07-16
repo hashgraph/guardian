@@ -372,3 +372,7 @@ export class PolicyCategoryDTO {
     @IsString()
     type: string;
 }
+
+export class PolicyTestDTO {
+
+}

@@ -20,8 +20,11 @@
     padding: 5px 0 20px 0;
     display: flex;
     flex-direction: row;
-    height: 100%;
+    height: 270px;
 
+    .drag-n-drop {
+        width: 100%;
+    }
 }
 
 ::ng-deep {
@@ -48,7 +51,6 @@
 }
 
 .dialog-body {
-    height: 40vh;
     overflow-y: auto;
 }
 
@@ -68,9 +70,4 @@
 
 .icon2-btn {
     margin-right: 8px;
-}
-
-.delete-color {
-    fill: var(--color-accent-red-1);
-    color: var(--color-accent-red-1);
 }

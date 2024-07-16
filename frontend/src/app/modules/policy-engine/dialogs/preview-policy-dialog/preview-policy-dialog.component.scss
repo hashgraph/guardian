@@ -17,44 +17,118 @@
     align-content: center;
 }
 
-.field-input {
-    margin: 30px 5px;
+.group-container {
+    margin-bottom: 18px;
+
+    .group-header {
+        font-family: Poppins;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 18px;
+        text-align: left;
+        color: #000;
+        margin-bottom: 18px;
+    }
+
+    .field-container {
+        margin-bottom: 12px;
+        padding-right: 24px;
+        padding-left: 1px;
+
+        .field-header {
+            font-family: Inter;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 14px;
+            text-align: left;
+            color: #181818;
+            padding: 3px 0px;
+        }
+
+        .field-value {
+            font-family: Inter;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 16px;
+            text-align: left;
+            padding: 12px 0px;
+            color: #181818;
+        }
+
+        .field-input {
+            display: flex;
+            margin-top: 30px;
+            position: relative;
+
+            input {
+                width: 60%;
+            }
+        }
+
+        .field-array {
+            color: #181818;
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 400;
+            overflow-y: auto;
+            margin-top: 10px;
+
+            .field-array-item {
+                display: grid;
+                grid-template-columns: 175px 105px 375px;
+                border-right: 1px solid #bbb;
+
+                &>div {
+                    white-space: break-spaces;
+                    padding: 0px 8px 12px 8px;
+                    border-left: 1px solid #bbb;
+                }
+            }
+
+            .error-type-warning>div {
+                color: var(--color-accent-yellow-1, #DA9B22);
+            }
+
+
+            .error-type-error>div {
+                color: var(--color-accent-red-1, #FF432A);
+            }
+        }
+    }
 }
 
-.input {
-    width: 100%;
-}
-
-.field-value {
-    color: #181818;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    margin-top: 10px;
-}
-
-.field-name {
-    color: #181818;
-    font-family: Inter, sans-serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 600;
-}
-
-.version-container {
+.change-mode {
     display: flex;
-}
+    flex-direction: row;
+    padding: 0px 2px;
 
-.version-container__new-versions {
-    margin-top: 3px;
+    &>div {
+        margin-right: 18px;
+        cursor: pointer;
+    }
+
+    .radio-label {
+        position: relative;
+        padding-left: 8px;
+        top: -1px;
+        pointer-events: none;
+    }
+
+    &::ng-deep {
+        .p-radiobutton .p-radiobutton-box.p-highlight {
+            border-color: #4169E2 !important;
+            background: #fff !important;
+        }
+
+        .p-radiobutton .p-radiobutton-box .p-radiobutton-icon {
+            background-color: #4169E2 !important;
+        }
+    }
 }
 
 .dialog-body {
-    height: 45vh;
+    height: 55vh;
     max-width: 100vw;
     overflow-y: auto;
 }
@@ -99,58 +173,7 @@
     }
 }
 
-.form-label {
-    color: #181818;
-    font-family: Inter, sans-serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 500;
-}
-
 .policy-version-container {
     display: flex;
     flex-direction: column;
-}
-
-.fields-container {
-    margin-top: 24px;
-}
-
-.version-of-dropdown {
-    ::ng-deep {
-        .p-dropdown {
-            width: 100%;
-        }
-    }
-}
-
-.field-array {
-    color: #181818;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    overflow-y: auto;
-    margin-top: 10px;
-
-    .field-array-item {
-        display: grid;
-        grid-template-columns: 175px 105px 375px;
-        border-right: 1px solid #bbb;
-
-        &>div {
-            white-space: break-spaces;
-            padding: 0px 8px 12px 8px;
-            border-left: 1px solid #bbb;
-        }
-    }
-
-    .error-type-warning>div {
-        color: var(--color-accent-yellow-1, #DA9B22);
-    }
-
-
-    .error-type-error>div {
-        color: var(--color-accent-red-1, #FF432A);
-    }
 }

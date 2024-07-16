@@ -855,4 +855,76 @@ export class PolicyEngine extends NatsService {
             owner,
         })
     }
+
+    /**
+     * Add policy test
+     * @param policyId
+     * @param zip
+     * @param owner
+     */
+    public async addPolicyTest(
+        policyId: string,
+        zip: Buffer,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.ADD_POLICY_TEST, {
+            policyId,
+            zip,
+            owner
+        });
+    }
+
+    /**
+     * Start policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async startPolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.START_POLICY_TEST, {
+            policyId,
+            testId,
+            owner
+        });
+    }
+
+    /**
+     * Stop policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async stopPolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.STOP_POLICY_TEST, {
+            policyId,
+            testId,
+            owner
+        });
+    }
+
+    /**
+     * Delete policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async deletePolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_TEST, {
+            policyId,
+            testId,
+            owner
+        });
+    }
 }

@@ -5,11 +5,43 @@
         </div>
 
 
+        <div *ngIf="tests && tests.length" class="dialog-grid-container">
+            <div class="dialog-grid-header">
+                <div class="col-auto col-text">Status</div>
+                <div class="col-200 col-text">Date</div>
+                <div class="col-80 col-text">Result</div>
+                <div class="col-120"></div>
+                <div class="col-64"></div>
+            </div>
+            <div class="dialog-grid-body">
+                <div *ngFor="let item of tests" class="dialog-grid-row">
+                    <div class="col-auto col-text">{{item.status}}</div>
+                    <div class="col-200 col-text">{{item.date}}</div>
+                    <div class="col-80 col-text">{{item.result}}</div>
+                    <div class="col-120">
+                        <button 
+                            *ngIf="status === 'DRY-RUN' || status === 'DEMO'"
+                            (click)="runTest(item)"
+                            class="button"
+                            label="Run"
+                            pButton></button>
+                    </div>
+                    <div class="col-64">
+                        <svg-icon
+                            (click)="deleteTest(item)"
+                            class="icon-btn"
+                            src="/assets/images/icons/delete.svg"
+                            svgClass="delete-color">
+                        </svg-icon>
+                    </div>
+                </div>
+            </div>
+        </div> 
 
 
     </div>
 </div>
-<div class="dialog-footer">
+<!-- <div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
             <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
@@ -26,4 +58,4 @@
             </button>
         </div>
     </div>
-</div>
+</div> -->

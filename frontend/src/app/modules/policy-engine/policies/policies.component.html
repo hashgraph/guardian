@@ -155,7 +155,7 @@
                                     class="header-cell-text cell-140">Tokens</th>
                                 <th 
                                     *ngIf="canDisplayColumn('schemas')" 
-                                    class="header-cell-text cell-150">Schemas</th>
+                                    class="header-cell-text cell-170">Schemas</th>
                                 <th 
                                     *ngIf="canDisplayColumn('instance') && !user.POLICIES_POLICY_MANAGE" 
                                     class="header-cell-text cell-150">Multi Policy</th>
@@ -338,7 +338,7 @@
                                 </td>
                                 <td 
                                     *ngIf="canDisplayColumn('schemas')"
-                                    class="cell-150" 
+                                    class="cell-170" 
                                 >
                                     <a 
                                         [queryParams]="{ type: 'policy', topic: policy.topicId }"

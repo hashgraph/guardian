@@ -30,6 +30,8 @@ import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-pol
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dialog.component';
+import { ImportFileDialog } from '../dialogs/import-file-dialog/import-file-dialog.component';
+import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -394,7 +396,7 @@ export class PoliciesComponent implements OnInit {
                     }),
                     new MenuButton({
                         visible: true,
-                        disabled: !policy.tests,
+                        disabled: !(policy.tests && policy.tests.length),
                         tooltip: 'Run test',
                         icon: 'check',
                         click: () => this.runTest(policy)
@@ -833,7 +835,7 @@ export class PoliciesComponent implements OnInit {
         } else {
             dialogRef = this.dialogService.open(PreviewPolicyDialog, {
                 header: 'Preview',
-                width: '720px',
+                width: '800px',
                 styleClass: 'custom-dialog',
                 data: {
                     policy: policy,
@@ -904,7 +906,7 @@ export class PoliciesComponent implements OnInit {
         } else {
             dialogRef = this.dialogService.open(PreviewPolicyDialog, {
                 header: 'Preview',
-                width: '720px',
+                width: '800px',
                 styleClass: 'custom-dialog',
                 data: {
                     xlsx: xlsx,
@@ -1324,19 +1326,49 @@ export class PoliciesComponent implements OnInit {
 
     public addTest(policy: any) {
         const item = this.policies?.find((e) => e.id === policy?.id);
-        const dialogRef = this.dialogService.open(PolicyTestDialog, {
-            header: 'Policy Tests',
-            width: '900px',
+        const dialogRef = this.dialogService.open(NewImportFileDialog, {
+            header: 'Add Policy Tests',
+            width: '600px',
             styleClass: 'custom-dialog',
-            data: { policy: item }
+            data: { 
+                policy: item,
+                fileExtension: 'record',
+                label: 'Add test .record file'
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
+        dialogRef.onClose.subscribe(async (arrayBuffer) => {
+            if (arrayBuffer) {
+                this.loading = true;
+                this.policyEngineService.addPolicyTest(item.id, arrayBuffer)
+                    .subscribe((result) => {
+                        this.loadAllPolicy();
+                    }, (e) => {
+                        this.loading = false;
+                    })
             }
         });
     }
 
     public runTest(policy: any) {
-
+        const item = this.policies?.find((e) => e.id === policy?.id);
+        const dialogRef = this.dialogService.open(PolicyTestDialog, {
+            header: 'Policy Tests',
+            width: '800px',
+            styleClass: 'custom-dialog',
+            data: { 
+                policy: item
+            }
+        });
+        dialogRef.onClose.subscribe(async (arrayBuffer) => {
+            if (arrayBuffer) {
+                this.loading = true;
+                this.policyEngineService.addPolicyTest(item.id, arrayBuffer)
+                    .subscribe((result) => {
+                        this.loadAllPolicy();
+                    }, (e) => {
+                        this.loading = false;
+                    })
+            }
+        });
     }
 }

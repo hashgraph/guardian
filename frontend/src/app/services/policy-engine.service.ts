@@ -333,4 +333,24 @@ export class PolicyEngineService {
             }
         );
     }
+
+    public addPolicyTest(policyId: string, testFile: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/${policyId}/test/`, testFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public runTest(policyId: string, testId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/start`, null);
+    }
+
+    public stopTest(policyId: string, testId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/stop`, null);
+    }
+
+    public deleteTest(policyId: string, testId: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/${policyId}/test/${testId}`);
+    }
 }

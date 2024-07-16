@@ -1,0 +1,14 @@
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="loading">
+            <div class="preloader-image preloader-image-l-size"></div>
+        </div>
+
+        <app-file-drag-n-drop 
+            class="drag-n-drop"
+            [fileExtension]="fileExtension" 
+            (onFileLoaded)="importFromFile($event)"
+            [dropZoneLabel]="label"></app-file-drag-n-drop>
+
+    </div>
+</div>
