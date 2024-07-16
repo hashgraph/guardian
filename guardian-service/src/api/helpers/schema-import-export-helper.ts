@@ -54,7 +54,6 @@ export class SchemaCache {
  * @param log
  */
 export async function loadSchema(messageId: string, log: PinoLogger): Promise<any> {
-    // const log = new Logger();
     try {
         let schemaToImport = SchemaCache.getSchema(messageId);
         if (!schemaToImport) {

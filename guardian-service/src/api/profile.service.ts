@@ -220,7 +220,6 @@ async function createUserProfile(
     user: IAuthUser,
     logger: PinoLogger
 ): Promise<string> {
-    // const logger = new Logger();
     const {
         hederaAccountId,
         hederaAccountKey,

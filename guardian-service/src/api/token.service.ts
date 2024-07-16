@@ -229,7 +229,6 @@ async function updateToken(
         try {
             await publishTokenTags(result, root);
         } catch (error) {
-            // const log = new Logger();
             log.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }
 

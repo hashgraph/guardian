@@ -124,8 +124,6 @@ export async function publishModule(
     notifier: INotifier,
     logger: PinoLogger
 ): Promise<PolicyModule> {
-    // const logger = new Logger();
-
     logger.info('Publish module', ['GUARDIAN_SERVICE']);
     notifier.start('Resolve Hedera account');
     const users = new Users();

@@ -129,7 +129,6 @@ export async function publishTool(
     logger: PinoLogger
 ): Promise<PolicyTool> {
     try {
-        // const logger = new Logger();
         await logger.info('Publish tool', ['GUARDIAN_SERVICE']);
 
         notifier.start('Resolve Hedera account');
@@ -272,7 +271,6 @@ export async function createTool(
     notifier: INotifier,
     logger: PinoLogger
 ): Promise<PolicyTool> {
-    // const logger = new Logger();
     await logger.info('Create Policy', ['GUARDIAN_SERVICE']);
     notifier.start('Save in DB');
     if (json) {

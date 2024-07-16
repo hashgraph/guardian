@@ -327,7 +327,6 @@ export class PolicyEngine extends NatsService {
         notifier: INotifier,
         logger: PinoLogger
     ): Promise<Policy> {
-        // const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Save in DB');
         if (data) {
@@ -474,7 +473,6 @@ export class PolicyEngine extends NatsService {
          */
         errors: any[];
     }> {
-        // const logger = new Logger();
         await logger.info('Create Policy', ['GUARDIAN_SERVICE']);
 
         const policy = await DatabaseServer.getPolicyById(policyId);
@@ -533,7 +531,6 @@ export class PolicyEngine extends NatsService {
         notifier: INotifier,
         logger: PinoLogger
     ): Promise<boolean> {
-        // const logger = new Logger();
         await logger.info('Delete Policy', ['GUARDIAN_SERVICE']);
 
         const policyToDelete = await DatabaseServer.getPolicyById(policyId);
@@ -663,7 +660,6 @@ export class PolicyEngine extends NatsService {
         notifier: INotifier,
         logger: PinoLogger
     ): Promise<Policy> {
-        // const logger = new Logger();
         await logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(user.creator);
@@ -856,7 +852,6 @@ export class PolicyEngine extends NatsService {
         version: string,
         logger: PinoLogger
     ): Promise<Policy> {
-        // const logger = new Logger();
         await logger.info('Dry-run Policy', ['GUARDIAN_SERVICE']);
 
         const root = await this.users.getHederaAccount(user.creator);

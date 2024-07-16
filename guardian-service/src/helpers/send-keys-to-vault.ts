@@ -6,7 +6,6 @@ import { MongoEntityManager } from '@mikro-orm/mongodb';
  * @constructor
  */
 export async function sendKeysToVault(em: MongoEntityManager, logger: PinoLogger): Promise<void> {
-    // const logger = new Logger();
     const wallet = new Wallet();
     try {
         logger.info('Start send keys to vault', ['GUARDIAN_SERVICE']);
