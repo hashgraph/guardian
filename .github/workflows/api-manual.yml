@@ -131,7 +131,7 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install --force
-                  npx cypress run --browser chrome --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
+                  ELECTRON_RUN_AS_NODE=1 npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
                   popd
 
             - name: Publish API Test Results
