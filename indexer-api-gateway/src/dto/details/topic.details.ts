@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Topic,
     TopicActivity,
     TopicAnalytics,
@@ -125,13 +127,25 @@ export class TopicDTO
     implements Topic
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.TOPIC
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateTopic
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: TopicOptionsDTO,
     })
     declare options: TopicOptionsDTO;
     @ApiProperty({
         type: TopicAnalyticsDTO,
     })
-    declare analytics: TopicAnalyticsDTO;
+    declare analytics?: TopicAnalyticsDTO;
 }
 
 export class TopicDetailsDTO

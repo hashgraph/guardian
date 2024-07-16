@@ -1,4 +1,4 @@
-import { VC, VCAnalytics, VCDetails, VCOptions } from '@indexer/interfaces';
+import { MessageAction, MessageType, VC, VCAnalytics, VCDetails, VCOptions } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
 import { DetailsHistoryDTO } from './details.interface.js';
@@ -24,7 +24,7 @@ export class VCOptionsDTO implements VCOptions {
     @ApiProperty({
         description: 'Encoded EVC data',
     })
-    encodedData?: string;
+    encodedData: boolean;
 }
 
 export class VCAnalyticsDTO implements VCAnalytics {
@@ -54,13 +54,25 @@ export class VCDTO
     implements VC
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.VC_DOCUMENT
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateVC
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: VCOptionsDTO,
     })
     declare options: VCOptionsDTO;
     @ApiProperty({
         type: VCAnalyticsDTO,
     })
-    declare analytics: VCAnalyticsDTO;
+    declare analytics?: VCAnalyticsDTO;
 }
 export class VCDetailsDTO
     extends DetailsHistoryDTO<VCDTO>

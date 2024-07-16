@@ -1,4 +1,4 @@
-import { DID, DIDAnalytics, DIDDetails, DIDOptions } from '@indexer/interfaces';
+import { DID, DIDAnalytics, DIDDetails, DIDOptions, MessageAction, MessageType } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
 import { DetailsHistoryDTO } from './details.interface.js';
@@ -30,13 +30,25 @@ export class DIDDTO
     implements DID
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.DID_DOCUMENT
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateDID
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: DIDOptionsDTO,
     })
     declare options: DIDOptionsDTO;
     @ApiProperty({
         type: DIDAnalyticsDTO,
     })
-    declare analytics: DIDAnalyticsDTO;
+    declare analytics?: DIDAnalyticsDTO;
 }
 
 export class DIDDetailsDTO

@@ -5,30 +5,34 @@ export const ApiPaginatedRequest = applyDecorators(
     ApiQuery({
         name: 'pageIndex',
         description: 'Page index',
-        example: 0
+        example: 0,
+        required: false,
     }),
     ApiQuery({
         name: 'pageSize',
         description: 'Page size',
-        example: 10
+        example: 10,
+        required: false,
     }),
     ApiQuery({
         name: 'orderField',
         description: 'Order field',
-        example: 'consensusTimestamp'
+        example: 'consensusTimestamp',
+        required: false,
     }),
     ApiQuery({
         name: 'orderDir',
         description: 'Order direction',
         examples: {
-            'ASC': {
+            ASC: {
                 value: 'ASC',
-                description: 'Ascending ordering'
+                description: 'Ascending ordering',
             },
-            'DESC': {
+            DESC: {
                 value: 'DESC',
-                description: 'Descending ordering'
-            }
-        }
+                description: 'Descending ordering',
+            },
+        },
+        required: false,
     })
 );

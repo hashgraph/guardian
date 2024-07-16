@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
+    Message,
     IndexerMessageAPI,
     MessageResponse,
     MessageError,
@@ -8,13 +9,13 @@ import {
     DataBaseHelper,
     MessageCache,
     TopicCache,
-    Message,
     TokenCache,
     NftCache,
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { Relationships } from '../utils/relationships.js';
 import {
+    Message as IMessage,
     MessageType,
     MessageAction,
     PageFilters,
@@ -98,7 +99,7 @@ function parseKeywordFilter(keywordsString: string) {
     return filter;
 }
 
-async function loadDocuments(row: Message): Promise<Message> {
+async function loadDocuments(row: IMessage): Promise<IMessage> {
     if (row?.files?.length) {
         row.documents = [];
         for (const fileName of row.files) {

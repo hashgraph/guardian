@@ -23,7 +23,7 @@ export interface DIDAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
 }
 
 /**

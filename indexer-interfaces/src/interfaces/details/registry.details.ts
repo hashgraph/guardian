@@ -30,7 +30,7 @@ export interface RegistryAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
 }
 
 /**

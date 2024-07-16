@@ -1,11 +1,10 @@
+import { MessageAction } from '../types/message-action.js';
+import { MessageType } from '../types/message-type.js';
+
 /**
  * Parsed message
  */
 export interface Message<O = any, A = any> {
-    /**
-     * Identifier
-     */
-    _id: any;
     /**
      * Identifier
      */
@@ -37,11 +36,11 @@ export interface Message<O = any, A = any> {
     /**
      * Type
      */
-    type: string;
+    type: MessageType;
     /**
      * Action
      */
-    action: string;
+    action: MessageAction;
     /**
      * Lang
      */

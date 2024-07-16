@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Role,
     RoleActivity,
     RoleAnalytics,
@@ -54,13 +56,25 @@ export class RoleDTO
     implements Role
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.ROLE_DOCUMENT
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateVC
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: RoleOptionsDTO,
     })
     declare options: RoleOptionsDTO;
     @ApiProperty({
         type: RoleAnalyticsDTO,
     })
-    declare analytics: RoleAnalyticsDTO;
+    declare analytics?: RoleAnalyticsDTO;
 }
 
 export class RoleDetailsDTO

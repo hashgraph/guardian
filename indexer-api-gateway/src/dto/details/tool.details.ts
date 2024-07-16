@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Tool,
     ToolActivity,
     ToolAnalytics,
@@ -74,13 +76,25 @@ export class ToolDTO
     implements Tool
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.TOOL
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.PublishTool
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: ToolOptionsDTO,
     })
     declare options: ToolOptionsDTO;
     @ApiProperty({
         type: ToolAnalyticsDTO,
     })
-    declare analytics: ToolAnalyticsDTO;
+    declare analytics?: ToolAnalyticsDTO;
 }
 
 export class ToolDetailsDTO

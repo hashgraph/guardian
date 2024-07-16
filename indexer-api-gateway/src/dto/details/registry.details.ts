@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Registry,
     RegistryActivity,
     RegistryAnalytics,
@@ -86,13 +88,25 @@ export class RegistryDTO
     implements Registry
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.STANDARD_REGISTRY
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.Init
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: RegistryOptionsDTO,
     })
     declare options: RegistryOptionsDTO;
     @ApiProperty({
         type: RegistryAnalyticsDTO,
     })
-    declare analytics: RegistryAnalyticsDTO;
+    declare analytics?: RegistryAnalyticsDTO;
 }
 
 export class RegistryDetailsDTO

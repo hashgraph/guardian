@@ -1,4 +1,4 @@
-import { VP, VPAnalytics, VPDetails, VPOptions } from '@indexer/interfaces';
+import { MessageAction, MessageType, VP, VPAnalytics, VPDetails, VPOptions } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
 import { DetailsHistoryDTO } from './details.interface.js';
@@ -45,13 +45,25 @@ export class VPDTO
     implements VP
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.VP_DOCUMENT
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateVP
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: VPOptionsDTO,
     })
     declare options: VPOptionsDTO;
     @ApiProperty({
         type: VPAnalyticsDTO,
     })
-    declare analytics: VPAnalyticsDTO;
+    declare analytics?: VPAnalyticsDTO;
 }
 
 export class VPDetailsDTO

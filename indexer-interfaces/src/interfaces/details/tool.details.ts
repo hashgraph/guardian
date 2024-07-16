@@ -42,7 +42,7 @@ export interface ToolAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
 }
 
 /**

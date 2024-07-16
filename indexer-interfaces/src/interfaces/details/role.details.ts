@@ -26,11 +26,11 @@ export interface RoleAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
     /**
      * Policy message identifier
      */
-    policyId: string;
+    policyId?: string;
 }
 
 /**

@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Policy,
     PolicyActivity,
     PolicyAnalytics,
@@ -155,13 +157,25 @@ export class PolicyDTO
     implements Policy
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.POLICY
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.PublishPolicy
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: PolicyOptionsDTO,
     })
     declare options: PolicyOptionsDTO;
     @ApiProperty({
         type: PolicyAnalyticsDTO,
     })
-    declare analytics: PolicyAnalyticsDTO;
+    declare analytics?: PolicyAnalyticsDTO;
 }
 
 export class PolicyDetailsDTO

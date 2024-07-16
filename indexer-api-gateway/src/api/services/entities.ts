@@ -77,22 +77,26 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Global topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'options.did',
         description: 'Registry did',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @ApiQuery({
         name: 'options.registrantTopicId',
         description: 'Registry user topic identifier',
         example: '0.0.4481265',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getRegistries(
@@ -166,11 +170,13 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'User topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getRegistryUsers(
@@ -241,22 +247,26 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Policy topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'options.owner',
         description: 'Policy owner',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @ApiQuery({
         name: 'analytics.tools',
         description: 'Tool',
         example: '1706823227.586179534',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getPolicies(
@@ -328,17 +338,20 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'options.owner',
         description: 'Tool owner',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getTools(
@@ -408,17 +421,20 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'options.owner',
         description: 'Module owner',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getModules(
@@ -488,17 +504,20 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Policy topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'options.owner',
         description: 'Schema owner',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getSchemas(
@@ -587,11 +606,13 @@ export class EntityApi extends ApiClient {
         name: 'tokenId',
         description: 'Token identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'treasury',
         description: 'Treasury',
         example: '0.0.1960',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getTokens(
@@ -659,22 +680,26 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'options.issuer',
         description: 'Issuer',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'analytics.policyId',
         description: 'Policy identifier',
         example: '1706823227.586179534',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getRoles(
@@ -749,17 +774,20 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'options.did',
         description: 'DID',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getDidDocuments(
@@ -854,27 +882,32 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'options.issuer',
         description: 'Issuer',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @ApiQuery({
         name: 'analytics.policyId',
         description: 'Policy identifier',
         example: '1706823227.586179534',
+        required: false,
     })
     @ApiQuery({
         name: 'analytics.schemaIds',
         description: 'Schema identifier',
         example: '1706823227.586179534',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getVpDocuments(
@@ -973,32 +1006,38 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @ApiQuery({
         name: 'options.issuer',
         description: 'Issuer',
         example:
             'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
     })
     @ApiQuery({
         name: 'analytics.policyId',
         description: 'Policy identifier',
         example: '1706823227.586179534',
+        required: false,
     })
     @ApiQuery({
         name: 'analytics.schemaId',
         description: 'Schema identifier',
         example: '1706823227.586179534',
+        required: false,
     })
     @ApiQuery({
         name: 'options.relationships',
         description: 'Relationships',
         example: '1706823227.586179534',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getVcDocuments(
@@ -1096,6 +1135,7 @@ export class EntityApi extends ApiClient {
         name: 'tokenId',
         description: 'Token identifier',
         example: '0.0.1960',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getNFTs(
@@ -1170,11 +1210,13 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'options.parentId',
         description: 'Parent topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getTopics(
@@ -1242,11 +1284,13 @@ export class EntityApi extends ApiClient {
                 value: '["0.0.1960"]',
             },
         },
+        required: false,
     })
     @ApiQuery({
         name: 'topicId',
         description: 'Topic identifier',
         example: '0.0.1960',
+        required: false,
     })
     @HttpCode(HttpStatus.OK)
     async getContracts(

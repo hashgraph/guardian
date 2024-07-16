@@ -60,19 +60,19 @@ export interface SchemaAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
     /**
      * Policy message identifiers
      */
-    policyIds: string[];
+    policyIds?: string[];
     /**
      * Child schemas identifiers
      */
-    childSchemas: ChildSchema[];
+    childSchemas?: ChildSchema[];
     /**
      * Schema properties
      */
-    properties: string[];
+    properties?: string[];
 }
 
 /**

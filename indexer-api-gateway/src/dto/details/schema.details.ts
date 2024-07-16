@@ -1,6 +1,8 @@
 import {
     ChildSchema,
     ISchema,
+    MessageAction,
+    MessageType,
     SchemaActivity,
     SchemaAnalytics,
     SchemaDetails,
@@ -107,13 +109,25 @@ export class SchemaDTO
     implements ISchema
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.SCHEMA
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.PublishSchema
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: SchemaOptionsDTO,
     })
     declare options: SchemaOptionsDTO;
     @ApiProperty({
         type: SchemaAnalyticsDTO,
     })
-    declare analytics: SchemaAnalyticsDTO;
+    declare analytics?: SchemaAnalyticsDTO;
 }
 
 export class SchemaDetailsDTO

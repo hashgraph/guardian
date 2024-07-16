@@ -20,7 +20,7 @@ export interface VCOptions {
     /**
      * Encoded data
      */
-    encodedData?: string;
+    encodedData: boolean;
 }
 
 /**
@@ -42,7 +42,7 @@ export interface VCAnalytics {
     /**
      * Schema name
      */
-    schemaName: string;
+    schemaName?: string;
 }
 
 /**

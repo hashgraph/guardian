@@ -4,6 +4,8 @@ import {
     Contract,
     ContractType,
     ContractDetails,
+    MessageType,
+    MessageAction,
 } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
@@ -41,13 +43,25 @@ export class ContractDTO
     implements Contract
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.CONTRACT
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateContract
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: ContractOptionsDTO,
     })
     declare options: ContractOptionsDTO;
     @ApiProperty({
         type: ContractAnalyticsDTO,
     })
-    declare analytics: ContractAnalyticsDTO;
+    declare analytics?: ContractAnalyticsDTO;
 }
 
 export class ContractDetailsDTO
