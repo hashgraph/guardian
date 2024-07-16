@@ -23,12 +23,6 @@ function rejectTimeout(t: number): Promise<void> {
  * Worker class
  */
 export class Worker extends NatsService {
-    // /**
-    //  * Logger instance
-    //  * @private
-    //  */
-    // private readonly logger: Logger;
-
     /**
      * Message queue name
      */
@@ -122,7 +116,6 @@ export class Worker extends NatsService {
             this.w3cProof,
             this.filebaseKey
         );
-        // this.logger = new Logger();
 
         this.analyticsService = process.env.ANALYTICS_SERVICE;
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
