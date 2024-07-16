@@ -7,7 +7,7 @@ paths:
       description: Full-text indexer search
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
@@ -48,28 +48,28 @@ paths:
       description: Returns standard registries
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: number
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -82,7 +82,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -94,14 +94,14 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Global topic identifier
           example: 0.0.1960
           schema:
             type: string
         - name: options.did
-          required: true
+          required: false
           in: query
           description: Registry did
           example: >-
@@ -109,7 +109,7 @@ paths:
           schema:
             type: string
         - name: options.registrantTopicId
-          required: true
+          required: false
           in: query
           description: Registry user topic identifier
           example: 0.0.4481265
@@ -170,28 +170,28 @@ paths:
       description: Returns registry users
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: string
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: string
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -204,7 +204,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -216,7 +216,7 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: User topic identifier
           example: 0.0.1960
@@ -276,28 +276,28 @@ paths:
       description: Returns policies
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: string
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: string
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -310,7 +310,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -320,14 +320,14 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Policy topic identifier
           example: 0.0.1960
           schema:
             type: string
         - name: options.owner
-          required: true
+          required: false
           in: query
           description: Policy owner
           example: >-
@@ -335,7 +335,7 @@ paths:
           schema:
             type: string
         - name: analytics.tools
-          required: true
+          required: false
           in: query
           description: Tool
           example: '1706823227.586179534'
@@ -395,28 +395,28 @@ paths:
       description: Returns tools
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: string
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: string
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -429,7 +429,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -439,7 +439,7 @@ paths:
           schema:
             type: string
         - name: options.owner
-          required: true
+          required: false
           in: query
           description: Tool owner
           example: >-
@@ -447,7 +447,7 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic identifier
           example: 0.0.1960
@@ -507,28 +507,28 @@ paths:
       description: Returns modules
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: string
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: string
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -541,7 +541,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -551,7 +551,7 @@ paths:
           schema:
             type: string
         - name: options.owner
-          required: true
+          required: false
           in: query
           description: Module owner
           example: >-
@@ -559,7 +559,7 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic identifier
           example: 0.0.1960
@@ -619,28 +619,28 @@ paths:
       description: Returns schemas
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: string
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: string
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -653,7 +653,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -663,14 +663,14 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Policy topic identifier
           example: 0.0.1960
           schema:
             type: string
         - name: options.owner
-          required: true
+          required: false
           in: query
           description: Schema owner
           example: >-
@@ -758,28 +758,28 @@ paths:
       description: Returns tokens
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: number
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -792,14 +792,14 @@ paths:
           schema:
             type: string
         - name: tokenId
-          required: true
+          required: false
           in: query
           description: Token identifier
           example: 0.0.1960
           schema:
             type: string
         - name: treasury
-          required: true
+          required: false
           in: query
           description: Treasury
           example: 0.0.1960
@@ -859,28 +859,28 @@ paths:
       description: Returns roles
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: string
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: string
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -893,7 +893,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -903,7 +903,7 @@ paths:
           schema:
             type: string
         - name: options.issuer
-          required: true
+          required: false
           in: query
           description: Issuer
           example: >-
@@ -911,14 +911,14 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic identifier
           example: 0.0.1960
           schema:
             type: string
         - name: analytics.policyId
-          required: true
+          required: false
           in: query
           description: Policy identifier
           example: '1706823227.586179534'
@@ -978,28 +978,28 @@ paths:
       description: Returns DIDs
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: number
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -1012,7 +1012,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -1022,14 +1022,14 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic identifier
           example: 0.0.1960
           schema:
             type: string
         - name: options.did
-          required: true
+          required: false
           in: query
           description: DID
           example: >-
@@ -1117,28 +1117,28 @@ paths:
       description: Returns VPs
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: number
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -1151,7 +1151,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -1161,14 +1161,14 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic identifier
           example: 0.0.1960
           schema:
             type: string
         - name: options.issuer
-          required: true
+          required: false
           in: query
           description: Issuer
           example: >-
@@ -1176,14 +1176,14 @@ paths:
           schema:
             type: string
         - name: analytics.policyId
-          required: true
+          required: false
           in: query
           description: Policy identifier
           example: '1706823227.586179534'
           schema:
             type: string
         - name: analytics.schemaIds
-          required: true
+          required: false
           in: query
           description: Schema identifier
           example: '1706823227.586179534'
@@ -1270,28 +1270,28 @@ paths:
       description: Returns VCs
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: number
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -1304,7 +1304,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -1314,14 +1314,14 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic identifier
           example: 0.0.1960
           schema:
             type: string
         - name: options.issuer
-          required: true
+          required: false
           in: query
           description: Issuer
           example: >-
@@ -1329,21 +1329,21 @@ paths:
           schema:
             type: string
         - name: analytics.policyId
-          required: true
+          required: false
           in: query
           description: Policy identifier
           example: '1706823227.586179534'
           schema:
             type: string
         - name: analytics.schemaId
-          required: true
+          required: false
           in: query
           description: Schema identifier
           example: '1706823227.586179534'
           schema:
             type: string
         - name: options.relationships
-          required: true
+          required: false
           in: query
           description: Relationships
           example: '1706823227.586179534'
@@ -1430,28 +1430,28 @@ paths:
       description: Returns NFTs
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: number
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -1464,7 +1464,7 @@ paths:
           schema:
             type: string
         - name: tokenId
-          required: true
+          required: false
           in: query
           description: Token identifier
           example: 0.0.1960
@@ -1531,28 +1531,28 @@ paths:
       description: Returns topics
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: number
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: number
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -1565,7 +1565,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -1575,7 +1575,7 @@ paths:
           schema:
             type: string
         - name: options.parentId
-          required: true
+          required: false
           in: query
           description: Parent topic identifier
           example: 0.0.1960
@@ -1635,28 +1635,28 @@ paths:
       description: Returns contracts
       parameters:
         - name: pageIndex
-          required: true
+          required: false
           in: query
           description: Page index
           example: 0
           schema:
             type: string
         - name: pageSize
-          required: true
+          required: false
           in: query
           description: Page size
           example: 10
           schema:
             type: string
         - name: orderField
-          required: true
+          required: false
           in: query
           description: Order field
           example: consensusTimestamp
           schema:
             type: string
         - name: orderDir
-          required: true
+          required: false
           in: query
           description: Order direction
           examples:
@@ -1669,7 +1669,7 @@ paths:
           schema:
             type: string
         - name: keywords
-          required: true
+          required: false
           in: query
           description: Keywords to search
           examples:
@@ -1679,7 +1679,7 @@ paths:
           schema:
             type: string
         - name: topicId
-          required: true
+          required: false
           in: query
           description: Topic identifier
           example: 0.0.1960
@@ -1880,8 +1880,10 @@ components:
       properties:
         code:
           type: number
+          example: 500
         message:
           type: string
+          example: Error message
       required:
         - code
         - message
@@ -1918,10 +1920,6 @@ components:
     RegistryDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -1950,14 +1948,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -1997,12 +1987,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Standard Registry
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: Init
         options:
           $ref: '#/components/schemas/RegistryOptionsDTO'
         analytics:
           $ref: '#/components/schemas/RegistryAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -2010,8 +2055,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -2019,15 +2062,13 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     RawMessageDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -2084,7 +2125,6 @@ components:
             `{"id":"eaa629ff-c86b-412e-bc60-c849692d00bb","status":"ISSUE","type":"Standard
             Registry","action":"Init","lang":"en-US","did":"did:hedera:testnet:AbGzCxiG4egLbnWBPDihwLQR3kKKrsF6bgH7TveFb27n_0.0.2176","topicId":"0.0.2176","attributes":{"geography":"test","law":"testtes","tags":"test"}}`
       required:
-        - _id
         - id
         - consensusTimestamp
         - topicId
@@ -2186,10 +2226,6 @@ components:
     RegistryUserDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -2218,14 +2254,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -2261,12 +2289,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: DID-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
         analytics:
           $ref: '#/components/schemas/RegistryUserAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -2274,8 +2357,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -2283,6 +2364,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     RegistryUserActivityDTO:
@@ -2457,10 +2540,6 @@ components:
     PolicyDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -2489,14 +2568,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -2532,12 +2603,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Policy
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: publish-policy
         options:
           $ref: '#/components/schemas/PolicyOptionsDTO'
         analytics:
           $ref: '#/components/schemas/PolicyAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -2545,8 +2671,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -2554,6 +2678,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     PolicyActivityDTO:
@@ -2654,10 +2780,6 @@ components:
     ToolDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -2686,14 +2808,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -2729,12 +2843,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Tool
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: publish-tool
         options:
           $ref: '#/components/schemas/ToolOptionsDTO'
         analytics:
           $ref: '#/components/schemas/ToolAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -2742,8 +2911,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -2751,6 +2918,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     ToolActivityDTO:
@@ -2831,10 +3000,6 @@ components:
     ModuleDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -2863,14 +3028,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -2906,12 +3063,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Module
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: publish-module
         options:
           $ref: '#/components/schemas/ModuleOptionsDTO'
         analytics:
           $ref: '#/components/schemas/ModuleAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -2919,8 +3131,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -2928,6 +3138,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     ModuleDetailsDTO:
@@ -3042,10 +3254,6 @@ components:
     SchemaDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -3074,14 +3282,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -3117,12 +3317,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Schema
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
         analytics:
           $ref: '#/components/schemas/SchemaAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -3130,8 +3385,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -3139,6 +3392,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     SchemaActivityDTO:
@@ -3231,10 +3486,6 @@ components:
     TokenDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -3290,7 +3541,6 @@ components:
           description: Decimals
           example: '2'
       required:
-        - _id
         - id
         - tokenId
         - status
@@ -3357,10 +3607,6 @@ components:
     RoleDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -3389,14 +3635,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -3432,12 +3670,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Role-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-vc-document
         options:
           $ref: '#/components/schemas/RoleOptionsDTO'
         analytics:
           $ref: '#/components/schemas/RoleAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -3445,8 +3738,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -3454,6 +3745,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     RoleActivityDTO:
@@ -3517,10 +3810,6 @@ components:
     DIDDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -3549,14 +3838,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -3592,12 +3873,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: DID-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
         analytics:
           $ref: '#/components/schemas/DIDAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -3605,8 +3941,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -3614,6 +3948,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     DIDDetailsDTO:
@@ -3644,10 +3980,6 @@ components:
     MessageDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -3676,14 +4008,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -3720,7 +4044,6 @@ components:
           items:
             type: string
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -3728,8 +4051,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -3885,10 +4206,6 @@ components:
     VPDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -3917,14 +4234,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -3960,12 +4269,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: VP-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
         analytics:
           $ref: '#/components/schemas/VPAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -3973,8 +4337,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -3982,6 +4344,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     VPDetailsDTO:
@@ -4029,7 +4393,7 @@ components:
           description: Document status
           example: Approved
         encodedData:
-          type: string
+          type: boolean
           description: Encoded EVC data
       required:
         - issuer
@@ -4062,10 +4426,6 @@ components:
     VCDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -4094,14 +4454,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -4137,12 +4489,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: VC-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
         analytics:
           $ref: '#/components/schemas/VCAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -4150,8 +4557,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -4159,6 +4564,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     VCDetailsDTO:
@@ -4193,10 +4600,6 @@ components:
     NFTDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -4218,7 +4621,6 @@ components:
           description: metadata
           example: '1706823227.586179534'
       required:
-        - _id
         - id
         - tokenId
         - lastUpdate
@@ -4310,10 +4712,6 @@ components:
     TopicDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -4342,14 +4740,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -4385,12 +4775,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Topic
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-topic
         options:
           $ref: '#/components/schemas/TopicOptionsDTO'
         analytics:
           $ref: '#/components/schemas/TopicAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -4398,8 +4843,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -4407,15 +4850,13 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     RawTopicDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -4440,7 +4881,6 @@ components:
           description: Has next
           example: false
       required:
-        - _id
         - id
         - topicId
         - status
@@ -4567,10 +5007,6 @@ components:
     ContractDTO:
       type: object
       properties:
-        _id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
         id:
           type: string
           description: Identifier
@@ -4599,14 +5035,6 @@ components:
           type: string
           description: Status
           example: Revoked
-        type:
-          type: string
-          description: Type
-          example: VC-Document
-        action:
-          type: string
-          description: Type
-          example: create-vc-document
         lang:
           type: string
           description: Lang
@@ -4642,12 +5070,67 @@ components:
           type: array
           items:
             type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Contract
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-contract
         options:
           $ref: '#/components/schemas/ContractOptionsDTO'
         analytics:
           $ref: '#/components/schemas/ContractAnalyticsDTO'
       required:
-        - _id
         - id
         - topicId
         - consensusTimestamp
@@ -4655,8 +5138,6 @@ components:
         - uuid
         - status
         - statusReason
-        - type
-        - action
         - lang
         - responseType
         - statusMessage
@@ -4664,6 +5145,8 @@ components:
         - documents
         - topics
         - tokens
+        - type
+        - action
         - options
         - analytics
     ContractDetailsDTO:
