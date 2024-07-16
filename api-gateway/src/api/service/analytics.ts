@@ -4,7 +4,7 @@ import { EntityOwner, Permissions } from '@guardian/interfaces';
 import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Guardians, ONLY_SR, InternalException, CacheService } from '#helpers';
+import { Guardians, ONLY_SR, InternalException } from '#helpers';
 
 function getPolicyId(filters: FilterPoliciesDTO): {
     type: 'id' | 'file' | 'message',

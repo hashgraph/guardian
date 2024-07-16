@@ -1,7 +1,7 @@
 import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { GenerateUUIDv4, IUser, PolicyEvents } from '@guardian/interfaces';
-import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
 import { PolicyUser } from './policy-user.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js'
 import { headers } from 'nats';

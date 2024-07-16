@@ -42,7 +42,7 @@ Promise.all([
     DataBaseHelper.orm = db;
 
     app.listen();
-    const channel = new MessageBrokerChannel(cn, 'worker');
+    // new MessageBrokerChannel(cn, 'worker');
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 

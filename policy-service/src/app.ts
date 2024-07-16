@@ -1,4 +1,4 @@
-import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, mongoLoggerInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, MessageBrokerChannel, mongoLoggerInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { startMetricsServer } from './utils/metrics.js';

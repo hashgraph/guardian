@@ -4,7 +4,7 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { LargePayloadContainer, Logger, MessageBrokerChannel } from '@guardian/common';
+import { LargePayloadContainer, MessageBrokerChannel, PinoLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
@@ -20,7 +20,6 @@ import { AISuggestions } from './helpers/ai-suggestions.js';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import fastifyFormbody from '@fastify/formbody'
 import fastifyMultipart from '@fastify/multipart';
-import { PinoLogger } from '@guardian/common';
 
 const PORT = process.env.PORT || 3002;
 
