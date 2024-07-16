@@ -1,4 +1,4 @@
-import { DataBaseHelper, Logger, MessageAction } from '@guardian/common';
+import { DataBaseHelper, MessageAction, PinoLogger } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import xl from 'excel4node';
@@ -104,12 +104,12 @@ export class ReportService {
         });
 
         if (!report) {
-            new Logger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
             return report;
         }
 
         if (report.status === ReportStatus.PROGRESS) {
-            new Logger().error(`Report already started`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Report already started`, ['ANALYTICS_SERVICE']);
             return report;
         }
 
@@ -117,10 +117,10 @@ export class ReportService {
 
         ReportService.update(report).then((result) => {
             if (result && result.status === ReportStatus.FINISHED) {
-                new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
+                new PinoLogger().info(`Update completed`, ['ANALYTICS_SERVICE']);
             }
         }, (error) => {
-            new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
         });
 
         return report;
