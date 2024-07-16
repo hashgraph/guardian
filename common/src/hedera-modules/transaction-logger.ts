@@ -1,6 +1,6 @@
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '../database-modules/index.js';
-import { Logger, RunFunctionAsync, Workers } from '../helpers/index.js';
+import { PinoLogger, RunFunctionAsync, Workers } from '../helpers/index.js';
 import { MessageResponse } from '../models/index.js';
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
@@ -293,7 +293,7 @@ export class TransactionLogger extends NatsService {
         await super.setConnection(channel).init();
         this.setLogLevel(lvl);
         this.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
-            const log = new Logger();
+            const log = new PinoLogger();
             const attributes = [
                 ...types,
                 date,

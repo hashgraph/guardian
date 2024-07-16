@@ -131,9 +131,6 @@ Promise.all([
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
-    //Todo: need to remove this connection, but now it gives error
-    await new Logger().setConnection(cn);
-
     const state = new ApplicationState();
     await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
     const secretManager = SecretManager.New();

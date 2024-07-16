@@ -92,7 +92,7 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async debug(message: string, attributes?: string[]): Promise<void> {
+    public async debug(message: string, attributes?: string[], level?: number,): Promise<void> {
         this.logger.debug({
             message,
             attributes,
@@ -104,7 +104,7 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async info(message: string, attributes?: string[]): Promise<void> {
+    public async info(message: string, attributes?: string[], level?: number,): Promise<void> {
         this.logger.info({
             message,
             attributes,
@@ -116,7 +116,7 @@ export class PinoLogger {
      * @param message
      * @param attributes
      */
-    public async warn(message: string, attributes?: string[]): Promise<void> {
+    public async warn(message: string, attributes?: string[], level?: number,): Promise<void> {
         this.logger.warn({
             message,
             attributes,
@@ -128,7 +128,7 @@ export class PinoLogger {
      * @param error
      * @param attributes
      */
-    public async error(error: string | Error, attributes?: string[]): Promise<void> {
+    public async error(error: string | Error, attributes?: string[], level?: number,): Promise<void> {
         const message = !error ? 'Unknown error' : (typeof error === 'string' ? error : error.stack);
         this.logger.error({
             message,

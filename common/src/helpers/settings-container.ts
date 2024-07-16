@@ -1,5 +1,5 @@
 import { Singleton } from '../decorators/singleton.js';
-import { Logger } from './logger.js';
+import { PinoLogger } from './index.js';
 import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
 import { NatsService } from '../mq/index.js';
 
@@ -61,7 +61,7 @@ export class SettingsContainerOLD extends NatsService {
 
             if (!this._settings[setting] && process.env[setting]) {
                 await this.setGlobalApplicationKey(setting,  process.env[setting]);
-                await new Logger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE']);
+                await new PinoLogger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE']);
             }
         }
 
@@ -77,7 +77,7 @@ export class SettingsContainerOLD extends NatsService {
 
             if (!this._settings[setting] && process.env[setting]) {
                 await this.setGlobalApplicationKey(setting,  process.env[setting]);
-                await new Logger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE']);
+                await new PinoLogger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE']);
             }
         }
     }
