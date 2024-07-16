@@ -1,5 +1,5 @@
 import '../config.js'
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, Users, Workers } from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, mongoLoggerInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, Users, Workers } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
@@ -50,9 +50,10 @@ Promise.all([
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ]
         },
-    })
+    }),
+    mongoLoggerInitialization()
 ]).then(async values => {
-    const [db, cn, app] = values;
+    const [db, cn, app, loggerMongo] = values;
     app.listen();
     DataBaseHelper.orm = db;
     // @ts-ignore
@@ -63,7 +64,7 @@ Promise.all([
 
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
 
-    const logger: PinoLogger = await pinoLoggerInitialization(db);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
@@ -97,7 +98,6 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, policyServiceName);
     new CommonVariables().setVariable('channel', channel);
 
-    new Logger().setConnection(cn);
     new BlockTreeGenerator().setConnection(cn);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);

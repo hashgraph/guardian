@@ -59,7 +59,6 @@ Promise.all([
         app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
         app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
 
-        // new Logger().setConnection(cn);
         await new Guardians().setConnection(cn).init();
         await new IPFS().setConnection(cn).init();
         await new PolicyEngine().setConnection(cn).init();

@@ -37,20 +37,21 @@ interface LoggerOptions {
  */
 @Singleton
 export class PinoLogger {
-    private readonly options: LoggerOptions;
-    private readonly logLevel: LogType;
-    private readonly mapTransports: { [key: string]: any };
-    private readonly transports: string;
-    private readonly determinedTransports: (new (options: any) => any)[];
-    private readonly logger: pino.Logger;
+    private options: LoggerOptions;
+    private logLevel: LogType;
+    private mapTransports: { [key: string]: any };
+    private transports: string;
+    private determinedTransports: (new (options: any) => any)[];
+    private logger: pino.Logger;
 
-    constructor(options: LoggerOptions) {
+    public init(options: LoggerOptions) {
         this.options = options;
         this.logLevel = options.logLevel;
         this.mapTransports = options.mapTransports;
         this.transports = options.transports;
         this.determinedTransports = this.determineTransports();
         this.logger = this.create();
+        return this;
     }
 
     private determineTransports() {
@@ -68,7 +69,7 @@ export class PinoLogger {
         return determinedTransports;
     }
 
-    create() {
+    private create() {
         const transportInstances = this.determinedTransports.map(TransportClass => new TransportClass(this.options));
 
         return pino({

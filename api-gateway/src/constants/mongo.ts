@@ -4,4 +4,4 @@ export const DEFAULT = {
     MAX_IDLE_TIME_MS: '30000',
 };
 
-export const PROVIDER = 'MONGO_PROVIDER';
+export const LOGGER_PROVIDER = 'LOGGER_MONGO_PROVIDER';

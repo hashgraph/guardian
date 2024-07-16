@@ -1,18 +1,17 @@
-import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, Logger, MessageBrokerChannel, mongoLoggerInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { startMetricsServer } from './utils/metrics.js';
-import { mongoInitialization } from './helpers/mongo-initialization.js';
 
 export const obj = {};
 
 Promise.all([
     MessageBrokerChannel.connect('policy-service'),
-    mongoInitialization()
+    mongoLoggerInitialization()
 ]).then(async values => {
-    const [cn, db] = values;
+    const [cn, loggerMongo] = values;
 
-    const logger: PinoLogger = await pinoLoggerInitialization(db);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
     new Logger().setConnection(cn);
     const state = new ApplicationState();

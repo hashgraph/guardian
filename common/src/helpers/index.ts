@@ -26,6 +26,6 @@ export * from './policy-property.js';
 export * from './mongo-transport.js';
 export * from './pino-file-transport.js';
 export * from './console-transport.js';
+export * from './mongo-logger-initialization.js';
 export * from './pino-logger.js';
-export * from './pino-logger-provider.js';
 export * from './pino-logger-initialization.js';

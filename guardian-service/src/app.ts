@@ -21,7 +21,7 @@ import {
     LargePayloadContainer, Logger,
     MessageBrokerChannel,
     MessageServer,
-    Migration,
+    Migration, mongoLoggerInitialization,
     OldSecretManager, PinoLogger, pinoLoggerInitialization,
     Policy,
     RetirePool,
@@ -111,9 +111,10 @@ Promise.all([
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ]
         },
-    })
+    }),
+    mongoLoggerInitialization()
 ]).then(async values => {
-    const [db, cn, app] = values;
+    const [db, cn, app, loggerMongo] = values;
 
     app.listen();
 
@@ -128,7 +129,7 @@ Promise.all([
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
-    const logger: PinoLogger = await pinoLoggerInitialization(db);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
     //Todo: need to remove this connection, but now it gives error
     await new Logger().setConnection(cn);

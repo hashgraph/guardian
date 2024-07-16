@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, mongoLoggerInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -36,16 +36,16 @@ Promise.all([
             ]
         },
     }),
+    mongoLoggerInitialization()
 ]).then(async values => {
-    const [db, cn, app] = values;
+    const [db, cn, app, loggerMongo] = values;
     DataBaseHelper.orm = db;
 
     app.listen();
     const channel = new MessageBrokerChannel(cn, 'worker');
 
-    const logger: PinoLogger = await pinoLoggerInitialization(db);
-    // const logger = new Logger();
-    // logger.setConnection(cn);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
     const state = new ApplicationState();
     await state.setServiceName('QUEUE').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);

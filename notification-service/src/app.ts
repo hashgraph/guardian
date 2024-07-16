@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration, mongoLoggerInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -35,16 +35,15 @@ Promise.all([
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
         },
     }),
+    mongoLoggerInitialization()
 ]).then(
     async (values) => {
-        const [_, db, mqConnection, app] = values;
+        const [_, db, mqConnection, app, loggerMongo] = values;
         DataBaseHelper.orm = db;
 
         app.listen();
 
-        const logger: PinoLogger = await pinoLoggerInitialization(db);
-
-        // new Logger().setConnection(mqConnection);
+        const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
         const state = new ApplicationState();
         await state

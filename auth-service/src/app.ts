@@ -1,6 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration, mongoLoggerInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -20,7 +20,7 @@ Promise.all([
         ...COMMON_CONNECTION_CONFIG,
         migrations: {
             path: 'dist/migrations',
-            transactional: false
+            transactional: false,
         },
     }),
     MikroORM.init<MongoDriver>({
@@ -28,8 +28,8 @@ Promise.all([
         driverOptions: {
             useUnifiedTopology: true,
             minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
-            maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
-            maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
+            maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
+            maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10),
         },
         ensureIndexes: true,
     }),
@@ -44,13 +44,14 @@ Promise.all([
             ],
         },
     }),
-    InitializeVault(process.env.VAULT_PROVIDER)
-]).then(async ([_, db, cn, app, vault]) => {
+    InitializeVault(process.env.VAULT_PROVIDER),
+    mongoLoggerInitialization(),
+]).then(async ([_, db, cn, app, vault, loggerMongo]) => {
     DataBaseHelper.orm = db;
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
 
-    const logger: PinoLogger = await pinoLoggerInitialization(db);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
     state.updateState(ApplicationStates.INITIALIZING);
     try {
@@ -69,7 +70,6 @@ Promise.all([
 
         app.listen();
 
-        // new Logger().setConnection(cn);
         await new AccountService().setConnection(cn).init();
         new AccountService().registerListeners(logger);
         await new WalletService().setConnection(cn).init();

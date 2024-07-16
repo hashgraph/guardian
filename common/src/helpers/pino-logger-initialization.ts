@@ -9,10 +9,10 @@ import { PinoLogType } from '@guardian/interfaces';
 //helpers
 import { levelTypeMapping, MAP_TRANSPORTS, PinoLogger } from './pino-logger.js';
 
-export async function pinoLoggerInitialization(db: MikroORM<MongoDriver> | null) {
+export function pinoLoggerInitialization(db: MikroORM<MongoDriver> | null) {
     const loggerOptions = {
         logLevel: levelTypeMapping[process.env.LOG_LEVEL] ?? PinoLogType.INFO,
-        collectionName: process.env.LOG_COLLECTION ?? 'log',
+        collectionName: process.env.DB_LOGGER_COLLECTION ?? 'log',
         filePath: process.env.LOG_FILE_PATH ?? './logs/app.log',
         client: db?.em.getDriver().getConnection().getDb(),
         transports: process.env.TRANSPORTS ?? '',
@@ -20,5 +20,5 @@ export async function pinoLoggerInitialization(db: MikroORM<MongoDriver> | null)
         seqUrl: process.env.SEQ_URL,
     };
 
-    return new PinoLogger(loggerOptions);
+    return new PinoLogger().init(loggerOptions);
 }

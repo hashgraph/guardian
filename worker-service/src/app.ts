@@ -1,4 +1,4 @@
-import { ApplicationState, LargePayloadContainer, MessageBrokerChannel, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, MessageBrokerChannel, mongoLoggerInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
@@ -6,7 +6,6 @@ import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { mongoInitialization } from './helpers/mongo-initialization.js';
 
 @Module({
     providers: [
@@ -28,16 +27,14 @@ Promise.all([
             ]
         },
     }),
-    mongoInitialization()
+    mongoLoggerInitialization()
 ]).then(async values => {
-    const [cn, app, db] = values;
+    const [cn, app, loggerMongo] = values;
     app.listen();
     const channel = new MessageBrokerChannel(cn, 'worker');
 
-    const logger: PinoLogger = await pinoLoggerInitialization(db);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
-    // const logger = new Logger();
-    // logger.setConnection(cn);
     await new Users().setConnection(cn).init();
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();

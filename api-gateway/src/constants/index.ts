@@ -16,4 +16,4 @@ export { REQUIRED_PROPS as TOOL_REQUIRED_PROPS } from './tool.js';
 
 export { REQUIRED_PROPS as TOKEN_REQUIRED_PROPS } from './token.js';
 
-export { DEFAULT as DEFAULT_MONGO, PROVIDER as MONGO_PROVIDER } from './mongo.js';
+export { DEFAULT as DEFAULT_MONGO, LOGGER_PROVIDER as LOGGER_MONGO_PROVIDER } from './mongo.js';
