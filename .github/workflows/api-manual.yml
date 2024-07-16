@@ -129,6 +129,9 @@ jobs:
 
             - name: Run tests with Cypress
               run: |
+                  sudo apt install libnss
+                  sudo apt install libnss3-dev libgdk-pixbuf2.0-dev libgtk-3-dev libxss-dev
+                  sudo apt install Xvfb
                   pushd e2e-tests
                   npm install --force
                   ELECTRON_RUN_AS_NODE=1 npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
