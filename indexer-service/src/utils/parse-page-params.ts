@@ -1,7 +1,7 @@
 import { DataBaseUtils } from '@indexer/common';
-import { IPageFilters } from '@indexer/interfaces';
+import { PageFilters } from '@indexer/interfaces';
 
-export function parsePageParams(msg: IPageFilters, limit = 100) {
+export function parsePageParams(msg: PageFilters, limit = 100) {
     return DataBaseUtils.pageParams(
         msg.pageSize,
         msg.pageIndex,

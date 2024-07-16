@@ -1,6 +1,6 @@
 {
   "/api/v1/*": {
-      "target": "http://api-gateway:3002/",
+      "target": "http://api-gateway:3021/",
       "secure": false,
       "logLevel": "debug",
       "changeOrigin": true,
@@ -10,7 +10,7 @@
       }
   },
   "/ws/*": {
-      "target": "http://api-gateway:3002/",
+      "target": "http://api-gateway:3021/",
       "secure": false,
       "ws": true,
       "logLevel": "debug",

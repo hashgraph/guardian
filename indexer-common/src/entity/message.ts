@@ -7,6 +7,7 @@ import {
     Index,
 } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { Message as IMessage } from '@indexer/interfaces';
 
 @Entity()
 @Unique({ name: 'consensus_timestamp', properties: ['consensusTimestamp'] })
@@ -14,7 +15,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'type', properties: ['type'] })
 @Index({ name: 'files', properties: ['files'] })
-export class Message {
+export class Message implements IMessage {
     @PrimaryKey()
     _id: ObjectId;
 
@@ -63,7 +64,7 @@ export class Message {
         schemaId?: string;
         schemaName?: string;
         policyId?: string;
-        policyIds?: string;
+        policyIds?: string[];
         textSearch?: string;
         childSchemas?: any[];
         owner?: string;
@@ -74,6 +75,7 @@ export class Message {
         tokensCount?: number;
         hash?: string;
         hashMap?: any;
+        properties?: string[];
     };
 
     @Property({ nullable: true })

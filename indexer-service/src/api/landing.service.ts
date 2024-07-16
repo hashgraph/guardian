@@ -8,6 +8,10 @@ import {
     ProjectCoordinates,
     Analytics,
 } from '@indexer/common';
+import {
+    LandingAnalytics as IAnalytics,
+    ProjectCoordinates as IProjectCoordinates,
+} from '@indexer/interfaces';
 
 @Controller()
 export class LandingService {
@@ -31,12 +35,14 @@ export class LandingService {
                 ],
             }
         );
-        return new MessageResponse(stats.reverse());
+        return new MessageResponse<IAnalytics[]>(stats.reverse());
     }
 
     @MessagePattern(IndexerMessageAPI.GET_PROJECTS_COORDINATES)
     async getProjects(): Promise<AnyResponse<any>> {
         const em = DataBaseHelper.getEntityManager();
-        return new MessageResponse(await em.findAll(ProjectCoordinates));
+        return new MessageResponse<IProjectCoordinates[]>(
+            await em.findAll(ProjectCoordinates)
+        );
     }
 }

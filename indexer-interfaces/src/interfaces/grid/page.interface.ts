@@ -1,7 +1,7 @@
 /**
- * Message response interface
+ * Page response
  */
-export interface IPage<T> {
+export interface Page<T> {
     /**
      * Items
      */
@@ -22,14 +22,4 @@ export interface IPage<T> {
      * Order
      */
     readonly order?: { [field: string]: string };
-}
-
-/**
- * Message response interface
- */
-export interface IResults<T> {
-    /**
-     * Items
-     */
-    readonly results: T;
 }

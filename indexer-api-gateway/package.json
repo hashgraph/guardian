@@ -1,10 +1,12 @@
 {
     "packageManager": "yarn@1.22.21",
-    "_moduleAliases": {
-        "@api": "dist/api",
-        "@helpers": "dist/helpers",
-        "@auth": "dist/auth",
-        "@subscribers": "dist/subscribers"
+    "imports": {
+        "#api": "./dist/api",
+        "#helpers": "./dist/helpers",
+        "#auth": "./dist/auth",
+        "#subscribers": "./dist/subscribers",
+        "#dto": "./dist/dto/index.js",
+        "#decorators": "./dist/decorators/index.js"
     },
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
@@ -12,8 +14,8 @@
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@indexer/interfaces": "^2.22.0",
-        "@indexer/common": "^2.22.0",
+        "@indexer/interfaces": "^2.26.2",
+        "@indexer/common": "^2.26.2",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
@@ -83,5 +85,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "2.22.0"
+    "version": "2.26.2"
 }
