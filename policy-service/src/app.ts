@@ -13,12 +13,9 @@ Promise.all([
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
-    new Logger().setConnection(cn);
     const state = new ApplicationState();
     await state.setServiceName('POLICY_SERVICE').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
-
-    /////////////
 
     state.updateState(ApplicationStates.INITIALIZING);
 

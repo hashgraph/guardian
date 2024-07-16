@@ -130,12 +130,6 @@ export class PolicyContainer extends NatsService {
         return this.container.size
     }
 
-    // /**
-    //  * Logger instance
-    //  * @private
-    //  */
-    // private readonly logger: PinoLogger
-
     /**
      * Generate policy subscription
      * @private
@@ -155,7 +149,6 @@ export class PolicyContainer extends NatsService {
         this.runServiceScript = process.env.RUN_SERVICE_SCRIPT;
         this.stopServiceScript = process.env.RUN_SERVICE_SCRIPT;
         this.instanceId = GenerateUUIDv4();
-        // this.logger = new Logger();
         this._policiInfoArrays = new Map();
     }
 
