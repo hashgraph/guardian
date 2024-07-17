@@ -125,7 +125,7 @@ export class InterfaceDocumentsSource {
         let paginationData = null;
 
         if (pagination) {
-            if (itemsPerPage && page && size) {
+            if (itemsPerPage && page) {
                 await pagination.setState(user, {itemsPerPage, page, size});
             }
 
