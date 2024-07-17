@@ -175,14 +175,14 @@ paths:
           description: Page index
           example: 0
           schema:
-            type: string
+            type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
           example: 10
           schema:
-            type: string
+            type: number
         - name: orderField
           required: false
           in: query
@@ -281,14 +281,14 @@ paths:
           description: Page index
           example: 0
           schema:
-            type: string
+            type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
           example: 10
           schema:
-            type: string
+            type: number
         - name: orderField
           required: false
           in: query
@@ -400,14 +400,14 @@ paths:
           description: Page index
           example: 0
           schema:
-            type: string
+            type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
           example: 10
           schema:
-            type: string
+            type: number
         - name: orderField
           required: false
           in: query
@@ -512,14 +512,14 @@ paths:
           description: Page index
           example: 0
           schema:
-            type: string
+            type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
           example: 10
           schema:
-            type: string
+            type: number
         - name: orderField
           required: false
           in: query
@@ -624,14 +624,14 @@ paths:
           description: Page index
           example: 0
           schema:
-            type: string
+            type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
           example: 10
           schema:
-            type: string
+            type: number
         - name: orderField
           required: false
           in: query
@@ -864,14 +864,14 @@ paths:
           description: Page index
           example: 0
           schema:
-            type: string
+            type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
           example: 10
           schema:
-            type: string
+            type: number
         - name: orderField
           required: false
           in: query
@@ -1640,14 +1640,14 @@ paths:
           description: Page index
           example: 0
           schema:
-            type: string
+            type: number
         - name: pageSize
           required: false
           in: query
           description: Page size
           example: 10
           schema:
-            type: string
+            type: number
         - name: orderField
           required: false
           in: query
