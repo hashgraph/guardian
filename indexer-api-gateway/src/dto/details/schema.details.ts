@@ -104,7 +104,29 @@ export class SchemaActivityDTO implements SchemaActivity {
     vps: number;
 }
 
-export class SchemaDTO
+export class SchemaGridDTO
+    extends MessageDTO<SchemaOptionsDTO, SchemaAnalyticsDTO>
+    implements ISchema
+{
+    @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.SCHEMA
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.PublishSchema
+    })
+    declare action: MessageAction;
+    @ApiProperty({
+        type: SchemaOptionsDTO,
+    })
+    declare options: SchemaOptionsDTO;
+}
+
+export class SchemaDetailsItemDTO
     extends MessageDTO<SchemaOptionsDTO, SchemaAnalyticsDTO>
     implements ISchema
 {
@@ -128,10 +150,22 @@ export class SchemaDTO
         type: SchemaAnalyticsDTO,
     })
     declare analytics?: SchemaAnalyticsDTO;
+    @ApiProperty({
+        description: 'Documents',
+        type: 'array',
+        items: {
+            type: 'string',
+        },
+        example: [
+            `{\"$id\":\"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\",\"$comment\":\"{ \\\"@id\\\": \\\"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\\\", \\\"term\\\": \\\"d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\\\" }\",\"title\":\"tagSchemaAPI339404\",\"description\":\"tagSchemaAPI339404\",\"type\":\"object\",\"properties\":{\"@context\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\",\"items\":{\"type\":\"string\"}}],\"readOnly\":true},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"array\",\"items\":{\"type\":\"string\"}}],\"readOnly\":true},\"id\":{\"type\":\"string\",\"readOnly\":true}},\"required\":[\"@context\",\"type\"],\"additionalProperties\":false,\"$defs\":{}}`,
+            `{\"@context\":{\"@version\":1.1,\"@vocab\":\"https://w3id.org/traceability/#undefinedTerm\",\"id\":\"@id\",\"type\":\"@type\",\"d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\":{\"@id\":\"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\",\"@context\":{}}}}`
+          ]
+    })
+    declare documents: any[];
 }
 
 export class SchemaDetailsDTO
-    extends DetailsActivityDTO<SchemaDTO, SchemaActivityDTO>
+    extends DetailsActivityDTO<SchemaDetailsItemDTO, SchemaActivityDTO>
     implements SchemaDetails
 {
     @ApiProperty({
@@ -140,9 +174,9 @@ export class SchemaDetailsDTO
     })
     declare uuid?: string;
     @ApiProperty({
-        type: SchemaDTO,
+        type: SchemaDetailsItemDTO,
     })
-    declare item?: SchemaDTO;
+    declare item?: SchemaDetailsItemDTO;
     @ApiProperty({
         type: RawMessageDTO,
     })

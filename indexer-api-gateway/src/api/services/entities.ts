@@ -26,15 +26,15 @@ import {
     ContractDTO,
     ContractDetailsDTO,
     TopicDTO,
-    VCDTO,
-    VPDTO,
-    DIDDTO,
+    VCGridDTO,
+    VPGridDTO,
+    DIDGridDTO,
     RoleDTO,
-    SchemaDTO,
+    SchemaGridDTO,
     ModuleDTO,
     ToolDTO,
     PolicyDTO,
-    RegistryUserDTO,
+    RegistryUserGridDTO,
     TopicDetailsDTO,
     VCDetailsDTO,
     VPDetailsDTO,
@@ -154,7 +154,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns registry users',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedResponse('Registry users', RegistryUserDTO)
+    @ApiPaginatedResponse('Registry users', RegistryUserGridDTO)
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
         type: InternalServerErrorDTO
@@ -488,7 +488,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns schemas',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedResponse('Schemas', SchemaDTO)
+    @ApiPaginatedResponse('Schemas', SchemaGridDTO)
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
         type: InternalServerErrorDTO
@@ -758,7 +758,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns DIDs',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedResponse('DIDs', DIDDTO)
+    @ApiPaginatedResponse('DIDs', DIDGridDTO)
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
         type: InternalServerErrorDTO
@@ -866,7 +866,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns VPs',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedResponse('VPs', VPDTO)
+    @ApiPaginatedResponse('VPs', VPGridDTO)
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
         type: InternalServerErrorDTO
@@ -990,7 +990,7 @@ export class EntityApi extends ApiClient {
         description: 'Returns VCs',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedResponse('VCs', VCDTO)
+    @ApiPaginatedResponse('VCs', VCGridDTO)
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
         type: InternalServerErrorDTO

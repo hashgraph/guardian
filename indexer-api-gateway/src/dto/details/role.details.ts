@@ -58,13 +58,13 @@ export class RoleDTO
     @ApiProperty({
         description: 'Type',
         enum: MessageType,
-        example: MessageType.ROLE_DOCUMENT
+        example: MessageType.ROLE_DOCUMENT,
     })
     declare type: MessageType;
     @ApiProperty({
         description: 'Action',
         enum: MessageAction,
-        example: MessageAction.CreateVC
+        example: MessageAction.CreateVC,
     })
     declare action: MessageAction;
     @ApiProperty({

@@ -68,14 +68,14 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
         example: ['QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX'],
     })
     files: string[];
-    @ApiProperty({
-        description: 'Documents',
-        type: 'array',
-        items: {
-            type: 'string',
-        },
-        example: ['667c240639282050117a1985']
-    })
+    // @ApiProperty({
+    //     description: 'Documents',
+    //     type: 'array',
+    //     items: {
+    //         type: 'string',
+    //     },
+    //     example: ['667c240639282050117a1985']
+    // })
     documents: any[];
     @ApiProperty({
         description: 'Topics',

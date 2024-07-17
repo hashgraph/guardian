@@ -4,7 +4,7 @@ import {
     SchemaTreeNodeData,
 } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
-import { SchemaDTO } from './details/schema.details.js';
+import { SchemaGridDTO } from './details/schema.details.js';
 
 export class SchemaTreeNodeDataDTO implements SchemaTreeNodeData {
     @ApiProperty({
@@ -48,9 +48,9 @@ export class SchemaTreeDTO implements SchemaTree {
     })
     id: string;
     @ApiProperty({
-        type: SchemaDTO,
+        type: SchemaGridDTO,
     })
-    item?: SchemaDTO;
+    item?: SchemaGridDTO;
     @ApiProperty({
         type: SchemaTreeNodeDTO,
     })
