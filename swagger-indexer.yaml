@@ -1967,22 +1967,22 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: &ref_3
-            - 667c240639282050117a1985
           type: array
-          items:
+          description: Documents
+          items: &ref_3
             type: string
+          example: &ref_4
+            - 667c240639282050117a1985
         topics:
           description: Topics
-          example: &ref_4
+          example: &ref_5
             - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: &ref_5
+          example: &ref_6
             - 0.0.4481265
           type: array
           items:
@@ -2272,20 +2272,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -2586,20 +2585,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -2826,20 +2824,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3046,20 +3043,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3300,20 +3296,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3561,15 +3556,10 @@ components:
           type: string
           description: Message identifier
           example: '1706823227.586179534'
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
         row:
           $ref: '#/components/schemas/TokenDTO'
       required:
         - id
-        - uuid
         - row
     RoleOptionsDTO:
       type: object
@@ -3653,20 +3643,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3856,20 +3845,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4026,20 +4014,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4252,20 +4239,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4472,20 +4458,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4633,20 +4618,15 @@ components:
           type: string
           description: Message identifier
           example: '1706823227.586179534'
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
         row:
           $ref: '#/components/schemas/NFTDTO'
         history:
-          description: NFT transaction history
           type: array
+          description: NFT transaction history
           items:
-            type: string
+            type: object
       required:
         - id
-        - uuid
         - row
         - history
     TopicOptionsDTO:
@@ -4758,20 +4738,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5053,20 +5032,19 @@ components:
           items:
             type: string
         documents:
-          description: Documents
-          example: *ref_3
           type: array
-          items:
-            type: string
+          description: Documents
+          items: *ref_3
+          example: *ref_4
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
