@@ -913,7 +913,7 @@ export class EntityService {
                 Message,
                 {
                     uuid: item.uuid,
-                    type: MessageType.VP_DOCUMENT,
+                    type: MessageType.DID_DOCUMENT,
                 },
                 {
                     orderBy: {
