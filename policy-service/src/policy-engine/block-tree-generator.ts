@@ -131,13 +131,13 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId, async (msg: any) => {
 
-            const { user, blockId } = msg;
+            const {user, blockId, params} = msg;
 
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
             if (block && (await block.isAvailable(userFull))) {
-                const data = await block.getData(userFull, blockId, null);
+                const data = await block.getData(userFull, blockId, params);
                 return new MessageResponse(data);
             } else {
                 return new MessageResponse(null);
@@ -145,7 +145,7 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
-            const { user, tag } = msg;
+            const {user, tag, params} = msg;
 
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
@@ -156,7 +156,7 @@ export class BlockTreeGenerator extends NatsService {
                         'Block is not supporting get data functions'
                     );
                 }
-                const data = await block.getData(userFull, block.uuid, null);
+                const data = await block.getData(userFull, block.uuid, params);
                 return new MessageResponse(data);
             } else {
                 return new MessageResponse(null);
