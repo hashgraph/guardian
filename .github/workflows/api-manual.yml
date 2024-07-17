@@ -130,9 +130,7 @@ jobs:
             - name: Run tests with Cypress
               run: |
                   lsb_release -a
-                  sudo apt install libnss3
-                  sudo apt install libnss3-dev libgdk-pixbuf2.0-dev libgtk-3-dev libxss-dev
-                  sudo apt install Xvfb
+                  sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
                   pushd e2e-tests
                   npm install --force
                   ELECTRON_RUN_AS_NODE=1 npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
