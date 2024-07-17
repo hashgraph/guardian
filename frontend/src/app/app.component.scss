@@ -418,6 +418,15 @@ body {
     position: relative;
 }
 
+::ng-deep body .custom-header-dialog {
+    .p-dialog-content {
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+}
+
 ::ng-deep body .dialog-grid-container {
     margin-top: 16px;
     display: flex;
@@ -429,6 +438,10 @@ body {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .col-button {
+        padding: 12px 6px !important;
     }
 
     .col-auto {
@@ -453,6 +466,12 @@ body {
         max-width: 120px;
     }
 
+    .col-100 {
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+    }
+
     .col-80 {
         width: 80px;
         min-width: 80px;
@@ -463,6 +482,12 @@ body {
         width: 64px;
         min-width: 64px;
         max-width: 64px;
+    }
+
+    .col-44 {
+        width: 44px;
+        min-width: 44px;
+        max-width: 44px;
     }
 
     .dialog-grid-header {
@@ -476,7 +501,7 @@ body {
 
         &>div {
             font-weight: 500;
-            padding: 12px 4px;
+            padding: 12px 8px;
         }
     }
 
@@ -499,11 +524,26 @@ body {
             padding: 0px 12px;
 
             &>div {
-                padding: 22px 6px;
+                padding: 22px 10px;
             }
 
             &:hover {
                 background: #f1f1f1;
+            }
+
+            &[expand="true"] {
+                border-bottom: none
+            }
+        }
+
+        .dialog-grid-expand-row {
+            width: 100%;
+            border-bottom: 1px solid #E1E7EF;
+            padding: 0px 12px;
+            display: none;
+
+            &[expand="true"] {
+                display: flex;
             }
         }
     }

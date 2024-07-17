@@ -1178,7 +1178,6 @@ export class PoliciesComponent implements OnInit {
                     WizardMode.CREATE,
                     (value) => {
                         this.loading = true;
-                        console.log(value);
                         this.wizardService
                             .createPolicyAsync({
                                 wizardConfig: value.config,
@@ -1186,7 +1185,6 @@ export class PoliciesComponent implements OnInit {
                             })
                             .subscribe(
                                 (result) => {
-                                    console.log(result);
                                     const { taskId, expectation } = result;
                                     this.router.navigate(['task', taskId], {
                                         queryParams: {
@@ -1352,9 +1350,10 @@ export class PoliciesComponent implements OnInit {
     public runTest(policy: any) {
         const item = this.policies?.find((e) => e.id === policy?.id);
         const dialogRef = this.dialogService.open(PolicyTestDialog, {
+            showHeader: false,
             header: 'Policy Tests',
-            width: '800px',
-            styleClass: 'custom-dialog',
+            width: '1000px',
+            styleClass: 'custom-dialog custom-header-dialog',
             data: { 
                 policy: item
             }

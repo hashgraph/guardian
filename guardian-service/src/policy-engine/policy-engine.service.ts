@@ -28,6 +28,7 @@ import {
     Policy,
     PolicyImportExport,
     PolicyMessage,
+    RecordImportExport,
     RunFunctionAsync,
     Schema as SchemaCollection,
     Singleton,
@@ -51,6 +52,7 @@ import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
 import { VpDocumentLoader, VcDocumentLoader, PolicyDataLoader } from './helpers/policy-data/loaders/index.js';
+import { getDetails } from '../api/record.service.js';
 
 /**
  * PolicyEngineChannel
@@ -248,11 +250,67 @@ export class PolicyEngineService {
             })
 
         this.channel.getMessages(PolicyEvents.RECORD_UPDATE_BROADCAST,
-            async (msg: any) => {
-                const policy = await DatabaseServer.getPolicyById(msg?.policyId);
+            async (msg: {
+                id: string,
+                type: string,
+                policyId: string,
+                status: string,
+                index: number,
+                error: string,
+                count: number,
+            }) => {
+                const policy = await DatabaseServer.getPolicyById(msg.policyId);
                 if (policy) {
-                    msg.user = { did: policy.owner };
-                    this.channel.publish('update-record', msg);
+                    const evert = { ...msg, user: { did: policy.owner } };
+                    this.channel.publish('update-record', evert);
+                }
+            })
+
+        this.channel.getMessages(PolicyEvents.TEST_UPDATE_BROADCAST,
+            async (msg: {
+                id: string,
+                type: string,
+                policyId: string,
+                status: string,
+                index: number,
+                error: string,
+                count: number,
+                result: any
+            }) => {
+                const test = await DatabaseServer.getPolicyTestByRecord(msg.id);
+                if (test) {
+                    const { status, index, count, error, result } = msg;
+                    if (status === 'Running') {
+                        test.status = 'Running';
+                        test.progress = Math.floor(index / count * 100);
+                        test.result = null;
+                        test.error = null;
+                    } else if (status === 'Stopped') {
+                        test.result = await getDetails(result);
+                        if (test.result?.total === 100) {
+                            test.status = 'Success';
+                        } else {
+                            test.status = 'Failure';
+                        }
+                        test.progress = null;
+                        test.error = null;
+                    } else if (status === 'Error') {
+                        test.status = 'Failure';
+                        test.result = null;
+                        test.progress = null;
+                        test.error = error;
+                    } else if (status === 'Finished') {
+                        test.status = 'Success';
+                        test.result = await getDetails(result);
+                        test.progress = null;
+                        test.error = null;
+                    } else {
+                        test.status = 'Failure';
+                        test.result = null;
+                        test.progress = null;
+                        test.error = null;
+                    }
+                    await DatabaseServer.updatePolicyTest(test);
                 }
             })
 
@@ -980,7 +1038,7 @@ export class PolicyEngineService {
                     await this.policyEngine.destroyModel(model.id.toString());
 
                     const databaseServer = new DatabaseServer(model.id.toString());
-                    await databaseServer.clearDryRun();
+                    await databaseServer.clear(true);
 
                     return new MessageResponse(true);
                 } catch (error) {
@@ -1445,7 +1503,8 @@ export class PolicyEngineService {
                         username,
                         did,
                         newAccountId.toString(),
-                        newPrivateKey.toString()
+                        newPrivateKey.toString(),
+                        false
                     );
 
                     const instanceDB = new DatabaseServer(policyId);
@@ -1501,7 +1560,9 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RESTART_DRY_RUN,
             async (msg: { policyId: string, owner: IOwner }) => {
                 try {
+                    console.time('RESTART_DRY_RUN')
                     const { policyId, owner } = msg;
+                    console.time('1')
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
                     if (!model.config) {
@@ -1510,16 +1571,25 @@ export class PolicyEngineService {
                     if (model.status !== PolicyType.DRY_RUN) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-
+                    console.timeEnd('1')
+                    console.time('2')
                     await this.policyEngine.destroyModel(model.id.toString());
+                    console.timeEnd('2')
+                    console.time('3')
                     const databaseServer = new DatabaseServer(model.id.toString());
-                    await databaseServer.clearDryRun();
-
+                    await databaseServer.clear(true);
+                    console.timeEnd('3')
+                    console.time('4')
                     const newPolicy = await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run');
+                    console.timeEnd('4')
+                    console.time('5')
                     await this.policyEngine.generateModel(newPolicy.id.toString());
-
+                    console.timeEnd('5')
+                    console.time('6')
                     const filters = await this.policyEngine.addAccessFilters({}, owner);
                     const policies = (await DatabaseServer.getListOfPolicies(filters));
+                    console.timeEnd('6')
+                    console.timeEnd('RESTART_DRY_RUN')
                     return new MessageResponse({ policies });
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1832,7 +1902,7 @@ export class PolicyEngineService {
                     const { policyId, zip, owner } = msg;
                     const buffer = Buffer.from(zip.data);
                     const test = await DatabaseServer.createPolicyTest(
-                        GenerateUUIDv4(), owner.creator, policyId, 'NEW', null, buffer, null
+                        GenerateUUIDv4(), owner.creator, policyId, 'New', null, buffer, null
                     );
                     return new MessageResponse(test);
                 } catch (error) {
@@ -1845,8 +1915,35 @@ export class PolicyEngineService {
                 try {
                     const { policyId, testId } = msg;
                     const test = await DatabaseServer.getPolicyTest(policyId, testId);
+                    if (!test) {
+                        return new MessageError('Policy test does not exist.', 404);
+                    }
+                    const zip = await DatabaseServer.loadFile(test.file);
+                    if (!zip) {
+                        return new MessageError('Policy test does not exist.', 404);
+                    }
 
+                    await DatabaseServer.clearDryRun(policyId, false);
 
+                    const options = { mode: 'test' };
+                    const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
+                    const guardiansService = new GuardiansService();
+                    const result: string = await guardiansService
+                        .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
+                            records: recordToImport.records,
+                            results: recordToImport.results,
+                            options
+                        });
+                    if (result) {
+                        test.resultId = result;
+                        test.duration = recordToImport.duration;
+                        test.date = (new Date()).toISOString();
+                        test.status = 'Running';
+                        test.progress = 0;
+                        test.result = null;
+                        test.error = null;
+                        await DatabaseServer.updatePolicyTest(test);
+                    }
 
                     return new MessageResponse(test);
                 } catch (error) {
@@ -1872,7 +1969,6 @@ export class PolicyEngineService {
             async (msg: { policyId: string, testId: string, owner: IOwner }) => {
                 try {
                     const { policyId, testId } = msg;
-                    console.log(policyId, testId)
                     await DatabaseServer.deletePolicyTest(policyId, testId);
                     return new MessageResponse(true);
                 } catch (error) {

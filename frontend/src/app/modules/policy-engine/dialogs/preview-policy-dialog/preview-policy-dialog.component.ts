@@ -43,7 +43,13 @@ export class PreviewPolicyDialog {
         if (this.config.data.policy) {
             const importFile = this.config.data.policy;
 
-            this.newVersions = importFile.newVersions || [];
+            this.newVersions = importFile.newVersions || [{
+                messageId: '1',
+                version: '1.0.0'
+            },{
+                messageId: '1',
+                version: '1.0.1'
+            }];
             this.policy = importFile.policy;
 
             this.policyGroups = '';

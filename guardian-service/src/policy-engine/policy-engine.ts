@@ -846,13 +846,14 @@ export class PolicyEngine extends NatsService {
         const logger = new Logger();
         logger.info('Dry-run Policy', ['GUARDIAN_SERVICE']);
 
+        const dryRunId = model.id.toString();
+        const databaseServer = new DatabaseServer(dryRunId);
+
         const root = await this.users.getHederaAccount(user.creator);
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
-        const dryRunId = model.id.toString();
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId)
             .setTopicObject(topic);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions, dryRunId);
-        const databaseServer = new DatabaseServer(dryRunId);
 
         model = await this.dryRunSchemas(model, user);
         model.status = PolicyType.DRY_RUN;
@@ -865,7 +866,7 @@ export class PolicyEngine extends NatsService {
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,
             owner: user.creator,
-            policyId: model.id.toString(),
+            policyId: dryRunId,
             policyUUID: model.uuid
         });
         await rootTopic.saveKeys();
@@ -890,7 +891,6 @@ export class PolicyEngine extends NatsService {
         const messageId = result.getId();
         const url = result.getUrl();
 
-        const vcHelper = new VcHelper();
         let credentialSubject: any = {
             id: messageId,
             name: model.name || '',
@@ -911,6 +911,7 @@ export class PolicyEngine extends NatsService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
+        const vcHelper = new VcHelper();
         const didDocument = await vcHelper.loadDidDocument(user.creator);
         const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
 
@@ -922,14 +923,15 @@ export class PolicyEngine extends NatsService {
             policyId: `${model.id}`
         });
 
-        await DatabaseServer.createVirtualUser(
-            model.id.toString(),
+        await databaseServer.createVirtualUser(
             'Administrator',
             root.did,
             root.hederaAccountId,
             root.hederaAccountKey,
             true
         );
+
+        await DatabaseServer.setSystemMode(dryRunId, true);
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
@@ -988,7 +990,7 @@ export class PolicyEngine extends NatsService {
         if (isValid) {
             if (policy.status === PolicyType.DRY_RUN) {
                 await this.destroyModel(policyId);
-                await DatabaseServer.clearDryRun(policy.id.toString());
+                await DatabaseServer.clearDryRun(policy.id.toString(), true);
             }
             const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
 

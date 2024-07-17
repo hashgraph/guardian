@@ -1,40 +1,97 @@
+
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Policy Tests</div>
+        <div *ngIf="policy" class="header-item">{{policy.name}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="close-icon-color"></svg-icon>
+    </div>
+</div>
 <div class="dialog-body">
     <div class="context">
         <div *ngIf="loading" class="loading">
             <div class="preloader-image preloader-image-l-size"></div>
         </div>
 
-
         <div *ngIf="tests && tests.length" class="dialog-grid-container">
             <div class="dialog-grid-header">
-                <div class="col-auto col-text">Status</div>
-                <div class="col-200 col-text">Date</div>
-                <div class="col-80 col-text">Result</div>
-                <div class="col-120"></div>
+                <div class="col-44"></div>
+                <div class="col-200 col-text">Start Date</div>
+                <div class="col-120 col-text">Duration</div>
+                <div class="col-120 col-text">Status</div>
+                <div class="col-auto">Progress</div>
+                <div class="col-120">Result</div>
+                <div class="col-120">Operations</div>
                 <div class="col-64"></div>
             </div>
             <div class="dialog-grid-body">
-                <div *ngFor="let item of tests" class="dialog-grid-row">
-                    <div class="col-auto col-text">{{item.status}}</div>
-                    <div class="col-200 col-text">{{item.date}}</div>
-                    <div class="col-80 col-text">{{item.result}}</div>
-                    <div class="col-120">
-                        <button 
-                            *ngIf="status === 'DRY-RUN' || status === 'DEMO'"
-                            (click)="runTest(item)"
-                            class="button"
-                            label="Run"
-                            pButton></button>
+                <ng-container *ngFor="let item of tests" >   
+                    <div class="dialog-grid-row" (click)="expand(item)" [attr.expand]="getExpand(item)">
+                        <div class="col-44">
+                            <svg-icon
+                                *ngIf="item.result || item.error"
+                                class="icon-btn"
+                                src="/assets/images/icons/right-arrow.svg"
+                                svgClass="disabled-color">
+                            </svg-icon>
+                        </div>
+                        <div class="col-200 col-text">{{getDate(item.date)}}</div>
+                        <div class="col-120 col-text">{{getTime(item.duration)}}</div>
+                        <div class="col-120 col-button">
+                            <div class="status-label {{item.status}}-status">{{item.status}}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div *ngIf="item.status==='Running'">
+                                <div class="progress-bar">
+                                    <div class="progress-bar-value" [style.width.%]="item.progress">
+                                        <!-- <span *ngIf="item.progress>10">{{getProgress(item.progress)}}</span> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-120">
+                            <div *ngIf="item.status === 'Success' || item.status === 'Failure'" class="results">
+                                <div *ngIf="item.result" class="results-total">{{getProgress(item.result?.total)}}</div>
+                            </div>
+                        </div>
+                        <div class="col-120 col-button">
+                            <ng-container *ngIf="status === 'DRY-RUN' || status === 'DEMO'">
+                                <button 
+                                    *ngIf="item.status !== 'Running'"
+                                    (click)="runTest(item, $event)"
+                                    class="button"
+                                    label="{{item.status==='New' ? 'Run' : 'Re-Run'}}"
+                                    pButton></button>
+                                <button 
+                                    *ngIf="item.status === 'Running'"
+                                    (click)="stopTest(item, $event)"
+                                    class="button"
+                                    label="Stop"
+                                    pButton></button>
+                            </ng-container>
+                        </div>
+                        <div class="col-64 col-button">
+                            <div class="small-btn">
+                                <svg-icon
+                                    (click)="deleteTest(item, $event)"
+                                    class="icon-btn"
+                                    src="/assets/images/icons/delete.svg"
+                                    svgClass="delete-color">
+                                </svg-icon>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-64">
-                        <svg-icon
-                            (click)="deleteTest(item)"
-                            class="icon-btn"
-                            src="/assets/images/icons/delete.svg"
-                            svgClass="delete-color">
-                        </svg-icon>
+                    <div class="dialog-grid-expand-row" [attr.expand]="getExpand(item)">
+                        <ng-template 
+                            *ngIf="item.result"
+                            [ngTemplateOutlet]="detailsTemplate"
+                            [ngTemplateOutletContext]="item.result"></ng-template>
+                        <div *ngIf="item.error" class="text-error">
+                            {{item.error}}
+                        </div>
                     </div>
-                </div>
+                </ng-container>
             </div>
         </div> 
 
@@ -59,3 +116,46 @@
         </div>
     </div>
 </div> -->
+
+<ng-template #detailsTemplate 
+    let-total="total" 
+    let-info="info"
+    let-results="documents"
+>
+    <div class="results-details">
+        <div class="results-header">
+            Common
+        </div>
+
+        <div class="results-info">
+            <div class="results-info-header">Created documents:</div>
+            <div>{{info?.documents}}</div>
+        </div>
+        <div class="results-info">
+            <div class="results-info-header">Minted tokens:</div>
+            <div>{{info?.tokens}}</div>
+        </div>
+        <div class="results-info">
+            <div class="results-info-header">Total rate:</div>
+            <div [attr.rate-color]="total">{{total}}%</div>
+        </div>
+
+        <div class="results-header">
+            Documents
+        </div>
+        <div class="results-body">
+            <div *ngFor="let item of results; let i=index" class="results-item">
+                <div class="document-type">{{item.type}}</div>
+                <div class="document-schema">{{item.schema}}</div>
+                <div class="document-rate" [attr.rate-color]="item.rate">{{item.rate}}</div>
+                <div class="document-view">
+                    <a (click)="openDocument(item)">View Document</a>
+                </div>
+            </div>
+        </div>
+        <div class="dialog-actions">
+            <button mat-raised-button color="primary" (click)="onDetails()">Details</button>
+        </div>
+    </div>
+
+</ng-template>

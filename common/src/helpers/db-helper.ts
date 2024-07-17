@@ -99,13 +99,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async remove(entity: T | T[]): Promise<void> {
-        if (Array.isArray(entity)) {
-            for (const element of entity) {
-                await this._em.removeAndFlush(element)
-            }
-        } else {
-            await this._em.removeAndFlush(entity);
-        }
+        await this._em.removeAndFlush(entity);
     }
 
     /**
@@ -266,7 +260,7 @@ export class DataBaseHelper<T extends BaseEntity> {
         await this._em.flush();
         await this._em.persistAndFlush(entityToUpdateOrCreate);
 
-      return entityToUpdateOrCreate;
+        return entityToUpdateOrCreate;
     }
 
     /**
@@ -324,11 +318,11 @@ export class DataBaseHelper<T extends BaseEntity> {
         const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
         delete data.id;
         delete data._id;
-        while(amount > 0) {
+        while (amount > 0) {
             delete data.id;
             delete data._id;
             await this._em.persist(repository.create(data));
-            amount --;
+            amount--;
         }
         await this._em.flush();
     }

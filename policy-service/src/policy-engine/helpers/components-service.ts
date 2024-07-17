@@ -313,9 +313,9 @@ export class ComponentsService {
         actions: any[],
         results: any[],
         options: any
-    ): Promise<boolean> {
+    ): Promise<string> {
         if (this._recordingController) {
-            return false;
+            return null;
         }
         if (!this._runningController) {
             this._runningController = new Running(

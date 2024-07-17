@@ -183,10 +183,10 @@ export class RecordUtils {
         actions: any[],
         results: any[],
         options: any
-    ): Promise<boolean> {
+    ): Promise<string> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
         if (!components) {
-            return false;
+            return null;
         }
         return await components.runRecord(actions, results, options);
     }

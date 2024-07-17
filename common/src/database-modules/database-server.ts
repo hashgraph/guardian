@@ -70,6 +70,12 @@ export class DatabaseServer {
      * Dry-run
      * @private
      */
+    private systemMode: boolean = false;
+
+    /**
+     * Dry-run
+     * @private
+     */
     private readonly classMap: Map<any, string> = new Map();
 
     /**
@@ -131,33 +137,52 @@ export class DatabaseServer {
     }
 
     /**
-     * Clear Dry Run table
+     * Set Dry Run id
+     * @param id
      */
-    public async clearDryRun(): Promise<void> {
-        console.log(this);
-        await DatabaseServer.clearDryRun(this.dryRun);
-        // Clear files
-        const files = await new DataBaseHelper(DryRunFiles).find({ policyId: this.dryRun });
-        await Promise.all(files.map(file => new DataBaseHelper(DryRunFiles).remove(file)));
+    public setSystemMode(systemMode: boolean): void {
+        this.systemMode = systemMode;
+    }
+
+    /**
+     * Set Dry Run id
+     * @param id
+     */
+    public static async setSystemMode(dryRunId: string, systemMode: boolean): Promise<void> {
+        const items = await new DataBaseHelper(DryRun).find({ dryRunId });
+        for (const item of items) {
+            item.systemMode = systemMode;
+        }
+        await new DataBaseHelper(DryRun).update(items);
     }
 
     /**
      * Clear Dry Run table
+     * @param systemMode
      */
-    public static async clearDryRun(dryRunId: string): Promise<void> {
-        const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
-        const naturalCount = Math.floor(
-            amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE
-        );
+    public async clear(all: boolean) {
+        await DatabaseServer.clearDryRun(this.dryRun, all);
+    }
+
+    /**
+     * Clear Dry Run table
+     * @param dryRunId
+     * @param systemMode
+     */
+    public static async clearDryRun(dryRunId: string, all: boolean): Promise<void> {
+        const filter = all ? { dryRunId } : { dryRunId, systemMode: false };
+        const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
+        const amount = await new DataBaseHelper(DryRun).count(filter);
+        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
         for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find(
-                { dryRunId },
-                { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE }
-            );
+            const items = await new DataBaseHelper(DryRun).find(filter, limit);
             await new DataBaseHelper(DryRun).remove(items);
         }
-        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
+        const restItems = await new DataBaseHelper(DryRun).find(filter);
         await new DataBaseHelper(DryRun).remove(restItems);
+
+        const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
+        await new DataBaseHelper(DryRunFiles).remove(files);
     }
 
     /**
@@ -231,7 +256,7 @@ export class DatabaseServer {
     /**
      * Find data by aggregation
      * @param entityClass Entity class
-     * @param aggregation Aggragation filter
+     * @param aggregation aggregate filter
      * @returns
      */
     private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
@@ -248,6 +273,42 @@ export class DatabaseServer {
         } else {
             return await new DataBaseHelper(entityClass).aggregate(aggregation);
         }
+    }
+
+    /**
+     * Add dry run id
+     * @param entityClass
+     * @param item
+     */
+    private addDryRunId(entityClass: any, item: any | any[]): any | any[] {
+        return DatabaseServer.addDryRunId(
+            item, this.dryRun, this.classMap.get(entityClass), this.systemMode
+        );
+    }
+
+    /**
+     * Add dry run id
+     * @param entityClass
+     * @param item
+     */
+    private static addDryRunId(
+        item: any | any[],
+        dryRunId: string,
+        dryRunClass: string,
+        systemMode: boolean
+    ): any | any[] {
+        if (Array.isArray(item)) {
+            for (const i of item) {
+                i.systemMode = systemMode;
+                i.dryRunId = dryRunId;
+                i.dryRunClass = dryRunClass;
+            }
+        } else {
+            item.systemMode = systemMode;
+            item.dryRunId = dryRunId;
+            item.dryRunClass = dryRunClass;
+        }
+        return item;
     }
 
     /**
@@ -274,8 +335,7 @@ export class DatabaseServer {
         const restCount = (amount % DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
 
         if (this.dryRun) {
-            item.dryRunId = this.dryRun;
-            item.dryRunClass = this.classMap.get(entityClass);
+            this.addDryRunId(entityClass, item);
             for (let i = 0; i < naturalCount; i++) {
                 await new DataBaseHelper(DryRun).createMuchData(item, DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
             }
@@ -295,15 +355,7 @@ export class DatabaseServer {
      */
     private async save<T extends BaseEntity>(entityClass: new () => T, item: any): Promise<T> {
         if (this.dryRun) {
-            if (Array.isArray(item)) {
-                for (const i of item) {
-                    i.dryRunId = this.dryRun;
-                    i.dryRunClass = this.classMap.get(entityClass);
-                }
-            } else {
-                item.dryRunId = this.dryRun;
-                item.dryRunClass = this.classMap.get(entityClass);
-            }
+            this.addDryRunId(entityClass, item);
             return await new DataBaseHelper(DryRun).save(item) as any;
         } else {
             return await new DataBaseHelper(entityClass).save(item);
@@ -322,19 +374,8 @@ export class DatabaseServer {
         row: any
     ): Promise<T> {
         if (this.dryRun) {
-            if (Array.isArray(row)) {
-                for (const i of row) {
-                    i.dryRunId = this.dryRun;
-                    i.dryRunClass = this.classMap.get(entityClass);
-                }
-            } else {
-                row.dryRunId = this.dryRun;
-                row.dryRunClass = this.classMap.get(entityClass);
-            }
-            return (await new DataBaseHelper(DryRun).update(
-                row,
-                criteria
-            )) as any;
+            this.addDryRunId(entityClass, row);
+            return (await new DataBaseHelper(DryRun).update(row, criteria)) as any;
         } else {
             return await new DataBaseHelper(entityClass).update(row, criteria);
         }
@@ -2571,27 +2612,53 @@ export class DatabaseServer {
         username: string,
         did: string,
         hederaAccountId: string,
-        hederaAccountKey?: string,
-        active: boolean = false
+        hederaAccountKey: string,
+        active: boolean,
+        systemMode?: boolean
     ): Promise<void> {
-        await new DataBaseHelper(DryRun).save({
-            dryRunId: policyId,
-            dryRunClass: 'VirtualUsers',
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             did,
             username,
             hederaAccountId,
             active
-        });
+        }, policyId, 'VirtualUsers', !!systemMode));
 
         if (hederaAccountKey) {
-            await new DataBaseHelper(DryRun).save({
-                dryRunId: policyId,
-                dryRunClass: 'VirtualKey',
+            await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
                 did,
                 type: did,
                 hederaAccountKey
-            });
+            }, policyId, 'VirtualKey', !!systemMode));
         }
+    }
+
+    /**
+     * Create Virtual User
+     * @param policyId
+     * @param username
+     * @param did
+     * @param hederaAccountId
+     * @param hederaAccountKey
+     * @param active
+     *
+     * @virtual
+     */
+    public async createVirtualUser(
+        username: string,
+        did: string,
+        hederaAccountId: string,
+        hederaAccountKey: string,
+        active: boolean = false
+    ): Promise<void> {
+        await DatabaseServer.createVirtualUser(
+            this.dryRun,
+            username,
+            did,
+            hederaAccountId,
+            hederaAccountKey,
+            active,
+            this.systemMode
+        )
     }
 
     /**
@@ -2726,12 +2793,10 @@ export class DatabaseServer {
         type: string,
         operatorId?: string
     ): Promise<any> {
-        await new DataBaseHelper(DryRun).save({
-            dryRunId: policyId,
-            dryRunClass: 'Transactions',
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             type,
             hederaAccountId: operatorId
-        });
+        }, policyId, 'Transactions', false));
     }
 
     /**
@@ -2747,14 +2812,12 @@ export class DatabaseServer {
         file: ArrayBuffer,
         url: any
     ): Promise<any> {
-        await new DataBaseHelper(DryRun).save({
-            dryRunId: policyId,
-            dryRunClass: 'Files',
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             document: {
                 size: file?.byteLength
             },
             documentURL: url?.url
-        });
+        }, policyId, 'Files', false));
     }
 
     /**
@@ -2799,13 +2862,11 @@ export class DatabaseServer {
         const messageId = message.getId();
         const topicId = message.getTopicId();
 
-        await new DataBaseHelper(DryRun).save({
-            dryRunId: dryRun,
-            dryRunClass: 'Message',
+        await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             document,
             topicId,
             messageId
-        });
+        }, dryRun, 'Message', false));
     }
 
     /**
@@ -3480,6 +3541,26 @@ export class DatabaseServer {
     }
 
     /**
+     * Save file
+     * @param uuid
+     * @param buffer
+     * @returns file ID
+     */
+    public static async loadFile(id: ObjectId): Promise<Buffer> {
+        const files = await DataBaseHelper.gridFS.find(id).toArray();
+        if (files.length === 0) {
+            return null;
+        }
+        const file = files[0];
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        return Buffer.concat(bufferArray);
+    }
+
+    /**
      * Get policy tests
      * @param policyId
      * @returns tests
@@ -3520,13 +3601,23 @@ export class DatabaseServer {
     }
 
     /**
-     * Get policy tests
+     * Get policy test
      * @param policyId
      * @param id
      * @returns tests
      */
     public static async getPolicyTest(policyId: string, id: string): Promise<PolicyTest> {
         return await new DataBaseHelper(PolicyTest).findOne({ id, policyId });
+    }
+
+    /**
+     * Get policy tests
+     * @param policyI
+     * @param id
+     * @returns tests
+     */
+    public static async getPolicyTestByRecord(resultId: string): Promise<PolicyTest> {
+        return await new DataBaseHelper(PolicyTest).findOne({ resultId });
     }
 
     /**
@@ -3538,4 +3629,16 @@ export class DatabaseServer {
     public static async deletePolicyTest(policyId: string, id: string): Promise<void> {
         await new DataBaseHelper(PolicyTest).delete({ id, policyId });
     }
+
+    /**
+     * Get policy tests
+     * @param policyId
+     * @param id
+     * @returns tests
+     */
+    public static async updatePolicyTest(test: PolicyTest): Promise<PolicyTest> {
+        return await new DataBaseHelper(PolicyTest).save(test);
+    }
+
+
 }

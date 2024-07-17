@@ -44,6 +44,35 @@ export async function compareResults(details: any): Promise<any> {
 }
 
 /**
+ * Compare results
+ * @param policyId
+ * @param owner
+ */
+export async function getDetails(details: any): Promise<any> {
+    const report = await compareResults(details);
+    const total = report?.total;
+    const info = report?.right;
+    const table = report?.documents?.report || [];
+
+    const documents = [];
+    for (let i = 1; i < table.length; i++) {
+        const row = table[i];
+        if (row.right) {
+            const index = row.right.attributes;
+            const document = details?.documents?.[index];
+            documents.push({
+                type: row.document_type,
+                rate: row.total_rate,
+                schema: row.right_schema,
+                document
+            })
+        }
+    }
+
+    return { info, total, details, documents };
+}
+
+/**
  * Check policy
  * @param policyId
  * @param owner
@@ -268,32 +297,8 @@ export async function recordAPI(): Promise<void> {
                 const details: any = await guardiansService
                     .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
 
-                const report = await compareResults(details);
-                const total = report?.total;
-                const info = report?.right;
-                const table = report?.documents?.report || [];
-
-                const documents = [];
-                for (let i = 1; i < table.length; i++) {
-                    const row = table[i];
-                    if (row.right) {
-                        const index = row.right.attributes;
-                        const document = details?.documents?.[index];
-                        documents.push({
-                            type: row.document_type,
-                            rate: row.total_rate,
-                            schema: row.right_schema,
-                            document
-                        })
-                    }
-                }
-
-                return new MessageResponse({
-                    info,
-                    total,
-                    details,
-                    documents
-                });
+                const result = await getDetails(details);
+                return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

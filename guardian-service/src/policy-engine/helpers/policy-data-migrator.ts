@@ -937,7 +937,8 @@ export class PolicyDataMigrator {
                 user.username,
                 user.did,
                 user.hederaAccountId,
-                null
+                null,
+                false
             );
         }
     }
