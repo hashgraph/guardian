@@ -6573,6 +6573,174 @@ paths:
       tags: *ref_11
       security:
         - bearer: []
+  /policies/{policyId}/test:
+    post:
+      operationId: PolicyApi_addPolicyTest
+      summary: Add policy test.
+      description: >-
+        Add policy test.  Only users with the Standard Registry role are allowed
+        to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing policy test.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyTestDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+      security:
+        - bearer: []
+  /policies/{policyId}/test/{testId}/start:
+    post:
+      operationId: PolicyApi_startPolicyTest
+      summary: Start policy test.
+      description: >-
+        Start policy test.  Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: testId
+          required: true
+          in: path
+          description: Test Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyTestDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+      security:
+        - bearer: []
+  /policies/{policyId}/test/{testId}/stop:
+    post:
+      operationId: PolicyApi_stopPolicyTest
+      summary: Stop policy test.
+      description: >-
+        Stop policy test.  Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: testId
+          required: true
+          in: path
+          description: Test Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyTestDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+      security:
+        - bearer: []
+  /policies/{policyId}/test/{testId}:
+    delete:
+      operationId: PolicyApi_deletePolicyTest
+      summary: Delete policy test.
+      description: >-
+        Delete policy test.  Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: testId
+          required: true
+          in: path
+          description: Test Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+      security:
+        - bearer: []
   /policies/methodologies/categories:
     get:
       operationId: PolicyApi_getPolicyCategoriesAsync
@@ -13520,6 +13688,9 @@ components:
         - schemas
         - tags
         - moduleTopicId
+    PolicyTestDTO:
+      type: object
+      properties: {}
     PolicyCategoryDTO:
       type: object
       properties:
