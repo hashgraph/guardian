@@ -5,7 +5,8 @@ import {
     GenerateUUIDv4,
     IOwner,
     PolicyEngineEvents,
-    PolicyEvents, PolicyType,
+    PolicyEvents,
+    PolicyType,
     Schema,
     SchemaField,
     TopicType
@@ -350,15 +351,16 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA,
-            async (msg: { user: IAuthUser, blockId: string, policyId: string }): Promise<IMessageResponse<any>> => {
+            async (msg: { user: IAuthUser, blockId: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, blockId, policyId } = msg;
+                    const {user, blockId, policyId, params} = msg;
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
-                            user,
-                            blockId,
-                            policyId
-                        }) as any
+		    .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
+                        user,
+                        blockId,
+                        policyId,
+                        params
+                    }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -367,15 +369,16 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG,
-            async (msg: { user: IAuthUser, tag: string, policyId: string }): Promise<IMessageResponse<any>> => {
+            async (msg: { user: IAuthUser, tag: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, tag, policyId } = msg;
+                    const {user, tag, policyId, params} = msg;
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
-                            user,
-                            tag,
-                            policyId
-                        }) as any
+		    .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
+                        user,
+                        tag,
+                        policyId,
+                        params
+                    }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);

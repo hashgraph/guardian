@@ -70,34 +70,34 @@ We are uploading Verifiable Presentation document to IPFS and CID will be attach
 
 **17. How does Guardian Provenance works?**
 
-(ONLY NFT) Open tokens page, click on appropriate token or open ledger works explorer manually https://explore.lworks.io/testnet/tokens/{tokenId} ([https://explore.lworks.io/testnet/tokens/0.0.4554172](https://explore.lworks.io/testnet/tokens/0.0.4554172)), open "NFT HOLDERS" tab and click on appropriate serial, click on "OVERVIEW" tab and in metadata you can get VP message identifier (1721049137.243457003). NEXT WE CAN KEEP "In our case it will be [https://testnet.mirrornode.hede](https://testnet.mirrornode.hede/)............"
+(ONLY NFT) Open tokens page, click on appropriate token or open ledger works explorer manually https://explore.lworks.io/testnet/tokens/{tokenId} ([https://explore.lworks.io/testnet/tokens/0.0.4554172](https://explore.lworks.io/testnet/tokens/0.0.4554172)), open "NFT HOLDERS" tab and click on appropriate serial, click on "OVERVIEW" tab and in metadata you can get VP message identifier (1721049137.243457003).&#x20;
 
 \
 (FT, NFT) Open tokens page, copy appropriate token identifier, open dragonglass explorer https://testnet.dragonglass.me/tokens/{tokenId} ([https://testnet.dragonglass.me/tokens/0.0.4554298](https://testnet.dragonglass.me/tokens/0.0.4554298)), click on "All transactions" tab, click on appropriate mint transaction, in memo you can get VP message identifier (1721049808.933544003).&#x20;
 
 \
-In our case it will be [https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1649942508.776446488](https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1649942508.776446488)\
+In our case it will be [https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003](https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1721049137.243457003)\
 You will get a message content:
 
 ```
 {
   "chunk_info": {
     "initial_transaction_id": {
-      "account_id": "0.0.34194892",
+      "account_id": "0.0.3652792",
       "nonce": 0,
       "scheduled": false,
-      "transaction_valid_start": "1649942496.012855213"
+      "transaction_valid_start": "1721049124.634107712"
     },
     "number": 1,
     "total": 1
   },
-  "consensus_timestamp": "1649942508.776446488",
-  "message": "eyJpZCI6IjEzNTZlMDNhLTk5NGEtNGU5ZC1iNTFmLWNlMGY4NzBmZDk1MiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlZQLURvY3VtZW50IiwiYWN0aW9uIjoiY3JlYXRlLWNwLWRvY3VtZW50IiwiaXNzdWVyIjpudWxsLCJyZWxhdGlvbnNoaXBzIjpbIjE2NDk5NDI0OTYuMDEwMjExMDAwIl0sImNpZCI6ImJhZmtyZWlhNWkzYnJ1bWNpMzVzNzMzcTRndWEzNjNpaHhyaXNyNm56aWFmN2g3aGd4aHlhbmg2dnlhIiwidXJsIjoiaHR0cHM6Ly9pcGZzLmlvL2lwZnMvYmFma3JlaWE1aTNicnVtY2kzNXM3MzNxNGd1YTM2M2loeHJpc3I2bnppYWY3aDdoZ3hoeWFuaDZ2eWEifQ==",
-  "payer_account_id": "0.0.34194892",
-  "running_hash": "P0i9GNaL1qUoPQmNHOumV/3x8K4voPmOUNJOfXDJl9K89u/7Qa7GgqKR3kmaTcAF",
+  "consensus_timestamp": "1721049137.243457003",
+  "message": "eyJpZCI6IjA1NTJlZDQzLWUyZWItNDM1OC05YzZjLWEwNzRlNzU1ZWRhYiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlZQLURvY3VtZW50IiwiYWN0aW9uIjoiY3JlYXRlLXZwLWRvY3VtZW50IiwibGFuZyI6ImVuLVVTIiwiaXNzdWVyIjpudWxsLCJyZWxhdGlvbnNoaXBzIjpbIjE3MjEwNDkxMjAuNTM1MTQwODYzIiwiMTcyMTA0OTEyOC41OTM0NDcwMDMiXSwiY2lkIjoiYmFma3JlaWdmejd6cmlxMnlhemJrajViczR2ZTVnbHlkbTZ0aXFiamdnZmhkYjJnNHZjb2k1aG9oc2EiLCJ1cmkiOiJpcGZzOi8vYmFma3JlaWdmejd6cmlxMnlhemJrajViczR2ZTVnbHlkbTZ0aXFiamdnZmhkYjJnNHZjb2k1aG9oc2EifQ==",
+  "payer_account_id": "0.0.3652792",
+  "running_hash": "BKgO/4+20/lpmgdqCUGyW4icZyplhfOwPsvozHQwTc3BQl4jfDTjkKgQDRyj7Naf",
   "running_hash_version": 3,
   "sequence_number": 9,
-  "topic_id": "0.0.34204397"
+  "topic_id": "0.0.4554253"
 }
 ```
 

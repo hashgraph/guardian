@@ -260,13 +260,15 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      * @param blockId
+     * @param params
      */
     public async getBlockData(
         user: IAuthUser,
         policyId: string,
-        blockId: string
+        blockId: string,
+        params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, { user, blockId, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, {user, blockId, policyId, params});
     }
 
     /**
@@ -274,13 +276,15 @@ export class PolicyEngine extends NatsService {
      * @param user
      * @param policyId
      * @param tag
+     * @param params
      */
     public async getBlockDataByTag(
         user: IAuthUser,
         policyId: string,
-        tag: string
+        tag: string,
+        params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId });
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, {user, tag, policyId, params});
     }
 
     /**
