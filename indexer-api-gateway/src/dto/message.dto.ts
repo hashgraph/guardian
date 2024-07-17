@@ -1,7 +1,5 @@
 import { Message, MessageAction, MessageType } from '@indexer/interfaces';
-import {
-    ApiProperty,
-} from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class MessageDTO<O = any, A = any> implements Message<O, A> {
     @ApiProperty({
@@ -21,8 +19,7 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
     consensusTimestamp: string;
     @ApiProperty({
         description: 'Owner',
-        example:
-            '0.0.1',
+        example: '0.0.1',
     })
     owner: string;
     @ApiProperty({
@@ -73,7 +70,17 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
     files: string[];
     @ApiProperty({
         description: 'Documents',
-        example: ['667c240639282050117a1985'],
+        type: 'array',
+        oneOf: [{
+            items: {
+                type: 'string',
+            },
+            example: ['667c240639282050117a1985']
+        }, {
+            items: {
+                type: 'object',
+            }
+        }]
     })
     documents: any[];
     @ApiProperty({
