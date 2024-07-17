@@ -71,16 +71,10 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
     @ApiProperty({
         description: 'Documents',
         type: 'array',
-        oneOf: [{
-            items: {
-                type: 'string',
-            },
-            example: ['667c240639282050117a1985']
-        }, {
-            items: {
-                type: 'object',
-            }
-        }]
+        items: {
+            type: 'string',
+        },
+        example: ['667c240639282050117a1985']
     })
     documents: any[];
     @ApiProperty({
