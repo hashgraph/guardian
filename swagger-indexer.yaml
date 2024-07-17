@@ -234,7 +234,7 @@ paths:
                       items:
                         type: array
                         items:
-                          $ref: '#/components/schemas/RegistryUserDTO'
+                          $ref: '#/components/schemas/RegistryUserGridDTO'
         '500':
           description: Internal server error
           content:
@@ -689,7 +689,7 @@ paths:
                       items:
                         type: array
                         items:
-                          $ref: '#/components/schemas/SchemaDTO'
+                          $ref: '#/components/schemas/SchemaGridDTO'
         '500':
           description: Internal server error
           content:
@@ -1048,7 +1048,7 @@ paths:
                       items:
                         type: array
                         items:
-                          $ref: '#/components/schemas/DIDDTO'
+                          $ref: '#/components/schemas/DIDGridDTO'
         '500':
           description: Internal server error
           content:
@@ -1201,7 +1201,7 @@ paths:
                       items:
                         type: array
                         items:
-                          $ref: '#/components/schemas/VPDTO'
+                          $ref: '#/components/schemas/VPGridDTO'
         '500':
           description: Internal server error
           content:
@@ -1361,7 +1361,7 @@ paths:
                       items:
                         type: array
                         items:
-                          $ref: '#/components/schemas/VCDTO'
+                          $ref: '#/components/schemas/VCGridDTO'
         '500':
           description: Internal server error
           content:
@@ -1966,23 +1966,16 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: &ref_3
-            type: string
-          example: &ref_4
-            - 667c240639282050117a1985
         topics:
           description: Topics
-          example: &ref_5
+          example: &ref_3
             - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: &ref_6
+          example: &ref_4
             - 0.0.4481265
           type: array
           items:
@@ -2059,7 +2052,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
@@ -2223,7 +2215,7 @@ components:
           description: Text search
       required:
         - textSearch
-    RegistryUserDTO:
+    RegistryUserGridDTO:
       type: object
       properties:
         id:
@@ -2271,20 +2263,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -2360,13 +2347,159 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
         - action
         - options
         - analytics
+    RegistryUserDetailsItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: DID-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-did-document
+        options:
+          $ref: '#/components/schemas/RegistryUserOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/RegistryUserAnalyticsDTO'
+        documents:
+          type: array
+          description: Documents
+          items:
+            type: string
+          example:
+            - >-
+              "{"@context":"https://www.w3.org/ns/did/v1","id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","verificationMethod":[{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key","type":"Ed25519VerificationKey2018","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"8WkE4uKLN7i9RnzeoUJfxSH9Jw8M1yTzKk6rtwVa6uGP"},{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key-bbs","type":"Bls12381G2Key2020","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"237NDsUq7LAmSMzE6CEBFyuz9s2sscSz2M6cn4zUKPmJ5Q6rMh6SLRGC3EDdna7vSKwHMCGjhCiLKM6qYU7ZeYKRPNnRMcadoJbSQ44SGAAiyrpmhX8aaoTZpMdHmGFVXdqC"}],"authentication":["did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key"],"assertionMethod":["#did-root-key","#did-root-key-bbs"]}"
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
+        - analytics
+        - documents
     RegistryUserActivityDTO:
       type: object
       properties:
@@ -2398,7 +2531,7 @@ components:
           description: UUID
           example: 93938a10-d032-4a9b-9425-092e58bffbf7
         item:
-          $ref: '#/components/schemas/RegistryUserDTO'
+          $ref: '#/components/schemas/RegistryUserDetailsItemDTO'
         row:
           $ref: '#/components/schemas/RawMessageDTO'
         activity:
@@ -2584,20 +2717,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -2673,7 +2801,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
@@ -2823,20 +2950,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -2912,7 +3034,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
@@ -3042,20 +3163,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -3131,7 +3247,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
@@ -3206,48 +3321,7 @@ components:
         - version
         - codeVersion
         - relationships
-    ChildSchemaDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        name:
-          type: string
-          description: Name
-          example: Project Details
-      required:
-        - id
-        - name
-    SchemaAnalyticsDTO:
-      type: object
-      properties:
-        policyIds:
-          description: Policy message identifiers
-          example:
-            - '1706823227.586179534'
-          type: array
-          items:
-            type: string
-        childSchemas:
-          $ref: '#/components/schemas/ChildSchemaDTO'
-        properties:
-          description: Schema properties
-          example:
-            - ActivityImpactModule.projectScope
-          type: array
-          items:
-            type: string
-        textSearch:
-          type: string
-          description: Text search
-      required:
-        - policyIds
-        - childSchemas
-        - properties
-        - textSearch
-    SchemaDTO:
+    SchemaGridDTO:
       type: object
       properties:
         id:
@@ -3295,20 +3369,191 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Schema
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: publish-schema
+        options:
+          $ref: '#/components/schemas/SchemaOptionsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
+    ChildSchemaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        name:
+          type: string
+          description: Name
+          example: Project Details
+      required:
+        - id
+        - name
+    SchemaAnalyticsDTO:
+      type: object
+      properties:
+        policyIds:
+          description: Policy message identifiers
+          example:
+            - '1706823227.586179534'
+          type: array
+          items:
+            type: string
+        childSchemas:
+          $ref: '#/components/schemas/ChildSchemaDTO'
+        properties:
+          description: Schema properties
+          example:
+            - ActivityImpactModule.projectScope
+          type: array
+          items:
+            type: string
+        textSearch:
+          type: string
+          description: Text search
+      required:
+        - policyIds
+        - childSchemas
+        - properties
+        - textSearch
+    SchemaDetailsItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
           type: array
           items:
             type: string
@@ -3372,6 +3617,19 @@ components:
           $ref: '#/components/schemas/SchemaOptionsDTO'
         analytics:
           $ref: '#/components/schemas/SchemaAnalyticsDTO'
+        documents:
+          type: array
+          description: Documents
+          items:
+            type: string
+          example:
+            - >-
+              {"$id":"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0","$comment":"{
+              \"@id\": \"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\",
+              \"term\": \"d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\"
+              }","title":"tagSchemaAPI339404","description":"tagSchemaAPI339404","type":"object","properties":{"@context":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"type":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"id":{"type":"string","readOnly":true}},"required":["@context","type"],"additionalProperties":false,"$defs":{}}
+            - >-
+              {"@context":{"@version":1.1,"@vocab":"https://w3id.org/traceability/#undefinedTerm","id":"@id","type":"@type","d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0":{"@id":"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0","@context":{}}}}
       required:
         - id
         - topicId
@@ -3384,13 +3642,13 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
         - action
         - options
         - analytics
+        - documents
     SchemaActivityDTO:
       type: object
       properties:
@@ -3417,7 +3675,7 @@ components:
           description: UUID
           example: 93938a10-d032-4a9b-9425-092e58bffbf7
         item:
-          $ref: '#/components/schemas/SchemaDTO'
+          $ref: '#/components/schemas/SchemaDetailsItemDTO'
         row:
           $ref: '#/components/schemas/RawMessageDTO'
         activity:
@@ -3471,7 +3729,7 @@ components:
           description: Message identifier
           example: '1706823227.586179534'
         item:
-          $ref: '#/components/schemas/SchemaDTO'
+          $ref: '#/components/schemas/SchemaGridDTO'
         root:
           $ref: '#/components/schemas/SchemaTreeNodeDTO'
       required:
@@ -3642,20 +3900,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -3731,7 +3984,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
@@ -3796,7 +4048,7 @@ components:
           description: Text search
       required:
         - textSearch
-    DIDDTO:
+    DIDGridDTO:
       type: object
       properties:
         id:
@@ -3844,20 +4096,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -3933,13 +4180,159 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
         - action
         - options
         - analytics
+    DIDDetailsItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: DID-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-did-document
+        options:
+          $ref: '#/components/schemas/DIDOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/DIDAnalyticsDTO'
+        documents:
+          type: array
+          description: Documents
+          items:
+            type: string
+          example:
+            - >-
+              "{"@context":"https://www.w3.org/ns/did/v1","id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","verificationMethod":[{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key","type":"Ed25519VerificationKey2018","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"8WkE4uKLN7i9RnzeoUJfxSH9Jw8M1yTzKk6rtwVa6uGP"},{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key-bbs","type":"Bls12381G2Key2020","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"237NDsUq7LAmSMzE6CEBFyuz9s2sscSz2M6cn4zUKPmJ5Q6rMh6SLRGC3EDdna7vSKwHMCGjhCiLKM6qYU7ZeYKRPNnRMcadoJbSQ44SGAAiyrpmhX8aaoTZpMdHmGFVXdqC"}],"authentication":["did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key"],"assertionMethod":["#did-root-key","#did-root-key-bbs"]}"
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
+        - analytics
+        - documents
     DIDDetailsDTO:
       type: object
       properties:
@@ -3952,13 +4345,13 @@ components:
           description: UUID
           example: 93938a10-d032-4a9b-9425-092e58bffbf7
         item:
-          $ref: '#/components/schemas/DIDDTO'
+          $ref: '#/components/schemas/DIDDetailsItemDTO'
         row:
           $ref: '#/components/schemas/RawMessageDTO'
         history:
           type: array
           items:
-            $ref: '#/components/schemas/DIDDTO'
+            $ref: '#/components/schemas/DIDDetailsItemDTO'
       required:
         - id
         - uuid
@@ -4013,20 +4406,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -4042,7 +4430,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
     RelationshipDTO:
@@ -4161,36 +4548,7 @@ components:
       required:
         - issuer
         - relationships
-    VPAnalyticsDTO:
-      type: object
-      properties:
-        schemaIds:
-          description: Schema message identifiers
-          example:
-            - '1706823227.586179534'
-          type: array
-          items:
-            type: string
-        schemaNames:
-          description: Schema names
-          example:
-            - Monitoring Report
-          type: array
-          items:
-            type: string
-        policyId:
-          type: string
-          description: Policy message identifier
-          example: '1706823227.586179534'
-        textSearch:
-          type: string
-          description: Text search
-      required:
-        - schemaIds
-        - schemaNames
-        - policyId
-        - textSearch
-    VPDTO:
+    VPGridDTO:
       type: object
       properties:
         id:
@@ -4238,20 +4596,179 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: VP-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-vp-document
+        options:
+          $ref: '#/components/schemas/VPOptionsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
+    VPAnalyticsDTO:
+      type: object
+      properties:
+        schemaIds:
+          description: Schema message identifiers
+          example:
+            - '1706823227.586179534'
+          type: array
+          items:
+            type: string
+        schemaNames:
+          description: Schema names
+          example:
+            - Monitoring Report
+          type: array
+          items:
+            type: string
+        policyId:
+          type: string
+          description: Policy message identifier
+          example: '1706823227.586179534'
+        textSearch:
+          type: string
+          description: Text search
+      required:
+        - schemaIds
+        - schemaNames
+        - policyId
+        - textSearch
+    VPDetailsItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
           type: array
           items:
             type: string
@@ -4315,6 +4832,14 @@ components:
           $ref: '#/components/schemas/VPOptionsDTO'
         analytics:
           $ref: '#/components/schemas/VPAnalyticsDTO'
+        documents:
+          type: array
+          description: Documents
+          items:
+            type: string
+          example:
+            - >-
+              "{"id":"urn:uuid:2c374b67-fda5-4023-97c2-c0782624573f","type":["VerifiablePresentation"],"@context":["https://www.w3.org/2018/credentials/v1"],"verifiableCredential":[{"id":"urn:uuid:ff0aecbd-d358-4e5b-b99b-7a87ba38a3b2","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438","issuanceDate":"2024-02-06T05:40:37.795Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreib6arvz7hltf2yqoyb7iqlkrojur7lqqcsuuhvcfvyrtkncm6pqhi"],"credentialSubject":[{"finalMintAmount":5,"policyId":"65bc691d2ae9d0f1ef2db3bc","ref":"urn:uuid:11b1ad6f-8b4f-4d61-a63a-cc9e6532625f","@context":["ipfs://bafkreib6arvz7hltf2yqoyb7iqlkrojur7lqqcsuuhvcfvyrtkncm6pqhi"],"id":"urn:uuid:5d253a1d-456a-4fb1-8b45-257e1db2e668","type":"601a68c4-66c3-407c-bc88-1b5841e6d1da&1.0.0"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:37Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..UvTeKVUVUxH1SFNNoyu_VXf4kFqDIFzFPJaaq5adiSHrBePLQMQv7dM_Fq23z7UGHSmXlodBen1Ujcdi-am5DQ"}},{"id":"urn:uuid:b76fbd72-48b7-45fb-b152-7ec13d11eafb","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438","issuanceDate":"2024-02-06T05:40:45.066Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreigd6nhj5auxobzu4qzlakzcaizh6wux2gq43qft4rwpri7msn2geu"],"credentialSubject":[{"date":"2024-02-06T05:40:45.021Z","tokenId":"0.0.1621155","amount":"5","@context":["ipfs://bafkreigd6nhj5auxobzu4qzlakzcaizh6wux2gq43qft4rwpri7msn2geu"],"type":"MintToken"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:45Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..5hWYO3NA0Q9zI0oS1lLOpofQI-DTQVM0sd4GUQV-UUSlBug3EgYYBm7247LCzlCRt9VpYsUh7SxIrsgHzsSRDA"}}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:45Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"authentication","challenge":"123","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Mu5BaQ34idnqG6d-aMqufQOXcuWHMkv6N9Z2zhBi9Yfd7jU9FFkwi-Xjyf-Kastr7vVWBNLwGxB-bPRf4UEHAg"}}"
       required:
         - id
         - topicId
@@ -4327,13 +4852,13 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
         - action
         - options
         - analytics
+        - documents
     VPDetailsDTO:
       type: object
       properties:
@@ -4346,13 +4871,13 @@ components:
           description: UUID
           example: 93938a10-d032-4a9b-9425-092e58bffbf7
         item:
-          $ref: '#/components/schemas/VPDTO'
+          $ref: '#/components/schemas/VPDetailsItemDTO'
         row:
           $ref: '#/components/schemas/RawMessageDTO'
         history:
           type: array
           items:
-            $ref: '#/components/schemas/VPDTO'
+            $ref: '#/components/schemas/VPDetailsItemDTO'
       required:
         - id
         - uuid
@@ -4409,7 +4934,7 @@ components:
         - schemaId
         - schemaName
         - textSearch
-    VCDTO:
+    VCGridDTO:
       type: object
       properties:
         id:
@@ -4457,20 +4982,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -4546,13 +5066,159 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
         - action
         - options
         - analytics
+    VCDetailsItemDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: VC-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-vc-document
+        options:
+          $ref: '#/components/schemas/VCOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/VCAnalyticsDTO'
+        documents:
+          type: array
+          description: Documents
+          items:
+            type: string
+          example:
+            - >-
+              "{"id":"urn:uuid:229f8416-db6b-4d68-90da-38a5355126f5","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223","issuanceDate":"2024-02-02T10:06:53.300Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"],"credentialSubject":[{"@context":["ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"],"id":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223","type":"StandardRegistry"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-02T10:06:53Z","verificationMethod":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..YElNPdCNkj8wzABUNgWYo3Yge0qrGA2KbxBWDKBzACJJe70ItIZsgbIQUHMnFbcKpXB1cSnHQ-H5WH_7uZ_3CQ"}}"
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
+        - analytics
+        - documents
     VCDetailsDTO:
       type: object
       properties:
@@ -4565,16 +5231,69 @@ components:
           description: UUID
           example: 93938a10-d032-4a9b-9425-092e58bffbf7
         item:
-          $ref: '#/components/schemas/VCDTO'
+          $ref: '#/components/schemas/VCDetailsItemDTO'
         row:
           $ref: '#/components/schemas/RawMessageDTO'
         history:
           type: array
           items:
-            $ref: '#/components/schemas/VCDTO'
+            $ref: '#/components/schemas/VCDetailsItemDTO'
         schema:
           type: object
           description: VC Schema
+          example:
+            $id: '#StandardRegistry'
+            $comment: '{ "@id": "#StandardRegistry", "term": "StandardRegistry" }'
+            title: StandardRegistry
+            description: StandardRegistry
+            type: object
+            properties:
+              '@context':
+                oneOf:
+                  - type: string
+                  - type: array
+                    items:
+                      type: string
+                readOnly: true
+              type:
+                oneOf:
+                  - type: string
+                  - type: array
+                    items:
+                      type: string
+                readOnly: true
+              id:
+                type: string
+                readOnly: true
+              geography:
+                $comment: '{"term": "geography", "@id": "https://www.schema.org/text"}'
+                title: geography
+                description: geography
+                type: string
+                readOnly: false
+              law:
+                $comment: '{"term": "law", "@id": "https://www.schema.org/text"}'
+                title: law
+                description: law
+                type: string
+                readOnly: false
+              tags:
+                $comment: '{"term": "tags", "@id": "https://www.schema.org/text"}'
+                title: tags
+                description: tags
+                type: string
+                readOnly: false
+              ISIC:
+                $comment: '{"term": "ISIC", "@id": "https://www.schema.org/text"}'
+                title: ISIC
+                description: ISIC
+                type: string
+                readOnly: false
+            required:
+              - geography
+              - law
+              - tags
+            additionalProperties: false
       required:
         - id
         - uuid
@@ -4737,20 +5456,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -4826,7 +5540,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
@@ -5031,20 +5744,15 @@ components:
           type: array
           items:
             type: string
-        documents:
-          type: array
-          description: Documents
-          items: *ref_3
-          example: *ref_4
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_3
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_4
           type: array
           items:
             type: string
@@ -5120,7 +5828,6 @@ components:
         - responseType
         - statusMessage
         - files
-        - documents
         - topics
         - tokens
         - type
