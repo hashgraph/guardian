@@ -71,6 +71,11 @@ export class VPDetailsDTO
     implements VPDetails
 {
     @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
+    @ApiProperty({
         type: VPDTO,
     })
     declare item?: VPDTO;

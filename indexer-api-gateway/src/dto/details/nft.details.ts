@@ -15,6 +15,10 @@ export class NFTDetailsDTO
     declare row?: NFTDTO;
     @ApiProperty({
         description: 'NFT transaction history',
-    }) // TODO Describe example
+        type: 'array',
+        items: {
+            type: 'object'
+        }
+    })
     history: any[];
 }

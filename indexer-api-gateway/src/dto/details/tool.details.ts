@@ -102,6 +102,11 @@ export class ToolDetailsDTO
     implements ToolDetails
 {
     @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
+    @ApiProperty({
         type: ToolDTO,
     })
     declare item?: ToolDTO;
