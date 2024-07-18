@@ -1641,6 +1641,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/contracts:
+    get:
+      operationId: EntityApi_getContracts
+      summary: Get contracts
+      description: Returns contracts
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          example: consensusTimestamp
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: Search contracts, which are related to specific topic identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic identifier
+          example: 0.0.1960
+          schema:
+            type: string
+        - name: owner
+          required: false
+          in: query
+          description: Owner
+          example: 0.0.2160
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contracts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ContractDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/contracts/{messageId}:
+    get:
+      operationId: EntityApi_getContract
+      summary: Get contract
+      description: Returns contract
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contract details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /landing/analytics:
     get:
       operationId: LandingApi_getOnboardingStat
@@ -2074,6 +2186,10 @@ components:
           type: number
           description: Registry users
           example: 10
+        contracts:
+          type: number
+          description: Contracts
+          example: 10
       required:
         - vcs
         - vps
@@ -2083,6 +2199,7 @@ components:
         - modules
         - tokens
         - users
+        - contracts
     RegistryDetailsDTO:
       type: object
       properties:
@@ -5586,6 +5703,199 @@ components:
         - item
         - row
         - activity
+    ContractOptionsDTO:
+      type: object
+      properties:
+        contractId:
+          type: string
+          description: Contract identifier
+          example: 0.0.4481265
+        description:
+          type: string
+          description: Description
+          example: Wipe contract
+        contractType:
+          type: string
+          description: Contract type
+          enum:
+            - WIPE
+            - RETIRE
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+      required:
+        - contractId
+        - description
+        - contractType
+        - owner
+    ContractAnalyticsDTO:
+      type: object
+      properties:
+        textSearch:
+          type: string
+          description: Text search
+      required:
+        - textSearch
+    ContractDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+          example: Contract
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+          example: create-contract
+        options:
+          $ref: '#/components/schemas/ContractOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/ContractAnalyticsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
+        - analytics
+    ContractDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        item:
+          $ref: '#/components/schemas/ContractDTO'
+        row:
+          $ref: '#/components/schemas/RawMessageDTO'
+      required:
+        - id
+        - uuid
+        - item
+        - row
     LandingAnalyticsDTO:
       type: object
       properties:
