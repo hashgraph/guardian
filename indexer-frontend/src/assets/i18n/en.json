@@ -303,7 +303,8 @@
                 "topic_id": "Topic Id",
                 "type": "Type",
                 "description": "Desription",
-                "owner": "Owner"
+                "owner": "Owner",
+                "owner_did": "Owner DID"
             }
         },
         "not_found": "Not found"

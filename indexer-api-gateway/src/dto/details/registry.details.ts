@@ -81,6 +81,11 @@ export class RegistryActivityDTO implements RegistryActivity {
         example: 10,
     })
     users: number;
+    @ApiProperty({
+        description: 'Contracts',
+        example: 10,
+    })
+    contracts: number;
 }
 
 export class RegistryDTO

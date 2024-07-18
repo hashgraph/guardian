@@ -69,6 +69,10 @@ export interface RegistryActivity {
      * Users
      */
     users: number;
+    /**
+     * Contracts
+     */
+    contracts: number;
 }
 
 /**

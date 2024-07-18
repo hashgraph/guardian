@@ -209,6 +209,12 @@ export class EntityService {
                 treasury: item.owner,
             } as any);
 
+            const contracts = await em.count(Message, {
+                type: MessageType.CONTRACT,
+                action: MessageAction.CreateContract,
+                owner: item.owner,
+            } as any);
+
             return new MessageResponse<RegistryDetails>({
                 id: messageId,
                 uuid: item.uuid,
@@ -223,6 +229,7 @@ export class EntityService {
                     modules,
                     tokens,
                     users,
+                    contracts
                 },
             });
         } catch (error) {

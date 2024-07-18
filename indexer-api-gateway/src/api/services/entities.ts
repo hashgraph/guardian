@@ -1292,6 +1292,12 @@ export class EntityApi extends ApiClient {
         example: '0.0.1960',
         required: false,
     })
+    @ApiQuery({
+        name: 'owner',
+        description: 'Owner',
+        example: '0.0.2160',
+        required: false,
+    })
     @HttpCode(HttpStatus.OK)
     async getContracts(
         @Query('pageIndex') pageIndex?: string,
@@ -1299,7 +1305,8 @@ export class EntityApi extends ApiClient {
         @Query('orderField') orderField?: string,
         @Query('orderDir') orderDir?: string,
         @Query('keywords') keywords?: string,
-        @Query('topicId') topicId?: string
+        @Query('topicId') topicId?: string,
+        @Query('owner') owner?: string
     ) {
         return await this.send(IndexerMessageAPI.GET_CONTRACTS, {
             pageIndex,
@@ -1308,6 +1315,7 @@ export class EntityApi extends ApiClient {
             orderDir,
             keywords,
             topicId,
+            owner
         });
     }
 

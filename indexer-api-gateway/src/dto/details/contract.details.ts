@@ -36,7 +36,12 @@ export class ContractOptionsDTO implements ContractOptions {
     owner: string;
 }
 
-export class ContractAnalyticsDTO implements ContractAnalytics {}
+export class ContractAnalyticsDTO implements ContractAnalytics {
+    @ApiProperty({
+        description: 'Text search',
+    })
+    textSearch?: string;
+}
 
 export class ContractDTO
     extends MessageDTO<ContractOptionsDTO, ContractAnalyticsDTO>

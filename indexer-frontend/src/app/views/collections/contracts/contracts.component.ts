@@ -77,6 +77,12 @@ export class ContractsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
+            field: 'owner',
+            title: 'grid.owner',
+            width: '150px',
+        },
+        {
+            type: ColumnType.TEXT,
             field: 'options.description',
             title: 'grid.description',
             width: '400px',
@@ -105,7 +111,11 @@ export class ContractsComponent extends BaseGridComponent {
         super(route, router);
         this.filters.push(new Filter({
             type: 'input',
-            field: 'options.owner',
+            field: 'topicId',
+            label: 'grid.topic_id'
+        }), new Filter({
+            type: 'input',
+            field: 'owner',
             label: 'grid.owner'
         }))
     }
