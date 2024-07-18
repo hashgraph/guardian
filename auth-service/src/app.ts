@@ -51,18 +51,14 @@ Promise.all([
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
     state.updateState(ApplicationStates.INITIALIZING);
     try {
-        if (!ApplicationEnvironment.demoMode) {
-            import('./helpers/fixtures.demo.js').then(async (module) => {
-                await module.fixtures();
-            });
-        }
-
         // Include accounts for demo builds only
-        if (ApplicationEnvironment.demoMode) {
-            import('./helpers/fixtures.demo.js').then(async (module) => {
-                await module.fixtures();
-            });
-        }
+        import(
+            `./helpers/fixtures${
+                ApplicationEnvironment.demoMode ? '.demo' : ''
+            }.js`
+        ).then(async (module) => {
+            await module.fixtures();
+        });
 
         app.listen();
 

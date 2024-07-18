@@ -1,3 +1,3 @@
 export const ApplicationEnvironment = {
-    demoMode: true
+    demoMode: false
 }
