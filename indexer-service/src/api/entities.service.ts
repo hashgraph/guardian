@@ -1447,7 +1447,7 @@ export class EntityService {
             const item = (await em.findOne(Message, {
                 type: MessageType.CONTRACT,
                 action: MessageAction.CreateContract,
-                messageId,
+                consensusTimestamp: messageId,
             } as any)) as Contract;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,

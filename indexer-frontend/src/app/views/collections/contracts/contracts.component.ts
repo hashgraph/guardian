@@ -61,6 +61,16 @@ export class ContractsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '150px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
+        },
+        {
+            type: ColumnType.TEXT,
             field: 'options.contractId',
             title: 'grid.contract_id',
             width: '250px',
@@ -73,7 +83,7 @@ export class ContractsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.CHIP,
-            field: 'contractType',
+            field: 'options.contractType',
             title: 'grid.contract_type',
             width: '150px',
         },
