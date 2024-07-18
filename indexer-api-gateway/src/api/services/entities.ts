@@ -7,6 +7,7 @@ import {
     Query,
 } from '@nestjs/common';
 import {
+    ApiExcludeEndpoint,
     ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiOperation,
@@ -1263,6 +1264,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#region CONTRACTS
+    @ApiExcludeEndpoint()
     @ApiOperation({
         summary: 'Get contracts',
         description: 'Returns contracts',
@@ -1311,6 +1313,7 @@ export class EntityApi extends ApiClient {
         });
     }
 
+    @ApiExcludeEndpoint()
     @ApiOperation({
         summary: 'Get contract',
         description: 'Returns contract',

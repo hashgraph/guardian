@@ -111,6 +111,7 @@ export class HeaderComponent {
         {
             label: 'header.contracts',
             routerLink: '/contracts',
+            disabled: true
         },
     ];
 
