@@ -12,9 +12,9 @@ export class RawTopicDTO implements RawTopic {
         example: '0.0.4481265',
     })
     topicId: string;
-    @ApiProperty({
-        description: 'Status',
-    })
+    // @ApiProperty({
+    //     description: 'Status',
+    // })
     status: string;
     @ApiProperty({
         description: 'Last update',
