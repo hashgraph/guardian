@@ -14,7 +14,10 @@ export const ApiPaginatedRequest = applyDecorators(
         description: 'Page size',
         example: 10,
         required: false,
-        type: 'number',
+        schema: {
+            type: 'number',
+            maximum: 100
+        }
     }),
     ApiQuery({
         name: 'orderField',
