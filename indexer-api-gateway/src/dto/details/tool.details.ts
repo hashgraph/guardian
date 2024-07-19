@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Tool,
     ToolActivity,
     ToolAnalytics,
@@ -74,19 +76,36 @@ export class ToolDTO
     implements Tool
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.TOOL
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.PublishTool
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: ToolOptionsDTO,
     })
     declare options: ToolOptionsDTO;
     @ApiProperty({
         type: ToolAnalyticsDTO,
     })
-    declare analytics: ToolAnalyticsDTO;
+    declare analytics?: ToolAnalyticsDTO;
 }
 
 export class ToolDetailsDTO
     extends DetailsActivityDTO<ToolDTO, ToolActivityDTO>
     implements ToolDetails
 {
+    @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
     @ApiProperty({
         type: ToolDTO,
     })

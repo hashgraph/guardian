@@ -58,47 +58,47 @@ export interface PolicyAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
     /**
      * Tools
      */
-    tools: string[];
+    tools?: string[];
     /**
      * Registry message identifier
      */
-    registryId: string;
+    registryId?: string;
     /**
      * Owner
      */
-    owner: string;
+    owner?: string;
     /**
      * Tokens
      */
-    tokens: string[];
+    tokens?: string[];
     /**
      * VC count
      */
-    vcCount: number;
+    vcCount?: number;
     /**
      * VP count
      */
-    vpCount: number;
+    vpCount?: number;
     /**
      * Tokens count
      */
-    tokensCount: number;
+    tokensCount?: number;
     /**
      * Tags
      */
-    tags: string[];
+    tags?: string[];
     /**
      * Hash
      */
-    hash: string;
+    hash?: string;
     /**
      * Hash map
      */
-    hashMap: any;
+    hashMap?: any;
 }
 
 /**

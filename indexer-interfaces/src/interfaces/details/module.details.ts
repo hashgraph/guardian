@@ -34,7 +34,7 @@ export interface ModuleAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
 }
 
 /**

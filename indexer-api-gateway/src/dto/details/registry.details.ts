@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Registry,
     RegistryActivity,
     RegistryAnalytics,
@@ -79,6 +81,11 @@ export class RegistryActivityDTO implements RegistryActivity {
         example: 10,
     })
     users: number;
+    @ApiProperty({
+        description: 'Contracts',
+        example: 10,
+    })
+    contracts: number;
 }
 
 export class RegistryDTO
@@ -86,19 +93,36 @@ export class RegistryDTO
     implements Registry
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.STANDARD_REGISTRY
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.Init
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: RegistryOptionsDTO,
     })
     declare options: RegistryOptionsDTO;
     @ApiProperty({
         type: RegistryAnalyticsDTO,
     })
-    declare analytics: RegistryAnalyticsDTO;
+    declare analytics?: RegistryAnalyticsDTO;
 }
 
 export class RegistryDetailsDTO
     extends DetailsActivityDTO<RegistryDTO, RegistryActivityDTO>
     implements RegistryDetails
 {
+    @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
     @ApiProperty({
         type: RegistryDTO,
     })

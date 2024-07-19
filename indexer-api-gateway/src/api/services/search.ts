@@ -22,6 +22,8 @@ export class SearchApi extends ApiClient {
         name: 'pageIndex',
         description: 'Page index',
         example: 0,
+        required: false,
+        type: 'number',
     })
     @ApiQuery({
         name: 'search',

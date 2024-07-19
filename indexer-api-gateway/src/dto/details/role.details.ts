@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Role,
     RoleActivity,
     RoleAnalytics,
@@ -54,19 +56,36 @@ export class RoleDTO
     implements Role
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.ROLE_DOCUMENT,
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateVC,
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: RoleOptionsDTO,
     })
     declare options: RoleOptionsDTO;
     @ApiProperty({
         type: RoleAnalyticsDTO,
     })
-    declare analytics: RoleAnalyticsDTO;
+    declare analytics?: RoleAnalyticsDTO;
 }
 
 export class RoleDetailsDTO
     extends DetailsActivityDTO<RoleDTO, RoleActivityDTO>
     implements RoleDetails
 {
+    @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
     @ApiProperty({
         type: RoleDTO,
     })

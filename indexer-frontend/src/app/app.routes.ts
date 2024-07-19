@@ -41,6 +41,7 @@ import { TokenDetailsComponent } from '@views/details/token-details/token-detail
 import { NFTsComponent } from '@views/collections/nfts/nfts.component';
 import { NFTDetailsComponent } from '@views/details/nft-details/nft-details.component';
 import { DidDocumentDetailsComponent } from '@views/details/did-document-details/did-document-details.component';
+import { ContractDetailsComponent } from '@views/details/contract-details/contract-details.component';
 
 export const routes: Routes = [
     // _DEV
@@ -85,4 +86,5 @@ export const routes: Routes = [
     { path: 'did-documents/:id', component: DidDocumentDetailsComponent },
     { path: 'vc-documents/:id', component: VcDocumentDetailsComponent },
     { path: 'vp-documents/:id', component: VpDocumentDetailsComponent },
+    { path: 'contracts/:id', component: ContractDetailsComponent },
 ];
