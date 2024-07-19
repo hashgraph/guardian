@@ -101,6 +101,7 @@ import { RecordResultDialog } from './record/record-result-dialog/record-result-
 import { RecordResultsComponent } from './record/record-results/record-results.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
 import { SelectSchema } from './helpers/select-schema/select-schema.component';
+import { PolicyTestResult } from './helpers/policy-test-result/policy-test-result.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -208,6 +209,7 @@ import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import
         MultiSignBlockComponent,
         SelectBlock,
         SelectSchema,
+        PolicyTestResult,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,

@@ -99,6 +99,16 @@ const columns = [{
         return true;
     }
 }, {
+    id: 'tests',
+    permissions: (user: UserPermissions) => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
     id: 'tags',
     permissions: (user: UserPermissions) => {
         return true;
@@ -134,6 +144,7 @@ const columns = [{
         )
     }
 }];
+
 
 
 
@@ -390,16 +401,16 @@ export class PoliciesComponent implements OnInit {
                     new MenuButton({
                         visible: true,
                         disabled: policy.status !== 'DRAFT' && policy.status !== 'DRY-RUN',
-                        tooltip: 'Add test',
-                        icon: 'add',
+                        tooltip: 'Attach test file',
+                        icon: 'add-test',
                         click: () => this.addTest(policy)
                     }),
                     new MenuButton({
                         visible: true,
                         disabled: !(policy.tests && policy.tests.length),
-                        tooltip: 'Run test',
-                        icon: 'check',
-                        click: () => this.runTest(policy)
+                        tooltip: 'Test details',
+                        icon: 'run-test',
+                        click: () => this.testDetails(policy)
                     })
                 ]
             }, {
@@ -1328,7 +1339,7 @@ export class PoliciesComponent implements OnInit {
             header: 'Add Policy Tests',
             width: '600px',
             styleClass: 'custom-dialog',
-            data: { 
+            data: {
                 policy: item,
                 fileExtension: 'record',
                 label: 'Add test .record file'
@@ -1347,27 +1358,34 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    public runTest(policy: any) {
+    public testDetails(policy: any) {
         const item = this.policies?.find((e) => e.id === policy?.id);
         const dialogRef = this.dialogService.open(PolicyTestDialog, {
             showHeader: false,
             header: 'Policy Tests',
             width: '1000px',
             styleClass: 'custom-dialog custom-header-dialog',
-            data: { 
+            data: {
                 policy: item
             }
         });
-        dialogRef.onClose.subscribe(async (arrayBuffer) => {
-            if (arrayBuffer) {
-                this.loading = true;
-                this.policyEngineService.addPolicyTest(item.id, arrayBuffer)
-                    .subscribe((result) => {
-                        this.loadAllPolicy();
-                    }, (e) => {
-                        this.loading = false;
-                    })
-            }
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public onRunTest($event: any) {
+        const { policy, test } = $event;
+        this.loading = true;
+        this.policyEngineService
+            .runTest(policy.id, test.id)
+            .subscribe((result) => {
+                this.loadAllPolicy();
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onAddTest($event: any) {
+        const { policy } = $event;
+        this.addTest(policy);
     }
 }

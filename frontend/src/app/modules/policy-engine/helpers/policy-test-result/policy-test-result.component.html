@@ -1,0 +1,52 @@
+<div *ngIf="last" class="container">
+    <div *ngIf="last.status !== 'New'" class="status-button">
+        <div class="status-details" (click)="onDetails(last)">
+            <div class="status-label {{last.status}}-status"></div>
+            <div class="date-label">{{getDate(last.date, last.status)}}</div>
+        </div>
+        <div 
+            class="re-run-btn" 
+            (click)="onRun(last)"
+            [attr.disabled]="!(status === 'DRY-RUN' || status === 'DEMO')">
+            <svg-icon
+                class="icon-btn svg-icon-16"
+                src="/assets/images/icons/16/re-run.svg"
+                svgClass="primary-color">
+            </svg-icon>
+        </div>
+    </div>
+    <div *ngIf="last.status === 'New'" class="run-button">
+        <div 
+            class="run-label primary" 
+            [attr.disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"
+            (click)="onRun(last)"
+            pTooltip="Tests can only be run in 'Dry-Run' or 'Demo' mode"
+            [tooltipDisabled]="(status === 'DRY-RUN' || status === 'DEMO')"
+            tooltipPosition="top">
+            <svg-icon
+                class="icon-btn svg-icon-16"
+                src="/assets/images/icons/16/run-test.svg"
+                [svgClass]="!(status === 'DRY-RUN' || status === 'DEMO') ? 'disabled-color' : 'white-color'">
+            </svg-icon>
+            <span>Run Test</span>
+        </div>
+    </div>
+</div>
+<div *ngIf="!last" class="container">
+    <div class="run-button">
+        <div 
+            class="run-label" 
+            [attr.disabled]="(status === 'PUBLISH' || status === 'DISCONTINUED')"
+            (click)="onAdd()"
+            pTooltip="It is not possible to add a test to a published policy"
+            [tooltipDisabled]="!(status === 'PUBLISH' || status === 'DISCONTINUED')"
+            tooltipPosition="top">
+            <svg-icon
+                class="icon-btn svg-icon-16"
+                src="/assets/images/icons/16/add-test.svg"
+                [svgClass]="(status === 'PUBLISH' || status === 'DISCONTINUED') ?  'disabled-color' :  'primary-color'">
+            </svg-icon>
+            <span>Add Test</span>
+        </div>
+    </div>
+</div>

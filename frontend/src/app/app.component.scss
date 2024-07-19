@@ -428,7 +428,6 @@ body {
 }
 
 ::ng-deep body .dialog-grid-container {
-    margin-top: 16px;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -458,6 +457,12 @@ body {
         width: 200px;
         min-width: 200px;
         max-width: 200px;
+    }
+
+    .col-150 {
+        width: 150px;
+        min-width: 150px;
+        max-width: 150px;
     }
 
     .col-120 {
@@ -525,6 +530,8 @@ body {
 
             &>div {
                 padding: 22px 10px;
+                display: flex;
+                align-items: center;
             }
 
             &:hover {
@@ -532,7 +539,11 @@ body {
             }
 
             &[expand="true"] {
-                border-bottom: none
+                border-bottom: none;
+
+                .expand-icon {
+                    transform: rotate(90deg);
+                }
             }
         }
 

@@ -18,11 +18,10 @@
             <div class="dialog-grid-header">
                 <div class="col-44"></div>
                 <div class="col-200 col-text">Start Date</div>
-                <div class="col-120 col-text">Duration</div>
-                <div class="col-120 col-text">Status</div>
-                <div class="col-auto">Progress</div>
-                <div class="col-120">Result</div>
-                <div class="col-120">Operations</div>
+                <div class="col-auto col-text">Duration</div>
+                <div class="col-150 col-text">Status</div>
+                <div class="col-150">Results</div>
+                <div class="col-150">Operations</div>
                 <div class="col-64"></div>
             </div>
             <div class="dialog-grid-body">
@@ -31,42 +30,54 @@
                         <div class="col-44">
                             <svg-icon
                                 *ngIf="item.result || item.error"
-                                class="icon-btn"
+                                class="icon-btn expand-icon"
                                 src="/assets/images/icons/right-arrow.svg"
                                 svgClass="disabled-color">
                             </svg-icon>
                         </div>
                         <div class="col-200 col-text">{{getDate(item.date)}}</div>
-                        <div class="col-120 col-text">{{getTime(item.duration)}}</div>
-                        <div class="col-120 col-button">
+                        <div class="col-auto col-text">{{getTime(item.duration)}}</div>
+                        <div class="col-150 col-button">
                             <div class="status-label {{item.status}}-status">{{item.status}}</div>
                         </div>
-                        <div class="col-auto">
-                            <div *ngIf="item.status==='Running'">
+                        <div class="col-150">
+                            <div *ngIf="item.status==='Running'" class="results">
                                 <div class="progress-bar">
-                                    <div class="progress-bar-value" [style.width.%]="item.progress">
-                                        <!-- <span *ngIf="item.progress>10">{{getProgress(item.progress)}}</span> -->
-                                    </div>
+                                    <div class="progress-bar-value" [style.width.%]="item.progress"></div>
                                 </div>
+                                <div class="progress-label"> {{getProgress(item.progress)}}</div>
                             </div>
-                        </div>
-                        <div class="col-120">
                             <div *ngIf="item.status === 'Success' || item.status === 'Failure'" class="results">
-                                <div *ngIf="item.result" class="results-total">{{getProgress(item.result?.total)}}</div>
+                                <ng-container *ngIf="item.result || item.error">
+                                    <div class="static-bar">
+                                        <div class="static-bar-value" [style.width.%]="item.result?.total"></div>
+                                    </div>
+                                    <div class="progress-label results-total"
+                                        [attr.total-value]="item.result?.total"> {{getProgress(item.result?.total)}}</div>
+                                </ng-container>
+                                <!-- <div *ngIf="item.result || item.error" class="results-total" [attr.total-value]="item.result?.total">
+                                    {{getProgress(item.result?.total)}}
+                                </div> -->
                             </div>
                         </div>
-                        <div class="col-120 col-button">
+                        <div class="col-150 col-button">
                             <ng-container *ngIf="status === 'DRY-RUN' || status === 'DEMO'">
                                 <button 
-                                    *ngIf="item.status !== 'Running'"
+                                    *ngIf="item.status === 'New'"
                                     (click)="runTest(item, $event)"
-                                    class="button"
-                                    label="{{item.status==='New' ? 'Run' : 'Re-Run'}}"
+                                    class="button action-button run-button"
+                                    label="Run"
+                                    pButton></button>
+                                <button 
+                                    *ngIf="item.status === 'Success' || item.status === 'Failure'"
+                                    (click)="runTest(item, $event)"
+                                    class="button action-button re-run-button"
+                                    label="Re-Run"
                                     pButton></button>
                                 <button 
                                     *ngIf="item.status === 'Running'"
                                     (click)="stopTest(item, $event)"
-                                    class="button"
+                                    class="button action-button stop-button"
                                     label="Stop"
                                     pButton></button>
                             </ng-container>
@@ -84,12 +95,9 @@
                     </div>
                     <div class="dialog-grid-expand-row" [attr.expand]="getExpand(item)">
                         <ng-template 
-                            *ngIf="item.result"
+                            *ngIf="item.result || item.error"
                             [ngTemplateOutlet]="detailsTemplate"
-                            [ngTemplateOutletContext]="item.result"></ng-template>
-                        <div *ngIf="item.error" class="text-error">
-                            {{item.error}}
-                        </div>
+                            [ngTemplateOutletContext]="getResults(item)"></ng-template>
                     </div>
                 </ng-container>
             </div>
@@ -118,44 +126,132 @@
 </div> -->
 
 <ng-template #detailsTemplate 
-    let-total="total" 
-    let-info="info"
-    let-results="documents"
+    let-runStep="runStep" 
+    let-compareStep="compareStep"
 >
     <div class="results-details">
-        <div class="results-header">
-            Common
+        <div class="results-step">
+            <div class="results-step-header">
+                <div class="results-step-expand">
+                    <svg-icon
+                        *ngIf="runStep.status !== 'Skipped'"
+                        class="icon-btn expand-icon"
+                        src="/assets/images/icons/right-arrow.svg"
+                        svgClass="disabled-color">
+                    </svg-icon>
+                </div>
+                <div class="results-step-status">
+                    <svg-icon
+                        *ngIf="runStep.status === 'Skipped'"
+                        class="icon-btn"
+                        src="/assets/images/icons/skip.svg"
+                        svgClass="disabled-color">
+                    </svg-icon>
+                    <svg-icon
+                        *ngIf="runStep.status === 'Success'"
+                        class="icon-btn"
+                        src="/assets/images/icons/check.svg"
+                        svgClass="success-color">
+                    </svg-icon>
+                    <svg-icon
+                        *ngIf="runStep.status === 'Failure'"
+                        class="icon-btn"
+                        src="/assets/images/icons/close-2.svg"
+                        svgClass="delete-color">
+                    </svg-icon>
+                </div>
+                <div class="results-step-name">Run Test</div>
+            </div>
+            <div class="results-step-body" *ngIf="runStep.error">
+                <div class="text-error">{{runStep.error}}</div>
+            </div>
+            <div class="results-step-body" *ngIf="!runStep.error">
+                <div class="text-success">Finished</div>
+            </div>
         </div>
+        <div class="results-step">
+            <div class="results-step-header">
+                <div class="results-step-expand">
+                    <svg-icon
+                        *ngIf="compareStep.status !== 'Skipped'"
+                        class="icon-btn expand-icon"
+                        src="/assets/images/icons/right-arrow.svg"
+                        svgClass="disabled-color">
+                    </svg-icon>
+                </div>
+                <div class="results-step-status">
+                    <svg-icon
+                        *ngIf="compareStep.status === 'Skipped'"
+                        class="icon-btn"
+                        src="/assets/images/icons/skip.svg"
+                        svgClass="disabled-color">
+                    </svg-icon>
+                    <svg-icon
+                        *ngIf="compareStep.status === 'Success'"
+                        class="icon-btn"
+                        src="/assets/images/icons/check.svg"
+                        svgClass="success-color">
+                    </svg-icon>
+                    <svg-icon
+                        *ngIf="compareStep.status === 'Failure'"
+                        class="icon-btn"
+                        src="/assets/images/icons/close-2.svg"
+                        svgClass="delete-color">
+                    </svg-icon>
+                </div>
+                <div class="results-step-name">Compare Results</div>
+            </div>
+            <div class="results-step-body" *ngIf="compareStep.report">
+                <ng-template 
+                    [ngTemplateOutlet]="compareDocumentTemplate"
+                    [ngTemplateOutletContext]="compareStep.report"></ng-template>
+            </div>
+        </div>
+    </div>
+</ng-template>
 
-        <div class="results-info">
-            <div class="results-info-header">Created documents:</div>
-            <div>{{info?.documents}}</div>
-        </div>
-        <div class="results-info">
-            <div class="results-info-header">Minted tokens:</div>
-            <div>{{info?.tokens}}</div>
-        </div>
-        <div class="results-info">
-            <div class="results-info-header">Total rate:</div>
-            <div [attr.rate-color]="total">{{total}}%</div>
-        </div>
+<ng-template #compareDocumentTemplate 
+    let-info="info" 
+    let-results="documents"
+    let-total="total"
+>
+    <div class="compare-details">
 
-        <div class="results-header">
-            Documents
+        <div class="compare-col">
+            <div class="compare-header">
+                Common
+            </div>
+
+            <div class="compare-info">
+                <div class="compare-info-header">Created documents:</div>
+                <div>{{info?.documents}}</div>
+            </div>
+            <div class="compare-info">
+                <div class="compare-info-header">Minted tokens:</div>
+                <div>{{info?.tokens}}</div>
+            </div>
+            <div class="compare-info">
+                <div class="compare-info-header">Total rate:</div>
+                <div class="rate-color" [attr.rate-color]="total">{{total}}%</div>
+            </div>
         </div>
-        <div class="results-body">
-            <div *ngFor="let item of results; let i=index" class="results-item">
-                <div class="document-type">{{item.type}}</div>
-                <div class="document-schema">{{item.schema}}</div>
-                <div class="document-rate" [attr.rate-color]="item.rate">{{item.rate}}</div>
-                <div class="document-view">
-                    <a (click)="openDocument(item)">View Document</a>
+        <div class="compare-col">
+            <div class="compare-header">
+                Documents
+            </div>
+
+            <div class="compare-body">
+                <div *ngFor="let item of results; let i=index" class="compare-item">
+                    <div class="document-type">{{item.type}}</div>
+                    <div class="document-schema">
+                        <a (click)="openDocument(item)">{{item.schema}}</a>
+                    </div>
+                    <div class="document-rate rate-color" [attr.rate-color]="item.rate">{{item.rate}}</div>
                 </div>
             </div>
         </div>
-        <div class="dialog-actions">
-            <button mat-raised-button color="primary" (click)="onDetails()">Details</button>
+        <div class="more-details">
+            <div class="link-btn" (click)="onDetails()">Show more details</div>
         </div>
     </div>
-
 </ng-template>

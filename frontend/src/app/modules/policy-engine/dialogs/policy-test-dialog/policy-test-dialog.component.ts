@@ -30,13 +30,17 @@ export class PolicyTestDialog {
         this.tests = this.policy?.tests || [];
         this.policyId = this.policy?.id;
         this.status = this.policy?.status;
+        const target = this.config.data?.test;
+        if (target) {
+            this.expandMap.add(target.id);
+        }
     }
 
     ngOnInit() {
         this.loading = false;
         this.lastUpdate = setInterval(() => {
             this.updateProgress();
-        }, 5000)
+        }, 10000)
     }
 
     ngOnDestroy(): void {
@@ -48,7 +52,7 @@ export class PolicyTestDialog {
     }
 
     public getDate(date: string) {
-        let momentDate = moment(date);
+        const momentDate = moment(date);
         if (momentDate.isValid()) {
             return momentDate.format("YYYY-MM-DD, HH:mm:ss");
         } else {
@@ -57,9 +61,18 @@ export class PolicyTestDialog {
     }
 
     public getTime(duration: number) {
-        let momentDate = moment.duration(duration);
+        const momentDate = moment.duration(duration);
         if (momentDate.isValid()) {
             return momentDate.humanize();
+        } else {
+            return 'N\\A';
+        }
+    }
+
+    public diffTime(test: any) {
+        const _diff = moment.duration(test.duration - moment(new Date()).diff(moment(test.date)) + 20000);
+        if (_diff.isValid()) {
+            return _diff.humanize();
         } else {
             return 'N\\A';
         }
@@ -73,6 +86,21 @@ export class PolicyTestDialog {
         }
     }
 
+    public getResults(test: any) {
+        const s1 = test.error ? 'Failure' : 'Success';
+        const s2 = test.result ? (test.result.total === 100 ? 'Success' : 'Failure') : 'Skipped';
+        return {
+            runStep: {
+                status: s1,
+                error: test.error
+            },
+            compareStep: {
+                status: s2,
+                report: test.result
+            }
+        }
+    }
+
     public onClose(): void {
         this.ref.close(null);
     }
@@ -81,12 +109,21 @@ export class PolicyTestDialog {
         this.policyEngineService
             .policy(this.policyId)
             .subscribe((result) => {
-                this.tests = result.tests;
+                this.policy = Object.assign(this.policy, result);
+                for (let index = 0; index < result.tests.length; index++) {
+                    const old = this.tests[index];
+                    const test = result.tests[index];
+                    if (old && old.id === test.id) {
+                        Object.assign(this.tests[index], test);
+                    } else {
+                        this.tests[index] = test;
+                    }
+                }
             }, (e) => {
             });
     }
 
-    public runTest(item: any, $event:any) {
+    public runTest(item: any, $event: any) {
         $event.stopPropagation();
         this.loading = true;
         this.policyEngineService
@@ -95,13 +132,15 @@ export class PolicyTestDialog {
                 const index = this.tests.findIndex((t: any) => t === item);
                 this.tests[index] = result;
                 this.tests = this.tests.slice();
-                this.loading = false;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500)
             }, (e) => {
                 this.loading = false;
             });
     }
 
-    public stopTest(item: any, $event:any) {
+    public stopTest(item: any, $event: any) {
         $event.stopPropagation();
         this.loading = true;
         this.policyEngineService
@@ -110,12 +149,14 @@ export class PolicyTestDialog {
                 const index = this.tests.findIndex((t: any) => t === item);
                 this.tests[index] = result;
                 this.tests = this.tests.slice();
-                this.loading = false;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500)
             }, (e) => {
                 this.loading = false;
             });
     }
-    public deleteTest(item: any, $event:any) {
+    public deleteTest(item: any, $event: any) {
         $event.stopPropagation();
         this.loading = true;
         this.policyEngineService
@@ -132,7 +173,12 @@ export class PolicyTestDialog {
 
     public onDetails(): void {
         this.ref.close(null);
-        this.router.navigate(['policy-viewer', this.policyId]);
+        this.router.navigate(['/record-results'], {
+            queryParams: {
+                type: 'policy',
+                policyId: this.policyId,
+            }
+        });
     }
 
     public expand(item: any) {

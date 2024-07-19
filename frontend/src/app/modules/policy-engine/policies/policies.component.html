@@ -134,7 +134,7 @@
                                 <th 
                                     *ngIf="canDisplayColumn('description')" 
                                     class="header-cell-text"
-                                    style="min-width: 140px">Description</th>
+                                    style="min-width: 170px">Description</th>
                                 <th 
                                     *ngIf="canDisplayColumn('status')" 
                                     class="header-cell-text cell-150">Status</th>
@@ -147,6 +147,9 @@
                                 <th 
                                     *ngIf="canDisplayColumn('version')" 
                                     class="header-cell-text cell-140">Version</th>
+                                <th 
+                                    *ngIf="canDisplayColumn('tests')" 
+                                    class="header-cell-text cell-190">Tests</th>
                                 <th 
                                     *ngIf="canDisplayColumn('tags')" 
                                     class="header-cell-text cell-190">Tags</th>
@@ -244,7 +247,7 @@
                                     class="text-truncate"
                                     pTooltip="{{ policy.description }}"
                                     tooltipPosition="top"
-                                    style="min-width: 140px"
+                                    style="min-width: 170px"
                                 >{{ policy.description }}</td>
                                 <td 
                                     *ngIf="canDisplayColumn('status')" 
@@ -312,6 +315,16 @@
                                     *ngIf="canDisplayColumn('version')" 
                                     class="cell-140"
                                 >{{ policy.version }}</td>
+                                <td 
+                                    *ngIf="canDisplayColumn('tests')" 
+                                    class="cell-190"
+                                >
+                                    <policy-test-result 
+                                        [policy]="policy" 
+                                        [tests]="policy.tests"
+                                        (run-test)="onRunTest($event)"
+                                        (add-test)="onAddTest($event)"></policy-test-result>
+                                </td>
                                 <td 
                                     *ngIf="canDisplayColumn('tags')" 
                                     class="cell-190"
@@ -442,7 +455,6 @@
         </ng-container>
     </ng-template>
 </mat-menu>
-
 
 <ng-template #noData>
     <div class="not-exist">
