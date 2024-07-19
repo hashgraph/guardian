@@ -1,9 +1,9 @@
-import { mongoLoggerInitialization } from '@guardian/common';
+import { mongoForLoggingInitialization } from '@guardian/common';
 
 //constants
 import { LOGGER_MONGO_PROVIDER } from '#constants';
 
 export const loggerMongoProvider = {
     provide: LOGGER_MONGO_PROVIDER,
-    useFactory: async () => mongoLoggerInitialization()
+    useFactory: async () => mongoForLoggingInitialization()
 };

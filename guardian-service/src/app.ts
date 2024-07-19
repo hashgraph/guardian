@@ -22,8 +22,9 @@ import {
     MessageBrokerChannel,
     MessageServer,
     Migration,
-    mongoLoggerInitialization,
-    OldSecretManager, PinoLogger,
+    mongoForLoggingInitialization,
+    OldSecretManager,
+    PinoLogger,
     pinoLoggerInitialization,
     Policy,
     RetirePool,
@@ -114,7 +115,7 @@ Promise.all([
             ]
         },
     }),
-    mongoLoggerInitialization()
+    mongoForLoggingInitialization()
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
 

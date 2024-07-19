@@ -1,4 +1,4 @@
-import { ApplicationState, LargePayloadContainer, MessageBrokerChannel, mongoLoggerInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { ApplicationState, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
@@ -27,7 +27,7 @@ Promise.all([
             ]
         },
     }),
-    mongoLoggerInitialization()
+    mongoForLoggingInitialization()
 ]).then(async values => {
     const [cn, app, loggerMongo] = values;
     app.listen();

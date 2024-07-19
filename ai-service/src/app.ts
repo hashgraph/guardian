@@ -2,13 +2,13 @@ import { AISuggestionService } from './helpers/suggestions.js';
 import { aiSuggestionsAPI } from './api/service/ai-suggestions-service.js';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
 import { AIManager } from './ai-manager.js';
-import { ApplicationState, MessageBrokerChannel, mongoLoggerInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import * as process from 'process';
 import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([
     MessageBrokerChannel.connect('AI_SERVICE'),
-    mongoLoggerInitialization()
+    mongoForLoggingInitialization()
 ]).then(async values => {
     const [cn, loggerMongo] = values;
 

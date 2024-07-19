@@ -3,7 +3,10 @@ import {
     DataBaseHelper,
     LargePayloadContainer,
     MessageBrokerChannel,
-    Migration, mongoLoggerInitialization, PinoLogger, pinoLoggerInitialization,
+    Migration,
+    mongoForLoggingInitialization,
+    PinoLogger,
+    pinoLoggerInitialization,
     Workers,
 } from '@guardian/common';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
@@ -38,7 +41,7 @@ Promise.all([
         bodyParser: false,
     }),
     MessageBrokerChannel.connect('ANALYTICS_SERVICE'),
-    mongoLoggerInitialization(),
+    mongoForLoggingInitialization(),
 ]).then(async ([db, app, cn, loggerMongo]) => {
     try {
         DataBaseHelper.orm = db;
