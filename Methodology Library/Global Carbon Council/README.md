@@ -1,4 +1,4 @@
-# KrypC Carbon Core Policy – Global Carbon Council
+# Global Carbon Council - Authored by KrypC Carbon Core
 
 ### KrypC Guardian Policy Template Methodologies
 

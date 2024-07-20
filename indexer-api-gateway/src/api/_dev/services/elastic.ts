@@ -1,5 +1,4 @@
 import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
     ApiForbiddenResponse,
@@ -28,10 +27,6 @@ export class ElasticApi extends ApiClient {
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async getAllMessages(): Promise<any> {

@@ -27,8 +27,9 @@ export interface ContractOptions {
 /**
  * Contract analytics
  */
-// tslint:disable-next-line:no-empty-interface
-export interface ContractAnalytics {}
+export interface ContractAnalytics {
+    textSearch?: string;
+}
 
 /**
  * Contract

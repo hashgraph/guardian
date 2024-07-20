@@ -5,10 +5,6 @@ export interface RawMessage {
     /**
      * Identifier
      */
-    _id: any;
-    /**
-     * Identifier
-     */
     id: string;
     /**
      * Message identifier

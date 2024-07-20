@@ -1,4 +1,6 @@
 import {
+    MessageAction,
+    MessageType,
     Topic,
     TopicActivity,
     TopicAnalytics,
@@ -125,19 +127,36 @@ export class TopicDTO
     implements Topic
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.TOPIC
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.CreateTopic
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: TopicOptionsDTO,
     })
     declare options: TopicOptionsDTO;
     @ApiProperty({
         type: TopicAnalyticsDTO,
     })
-    declare analytics: TopicAnalyticsDTO;
+    declare analytics?: TopicAnalyticsDTO;
 }
 
 export class TopicDetailsDTO
     extends DetailsActivityDTO<TopicDTO, TopicActivityDTO, RawTopicDTO>
     implements TopicDetails
 {
+    @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
     @ApiProperty({
         type: TopicDTO,
     })
