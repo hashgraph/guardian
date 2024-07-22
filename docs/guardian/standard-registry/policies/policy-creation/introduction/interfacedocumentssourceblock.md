@@ -28,20 +28,17 @@ To know more information about events, please look at [Events](events.md).
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```
 {
   "data": [
@@ -125,27 +122,59 @@ Block UUID
       "group": "8e58d3eb-9af5-4705-a9b3-
 .....
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="body" name="orderDirection" type="String" required="false" %}
-Order Direction ASC,DESC
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
+| uuid<mark style="color:red;">\*</mark>     | String | Block UUID  |
 
-{% swagger-parameter in="body" name="orderField" type="String" required="false" %}
-Order Field Path
-{% endswagger-parameter %}
+#### Request Body
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
+| Name           | Type   | Description              |
+| -------------- | ------ | ------------------------ |
+| orderDirection | String | Order Direction ASC,DESC |
+| orderField     | String | Order Field Path         |
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
-{% endswagger-parameter %}
-{% endswagger %}
+### Path Parameters for Pagination and Filtration
+
+#### With Child Blocks
+
+InterfaceDocumentsSourceBlock can accept and pass-on query parameters to the child pagination and filtration add-ons.
+
+**Pagination**
+
+| Name         | Type   |
+| ------------ | ------ |
+| itemsPerPage | Number |
+| page         | Number |
+
+**Filtration**
+
+| Name  | Type   | Description                               |
+| ----- | ------ | ----------------------------------------- |
+| key   | Number | ID or a tag of the filtration add-ons     |
+| Value | String | the filtervalue for the Filtration add-on |
+
+**Example:**
+
+```
+/api/v1/policies/<policyId>/blocks/<blockId>?itemsPerPage=20&page=0&Block_5=valuetofilterby
+```
+
+#### Without Child Blocks
+
+| Name         | Description                         |
+| ------------ | ----------------------------------- |
+| filterByUUID | return document with specified uuid |
+
+**Example:**
+
+```
+/api/v1/policies/<policyId>/blocks/<blockId>?itemsPerPage=20&page=0&<filterBlock id or tag>=<filterValue>&filterByUUID=<document uuid>
+```
