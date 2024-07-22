@@ -68,7 +68,7 @@ export class PolicyTestResult {
         }
         let momentDate = moment(date);
         if (momentDate.isValid()) {
-            return momentDate.format("YYYY-MM-DD");
+            return momentDate.format("YYYY/MM/DD");
         } else {
             return 'N\\A';
         }
@@ -79,7 +79,7 @@ export class PolicyTestResult {
             showHeader: false,
             header: 'Policy Tests',
             width: '1000px',
-            styleClass: 'custom-dialog custom-header-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 policy: this.policy,
                 test: last

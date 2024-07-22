@@ -1,52 +1,75 @@
 <div *ngIf="last" class="container">
-    <div *ngIf="last.status !== 'New'" class="status-button">
-        <div class="status-details" (click)="onDetails(last)">
-            <div class="status-label {{last.status}}-status"></div>
-            <div class="date-label">{{getDate(last.date, last.status)}}</div>
-        </div>
-        <div 
-            class="re-run-btn" 
+    <div *ngIf="last.status !== 'New'" class="status-buttons">
+        <button 
+            (click)="onDetails(last)" 
+            class="guardian-button status-button {{last.status}}-status">
+            <div class="guardian-button-icon status-label {{last.status}}-status"></div>
+            <div class="guardian-button-label">{{getDate(last.date, last.status)}}</div>
+        </button>
+
+        <button 
+            class="guardian-icon-button re-run-btn" 
             (click)="onRun(last)"
-            [attr.disabled]="!(status === 'DRY-RUN' || status === 'DEMO')">
-            <svg-icon
-                class="icon-btn svg-icon-16"
-                src="/assets/images/icons/16/re-run.svg"
-                svgClass="primary-color">
-            </svg-icon>
-        </div>
-    </div>
-    <div *ngIf="last.status === 'New'" class="run-button">
-        <div 
-            class="run-label primary" 
-            [attr.disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"
-            (click)="onRun(last)"
+            [disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"    
             pTooltip="Tests can only be run in 'Dry-Run' or 'Demo' mode"
+            [tooltipOptions]="{showDelay: 300}"
             [tooltipDisabled]="(status === 'DRY-RUN' || status === 'DEMO')"
             tooltipPosition="top">
             <svg-icon
                 class="icon-btn svg-icon-16"
-                src="/assets/images/icons/16/run-test.svg"
-                [svgClass]="!(status === 'DRY-RUN' || status === 'DEMO') ? 'disabled-color' : 'white-color'">
+                src="/assets/images/icons/16/re-run.svg"
+                [svgClass]="
+                    !(status === 'DRY-RUN' || status === 'DEMO') ?  
+                        'icon-color-disabled' :  
+                        'icon-color-primary'
+                    ">
             </svg-icon>
-            <span>Run Test</span>
-        </div>
+        </button>
+    </div>
+    <div *ngIf="last.status === 'New'" class="run-button">
+        <button 
+            (click)="onRun(last)"
+            class="guardian-button guardian-button-primary run-btn"
+            [disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"
+            pTooltip="Tests can only be run in 'Dry-Run' or 'Demo' mode"
+            [tooltipOptions]="{showDelay: 300}"
+            [tooltipDisabled]="(status === 'DRY-RUN' || status === 'DEMO')"
+            tooltipPosition="top">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn svg-icon-16"
+                    src="/assets/images/icons/16/run-test.svg"
+                    [svgClass]="
+                        !(status === 'DRY-RUN' || status === 'DEMO') ?  
+                            'icon-color-disabled' :  
+                            'icon-color-secondary'
+                    ">
+                </svg-icon>
+            </div>
+            <div class="guardian-button-label">Run Test</div>
+        </button>
     </div>
 </div>
 <div *ngIf="!last" class="container">
-    <div class="run-button">
-        <div 
-            class="run-label" 
-            [attr.disabled]="(status === 'PUBLISH' || status === 'DISCONTINUED')"
-            (click)="onAdd()"
-            pTooltip="It is not possible to add a test to a published policy"
-            [tooltipDisabled]="!(status === 'PUBLISH' || status === 'DISCONTINUED')"
-            tooltipPosition="top">
+    <button 
+        (click)="onAdd()" 
+        class="guardian-button guardian-button-secondary run-btn"
+        [disabled]="(status === 'PUBLISH' || status === 'DISCONTINUED')"
+        pTooltip="It is not possible to add a test to a published policy"
+        [tooltipOptions]="{showDelay: 300}"
+        [tooltipDisabled]="!(status === 'PUBLISH' || status === 'DISCONTINUED')"
+        tooltipPosition="top">
+        <div class="guardian-button-icon">
             <svg-icon
                 class="icon-btn svg-icon-16"
                 src="/assets/images/icons/16/add-test.svg"
-                [svgClass]="(status === 'PUBLISH' || status === 'DISCONTINUED') ?  'disabled-color' :  'primary-color'">
+                [svgClass]="
+                    (status === 'PUBLISH' || status === 'DISCONTINUED') ?  
+                        'icon-color-disabled' :  
+                        'icon-color-primary'
+                ">
             </svg-icon>
-            <span>Add Test</span>
         </div>
-    </div>
+        <div class="guardian-button-label">Add Test</div>
+    </button>
 </div>

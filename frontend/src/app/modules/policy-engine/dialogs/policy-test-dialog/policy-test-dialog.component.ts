@@ -34,17 +34,24 @@ export class PolicyTestDialog {
         if (target) {
             this.expandMap.add(target.id);
         }
+        this.updateData();
     }
 
     ngOnInit() {
         this.loading = false;
-        this.lastUpdate = setInterval(() => {
-            this.updateProgress();
-        }, 10000)
+        // this.lastUpdate = setInterval(() => {
+        //     this.updateProgress();
+        // }, 10000)
     }
 
     ngOnDestroy(): void {
         clearInterval(this.lastUpdate);
+    }
+
+    private updateData() {
+        for (const test of this.tests) {
+            test.__result = this.getResults(test);
+        }
     }
 
     public getExpand(item: any): boolean {
@@ -54,7 +61,7 @@ export class PolicyTestDialog {
     public getDate(date: string) {
         const momentDate = moment(date);
         if (momentDate.isValid()) {
-            return momentDate.format("YYYY-MM-DD, HH:mm:ss");
+            return momentDate.format("YYYY/MM/DD, HH:mm:ss");
         } else {
             return 'N\\A';
         }
@@ -119,6 +126,7 @@ export class PolicyTestDialog {
                         this.tests[index] = test;
                     }
                 }
+                this.updateData();
             }, (e) => {
             });
     }
@@ -132,6 +140,7 @@ export class PolicyTestDialog {
                 const index = this.tests.findIndex((t: any) => t === item);
                 this.tests[index] = result;
                 this.tests = this.tests.slice();
+                this.updateData();
                 setTimeout(() => {
                     this.loading = false;
                 }, 500)
@@ -149,6 +158,7 @@ export class PolicyTestDialog {
                 const index = this.tests.findIndex((t: any) => t === item);
                 this.tests[index] = result;
                 this.tests = this.tests.slice();
+                this.updateData();
                 setTimeout(() => {
                     this.loading = false;
                 }, 500)
@@ -163,6 +173,7 @@ export class PolicyTestDialog {
             .deleteTest(this.policyId, item.id)
             .subscribe((result) => {
                 this.tests = this.tests.filter((t: any) => t !== item);
+                this.updateData();
                 setTimeout(() => {
                     this.loading = false;
                 }, 500)

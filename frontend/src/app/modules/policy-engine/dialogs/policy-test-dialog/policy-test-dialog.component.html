@@ -5,13 +5,13 @@
         <div *ngIf="policy" class="header-item">{{policy.name}}</div>
     </div>
     <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="close-icon-color"></svg-icon>
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
     </div>
 </div>
 <div class="dialog-body">
     <div class="context">
-        <div *ngIf="loading" class="loading">
-            <div class="preloader-image preloader-image-l-size"></div>
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
         </div>
 
         <div *ngIf="tests && tests.length" class="dialog-grid-container">
@@ -19,9 +19,9 @@
                 <div class="col-44"></div>
                 <div class="col-200 col-text">Start Date</div>
                 <div class="col-auto col-text">Duration</div>
-                <div class="col-150 col-text">Status</div>
-                <div class="col-150">Results</div>
-                <div class="col-150">Operations</div>
+                <div class="col-135 col-text">Status</div>
+                <div class="col-200">Results</div>
+                <div class="col-120">Operations</div>
                 <div class="col-64"></div>
             </div>
             <div class="dialog-grid-body">
@@ -32,15 +32,15 @@
                                 *ngIf="item.result || item.error"
                                 class="icon-btn expand-icon"
                                 src="/assets/images/icons/right-arrow.svg"
-                                svgClass="disabled-color">
+                                svgClass="icon-color-disabled">
                             </svg-icon>
                         </div>
                         <div class="col-200 col-text">{{getDate(item.date)}}</div>
                         <div class="col-auto col-text">{{getTime(item.duration)}}</div>
-                        <div class="col-150 col-button">
-                            <div class="status-label {{item.status}}-status">{{item.status}}</div>
+                        <div class="col-135 col-button">
+                            <div class="guardian-label status-label-{{item.status}} action-button">{{item.status}}</div>
                         </div>
-                        <div class="col-150">
+                        <div class="col-200">
                             <div *ngIf="item.status==='Running'" class="results">
                                 <div class="progress-bar">
                                     <div class="progress-bar-value" [style.width.%]="item.progress"></div>
@@ -49,46 +49,37 @@
                             </div>
                             <div *ngIf="item.status === 'Success' || item.status === 'Failure'" class="results">
                                 <ng-container *ngIf="item.result || item.error">
-                                    <div class="static-bar">
-                                        <div class="static-bar-value" [style.width.%]="item.result?.total"></div>
+                                    <div class="progress-bar static-bar">
+                                        <div class="progress-bar-value" [style.width.%]="item.result?.total"></div>
                                     </div>
                                     <div class="progress-label results-total"
                                         [attr.total-value]="item.result?.total"> {{getProgress(item.result?.total)}}</div>
                                 </ng-container>
-                                <!-- <div *ngIf="item.result || item.error" class="results-total" [attr.total-value]="item.result?.total">
-                                    {{getProgress(item.result?.total)}}
-                                </div> -->
                             </div>
                         </div>
-                        <div class="col-150 col-button">
+                        <div class="col-120 col-button">
                             <ng-container *ngIf="status === 'DRY-RUN' || status === 'DEMO'">
                                 <button 
                                     *ngIf="item.status === 'New'"
                                     (click)="runTest(item, $event)"
-                                    class="button action-button run-button"
-                                    label="Run"
-                                    pButton></button>
+                                    class="guardian-button guardian-button-primary action-button">Run</button>
                                 <button 
                                     *ngIf="item.status === 'Success' || item.status === 'Failure'"
                                     (click)="runTest(item, $event)"
-                                    class="button action-button re-run-button"
-                                    label="Re-Run"
-                                    pButton></button>
+                                    class="guardian-button guardian-button-secondary action-button">Re-Run</button>
                                 <button 
                                     *ngIf="item.status === 'Running'"
                                     (click)="stopTest(item, $event)"
-                                    class="button action-button stop-button"
-                                    label="Stop"
-                                    pButton></button>
+                                    class="guardian-button guardian-button-delete action-button">Stop</button>
                             </ng-container>
                         </div>
                         <div class="col-64 col-button">
-                            <div class="small-btn">
+                            <div class="guardian-icon-button big delete-btn">
                                 <svg-icon
                                     (click)="deleteTest(item, $event)"
                                     class="icon-btn"
                                     src="/assets/images/icons/delete.svg"
-                                    svgClass="delete-color">
+                                    svgClass="icon-color-delete">
                                 </svg-icon>
                             </div>
                         </div>
@@ -97,7 +88,7 @@
                         <ng-template 
                             *ngIf="item.result || item.error"
                             [ngTemplateOutlet]="detailsTemplate"
-                            [ngTemplateOutletContext]="getResults(item)"></ng-template>
+                            [ngTemplateOutletContext]="item.__result"></ng-template>
                     </div>
                 </ng-container>
             </div>
@@ -106,24 +97,13 @@
 
     </div>
 </div>
-<!-- <div class="dialog-footer">
+<div class="dialog-footer">
     <div class="action-buttons">
         <div class="cancel-button">
-            <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
-        </div>
-        <div>
-            <button (click)="onCompare()" 
-                class="button" 
-                pButton>
-                <svg-icon
-                    class="icon2-btn"
-                    src="/assets/images/icons/compare.svg"
-                    [svgClass]="'disabled-icon-color'">
-                </svg-icon>
-            </button>
+            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
         </div>
     </div>
-</div> -->
+</div>
 
 <ng-template #detailsTemplate 
     let-runStep="runStep" 
@@ -132,33 +112,22 @@
     <div class="results-details">
         <div class="results-step">
             <div class="results-step-header">
-                <div class="results-step-expand">
-                    <svg-icon
-                        *ngIf="runStep.status !== 'Skipped'"
-                        class="icon-btn expand-icon"
-                        src="/assets/images/icons/right-arrow.svg"
-                        svgClass="disabled-color">
-                    </svg-icon>
-                </div>
-                <div class="results-step-status">
-                    <svg-icon
-                        *ngIf="runStep.status === 'Skipped'"
+                <div class="results-step-status" [ngSwitch]="runStep.status">
+                    <svg-icon 
+                        *ngSwitchCase="'Skipped'"
                         class="icon-btn"
-                        src="/assets/images/icons/skip.svg"
-                        svgClass="disabled-color">
-                    </svg-icon>
-                    <svg-icon
-                        *ngIf="runStep.status === 'Success'"
+                        src="/assets/images/icons/skip-fill.svg"
+                        svgClass="icon-color-disabled"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Success'"
                         class="icon-btn"
-                        src="/assets/images/icons/check.svg"
-                        svgClass="success-color">
-                    </svg-icon>
-                    <svg-icon
-                        *ngIf="runStep.status === 'Failure'"
+                        src="/assets/images/icons/check-fill.svg"
+                        svgClass="icon-color-success"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Failure'"
                         class="icon-btn"
-                        src="/assets/images/icons/close-2.svg"
-                        svgClass="delete-color">
-                    </svg-icon>
+                        src="/assets/images/icons/close-fill.svg"
+                        svgClass="icon-color-delete"></svg-icon>
                 </div>
                 <div class="results-step-name">Run Test</div>
             </div>
@@ -171,33 +140,22 @@
         </div>
         <div class="results-step">
             <div class="results-step-header">
-                <div class="results-step-expand">
-                    <svg-icon
-                        *ngIf="compareStep.status !== 'Skipped'"
-                        class="icon-btn expand-icon"
-                        src="/assets/images/icons/right-arrow.svg"
-                        svgClass="disabled-color">
-                    </svg-icon>
-                </div>
-                <div class="results-step-status">
-                    <svg-icon
-                        *ngIf="compareStep.status === 'Skipped'"
+                <div class="results-step-status" [ngSwitch]="compareStep.status">
+                    <svg-icon 
+                        *ngSwitchCase="'Skipped'"
                         class="icon-btn"
-                        src="/assets/images/icons/skip.svg"
-                        svgClass="disabled-color">
-                    </svg-icon>
-                    <svg-icon
-                        *ngIf="compareStep.status === 'Success'"
+                        src="/assets/images/icons/skip-fill.svg"
+                        svgClass="icon-color-disabled"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Success'"
                         class="icon-btn"
-                        src="/assets/images/icons/check.svg"
-                        svgClass="success-color">
-                    </svg-icon>
-                    <svg-icon
-                        *ngIf="compareStep.status === 'Failure'"
+                        src="/assets/images/icons/check-fill.svg"
+                        svgClass="icon-color-success"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Failure'"
                         class="icon-btn"
-                        src="/assets/images/icons/close-2.svg"
-                        svgClass="delete-color">
-                    </svg-icon>
+                        src="/assets/images/icons/close-fill.svg"
+                        svgClass="icon-color-delete"></svg-icon>
                 </div>
                 <div class="results-step-name">Compare Results</div>
             </div>
@@ -205,6 +163,9 @@
                 <ng-template 
                     [ngTemplateOutlet]="compareDocumentTemplate"
                     [ngTemplateOutletContext]="compareStep.report"></ng-template>
+            </div>
+            <div class="results-step-body" *ngIf="!compareStep.report">
+                <div class="text-skipped">Skipped</div>
             </div>
         </div>
     </div>
@@ -251,7 +212,7 @@
             </div>
         </div>
         <div class="more-details">
-            <div class="link-btn" (click)="onDetails()">Show more details</div>
+            <div class="guardian-button guardian-button-secondary more-btn" (click)="onDetails()">Show more details</div>
         </div>
     </div>
 </ng-template>

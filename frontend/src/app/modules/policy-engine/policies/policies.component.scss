@@ -66,7 +66,7 @@
 
 .status-draft {
     font-weight: 500;
-    color: var(--color-primary);
+    color: var(--guardian-primary-color);
 }
 
 .status-publish {
@@ -407,8 +407,8 @@
 
 .toolbar-btn-primary {
     ::ng-deep .p-button {
-        background: var(--color-primary);
-        border: 1px solid var(--color-primary);
+        background: var(--guardian-primary-color);
+        border: 1px solid var(--guardian-primary-color);
         font-family: Inter, sans-serif;
         font-size: 1px;
         font-style: normal;
@@ -416,13 +416,14 @@
         margin-left: 10px;
         height: 40px;
         padding: 8px;
+        border-radius: 8px;
     }
 }
 
 .toolbar-btn-secondary {
     ::ng-deep .p-button {
         background: #fff;
-        border: 1px solid var(--color-primary) !important;
+        border: 1px solid var(--guardian-primary-color) !important;
         font-family: Inter, sans-serif;
         font-size: 1px;
         font-style: normal;
@@ -430,6 +431,7 @@
         margin-left: 10px;
         height: 40px;
         padding: 8px;
+        border-radius: 8px;
     }
 }
 
@@ -442,8 +444,8 @@
 }
 
 .primary-color {
-    fill: var(--color-primary);
-    color: var(--color-primary);
+    fill: var(--guardian-primary-color);
+    color: var(--guardian-primary-color);
 }
 
 .color-white {
@@ -466,7 +468,7 @@
     width: 250px;
     height: 40px;
     border: 1px solid #e1e7ef;
-    border-radius: 8px;
+    border-radius: 6px;
     padding-left: 16px;
 }
 
@@ -512,10 +514,10 @@
 
     ::ng-deep .p-button {
         height: 28px;
-        border-radius: 8px;
+        border-radius: 6px;
         background: var(--color-grey-white);
         border: 1px solid var(--color-secondary) !important;
-        color: var(--color-primary);
+        color: var(--guardian-primary-color);
         font-family: Inter, serif;
         font-size: 14px;
         font-style: normal;
@@ -580,11 +582,11 @@
     .p-dropdown {
         width: 128px;
         height: 40px;
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     .p-button {
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     .p-inputtext {
@@ -615,7 +617,7 @@
         font-style: normal;
         font-weight: 500;
         height: 40px;
-        border-radius: 8px;
+        border-radius: 6px;
     }
 
     margin-left: 10px;
@@ -632,7 +634,7 @@
         background-color: #ffffff;
         height: 40px;
         border: 1px solid var(--color-secondary);
-        border-radius: 8px;
+        border-radius: 6px;
     }
 }
 
@@ -674,7 +676,7 @@
     background-color: #ffffff;
     height: 40px;
     border: none !important;
-    border-radius: 8px;
+    border-radius: 6px;
     width: 100%;
     text-align: left;
     padding: 0.5rem 1rem;
@@ -774,7 +776,7 @@
 }
 
 .chip-color-blue {
-    color: var(--color-primary, #0681ee);
+    color: var(--guardian-primary-color, #0681ee);
     background: rgba(6, 129, 238, 0.16);
 }
 
@@ -799,7 +801,7 @@
     font-style: normal;
     font-weight: 500;
     line-height: 16px;
-    background: var(--color-primary, #0681ee) !important;
+    background: var(--guardian-primary-color, #0681ee) !important;
     color: var(--color-grey-white, #fff) !important;
 }
 
@@ -812,7 +814,7 @@
     border-radius: 6px;
     border: 1px solid var(--color-secondary, #cdddfd) !important;
     background: var(--color-grey-white, #fff) !important;
-    color: var(--color-primary, #0681ee) !important;
+    color: var(--guardian-primary-color, #0681ee) !important;
 }
 
 .loading {
@@ -907,26 +909,26 @@
 .DRAFT-status,
 .DRAFT-dropdown ::ng-deep .p-dropdown {
     background: #fff;
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    color: var(--guardian-primary-color);
+    border: 1px solid var(--guardian-primary-color);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--color-primary);
+        color: var(--guardian-primary-color);
     }
 }
 
 .DRY-RUN-status,
 .DRY-RUN-dropdown ::ng-deep .p-dropdown {
     background: #edf0fb;
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    color: var(--guardian-primary-color);
+    border: 1px solid var(--guardian-primary-color);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--color-primary);
+        color: var(--guardian-primary-color);
     }
 }
 

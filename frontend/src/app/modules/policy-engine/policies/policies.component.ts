@@ -1364,7 +1364,7 @@ export class PoliciesComponent implements OnInit {
             showHeader: false,
             header: 'Policy Tests',
             width: '1000px',
-            styleClass: 'custom-dialog custom-header-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 policy: item
             }
