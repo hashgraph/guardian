@@ -25,7 +25,7 @@ RUN npm install interfaces.tgz && npm run build:demo
 FROM nginxinc/nginx-unprivileged:1.25.4-alpine as image
 
 # Copy config and built application from the build stage into the image
-COPY --link ./web-proxy/configs/demo.conf /etc/nginx/conf.d/default.conf
+COPY --link ./web-proxy/configs/demo.conf /etc/nginx/templates/default.conf.template
 COPY --link --from=build /usr/local/app/dist/guardian /usr/share/nginx/html
 
 # Change the user to nginx
