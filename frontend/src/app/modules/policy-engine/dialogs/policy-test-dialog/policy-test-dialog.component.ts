@@ -68,6 +68,9 @@ export class PolicyTestDialog {
     }
 
     public getTime(duration: number) {
+        if (!duration) {
+            return 'N\\A';
+        }
         const momentDate = moment.duration(duration);
         if (momentDate.isValid()) {
             return momentDate.humanize();

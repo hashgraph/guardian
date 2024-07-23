@@ -864,7 +864,6 @@ export class PoliciesComponent implements OnInit {
                 const versionOfTopicId = result.versionOfTopicId || null;
                 const demo = result.demo || false;
                 const tools = result.tools;
-                debugger;
 
                 this.loading = true;
                 if (type == 'message') {

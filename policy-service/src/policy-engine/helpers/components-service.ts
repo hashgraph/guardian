@@ -317,16 +317,17 @@ export class ComponentsService {
         if (this._recordingController) {
             return null;
         }
-        if (!this._runningController) {
-            this._runningController = new Running(
-                this.root,
-                this.policyId,
-                this.owner,
-                actions,
-                results,
-                options
-            );
+        if (this._runningController) {
+            this._runningController.finished();
         }
+        this._runningController = new Running(
+            this.root,
+            this.policyId,
+            this.owner,
+            actions,
+            results,
+            options
+        );
         return this._runningController.start();
     }
 

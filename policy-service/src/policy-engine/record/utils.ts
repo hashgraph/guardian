@@ -318,7 +318,11 @@ export class RecordItemStack {
      * @public
      */
     public setItems(items: RecordItem[]): void {
-        this._source = this._copy(items);
+        if (Array.isArray(items)) {
+            this._source = items;
+        } else {
+            this._source = [];
+        }
         this._items = this._copy(this._source);;
         this._index = 0;
     }

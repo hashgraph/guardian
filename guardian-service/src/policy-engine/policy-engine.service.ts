@@ -1566,9 +1566,7 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.RESTART_DRY_RUN,
             async (msg: { policyId: string, owner: IOwner }) => {
                 try {
-                    console.time('RESTART_DRY_RUN')
                     const { policyId, owner } = msg;
-                    console.time('1')
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     if (!policy.config) {
@@ -1577,32 +1575,11 @@ export class PolicyEngineService {
                     if (policy.status !== PolicyType.DRY_RUN) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-
                     await DatabaseServer.clearDryRun(policyId, false);
                     const users = await DatabaseServer.getVirtualUsers(policyId);
                     await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
-
-                    // console.timeEnd('1')
-                    // console.time('2')
-                    // await this.policyEngine.destroyModel(policy.id.toString());
-                    // console.timeEnd('2')
-                    // console.time('3')
-                    // const databaseServer = new DatabaseServer(policy.id.toString());
-                    // await databaseServer.clear(true);
-                    // console.timeEnd('3')
-                    // console.time('4')
-                    // const newPolicy = await this.policyEngine.dryRunPolicy(policy, owner, 'Dry Run');
-                    // console.timeEnd('4')
-                    // console.time('5')
-                    // await this.policyEngine.generateModel(newPolicy.id.toString());
-                    // console.timeEnd('5')
-
-
-                    console.time('6')
                     const filters = await this.policyEngine.addAccessFilters({}, owner);
                     const policies = (await DatabaseServer.getListOfPolicies(filters));
-                    console.timeEnd('6')
-                    console.timeEnd('RESTART_DRY_RUN')
                     return new MessageResponse({ policies });
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1916,8 +1893,21 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const buffer = Buffer.from(zip.data);
+                    const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
-                        GenerateUUIDv4(), owner.creator, policyId, 'New', null, buffer, null
+                        {
+                            uuid: GenerateUUIDv4(),
+                            policyId,
+                            owner: owner.creator,
+                            status: 'New',
+                            duration: recordToImport.duration,
+                            progress: 0,
+                            date: null,
+                            result: null,
+                            error: null,
+                            resultId: null
+                        },
+                        buffer
                     );
                     return new MessageResponse(test);
                 } catch (error) {

@@ -3571,32 +3571,12 @@ export class DatabaseServer {
 
     /**
      * Assign entity
-     * @param uuid
-     * @param policyId
-     * @param status
-     * @param date
+     * @param config
      * @param buffer
-     * @param result
      */
-    public static async createPolicyTest(
-        uuid: string,
-        owner: string,
-        policyId: string,
-        status: string,
-        date: string,
-        buffer: Buffer,
-        result: any
-    ): Promise<PolicyTest> {
+    public static async createPolicyTest(config: any, buffer: Buffer): Promise<PolicyTest> {
         const file = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
-        const item = new DataBaseHelper(PolicyTest).create({
-            uuid,
-            owner,
-            policyId,
-            status,
-            date,
-            result,
-            file
-        });
+        const item = new DataBaseHelper(PolicyTest).create({ ...config, file });
         return await new DataBaseHelper(PolicyTest).save(item);
     }
 
