@@ -30,6 +30,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -1332,12 +1333,16 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public setVersion() {
-        const dialogRef = this.dialog.open(SetVersionDialog, {
-            width: '350px',
-            disableClose: true,
-            data: {}
+        const dialogRef = this.dialogService.open(PublishPolicyDialog, {
+            showHeader: false,
+            header: 'Publish Policy',
+            width: '600px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy: this.policyTemplate
+            }
         });
-        dialogRef.afterClosed().subscribe((version) => {
+        dialogRef.onClose.subscribe(async (version) => {
             if (version) {
                 this.publishPolicy(version);
             }

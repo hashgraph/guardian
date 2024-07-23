@@ -1971,11 +1971,11 @@ export class PolicyEngineService {
                     const result: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.STOP_RUNNING, policyId, null);
                     if (result) {
-                        test.resultId = result;
                         test.status = 'Stopped';
                         test.progress = 0;
                         test.result = null;
                         test.error = null;
+                        test.resultId = null;
                         await DatabaseServer.updatePolicyTest(test);
                     }
                     return new MessageResponse(test);

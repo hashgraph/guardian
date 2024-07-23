@@ -30,8 +30,8 @@ import { DiscontinuePolicy } from '../dialogs/discontinue-policy/discontinue-pol
 import { MigrateData } from '../dialogs/migrate-data/migrate-data.component';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dialog.component';
-import { ImportFileDialog } from '../dialogs/import-file-dialog/import-file-dialog.component';
 import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
+import { PublishPolicyDialog } from '../dialogs/publish-policy-dialog/publish-policy-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -672,12 +672,17 @@ export class PoliciesComponent implements OnInit {
     }
 
     private setVersion(element: any) {
-        const dialogRef = this.dialog.open(SetVersionDialog, {
-            width: '350px',
-            disableClose: false,
-            data: {},
+        const item = this.policies?.find((e) => e.id === element?.id);
+        const dialogRef = this.dialogService.open(PublishPolicyDialog, {
+            showHeader: false,
+            header: 'Publish Policy',
+            width: '600px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy: item
+            }
         });
-        dialogRef.afterClosed().subscribe((version) => {
+        dialogRef.onClose.subscribe(async (version) => {
             if (version) {
                 this.publish(element, version);
             }

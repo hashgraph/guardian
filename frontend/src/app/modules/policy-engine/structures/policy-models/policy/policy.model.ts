@@ -36,6 +36,7 @@ export class PolicyTemplate {
     public readonly messageId!: string;
     public readonly version!: string;
     public readonly previousVersion!: string;
+    public readonly tests!: any;
 
     private _policyTag!: string;
     private _name!: string;
@@ -93,6 +94,7 @@ export class PolicyTemplate {
         this.messageId = policy.messageId;
         this.version = policy.version;
         this.previousVersion = policy.previousVersion;
+        this.tests = policy.tests;
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
