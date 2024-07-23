@@ -48,12 +48,20 @@ interface IMetadata {
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true,
-        properties: [{
-            name: 'unsigned',
-            label: 'Unsigned VC',
-            title: 'Unsigned document',
-            type: PropertyType.Checkbox
-        }]
+        properties: [
+            {
+                name: 'unsigned',
+                label: 'Unsigned VC',
+                title: 'Unsigned document',
+                type: PropertyType.Checkbox
+            },
+            {
+                name: 'passOriginal',
+                label: 'Pass original',
+                title: 'Pass original document',
+                type: PropertyType.Checkbox
+            }
+        ]
     },
     variables: [
         { path: 'options.outputSchema', alias: 'schema', type: 'Schema' }
@@ -84,17 +92,19 @@ export class CustomLogicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         try {
-            const documents = await this.execute(event.data, event.user);
-            if (!documents) {
-                return;
+            const triggerEvents = (documents: IPolicyDocument | IPolicyDocument[]) => {
+                if (!documents) {
+                    return;
+                }
+                event.data.data = documents;
+                ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+                ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+                PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+                    documents: ExternalDocuments(event?.data?.data)
+                }));
             }
-            event.data.data = documents;
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                documents: ExternalDocuments(event?.data?.data)
-            }));
+            await this.execute(event.data, event.user, triggerEvents);
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
@@ -125,7 +135,7 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: IPolicyEventState, user: PolicyUser): Promise<IPolicyDocument | IPolicyDocument[]> {
+    execute(state: IPolicyEventState, user: PolicyUser, triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -143,12 +153,18 @@ export class CustomLogicBlock {
                     metadata = await this.aggregateMetadata(documents, user, ref);
                 }
 
-                const done = async (result: any | any[]) => {
+                const done = async (result: any | any[], final: boolean) => {
                     if (!result) {
-                        resolve(null);
+                        triggerEvents(null);
+                        if (final) {
+                            resolve(null);
+                        }
                         return;
                     }
                     const processing = async (json: any): Promise<IPolicyDocument> => {
+                        if (ref.options.passOriginal) {
+                            return json;
+                        }
                         if (ref.options.unsigned) {
                             return await this.createUnsignedDocument(json, ref);
                         } else {
@@ -160,10 +176,16 @@ export class CustomLogicBlock {
                         for (const r of result) {
                             items.push(await processing(r))
                         }
-                        resolve(items);
+                        triggerEvents(items);
+                        if (final) {
+                            resolve(items);
+                        }
                         return;
                     } else {
-                        resolve(await processing(result));
+                        triggerEvents(await processing(result));
+                        if (final) {
+                            resolve(await processing(result));
+                        }
                         return;
                     }
                 }
@@ -200,9 +222,9 @@ export class CustomLogicBlock {
                 worker.on('error', (error) => {
                     reject(error);
                 });
-                worker.on('message', async (result) => {
+                worker.on('message', async (data) => {
                     try {
-                        await done(result);
+                        await done(data.result, data.final);
                     } catch (error) {
                         reject(error);
                     }

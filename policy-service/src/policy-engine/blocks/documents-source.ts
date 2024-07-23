@@ -87,7 +87,7 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const {itemsPerPage, page, size, ...filterIds} = queryParams;
+        const {itemsPerPage, page, size, filterByUUID, ...filterIds} = queryParams;
 
         const filterAddons = ref.getFiltersAddons();
         const filters = filterAddons.map(addon => {
@@ -177,6 +177,11 @@ export class InterfaceDocumentsSource {
 
         for (const child of ref.children) {
             data = await child.joinData(data, user, ref);
+        }
+
+        if (filterByUUID) {
+            const doc = data.find(d => d.document.id === filterByUUID);
+            data = [doc];
         }
 
         return Object.assign(

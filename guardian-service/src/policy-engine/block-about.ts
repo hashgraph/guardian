@@ -184,12 +184,20 @@ export const BlockAbout = {
             'ErrorEvent'
         ],
         'defaultEvent': true,
-        'properties': [{
-            'name': 'unsigned',
-            'label': 'Unsigned VC',
-            'title': 'Unsigned document',
-            'type': 'Checkbox'
-        }]
+        'properties': [
+            {
+                'name': 'unsigned',
+                'label': 'Unsigned VC',
+                'title': 'Unsigned document',
+                'type': 'Checkbox'
+            },
+            {
+                'name': 'passOriginal',
+                'label': 'Pass original',
+                'title': 'Pass original document',
+                'type': 'Checkbox'
+            }
+        ]
     },
     'documentsSourceAddon': {
         'label': 'Source',

@@ -3,6 +3,7 @@ import { ApiExtraModels, ApiTags, ApiOperation, ApiOkResponse, ApiInternalServer
 import { CACHE } from '../../constants/index.js';
 import { UseCache, Guardians } from '#helpers';
 import { InternalServerErrorDTO } from '#middlewares';
+import { Auth } from '#auth';
 
 @Controller('map')
 @ApiTags('map')
@@ -11,9 +12,10 @@ export class MapApi {
      * Get map key
      */
     @Get('/key')
+    @Auth()
     @ApiOperation({
-        summary: 'Return map key.',
-        description: 'Return map key.',
+        summary: 'Get map API key.',
+        description: 'Return map API key.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -35,9 +37,10 @@ export class MapApi {
      * Get map sh
      */
     @Get('/sh')
+    @Auth()
     @ApiOperation({
-        summary: 'Return map key.',
-        description: 'Return map key.',
+        summary: 'Get sentinel API key.',
+        description: 'Return sentinel API key.',
     })
     @ApiOkResponse({
         description: 'Successful operation.',
