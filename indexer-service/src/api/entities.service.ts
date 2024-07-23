@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
+    Message,
     IndexerMessageAPI,
     MessageResponse,
     MessageError,
@@ -8,13 +9,13 @@ import {
     DataBaseHelper,
     MessageCache,
     TopicCache,
-    Message,
     TokenCache,
     NftCache,
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { Relationships } from '../utils/relationships.js';
 import {
+    Message as IMessage,
     MessageType,
     MessageAction,
     PageFilters,
@@ -98,7 +99,7 @@ function parseKeywordFilter(keywordsString: string) {
     return filter;
 }
 
-async function loadDocuments(row: Message): Promise<Message> {
+async function loadDocuments(row: IMessage): Promise<IMessage> {
     if (row?.files?.length) {
         row.documents = [];
         for (const fileName of row.files) {
@@ -208,6 +209,12 @@ export class EntityService {
                 treasury: item.owner,
             } as any);
 
+            const contracts = await em.count(Message, {
+                type: MessageType.CONTRACT,
+                action: MessageAction.CreateContract,
+                owner: item.owner,
+            } as any);
+
             return new MessageResponse<RegistryDetails>({
                 id: messageId,
                 uuid: item.uuid,
@@ -222,6 +229,7 @@ export class EntityService {
                     modules,
                     tokens,
                     users,
+                    contracts
                 },
             });
         } catch (error) {
@@ -912,7 +920,7 @@ export class EntityService {
                 Message,
                 {
                     uuid: item.uuid,
-                    type: MessageType.VP_DOCUMENT,
+                    type: MessageType.DID_DOCUMENT,
                 },
                 {
                     orderBy: {
@@ -1446,7 +1454,7 @@ export class EntityService {
             const item = (await em.findOne(Message, {
                 type: MessageType.CONTRACT,
                 action: MessageAction.CreateContract,
-                messageId,
+                consensusTimestamp: messageId,
             } as any)) as Contract;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,

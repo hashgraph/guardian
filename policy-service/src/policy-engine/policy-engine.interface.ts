@@ -1,4 +1,4 @@
-import { BlockCacheType, PolicyOutputEventType, EventConfig, IPolicyEvent } from './interfaces/index.js';
+import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from './interfaces/index.js';
 import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
@@ -560,6 +560,13 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
     getData(user: PolicyUser | null, uuid: string, queryParams?: any): Promise<any>;
 
     /**
+     * Set filter state
+     * @param user
+     * @param data
+     */
+    setFilterState(user: PolicyUser | null, data: any): Promise<void>;
+
+    /**
      * Get sources
      * @param user
      * @param globalFilters
@@ -593,6 +600,13 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * @param user
      */
     getState(user: PolicyUser): any;
+
+    /**
+     * Set block state
+     * @param user
+     * @param state
+     */
+    setState(user: PolicyUser, state: any): Promise<void>;
 
     /**
      * Get selective attributes addons

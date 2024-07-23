@@ -6,11 +6,6 @@ export class RawNFTDTO implements RawNFT {
         description: 'Identifier',
         example: '667c240639282050117a1985',
     })
-    _id: string;
-    @ApiProperty({
-        description: 'Identifier',
-        example: '667c240639282050117a1985',
-    })
     id: string;
     @ApiProperty({
         description: 'Token identifier',

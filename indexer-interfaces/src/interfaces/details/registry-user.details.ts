@@ -18,7 +18,7 @@ export interface RegistryUserAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
 }
 
 /**
