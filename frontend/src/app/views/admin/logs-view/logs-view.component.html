@@ -19,7 +19,7 @@
 
 <ng-template #actionsContainer>
     <div class="actions-container">
-        <form [formGroup]="searchForm">
+        <form [formGroup]="searchForm" *useWithServiceDecorator="'LOGGER_SERVICE'">
             <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
                 <p-multiSelect #searchInput (onFilter)="onFilter($event)"
                                [filter]="true" [options]="attributes"
@@ -65,6 +65,7 @@
                             selectionMode="range"></p-calendar>
             </div>
         </form>
+      <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
         <div class="flex flex-column-gap-8" *useWithServiceDecorator="'LOGGER_SERVICE'">
             <button
                 (click)="onApply()"
@@ -88,6 +89,17 @@
                 type="button"
             ></button>
         </div>
+        <div class="flex flex-column-gap-8" *ngIf="seqUrl">
+          <button
+            #seqButton
+            (click)="onSeq()"
+            class="button"
+            label="Seq"
+            pButton
+            type="button"
+          ></button>
+        </div>
+      </div>
     </div>
 </ng-template>
 

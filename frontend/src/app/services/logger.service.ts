@@ -21,4 +21,8 @@ export class LoggerService {
     public getAttributes(name: string = "", existingAttributes: string[] = []): Observable<string[]> {
         return this.http.get<any>(`${this.url}/attributes`, { params: { name, existingAttributes } });
     }
+
+    public getUrlSeq(): Observable<any> {
+        return this.http.get<any>(`${this.url}/seq`);
+    }
 }

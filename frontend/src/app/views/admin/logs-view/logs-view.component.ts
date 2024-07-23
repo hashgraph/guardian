@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
@@ -23,6 +23,7 @@ import { WebSocketService } from '../../../services/web-socket.service';
 })
 export class LogsViewComponent implements OnInit, OnDestroy {
     @ViewChild('searchInput') searchInput: any;
+    @ViewChild('seqButton', { static: false }) seqButton: ElementRef;
 
     loading: boolean = true;
     logs: ILog[] = [];
@@ -63,6 +64,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     dateRange: any;
 
     private subscriptions = new Subscription();
+    public seqUrl: string | null
 
     get currentDate() {
         return new Date();
@@ -141,6 +143,10 @@ export class LogsViewComponent implements OnInit, OnDestroy {
                 }
             })
         );
+
+        this.logService.getUrlSeq().subscribe((data: { seq_url: string | null }) => {
+            this.seqUrl = data.seq_url;
+        });
     }
 
     initializeLogs() {
@@ -304,5 +310,12 @@ export class LogsViewComponent implements OnInit, OnDestroy {
             this.pageSize = event.pageSize;
         }
         this.onApply();
+    }
+
+    onSeq(): void {
+        if (this.seqUrl) {
+            window.open(this.seqUrl, '_blank');
+        }
+        this.seqButton.nativeElement.blur()
     }
 }
