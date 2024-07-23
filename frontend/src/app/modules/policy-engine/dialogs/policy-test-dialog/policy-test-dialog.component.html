@@ -60,7 +60,7 @@
                         <div class="col-120 col-button">
                             <ng-container *ngIf="status === 'DRY-RUN' || status === 'DEMO'">
                                 <button 
-                                    *ngIf="item.status === 'New'"
+                                    *ngIf="item.status === 'New' || item.status === 'Stopped'"
                                     (click)="runTest(item, $event)"
                                     class="guardian-button guardian-button-primary action-button">Run</button>
                                 <button 
@@ -162,7 +162,7 @@
             <div class="results-step-body" *ngIf="compareStep.report">
                 <ng-template 
                     [ngTemplateOutlet]="compareDocumentTemplate"
-                    [ngTemplateOutletContext]="compareStep.report"></ng-template>
+                    [ngTemplateOutletContext]="compareStep"></ng-template>
             </div>
             <div class="results-step-body" *ngIf="!compareStep.report">
                 <div class="text-skipped">Skipped</div>
@@ -172,9 +172,10 @@
 </ng-template>
 
 <ng-template #compareDocumentTemplate 
-    let-info="info" 
-    let-results="documents"
-    let-total="total"
+    let-id="id" 
+    let-info="report.info" 
+    let-results="report.documents"
+    let-total="report.total"
 >
     <div class="compare-details">
 
@@ -212,7 +213,9 @@
             </div>
         </div>
         <div class="more-details">
-            <div class="guardian-button guardian-button-secondary more-btn" (click)="onDetails()">Show more details</div>
+            <div 
+                class="guardian-button guardian-button-secondary more-btn" 
+                (click)="onDetails(id)">Show more details</div>
         </div>
     </div>
 </ng-template>

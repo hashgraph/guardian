@@ -350,6 +350,10 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/stop`, null);
     }
 
+    public getTestDetails(policyId: string, testId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/test/${testId}/details`);
+    }
+
     public deleteTest(policyId: string, testId: string): Observable<any> {
         return this.http.delete<any>(`${this.url}/${policyId}/test/${testId}`);
     }

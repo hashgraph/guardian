@@ -145,9 +145,9 @@ export class Running {
         this._id = GenerateUUIDv4();
         this._generatedItems = [];
         this._generatedDIDs = [];
-        this._actions.clearIndex();
-        this._generateUUID.clearIndex();
-        this._generateDID.clearIndex();
+        this._actions.clear();
+        this._generateUUID.clear();
+        this._generateDID.clear();
         this._startTime = Date.now();
         this._updateStatus().then();
         this._run(this._id).then();
@@ -202,9 +202,9 @@ export class Running {
         this._id = GenerateUUIDv4();
         this._generatedItems = [];
         this._generatedDIDs = [];
-        this._actions.clearIndex();
-        this._generateUUID.clearIndex();
-        this._generateDID.clearIndex();
+        this._actions.clear();
+        this._generateUUID.clear();
+        this._generateDID.clear();
         this._startTime = Date.now();
         this._updateStatus().then();
         await this._run(this._id);

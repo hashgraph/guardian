@@ -300,7 +300,7 @@ export class ComponentsService {
             this._runningController = null;
             return old.finished();
         }
-        return false;
+        return true;
     }
 
     /**

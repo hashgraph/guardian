@@ -3,7 +3,7 @@ import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, TaskDTO } from '#middlewares';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, TaskDTO } from '#middlewares';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 
@@ -3158,6 +3158,52 @@ export class PolicyApi {
         try {
             const engineService = new PolicyEngine();
             return await engineService.deletePolicyTest(policyId, testId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
+     * Get test details
+     */
+    @Get('/:policyId/test/:testId/details')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get test details.',
+        description: 'Get test details.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'testId',
+        type: String,
+        description: 'Test Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: RunningDetailsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(RunningDetailsDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getTestDetails(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('testId') testId: string
+    ) {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getTestDetails(policyId, testId, new EntityOwner(user));
         } catch (error) {
             await InternalException(error);
         }

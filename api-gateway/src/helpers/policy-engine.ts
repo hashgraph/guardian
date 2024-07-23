@@ -931,4 +931,22 @@ export class PolicyEngine extends NatsService {
             owner
         });
     }
+
+    /**
+     * Get test details
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async getTestDetails(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_TEST_DETAILS, {
+            policyId,
+            testId,
+            owner
+        });
+    }
 }

@@ -39,9 +39,9 @@ export class PolicyTestDialog {
 
     ngOnInit() {
         this.loading = false;
-        // this.lastUpdate = setInterval(() => {
-        //     this.updateProgress();
-        // }, 10000)
+        this.lastUpdate = setInterval(() => {
+            this.updateProgress();
+        }, 5000)
     }
 
     ngOnDestroy(): void {
@@ -98,10 +98,12 @@ export class PolicyTestDialog {
         const s2 = test.result ? (test.result.total === 100 ? 'Success' : 'Failure') : 'Skipped';
         return {
             runStep: {
+                id: test.id,
                 status: s1,
                 error: test.error
             },
             compareStep: {
+                id: test.id,
                 status: s2,
                 report: test.result
             }
@@ -153,7 +155,7 @@ export class PolicyTestDialog {
         $event.stopPropagation();
         this.loading = true;
         this.policyEngineService
-            .runTest(this.policyId, item.id)
+            .stopTest(this.policyId, item.id)
             .subscribe((result) => {
                 const index = this.tests.findIndex((t: any) => t === item);
                 this.tests[index] = result;
@@ -166,6 +168,7 @@ export class PolicyTestDialog {
                 this.loading = false;
             });
     }
+
     public deleteTest(item: any, $event: any) {
         $event.stopPropagation();
         this.loading = true;
@@ -182,12 +185,13 @@ export class PolicyTestDialog {
             });
     }
 
-    public onDetails(): void {
+    public onDetails(id: any): void {
         this.ref.close(null);
-        this.router.navigate(['/record-results'], {
+        this.router.navigate(['/test-results'], {
             queryParams: {
                 type: 'policy',
                 policyId: this.policyId,
+                testId: id
             }
         });
     }

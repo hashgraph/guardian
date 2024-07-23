@@ -74,7 +74,7 @@ export class RecordUtils {
     public static async StopRunning(policyId: string): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
         if (!components) {
-            return false;
+            return true;
         }
         return await components.stopRunning();
     }

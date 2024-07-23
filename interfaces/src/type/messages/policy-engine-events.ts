@@ -66,5 +66,6 @@ export enum PolicyEngineEvents {
     START_POLICY_TEST = 'policy-engine-event-start-policy-test',
     STOP_POLICY_TEST = 'policy-engine-event-stop-policy-test',
     DELETE_POLICY_TEST = 'policy-engine-event-delete-policy-test',
+    GET_POLICY_TEST_DETAILS = 'policy-engine-event-get-policy-test-details',
     ACCESS_POLICY = 'policy-engine-event-access-policy'
 }

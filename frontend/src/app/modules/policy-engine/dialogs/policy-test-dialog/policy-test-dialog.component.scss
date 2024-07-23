@@ -27,6 +27,11 @@
             background: var(--guardian-primary-background);
         }
 
+        &-Stopped {
+            color: var(--guardian-disabled-color);
+            background: var(--guardian-disabled-background);
+        }
+
         &-Success {
             color: var(--guardian-success-color);
             background: var(--guardian-success-background);

@@ -53,7 +53,7 @@ import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
 import { VpDocumentLoader, VcDocumentLoader, PolicyDataLoader } from './helpers/policy-data/loaders/index.js';
-import { getDetails } from '../api/record.service.js';
+import { compareResults, getDetails } from '../api/record.service.js';
 
 /**
  * PolicyEngineChannel
@@ -281,35 +281,38 @@ export class PolicyEngineService {
                 const test = await DatabaseServer.getPolicyTestByRecord(msg.id);
                 if (test) {
                     const { status, index, count, error, result } = msg;
-                    if (status === 'Running') {
-                        test.status = 'Running';
-                        test.progress = Math.floor(index / count * 100);
-                        test.result = null;
-                        test.error = null;
-                    } else if (status === 'Stopped') {
-                        test.result = await getDetails(result);
-                        if (test.result?.total === 100) {
-                            test.status = 'Success';
-                        } else {
-                            test.status = 'Failure';
+                    switch (status) {
+                        case 'Running': {
+                            test.status = 'Running';
+                            test.progress = Math.floor(index / count * 100);
+                            test.result = null;
+                            test.error = null;
+                            break;
                         }
-                        test.progress = null;
-                        test.error = null;
-                    } else if (status === 'Error') {
-                        test.status = 'Failure';
-                        test.result = null;
-                        test.progress = null;
-                        test.error = error;
-                    } else if (status === 'Finished') {
-                        test.status = 'Success';
-                        test.result = await getDetails(result);
-                        test.progress = null;
-                        test.error = null;
-                    } else {
-                        test.status = 'Failure';
-                        test.result = null;
-                        test.progress = null;
-                        test.error = null;
+                        case 'Stopped': {
+                            test.result = await getDetails(result);
+                            if (test.result?.total === 100) {
+                                test.status = 'Success';
+                            } else {
+                                test.status = 'Failure';
+                            }
+                            test.progress = null;
+                            test.error = null;
+                            break;
+                        }
+                        case 'Error': {
+                            test.status = 'Failure';
+                            test.result = null;
+                            test.progress = null;
+                            test.error = error;
+                            break;
+                        }
+                        case 'Finished': {
+                            return;
+                        }
+                        default: {
+                            return;
+                        }
                     }
                     await DatabaseServer.updatePolicyTest(test);
                 }
@@ -353,14 +356,14 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA,
             async (msg: { user: IAuthUser, blockId: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
-                    const {user, blockId, policyId, params} = msg;
+                    const { user, blockId, policyId, params } = msg;
                     const blockData = await new GuardiansService()
-		    .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
-                        user,
-                        blockId,
-                        policyId,
-                        params
-                    }) as any
+                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
+                            user,
+                            blockId,
+                            policyId,
+                            params
+                        }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -371,14 +374,14 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG,
             async (msg: { user: IAuthUser, tag: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
-                    const {user, tag, policyId, params} = msg;
+                    const { user, tag, policyId, params } = msg;
                     const blockData = await new GuardiansService()
-		    .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
-                        user,
-                        tag,
-                        policyId,
-                        params
-                    }) as any
+                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
+                            user,
+                            tag,
+                            policyId,
+                            params
+                        }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1566,28 +1569,35 @@ export class PolicyEngineService {
                     console.time('RESTART_DRY_RUN')
                     const { policyId, owner } = msg;
                     console.time('1')
-                    const model = await DatabaseServer.getPolicyById(policyId);
-                    await this.policyEngine.accessPolicy(model, owner, 'read');
-                    if (!model.config) {
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!policy.config) {
                         throw new Error('The policy is empty');
                     }
-                    if (model.status !== PolicyType.DRY_RUN) {
+                    if (policy.status !== PolicyType.DRY_RUN) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-                    console.timeEnd('1')
-                    console.time('2')
-                    await this.policyEngine.destroyModel(model.id.toString());
-                    console.timeEnd('2')
-                    console.time('3')
-                    const databaseServer = new DatabaseServer(model.id.toString());
-                    await databaseServer.clear(true);
-                    console.timeEnd('3')
-                    console.time('4')
-                    const newPolicy = await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run');
-                    console.timeEnd('4')
-                    console.time('5')
-                    await this.policyEngine.generateModel(newPolicy.id.toString());
-                    console.timeEnd('5')
+
+                    await DatabaseServer.clearDryRun(policyId, false);
+                    const users = await DatabaseServer.getVirtualUsers(policyId);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+
+                    // console.timeEnd('1')
+                    // console.time('2')
+                    // await this.policyEngine.destroyModel(policy.id.toString());
+                    // console.timeEnd('2')
+                    // console.time('3')
+                    // const databaseServer = new DatabaseServer(policy.id.toString());
+                    // await databaseServer.clear(true);
+                    // console.timeEnd('3')
+                    // console.time('4')
+                    // const newPolicy = await this.policyEngine.dryRunPolicy(policy, owner, 'Dry Run');
+                    // console.timeEnd('4')
+                    // console.time('5')
+                    // await this.policyEngine.generateModel(newPolicy.id.toString());
+                    // console.timeEnd('5')
+
+
                     console.time('6')
                     const filters = await this.policyEngine.addAccessFilters({}, owner);
                     const policies = (await DatabaseServer.getListOfPolicies(filters));
@@ -1903,6 +1913,8 @@ export class PolicyEngineService {
             async (msg: { policyId: string, zip: any, owner: IOwner }) => {
                 try {
                     const { policyId, zip, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const buffer = Buffer.from(zip.data);
                     const test = await DatabaseServer.createPolicyTest(
                         GenerateUUIDv4(), owner.creator, policyId, 'New', null, buffer, null
@@ -1916,7 +1928,9 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.START_POLICY_TEST,
             async (msg: { policyId: string, testId: string, owner: IOwner }) => {
                 try {
-                    const { policyId, testId } = msg;
+                    const { policyId, testId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const test = await DatabaseServer.getPolicyTest(policyId, testId);
                     if (!test) {
                         return new MessageError('Policy test does not exist.', 404);
@@ -1927,6 +1941,8 @@ export class PolicyEngineService {
                     }
 
                     await DatabaseServer.clearDryRun(policyId, false);
+                    const users = await DatabaseServer.getVirtualUsers(policyId);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
@@ -1957,11 +1973,21 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.STOP_POLICY_TEST,
             async (msg: { policyId: string, testId: string, owner: IOwner }) => {
                 try {
-                    const { policyId, testId } = msg;
+                    const { policyId, testId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const test = await DatabaseServer.getPolicyTest(policyId, testId);
-
-
-
+                    const guardiansService = new GuardiansService();
+                    const result: string = await guardiansService
+                        .sendPolicyMessage(PolicyEvents.STOP_RUNNING, policyId, null);
+                    if (result) {
+                        test.resultId = result;
+                        test.status = 'Stopped';
+                        test.progress = 0;
+                        test.result = null;
+                        test.error = null;
+                        await DatabaseServer.updatePolicyTest(test);
+                    }
                     return new MessageResponse(test);
                 } catch (error) {
                     return new MessageError(error);
@@ -1971,10 +1997,30 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_TEST,
             async (msg: { policyId: string, testId: string, owner: IOwner }) => {
                 try {
-                    const { policyId, testId } = msg;
+                    const { policyId, testId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
                     await DatabaseServer.deletePolicyTest(policyId, testId);
                     return new MessageResponse(true);
                 } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_TEST_DETAILS,
+            async (msg: { policyId: string, testId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, testId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    const test = await DatabaseServer.getPolicyTest(policyId, testId);
+                    if (!test || !test.result) {
+                        return new MessageError('Policy test does not exist.', 404);
+                    }
+                    const result = await compareResults(test.result.details);
+                    return new MessageResponse(result);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });

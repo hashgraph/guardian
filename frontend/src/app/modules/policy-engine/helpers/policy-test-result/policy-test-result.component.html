@@ -1,5 +1,5 @@
 <div *ngIf="last" class="container">
-    <div *ngIf="last.status !== 'New'" class="status-buttons">
+    <div *ngIf="!(last.status === 'New' || last.status === 'Stopped')" class="status-buttons">
         <button 
             (click)="onDetails(last)" 
             class="guardian-button status-button {{last.status}}-status">
@@ -26,7 +26,7 @@
             </svg-icon>
         </button>
     </div>
-    <div *ngIf="last.status === 'New'" class="run-button">
+    <div *ngIf="last.status === 'New' || last.status === 'Stopped'" class="run-button">
         <button 
             (click)="onRun(last)"
             class="guardian-button guardian-button-primary run-btn"

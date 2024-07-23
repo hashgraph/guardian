@@ -35,6 +35,7 @@ import { AboutViewComponent } from './views/admin/about-view/about-view.componen
 import { PolicySearchComponent } from './views/policy-search/policy-search.component';
 import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
 import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
+import { TestResultsComponent } from './modules/policy-engine/record/test-results/test-results.component';
 import { ContractConfigComponent } from './modules/contract-engine/configs/contract-config/contract-config.component';
 import { UserContractConfigComponent } from './modules/contract-engine/configs/user-contract-config/user-contract-config.component';
 import { AnnotationBlockComponent } from './modules/project-comparison/component/annotation-block/annotation-block.component';
@@ -112,7 +113,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
-    {path: 'worker-tasks', component: WorkerTasksComponent},
+    { path: 'worker-tasks', component: WorkerTasksComponent },
 
     {
         path: 'user-profile',
@@ -403,7 +404,15 @@ const routes: Routes = [
             permissions: [Permissions.POLICIES_RECORD_ALL]
         }
     },
-
+    {
+        path: 'test-results',
+        component: TestResultsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY],
+            permissions: [Permissions.POLICIES_RECORD_ALL]
+        }
+    },
     {
         path: 'branding',
         component: BrandingComponent,

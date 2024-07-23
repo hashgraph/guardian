@@ -170,7 +170,7 @@ export class DatabaseServer {
      * @param systemMode
      */
     public static async clearDryRun(dryRunId: string, all: boolean): Promise<void> {
-        const filter = all ? { dryRunId } : { dryRunId, systemMode: false };
+        const filter = all ? { dryRunId } : { dryRunId, systemMode: { $ne: true } };
         const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
         const amount = await new DataBaseHelper(DryRun).count(filter);
         const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
