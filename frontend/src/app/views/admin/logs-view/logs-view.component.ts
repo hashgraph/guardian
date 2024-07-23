@@ -11,6 +11,7 @@ import { LoggerService } from 'src/app/services/logger.service';
 import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
 import { ActivatedRoute } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
+import { WebSocketService } from '../../../services/web-socket.service';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -72,6 +73,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         private logService: LoggerService,
         public dialog: DialogService,
         private route: ActivatedRoute,
+        private wsService: WebSocketService
     ) {
     }
 
@@ -132,6 +134,16 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     }
 
     ngAfterViewInit() {
+        this.subscriptions.add(
+            this.wsService.getServiceStateObservable('LOGGER_SERVICE').subscribe((isReady) => {
+                if (isReady) {
+                    this.initializeLogs();
+                }
+            })
+        );
+    }
+
+    initializeLogs() {
         this.subscriptions.add(merge(this.onSearch)
             .pipe(
                 startWith({}),

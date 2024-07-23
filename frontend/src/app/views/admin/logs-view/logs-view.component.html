@@ -2,7 +2,9 @@
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container *ngIf="!loading">
         <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+      <ng-container *useWithServiceDecorator="'LOGGER_SERVICE'">
         <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+      </ng-container>
     </ng-container>
     <div *ngIf="loading" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
@@ -63,7 +65,7 @@
                             selectionMode="range"></p-calendar>
             </div>
         </form>
-        <div class="flex flex-column-gap-8">
+        <div class="flex flex-column-gap-8" *useWithServiceDecorator="'LOGGER_SERVICE'">
             <button
                 (click)="onApply()"
                 class="button"
