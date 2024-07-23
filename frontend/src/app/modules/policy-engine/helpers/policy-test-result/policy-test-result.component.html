@@ -11,7 +11,7 @@
             class="guardian-icon-button re-run-btn" 
             (click)="onRun(last)"
             [disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"    
-            pTooltip="Tests can only be run in 'Dry-Run' or 'Demo' mode"
+            pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
             [tooltipOptions]="{showDelay: 300}"
             [tooltipDisabled]="(status === 'DRY-RUN' || status === 'DEMO')"
             tooltipPosition="top">
@@ -31,7 +31,7 @@
             (click)="onRun(last)"
             class="guardian-button guardian-button-primary run-btn"
             [disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"
-            pTooltip="Tests can only be run in 'Dry-Run' or 'Demo' mode"
+            pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
             [tooltipOptions]="{showDelay: 300}"
             [tooltipDisabled]="(status === 'DRY-RUN' || status === 'DEMO')"
             tooltipPosition="top">
@@ -55,7 +55,7 @@
         (click)="onAdd()" 
         class="guardian-button guardian-button-secondary run-btn"
         [disabled]="(status === 'PUBLISH' || status === 'DISCONTINUED')"
-        pTooltip="It is not possible to add a test to a published policy"
+        pTooltip="Not possible to add test data to a published policy"
         [tooltipOptions]="{showDelay: 300}"
         [tooltipDisabled]="!(status === 'PUBLISH' || status === 'DISCONTINUED')"
         tooltipPosition="top">
