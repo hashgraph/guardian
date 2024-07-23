@@ -17,7 +17,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
             timeout: 180000,
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-            policyId = response.body.id;
+            policyId = response.body.at(0).id;
             cy.request({
                 method: METHOD.PUT,
                 url:
@@ -90,12 +90,12 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
     });
     
     it("Get file from ipfs for dry run mode", () => {
-        cy.fixture("testJsonC id")
+        cy.fixture("testJsonDRCid")
             .then((cid) => {
                 cid = cid
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.IPFSFile + "/" + cid + API.DryRun,
+                    url: API.ApiServer + API.IPFSFile + cid + "/" + API.DryRun,
                     headers: {
                         authorization,
                     }
@@ -103,7 +103,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     let body = JSON.parse(response.body)
                     expect(body.red).eql("rose");
-                    expect(body.blue).eql("grass");
+                    expect(body.blue).eql("sky");
                 });
             })
     });

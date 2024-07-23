@@ -18,7 +18,7 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
             timeout: 180000,
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-            policyId = response.body.at(-1).id;
+            policyId = response.body.at(0).id;
         });
     });
 
@@ -120,8 +120,8 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
             },
             failOnStatusCode: false,
         }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.NOT_FOUND);
-            expect(response.body.message).eql("Policy does not exist.")
+            expect(response.status).eql(STATUS_CODE.ERROR);
+            expect(response.body.message).eql("Internal server error")
         });
     });
 

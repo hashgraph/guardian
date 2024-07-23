@@ -36,6 +36,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
                         url: API.ApiServer + API.RandomKey,
                         headers: {authorization},
                     }).then((response) => {
+                        cy.wait(3000)
                         let hederaAccountId = response.body.id
                         let hederaAccountKey = response.body.key
                         cy.request({

@@ -1,4 +1,4 @@
-import {STATUS_CODE} from "../../../support/api/api-const";
+import {STATUS_CODE, METHOD} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 

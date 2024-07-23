@@ -1,3 +1,4 @@
+const optionKey = "option";
 
 export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {

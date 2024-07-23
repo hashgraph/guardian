@@ -206,7 +206,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
         })
             .then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(-1).id;
+                policyId = response.body.at(0).id;
             })
 
         //Get token(Irec token) draft id to update it
@@ -297,6 +297,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         url: API.ApiServer + API.RandomKey,
                         headers: { authorization },
                     }).then((response) => {
+                        cy.wait(3000)
                         hederaId = response.body.id
                         let hederaAccountKey = response.body.key
                         //Update profile

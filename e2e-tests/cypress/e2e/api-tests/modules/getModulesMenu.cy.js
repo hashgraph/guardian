@@ -8,7 +8,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Returns modules menu", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.ListOfModulesMenu,
+            url: API.ApiServer + API.ListOfModules,
             headers: {
                 authorization,
             },
@@ -41,7 +41,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
                 let accessToken = "Bearer " + response.body.accessToken
                 cy.request({
                     method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfModulesMenu,
+                    url: API.ApiServer + API.ListOfModules,
                     headers: {
                         authorization: accessToken
                     }, 
@@ -56,7 +56,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Returns modules menu without auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.ListOfModulesMenu,
+            url: API.ApiServer + API.ListOfModules,
             failOnStatusCode:false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -66,7 +66,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Returns modules menu with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.ListOfModulesMenu,
+            url: API.ApiServer + API.ListOfModules,
             headers: {
                 authorization: "Bearer wqe",
             },
@@ -79,7 +79,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Returns modules menu with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.ListOfModulesMenu,
+            url: API.ApiServer + API.ListOfModules,
             headers: {
                 authorization: "",
             },

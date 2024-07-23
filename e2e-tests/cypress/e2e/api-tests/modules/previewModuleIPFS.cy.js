@@ -7,7 +7,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Previews the module from IPFS without loading it into the local DB", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.ModuleImportMessagePreview,
+            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
             headers: {
                 authorization,
             },
@@ -43,7 +43,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
                 let accessToken = "Bearer " + response.body.accessToken
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.ModuleImportMessagePreview,
+                    url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
                     headers: {
                         authorization: accessToken
                     }, 
@@ -61,7 +61,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Previews the module from IPFS without loading it into the local DB without auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.ModuleImportMessagePreview,
+            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
             body: {
                 "messageId": Cypress.env('module_for_import')
             },
@@ -74,7 +74,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Previews the module from IPFS without loading it into the local DB with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.ModuleImportMessagePreview,
+            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
             headers: {
                 authorization: "Bearer wqe",
             },
@@ -90,7 +90,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Previews the module from IPFS without loading it into the local DB with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.ModuleImportMessagePreview,
+            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
             headers: {
                 authorization: "",
             },
@@ -106,7 +106,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Previews the module from IPFS without loading it into the local DB with invalid message id - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.ModuleImportMessagePreview,
+            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
             headers: {
                 authorization,
             },
@@ -123,7 +123,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     it("Previews the module from IPFS without loading it into the local DB with empty message id - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.ModuleImportMessagePreview,
+            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage + API.Preview,
             headers: {
                 authorization,
             },

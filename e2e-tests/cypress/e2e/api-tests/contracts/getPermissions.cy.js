@@ -62,6 +62,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         authorization
                     },
                 }).then((response) => {
+                    cy.wait(3000)
                     let hederaAccountId = response.body.id
                     let hederaAccountKey = response.body.key
                     cy.request({

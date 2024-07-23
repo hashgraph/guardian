@@ -27,8 +27,8 @@ context(" Policies", { tags: ['policies', 'secondPool'] }, () => {
             timeout: 600000
           })
             .then((response) => {
-              let secondPolicyId = response.body.policies.at(-1).id
-              let policyStatus = response.body.policies.at(-1).status
+              let secondPolicyId = response.body.policies.at(0).id
+              let policyStatus = response.body.policies.at(0).status
               expect(response.status).to.eq(STATUS_CODE.OK)
               expect(response.body).to.not.be.oneOf([null, ""])
               expect(firstPolicyId).to.equal(secondPolicyId)

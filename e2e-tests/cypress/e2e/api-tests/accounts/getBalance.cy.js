@@ -18,7 +18,8 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
     });
 
     it('Get User balance', () => {
-        let username = "UserTest";
+        let username = Math.floor(Math.random() * 99999) + "UserTest";
+        let id, key;
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
@@ -56,21 +57,34 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
-                            headers: {authorization},
+                            headers: {
+                                authorization: accessToken
+                            }
                         }).then((response) => {
+                            id = response.body.id;
+                            key = response.body.key;
+                            cy.wait(3000)
                             cy.request({
                                 method: METHOD.PUT,
                                 url: API.ApiServer + API.Profiles + username,
                                 body: {
+                                    parent: SRDid,
                                     hederaAccountId: response.body.id,
                                     hederaAccountKey: response.body.key,
-                                    parent: SRDid
+                                    useFireblocksSigning: false,
+                                    fireblocksConfig:
+                                    {
+                                        fireBlocksVaultId: "",
+                                        fireBlocksAssetId: "",
+                                        fireBlocksApiKey: "",
+                                        fireBlocksPrivateiKey: ""
+                                    }
                                 },
                                 headers: {
                                     authorization: accessToken
                                 },
                                 timeout: 180000
-                            }).then((response) => {
+                            }).then(() => {
                                 cy.request({
                                     method: METHOD.GET,
                                     url: API.ApiServer + API.Balance,
@@ -88,8 +102,8 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 })
             })
         })
-
     })
+
     it("Get balance without auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,

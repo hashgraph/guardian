@@ -210,7 +210,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
             })
                 .then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId = response.body.at(-1).id;
+                    policyId = response.body.at(0).id;
                 })
 
             //Get token(Irec token) draft id to update it
@@ -301,6 +301,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                             url: API.ApiServer + API.RandomKey,
                             headers: { authorization },
                         }).then((response) => {
+                            cy.wait(3000)
                             hederaId = response.body.id
                             let hederaAccountKey = response.body.key
                             //Update profile
@@ -678,7 +679,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
                 headers: {
-                    authorization
+                    authorization   
                 }
             }).then((response) => {
                 issueRow = response.body.data
@@ -757,7 +758,35 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         }
                     }
 
-                    whileBalanceVerifying("10", requestForBalance, 0)
+                    whileBalanceVerifying("10", requestForBalance, 91)
+                })
+            })
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccountsLogin,
+                body: {
+                    username: username,
+                    password: "test"
+                }
+            }).then((response) => {
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.AccessToken,
+                    body: {
+                        refreshToken: response.body.refreshToken
+                    }
+                }).then((response) => {
+                    accessToken = "Bearer " + response.body.accessToken
+
+                    let requestForBalance = {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.ListOfTokens,
+                        headers: {
+                            authorization: accessToken
+                        }
+                    }
+
+                    whileBalanceVerifying("10", requestForBalance, 91)
                 })
             })
         })

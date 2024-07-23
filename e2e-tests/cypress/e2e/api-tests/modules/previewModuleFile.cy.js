@@ -9,7 +9,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
             .then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.ModuleImportFilePreview,
+                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
                     headers: {
                         "content-type": "binary/octet-stream",
                         authorization,
@@ -48,7 +48,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
                         let accessToken = "Bearer " + response.body.accessToken
                         cy.request({
                             method: METHOD.POST,
-                            url: API.ApiServer + API.ModuleImportFilePreview,
+                            url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
                             headers: {
                                 "content-type": "binary/octet-stream",
                                 authorization: accessToken,
@@ -69,7 +69,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
             .then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.ModuleImportFilePreview,
+                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
                     body: file,
                     headers: {
                         "content-type": "binary/octet-stream",
@@ -86,7 +86,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
             .then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.ModuleImportFilePreview,
+                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
                     headers: {
                         authorization: "Bearer wqe",
                     },
@@ -106,7 +106,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
             .then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.ModuleImportFilePreview,
+                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
                     headers: {
                         authorization: "",
                     },
@@ -125,7 +125,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
         let file
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.ModuleImportFilePreview,
+            url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
             headers: {
                 "content-type": "binary/octet-stream",
                 authorization,

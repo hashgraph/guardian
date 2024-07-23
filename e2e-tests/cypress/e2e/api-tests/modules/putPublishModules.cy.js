@@ -34,6 +34,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
             headers: {
                 authorization,
             },
+            timeout: 180000
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
         });

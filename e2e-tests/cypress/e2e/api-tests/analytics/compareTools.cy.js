@@ -14,7 +14,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             headers: {
                 authorization,
             },
-            timeout: 1800000
+            timeout: 1800000 
         })
             .then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
@@ -41,8 +41,11 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare,
             body: {
-                toolId1: toolId1,
-                toolId2: toolId2
+                childrenLvl:"2",
+                eventsLvl: "1",
+                idLvl: "0",
+                propLvl: "2",
+                toolIds:[toolId1,toolId2]
             },
             headers: {
                 authorization,
@@ -60,8 +63,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare,
             body: {
-                toolId1: "6419853a31fe4fd0e741b3a9",
-                toolId2: "641983a931fe4fd0e741b399"
+                toolIds:["6419853a31fe4fd0e741b3a9","641983a931fe4fd0e741b399"]
             },
             headers: {
             },
@@ -76,8 +78,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare,
             body: {
-                toolId1: "6419853a31fe4fd0e741b3a9",
-                toolId2: "641983a931fe4fd0e741b399"
+                toolIds:["6419853a31fe4fd0e741b3a9","641983a931fe4fd0e741b399"]
             },
             headers: {
                 authorization: "",
@@ -93,8 +94,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare,
             body: {
-                toolId1: "6419853a31fe4fd0e741b3a9",
-                toolId2: "641983a931fe4fd0e741b399"
+                toolIds:["6419853a31fe4fd0e741b3a9","641983a931fe4fd0e741b399"]
             },
             headers: {
                 authorization: "Bearer wqe",
@@ -110,8 +110,11 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare + API.ExportCSV,
             body: {
-                toolId1: toolId1,
-                toolId2: toolId2
+                childrenLvl:"2",
+                eventsLvl: "1",
+                idLvl: "0",
+                propLvl: "2",
+                toolIds:[toolId1,toolId2]
             },
             headers: {
                 authorization,
@@ -127,8 +130,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare + API.ExportCSV,
             body: {
-                toolId1: "6419853a31fe4fd0e741b3a9",
-                toolId2: "641983a931fe4fd0e741b399"
+                toolIds:["6419853a31fe4fd0e741b3a9","641983a931fe4fd0e741b399"]
             },
             headers: {
             },
@@ -143,8 +145,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare + API.ExportCSV,
             body: {
-                toolId1: "6419853a31fe4fd0e741b3a9",
-                toolId2: "641983a931fe4fd0e741b399"
+                toolIds:["6419853a31fe4fd0e741b3a9","641983a931fe4fd0e741b399"]
             },
             headers: {
                 authorization: "",
@@ -160,8 +161,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.ToolCompare + API.ExportCSV,
             body: {
-                toolId1: "6419853a31fe4fd0e741b3a9",
-                toolId2: "641983a931fe4fd0e741b399"
+                toolIds:["6419853a31fe4fd0e741b3a9","641983a931fe4fd0e741b399"]
             },
             headers: {
                 authorization: "Bearer wqe",

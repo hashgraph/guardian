@@ -95,7 +95,7 @@ const API = {
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     PolicyGroups: "groups/",
-    DryRun: "groups/",
+    DryRun: "dry-run/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     CreateApplication: "tag/create_application/blocks",
     WaitForApproveApplication: "tag/wait_for_approve",
@@ -129,6 +129,8 @@ const API = {
     Cancel: "cancel/",
     Requests: "requests/",
     Disable: "disable/",
-    Enable: "enable/"
+    Enable: "enable/",
+    Preview: "preview/",
+    Validate: "validate/"
 };
 export default API;
