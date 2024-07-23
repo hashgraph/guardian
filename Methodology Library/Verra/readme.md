@@ -28,7 +28,7 @@ The mechanism stimulates sustainable development and emission reductions, while 
 
 | Policy | ETA |
 |---|---:|
-| ACM0007 | TBD |
+| ACM0006 | TBD |
 
 
 **Following are the Testnet and Mainnet timestamps for CDM Methodologies**
