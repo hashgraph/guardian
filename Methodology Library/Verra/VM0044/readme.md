@@ -63,9 +63,9 @@ Policy: 1698754217.516521003
 
 **Emissions Reduction** – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
 
-### Token(Carbon Emissions Reduction) 
+### Token(Verified Carbon Unit) 
 
-Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
+Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 
 ### Step By Step 
