@@ -128,11 +128,6 @@ jobs:
                   IPFS_PROVIDER: local
                   IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
 
-            - name: Install xvfb
-              run: |
-                  apt-get update && apt-get install sudo
-                  sudo apt-get install -y xvfb x11-xserver-utils
-
             - name: Run tests with Cypress
               run: |
                   pushd e2e-tests
