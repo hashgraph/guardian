@@ -7,11 +7,10 @@ on:
                 description: Tags for run(smoke, accounts, firstPool and etc.)
                 default: 'all'
         description: 'Manual run'
-
 jobs:
     buildAndTest:
         name: Build and Test (Manual)
-        runs-on: [self-hosted, Linux, medium, ephemeral]
+        runs-on: ubuntu-latest
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
@@ -63,6 +62,9 @@ jobs:
                   yarn run build
                   popd
                   pushd auth-service
+                  yarn run build
+                  popd
+                  pushd queue-service
                   yarn run build
                   popd
                   pushd guardian-service
