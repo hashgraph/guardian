@@ -102,7 +102,6 @@ export class PolicyImportExport {
             });
         }
 
-
         const tagTargets: string[] = [];
         tagTargets.push(policy.id.toString());
         for (const token of tokens) {
@@ -298,11 +297,10 @@ export class PolicyImportExport {
             return {
                 name: uuid,
                 extention: 'record',
-                uuid: uuid,
+                uuid,
                 data: await file[1].async('nodebuffer')
             }
         }));
-
 
         if (policy.categoriesExport?.length) {
             const allCategories = await DatabaseServer.getPolicyCategories();

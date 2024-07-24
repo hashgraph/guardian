@@ -222,7 +222,7 @@ export class RecordImportExport {
         const time: any = first ? first.time : null;
         if (first && last) {
             const results = await RecordImportExport.loadRecordResults(first.policyId, first.time, last.time);
-            const duration = this.duration(first.time, last.time);
+            const duration = RecordImportExport.duration(first.time, last.time);
             return { records, time, duration, results };
         } else {
             return { records, time, duration: 0, results: [] };
@@ -346,7 +346,7 @@ export class RecordImportExport {
         }
         const first = records[0];
         const last = records[records.length - 1];
-        const duration = this.duration(first?.time, last?.time);
+        const duration = RecordImportExport.duration(first?.time, last?.time);
         return {
             records,
             results,

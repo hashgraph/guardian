@@ -43,7 +43,7 @@ export interface IUser {
      * User ID
      */
     id?: string;
-    
+
     /**
      * Was confirmed
      */

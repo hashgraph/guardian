@@ -713,7 +713,7 @@ export class SchemaImportExportHelper {
 
     /**
      * Validate and update schema defs
-     * 
+     *
      * @param target Schema iri
      * @param allSchemas Schemas
      * @param validatedSchemas Schemas

@@ -2,6 +2,7 @@ import { AfterDelete, Entity, Index, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
+import { PolicyTestStatus } from '@guardian/interfaces';
 
 /**
  * PolicyRoles collection
@@ -42,7 +43,7 @@ export class PolicyTest extends BaseEntity {
      * Status
      */
     @Property({ nullable: true })
-    status?: string;
+    status?: PolicyTestStatus;
 
     /**
      * Start date
@@ -66,7 +67,7 @@ export class PolicyTest extends BaseEntity {
      * Progress
      */
     @Property({ nullable: true })
-    progress?: any;
+    progress?: number;
 
     /**
      * Error
@@ -78,8 +79,8 @@ export class PolicyTest extends BaseEntity {
      * Duration
      */
     @Property({ nullable: true })
-    duration?: any;
-    
+    duration?: number;
+
     /**
      * File
      */

@@ -1,4 +1,4 @@
-import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyTestStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
 import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag, SchemaImportExportHelper } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
@@ -50,7 +50,9 @@ export class PolicyImport {
     private schemasResult: ImportSchemaResult;
     private schemasMapping: ImportSchemaMap[];
     private testsResult: ImportTestResult;
+    // tslint:disable-next-line:no-unused-variable
     private testsMapping: Map<string, string>;
+    // tslint:disable-next-line:no-unused-variable
     private topicId: string;
 
     constructor(demo: boolean, notifier: INotifier) {
@@ -61,7 +63,6 @@ export class PolicyImport {
     private async resolveAccount(user: IOwner): Promise<IRootConfig> {
         this.notifier.start('Resolve Hedera account');
         const users = new Users();
-        const userAccount = await users.getUser(user.username);
         this.root = await users.getHederaAccount(user.creator);
         this.topicHelper = new TopicHelper(
             this.root.hederaAccountId,
@@ -264,7 +265,7 @@ export class PolicyImport {
                 files.push([{
                     uuid: newUUID,
                     owner: user.creator,
-                    status: 'New',
+                    status: PolicyTestStatus.New,
                     duration: recordToImport.duration,
                     progress: 0,
                     date: null,
@@ -285,7 +286,7 @@ export class PolicyImport {
 
         this.testsResult = { testsMap, errors, files };
         this.testsMapping = testsMap;
-    } 
+    }
 
     private async updateUUIDs(policy: Policy): Promise<Policy> {
         await PolicyImportExportHelper.replaceConfig(
@@ -403,43 +404,24 @@ export class PolicyImport {
         additionalPolicyConfig: Partial<Policy> | null,
         metadata: PolicyToolMetadata | null,
     ): Promise<ImportPolicyResult> {
-        console.log('---- import ---')
-
         const { policy, tokens, schemas, artifacts, tags, tools, tests } = policyComponents;
-        console.log('---- resolveAccount ---')
         await this.resolveAccount(user);
-        console.log('---- dataPreparation ---')
         await this.dataPreparation(policy, user, additionalPolicyConfig);
-        console.log('---- createPolicyTopic ---')
         await this.createPolicyTopic(policy, versionOfTopicId, user);
-        console.log('---- publishSystemSchemas ---')
         await this.publishSystemSchemas(versionOfTopicId, user);
-        console.log('---- importTools ---')
         await this.importTools(tools, metadata, user);
-        console.log('---- importTokens ---')
         await this.importTokens(tokens, user);
-        console.log('---- importSchemas ---')
         await this.importSchemas(schemas, user);
-        console.log('---- importArtifacts ---')
         await this.importArtifacts(artifacts, user);
-        console.log('---- importTests ---')
         await this.importTests(tests, user);
-        console.log('---- updateUUIDs ---')
         await this.updateUUIDs(policy);
 
-        console.log('---- savePolicy ---', policy)
         const row = await this.savePolicy(policy);
-        console.log('---- saveTopic ---')
         await this.saveTopic(row);
-        console.log('---- saveArtifacts ---')
         await this.saveArtifacts(row);
-        console.log('---- saveTests ---')
         await this.saveTests(row);
-        console.log('---- saveHash ---')
         await this.saveHash(row);
-        console.log('---- setSuggestionsConfig ---')
         await this.setSuggestionsConfig(row, user);
-        console.log('---- importTags ---')
         await this.importTags(row, tags);
 
         const errors = await this.getErrors();

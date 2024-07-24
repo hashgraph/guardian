@@ -9,7 +9,8 @@ import {
     PolicyType,
     Schema,
     SchemaField,
-    TopicType
+    TopicType,
+    PolicyTestStatus
 } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
@@ -283,7 +284,7 @@ export class PolicyEngineService {
                     const { status, index, count, error, result } = msg;
                     switch (status) {
                         case 'Running': {
-                            test.status = 'Running';
+                            test.status = PolicyTestStatus.Running;
                             test.progress = Math.floor(index / count * 100);
                             test.result = null;
                             test.error = null;
@@ -292,16 +293,16 @@ export class PolicyEngineService {
                         case 'Stopped': {
                             test.result = await getDetails(result);
                             if (test.result?.total === 100) {
-                                test.status = 'Success';
+                                test.status = PolicyTestStatus.Success;
                             } else {
-                                test.status = 'Failure';
+                                test.status = PolicyTestStatus.Failure;
                             }
                             test.progress = null;
                             test.error = null;
                             break;
                         }
                         case 'Error': {
-                            test.status = 'Failure';
+                            test.status = PolicyTestStatus.Failure;
                             test.result = null;
                             test.progress = null;
                             test.error = error;
@@ -1899,7 +1900,7 @@ export class PolicyEngineService {
                             uuid: GenerateUUIDv4(),
                             policyId,
                             owner: owner.creator,
-                            status: 'New',
+                            status: PolicyTestStatus.New,
                             duration: recordToImport.duration,
                             progress: 0,
                             date: null,
@@ -1947,7 +1948,7 @@ export class PolicyEngineService {
                         test.resultId = result;
                         test.duration = recordToImport.duration;
                         test.date = (new Date()).toISOString();
-                        test.status = 'Running';
+                        test.status = PolicyTestStatus.Running;
                         test.progress = 0;
                         test.result = null;
                         test.error = null;
@@ -1971,7 +1972,7 @@ export class PolicyEngineService {
                     const result: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.STOP_RUNNING, policyId, null);
                     if (result) {
-                        test.status = 'Stopped';
+                        test.status = PolicyTestStatus.Stopped;
                         test.progress = 0;
                         test.result = null;
                         test.error = null;

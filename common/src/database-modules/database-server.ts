@@ -3619,6 +3619,4 @@ export class DatabaseServer {
     public static async updatePolicyTest(test: PolicyTest): Promise<PolicyTest> {
         return await new DataBaseHelper(PolicyTest).save(test);
     }
-
-
 }

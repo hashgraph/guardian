@@ -20,6 +20,8 @@ export class PolicyApi {
     constructor(private readonly cacheService: CacheService) {
     }
 
+    //#region Common
+
     /**
      * Return a list of all policies
      */
@@ -535,6 +537,10 @@ export class PolicyApi {
         }
     }
 
+    //#endregion
+
+    //#region Status
+
     /**
      * Publish policy
      */
@@ -809,6 +815,10 @@ export class PolicyApi {
         }
     }
 
+    //#endregion
+
+    //#region Other
+
     /**
      * Policy navigation
      */
@@ -989,6 +999,10 @@ export class PolicyApi {
         }
     }
 
+    //#endregion
+
+    //#region Data
+
     /**
      * Get policy data
      */
@@ -1081,49 +1095,6 @@ export class PolicyApi {
         try {
             const engineService = new PolicyEngine();
             return await engineService.uploadPolicyData(new EntityOwner(user), body);
-        } catch (error) {
-            await InternalException(error);
-        }
-    }
-
-    /**
-     * Get policy tag map
-     */
-    @Get('/:policyId/tag-block-map')
-    @Auth(
-        Permissions.POLICIES_MIGRATION_CREATE,
-        // UserRole.STANDARD_REGISTRY,
-    )
-    @ApiOperation({
-        summary: 'Get policy tag block map.',
-        description: 'Get policy tag block map.' + ONLY_SR,
-    })
-    @ApiParam({
-        name: 'policyId',
-        type: String,
-        description: 'Policy Id',
-        required: true,
-        example: Examples.DB_ID
-    })
-    @ApiOkResponse({
-        description: 'Policy tag block map.',
-        schema: {
-            type: 'object'
-        }
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
-    async getTagBlockMap(
-        @AuthUser() user: IAuthUser,
-        @Param('policyId') policyId: string,
-    ): Promise<any> {
-        try {
-            const engineService = new PolicyEngine();
-            return await engineService.getTagBlockMap(policyId, new EntityOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -1225,6 +1196,53 @@ export class PolicyApi {
         try {
             const engineService = new PolicyEngine();
             return await engineService.uploadVirtualKeys(new EntityOwner(user), body, policyId);
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    //#endregion
+
+    //#region Blocks
+
+    /**
+     * Get policy tag map
+     */
+    @Get('/:policyId/tag-block-map')
+    @Auth(
+        Permissions.POLICIES_MIGRATION_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Get policy tag block map.',
+        description: 'Get policy tag block map.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Policy tag block map.',
+        schema: {
+            type: 'object'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getTagBlockMap(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getTagBlockMap(policyId, new EntityOwner(user));
         } catch (error) {
             await InternalException(error);
         }
@@ -1633,6 +1651,43 @@ export class PolicyApi {
     }
 
     /**
+     * About
+     */
+    @Get('/blocks/about')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.MODULES_MODULE_UPDATE,
+        Permissions.TOOLS_TOOL_UPDATE
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns block descriptions.',
+        description: 'Returns block descriptions.' + ONLY_SR,
+    })
+    @ApiOkResponse({
+        description: 'Block descriptions.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @UseCache({ ttl: CACHE.LONG_TTL })
+    @HttpCode(HttpStatus.OK)
+    async getBlockAbout() {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.blockAbout();
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    //#endregion
+
+    //#region Export
+
+    /**
      * Export policy in a zip file.
      */
     @Get('/:policyId/export/file')
@@ -1772,6 +1827,10 @@ export class PolicyApi {
             await InternalException(error);
         }
     }
+
+    //#endregion
+
+    //#region Import
 
     /**
      * Imports policy
@@ -2490,38 +2549,9 @@ export class PolicyApi {
         }
     }
 
-    /**
-     * About
-     */
-    @Get('/blocks/about')
-    @Auth(
-        Permissions.POLICIES_POLICY_UPDATE,
-        Permissions.MODULES_MODULE_UPDATE,
-        Permissions.TOOLS_TOOL_UPDATE
-        // UserRole.STANDARD_REGISTRY,
-    )
-    @ApiOperation({
-        summary: 'Returns block descriptions.',
-        description: 'Returns block descriptions.' + ONLY_SR,
-    })
-    @ApiOkResponse({
-        description: 'Block descriptions.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @UseCache({ ttl: CACHE.LONG_TTL })
-    @HttpCode(HttpStatus.OK)
-    async getBlockAbout() {
-        try {
-            const engineService = new PolicyEngine();
-            return await engineService.blockAbout();
-        } catch (error) {
-            await InternalException(error);
-        }
-    }
+    //#endregion
+
+    //#region Dry-Run
 
     /**
      * Get virtual users
@@ -2892,6 +2922,10 @@ export class PolicyApi {
         }
     }
 
+    //#endregion
+
+    //#region Multiple
+
     /**
      * Get policy links
      */
@@ -2980,6 +3014,10 @@ export class PolicyApi {
             await InternalException(error);
         }
     }
+
+    //#endregion
+
+    //#region Tests
 
     /**
      * Add policy test
@@ -3209,6 +3247,10 @@ export class PolicyApi {
         }
     }
 
+    //#endregion
+
+    //#region Methodologies
+
     /**
      * Get all categories
      */
@@ -3279,4 +3321,6 @@ export class PolicyApi {
             await InternalException(error);
         }
     }
+
+    //#endregion
 }
