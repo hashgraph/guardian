@@ -279,6 +279,9 @@ export class PolicyEngineService {
                 count: number,
                 result: any
             }) => {
+                if(!msg.id) {
+                    return;
+                }
                 const test = await DatabaseServer.getPolicyTestByRecord(msg.id);
                 if (test) {
                     const { status, index, count, error, result } = msg;
@@ -286,7 +289,6 @@ export class PolicyEngineService {
                         case 'Running': {
                             test.status = PolicyTestStatus.Running;
                             test.progress = Math.floor(index / count * 100);
-                            test.resultId = null;
                             test.result = null;
                             test.error = null;
                             break;
@@ -300,23 +302,24 @@ export class PolicyEngineService {
                             }
                             test.progress = null;
                             test.error = null;
+                            test.resultId = null;
                             break;
                         }
                         case 'Error': {
                             test.status = PolicyTestStatus.Failure;
-                            test.resultId = null;
                             test.result = null;
                             test.progress = null;
                             test.error = error;
+                            test.resultId = null;
                             break;
                         }
                         case 'Finished': {
                             if (test.status === PolicyTestStatus.Running) {
                                 test.status = PolicyTestStatus.Stopped;
-                                test.resultId = null;
                                 test.result = null;
                                 test.progress = null;
                                 test.error = null;
+                                test.resultId = null;
                                 break;
                             } else {
                                 return;
@@ -1949,14 +1952,14 @@ export class PolicyEngineService {
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
                     const guardiansService = new GuardiansService();
-                    const result: string = await guardiansService
+                    const recordId: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
                             records: recordToImport.records,
                             results: recordToImport.results,
                             options
                         });
-                    if (result) {
-                        test.resultId = result;
+                    if (recordId) {
+                        test.resultId = recordId;
                         test.duration = recordToImport.duration;
                         test.date = (new Date()).toISOString();
                         test.status = PolicyTestStatus.Running;

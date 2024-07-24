@@ -149,7 +149,7 @@ export class Running {
         this._generateUUID.clear();
         this._generateDID.clear();
         this._startTime = Date.now();
-        this._updateStatus().then();
+        this._updateStatus(this._id).then();
         this._run(this._id).then();
         return this._id;
     }
@@ -162,7 +162,7 @@ export class Running {
         this._status = RunningStatus.Stopped;
         this._lastError = null;
         this._endTime = Date.now();
-        this._updateStatus().then();
+        this._updateStatus(this._id).then();
         return true;
     }
 
@@ -171,11 +171,12 @@ export class Running {
      * @public
      */
     public finished(): boolean {
+        let oldID = this._id;
         this._id = null;
         this._status = RunningStatus.Finished;
         this._lastError = null;
         this._endTime = Date.now();
-        this._updateStatus().then();
+        this._updateStatus(oldID).then();
         return true;
     }
 
@@ -188,7 +189,7 @@ export class Running {
         this._status = RunningStatus.Error;
         this._lastError = message;
         this._endTime = Date.now();
-        this._updateStatus().then();
+        this._updateStatus(this._id).then();
         return true;
     }
 
@@ -206,7 +207,7 @@ export class Running {
         this._generateUUID.clear();
         this._generateDID.clear();
         this._startTime = Date.now();
-        this._updateStatus().then();
+        this._updateStatus(this._id).then();
         await this._run(this._id);
         return await this.results();
     }
@@ -243,7 +244,7 @@ export class Running {
             if (this._status === RunningStatus.Error) {
                 this._status = RunningStatus.Running;
                 this._lastError = null;
-                this._updateStatus().then();
+                this._updateStatus(this._id).then();
                 this._run(this._id).then();
                 return true;
             } else {
@@ -264,7 +265,7 @@ export class Running {
                 this._status = RunningStatus.Running;
                 this._lastError = null;
                 this._actions.next();
-                this._updateStatus().then();
+                this._updateStatus(this._id).then();
                 this._run(this._id).then();
                 return true;
             } else {
@@ -318,9 +319,9 @@ export class Running {
      * Update status
      * @private
      */
-    private async _updateStatus(): Promise<void> {
+    private async _updateStatus(id: string): Promise<void> {
         try {
-            const status: any = this.getStatus();
+            const status: any = this.getStatus(id);
             this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, status);
             if (this._mode === 'test') {
                 if (this._status === RunningStatus.Running) {
@@ -354,7 +355,7 @@ export class Running {
                 this.error(result.error);
                 return;
             }
-            this._updateStatus().then();
+            this._updateStatus(id).then();
             await this.delay(result.delay, result.index);
         }
     }
@@ -676,9 +677,9 @@ export class Running {
      * Get full status
      * @public
      */
-    public getStatus() {
+    public getStatus(id?: string) {
         return {
-            id: this._id,
+            id: id || this._id,
             type: this.type,
             policyId: this.policyId,
             status: this._status,
