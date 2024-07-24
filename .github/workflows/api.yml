@@ -6,7 +6,7 @@ on:
 jobs:
     buildAndTest:
         name: Build and Test
-        runs-on: [self-hosted, Linux, medium, ephemeral]
+        runs-on: [ self-hosted, Linux, medium, ephemeral, gpu ]
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
@@ -62,6 +62,9 @@ jobs:
                   pushd auth-service
                   yarn run build
                   popd
+                  pushd queue-service
+                  yarn run build
+                  popd
                   pushd guardian-service
                   yarn run build
                   popd
@@ -96,6 +99,10 @@ jobs:
                   sleep 20
                   popd
                   pushd auth-service
+                  npm start &
+                  sleep 20
+                  popd                  
+                  pushd queue-service
                   npm start &
                   sleep 20
                   popd
