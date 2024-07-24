@@ -226,8 +226,8 @@ export class RecordApi {
         type: String
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: Boolean
+        description: 'Record UUID.',
+        type: String
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
