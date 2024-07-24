@@ -1,5 +1,5 @@
 import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
-import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag, SchemaImportExportHelper } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
@@ -14,6 +14,21 @@ export interface ImportPolicyResult {
      * Errors
      */
     errors: any[]
+}
+
+export interface ImportTestResult {
+    /**
+     * New schema uuid
+     */
+    testsMap: Map<string, string>;
+    /**
+     * Errors
+     */
+    errors: any[];
+    /**
+     * Errors
+     */
+    files: [any, Buffer][];
 }
 
 export class PolicyImport {
@@ -34,6 +49,8 @@ export class PolicyImport {
     private artifactsMapping: Map<string, string>;
     private schemasResult: ImportSchemaResult;
     private schemasMapping: ImportSchemaMap[];
+    private testsResult: ImportTestResult;
+    private testsMapping: Map<string, string>;
     private topicId: string;
 
     constructor(demo: boolean, notifier: INotifier) {
@@ -233,6 +250,43 @@ export class PolicyImport {
         this.artifactsMapping = this.artifactsResult.artifactsMap;
     }
 
+    private async importTests(tests: any[], user: IOwner) {
+        this.notifier.completedAndStart('Import tests');
+
+        const testsMap = new Map<string, string>();
+        const errors: any[] = [];
+        const files: [any, Buffer][] = [];
+        for (const test of tests) {
+            const oldUUID = test.uuid;
+            const newUUID = GenerateUUIDv4();
+            try {
+                const recordToImport = await RecordImportExport.parseZipFile(test.data);
+                files.push([{
+                    uuid: newUUID,
+                    owner: user.creator,
+                    status: 'New',
+                    duration: recordToImport.duration,
+                    progress: 0,
+                    date: null,
+                    result: null,
+                    error: null,
+                    resultId: null,
+                }, test.data])
+                testsMap.set(oldUUID, newUUID);
+            } catch (error) {
+                errors.push({
+                    type: 'test',
+                    uuid: oldUUID,
+                    name: oldUUID,
+                    error: error.toString(),
+                })
+            }
+        }
+
+        this.testsResult = { testsMap, errors, files };
+        this.testsMapping = testsMap;
+    } 
+
     private async updateUUIDs(policy: Policy): Promise<Policy> {
         await PolicyImportExportHelper.replaceConfig(
             policy,
@@ -251,7 +305,7 @@ export class PolicyImport {
     }
 
     private async saveTopic(policy: Policy) {
-        if(!this.demo) {
+        if (!this.demo) {
             this.notifier.completedAndStart('Saving topic in DB');
             const row = await new DataBaseHelper(Topic).findOne({ topicId: this.topicRow.topicId })
             row.policyId = policy.id.toString();
@@ -265,6 +319,14 @@ export class PolicyImport {
         for (const addedArtifact of this.artifactsResult.artifacts) {
             addedArtifact.policyId = policy.id;
             await DatabaseServer.saveArtifact(addedArtifact);
+        }
+    }
+
+    private async saveTests(policy: Policy) {
+        this.notifier.completedAndStart('Saving tests in DB');
+        for (const [test, data] of this.testsResult.files) {
+            test.policyId = policy.id;
+            await DatabaseServer.createPolicyTest(test, data);
         }
     }
 
@@ -326,6 +388,11 @@ export class PolicyImport {
                 errors.push(error);
             }
         }
+        if (this.testsResult.errors) {
+            for (const error of this.testsResult.errors) {
+                errors.push(error);
+            }
+        }
         return errors;
     }
 
@@ -338,7 +405,7 @@ export class PolicyImport {
     ): Promise<ImportPolicyResult> {
         console.log('---- import ---')
 
-        const { policy, tokens, schemas, artifacts, tags, tools } = policyComponents;
+        const { policy, tokens, schemas, artifacts, tags, tools, tests } = policyComponents;
         console.log('---- resolveAccount ---')
         await this.resolveAccount(user);
         console.log('---- dataPreparation ---')
@@ -355,6 +422,8 @@ export class PolicyImport {
         await this.importSchemas(schemas, user);
         console.log('---- importArtifacts ---')
         await this.importArtifacts(artifacts, user);
+        console.log('---- importTests ---')
+        await this.importTests(tests, user);
         console.log('---- updateUUIDs ---')
         await this.updateUUIDs(policy);
 
@@ -364,6 +433,8 @@ export class PolicyImport {
         await this.saveTopic(row);
         console.log('---- saveArtifacts ---')
         await this.saveArtifacts(row);
+        console.log('---- saveTests ---')
+        await this.saveTests(row);
         console.log('---- saveHash ---')
         await this.saveHash(row);
         console.log('---- setSuggestionsConfig ---')

@@ -20,15 +20,15 @@
         </div>
         <div>
             <div class="form-input-container">
-                <label class="form-label" htmlFor="version">Policy Test</label>
+                <label class="form-label" htmlFor="version">Policy Tests</label>
                 <ng-container *ngIf="policy?.tests?.length; else elseTemplate">
                     <div class="tests-container">
-                        {{policy.tests.length}} test(s) found
+                        {{policy.tests.length}} test data file[s]
                     </div>
                 </ng-container>
                 <ng-template #elseTemplate>
                     <div class="tests-container">
-                        Tests not found
+                        0 test data file[s]
                     </div>
                 </ng-template>
 

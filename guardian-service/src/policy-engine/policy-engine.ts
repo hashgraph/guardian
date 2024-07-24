@@ -503,7 +503,8 @@ export class PolicyEngine extends NatsService {
             tokens,
             artifacts,
             tools,
-            tags
+            tags,
+            tests: []
         };
         return await PolicyImportExportHelper.importPolicy(
             dataToCreate,
