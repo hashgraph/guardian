@@ -19,30 +19,18 @@
             color: var(--guardian-primary-color);
             background: var(--guardian-secondary-color);
             border: 1px solid var(--guardian-primary-color);
-
-            &:hover {
-                background: var(--guardian-primary-hover-2);
-            }
         }
 
         &.Success-status {
             color: var(--guardian-success-color);
             background: var(--guardian-secondary-background);
             border: 1px solid var(--guardian-success-color);
-
-            &:hover {
-                background: var(--guardian-success-hover-2);
-            }
         }
 
         &.Failure-status {
             color: var(--guardian-failure-color);
             background: var(--guardian-secondary-color);
             border: 1px solid var(--guardian-failure-color);
-
-            &:hover {
-                background: var(--guardian-failure-hover-2);
-            }
         }
 
         .status-label {

@@ -908,27 +908,27 @@
 
 .DRAFT-status,
 .DRAFT-dropdown ::ng-deep .p-dropdown {
-    background: #fff;
-    color: var(--guardian-primary-color);
-    border: 1px solid var(--guardian-primary-color);
+    background: var(--guardian-secondary-background);
+    color: var(--guardian-dry-run-color);
+    border: 1px solid var(--guardian-dry-run-color);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--guardian-primary-color);
+        color: var(--guardian-dry-run-color);
     }
 }
 
 .DRY-RUN-status,
 .DRY-RUN-dropdown ::ng-deep .p-dropdown {
-    background: #edf0fb;
-    color: var(--guardian-primary-color);
-    border: 1px solid var(--guardian-primary-color);
+    background: var(--guardian-dry-run-background);
+    color: var(--guardian-dry-run-color);
+    border: 1px solid var(--guardian-dry-run-color);
     // width: auto;
     width: 130px;
 
     .p-dropdown-trigger-icon {
-        color: var(--guardian-primary-color);
+        color: var(--guardian-dry-run-color);
     }
 }
 
