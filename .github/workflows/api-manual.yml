@@ -14,7 +14,7 @@ on:
 jobs:
     buildAndTest:
         name: Build and Test (Manual)
-        runs-on: [ self-hosted, Linux, medium, ephemeral, gpu ]
+        runs-on: ubuntu-latest
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
