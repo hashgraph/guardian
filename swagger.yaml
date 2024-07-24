@@ -10816,11 +10816,11 @@ paths:
               type: string
       responses:
         '200':
-          description: Successful operation.
+          description: Record UUID.
           content:
             application/json:
               schema:
-                type: boolean
+                type: string
         '401':
           description: Unauthorized.
         '403':
