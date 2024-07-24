@@ -7,10 +7,6 @@ on:
                 description: Tags for run(smoke, accounts, firstPool and etc.)
                 default: 'all'
         description: 'Manual run'
-    push:
-        branches-ignore:
-            - 'dependabot/**'
-            -
 jobs:
     buildAndTest:
         name: Build and Test (Manual)
@@ -30,6 +26,11 @@ jobs:
                 node-version: [ 20.x ]
                 mongodb-version: [ 7.0.5 ]
         steps:
+            - name: Harden Runner
+              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+              with:
+                  egress-policy: audit
+
             - name: Checkout Code
               uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
