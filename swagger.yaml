@@ -2540,6 +2540,38 @@ paths:
       tags: *ref_6
       security:
         - bearer: []
+  /logs/seq:
+    get:
+      operationId: LoggerApi_getSeqUrl
+      summary: Return url on seq store.
+      description: >-
+        Return url on seq store. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seq_url:
+                    type: string
+                    example: http://localhost:5341
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_6
+      security:
+        - bearer: []
   /map/key:
     get:
       operationId: MapApi_getKey
