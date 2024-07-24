@@ -1,18 +1,7 @@
-import { Message } from '@indexer/interfaces';
-import { applyDecorators, Type } from '@nestjs/common';
-import {
-    ApiExtraModels,
-    ApiOkResponse,
-    ApiProperty,
-    getSchemaPath,
-} from '@nestjs/swagger';
+import { Message, MessageAction, MessageType } from '@indexer/interfaces';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class MessageDTO<O = any, A = any> implements Message<O, A> {
-    @ApiProperty({
-        description: 'Identifier',
-        example: '667c240639282050117a1985',
-    })
-    _id: string;
     @ApiProperty({
         description: 'Identifier',
         example: '667c240639282050117a1985',
@@ -30,8 +19,7 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
     consensusTimestamp: string;
     @ApiProperty({
         description: 'Owner',
-        example:
-            '0.0.1',
+        example: '0.0.1',
     })
     owner: string;
     @ApiProperty({
@@ -49,16 +37,16 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
         example: 'Revoked',
     })
     statusReason: string;
-    @ApiProperty({
-        description: 'Type',
-        example: 'VC-Document',
-    })
-    type: string;
-    @ApiProperty({
-        description: 'Type',
-        example: 'create-vc-document',
-    })
-    action: string;
+    // @ApiProperty({
+    //     description: 'Type',
+    //     example: 'VC-Document',
+    // })
+    type: MessageType;
+    // @ApiProperty({
+    //     description: 'Type',
+    //     example: 'create-vc-document',
+    // })
+    action: MessageAction;
     @ApiProperty({
         description: 'Lang',
         example: 'en-US',
@@ -80,10 +68,14 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
         example: ['QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX'],
     })
     files: string[];
-    @ApiProperty({
-        description: 'Documents',
-        example: ['667c240639282050117a1985'],
-    })
+    // @ApiProperty({
+    //     description: 'Documents',
+    //     type: 'array',
+    //     items: {
+    //         type: 'string',
+    //     },
+    //     example: ['667c240639282050117a1985']
+    // })
     documents: any[];
     @ApiProperty({
         description: 'Topics',

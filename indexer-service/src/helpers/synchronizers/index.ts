@@ -10,3 +10,4 @@ export * from './synchronize-schema.js';
 export * from './synchronize-tool.js';
 export * from './synchronize-topic.js';
 export * from './synchronize-vp.js';
+export * from './synchronize-contracts.js';

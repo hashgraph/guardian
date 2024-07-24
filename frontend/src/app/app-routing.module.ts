@@ -2,7 +2,7 @@ import { Injectable, NgModule } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterModule, RouterStateSnapshot, Routes, UrlTree } from '@angular/router';
 import { IUser, Permissions, UserRole } from '@guardian/interfaces';
 import { of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuditComponent } from './views/audit/audit.component';
 import { HomeComponent } from './views/home/home.component';
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
@@ -43,6 +43,7 @@ import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { MapService } from './services/map.service';
 
 @Injectable({
     providedIn: 'root'
@@ -50,7 +51,8 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
 export class PermissionsGuard {
     constructor(
         private readonly router: Router,
-        private readonly auth: AuthService
+        private readonly auth: AuthService,
+        private readonly mapSevice: MapService,
     ) {
     }
 
@@ -74,6 +76,12 @@ export class PermissionsGuard {
         const permissions: string[] | undefined = route.data.permissions;
         const defaultPage: string | undefined = route.data.defaultPage;
         return this.auth.sessions().pipe(
+            switchMap((user) => {
+                return this.mapSevice.loadMap().pipe(
+                    switchMap(() => of(user)),
+                    catchError(() => of(user))
+                );
+            }),
             map((user: IUser | null) => {
                 if (user) {
                     if (roles) {

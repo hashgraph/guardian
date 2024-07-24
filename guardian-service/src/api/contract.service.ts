@@ -1129,9 +1129,14 @@ export async function contractAPI(
                 rootKey,
                 signOptions
             );
-            await messageServer
+            const contractMessageResult = await messageServer
                 .setTopicObject(topic)
                 .sendMessage(contractMessage);
+            const userTopic = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicByType(owner.creator, TopicType.UserTopic),
+                true
+            );
+            await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId());
             return new MessageResponse(contract);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE']);

@@ -1,6 +1,5 @@
 import { Controller, HttpCode, HttpStatus, Get, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
     ApiForbiddenResponse,
@@ -53,10 +52,6 @@ export class StatusApi {
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async getStatus(): Promise<any> {

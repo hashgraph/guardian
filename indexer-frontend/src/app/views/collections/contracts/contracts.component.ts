@@ -61,9 +61,25 @@ export class ContractsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
+            field: 'topicId',
+            title: 'grid.topic_id',
+            width: '150px',
+            link: {
+                field: 'topicId',
+                url: '/topics',
+            },
+        },
+        {
+            type: ColumnType.TEXT,
             field: 'options.contractId',
             title: 'grid.contract_id',
             width: '250px',
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'owner',
+            title: 'grid.owner',
+            width: '150px',
         },
         {
             type: ColumnType.TEXT,
@@ -73,7 +89,7 @@ export class ContractsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.CHIP,
-            field: 'contractType',
+            field: 'options.contractType',
             title: 'grid.contract_type',
             width: '150px',
         },
@@ -95,7 +111,11 @@ export class ContractsComponent extends BaseGridComponent {
         super(route, router);
         this.filters.push(new Filter({
             type: 'input',
-            field: 'options.owner',
+            field: 'topicId',
+            label: 'grid.topic_id'
+        }), new Filter({
+            type: 'input',
+            field: 'owner',
             label: 'grid.owner'
         }))
     }

@@ -34,6 +34,7 @@ import {
     syncRoles,
     syncTools,
     syncTopics,
+    syncContracts
 } from './helpers/synchronizers/index.js';
 
 const channelName = (
@@ -232,7 +233,14 @@ Promise.all([
             process.env.SYNC_POLICIES_MASK || '0 * * * *'
         );
         policy.start(process.env.START_SYNC_POLICIES?.toLowerCase() === 'true');
-
+        const contractsSync = new SynchronizationTask(
+            'contracts',
+            syncContracts,
+            process.env.SYNC_CONTRACTS_MASK || '0 * * * *'
+        );
+        contractsSync.start(
+            process.env.START_SYNC_CONTRACTS?.toLowerCase() === 'true'
+        );
         // synchronizePolicies()
     },
     (reason) => {

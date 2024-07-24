@@ -44,7 +44,7 @@ export interface TopicAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
 }
 
 /**

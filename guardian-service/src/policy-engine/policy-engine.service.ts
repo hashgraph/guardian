@@ -1,15 +1,4 @@
-import {
-    DocumentCategoryType,
-    DocumentType,
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    IOwner,
-    PolicyEngineEvents,
-    PolicyEvents, PolicyType,
-    Schema,
-    SchemaField,
-    TopicType
-} from '@guardian/interfaces';
+import { DocumentCategoryType, DocumentType, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
     DatabaseServer,
@@ -49,7 +38,7 @@ import { getSchemaCategory, importSchemaByFiles, importSubTools, previewToolByMe
 import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
 import { Inject } from '../helpers/decorators/inject.js';
 import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
-import { VpDocumentLoader, VcDocumentLoader, PolicyDataLoader } from './helpers/policy-data/loaders/index.js';
+import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
 
 /**
  * PolicyEngineChannel
@@ -750,13 +739,14 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA,
-            async (msg: { user: IAuthUser, blockId: string, policyId: string }): Promise<IMessageResponse<any>> => {
+            async (msg: { user: IAuthUser, blockId: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, blockId, policyId } = msg;
+                    const {user, blockId, policyId, params} = msg;
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
                         user,
                         blockId,
-                        policyId
+                        policyId,
+                        params
                     }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -766,13 +756,14 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG,
-            async (msg: { user: IAuthUser, tag: string, policyId: string }): Promise<IMessageResponse<any>> => {
+            async (msg: { user: IAuthUser, tag: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { user, tag, policyId } = msg;
+                    const {user, tag, policyId, params} = msg;
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
                         user,
                         tag,
-                        policyId
+                        policyId,
+                        params
                     }) as any
                     return new MessageResponse(blockData);
                 } catch (error) {

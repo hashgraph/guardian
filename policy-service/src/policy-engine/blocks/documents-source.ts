@@ -83,13 +83,31 @@ export class InterfaceDocumentsSource {
     async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
-        const filters = ref.getFiltersAddons().map(addon => {
+        if (!queryParams) {
+            queryParams = {};
+        }
+
+        const {itemsPerPage, page, size, filterByUUID, ...filterIds} = queryParams;
+
+        const filterAddons = ref.getFiltersAddons();
+        const filters = filterAddons.map(addon => {
             return {
                 id: addon.uuid,
                 uiMetaData: addon.options.uiMetaData,
                 blockType: addon.blockType
             }
         });
+
+        if (filterIds) {
+            for (const filterId of Object.keys(filterIds)) {
+                const filter = filterAddons.find((_filter) => {
+                    return (_filter.uuid === filterId) || (_filter.tag === filterId);
+                });
+                if (filter) {
+                    await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue: filterIds[filterId]});
+                }
+            }
+        }
 
         const commonAddonBlocks = ref.getCommonAddons();
         const commonAddons = commonAddonBlocks.map(addon => {
@@ -105,7 +123,12 @@ export class InterfaceDocumentsSource {
         }) as IPolicyAddonBlock;
 
         let paginationData = null;
+
         if (pagination) {
+            if (itemsPerPage && page) {
+                await pagination.setState(user, {itemsPerPage, page, size});
+            }
+
             paginationData = await pagination.getState(user);
         }
 
@@ -154,6 +177,11 @@ export class InterfaceDocumentsSource {
 
         for (const child of ref.children) {
             data = await child.joinData(data, user, ref);
+        }
+
+        if (filterByUUID) {
+            const doc = data.find(d => d.document.id === filterByUUID);
+            data = [doc];
         }
 
         return Object.assign(

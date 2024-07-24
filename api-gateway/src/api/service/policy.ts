@@ -1359,11 +1359,12 @@ export class PolicyApi {
     async getBlockData(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Param('uuid') uuid: string
+        @Param('uuid') uuid: string,
+        @Query() query: any
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.getBlockData(user, policyId, uuid);
+            return await engineService.getBlockData(user, policyId, uuid, query);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -1519,7 +1520,7 @@ export class PolicyApi {
     async getBlockByTagName(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Param('tagName') tagName: string
+        @Param('tagName') tagName: string,
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
@@ -1570,10 +1571,11 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('tagName') tagName: string,
+        @Query() query: any
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.getBlockDataByTag(user, policyId, tagName);
+            return await engineService.getBlockDataByTag(user, policyId, tagName, query);
         } catch (error) {
             await InternalException(error, this.logger);
         }

@@ -22,19 +22,19 @@ export interface VPAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
     /**
      * Policy message identifier
      */
-    policyId: string;
+    policyId?: string;
     /**
      * Schema message identifiers
      */
-    schemaIds: string[];
+    schemaIds?: string[];
     /**
      * Schema names
      */
-    schemaNames: string[];
+    schemaNames?: string[];
 }
 
 /**
