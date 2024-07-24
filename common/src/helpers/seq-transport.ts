@@ -3,6 +3,7 @@ import { Logger } from 'seq-logging';
 
 interface SeqTransportOptions {
     seqUrl: string;
+    apiKey?: string;
 }
 
 /**a
@@ -15,12 +16,18 @@ export class SeqTransport extends Writable {
     constructor(options: SeqTransportOptions) {
         super({ objectMode: true });
 
-        this.logger = new Logger({
+        const loggerOptions: any = {
             serverUrl: options.seqUrl,
             onError: (e) => {
                 console.error('Error in Seq logger:', e);
             }
-        });
+        };
+
+        if (options.apiKey?.trim() !== '') {
+            loggerOptions.apiKey = options.apiKey;
+        }
+
+        this.logger = new Logger(loggerOptions);
 
         this.logLevelMap = {
             trace: 'Verbose',

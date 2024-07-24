@@ -193,8 +193,8 @@ export class LoggerApi {
     async getSeqUrl(): Promise<{ seq_url: string | null }> {
         const isSeqTransport = process.env.TRANSPORTS.includes('SEQ');
 
-        if (isSeqTransport && process.env.SEQ_URL_FRONT) {
-            return { seq_url: process.env.SEQ_URL_FRONT };
+        if (isSeqTransport && process.env.SEQ_UI_URL) {
+            return { seq_url: process.env.SEQ_UI_URL };
         }
 
         return { seq_url: null };

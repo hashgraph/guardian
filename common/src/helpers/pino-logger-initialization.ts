@@ -17,7 +17,8 @@ export function pinoLoggerInitialization(db: MikroORM<MongoDriver> | null) {
         client: db?.em.getDriver().getConnection().getDb(),
         transports: process.env.TRANSPORTS ?? '',
         mapTransports: MAP_TRANSPORTS ?? [],
-        seqUrl: process.env.SEQ_URL,
+        seqUrl: process.env.SEQ_SERVER_URL,
+        seqApiKey: process.env.SEQ_API_KEY,
     };
 
     return new PinoLogger().init(loggerOptions);
