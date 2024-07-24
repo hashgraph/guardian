@@ -3,7 +3,7 @@ import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { SchemaImportExportHelper, checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
+import { SchemaImportExportHelper, checkForCircularDependency, deleteSchema, copySchemaAsync, createSchemaAndArtifacts, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -627,11 +627,7 @@ export async function schemaAPI(): Promise<void> {
                     );
                 }
 
-                // const users = new Users();
-                // const userAccount = await users.getUser(owner.username);
-                // const userId = userAccount.id.toString();
-                //
-                // await deleteSchema(id, owner, emptyNotifier());
+                await deleteSchema(id, owner, emptyNotifier());
 
                 if (needResult) {
                     const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
