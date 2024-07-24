@@ -513,4 +513,22 @@ export class WebSocketService {
     public getServicesStatesArray(): any[] {
         return this.serviesStates;
     }
+
+    public getServiceStateObservable(serviceName: string): Observable<boolean> {
+        return new Observable<boolean>((observer) => {
+            const checkState = () => {
+                const currentService = this.serviesStates.find((s: { serviceName: string; states: string[]; }) => s.serviceName === serviceName && s.states.includes('READY'));
+                if (currentService) {
+                    observer.next(true);
+                    observer.complete();
+                }
+            };
+
+            const subscription = this.servicesReady.subscribe(() => checkState());
+
+            checkState();
+
+            return () => subscription.unsubscribe();
+        });
+    }
 }

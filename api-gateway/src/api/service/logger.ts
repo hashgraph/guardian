@@ -7,6 +7,7 @@ import { InternalServerErrorDTO, LogFilterDTO, LogResultDTO } from '#middlewares
 import { UseCache, InternalException } from '#helpers';
 import axios from 'axios';
 import { PinoLogger } from '@guardian/common';
+import process from 'process';
 
 @Injectable()
 export class LoggerService {
@@ -162,6 +163,41 @@ export class LoggerApi {
         } catch (error) {
             await InternalException(error, this.logger);
         }
+    }
+
+    @Get('/seq')
+    @Auth(
+        Permissions.LOG_LOG_READ,
+    )
+    @ApiOperation({
+        summary: 'Return url on seq store.',
+        description: 'Return url on seq store. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            properties: {
+                seq_url: {
+                    type: 'string',
+                    example: 'http://localhost:5341',
+                },
+            },
+        },
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getSeqUrl(): Promise<{ seq_url: string | null }> {
+        const isSeqTransport = process.env.TRANSPORTS.includes('SEQ');
+
+        if (isSeqTransport && process.env.SEQ_URL_FRONT) {
+            return { seq_url: process.env.SEQ_URL_FRONT };
+        }
+
+        return { seq_url: null };
     }
 }
 

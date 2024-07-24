@@ -212,7 +212,7 @@ export class WebSocketsService {
         const channel = new WebSocketsServiceChannel();
 
         const statuses = {
-            LOGGER_SERVICE: [],
+            // LOGGER_SERVICE: [],
             GUARDIAN_SERVICE: [],
             AUTH_SERVICE: [],
             WORKER: [],
