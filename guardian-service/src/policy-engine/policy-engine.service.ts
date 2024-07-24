@@ -286,6 +286,7 @@ export class PolicyEngineService {
                         case 'Running': {
                             test.status = PolicyTestStatus.Running;
                             test.progress = Math.floor(index / count * 100);
+                            test.resultId = null;
                             test.result = null;
                             test.error = null;
                             break;
@@ -303,13 +304,23 @@ export class PolicyEngineService {
                         }
                         case 'Error': {
                             test.status = PolicyTestStatus.Failure;
+                            test.resultId = null;
                             test.result = null;
                             test.progress = null;
                             test.error = error;
                             break;
                         }
                         case 'Finished': {
-                            return;
+                            if (test.status === PolicyTestStatus.Running) {
+                                test.status = PolicyTestStatus.Stopped;
+                                test.resultId = null;
+                                test.result = null;
+                                test.progress = null;
+                                test.error = null;
+                                break;
+                            } else {
+                                return;
+                            }
                         }
                         default: {
                             return;
