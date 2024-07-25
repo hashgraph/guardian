@@ -1,5 +1,10 @@
 # ↔️ Live Project Data Migration UI
 
+1. [Step By Step Process](live-project-data-migration-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](live-project-data-migration-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## 1. Exporting Policy Data
 
 Data migration feature allows transfer of some or all policy artefacts and/or state into another policy (on the same of different Guardian instance) by exporting into and then importing the .data file.
@@ -49,3 +54,7 @@ When state migration is selected block mapping could be used to optimize the mig
 For Policies with dynamic tokens mapping of token templates might be required.
 
 <figure><img src="../../../.gitbook/assets/image (605).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/stSudc82pZU?si=Nsv6RyM6I\_NpRvwE\&t=110)
