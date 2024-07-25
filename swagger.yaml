@@ -11541,12 +11541,12 @@ paths:
           example: Active
           schema:
             enum:
-              - ALL
-              - DRAFT
               - DRY-RUN
+              - DRAFT
               - PUBLISH_ERROR
-              - DISCONTINUED
               - PUBLISH
+              - DISCONTINUED
+              - DEMO
             type: string
       responses:
         '200':
