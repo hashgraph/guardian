@@ -1,6 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration, OldSecretManager, SecretManager } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, Logger, MessageBrokerChannel, Migration, OldSecretManager, SecretManager, ValidateConfiguration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -72,6 +72,8 @@ Promise.all([
         await new RoleService().setConnection(cn).init();
         new RoleService().registerListeners();
 
+        const validator = new ValidateConfiguration();
+
         if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
             await new MeecoAuthService().setConnection(cn).init();
             new MeecoAuthService().registerListeners();
@@ -83,18 +85,33 @@ Promise.all([
 
         await new OldSecretManager().setConnection(cn).init();
         const secretManager = SecretManager.New();
-        let { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-        if (!ACCESS_TOKEN_SECRET) {
-            ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-            await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET });
-        }
 
-        state.updateState(ApplicationStates.READY);
-        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
-        if (Number.isInteger(maxPayload)) {
-            new LargePayloadContainer().runServer();
-        }
-        new Logger().info('auth service started', ['AUTH_SERVICE']);
+        validator.setValidator(async () => {
+            let {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth');
+            if (!ACCESS_TOKEN_SECRET) {
+                ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+                if (ACCESS_TOKEN_SECRET.length < 8) {
+                    return false;
+                }
+                await secretManager.setSecrets('secretkey/auth', {ACCESS_TOKEN_SECRET});
+            }
+        })
+
+        validator.setValidAction(async () => {
+            state.updateState(ApplicationStates.READY);
+            const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+            if (Number.isInteger(maxPayload)) {
+                new LargePayloadContainer().runServer();
+            }
+            new Logger().info('auth service started', ['AUTH_SERVICE']);
+        })
+
+        validator.setInvalidAction(async () => {
+            await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+            new Logger().error('Auth service not configured', ['AUTH_SERVICE']);
+        })
+
+
     } catch (error) {
         console.error(error.message);
         process.exit(1);

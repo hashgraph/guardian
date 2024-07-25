@@ -14,7 +14,7 @@ data:
     # Ecosystem Defined Variables
     HEDERA_NET="testnet"
     PREUSED_HEDERA_NET="testnet"
-    ACCESS_TOKEN_SECRET="youraccesstokensecret"
+    ACCESS_TOKEN_SECRET="..."
     MQ_ADDRESS="localhost"
     DB_HOST="localhost"
 
@@ -44,7 +44,7 @@ data:
     HASHICORP_ADDRESS="http://localhost:8200"
     HASHICORP_NAMESPACE="admin"
     HASHICORP_ENCRIPTION_ALG="sha512"
-    
+
 metadata:
   labels:
     io.kompose.service: auth-service

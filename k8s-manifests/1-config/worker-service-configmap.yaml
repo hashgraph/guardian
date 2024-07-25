@@ -13,7 +13,7 @@ data:
     SERVICE_CHANNEL="worker.1" # assigned at orkestrator level
     HEDERA_NET="testnet"
     PREUSED_HEDERA_NET="testnet"
-    ACCESS_TOKEN_SECRET="youraccesstokensecret"
+    ACCESS_TOKEN_SECRET="..."
     MQ_ADDRESS="localhost"
     MIN_PRIORITY="0"
     MAX_PRIORITY="20"
