@@ -41,7 +41,7 @@ import { importTag } from '../api/helpers/tag-import-export-helper.js';
 import { createHederaToken } from '../api/token.service.js';
 import { GuardiansService } from '../helpers/guardians.js';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
-import { deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
+import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 
 /**
@@ -552,7 +552,7 @@ export class PolicyEngine extends NatsService {
         });
         for (const schema of schemasToDelete) {
             if (schema.status === SchemaStatus.DRAFT) {
-                await deleteSchema(schema.id, user, notifier);
+                await deleteDemoSchema(schema.id, user, notifier);
             }
         }
 
@@ -999,7 +999,7 @@ export class PolicyEngine extends NatsService {
         let retVal = await DatabaseServer.updatePolicy(model);
         retVal = await PolicyImportExportHelper.updatePolicyComponents(retVal);
 
-        logger.info('Published Policy', ['GUARDIAN_SERVICE']);
+        logger.info('Run Policy', ['GUARDIAN_SERVICE']);
 
         return retVal;
     }
@@ -1395,7 +1395,8 @@ export class PolicyEngine extends NatsService {
         }
 
         notifier.completedAndStart('Update policy model');
-        const newPolicy = await this.dryRunPolicy(policy, owner, 'Demo', true);
+        const model = await DatabaseServer.getPolicyById(policy.id);
+        const newPolicy = await this.dryRunPolicy(model, owner, 'Demo', true);
         notifier.completedAndStart('Run policy');
         await this.generateModel(newPolicy.id.toString());
     }

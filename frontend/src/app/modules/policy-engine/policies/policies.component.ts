@@ -891,6 +891,7 @@ export class PoliciesComponent implements OnInit {
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
                                     last: btoa(location.href),
+                                    redir: String(!demo)
                                 },
                             });
                         }, (e) => {
@@ -904,6 +905,7 @@ export class PoliciesComponent implements OnInit {
                             this.router.navigate(['task', taskId], {
                                 queryParams: {
                                     last: btoa(location.href),
+                                    redir: String(!demo)
                                 },
                             });
                         }, (e) => {

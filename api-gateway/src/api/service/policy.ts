@@ -3064,6 +3064,52 @@ export class PolicyApi {
     }
 
     /**
+     * Get test
+     */
+    @Get('/:policyId/test/:testId')
+    @Auth(Permissions.POLICIES_POLICY_UPDATE)
+    @ApiOperation({
+        summary: 'Get policy test.',
+        description: `Get policy test. ${ONLY_SR}`,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'testId',
+        type: String,
+        description: 'Test Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyTestDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyTest(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('testId') testId: string
+    ) {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getPolicyTest(policyId, testId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error);
+        }
+    }
+
+    /**
      * Start test
      */
     @Post('/:policyId/test/:testId/start')

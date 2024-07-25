@@ -414,14 +414,14 @@
             justify-content: center;
             height: inherit;
             overflow: hidden;
-            transition: width 0.5s;
             width: 0%;
             border-top-right-radius: 8px;
             border-bottom-right-radius: 8px;
+            transition: width 1s ease-in-out;
 
             &::before {
                 content: "";
-                background-color: linear-gradient(135deg,
+                background: linear-gradient(135deg,
                         transparent 25%,
                         rgba(255, 255, 255, 0.5) 50%,
                         rgba(255, 255, 255, 0.5) 50%,

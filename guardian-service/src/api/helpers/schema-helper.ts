@@ -454,3 +454,30 @@ export async function deleteSchema(
     }
     await DatabaseServer.deleteSchemas(item.id);
 }
+
+/**
+ * Delete schema
+ * @param schemaId Schema ID
+ * @param owner
+ * @param notifier Notifier
+ */
+export async function deleteDemoSchema(
+    schemaId: any,
+    owner: IOwner,
+    notifier: INotifier,
+) {
+    if (!schemaId) {
+        return;
+    }
+
+    const item = await DatabaseServer.getSchema(schemaId);
+    if (!item) {
+        throw new Error('Schema not found');
+    }
+    if (item.status !== SchemaStatus.DRAFT && item.status !== SchemaStatus.ERROR) {
+        throw new Error('Schema is not in draft status');
+    }
+
+    notifier.info(`Delete schema ${item.name}`);
+    await DatabaseServer.deleteSchemas(item.id);
+}

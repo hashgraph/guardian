@@ -268,7 +268,7 @@ export class PolicyEngine extends NatsService {
         blockId: string,
         params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, {user, blockId, policyId, params});
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, { user, blockId, policyId, params });
     }
 
     /**
@@ -284,7 +284,7 @@ export class PolicyEngine extends NatsService {
         tag: string,
         params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, {user, tag, policyId, params});
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId, params });
     }
 
     /**
@@ -874,6 +874,24 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.ADD_POLICY_TEST, {
             policyId,
             zip,
+            owner
+        });
+    }
+
+    /**
+     * Start policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async getPolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_TEST, {
+            policyId,
+            testId,
             owner
         });
     }

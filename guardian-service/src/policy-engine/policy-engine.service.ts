@@ -883,7 +883,7 @@ export class PolicyEngineService {
                 RunFunctionAsync(async () => {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'delete');
-                    if(policy.status === PolicyType.DEMO) {
+                    if (policy.status === PolicyType.DEMO) {
                         notifier.result(await this.policyEngine.deleteDemoPolicy(policy, owner, notifier));
                     } else {
                         notifier.result(await this.policyEngine.deletePolicy(policy, owner, notifier));
@@ -1953,6 +1953,22 @@ export class PolicyEngineService {
                         },
                         buffer
                     );
+                    return new MessageResponse(test);
+                } catch (error) {
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_TEST,
+            async (msg: { policyId: string, testId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, testId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    const test = await DatabaseServer.getPolicyTest(policyId, testId);
+                    if (!test) {
+                        return new MessageError('Policy test does not exist.', 404);
+                    }
                     return new MessageResponse(test);
                 } catch (error) {
                     return new MessageError(error);
