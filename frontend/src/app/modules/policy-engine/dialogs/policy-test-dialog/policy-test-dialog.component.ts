@@ -42,6 +42,9 @@ export class PolicyTestDialog {
         this.lastUpdate = setInterval(() => {
             this.updateProgress();
         }, 5000)
+        setTimeout(() => {
+            this.updateProgress();
+        }, 10)
     }
 
     ngOnDestroy(): void {
