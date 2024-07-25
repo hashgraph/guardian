@@ -95,6 +95,7 @@ Promise.all([
                 }
                 await secretManager.setSecrets('secretkey/auth', {ACCESS_TOKEN_SECRET});
             }
+            return true;
         })
 
         validator.setValidAction(async () => {
@@ -110,6 +111,7 @@ Promise.all([
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
             new Logger().error('Auth service not configured', ['AUTH_SERVICE']);
         })
+        await validator.validate();
 
 
     } catch (error) {
