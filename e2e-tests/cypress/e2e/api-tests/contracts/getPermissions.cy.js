@@ -69,8 +69,17 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         method: METHOD.PUT,
                         url: API.ApiServer + API.Profiles + username,
                         body: {
-                            hederaAccountId: hederaAccountId,
-                            hederaAccountKey: hederaAccountKey
+                            parent: SRDid,
+                            hederaAccountId: response.body.id,
+                            hederaAccountKey: response.body.key,
+                            useFireblocksSigning: false,
+                            fireblocksConfig:
+                            {
+                                fireBlocksVaultId: "",
+                                fireBlocksAssetId: "",
+                                fireBlocksApiKey: "",
+                                fireBlocksPrivateiKey: ""
+                            }
                         },
                         headers: {
                             authorization: accessToken

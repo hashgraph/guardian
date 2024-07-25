@@ -1,5 +1,6 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Checks from "../../../support/checkingMethods";
 
 context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     const authorization = Cypress.env("authorization");
@@ -10,153 +11,6 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     let wContractId, rContractId, tokenId, policyId, hederaId, rConractUuid, retireRequestId, poolId;
     let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId, approveRegistrantBtnBlockId;
 
-    const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.at(0)?.contractId)
-                    whileWipeRequestCreating(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.at(0).contractId
-                    if (data !== dataToCompare)
-                        whileWipeRequestCreating(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileRetireRequestCreating = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.at(0)?.contractId)
-                    whileRetireRequestCreating(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.at(0).contractId
-                    if (data !== dataToCompare)
-                        whileRetireRequestCreating(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileApplicationCreating = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.uiMetaData?.title)
-                    whileApplicationCreating(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.uiMetaData.title
-                    if (data !== dataToCompare)
-                        whileApplicationCreating(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileApplicationApproving = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.fields)
-                    whileApplicationApproving(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.fields[0]?.title
-                    if (data !== dataToCompare)
-                        whileApplicationApproving(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileDeviceCreating = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.data)
-                    whileDeviceCreating(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.data[0]?.[optionKey]?.status
-                    if (data !== dataToCompare)
-                        whileDeviceCreating(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileDeviceApproving = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.data)
-                    whileDeviceApproving(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.data[0]?.[optionKey]?.status
-                    if (data !== dataToCompare)
-                        whileDeviceApproving(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileIssueRequestCreating = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.data)
-                    whileIssueRequestCreating(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.data[0]?.[optionKey]?.status
-                    if (data !== dataToCompare)
-                        whileIssueRequestCreating(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileIssueRequestApproving = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body?.data)
-                    whileIssueRequestApproving(dataToCompare, request, attempts)
-                else {
-                    let data = response.body.data[0]?.[optionKey]?.status
-                    if (data !== dataToCompare)
-                        whileIssueRequestApproving(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
-
-    const whileBalanceVerifying = (dataToCompare, request, attempts) => {
-        if (attempts < 100) {
-            attempts++
-            let balance
-            cy.wait(3000)
-            cy.request(request).then((response) => {
-                if (!response?.body)
-                    whileBalanceVerifying(dataToCompare, request, attempts)
-                else {
-                    for (let i = 0; i < response.body.length; i++) {
-                        if (response.body[i].tokenId === tokenId)
-                            balance = response.body[i].balance
-                    }
-                    if (balance !== dataToCompare)
-                        whileBalanceVerifying(dataToCompare, request, attempts)
-                }
-            })
-        }
-    }
 
     before("Create contracts, policy and register new user", () => {
         //Create retire contract and save id
@@ -305,9 +159,17 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                             method: METHOD.PUT,
                             url: API.ApiServer + API.Profiles + username,
                             body: {
-                                hederaAccountId: hederaId,
-                                hederaAccountKey: hederaAccountKey,
-                                parent: SRDid
+                                parent: SRDid,
+                                hederaAccountId: response.body.id,
+                                hederaAccountKey: response.body.key,
+                                useFireblocksSigning: false,
+                                fireblocksConfig:
+                                {
+                                    fireBlocksVaultId: "",
+                                    fireBlocksAssetId: "",
+                                    fireBlocksApiKey: "",
+                                    fireBlocksPrivateiKey: ""
+                                }
                             },
                             headers: {
                                 authorization: accessToken
@@ -443,7 +305,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }
 
-                whileApplicationCreating("Submitted for Approval", requestForApplicationCreationProgress, 0)
+                Checks.whileApplicationCreating("Submitted for Approval", requestForApplicationCreationProgress, 0)
             })
         })
 
@@ -500,7 +362,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }
 
-                whileApplicationApproving("Device Name", requestForApplicationApproveProgress, 0)
+                Checks.whileApplicationApproving("Device Name", requestForApplicationApproveProgress, 0)
             })
         })
 
@@ -544,8 +406,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         authorization: accessToken
                     }
                 }
-
-                whileDeviceCreating("Waiting for approval", requestForDeviceCreationProgress, 0)
+                Checks.whileDeviceCreating("Waiting for approval", requestForDeviceCreationProgress, 0)
             })
         })
 
@@ -603,7 +464,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }
 
-                whileDeviceApproving("Approved", requestForDeviceApproveProgress, 0)
+                Checks.whileDeviceApproving("Approved", requestForDeviceApproveProgress, 0)
             })
         })
 
@@ -664,7 +525,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         }
                     }
 
-                    whileIssueRequestCreating("Waiting for approval", requestForIssueCreationProgress, 0)
+                    Checks.whileIssueRequestCreating("Waiting for approval", requestForIssueCreationProgress, 0)
                 })
             })
         })
@@ -724,7 +585,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }
 
-                whileIssueRequestApproving("Approved", requestForIssueApproveProgress, 0)
+                Checks.whileIssueRequestApproving("Approved", requestForIssueApproveProgress, 0)
             })
         })
 
@@ -754,7 +615,27 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }
 
-                whileBalanceVerifying("10", requestForBalance, 0)
+                Checks.whileBalanceVerifying("10", requestForBalance, 91)
+            })
+            
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
+                body: {
+                    refreshToken: response.body.refreshToken
+                }
+            }).then((response) => {
+                accessToken = "Bearer " + response.body.accessToken
+
+                let requestForBalance = {
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.ListOfTokens,
+                    headers: {
+                        authorization: accessToken
+                    }
+                }
+
+                Checks.whileBalanceVerifying("10", requestForBalance, 91)
             })
         })
     })
@@ -793,7 +674,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 }
             }
 
-            whileWipeRequestCreating(wContractId, requestForWipeRequestCreationProgress, 0)
+            Checks.whileWipeRequestCreating(wContractId, requestForWipeRequestCreationProgress, 0)
         })
 
         before("Appove wipe request", () => {
@@ -876,7 +757,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 }
             }
 
-            whileRetireRequestCreating(rContractId, requestForRetireRequestCreationProgress, 0)
+            Checks.whileRetireRequestCreating(rContractId, requestForRetireRequestCreationProgress, 0)
         });
 
         it("Create retire request without auth token - Negative", () => {
@@ -987,7 +868,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 }
             }
 
-            whileWipeRequestCreating(wContractId, requestForWipeRequestCreationProgress, 0)
+            Checks.whileWipeRequestCreating(wContractId, requestForWipeRequestCreationProgress, 0)
         })
 
         it("Create retire request", () => {
@@ -1045,7 +926,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 }
             }
 
-            whileRetireRequestCreating(rContractId, requestForRetireRequestCreationProgress, 0)
+            Checks.whileRetireRequestCreating(rContractId, requestForRetireRequestCreationProgress, 0)
 
             cy.request({
                 method: METHOD.GET,

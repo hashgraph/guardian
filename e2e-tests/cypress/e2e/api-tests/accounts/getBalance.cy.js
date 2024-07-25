@@ -61,8 +61,6 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                                 authorization: accessToken
                             }
                         }).then((response) => {
-                            id = response.body.id;
-                            key = response.body.key;
                             cy.wait(3000)
                             cy.request({
                                 method: METHOD.PUT,
