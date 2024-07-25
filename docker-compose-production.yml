@@ -11,17 +11,6 @@ services:
     expose:
       - 27017
 
-  mongo-express:
-    image: mongo-express:1.0.2-20
-    expose:
-      - 8081
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_SITE_BASEURL: /mongo-admin # default credentials: admin/pass
-    depends_on:
-      - mongo
-
   cache:
     image: registry.redict.io/redict
     restart: always
@@ -136,7 +125,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./auth-service/Dockerfile.demo
+      dockerfile: ./auth-service/Dockerfile
     init: true
     ports:
       - '5005:5005'
@@ -159,7 +148,7 @@ services:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
-      dockerfile: ./api-gateway/Dockerfile.demo
+      dockerfile: ./api-gateway/Dockerfile
     init: true
     expose:
       - 3002
@@ -260,49 +249,21 @@ services:
     expose:
     - 3012
 
-  mrv-sender:
-    build:
-      context: .
-      dockerfile: ./mrv-sender/Dockerfile
-    init: true
-    ports:
-      - "5008:5008"
-    expose:
-      - 3005
-      - 5008
-
-  topic-viewer:
-    build:
-      context: .
-      dockerfile: ./topic-viewer/Dockerfile
-    init: true
-    expose:
-      - 3006
-      - 5009
-    ports:
-      - "5009:5009"
-
   web-proxy:
     build:
       context: .
-      dockerfile: ./web-proxy/Dockerfile.demo
+      dockerfile: ./web-proxy/Dockerfile.ci
     init: true
     environment:
       GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
       GATEWAY_HOST: api-gateway
       GATEWAY_PORT: 3002
-      MRV_SENDER_HOST: mrv-sender
-      MRV_SENDER_PORT: 3005
-      TOPIC_VIEWER_HOST: topic-viewer
-      TOPIC_VIEWER_PORT: 3006
     ports:
       - "3000:80"
     depends_on:
       - guardian-service
       - auth-service
       - api-gateway
-      - mrv-sender
-      - mongo-express
 
   prometheus:
     image: prom/prometheus:v2.44.0
