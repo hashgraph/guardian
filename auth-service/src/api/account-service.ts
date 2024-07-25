@@ -126,7 +126,9 @@ export class AccountService extends NatsService {
             const secretManager = SecretManager.New();
             const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
             try {
-                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, ACCESS_TOKEN_SECRET, {});
+                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, ACCESS_TOKEN_SECRET, {
+                    algorithms: ['RS256']
+                });
                 if (Date.now() > decryptedToken.expireAt) {
                     throw new Error('Token expired');
                 }
@@ -370,7 +372,9 @@ export class AccountService extends NatsService {
                         username: user.username,
                         did: user.did,
                         role: user.role
-                    }, ACCESS_TOKEN_SECRET);
+                    }, ACCESS_TOKEN_SECRET, {
+                        algorithm: 'RS256'
+                    });
                     return new MessageResponse({
                         username: user.username,
                         did: user.did,
@@ -404,7 +408,9 @@ export class AccountService extends NatsService {
                         id: tokenId,
                         name: user.username,
                         expireAt: Date.now() + parseInt(REFRESH_TOKEN_UPDATE_INTERVAL, 10)
-                    }, ACCESS_TOKEN_SECRET);
+                    }, ACCESS_TOKEN_SECRET, {
+                        algorithm: 'RS256'
+                    });
                     user.refreshToken = tokenId;
                     await new DataBaseHelper(User).save(user);
                     return new MessageResponse({
@@ -429,7 +435,9 @@ export class AccountService extends NatsService {
 
             const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
 
-            const decryptedToken = await util.promisify<string, any, Object, any>(verify)(refreshToken, ACCESS_TOKEN_SECRET, {});
+            const decryptedToken = await util.promisify<string, any, Object, any>(verify)(refreshToken, ACCESS_TOKEN_SECRET, {
+                algorithms: ['RS256']
+            });
             if (Date.now() > decryptedToken.expireAt) {
                 return new MessageResponse({})
             }
@@ -450,7 +458,9 @@ export class AccountService extends NatsService {
                 did: user.did,
                 role: user.role,
                 expireAt: Date.now() + parseInt(ACCESS_TOKEN_UPDATE_INTERVAL, 10)
-            }, ACCESS_TOKEN_SECRET);
+            }, ACCESS_TOKEN_SECRET, {
+                algorithm: 'RS256'
+            });
 
             return new MessageResponse({ accessToken });
         });
