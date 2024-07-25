@@ -1,7 +1,7 @@
 import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
 import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
-import { PolicyRole, PolicyType } from '@guardian/interfaces';
+import { PolicyHelper, PolicyRole, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
@@ -469,7 +469,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public setPolicyInstance(policyId: string, policy: Policy) {
                 this.policyInstance = policy;
                 this.policyId = policyId;
-                if (this.policyInstance && this.policyInstance.status === PolicyType.DRY_RUN) {
+                if (PolicyHelper.isDryRunMode(this.policyInstance)) {
                     this._dryRun = this.policyId;
                 } else {
                     this._dryRun = null;

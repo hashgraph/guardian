@@ -273,7 +273,7 @@ export async function findAndDryRunSchema(
     for (const name of names) {
         const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
         if (!field.type) {
-            throw new Error(`Field type is not set. Field: ${name}`);
+            throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
         }
         if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
             throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);

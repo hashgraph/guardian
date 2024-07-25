@@ -52,7 +52,13 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private subscription = new Subscription();
 
     public get isDryRun(): boolean {
-        return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
+        return (
+            this.policyInfo &&
+            (
+                this.policyInfo.status === PolicyType.DRY_RUN ||
+                this.policyInfo.status === PolicyType.DEMO
+            )
+        );
     }
 
     @ViewChild('recordController')

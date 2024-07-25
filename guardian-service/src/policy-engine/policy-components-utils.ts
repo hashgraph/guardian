@@ -1,4 +1,4 @@
-import { PolicyType } from '@guardian/interfaces';
+import { PolicyHelper, PolicyType } from '@guardian/interfaces';
 import { DatabaseServer, Policy } from '@guardian/common';
 import { IPolicyUser } from './policy-user.js';
 import { ExternalEvent } from './interfaces/external-event.js';
@@ -52,7 +52,7 @@ export class PolicyComponentsUtils {
             result.userRole = null;
             result.userGroup = null;
 
-            if (policy.status === PolicyType.DRY_RUN) {
+            if (PolicyHelper.isDryRunMode(policy)) {
                 const activeUser = await DatabaseServer.getVirtualUser(policyId);
                 if (activeUser) {
                     did = activeUser.did;
@@ -64,7 +64,7 @@ export class PolicyComponentsUtils {
                 result.userRole = 'Administrator';
             }
 
-            const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+            const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
             const db = new DatabaseServer(dryRun);
             const groups = await db.getGroupsByUser(policyId, did, {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']

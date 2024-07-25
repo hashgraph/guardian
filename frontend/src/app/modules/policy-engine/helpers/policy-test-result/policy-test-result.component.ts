@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import moment from 'moment';
 import { PolicyTestDialog } from '../../dialogs/policy-test-dialog/policy-test-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { PolicyType } from '@guardian/interfaces';
 
 /**
  * Help Icon
@@ -62,8 +63,8 @@ export class PolicyTestResult {
         }
     }
 
-    public getDate(date: string, status:string) {
-        if(status === 'Running') {
+    public getDate(date: string, status: string) {
+        if (status === 'Running') {
             return 'Running...'
         }
         let momentDate = moment(date);
@@ -89,15 +90,22 @@ export class PolicyTestResult {
     }
 
     public onRun(last: any) {
-        if((this.status === 'DRY-RUN' || this.status === 'DEMO')) {
+        if ((this.status === PolicyType.DRY_RUN || this.status === PolicyType.DEMO)) {
             this.runTest.emit({ policy: this.policy, test: last })
         }
     }
 
     public onAdd() {
-        if(!(this.status === 'PUBLISH' || this.status === 'DISCONTINUED')) {
+        if (!(this.status === 'PUBLISH' || this.status === 'DISCONTINUED')) {
             this.addTest.emit({ policy: this.policy })
         }
     }
-    
+
+    public isRun(policy: any): boolean {
+        return policy.status === PolicyType.DRY_RUN || policy.status === PolicyType.DEMO;
+    }
+
+    public isPublished(policy: any): boolean {
+        return policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED;
+    }
 }

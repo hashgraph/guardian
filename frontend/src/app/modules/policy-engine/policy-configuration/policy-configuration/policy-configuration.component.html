@@ -23,6 +23,7 @@
                 <div 
                     *ngIf="user.POLICIES_POLICY_CREATE"
                     class="top-toolbar-btn all-status" 
+                    [class.readonly-status]="policyTemplate.isDemo"
                     (click)="saveAsPolicy()" 
                     title="Save Policy">
                     <mat-icon>save</mat-icon>
@@ -62,6 +63,11 @@
                     <span class="publish-color">Published</span>
                 </div>
 
+                <div *ngIf="policyTemplate.isDemo" class="top-toolbar-btn top-toolbar-label">
+                    <mat-icon class="demo-color">public</mat-icon>
+                    <span class="demo-color">Demo</span>
+                </div>
+
                 <div class="delimiter"></div>
 
                 <div *ngIf="policyTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
@@ -71,7 +77,7 @@
                     <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                 </div>
 
-                <div *ngIf="policyTemplate.isDryRun || policyTemplate.isPublished" class="top-toolbar-btn all-status"
+                <div *ngIf="policyTemplate.isRun" class="top-toolbar-btn all-status"
                     [routerLink]="['/policy-viewer', policyId]">
                     <mat-icon>double_arrow</mat-icon>
                     <span>Go</span>

@@ -171,7 +171,7 @@ export class Running {
      * @public
      */
     public finished(): boolean {
-        let oldID = this._id;
+        const oldID = this._id;
         this._id = null;
         this._status = RunningStatus.Finished;
         this._lastError = null;
@@ -190,6 +190,20 @@ export class Running {
         this._lastError = message;
         this._endTime = Date.now();
         this._updateStatus(this._id).then();
+        return true;
+    }
+
+    /**
+     * Destroy
+     * @public
+     */
+    public async destroy(): Promise<boolean> {
+        const oldID = this._id;
+        this._id = null;
+        this._status = RunningStatus.Finished;
+        this._lastError = null;
+        this._endTime = Date.now();
+        await this._updateStatus(oldID);
         return true;
     }
 

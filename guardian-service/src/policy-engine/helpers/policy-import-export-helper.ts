@@ -5,6 +5,25 @@ import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 
+export interface ImportPolicyError {
+    /**
+     * Entity type
+     */
+    type?: string;
+    /**
+     * Schema uuid
+     */
+    uuid?: string;
+    /**
+     * Schema name
+     */
+    name?: string;
+    /**
+     * Error message
+     */
+    error?: string;
+}
+
 export interface ImportPolicyResult {
     /**
      * New Policy
@@ -13,7 +32,7 @@ export interface ImportPolicyResult {
     /**
      * Errors
      */
-    errors: any[]
+    errors: ImportPolicyError[]
 }
 
 export interface ImportTestResult {
@@ -110,13 +129,15 @@ export class PolicyImport {
 
         if (this.demo) {
             this.topicRow = new TopicConfig({
+                type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
                 owner: user.creator,
                 policyId: null,
                 policyUUID: null,
-                topicId: GenerateUUIDv4()
-            }, null, null)
+                topicId: `0.0.${Date.now()}${(Math.random()*1000).toFixed(0)}`
+            }, null, null);
+            await DatabaseServer.saveTopic(this.topicRow.toObject());
         } else if (versionOfTopicId) {
             this.topicRow = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicById(versionOfTopicId), true
@@ -158,11 +179,11 @@ export class PolicyImport {
     private async publishSystemSchemas(versionOfTopicId: string, user: IOwner) {
         if (this.demo) {
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-            this.schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
+            this.schemasResult = await SchemaImportExportHelper.importSystemSchema(
                 systemSchemas,
                 user,
                 {
-                    category: SchemaCategory.SYSTEM,
+                    category: SchemaCategory.POLICY,
                     topicId: this.topicRow.topicId,
                     skipGenerateId: false,
                     demo: this.demo
@@ -306,13 +327,11 @@ export class PolicyImport {
     }
 
     private async saveTopic(policy: Policy) {
-        if (!this.demo) {
-            this.notifier.completedAndStart('Saving topic in DB');
-            const row = await new DataBaseHelper(Topic).findOne({ topicId: this.topicRow.topicId })
-            row.policyId = policy.id.toString();
-            row.policyUUID = policy.uuid;
-            await new DataBaseHelper(Topic).update(row);
-        }
+        this.notifier.completedAndStart('Saving topic in DB');
+        const row = await new DataBaseHelper(Topic).findOne({ topicId: this.topicRow.topicId })
+        row.policyId = policy.id.toString();
+        row.policyUUID = policy.uuid;
+        await new DataBaseHelper(Topic).update(row);
     }
 
     private async saveArtifacts(policy: Policy) {
@@ -377,8 +396,8 @@ export class PolicyImport {
         this.notifier.completed();
     }
 
-    private async getErrors() {
-        const errors: any[] = [];
+    private async getErrors(): Promise<ImportPolicyError[]> {
+        const errors: ImportPolicyError[] = [];
         if (this.schemasResult.errors) {
             for (const error of this.schemasResult.errors) {
                 errors.push(error);
@@ -540,7 +559,7 @@ export class PolicyImportExportHelper {
      * Convert errors to string
      * @param errors
      */
-    public static errorsMessage(errors: any[]): string {
+    public static errorsMessage(errors: ImportPolicyError[]): string {
         const schemas: string[] = [];
         const tools: string[] = [];
         const others: string[] = []

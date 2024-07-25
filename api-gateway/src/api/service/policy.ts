@@ -1,6 +1,6 @@
 import { Auth, AuthUser } from '#auth';
 import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
+import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, TaskDTO } from '#middlewares';
@@ -2723,7 +2723,7 @@ export class PolicyApi {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         const policy = await engineService.accessPolicy(policyId, owner, 'read');
-        if (policy.status !== PolicyType.DRY_RUN) {
+        if (!PolicyHelper.isDryRunMode(policy)) {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
         try {

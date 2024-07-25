@@ -332,7 +332,6 @@ export async function createSchema(
     user: IOwner,
     notifier: INotifier
 ): Promise<SchemaCollection> {
-    console.log('--- createSchema ---')
     if (checkForCircularDependency(newSchema)) {
         throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
     }

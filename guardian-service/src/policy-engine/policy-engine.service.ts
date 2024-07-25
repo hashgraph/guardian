@@ -10,7 +10,8 @@ import {
     Schema,
     SchemaField,
     TopicType,
-    PolicyTestStatus
+    PolicyTestStatus,
+    PolicyHelper
 } from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
@@ -279,7 +280,7 @@ export class PolicyEngineService {
                 count: number,
                 result: any
             }) => {
-                if(!msg.id) {
+                if (!msg.id) {
                     return;
                 }
                 const test = await DatabaseServer.getPolicyTestByRecord(msg.id);
@@ -880,7 +881,13 @@ export class PolicyEngineService {
                 const { policyId, owner, task } = msg;
                 const notifier = await initNotifier(task);
                 RunFunctionAsync(async () => {
-                    notifier.result(await this.policyEngine.deletePolicy(policyId, owner, notifier));
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'delete');
+                    if(policy.status === PolicyType.DEMO) {
+                        notifier.result(await this.policyEngine.deleteDemoPolicy(policy, owner, notifier));
+                    } else {
+                        notifier.result(await this.policyEngine.deletePolicy(policy, owner, notifier));
+                    }
                 }, async (error) => {
                     notifier.error(error);
                 });
@@ -966,14 +973,17 @@ export class PolicyEngineService {
                     if (model.status === PolicyType.PUBLISH_ERROR) {
                         throw new Error(`Failed policy cannot be started in dry run mode`);
                     }
+                    if (model.status === PolicyType.DEMO) {
+                        throw new Error(`Policy imported in demo mode`);
+                    }
 
                     const errors = await this.policyEngine.validateModel(policyId);
                     const isValid = !errors.blocks.some(block => !block.isValid);
-
                     if (isValid) {
-                        const newPolicy = await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run');
+                        const newPolicy = await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run', false);
                         await this.policyEngine.generateModel(newPolicy.id.toString());
                     }
+
                     return new MessageResponse({
                         isValid,
                         errors
@@ -1192,6 +1202,9 @@ export class PolicyEngineService {
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return new MessageError(message);
                     }
+                    if (demo) {
+                        await this.policyEngine.startDemo(result.policy, owner);
+                    }
                     return new MessageResponse(true);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1233,6 +1246,9 @@ export class PolicyEngineService {
                         notifier.error(message);
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return;
+                    }
+                    if (demo) {
+                        await this.policyEngine.startDemo(result.policy, owner, notifier);
                     }
                     notifier.result({
                         policyId: result.policy.id,
@@ -1291,8 +1307,7 @@ export class PolicyEngineService {
                 owner: IOwner,
                 versionOfTopicId: string,
                 metadata: any,
-                demo: boolean,
-
+                demo: boolean
             }): Promise<IMessageResponse<boolean>> => {
                 try {
                     const { messageId, owner, versionOfTopicId, metadata, demo } = msg;
@@ -1306,6 +1321,9 @@ export class PolicyEngineService {
                         const message = PolicyImportExportHelper.errorsMessage(result.errors);
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return new MessageError(message);
+                    }
+                    if (demo) {
+                        await this.policyEngine.startDemo(result.policy, owner);
                     }
                     return new MessageResponse(true);
                 } catch (error) {
@@ -1341,6 +1359,9 @@ export class PolicyEngineService {
                             notifier.error(message);
                             new Logger().warn(message, ['GUARDIAN_SERVICE']);
                             return;
+                        }
+                        if (demo) {
+                            await this.policyEngine.startDemo(result.policy, owner, notifier);
                         }
                         notifier.result({
                             policyId: result.policy.id,
@@ -1486,7 +1507,7 @@ export class PolicyEngineService {
                     const { policyId, owner } = msg;
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
-                    if (model.status !== PolicyType.DRY_RUN) {
+                    if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     const users = await DatabaseServer.getVirtualUsers(policyId);
@@ -1503,7 +1524,7 @@ export class PolicyEngineService {
 
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
-                    if (model.status !== PolicyType.DRY_RUN) {
+                    if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
@@ -1562,7 +1583,7 @@ export class PolicyEngineService {
 
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
-                    if (model.status !== PolicyType.DRY_RUN) {
+                    if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
@@ -1587,7 +1608,7 @@ export class PolicyEngineService {
                     if (!policy.config) {
                         throw new Error('The policy is empty');
                     }
-                    if (policy.status !== PolicyType.DRY_RUN) {
+                    if (!PolicyHelper.isDryRunMode(policy)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     await DatabaseServer.clearDryRun(policyId, false);
@@ -1614,7 +1635,7 @@ export class PolicyEngineService {
                     const { policyId, type, owner, pageIndex, pageSize } = msg;
                     const model = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(model, owner, 'read');
-                    if (model.status !== PolicyType.DRY_RUN) {
+                    if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     const documents = await DatabaseServer
@@ -1698,7 +1719,12 @@ export class PolicyEngineService {
                     const { policyId, owner } = msg;
                     const policy = await DatabaseServer.getPolicy({
                         id: policyId,
-                        status: PolicyType.DRY_RUN,
+                        status: {
+                            $in: [
+                                PolicyType.DRY_RUN,
+                                PolicyType.DEMO
+                            ]
+                        }
                     });
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     const zip = await PolicyDataImportExport.exportVirtualKeys(owner, policy.id);
@@ -1721,7 +1747,12 @@ export class PolicyEngineService {
                     const { policyId, data, owner } = msg;
                     const policy = await DatabaseServer.getPolicy({
                         id: policyId,
-                        status: PolicyType.DRY_RUN,
+                        status: {
+                            $in: [
+                                PolicyType.DRY_RUN,
+                                PolicyType.DEMO
+                            ]
+                        }
                     });
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     await PolicyDataImportExport.importVirtualKeys(
@@ -1745,7 +1776,8 @@ export class PolicyEngineService {
                                 PolicyType.DRY_RUN,
                                 PolicyType.PUBLISH,
                                 PolicyType.DISCONTINUED,
-                            ],
+                                PolicyType.DEMO
+                            ]
                         },
                     });
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
@@ -1853,13 +1885,7 @@ export class PolicyEngineService {
 
                     const model = await DatabaseServer.getPolicy({ id: policyId });
                     await this.policyEngine.accessPolicy(model, owner, 'read');
-                    if (
-                        ![
-                            PolicyType.DISCONTINUED,
-                            PolicyType.PUBLISH,
-                            PolicyType.DRY_RUN,
-                        ].includes(model.status)
-                    ) {
+                    if (!PolicyHelper.isRun(model)) {
                         throw new Error(`Policy is not running`);
                     }
 
@@ -1878,14 +1904,14 @@ export class PolicyEngineService {
                             model.id,
                             model.topicId,
                             model.instanceTopicId,
-                            model.status === PolicyType.DRY_RUN
+                            PolicyHelper.isDryRunMode(model)
                         );
                     } else if (type === DocumentType.VP) {
                         loader = new VpDocumentLoader(
                             model.id,
                             model.topicId,
                             model.instanceTopicId,
-                            model.status === PolicyType.DRY_RUN
+                            PolicyHelper.isDryRunMode(model)
                         );
                     } else {
                         throw new Error(`Unknown type: ${type}`);
@@ -1907,6 +1933,9 @@ export class PolicyEngineService {
                     const { policyId, zip, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (PolicyHelper.isPublishMode(policy)) {
+                        throw new Error(`Policy is published`);
+                    }
                     const buffer = Buffer.from(zip.data);
                     const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
@@ -1936,6 +1965,9 @@ export class PolicyEngineService {
                     const { policyId, testId, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
                     const test = await DatabaseServer.getPolicyTest(policyId, testId);
                     if (!test) {
                         return new MessageError('Policy test does not exist.', 404);
@@ -1981,6 +2013,9 @@ export class PolicyEngineService {
                     const { policyId, testId, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
                     const test = await DatabaseServer.getPolicyTest(policyId, testId);
                     const guardiansService = new GuardiansService();
                     const result: string = await guardiansService
@@ -2005,6 +2040,9 @@ export class PolicyEngineService {
                     const { policyId, testId, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (PolicyHelper.isPublishMode(policy)) {
+                        throw new Error(`Policy is published`);
+                    }
                     await DatabaseServer.deletePolicyTest(policyId, testId);
                     return new MessageResponse(true);
                 } catch (error) {

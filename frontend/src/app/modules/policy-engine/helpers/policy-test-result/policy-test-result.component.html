@@ -10,19 +10,15 @@
         <button 
             class="guardian-icon-button re-run-btn" 
             (click)="onRun(last)"
-            [disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"    
+            [disabled]="!isRun(policy)"    
             pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
             [tooltipOptions]="{showDelay: 300}"
-            [tooltipDisabled]="(status === 'DRY-RUN' || status === 'DEMO')"
+            [tooltipDisabled]="isRun(policy)"
             tooltipPosition="top">
             <svg-icon
                 class="icon-btn svg-icon-16"
                 src="/assets/images/icons/16/re-run.svg"
-                [svgClass]="
-                    !(status === 'DRY-RUN' || status === 'DEMO') ?  
-                        'icon-color-disabled' :  
-                        'icon-color-primary'
-                    ">
+                [svgClass]="!isRun(policy) ? 'icon-color-disabled' : 'icon-color-primary'">
             </svg-icon>
         </button>
     </div>
@@ -30,20 +26,16 @@
         <button 
             (click)="onRun(last)"
             class="guardian-button guardian-button-primary run-btn"
-            [disabled]="!(status === 'DRY-RUN' || status === 'DEMO')"
+            [disabled]="!isRun(policy)"
             pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
             [tooltipOptions]="{showDelay: 300}"
-            [tooltipDisabled]="(status === 'DRY-RUN' || status === 'DEMO')"
+            [tooltipDisabled]="isRun(policy)"
             tooltipPosition="top">
             <div class="guardian-button-icon">
                 <svg-icon
                     class="icon-btn svg-icon-16"
                     src="/assets/images/icons/16/run-test.svg"
-                    [svgClass]="
-                        !(status === 'DRY-RUN' || status === 'DEMO') ?  
-                            'icon-color-disabled' :  
-                            'icon-color-secondary'
-                    ">
+                    [svgClass]="!isRun(policy) ? 'icon-color-disabled' : 'icon-color-secondary'">
                 </svg-icon>
             </div>
             <div class="guardian-button-label">Run Test</div>
@@ -54,20 +46,16 @@
     <button 
         (click)="onAdd()" 
         class="guardian-button guardian-button-secondary run-btn"
-        [disabled]="(status === 'PUBLISH' || status === 'DISCONTINUED')"
+        [disabled]="isPublished(policy)"
         pTooltip="Not possible to add test data to a published policy"
         [tooltipOptions]="{showDelay: 300}"
-        [tooltipDisabled]="!(status === 'PUBLISH' || status === 'DISCONTINUED')"
+        [tooltipDisabled]="!isPublished(policy)"
         tooltipPosition="top">
         <div class="guardian-button-icon">
             <svg-icon
                 class="icon-btn svg-icon-16"
                 src="/assets/images/icons/16/add-test.svg"
-                [svgClass]="
-                    (status === 'PUBLISH' || status === 'DISCONTINUED') ?  
-                        'icon-color-disabled' :  
-                        'icon-color-primary'
-                ">
+                [svgClass]="isPublished(policy) ? 'icon-color-disabled' : 'icon-color-primary'">
             </svg-icon>
         </div>
         <div class="guardian-button-label">Add Test</div>

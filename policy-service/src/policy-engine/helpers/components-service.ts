@@ -6,7 +6,7 @@ import {
     Schema as SchemaCollection,
     VcHelper
 } from '@guardian/common';
-import { GenerateUUIDv4, PolicyType, SchemaEntity } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyHelper, SchemaEntity } from '@guardian/interfaces';
 import { PrivateKey } from '@hashgraph/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
@@ -63,7 +63,7 @@ export class ComponentsService {
         this.owner = policy.owner;
         this.policyId = policyId;
         this.topicId = policy.topicId;
-        if (policy && policy.status === PolicyType.DRY_RUN) {
+        if (PolicyHelper.isDryRunMode(policy)) {
             this.dryRunId = policyId;
         } else {
             this.dryRunId = null;
@@ -301,6 +301,40 @@ export class ComponentsService {
             return old.finished();
         }
         return true;
+    }
+
+    /**
+     * Destroy Recording
+     */
+    public async destroyRecording(): Promise<boolean> {
+        if (this._recordingController) {
+            const old = this._recordingController;
+            this._recordingController = null;
+            return await old.destroy();
+        }
+        if (this._runningController) {
+            const old = this._runningController;
+            this._runningController = null;
+            return await old.destroy();
+        }
+        return false;
+    }
+
+    /**
+     * Destroy Running
+     */
+    public async destroyRunning(): Promise<boolean> {
+        if (this._recordingController) {
+            const old = this._recordingController;
+            this._recordingController = null;
+            return await old.destroy();
+        }
+        if (this._runningController) {
+            const old = this._runningController;
+            this._runningController = null;
+            return await old.destroy();
+        }
+        return false;
     }
 
     /**

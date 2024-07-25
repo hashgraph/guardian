@@ -10,7 +10,7 @@ import {
     Policy,
     RecordImportExport,
 } from '@guardian/common';
-import { IOwner, MessageAPI, PolicyEvents, PolicyType } from '@guardian/interfaces';
+import { IOwner, MessageAPI, PolicyEvents, PolicyHelper } from '@guardian/interfaces';
 import { GuardiansService } from '../helpers/guardians.js';
 
 /**
@@ -88,7 +88,7 @@ export async function checkPolicy(
     if (model.owner !== user.owner) {
         throw new Error('Invalid owner.');
     }
-    if (model.status !== PolicyType.DRY_RUN) {
+    if (!PolicyHelper.isDryRunMode(model)) {
         throw new Error(`Policy is not in Dry Run`);
     }
     return model;

@@ -80,6 +80,34 @@ export class RecordUtils {
     }
 
     /**
+     * Destroy recording
+     * @param policyId
+     * @public
+     * @static
+     */
+    public static async DestroyRecording(policyId: string): Promise<boolean> {
+        const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
+        if (!components) {
+            return false;
+        }
+        return await components.destroyRecording();
+    }
+
+    /**
+     * Destroy running
+     * @param policyId
+     * @public
+     * @static
+     */
+    public static async DestroyRunning(policyId: string): Promise<boolean> {
+        const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
+        if (!components) {
+            return true;
+        }
+        return await components.destroyRunning();
+    }
+
+    /**
      * Fast Forward
      * @param policyId
      * @param options

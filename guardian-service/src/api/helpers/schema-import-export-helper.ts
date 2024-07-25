@@ -409,7 +409,8 @@ export class SchemaImport {
         category: SchemaCategory,
         schemas: ISchema[],
         user: IOwner,
-        skipGenerateId: boolean
+        skipGenerateId: boolean,
+        system: boolean
     ) {
         this.notifier.info(`Found ${schemas.length} schemas`);
         for (const file of schemas) {
@@ -424,7 +425,7 @@ export class SchemaImport {
             file.topicId = this.topicId;
             file.status = this.demo ? SchemaStatus.DEMO : SchemaStatus.DRAFT;
             file.category = category;
-            file.readonly = false;
+            file.readonly = system;
             file.system = false;
             file.codeVersion = SchemaConverterUtils.VERSION;
             delete file.id;
@@ -479,6 +480,13 @@ export class SchemaImport {
                     error
                 });
             }
+        }
+    }
+
+    private async updateDefs(schemas: ISchema[]): Promise<void> {
+        for (const file of schemas) {
+            const schema = new Schema(file, true);
+            this.validatedSchemas.set(file.iri, schema);
         }
     }
 
@@ -586,17 +594,39 @@ export class SchemaImport {
 
         this.notifier.start('Import schemas');
 
-        console.log('---- resolveAccount ---')
         await this.resolveAccount(user);
-        console.log('---- resolveTopic ---')
         await this.resolveTopic(user, topicId);
-        console.log('---- dataPreparation ---')
-        await this.dataPreparation(category, components, user, skipGenerateId);
-        console.log('---- updateUUIDs ---')
+        await this.dataPreparation(category, components, user, skipGenerateId, false);
         await this.updateUUIDs(components);
-        console.log('---- validateDefs ---')
         await this.validateDefs(components);
-        console.log('---- saveSchemas ---')
+        await this.saveSchemas(components);
+
+        this.notifier.completed();
+
+        return {
+            schemasMap: this.schemasMapping,
+            errors: this.errors
+        };
+    }
+
+    public async importSystem(
+        components: ISchema[],
+        user: IOwner,
+        options: {
+            topicId: string,
+            category: SchemaCategory,
+            skipGenerateId?: boolean
+        },
+    ): Promise<ImportSchemaResult> {
+        const { topicId, category, skipGenerateId } = options;
+
+        this.notifier.start('Import schemas');
+
+        await this.resolveAccount(user);
+        await this.resolveTopic(user, topicId);
+        await this.dataPreparation(category, components, user, skipGenerateId, true);
+        await this.updateUUIDs(components);
+        await this.updateDefs(components);
         await this.saveSchemas(components);
 
         this.notifier.completed();
@@ -625,7 +655,7 @@ export class SchemaImport {
         const components = await this.resolveMessages(messageIds);
         const topics = new Set(components.map((s) => s.topicId));
 
-        await this.dataPreparation(category, components, user, skipGenerateId);
+        await this.dataPreparation(category, components, user, skipGenerateId, false);
         await this.updateUUIDs(components);
         await this.validateDefs(components);
         await this.saveSchemas(components);
@@ -801,5 +831,29 @@ export class SchemaImportExportHelper {
     ): Promise<ImportSchemaResult> {
         const helper = new SchemaImport(options.demo, notifier);
         return helper.importByMessage(messageIds, user, options);
+    }
+
+    /**
+     * Import schema by files
+     * @param files
+     * @param user
+     * @param options
+     * @param notifier
+     */
+    public static async importSystemSchema(
+        files: ISchema[],
+        user: IOwner,
+        options: {
+            topicId: string,
+            category: SchemaCategory,
+            skipGenerateId?: boolean,
+            outerSchemas?: { name: string, iri: string }[],
+            demo?: boolean
+        },
+        notifier: INotifier
+    ): Promise<ImportSchemaResult> {
+        const helper = new SchemaImport(options.demo, notifier);
+        helper.addExternalSchemas(options.outerSchemas);
+        return helper.importSystem(files, user, options);
     }
 }
