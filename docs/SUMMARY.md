@@ -290,7 +290,6 @@
         * [Comparing Policies](guardian/standard-registry/policies/policy-differentiation/policy-differentiation-apis/returns-result-of-policy-comparison.md)
         * [Searching Policies](guardian/standard-registry/policies/policy-differentiation/policy-differentiation-apis/searching-policies.md)
         * [Exports Comparison results](guardian/standard-registry/policies/policy-differentiation/policy-differentiation-apis/exports-comparison-results.md)
-        * [Page](guardian/standard-registry/policies/policy-differentiation/policy-differentiation-apis/page.md)
     * [🔍 Block/Policy Discoverability](guardian/standard-registry/policies/block-policy-discoverability/README.md)
       * [💻 Search Policy using UI](guardian/standard-registry/policies/block-policy-discoverability/search-policy-using-ui.md)
       * [⚙️ Search Policy APIs](guardian/standard-registry/policies/block-policy-discoverability/search-policy-apis/README.md)
