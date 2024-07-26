@@ -547,13 +547,10 @@ export class PolicyEngine extends NatsService {
 
         notifier.start('Delete schemas');
         const schemasToDelete = await DatabaseServer.getSchemas({
-            topicId: policyToDelete.topicId,
-            readonly: false
+            topicId: policyToDelete.topicId
         });
         for (const schema of schemasToDelete) {
-            if (schema.status === SchemaStatus.DRAFT) {
-                await deleteDemoSchema(schema.id, user, notifier);
-            }
+            await deleteDemoSchema(schema.id, user, notifier);
         }
 
         notifier.completedAndStart('Delete artifacts');
