@@ -14,7 +14,7 @@ import { InformService } from 'src/app/services/inform.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -31,6 +31,7 @@ import { ContractService } from 'src/app/services/contract.service';
 import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dialog.component';
 import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
 import { PublishPolicyDialog } from '../dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -504,6 +505,8 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
+    private subscription = new Subscription();
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -518,6 +521,7 @@ export class PoliciesComponent implements OnInit {
         private tokenService: TokenService,
         private analyticsService: AnalyticsService,
         private contractSerivce: ContractService,
+        private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
     ) {
@@ -528,9 +532,18 @@ export class PoliciesComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.subscription.add(
+            this.wsService.testSubscribe(((test) => {
+                this.updatePolicyTest(test);
+            }))
+        );
         this.loading = true;
         this.loadPolicy();
         this.handleTagsUpdate();
+    }
+
+    ngOnDestroy(): void {
+        this.subscription.unsubscribe();
     }
 
     private loadPolicy() {
@@ -1401,5 +1414,19 @@ export class PoliciesComponent implements OnInit {
     public onAddTest($event: any) {
         const { policy } = $event;
         this.addTest(policy);
+    }
+
+    private updatePolicyTest(event: any) {
+        const policy = this.policies?.find((e: any) => e.id === event.policyId);
+        if (!policy) {
+            return;
+        }
+        const test = policy.tests?.find((e: any) => e.id === event.id);
+        if (!policy) {
+            return;
+        }
+        test.date = event.date;
+        test.progress = event.progress;
+        test.status = event.status;
     }
 }

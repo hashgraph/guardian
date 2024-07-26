@@ -288,7 +288,7 @@
     button.guardian-icon-button[disabled],
     div.guardian-icon-button[disabled="true"] {
         cursor: default !important;
-        background-color: none !important;
+        background-color: transparent !important;
         box-shadow: none !important;
         filter: none !important;
     }

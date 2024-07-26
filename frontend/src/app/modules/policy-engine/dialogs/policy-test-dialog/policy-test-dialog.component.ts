@@ -4,6 +4,8 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import moment from 'moment';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { Subscription } from 'rxjs';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 @Component({
     selector: 'policy-test-dialog',
@@ -16,14 +18,17 @@ export class PolicyTestDialog {
     public tests: any[];
     public policyId: any;
     public status: string;
+    public isRunning: boolean;
     private lastUpdate: any;
     private expandMap: Set<string> = new Set<string>();
+    private subscription = new Subscription();
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
         private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
         private router: Router
     ) {
         this.policy = this.config.data?.policy;
@@ -38,22 +43,68 @@ export class PolicyTestDialog {
     }
 
     ngOnInit() {
-        this.loading = false;
+        this.subscription.add(
+            this.wsService.testSubscribe(((test) => {
+                const needRefresh = this.updateTest(test);
+                if (needRefresh) {
+                    this.updateProgress(false);
+                } else {
+                    this.updateData();
+                }
+            }))
+        );
+        this.loading = true;
+        this.updateProgress(true);
         this.lastUpdate = setInterval(() => {
-            this.updateProgress();
-        }, 5000)
-        setTimeout(() => {
-            this.updateProgress();
-        }, 10)
+            this.updateProgress(false);
+        }, 10000)
     }
 
     ngOnDestroy(): void {
         clearInterval(this.lastUpdate);
+        this.subscription.unsubscribe();
+    }
+
+    private updateTest(newTest: any) {
+        if (!newTest || !this.tests || !this.policy || this.policy.id !== newTest.policyId) {
+            return false;
+        }
+        const target = this.tests.find((t) => t.id === newTest.id);
+        if (!target) {
+            return false;
+        }
+
+        if (newTest.status !== 'Running') {
+            return true;
+        } else {
+            const needRefresh = target.status !== newTest.status;
+            target.date = newTest.date;
+            target.progress = newTest.progress;
+            target.status = newTest.status;
+            return needRefresh;
+        }
+    }
+
+    private updatePolicy(newPolicy: any) {
+        this.policy = Object.assign(this.policy, newPolicy);
+        if (newPolicy.tests) {
+            for (let index = 0; index < newPolicy.tests.length; index++) {
+                const old = this.tests[index];
+                const test = newPolicy.tests[index];
+                if (old && old.id === test.id) {
+                    Object.assign(this.tests[index], test);
+                } else {
+                    this.tests[index] = test;
+                }
+            }
+        }
     }
 
     private updateData() {
+        this.isRunning = false;
         for (const test of this.tests) {
             test.__result = this.getResults(test);
+            this.isRunning = this.isRunning || test.status === 'Running';
         }
     }
 
@@ -120,22 +171,22 @@ export class PolicyTestDialog {
         this.ref.close(null);
     }
 
-    public updateProgress() {
+    public updateProgress(loading: boolean) {
+        if (loading) {
+            this.loading = true;
+        }
         this.policyEngineService
             .policy(this.policyId)
             .subscribe((result) => {
-                this.policy = Object.assign(this.policy, result);
-                for (let index = 0; index < result.tests.length; index++) {
-                    const old = this.tests[index];
-                    const test = result.tests[index];
-                    if (old && old.id === test.id) {
-                        Object.assign(this.tests[index], test);
-                    } else {
-                        this.tests[index] = test;
-                    }
-                }
+                this.updatePolicy(result)
                 this.updateData();
+                if (loading) {
+                    this.loading = false;
+                }
             }, (e) => {
+                if (loading) {
+                    this.loading = false;
+                }
             });
     }
 
@@ -148,6 +199,9 @@ export class PolicyTestDialog {
                 const index = this.tests.findIndex((t: any) => t === item);
                 this.tests[index] = result;
                 this.tests = this.tests.slice();
+                if (this.policy) {
+                    this.policy.tests = this.tests;
+                }
                 this.updateData();
                 setTimeout(() => {
                     this.loading = false;
@@ -166,6 +220,9 @@ export class PolicyTestDialog {
                 const index = this.tests.findIndex((t: any) => t === item);
                 this.tests[index] = result;
                 this.tests = this.tests.slice();
+                if (this.policy) {
+                    this.policy.tests = this.tests;
+                }
                 this.updateData();
                 setTimeout(() => {
                     this.loading = false;
@@ -177,11 +234,17 @@ export class PolicyTestDialog {
 
     public deleteTest(item: any, $event: any) {
         $event.stopPropagation();
+        if (item.status === 'Running') {
+            return;
+        }
         this.loading = true;
         this.policyEngineService
             .deleteTest(this.policyId, item.id)
             .subscribe((result) => {
                 this.tests = this.tests.filter((t: any) => t !== item);
+                if (this.policy) {
+                    this.policy.tests = this.tests;
+                }
                 this.updateData();
                 setTimeout(() => {
                     this.loading = false;

@@ -10,7 +10,7 @@
         <button 
             class="guardian-icon-button re-run-btn" 
             (click)="onRun(last)"
-            [disabled]="!isRun(policy)"    
+            [disabled]="!isRun(policy) || isRunning"    
             pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
             [tooltipOptions]="{showDelay: 300}"
             [tooltipDisabled]="isRun(policy)"
@@ -26,7 +26,7 @@
         <button 
             (click)="onRun(last)"
             class="guardian-button guardian-button-primary run-btn"
-            [disabled]="!isRun(policy)"
+            [disabled]="!isRun(policy) || isRunning"
             pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
             [tooltipOptions]="{showDelay: 300}"
             [tooltipDisabled]="isRun(policy)"

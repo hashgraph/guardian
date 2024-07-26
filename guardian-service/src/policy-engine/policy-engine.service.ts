@@ -331,6 +331,15 @@ export class PolicyEngineService {
                         }
                     }
                     await DatabaseServer.updatePolicyTest(test);
+                    const evert = {
+                        id: test.id,
+                        policyId: test.policyId,
+                        date: test.date,
+                        progress: test.progress,
+                        status: test.status,
+                        user: { did: test.owner }
+                    };
+                    this.channel.publish('update-test', evert);
                 }
             })
 
@@ -1058,6 +1067,9 @@ export class PolicyEngineService {
                     }
                     if (model.status === PolicyType.DRAFT) {
                         throw new Error(`Policy already in draft`);
+                    }
+                    if (model.status === PolicyType.DEMO) {
+                        throw new Error(`Policy imported in demo mode`);
                     }
 
                     model.status = PolicyType.DRAFT;
@@ -1992,6 +2004,10 @@ export class PolicyEngineService {
                     if (!zip) {
                         return new MessageError('Policy test does not exist.', 404);
                     }
+                    const active = await DatabaseServer.getPolicyTestsByStatus(policyId, PolicyTestStatus.Running);
+                    if (active.length) {
+                        return new MessageError('Policy test is already running.', 500);
+                    }
 
                     await DatabaseServer.clearDryRun(policyId, false);
                     const users = await DatabaseServer.getVirtualUsers(policyId);
@@ -2033,6 +2049,10 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     const test = await DatabaseServer.getPolicyTest(policyId, testId);
+                    if (test.status !== PolicyTestStatus.Failure) {
+                        return new MessageError('Policy test not started.', 500);
+                    }
+
                     const guardiansService = new GuardiansService();
                     const result: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.STOP_RUNNING, policyId, null);

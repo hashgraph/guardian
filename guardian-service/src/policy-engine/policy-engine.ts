@@ -564,6 +564,9 @@ export class PolicyEngine extends NatsService {
             await DatabaseServer.removeArtifact(artifact);
         }
 
+        notifier.completedAndStart('Delete tests');
+        await DatabaseServer.deletePolicyTests(policyToDelete.id);
+
         notifier.completedAndStart('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyToDelete.id);
 
@@ -607,6 +610,9 @@ export class PolicyEngine extends NatsService {
         for (const artifact of artifactsToDelete) {
             await DatabaseServer.removeArtifact(artifact);
         }
+
+        notifier.completedAndStart('Delete tests');
+        await DatabaseServer.deletePolicyTests(policyToDelete.id);
 
         notifier.completedAndStart('Publishing delete policy message');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true);
@@ -1031,6 +1037,9 @@ export class PolicyEngine extends NatsService {
         }
         if (policy.status === PolicyType.DISCONTINUED) {
             throw new Error(`Policy is discontinued`);
+        }
+        if (policy.status === PolicyType.DEMO) {
+            throw new Error(`Policy imported in demo mode`);
         }
         if (!ModelHelper.checkVersionFormat(version)) {
             throw new Error('Invalid version format');

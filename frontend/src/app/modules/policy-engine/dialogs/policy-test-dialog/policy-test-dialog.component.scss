@@ -82,6 +82,24 @@
             }
         }
     }
+
+    .no-tests {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--color-grey-5, #848FA9);
+        text-align: center;
+        font-family: Inter, sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
 }
 
 .dialog-grid-expand-row {

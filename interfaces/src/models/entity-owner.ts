@@ -18,7 +18,6 @@ export class EntityOwner implements IOwner {
             this.parent = user.parent;
             this.username = user.username;
             this.id = user.id?.toString();
-            console.log('this.id', this.id);
             if (user.role === UserRole.USER) {
                 this.creator = user.did;
                 this.owner = user.parent;

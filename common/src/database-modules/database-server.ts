@@ -44,6 +44,7 @@ import {
     GenerateUUIDv4,
     IVC,
     MintTransactionStatus,
+    PolicyTestStatus,
     SchemaEntity,
     TokenType,
     TopicType,
@@ -3591,6 +3592,16 @@ export class DatabaseServer {
     }
 
     /**
+     * Get policy test
+     * @param policyId
+     * @param status
+     * @returns tests
+     */
+    public static async getPolicyTestsByStatus(policyId: string, status: PolicyTestStatus): Promise<PolicyTest[]> {
+        return await new DataBaseHelper(PolicyTest).find({ status, policyId });
+    }
+
+    /**
      * Get policy tests
      * @param policyI
      * @param id
@@ -3618,5 +3629,25 @@ export class DatabaseServer {
      */
     public static async updatePolicyTest(test: PolicyTest): Promise<PolicyTest> {
         return await new DataBaseHelper(PolicyTest).save(test);
+    }
+
+    /**
+     * Get policy tests
+     * @param policyId
+     * @param id
+     * @returns tests
+     */
+    public static async deletePolicyTests(policyId: string): Promise<void> {
+        await new DataBaseHelper(PolicyTest).delete({ policyId });
+    }
+
+    /**
+     * Get policy tests
+     * @param policyId
+     * @param id
+     * @returns tests
+     */
+    public static async removePolicyTests(tests: PolicyTest[]): Promise<void> {
+        await new DataBaseHelper(PolicyTest).remove(tests);
     }
 }

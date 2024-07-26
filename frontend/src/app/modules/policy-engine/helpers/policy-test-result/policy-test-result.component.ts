@@ -21,6 +21,7 @@ export class PolicyTestResult {
     public policyId: any;
     public status: any;
     public last: any;
+    public isRunning: boolean;
 
     constructor(
         private dialogService: DialogService,
@@ -42,10 +43,12 @@ export class PolicyTestResult {
     private update() {
         this.status = this.policy?.status;
         this.policyId = this.policy?.id;
+        this.isRunning = false;
         if (this.tests) {
             let last = null;
             let lastDate = -1;
             for (const test of this.tests) {
+                this.isRunning = this.isRunning || test.status === 'Running';
                 let momentDate = moment(test.date);
                 if (momentDate.isValid()) {
                     const date = momentDate.valueOf();

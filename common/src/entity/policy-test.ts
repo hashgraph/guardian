@@ -20,6 +20,10 @@ import { PolicyTestStatus } from '@guardian/interfaces';
     properties: ['policyId'],
     name: 'policy_id_index',
 })
+@Index({
+    properties: ['status', 'policyId'],
+    name: 'status_index',
+})
 export class PolicyTest extends BaseEntity {
     /**
      * Test UUID

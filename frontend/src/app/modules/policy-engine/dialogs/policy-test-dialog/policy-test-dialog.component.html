@@ -61,10 +61,12 @@
                                 <button 
                                     *ngIf="item.status === 'New' || item.status === 'Stopped'"
                                     (click)="runTest(item, $event)"
+                                    [disabled]="isRunning"
                                     class="guardian-button guardian-button-primary action-button">Run</button>
                                 <button 
                                     *ngIf="item.status === 'Success' || item.status === 'Failure'"
                                     (click)="runTest(item, $event)"
+                                    [disabled]="isRunning"
                                     class="guardian-button guardian-button-secondary action-button">Re-Run</button>
                                 <button 
                                     *ngIf="item.status === 'Running'"
@@ -73,12 +75,14 @@
                             </ng-container>
                         </div>
                         <div class="col-64 col-button">
-                            <div class="guardian-icon-button big delete-btn">
-                                <svg-icon
-                                    (click)="deleteTest(item, $event)"
+                            <div 
+                                class="guardian-icon-button big delete-btn" 
+                                [attr.disabled]="item.status === 'Running'"
+                                (click)="deleteTest(item, $event)">
+                                <svg-icon 
                                     class="icon-btn"
                                     src="/assets/images/icons/delete.svg"
-                                    svgClass="icon-color-delete">
+                                    [svgClass]="item.status === 'Running' ? 'icon-color-disabled' : 'icon-color-delete'">
                                 </svg-icon>
                             </div>
                         </div>
@@ -93,7 +97,9 @@
             </div>
         </div> 
 
-
+        <div *ngIf="!(tests && tests.length)" class="no-tests">
+            No Tests
+        </div>
     </div>
 </div>
 <div class="dialog-footer">
