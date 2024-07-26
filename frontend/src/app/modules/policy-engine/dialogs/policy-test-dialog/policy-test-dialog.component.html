@@ -36,7 +36,11 @@
                             </svg-icon>
                         </div>
                         <div class="col-200 col-text">
-                            <span class="col-text">{{getText(item.name)}}</span>
+                            <span 
+                                class="col-text"
+                                [pTooltip]="getText(item.name)"
+                                [tooltipOptions]="{showDelay: 300}"
+                                tooltipPosition="top">{{getText(item.name)}}</span>
                         </div>
                         <div class="col-180 col-text">
                             <span class="col-text">{{getDate(item.date)}}</span>

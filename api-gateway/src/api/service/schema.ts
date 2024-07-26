@@ -716,7 +716,7 @@ export class SchemaApi {
         @Query('category') category: string,
         @Query('topicId') topicId: string,
         @Query('schemaId') schemaId: string,
-    ): Promise<{schema: SchemaDTO, subSchemas: SchemaDTO[]} | {}> {
+    ): Promise<{ schema: SchemaDTO, subSchemas: SchemaDTO[] } | {}> {
         try {
             const guardians = new Guardians();
             if (!user.did) {
@@ -726,7 +726,7 @@ export class SchemaApi {
 
             let promiseSchema: Promise<ISchema | void> = new Promise<void>(resolve => resolve())
 
-            if(schemaId) {
+            if (schemaId) {
                 promiseSchema = guardians.getSchemaById(schemaId)
             }
 
