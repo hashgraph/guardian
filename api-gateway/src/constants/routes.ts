@@ -8,4 +8,5 @@ export const PREFIXES = {
     POLICIES: '/policies/',
     CONTRACTS: '/contracts/',
     TAGS: '/tags/',
+    IPFS: 'ipfs',
 };
