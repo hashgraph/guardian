@@ -6602,18 +6602,26 @@ paths:
             type: string
       requestBody:
         required: true
-        description: A zip file containing policy test.
+        description: Form data with tests.
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              type: string
+              type: array
+              items:
+                type: object
+                properties:
+                  tests:
+                    type: string
+                    format: binary
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PolicyTestDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyTestDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12023,6 +12031,10 @@ components:
           type: string
           description: Test UUID
           example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          description: Test Name
+          example: Test Name
         policyId:
           type: string
           description: Policy ID
@@ -12064,6 +12076,7 @@ components:
       required:
         - id
         - uuid
+        - name
         - policyId
         - owner
         - status
