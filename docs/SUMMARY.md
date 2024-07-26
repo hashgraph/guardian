@@ -587,6 +587,7 @@
 * [👾 Automation Testing](guardian/automation-testing/README.md)
   * [💻 Performing API Automation Testing](guardian/automation-testing/how-to-perform-api-automation-testing.md)
   * [💻 Performing UI Automation Testing](guardian/automation-testing/performing-ui-automation-testing.md)
+* [📕 Logging Configuration using Pino Library](guardian/logging-configuration-using-pino-library.md)
 * [📔 Guidance for Open Source Policy Submissions](guardian/guidance-for-open-source-policy.md)
 * [📝 Demo Guide](guardian/demo-guide/README.md)
   * [🔋 Renewable Energy Credits](guardian/demo-guide/renewable-energy-credits/README.md)
