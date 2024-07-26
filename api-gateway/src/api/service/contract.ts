@@ -5,6 +5,8 @@ import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiO
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
+import { PREFIXES } from '#constants';
+import { Request } from 'express';
 
 /**
  * Contracts api
@@ -112,14 +114,20 @@ export class ContractsApi {
     async createContract(
         @AuthUser() user: IAuthUser,
         @Body() body: ContractConfigDTO,
-        @Req() req: any
+        @Req() req: Request
     ): Promise<ContractDTO> {
         try {
             const owner = new EntityOwner(user);
             const { description, type } = body;
             const guardians = new Guardians();
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user))
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await guardians.createContract(owner, description, type);
         } catch (error) {
@@ -167,12 +175,22 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async importContract(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req: Request
     ): Promise<ContractDTO> {
         try {
             const owner = new EntityOwner(user);
             const { contractId, description } = body;
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.importContract(owner, contractId, description);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -254,10 +272,20 @@ export class ContractsApi {
     async removeContract(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.removeContract(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -307,11 +335,12 @@ export class ContractsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    // @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getWipeRequests(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('contractId') contractId?: string,
         @Query('pageIndex') pageIndex?: number,
@@ -326,6 +355,9 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
+
+            req.locals = contracts
+
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -364,10 +396,17 @@ export class ContractsApi {
     async enableWipeRequests(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.enableWipeRequests(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -406,10 +445,17 @@ export class ContractsApi {
     async disableWipeRequests(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.disableWipeRequests(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -448,10 +494,17 @@ export class ContractsApi {
     async approveWipeRequest(
         @AuthUser() user: IAuthUser,
         @Param('requestId') requestId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.approveWipeRequest(owner, requestId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -497,11 +550,18 @@ export class ContractsApi {
     async rejectWipeRequest(
         @AuthUser() user: IAuthUser,
         @Param('requestId') requestId: string,
+        @Req() req: Request,
         @Query('ban') ban?: boolean,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.rejectWipeRequest(
                 owner,
                 requestId,
@@ -544,10 +604,17 @@ export class ContractsApi {
     async clearWipeRequests(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.clearWipeRequests(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -593,11 +660,18 @@ export class ContractsApi {
     async wipeAddAdmin(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.addWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -643,11 +717,18 @@ export class ContractsApi {
     async wipeRemoveAdmin(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.removeWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -693,11 +774,18 @@ export class ContractsApi {
     async wipeAddManager(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.addWipeManager(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -743,11 +831,18 @@ export class ContractsApi {
     async wipeRemoveManager(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.removeWipeManager(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -793,11 +888,18 @@ export class ContractsApi {
     async wipeAddWiper(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.addWipeWiper(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -843,11 +945,18 @@ export class ContractsApi {
     async wipeRemoveWiper(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}wipe/requests`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.removeWipeWiper(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -888,11 +997,20 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async retireSyncPools(
         @AuthUser() user: IAuthUser,
-        @Param('contractId') contractId: string
+        @Param('contractId') contractId: string,
+        @Req() req: Request
     ): Promise<string> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.syncRetirePools(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -942,10 +1060,11 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     async getRetireRequests(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('contractId') contractId?: string,
         @Query('pageIndex') pageIndex?: number,
@@ -960,6 +1079,9 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
+
+            req.locals = contracts
+
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1015,10 +1137,11 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     async getRetirePools(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('contractId') contractId?: string,
         @Query('tokens') tokens?: string,
@@ -1035,6 +1158,9 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
+
+            req.locals = contracts
+
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1072,11 +1198,20 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async clearRetireRequests(
         @AuthUser() user: IAuthUser,
-        @Param('contractId') contractId: string
+        @Param('contractId') contractId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.clearRetireRequests(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1115,10 +1250,19 @@ export class ContractsApi {
     async clearRetirePools(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.clearRetirePools(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1160,11 +1304,20 @@ export class ContractsApi {
     async setRetirePool(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req: Request
     ): Promise<RetirePoolDTO> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.setRetirePool(owner, contractId, body);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1203,10 +1356,19 @@ export class ContractsApi {
     async unsetRetirePool(
         @AuthUser() user: IAuthUser,
         @Param('poolId') poolId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.unsetRetirePool(owner, poolId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1244,11 +1406,20 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async unsetRetireRequest(
         @AuthUser() user: IAuthUser,
-        @Param('requestId') requestId: string
+        @Param('requestId') requestId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.unsetRetireRequest(owner, requestId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1291,11 +1462,21 @@ export class ContractsApi {
     async retire(
         @AuthUser() user: IAuthUser,
         @Param('poolId') poolId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.retire(owner, poolId, body);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1333,11 +1514,20 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async approveRetire(
         @AuthUser() user: IAuthUser,
-        @Param('requestId') requestId: string
+        @Param('requestId') requestId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.approveRetire(owner, requestId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1376,11 +1566,20 @@ export class ContractsApi {
     @HttpCode(HttpStatus.OK)
     async cancelRetireRequest(
         @AuthUser() user: IAuthUser,
-        @Param('requestId') requestId: string
+        @Param('requestId') requestId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.cancelRetire(owner, requestId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1426,11 +1625,20 @@ export class ContractsApi {
     async retireAddAdmin(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.addRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1476,11 +1684,20 @@ export class ContractsApi {
     async retireRemoveAdmin(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.CONTRACTS}retire/requests`,
+                `${PREFIXES.CONTRACTS}retire/pools`,
+                `${PREFIXES.CONTRACTS}retire`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.removeRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1529,10 +1746,11 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     async getRetireVCs(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -1541,6 +1759,9 @@ export class ContractsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const [vcs, count] = await guardians.getRetireVCs(owner, pageIndex, pageSize);
+
+            req.locals = vcs
+
             return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
             await InternalException(error, this.logger);
