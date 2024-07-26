@@ -428,9 +428,9 @@ export class SchemaImport {
             file.readonly = system;
             file.system = false;
             file.codeVersion = SchemaConverterUtils.VERSION;
+
             delete file.id;
             delete file._id;
-            delete file.status;
 
             //Find external schemas by Title
             const defs = SchemaImportExportHelper.getDefDocuments(file);
@@ -505,8 +505,11 @@ export class SchemaImport {
             const schemaObject = DatabaseServer.createSchema(file);
             const errors = SchemaHelper.checkErrors(file as Schema);
             SchemaHelper.updateIRI(schemaObject);
+
             schemaObject.errors = errors;
-            schemaObject.status = errors?.length ? SchemaStatus.ERROR : SchemaStatus.DRAFT;
+            if (errors?.length) {
+                schemaObject.status = SchemaStatus.ERROR;
+            }
 
             const errorsCount = await DatabaseServer.getSchemasCount({
                 iri: {

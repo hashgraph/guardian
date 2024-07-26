@@ -19,7 +19,7 @@
                     <p-dropdown
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
-                        [options]="policies"
+                        [options]="allPolicies"
                         [showClear]="false"
                         class="policy-dropdown"
                         optionLabel="name"
@@ -219,6 +219,9 @@
                                 </div>
                                 <div *ngSwitchCase="'ERROR'">
                                     <span class="schema-status status-ERROR">Incomplete</span>
+                                </div>
+                                <div *ngSwitchCase="'DEMO'">
+                                    <span class="schema-status status-DEMO">Demo</span>
                                 </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
@@ -515,7 +518,7 @@
             <span>Copy</span>
         </button>
 
-        <button mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
+        <button *ngIf="ifCanEdit(element)" mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
             <mat-icon>settings</mat-icon>
             <span>Configuration</span>
         </button>

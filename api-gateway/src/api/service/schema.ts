@@ -950,6 +950,9 @@ export class SchemaApi {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
+            if (schema.status === SchemaStatus.DEMO) {
+                throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);
 
@@ -1020,6 +1023,9 @@ export class SchemaApi {
         }
         if (schema.status === SchemaStatus.PUBLISHED) {
             throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
+        if (schema.status === SchemaStatus.DEMO) {
+            throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
             const schemas = (await guardians.deleteSchema(schemaId, owner, true) as ISchema[]);
@@ -1108,6 +1114,9 @@ export class SchemaApi {
         if (schema.status === SchemaStatus.PUBLISHED) {
             throw new HttpException('Schema is published.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
+        if (schema.status === SchemaStatus.DEMO) {
+            throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         if (allVersion.findIndex(s => s.version === version) !== -1) {
             throw new HttpException('Version already exists.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
@@ -1191,6 +1200,10 @@ export class SchemaApi {
         RunFunctionAsync<ServiceError>(async () => {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 taskManager.addError(task.taskId, { code: 500, message: 'Schema is published.' });
+                return;
+            }
+            if (schema.status === SchemaStatus.DEMO) {
+                taskManager.addError(task.taskId, { code: 500, message: 'Schema imported in demo mode.' });
                 return;
             }
             const allVersion = await guardians.getSchemasByUUID(schema.uuid);
