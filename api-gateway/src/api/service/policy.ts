@@ -3035,29 +3035,53 @@ export class PolicyApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'A zip file containing policy test.',
+        description: 'Form data with tests.',
         required: true,
-        type: String
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    'tests': {
+                        type: 'string',
+                        format: 'binary',
+                    }
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        isArray: true,
         type: PolicyTestDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(PolicyTestDTO, InternalServerErrorDTO)
+    @UseInterceptors(AnyFilesInterceptor())
+    @HttpCode(HttpStatus.CREATED)
     async addPolicyTest(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() file: any
+        @UploadedFiles() files: any,
     ) {
         try {
+            if (!files) {
+                throw new HttpException('There are no files to upload', HttpStatus.BAD_REQUEST)
+            }
+            const uploadedTests = [];
             const engineService = new PolicyEngine();
-            return await engineService.addPolicyTest(policyId, file, new EntityOwner(user));
+            for (const file of files) {
+                if (file) {
+                    const result = await engineService.addPolicyTest(policyId, file, new EntityOwner(user));
+                    uploadedTests.push(result);
+                }
+            }
+            return uploadedTests;
         } catch (error) {
             await InternalException(error);
         }

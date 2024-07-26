@@ -247,13 +247,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.modulesService.exportInMessage(element.uuid)
             .subscribe(module => {
                 this.loading = false;
-                this.dialog.open(ExportPolicyDialog, {
+                this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Module',
                     width: '700px',
+                    styleClass: 'guardian-dialog',
                     data: {
-                        module
+                        module,
                     },
-                    closable: true,
-                })
+                });
             });
     }
 

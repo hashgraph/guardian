@@ -6,6 +6,7 @@
 
         <app-file-drag-n-drop 
             class="drag-n-drop"
+            [multiple]="multiple"
             [fileExtension]="fileExtension" 
             (onFileLoaded)="importFromFile($event)"
             [dropZoneLabel]="label"></app-file-drag-n-drop>

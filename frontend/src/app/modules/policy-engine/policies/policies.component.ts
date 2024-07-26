@@ -767,16 +767,17 @@ export class PoliciesComponent implements OnInit {
     public exportPolicy(policy?: any) {
         this.policyEngineService
             .exportInMessage(policy?.id)
-            .subscribe((exportedPolicy) =>
+            .subscribe((exportedPolicy) => {
                 this.dialogService.open(ExportPolicyDialog, {
-                    header: 'Export',
+                    showHeader: false,
+                    header: 'Export Policy',
                     width: '700px',
-                    styleClass: 'custom-dialog',
+                    styleClass: 'guardian-dialog',
                     data: {
                         policy: exportedPolicy,
                     },
-                })
-            );
+                });
+            });
     }
 
     public exportPolicyData(policy: any) {
@@ -1369,13 +1370,15 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy: item,
                 fileExtension: 'record',
-                label: 'Add test .record file'
+                label: 'Add test .record file',
+                multiple: true,
+                type: 'File' 
             }
         });
-        dialogRef.onClose.subscribe(async (arrayBuffer) => {
-            if (arrayBuffer) {
+        dialogRef.onClose.subscribe(async (files) => {
+            if (files) {
                 this.loading = true;
-                this.policyEngineService.addPolicyTest(item.id, arrayBuffer)
+                this.policyEngineService.addPolicyTest(item.id, files)
                     .subscribe((result) => {
                         this.loadAllPolicy();
                     }, (e) => {
@@ -1390,7 +1393,7 @@ export class PoliciesComponent implements OnInit {
         const dialogRef = this.dialogService.open(PolicyTestDialog, {
             showHeader: false,
             header: 'Policy Tests',
-            width: '1000px',
+            width: '1100px',
             styleClass: 'guardian-dialog',
             data: {
                 policy: item

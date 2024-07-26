@@ -254,13 +254,13 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             .subscribe(tool => {
                 this.loading = false;
                 this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Tool',
                     width: '700px',
-                    header: 'Export',
-                    styleClass: 'custom-dialog',
+                    styleClass: 'guardian-dialog',
                     data: {
                         tool
                     },
-                    closable: true
                 })
             });
     }

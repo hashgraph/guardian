@@ -82,7 +82,7 @@ export class PolicyTestResult {
         const dialogRef = this.dialogService.open(PolicyTestDialog, {
             showHeader: false,
             header: 'Policy Tests',
-            width: '1000px',
+            width: '1100px',
             styleClass: 'guardian-dialog',
             data: {
                 policy: this.policy,

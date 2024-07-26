@@ -868,12 +868,12 @@ export class PolicyEngine extends NatsService {
      */
     public async addPolicyTest(
         policyId: string,
-        zip: Buffer,
+        file: any,
         owner: IOwner
     ): Promise<boolean> {
         return await this.sendMessage(PolicyEngineEvents.ADD_POLICY_TEST, {
             policyId,
-            zip,
+            file,
             owner
         });
     }

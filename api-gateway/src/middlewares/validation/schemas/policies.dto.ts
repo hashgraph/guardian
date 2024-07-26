@@ -25,6 +25,15 @@ export class PolicyTestDTO {
 
     @ApiProperty({
         type: 'string',
+        description: 'Test Name',
+        example: 'Test Name'
+    })
+    @IsOptional()
+    @IsString()
+    name?: string;
+
+    @ApiProperty({
+        type: 'string',
         description: 'Policy ID',
         example: Examples.DB_ID
     })

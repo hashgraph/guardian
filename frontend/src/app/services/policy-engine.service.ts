@@ -334,13 +334,13 @@ export class PolicyEngineService {
         );
     }
 
-    public addPolicyTest(policyId: string, testFile: any): Observable<any> {
-        return this.http.post<any[]>(`${this.url}/${policyId}/test/`, testFile, {
-            headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
-        });
-    }
+    // public addPolicyTest(policyId: string, testFile: any): Observable<any> {
+    //     return this.http.post<any[]>(`${this.url}/${policyId}/test/`, testFile, {
+    //         headers: {
+    //             'Content-Type': 'binary/octet-stream'
+    //         }
+    //     });
+    // }
 
     public runTest(policyId: string, testId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/start`, null);
@@ -356,5 +356,13 @@ export class PolicyEngineService {
 
     public deleteTest(policyId: string, testId: string): Observable<any> {
         return this.http.delete<any>(`${this.url}/${policyId}/test/${testId}`);
+    }
+
+    public addPolicyTest(policyId: string, files: File[]): Observable<any[]> {
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('tests', file);
+        }
+        return this.http.post<any[]>(`${this.url}/${policyId}/test/`, formData);
     }
 }

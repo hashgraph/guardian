@@ -16,10 +16,11 @@
         <div *ngIf="tests && tests.length" class="dialog-grid-container">
             <div class="dialog-grid-header">
                 <div class="col-44"></div>
-                <div class="col-200 col-text">Start Date</div>
+                <div class="col-200 col-text">Name</div>
+                <div class="col-180 col-text">Start Date</div>
                 <div class="col-auto col-text">Duration</div>
-                <div class="col-135 col-text">Status</div>
-                <div class="col-200">Results</div>
+                <div class="col-120 col-text">Status</div>
+                <div class="col-140">Results</div>
                 <div class="col-120">Operations</div>
                 <div class="col-64"></div>
             </div>
@@ -34,12 +35,19 @@
                                 svgClass="icon-color-disabled">
                             </svg-icon>
                         </div>
-                        <div class="col-200 col-text">{{getDate(item.date)}}</div>
-                        <div class="col-auto col-text">{{getTime(item.duration)}}</div>
-                        <div class="col-135 col-button">
+                        <div class="col-200 col-text">
+                            <span class="col-text">{{getText(item.name)}}</span>
+                        </div>
+                        <div class="col-180 col-text">
+                            <span class="col-text">{{getDate(item.date)}}</span>
+                        </div>
+                        <div class="col-auto col-text">
+                            <span class="col-text">{{getTime(item.duration)}}</span>
+                        </div>
+                        <div class="col-120 col-button">
                             <div class="guardian-label status-label-{{item.status}} action-button">{{item.status}}</div>
                         </div>
-                        <div class="col-200">
+                        <div class="col-140">
                             <div *ngIf="item.status==='Running'" class="results">
                                 <div class="progress-bar">
                                     <div class="progress-bar-value" [style.width.%]="item.progress"></div>

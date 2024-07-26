@@ -1940,19 +1940,20 @@ export class PolicyEngineService {
 
         //#region Tests
         this.channel.getMessages<any, any>(PolicyEngineEvents.ADD_POLICY_TEST,
-            async (msg: { policyId: string, zip: any, owner: IOwner }) => {
+            async (msg: { policyId: string, file: any, owner: IOwner }) => {
                 try {
-                    const { policyId, zip, owner } = msg;
+                    const { policyId, file, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'read');
                     if (PolicyHelper.isPublishMode(policy)) {
                         throw new Error(`Policy is published`);
                     }
-                    const buffer = Buffer.from(zip.data);
+                    const buffer = Buffer.from(file.buffer);
                     const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
                         {
                             uuid: GenerateUUIDv4(),
+                            name: file.filename.split('.')[0],
                             policyId,
                             owner: owner.creator,
                             status: PolicyTestStatus.New,
@@ -2049,7 +2050,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
                     const test = await DatabaseServer.getPolicyTest(policyId, testId);
-                    if (test.status !== PolicyTestStatus.Failure) {
+                    if (test.status !== PolicyTestStatus.Running) {
                         return new MessageError('Policy test not started.', 500);
                     }
 

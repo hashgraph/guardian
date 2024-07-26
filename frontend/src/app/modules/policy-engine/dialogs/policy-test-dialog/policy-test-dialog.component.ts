@@ -121,6 +121,14 @@ export class PolicyTestDialog {
         }
     }
 
+    public getText(text: string) {
+        if (text) {
+            return text;
+        } else {
+            return 'N\\A';
+        }
+    }
+
     public getTime(duration: number) {
         if (!duration) {
             return 'N\\A';

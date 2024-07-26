@@ -32,6 +32,12 @@ export class PolicyTest extends BaseEntity {
     uuid?: string;
 
     /**
+     * Test Name
+     */
+    @Property({ nullable: true })
+    name?: string;
+
+    /**
      * Policy Id
      */
     @Property({ nullable: true })
