@@ -474,9 +474,6 @@ export async function deleteDemoSchema(
     if (!item) {
         throw new Error('Schema not found');
     }
-    if (item.status !== SchemaStatus.DRAFT && item.status !== SchemaStatus.ERROR) {
-        throw new Error('Schema is not in draft status');
-    }
 
     notifier.info(`Delete schema ${item.name}`);
     await DatabaseServer.deleteSchemas(item.id);
