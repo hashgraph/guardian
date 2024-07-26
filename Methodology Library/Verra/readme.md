@@ -20,6 +20,7 @@ Methodologies often refer to modules or tools, which include specific methodolog
 | Policy | Company Name | ETA |
 |---|---|---:|
 | VMR0006 | Envision |July 31st|
+| VMR0047 | Evercity |July 31st|
 
 **Following are the Testnet and Mainnet timestamps for CDM Methodologies**
 
