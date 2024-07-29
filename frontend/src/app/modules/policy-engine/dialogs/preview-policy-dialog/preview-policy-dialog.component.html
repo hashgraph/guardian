@@ -1,0 +1,218 @@
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+
+    <div *ngIf="policy">
+        <div class="group-container">
+            <div class="group-header">Import mode</div>
+            <div class="field-container">
+                <div class="field-value">
+                    <div class="change-mode">
+                        <div (click)="onSelectMode('new')">
+                            <p-radioButton 
+                                (onChange)="onChangeType()"
+                                [(ngModel)]="mode"
+                                value="new"
+                                id="new-mode"
+                                inputId="new-mode"
+                                name="mode"></p-radioButton>
+                            <label class="radio-label" for="new-mode">As New Policy</label>
+                        </div>
+                        <div (click)="onSelectMode('version')" 
+                            [attr.disabled]="!policies.length">
+                            <p-radioButton 
+                                (onChange)="onChangeType()"
+                                [disabled]="!policies.length"
+                                [(ngModel)]="mode"
+                                value="version"
+                                id="version-mode"
+                                inputId="version-mode"
+                                name="mode"></p-radioButton>
+                            <label class="radio-label" for="version-mode">As New Version</label>
+                        </div>
+                        <div (click)="onSelectMode('demo')">
+                            <p-radioButton 
+                                (onChange)="onChangeType()"
+                                [(ngModel)]="mode"
+                                value="demo"
+                                id="demo-mode"
+                                inputId="demo-mode"
+                                name="mode"></p-radioButton>
+                            <label class="radio-label" for="demo-mode">In Demo mode</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="mode==='version'" class="field-container">
+                <div class="field-header">Version of</div>
+                <div class="field-value">
+                    <p-dropdown
+                        [(ngModel)]="versionOfTopicId"
+                        [options]="policies"
+                        appendTo="body"
+                        class="version-of-dropdown"
+                        id="versionOf"
+                        optionLabel="name"
+                        optionValue="topicId"
+                        placeholder="Select Policy"
+                ></p-dropdown>
+                </div>
+            </div>
+        </div>
+        <div class="group-container">
+            <div class="group-header">Details</div>
+            <div class="field-container">
+                <div class="field-header">Description</div>
+                <div class="field-value">{{ policy.description || 'N\\A' }}</div>
+            </div>
+            <div class="field-container">
+                <div class="field-header">Version</div>
+                <div class="field-value">{{ policy.version || 'N\\A' }}</div>
+                <div *ngIf="newVersions?.length" class="field-value">
+                    <app-new-versions
+                        (onClick)="onNewVersionClick($event)"
+                        [newVersions]="newVersions"
+                        class="version-container__new-versions"
+                        type="policy"
+                ></app-new-versions>
+                </div>
+            </div>
+            <div class="field-container">
+                <div class="field-header">Tag</div>
+                <div class="field-value">{{ policy.policyTag || 'N\\A' }}</div>
+            </div>
+            <div class="field-container">
+                <div class="field-header">Creator</div>
+                <div class="field-value" [title]="policy.owner">{{ policy.owner || 'N\\A' }}</div>
+            </div>
+            <div class="field-container">
+                <div class="field-header">Involved Roles</div>
+                <div class="field-value">Standard Registry, {{ policyGroups }}</div>
+            </div>
+            <div *ngIf="schemas" class="field-container">
+                <div class="field-header">Schemas Overview</div>
+                <div class="field-value">{{ schemas }}</div>
+            </div>
+            <div *ngIf="tokens" class="field-container">
+                <div class="field-header">Tokens</div>
+                <div class="field-value">{{ tokens }}</div>
+            </div>
+            <div *ngIf="similar" class="field-container">
+                <div class="field-header">Similar Policies</div>
+                <div class="field-value">{{ similar }}</div>
+            </div>
+            <div *ngIf="toolConfigs?.length" class="field-container">
+                <div class="field-header">Tools</div>
+                <form [formGroup]="toolForm">
+                    <div *ngFor="let toolConfig of toolConfigs" class="field-input p-float-label">
+                        <input id="float-input" class="input" type="text" pInputText [formControlName]="toolConfig.messageId">
+                        <label for="float-input">{{toolConfig.name}}</label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="module">
+        <div class="group-container">
+            <div class="group-header">Details</div>
+            <div class="field-container">
+                <div class="field-header">Description</div>
+                <div class="field-value">{{ module.description || 'N\\A' }}</div>
+            </div>
+            <div class="field-container">
+                <div class="field-header">Creator</div>
+                <div class="field-value" [title]="module.owner">{{ module.owner || 'N\\A' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="tool">
+        <div class="group-container">
+            <div class="group-header">Details</div>
+            <div class="field-container">
+                <div class="field-header">Name</div>
+                <div class="field-value">{{ tool.name || 'N\\A' }}</div>
+            </div>
+            <div class="field-container">
+                <div class="field-header">Description</div>
+                <div class="field-value">{{ tool.description || 'N\\A' }}</div>
+            </div>
+            <div class="field-container">
+                <div class="field-header">Creator</div>
+                <div class="field-value" [title]="tool.owner">{{ tool.owner || 'N\\A' }}</div>
+            </div>
+            <div *ngIf="!isFile" class="field-container">
+                <div class="field-header">Tools</div>
+                <div class="field-value">{{ tools }}</div>
+            </div>
+            <div *ngIf="isFile" class="field-container">
+                <div class="field-header">Tools</div>
+                <form [formGroup]="toolForm!">
+                    <div class="field-input p-float-label" *ngFor="let toolConfig of toolConfigs">
+                        <input id="float-input" class="input" type="text" pInputText [formControlName]="toolConfig.messageId">
+                        <label for="float-input">{{toolConfig.name}}</label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="xlsx">
+        <div class="group-container">
+            <div class="group-header">Details</div>
+            <div *ngIf="schemas" class="field-container">
+                <div class="field-header">Schemas Overview</div>
+                <div class="field-value">{{ schemas }}</div>
+            </div>
+            <div *ngIf="tools" class="field-container">
+                <div class="field-header">Tools Overview</div>
+                <div class="field-value">{{ tools }}</div>
+            </div>
+            <div *ngIf="errors?.length" class="field-container">
+                <div class="field-header">Warning & Errors</div>
+                <div class="field-value field-array">
+                    <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
+                        <div>{{error.worksheet}}</div>
+                        <div>{{error.__path}}</div>
+                        <div>
+                            <div>{{error.text}}</div>
+                            <div *ngIf="error.message && error.message !== error.text">{{error.message}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button
+                    (click)="onClose()"
+                    class="button secondary"
+                    label="Close"
+                    pButton
+            ></button>
+        </div>
+        <div [ngSwitch]="!!(xlsx && errors?.length)">
+            <button
+                    *ngSwitchCase="true"
+                    (click)="onImport()"
+                    class="button"
+                    label="Skip & Import"
+                    pButton
+            ></button>
+            <button
+                    *ngSwitchCase="false"
+                    [disabled]="inValid"
+                    (click)="onImport()"
+                    class="button"
+                    label="Import"
+                    pButton
+            ></button>
+        </div>
+    </div>
+</div>

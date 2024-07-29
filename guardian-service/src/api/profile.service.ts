@@ -132,7 +132,7 @@ async function setupUserProfile(
     notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
         const changeRole = await users.setDefaultUserRole(username, profile.parent);
-        await serDefaultRole(changeRole, EntityOwner.sr(profile.parent))
+        await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
     notifier.completedAndStart('Set up wallet');
@@ -181,8 +181,7 @@ async function checkAndPublishSchema(
     srUser: IOwner,
     messageServer: MessageServer,
     logger: Logger,
-    notifier: INotifier,
-    userId?: string
+    notifier: INotifier
 ): Promise<void> {
     let schema = await new DataBaseHelper(SchemaCollection).findOne({
         entity,
@@ -200,7 +199,7 @@ async function checkAndPublishSchema(
             logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE']);
             schema.creator = userDID;
             schema.owner = userDID;
-            const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
+            const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier);
             await new DataBaseHelper(SchemaCollection).save(item);
         }
     }
@@ -346,7 +345,7 @@ async function createUserProfile(
     notifier.completedAndStart('Publish Schema');
     let schemaObject: Schema;
     try {
-        const srUser: IOwner = EntityOwner.sr(userDID);
+        const srUser: IOwner = EntityOwner.sr(user.id.toString(), userDID);
         await checkAndPublishSchema(
             SchemaEntity.STANDARD_REGISTRY,
             topicConfig,
@@ -354,8 +353,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.USER,
@@ -364,8 +362,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.RETIRE_TOKEN,
@@ -374,8 +371,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.ROLE,
@@ -384,8 +380,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.USER_PERMISSIONS,
@@ -394,8 +389,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         if (entity) {
             const schema = await new DataBaseHelper(SchemaCollection).findOne({
@@ -481,7 +475,7 @@ async function createUserProfile(
     // -----------------------
     if (user.role === UserRole.STANDARD_REGISTRY) {
         messageServer.setTopicObject(topicConfig);
-        await createDefaultRoles(userDID, currentDidDocument, messageServer, notifier, user.id.toString());
+        await createDefaultRoles(user.id.toString(), userDID, currentDidDocument, messageServer, notifier);
     }
 
     notifier.completed();
@@ -494,17 +488,16 @@ async function createUserProfile(
  * @param didDocument
  * @param messageServer
  * @param notifier
- * @param userId
  */
 async function createDefaultRoles(
+    userId: string,
     did: string,
     didDocument: CommonDidDocument,
     messageServer: MessageServer,
-    notifier: INotifier,
-    userId?: string
+    notifier: INotifier
 ): Promise<void> {
     notifier.completedAndStart('Create roles');
-    const owner = EntityOwner.sr(did);
+    const owner = EntityOwner.sr(userId, did);
     const users = new Users();
     const vcHelper = new VcHelper();
     const roles = [{

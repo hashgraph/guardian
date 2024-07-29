@@ -1,5 +1,5 @@
 import { IAuthUser } from '@guardian/common';
-import { AssignedEntityType, Permissions, UserPermissions } from '@guardian/interfaces';
+import { AssignedEntityType, Permissions, PolicyType, UserPermissions } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
@@ -555,7 +555,7 @@ export class PermissionsApi {
     @ApiQuery({
         name: 'status',
         type: String,
-        enum: ['ALL', 'DRAFT', 'DRY-RUN', 'PUBLISH_ERROR', 'DISCONTINUED', 'PUBLISH'],
+        enum: PolicyType,
         description: 'Filter by status',
         required: false,
         example: 'Active'

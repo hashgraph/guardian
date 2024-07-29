@@ -28,9 +28,21 @@ export class PreviewPolicyDialog {
     public errors!: any;
     public toolForm!: FormGroup;
     public isFile?: boolean;
+    public mode: string = 'new';
 
-    public get valid(): boolean {
-        return (this.policy || this.module || this.tool) && this.toolForm.valid;
+    public get inValid(): boolean {
+        if(!(this.policy || this.module || this.tool)) {
+            return true;
+        }
+        if(!this.toolForm.valid) {
+            return true;
+        }
+        if(this.mode === 'version') {
+            if(!this.versionOfTopicId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     constructor(
@@ -156,6 +168,7 @@ export class PreviewPolicyDialog {
         this.ref.close({
             versionOfTopicId: this.versionOfTopicId,
             tools: this.toolForm?.value,
+            demo: this.mode === 'demo'
         });
     }
 
@@ -164,5 +177,13 @@ export class PreviewPolicyDialog {
             messageId,
             tools: this.toolForm?.value,
         });
+    }
+
+    onChangeType() {
+
+    }
+
+    onSelectMode(mode:string) {
+        this.mode = mode;
     }
 }

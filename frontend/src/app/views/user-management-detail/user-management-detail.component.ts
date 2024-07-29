@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
-import { UserPermissions } from '@guardian/interfaces';
+import { PolicyType, UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PermissionsGroup } from 'src/app/utils/index';
@@ -39,27 +39,27 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         value: 'ALL',
     }, {
         name: 'Draft',
-        value: 'DRAFT',
+        value: PolicyType.DRAFT,
         color: 'grey'
     },
     {
         name: 'Dry Run',
-        value: 'DRY-RUN',
+        value: PolicyType.DRY_RUN,
         color: 'grey'
     },
     {
         name: 'Publish Error',
-        value: 'PUBLISH_ERROR',
+        value: PolicyType.PUBLISH_ERROR,
         color: 'red'
     },
     {
         name: 'Discontinued',
-        value: 'DISCONTINUED',
+        value: PolicyType.DISCONTINUED,
         color: 'red'
     },
     {
         name: 'Published',
-        value: 'PUBLISH',
+        value: PolicyType.PUBLISH,
         color: 'green'
     }];
     public needSave: boolean = false;
@@ -346,14 +346,14 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public getColor(status: string, expired: boolean = false) {
         switch (status) {
-            case 'DRAFT':
+            case PolicyType.DRAFT:
                 return 'grey';
-            case 'DRY-RUN':
+            case PolicyType.DRY_RUN:
                 return 'grey';
-            case 'DISCONTINUED':
-            case 'PUBLISH_ERROR':
+            case PolicyType.DISCONTINUED:
+            case PolicyType.PUBLISH_ERROR:
                 return 'red';
-            case 'PUBLISH':
+            case PolicyType.PUBLISH:
                 return expired ? 'yellow' : 'green';
             default:
                 return 'grey';
@@ -362,15 +362,15 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public getLabelStatus(status: string, expired: boolean = false) {
         switch (status) {
-            case 'DRAFT':
+            case PolicyType.DRAFT:
                 return 'Draft';
-            case 'DRY-RUN':
+            case PolicyType.DRY_RUN:
                 return 'Dry Run';
-            case 'PUBLISH_ERROR':
+            case PolicyType.PUBLISH_ERROR:
                 return 'Publish Error';
-            case 'PUBLISH':
+            case PolicyType.PUBLISH:
                 return `Published${expired ? '*' : ''}`;
-            case 'DISCONTINUED':
+            case PolicyType.DISCONTINUED:
                 return `Discontinued`;
             default:
                 return 'Incorrect status';

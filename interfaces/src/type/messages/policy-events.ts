@@ -28,6 +28,7 @@ export enum PolicyEvents {
     SET_VIRTUAL_USER = 'policy-event-login-virtual-user',
     GET_POLICY_NAVIGATION = 'policy-event-get-policy-navigation',
     RECORD_UPDATE_BROADCAST = 'policy-event-record-update-broadcast',
+    TEST_UPDATE_BROADCAST = 'policy-event-test-update-broadcast',
     GET_RECORD_STATUS = 'policy-event-get-record-status',
     START_RECORDING = 'policy-event-start-recording',
     STOP_RECORDING = 'policy-event-stop-recording',

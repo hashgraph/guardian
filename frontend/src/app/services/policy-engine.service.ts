@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { MigrationConfig, PolicyToolMetadata } from '@guardian/interfaces';
@@ -120,41 +120,46 @@ export class PolicyEngineService {
     public pushImportByMessage(
         messageId: string,
         versionOfTopicId?: string,
-        metadata?: PolicyToolMetadata
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
-        var query = versionOfTopicId
-            ? `?versionOfTopicId=${versionOfTopicId}`
-            : '';
+        let params = new HttpParams();
+        if (versionOfTopicId) {
+            params = params.set('versionOfTopicId', versionOfTopicId);
+        }
+        if (demo) {
+            params = params.set('demo', demo);
+        }
         return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/push/import/message${query}`,
-            { messageId, metadata }
+            `${this.url}/push/import/message`,
+            { messageId, metadata },
+            { params }
         );
     }
 
     public pushImportByFile(
         policyFile: any,
         versionOfTopicId?: string,
-        metadata?: PolicyToolMetadata
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
     ): Observable<{ taskId: string; expectation: number }> {
-        var query = versionOfTopicId
-            ? `?versionOfTopicId=${versionOfTopicId}`
-            : '';
+        let params = new HttpParams();
+        if (versionOfTopicId) {
+            params = params.set('versionOfTopicId', versionOfTopicId);
+        }
+        if (demo) {
+            params = params.set('demo', demo);
+        }
+
         const formData = new FormData();
-        formData.append(
-            'policyFile',
-            new Blob([policyFile], { type: 'application/octet-stream' })
-        );
+        formData.append('policyFile', new Blob([policyFile], { type: 'application/octet-stream' }));
         if (metadata) {
-            formData.append(
-                'metadata',
-                new Blob([JSON.stringify(metadata)], {
-                    type: 'application/json',
-                })
-            );
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
         }
         return this.http.post<{ taskId: string; expectation: number }>(
-            `${this.url}/push/import/file-metadata${query}`,
-            formData
+            `${this.url}/push/import/file-metadata`,
+            formData,
+            { params }
         );
     }
 
@@ -327,5 +332,37 @@ export class PolicyEngineService {
                 },
             }
         );
+    }
+
+    // public addPolicyTest(policyId: string, testFile: any): Observable<any> {
+    //     return this.http.post<any[]>(`${this.url}/${policyId}/test/`, testFile, {
+    //         headers: {
+    //             'Content-Type': 'binary/octet-stream'
+    //         }
+    //     });
+    // }
+
+    public runTest(policyId: string, testId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/start`, null);
+    }
+
+    public stopTest(policyId: string, testId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/stop`, null);
+    }
+
+    public getTestDetails(policyId: string, testId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/test/${testId}/details`);
+    }
+
+    public deleteTest(policyId: string, testId: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/${policyId}/test/${testId}`);
+    }
+
+    public addPolicyTest(policyId: string, files: File[]): Observable<any[]> {
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('tests', file);
+        }
+        return this.http.post<any[]>(`${this.url}/${policyId}/test/`, formData);
     }
 }

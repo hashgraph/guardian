@@ -1,10 +1,12 @@
 <div class="center-container">
     <div class="task-viewer">
         <div class="header">{{ action }}...</div>
-        <div class="progress-bar">
-            <p-progressBar [showValue]="false" [value]="progressValue"></p-progressBar>
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-bar-value" [style.width.%]="progressValue"></div>
+            </div>
         </div>
-        <div class="status-items">
+        <div #status class="status-items">
             <ng-container *ngFor="let status of statuses">
                 <div *ngIf="isInfo(status)" class="info-part">INFO: {{ status.message }}</div>
                 <div *ngIf="!isInfo(status)" class="non-info-part">

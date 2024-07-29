@@ -268,7 +268,7 @@ export class PolicyEngine extends NatsService {
         blockId: string,
         params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, {user, blockId, policyId, params});
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA, { user, blockId, policyId, params });
     }
 
     /**
@@ -284,7 +284,7 @@ export class PolicyEngine extends NatsService {
         tag: string,
         params?: any
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, {user, tag, policyId, params});
+        return await this.sendMessage(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId, params });
     }
 
     /**
@@ -391,18 +391,21 @@ export class PolicyEngine extends NatsService {
      * @param owner
      * @param versionOfTopicId
      * @param metadata
+     * @param demo
      */
     public async importFile(
         zip: Buffer,
         owner: IOwner,
         versionOfTopicId?: string,
-        metadata?: PolicyToolMetadata
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
     ): Promise<boolean> {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE, {
             zip,
             owner,
             versionOfTopicId,
             metadata,
+            demo
         });
     }
 
@@ -410,20 +413,22 @@ export class PolicyEngine extends NatsService {
      * Async load policy file for import
      * @param zip
      * @param owner
-     * @param versionOfTopicId
      * @param task
+     * @param versionOfTopicId
      * @param metadata
+     * @param demo
      */
     public async importFileAsync(
         zip: Buffer,
         owner: IOwner,
-        versionOfTopicId: string,
         task: NewTask,
-        metadata?: PolicyToolMetadata
+        versionOfTopicId?: string,
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC,
-            { zip, owner, versionOfTopicId, task, metadata }
+            { zip, owner, task, versionOfTopicId, metadata, demo }
         );
     }
 
@@ -433,18 +438,18 @@ export class PolicyEngine extends NatsService {
      * @param owner
      * @param versionOfTopicId
      * @param metadata
-     * @param userId
+     * @param demo
      */
     public async importMessage(
         messageId: string,
         owner: IOwner,
-        versionOfTopicId: string,
+        versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        userId?: string
+        demo?: boolean
     ): Promise<boolean> {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE,
-            {messageId, owner, versionOfTopicId, metadata, userId}
+            { messageId, owner, versionOfTopicId, metadata, demo }
         );
     }
 
@@ -455,19 +460,19 @@ export class PolicyEngine extends NatsService {
      * @param versionOfTopicId
      * @param task
      * @param metadata
-     * @param userId
+     * @param demo
      */
     public async importMessageAsync(
         messageId: string,
         owner: IOwner,
-        versionOfTopicId: string,
         task: NewTask,
+        versionOfTopicId?: string,
         metadata?: PolicyToolMetadata,
-        userId?: string
+        demo?: boolean
     ) {
         return await this.sendMessage(
             PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC,
-            {messageId, owner, versionOfTopicId, task, metadata, userId}
+            { messageId, owner, versionOfTopicId, task, metadata, demo }
         );
     }
 
@@ -853,5 +858,113 @@ export class PolicyEngine extends NatsService {
             policyId,
             owner,
         })
+    }
+
+    /**
+     * Add policy test
+     * @param policyId
+     * @param zip
+     * @param owner
+     */
+    public async addPolicyTest(
+        policyId: string,
+        file: any,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.ADD_POLICY_TEST, {
+            policyId,
+            file,
+            owner
+        });
+    }
+
+    /**
+     * Start policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async getPolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_TEST, {
+            policyId,
+            testId,
+            owner
+        });
+    }
+
+    /**
+     * Start policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async startPolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.START_POLICY_TEST, {
+            policyId,
+            testId,
+            owner
+        });
+    }
+
+    /**
+     * Stop policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async stopPolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.STOP_POLICY_TEST, {
+            policyId,
+            testId,
+            owner
+        });
+    }
+
+    /**
+     * Delete policy test
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async deletePolicyTest(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_POLICY_TEST, {
+            policyId,
+            testId,
+            owner
+        });
+    }
+
+    /**
+     * Get test details
+     * @param policyId
+     * @param testId
+     * @param owner
+     */
+    public async getTestDetails(
+        policyId: string,
+        testId: string,
+        owner: IOwner
+    ): Promise<boolean> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_TEST_DETAILS, {
+            policyId,
+            testId,
+            owner
+        });
     }
 }
