@@ -29,6 +29,7 @@ The mechanism stimulates sustainable development and emission reductions, while 
 | Policy | Company Name | ETA |
 |---|---|---:|
 | ACM0006 | Envision |TBD |
+| AR-AM0014 | Evercity | 1 Aug |
 
 **Following are the Testnet and Mainnet timestamps for CDM Methodologies**
 
