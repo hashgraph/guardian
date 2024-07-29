@@ -58,6 +58,7 @@ The digitization of VM0033 on the **Hedera Guardian** enhances its utility by:
 VM0033 on Guardian platform is set to become a powerful tool for scaling up tidal wetland and seagrass restoration efforts globally, contributing significantly to both climate change mitigation and coastal ecosystem conservation.
 
 ## Policy Workflow
+![Slide1 3](https://github.com/user-attachments/assets/f8432966-2274-41ca-b0da-f631a7229511)
 
 
 ## Policy Guide
