@@ -5,13 +5,13 @@ import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, Schema, SchemaCategory
 /**
  * Publish schema tags
  * @param schema
- * @param user
- * @param userId
+ * @param owner
+ * @param root
  */
 export async function publishSchemaTags(
     schema: SchemaCollection,
-    user: IRootConfig,
-    userId?: string
+    owner: IOwner,
+    root: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: schema.id,
@@ -22,12 +22,12 @@ export async function publishSchemaTags(
 
     const topic = await DatabaseServer.getTopicById(schema.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
         tag.target = schema.messageId;
-        await publishTag(tag, messageServer, userId);
+        await publishTag(tag, messageServer, owner);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -35,13 +35,13 @@ export async function publishSchemaTags(
 /**
  * Publish policy tags
  * @param policy
- * @param user
- * @param userId
+ * @param owner
+ * @param root
  */
 export async function publishPolicyTags(
     policy: PolicyCollection,
-    user: IRootConfig,
-    userId?: string
+    owner: IOwner,
+    root: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: policy.id,
@@ -52,12 +52,12 @@ export async function publishPolicyTags(
 
     const topic = await DatabaseServer.getTopicById(policy.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
         tag.target = policy.messageId;
-        await publishTag(tag, messageServer, userId);
+        await publishTag(tag, messageServer, owner);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -65,13 +65,13 @@ export async function publishPolicyTags(
 /**
  * Publish token tags
  * @param token
- * @param user
- * @param userId
+ * @param owner
+ * @param root
  */
 export async function publishTokenTags(
     token: TokenCollection,
-    user: IRootConfig,
-    userId?: string
+    owner: IOwner,
+    root: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: token.id,
@@ -82,12 +82,12 @@ export async function publishTokenTags(
 
     const topic = await DatabaseServer.getTopicById(token.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
         tag.target = token.tokenId;
-        await publishTag(tag, messageServer, userId);
+        await publishTag(tag, messageServer, owner);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -95,13 +95,13 @@ export async function publishTokenTags(
 /**
  * Publish tool tags
  * @param tool
- * @param user
- * @param userId
+ * @param owner
+ * @param root
  */
 export async function publishToolTags(
     tool: PolicyToolCollection,
-    user: IRootConfig,
-    userId?: string
+    owner: IOwner,
+    root: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: tool.id,
@@ -111,11 +111,11 @@ export async function publishToolTags(
     const tags = await DatabaseServer.getTags(filter);
     const topic = await DatabaseServer.getTopicById(tool.tagsTopicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
     for (const tag of tags) {
         tag.target = tool.tagsTopicId;
-        await publishTag(tag, messageServer, userId);
+        await publishTag(tag, messageServer, owner);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -123,13 +123,13 @@ export async function publishToolTags(
 /**
  * Publish module tags
  * @param module
- * @param user
- * @param userId
+ * @param owner
+ * @param root
  */
 export async function publishModuleTags(
     module: ModuleCollection,
-    user: IRootConfig,
-    userId?: string
+    owner: IOwner,
+    root: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: module.id,
@@ -140,12 +140,12 @@ export async function publishModuleTags(
 
     const topic = await DatabaseServer.getTopicById(module.topicId);
     const topicConfig = await TopicConfig.fromObject(topic, true);
-    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions)
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
     for (const tag of tags) {
         tag.target = module.messageId;
-        await publishTag(tag, messageServer, userId);
+        await publishTag(tag, messageServer, owner);
         await DatabaseServer.updateTag(tag);
     }
 }
@@ -154,12 +154,12 @@ export async function publishModuleTags(
  * Publish tag
  * @param item
  * @param messageServer
- * @param userId
+ * @param owner
  */
 export async function publishTag(
     item: Tag,
     messageServer: MessageServer,
-    userId?: string
+    owner: IOwner
 ): Promise<any> {
     item.operation = 'Create';
     item.status = 'Published';
@@ -167,7 +167,7 @@ export async function publishTag(
     const message = new TagMessage(MessageAction.PublishTag);
     message.setDocument(item);
     const result = await messageServer
-        .sendMessage(message, true, null, userId);
+        .sendMessage(message, true, null, owner.id);
     const messageId = result.getId();
     const topicId = result.getTopicId();
     item.messageId = messageId;
@@ -180,12 +180,12 @@ export async function publishTag(
  * Delete tag
  * @param item
  * @param messageServer
- * @param userId
+ * @param owner
  */
 export async function deleteTag(
     item: Tag,
     messageServer: MessageServer,
-    userId?: string
+    owner: IOwner
 ): Promise<any> {
     item.operation = 'Delete';
     item.status = 'Published';
@@ -193,7 +193,7 @@ export async function deleteTag(
     const message = new TagMessage(MessageAction.DeleteTag);
     message.setDocument(item);
     const result = await messageServer
-        .sendMessage(message, true, null, userId);
+        .sendMessage(message, true, null, owner.id);
     const messageId = result.getId();
     const topicId = result.getTopicId();
     item.messageId = messageId;
@@ -379,7 +379,7 @@ export async function tagsAPI(): Promise<void> {
                         const topicConfig = await TopicConfig.fromObject(topic, true);
                         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                             .setTopicObject(topicConfig);
-                        await publishTag(tag, messageServer);
+                        await publishTag(tag, messageServer, owner);
                     } else {
                         tag.target = null;
                         tag.localTarget = target.id;
@@ -519,23 +519,25 @@ export async function tagsAPI(): Promise<void> {
     ApiResponse(MessageAPI.DELETE_TAG,
         async (msg: { uuid: string, owner: IOwner }) => {
             try {
-                if (!msg.uuid || !msg.owner) {
+                const { uuid, owner } = msg;
+
+                if (!uuid || !owner) {
                     return new MessageError('Invalid load tags parameter');
                 }
-                const item = await DatabaseServer.getTagById(msg.uuid);
-                if (!item || item.owner !== msg.owner.creator) {
+                const item = await DatabaseServer.getTagById(uuid);
+                if (!item || item.owner !== owner.creator) {
                     throw new Error('Invalid tag');
                 }
                 await DatabaseServer.removeTag(item);
 
                 if (item.topicId && item.status === 'Published') {
                     const users = new Users();
-                    const root = await users.getHederaAccount(msg.owner.creator);
+                    const root = await users.getHederaAccount(owner.creator);
                     const topic = await DatabaseServer.getTopicById(item.topicId);
                     const topicConfig = await TopicConfig.fromObject(topic, true);
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
                         .setTopicObject(topicConfig);
-                    await deleteTag(item, messageServer);
+                    await deleteTag(item, messageServer, owner);
                 }
 
                 return new MessageResponse(true);

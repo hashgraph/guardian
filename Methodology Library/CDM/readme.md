@@ -23,6 +23,7 @@ The mechanism stimulates sustainable development and emission reductions, while 
 - ACM0001
 - ACM0018
 - AMS-I.A
+- AMS-I.E
 
 **Under Development Methodologies**
 
@@ -48,3 +49,4 @@ The mechanism stimulates sustainable development and emission reductions, while 
 | AMS-III.F | 1712067335.866743003 |1713216799.476352529 |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/CDM%20AMS-III.AR/CDM%20AMS-III.AR%20Policy.policy) |
 | AMS-III.H | 1712067335.866743003 |1721077588.207497628 |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/CDM%20AMS-III.H/AMS-III.H.policy) |
 | AR-ACM0003 | 1698755906.758865003 |- |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/CDM/CDM%20AR-ACM0003/CDM%20AR-ACM0003.policy) |
+| AMS-I.E | - |- |[Link](https://github.com/hashgraph/guardian/blob/develop/Methodology%20Library/CDM/CDM%20AMS-I.E/AMS-I.E.policy) |

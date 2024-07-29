@@ -5,9 +5,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
-import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dialog.component';
-import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
-import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
+import { NewModuleDialog } from '../../dialogs/new-module-dialog/new-module-dialog.component';
+import { SaveBeforeDialogComponent } from '../../dialogs/save-before-dialog/save-before-dialog.component';
+import { PolicyAction, SavePolicyDialog } from '../../dialogs/save-policy-dialog/save-policy-dialog.component';
 import { RegisteredService } from '../../services/registered.service';
 import { IPolicyCategory, ModuleTemplate, Options, PolicyBlock, PolicyModule, PolicyStorage, PolicyTemplate, Theme, ThemeRule, ToolMenu, ToolTemplate } from '../../structures';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
@@ -30,6 +30,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -1332,12 +1333,16 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public setVersion() {
-        const dialogRef = this.dialog.open(SetVersionDialog, {
-            width: '350px',
-            disableClose: true,
-            data: {}
+        const dialogRef = this.dialogService.open(PublishPolicyDialog, {
+            showHeader: false,
+            header: 'Publish Policy',
+            width: '600px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy: this.policyTemplate
+            }
         });
-        dialogRef.afterClosed().subscribe((version) => {
+        dialogRef.onClose.subscribe(async (version) => {
             if (version) {
                 this.publishPolicy(version);
             }
