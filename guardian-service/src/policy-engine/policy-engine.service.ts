@@ -1,4 +1,17 @@
-import { DocumentCategoryType, DocumentType, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
+import {
+    DocumentCategoryType,
+    DocumentType,
+    EntityOwner,
+    ExternalMessageEvents,
+    GenerateUUIDv4,
+    IOwner,
+    PolicyEngineEvents,
+    PolicyEvents,
+    PolicyType,
+    Schema,
+    SchemaField,
+    TopicType
+} from '@guardian/interfaces';
 import {
     BinaryMessageResponse,
     DatabaseServer,
@@ -664,6 +677,9 @@ export class PolicyEngineService {
                 try {
                     const { user, policyId } = msg;
 
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+
                     const error = new PolicyEngine().getPolicyError(policyId);
                     if (error) {
                         throw new Error(error);
@@ -743,6 +759,8 @@ export class PolicyEngineService {
             async (msg: { user: IAuthUser, blockId: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
                     const {user, blockId, policyId, params} = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
                         user,
                         blockId,
@@ -760,6 +778,8 @@ export class PolicyEngineService {
             async (msg: { user: IAuthUser, tag: string, policyId: string, params: any }): Promise<IMessageResponse<any>> => {
                 try {
                     const {user, tag, policyId, params} = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
                         user,
                         tag,
@@ -777,7 +797,8 @@ export class PolicyEngineService {
             async (msg: { user: IAuthUser, blockId: string, policyId: string, data: any }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, blockId, policyId, data } = msg;
-
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
                         user,
                         blockId,
@@ -795,6 +816,8 @@ export class PolicyEngineService {
             async (msg: { user: IAuthUser, tag: string, policyId: string, data: any }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, tag, policyId, data } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
                         user,
                         tag,
@@ -811,7 +834,9 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_BY_TAG,
             async (msg: { user: IAuthUser, tag: string, policyId: string }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { tag, policyId } = msg;
+                    const { user, tag, policyId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.BLOCK_BY_TAG, policyId, {
                         tag,
                         policyId,
@@ -825,7 +850,9 @@ export class PolicyEngineService {
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS,
             async (msg: { user: IAuthUser, blockId: string, policyId: string }): Promise<IMessageResponse<any>> => {
                 try {
-                    const { blockId, policyId } = msg;
+                    const { user, blockId, policyId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_PARENTS, policyId, { blockId });
                     return new MessageResponse(blockData);
                 } catch (error) {
@@ -838,7 +865,8 @@ export class PolicyEngineService {
             async (msg: { user: IAuthUser, policyId: string }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, policyId } = msg;
-
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const navigationData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_POLICY_NAVIGATION, policyId, {
                         user
                     }) as any;
@@ -853,7 +881,8 @@ export class PolicyEngineService {
             async (msg: { user: IAuthUser, policyId: string }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, policyId } = msg;
-
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_POLICY_GROUPS, policyId, {
                         user,
                         policyId
@@ -869,6 +898,8 @@ export class PolicyEngineService {
             async (msg: { user: IAuthUser, policyId: string, uuid: string }): Promise<IMessageResponse<any>> => {
                 try {
                     const { user, policyId, uuid } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SELECT_POLICY_GROUP, policyId, {
                         user,
                         policyId,
