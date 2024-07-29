@@ -66,6 +66,16 @@ before(() => {
                             authorization: authorization,
                         },
                         body: {
+                            didDocument:null,
+                            useFireblocksSigning:false, 
+                            fireblocksConfig:
+                            {
+                                fireBlocksVaultId:"",
+                                fireBlocksAssetId:"",
+                                fireBlocksApiKey:"",
+                                fireBlocksPrivateiKey:""
+                            },
+                            didKeys:[],
                             hederaAccountId: Cypress.env('operatorId'),
                             hederaAccountKey: Cypress.env('operatorKey'),
                             vcDocument: {
