@@ -16,6 +16,14 @@ interface RecordOptions {
     index?: string | number;
 }
 
+interface IActionResult {
+    index: number;
+    delay: number;
+    code: number;
+    error: string;
+    action: RecordAction;
+};
+
 /**
  * Running controller
  */
@@ -370,7 +378,24 @@ export class Running {
                 return;
             }
             this._updateStatus(id).then();
+            this._correctDelay(result);
             await this.delay(result.delay, result.index);
+        }
+    }
+
+    /**
+     * Correct Delay
+     * @param id
+     * @private
+     */
+    private _correctDelay(result: IActionResult): void {
+        if (this._mode === 'test') {
+            if (result.action === RecordAction.SetBlockData) {
+                result.delay += 10000;
+            }
+            if (result.action === RecordAction.SetExternalData) {
+                result.delay += 10000;
+            }
         }
     }
 
@@ -387,6 +412,7 @@ export class Running {
      * Create delay
      * @param time
      * @param index
+     * @param action
      * @private
      */
     private async delay(time: number, index: number): Promise<void> {
@@ -596,17 +622,19 @@ export class Running {
      * @private
      */
     private async next() {
-        const result = {
+        const result: IActionResult = {
             index: -1,
             delay: -1,
             code: 0,
-            error: null
+            error: null,
+            action: null
         };
         try {
             const action = this._actions.current;
             if (!action) {
                 return result;
             }
+            result.action = action.action;
 
             const error = await this.runAction(action);
             if (error) {
