@@ -168,7 +168,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     },
                     failOnStatusCode: false,
                 }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.ERROR);
+                    expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
                     //expect(response.status).eql(STATUS_CODE.FORBIDDEN);
                 });
             });

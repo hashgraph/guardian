@@ -39,39 +39,39 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
             contractIdW = response.body.id;
             contractIdHedW = response.body.contractId;
         });
+
         cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: username,
-                password: "test"
-            }
+            method: METHOD.GET,
+            url: API.ApiServer + API.RandomKey,
+            headers: {
+                authorization
+            },
         }).then((response) => {
+            cy.wait(3000)
+            let hederaAccountId = response.body.id
+            let hederaAccountKey = response.body.key
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.AccessToken,
+                url: API.ApiServer + API.AccountsLogin,
                 body: {
-                    refreshToken: response.body.refreshToken
+                    username: username,
+                    password: "test"
                 }
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
                 cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.RandomKey,
-                    headers: {
-                        authorization
-                    },
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.AccessToken,
+                    body: {
+                        refreshToken: response.body.refreshToken
+                    }
                 }).then((response) => {
-                    cy.wait(3000)
-                    let hederaAccountId = response.body.id
-                    let hederaAccountKey = response.body.key
+                    let accessToken = "Bearer " + response.body.accessToken
                     cy.request({
                         method: METHOD.PUT,
                         url: API.ApiServer + API.Profiles + username,
                         body: {
-                            parent: SRDid,
-                            hederaAccountId: response.body.id,
-                            hederaAccountKey: response.body.key,
+                            hederaAccountId: hederaAccountId,
+                            hederaAccountKey: hederaAccountKey,
                             useFireblocksSigning: false,
                             fireblocksConfig:
                             {

@@ -4,11 +4,11 @@ import * as Checks from "../../../support/checkingMethods";
 
 context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
     const authorization = Cypress.env("authorization");
-    const username = Math.floor(Math.random() * 999) + "User";
-    const contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
-    const contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
+    let username = Math.floor(Math.random() * 999) + "User";
+    let contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
+    let contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
     const optionKey = "option"
-    let wContractId, rContractId, tokenId, policyId, hederaId, rConractUuid
+    let wContractId, rContractId, tokenId, tokenid2, policyId, hederaId, rConractUuid
     let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId, approveRegistrantBtnBlockId
 
     describe("Flow for one NFT token and get requests", () => {

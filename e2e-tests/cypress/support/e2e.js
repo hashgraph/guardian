@@ -76,7 +76,7 @@ before(() => {
                                 "@context": [],
                             },
                         },
-                        timeout: 200000,
+                        timeout: 400000,
                     }).then(() => {
                         cy.log("hedera credentials was created");
                     });

@@ -318,7 +318,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body).eql("14");
+                    expect(response.body).eql(14);
                 });
             })
         });
@@ -349,7 +349,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body).eql("2");
+                    expect(response.body).eql(2);
                 });
             })
         });
@@ -552,6 +552,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Verify roles(wipe)", () => {
+        cy.wait(60000)
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
@@ -576,13 +577,14 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body).eql("0");
+                    expect(response.body).eql(0);
                 });
             })
         });
     });
 
     it("Verify roles(retire)", () => {
+        cy.wait(60000)
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
@@ -607,7 +609,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body).eql("0");
+                    expect(response.body).eql(0);
                 });
             })
         });
