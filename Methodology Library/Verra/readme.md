@@ -33,4 +33,4 @@ Methodologies often refer to modules or tools, which include specific methodolog
 | VerraARR | 1707209648.628432394 |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/VerraARR/Verra%20ARR.policy) |
 | PWRM0001 | 1707206885.406272003 |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/PWRM0001/PWRM0001.policy) |
 | PWRM0002 | 1721746888.834099991 |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/PWRM0002/PWRM0002.policy) |
-| VMR0006 | - |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/VMR0006/VMR0006.policy) |
+| VMR0006 | 1721826322.833452372 |[Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/VMR0006/VMR0006.policy) |
