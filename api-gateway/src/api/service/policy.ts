@@ -1,11 +1,6 @@
 import { Auth, AuthUser } from '#auth';
-// <<<<<<< HEAD
-// import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-// import { DocumentType, Permissions, PolicyType, TaskAction, UserRole } from '@guardian/interfaces';
-// =======
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
-// >>>>>>> develop
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, TaskDTO } from '#middlewares';
