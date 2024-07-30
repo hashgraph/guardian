@@ -41,6 +41,7 @@ import {
     ValidateConfiguration,
     VcDocument,
     VpDocument,
+    Wallet,
     WiperRequest,
     Workers,
 } from '@guardian/common';
@@ -237,6 +238,7 @@ Promise.all([
     new ExternalEventChannel().setChannel(channel);
 
     await new Users().setConnection(cn).init();
+    await new Wallet().setConnection(cn).init();
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();
     workersHelper.initListeners();
