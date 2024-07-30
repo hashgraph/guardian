@@ -6,9 +6,9 @@ import { RecordMethod } from './method.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcHelper } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument, VcHelper, VpDocument } from '@guardian/common';
 import { RecordItem } from './record-item.js';
-import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils.js';
+import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, RowDocument, Utils } from './utils.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 interface RecordOptions {
@@ -72,6 +72,10 @@ export class Running {
      * Mode
      */
     private readonly _mode: string;
+    /**
+     * Event delay
+     */
+    private readonly _eventIterationDelay = [2, 4, 6, 8, 10]; //30s
     /**
      * Record ID
      */
@@ -378,24 +382,7 @@ export class Running {
                 return;
             }
             this._updateStatus(id).then();
-            this._correctDelay(result);
             await this.delay(result.delay, result.index);
-        }
-    }
-
-    /**
-     * Correct Delay
-     * @param id
-     * @private
-     */
-    private _correctDelay(result: IActionResult): void {
-        if (this._mode === 'test') {
-            if (result.action === RecordAction.SetBlockData) {
-                result.delay += 10000;
-            }
-            if (result.action === RecordAction.SetExternalData) {
-                result.delay += 10000;
-            }
         }
     }
 
@@ -466,15 +453,14 @@ export class Running {
                     return null;
                 }
                 case RecordAction.SetBlockData: {
-                    const doc = await this.getActionDocument(action);
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
-                    if (block && (await block.isAvailable(userFull))) {
-                        if (typeof block.setData === 'function') {
-                            await block.setData(userFull, doc);
-                            return null;
-                        }
+                    if (await this.isAvailable(block, userFull)) {
+                        const doc = await this.getActionDocument(action);
+                        await block.setData(userFull, doc);
+                        return null;
+                    } else {
+                        return `Block (${action.target}) not available.`;
                     }
-                    return `Block (${action.target}) not available.`;
                 }
                 case RecordAction.SetExternalData: {
                     const doc = await this.getActionDocument(action);
@@ -572,6 +558,25 @@ export class Running {
     }
 
     /**
+     * Check available
+     * @param block
+     * @param user
+     * @private
+     */
+    private async isAvailable(block: any, user: PolicyUser): Promise<boolean> {
+        if (!block || typeof block.setData !== 'function') {
+            return false;
+        }
+        for (const i of this._eventIterationDelay) {
+            if (await block.isAvailable(user)) {
+                return true;
+            }
+            await this.delay(i * 1000, this._actions?.index);
+        }
+        return false;
+    }
+
+    /**
      * Replace DID
      * @param did
      * @private
@@ -605,16 +610,41 @@ export class Running {
     private async replaceRow(obj: any): Promise<any> {
         const result = Utils.findAllDocuments(obj);
         for (const row of result) {
-            if (row.type === 'vc') {
-                const item = await this.policyInstance.databaseServer.getVcDocument(row.filters);
-                obj = row.replace(obj, item);
-            }
-            if (row.type === 'vp') {
-                const item = await this.policyInstance.databaseServer.getVpDocument(row.filters);
-                obj = row.replace(obj, item);
-            }
+            const item = await this.findRowDocument(row);
+            obj = row.replace(obj, item);
         }
         return obj;
+    }
+
+    /**
+     * Find row document
+     * @param row
+     * @private
+     */
+    private async findRowDocument(row: RowDocument): Promise<VcDocument | VpDocument> {
+        for (const i of this._eventIterationDelay) {
+            const item = await this.getRowDocument(row);
+            if (item) {
+                return item;
+            }
+            await this.delay(i * 1000, this._actions?.index);
+        }
+        return undefined;
+    }
+
+    /**
+     * Find row document
+     * @param row
+     * @private
+     */
+    private async getRowDocument(row: RowDocument): Promise<VcDocument | VpDocument> {
+        if (row.type === 'vc') {
+            return await this.policyInstance.databaseServer.getVcDocument(row.filters);
+        } else if (row.type === 'vp') {
+            return await this.policyInstance.databaseServer.getVpDocument(row.filters);
+        } else {
+            return undefined;
+        }
     }
 
     /**
