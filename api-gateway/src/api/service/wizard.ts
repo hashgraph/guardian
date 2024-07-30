@@ -1,5 +1,5 @@
 import { Guardians, TaskManager, ServiceError, ONLY_SR, InternalException, EntityOwner } from '#helpers';
-import { IAuthUser, Logger, RunFunctionAsync, } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiParam, ApiExtraModels } from '@nestjs/swagger';
@@ -9,6 +9,9 @@ import { AuthUser, Auth } from '#auth';
 @Controller('wizard')
 @ApiTags('wizard')
 export class WizardApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Creates a new policy
      */
@@ -45,7 +48,7 @@ export class WizardApi {
             const guardians = new Guardians();
             return await guardians.wizardPolicyCreate(wizardConfig, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -95,7 +98,7 @@ export class WizardApi {
                 );
             },
             async (error) => {
-                new Logger().error(error, ['API_GATEWAY']);
+                await this.logger.error(error, ['API_GATEWAY']);
                 taskManager.addError(task.taskId, {
                     code: 500,
                     message: error.message,
@@ -149,7 +152,7 @@ export class WizardApi {
             const owner = new EntityOwner(user);
             return await guardians.wizardGetPolicyConfig(policyId, wizardConfig, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

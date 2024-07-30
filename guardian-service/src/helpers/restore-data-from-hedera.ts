@@ -34,7 +34,7 @@ import {
     UrlType,
     RoleMessage,
     GuardianRoleMessage,
-    UserPermissionsMessage
+    UserPermissionsMessage, PinoLogger,
 } from '@guardian/common';
 import {
     DidDocumentStatus,
@@ -318,6 +318,7 @@ export class RestoreDataFromHedera {
      * @param user
      * @param hederaAccountID
      * @param hederaAccountKey
+     * @param logger
      * @private
      */
     private async restorePolicy(
@@ -325,7 +326,8 @@ export class RestoreDataFromHedera {
         owner: string,
         user: IAuthUser,
         hederaAccountID: string,
-        hederaAccountKey: string
+        hederaAccountKey: string,
+        logger: PinoLogger
     ): Promise<void> {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
@@ -430,7 +432,7 @@ export class RestoreDataFromHedera {
                     hederaAccountKey
                 );
 
-                await new PolicyEngine().generateModel(r.id.toString());
+                await new PolicyEngine(logger).generateModel(r.id.toString());
                 // await new BlockTreeGenerator().generate(r.id.toString());
             }
         } catch (e) {
@@ -539,13 +541,16 @@ export class RestoreDataFromHedera {
      * @param hederaAccountID
      * @param hederaAccountKey
      * @param registrantTopicId
+     * @param didDocument
+     * @param logger
      */
     async restoreRootAuthority(
         username: string,
         hederaAccountID: string,
         hederaAccountKey: string,
         registrantTopicId: string,
-        didDocument: CommonDidDocument
+        didDocument: CommonDidDocument,
+        logger: PinoLogger
     ): Promise<void> {
         const did = didDocument.getDid();
         const user = await this.users.getUser(username);
@@ -654,7 +659,8 @@ export class RestoreDataFromHedera {
                 did,
                 user,
                 hederaAccountID,
-                hederaAccountKey
+                hederaAccountKey,
+                logger
             );
         }
     }

@@ -2,7 +2,9 @@
     <ng-container [ngTemplateOutlet]="header"></ng-container>
     <ng-container *ngIf="!loading">
         <ng-container [ngTemplateOutlet]="actionsContainer"></ng-container>
+      <ng-container *useWithServiceDecorator="'LOGGER_SERVICE'">
         <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+      </ng-container>
     </ng-container>
     <div *ngIf="loading" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
@@ -17,7 +19,7 @@
 
 <ng-template #actionsContainer>
     <div class="actions-container">
-        <form [formGroup]="searchForm">
+        <form [formGroup]="searchForm" *useWithServiceDecorator="'LOGGER_SERVICE'">
             <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
                 <p-multiSelect #searchInput (onFilter)="onFilter($event)"
                                [filter]="true" [options]="attributes"
@@ -63,7 +65,8 @@
                             selectionMode="range"></p-calendar>
             </div>
         </form>
-        <div class="flex flex-column-gap-8">
+      <div class="flex flex-column-gap-8" style="flex-wrap: wrap; row-gap: 8px;">
+        <div class="flex flex-column-gap-8" *useWithServiceDecorator="'LOGGER_SERVICE'">
             <button
                 (click)="onApply()"
                 class="button"
@@ -86,6 +89,17 @@
                 type="button"
             ></button>
         </div>
+        <div class="flex flex-column-gap-8" *ngIf="seqUrl">
+          <button
+            #seqButton
+            (click)="onSeq()"
+            class="button"
+            label="Seq"
+            pButton
+            type="button"
+          ></button>
+        </div>
+      </div>
     </div>
 </ng-template>
 

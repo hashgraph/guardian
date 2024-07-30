@@ -3,7 +3,6 @@ import {
     DataBaseHelper,
     GuardianRoleMessage,
     IAuthUser,
-    Logger,
     MessageAction,
     MessageError,
     MessageResponse,
@@ -15,6 +14,7 @@ import {
     Schema as SchemaCollection,
     VcDocument as VcDocumentCollection,
     UserPermissionsMessage,
+    PinoLogger,
     KeyType,
     KEY_TYPE_KEY_ENTITY,
     KeyEntity,
@@ -140,7 +140,7 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
  * @param channel
  * @param settingsRepository
  */
-export async function permissionAPI(): Promise<void> {
+export async function permissionAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.CREATE_ROLE,
         async (msg: { role: any, owner: IOwner }) => {
             try {
@@ -172,7 +172,7 @@ export async function permissionAPI(): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -208,7 +208,7 @@ export async function permissionAPI(): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -244,7 +244,7 @@ export async function permissionAPI(): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -256,7 +256,7 @@ export async function permissionAPI(): Promise<void> {
                 const result = await serDefaultRole(user, owner);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -290,7 +290,7 @@ export async function permissionAPI(): Promise<void> {
                         return new MessageResponse(false);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

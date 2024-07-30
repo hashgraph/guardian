@@ -5,12 +5,12 @@ import {
     DataBaseHelper,
     DatabaseServer,
     KeyType,
-    Logger,
     MessageAction,
     MessageError,
     MessageResponse,
     MessageServer,
     NotificationHelper,
+    PinoLogger,
     RetirePool,
     RetireRequest,
     Schema as SchemaCollection,
@@ -1011,7 +1011,8 @@ export async function contractAPI(
     wipeRequestRepository: DataBaseHelper<WiperRequest>,
     retirePoolRepository: DataBaseHelper<RetirePool>,
     retireRequestRepository: DataBaseHelper<RetireRequest>,
-    vcRepostitory: DataBaseHelper<VcDocument>
+    vcRepostitory: DataBaseHelper<VcDocument>,
+    logger: PinoLogger,
 ): Promise<void> {
     ApiResponse(ContractAPI.GET_CONTRACTS, async (msg: {
         owner: IOwner,
@@ -1055,7 +1056,7 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1140,7 +1141,7 @@ export async function contractAPI(
             await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId());
             return new MessageResponse(contract);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1266,7 +1267,7 @@ export async function contractAPI(
 
             return new MessageResponse(contract);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1322,7 +1323,7 @@ export async function contractAPI(
             );
             return new MessageResponse(permissions);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1369,7 +1370,7 @@ export async function contractAPI(
                 }
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1422,7 +1423,7 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1472,7 +1473,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1522,7 +1523,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1589,7 +1590,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1655,7 +1656,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1709,7 +1710,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1773,7 +1774,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1837,7 +1838,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1901,7 +1902,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1965,7 +1966,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -2029,7 +2030,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -2093,7 +2094,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -2190,7 +2191,7 @@ export async function contractAPI(
 
                 return new MessageResponse(syncDate);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -2249,7 +2250,7 @@ export async function contractAPI(
             }
             return new MessageResponse(result);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -2320,7 +2321,7 @@ export async function contractAPI(
                 await retirePoolRepository.findAndCount(filters, otherOptions)
             );
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -2394,7 +2395,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -2468,7 +2469,7 @@ export async function contractAPI(
 
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -2532,7 +2533,7 @@ export async function contractAPI(
                 )
             );
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -2592,7 +2593,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -2657,7 +2658,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -2755,7 +2756,7 @@ export async function contractAPI(
 
             return new MessageResponse(pool.immediately);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -2831,7 +2832,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -2891,7 +2892,7 @@ export async function contractAPI(
 
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -2955,7 +2956,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -3019,7 +3020,7 @@ export async function contractAPI(
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -3068,7 +3069,7 @@ export async function contractAPI(
                 await vcRepostitory.findAndCount(filters, otherOptions)
             );
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, Logger, MessageError, MessageResponse, RunFunctionAsync, } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { IOwner, IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
@@ -72,7 +72,7 @@ async function createExistingPolicySchemas(
 /**
  * Connect to the message broker methods of working with wizard.
  */
-export async function wizardAPI(): Promise<void> {
+export async function wizardAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.WIZARD_POLICY_CREATE_ASYNC,
         async (msg: { config: any, owner: IOwner, task: any, saveState: boolean }) => {
             // tslint:disable-next-line:prefer-const
@@ -80,7 +80,7 @@ export async function wizardAPI(): Promise<void> {
             const notifier = await initNotifier(task);
             RunFunctionAsync(
                 async () => {
-                    const policyEngine = new PolicyEngine();
+                    const policyEngine = new PolicyEngine(logger);
                     const wizardHelper = new PolicyWizardHelper();
                     config = await createExistingPolicySchemas(config, owner);
                     const categories = [];
@@ -109,7 +109,8 @@ export async function wizardAPI(): Promise<void> {
                             categories
                         }),
                         owner,
-                        notifier
+                        notifier,
+                        logger
                     );
                     await policyEngine.setupPolicySchemas(
                         config.schemas.map((schema: any) => schema.iri),
@@ -134,7 +135,7 @@ export async function wizardAPI(): Promise<void> {
             try {
                 // tslint:disable-next-line:prefer-const
                 let { config, owner } = msg;
-                const policyEngine = new PolicyEngine();
+                const policyEngine = new PolicyEngine(logger);
                 const wizardHelper = new PolicyWizardHelper();
                 config = await createExistingPolicySchemas(config, owner);
                 const policyConfig = wizardHelper.createPolicyConfig(config);
@@ -146,7 +147,8 @@ export async function wizardAPI(): Promise<void> {
                         ),
                     }),
                     owner,
-                    emptyNotifier()
+                    emptyNotifier(),
+                    logger
                 );
                 await policyEngine.setupPolicySchemas(
                     config.schemas.map((schema: any) => schema.iri),
@@ -167,7 +169,7 @@ export async function wizardAPI(): Promise<void> {
             try {
                 // tslint:disable-next-line:prefer-const
                 let { policyId, config, owner } = msg;
-                const policyEngine = new PolicyEngine();
+                const policyEngine = new PolicyEngine(logger);
                 const wizardHelper = new PolicyWizardHelper();
                 const policy = await DatabaseServer.getPolicy({
                     owner: owner.owner,
@@ -192,7 +194,7 @@ export async function wizardAPI(): Promise<void> {
                     wizardConfig: config,
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

@@ -1,9 +1,9 @@
 import { ApiResponse } from './helpers/api-response.js';
 import {
     DatabaseServer,
-    Logger,
     MessageError,
     MessageResponse,
+    PinoLogger,
 } from '@guardian/common';
 import { AssignedEntityType, MessageAPI } from '@guardian/interfaces';
 
@@ -37,7 +37,7 @@ export async function getTarget(
 /**
  * Connect to the message broker methods of working with assigned entity.
  */
-export async function AssignedEntityAPI(): Promise<void> {
+export async function AssignedEntityAPI(logger: PinoLogger): Promise<void> {
     /**
      * Assign entity
      *
@@ -71,7 +71,7 @@ export async function AssignedEntityAPI(): Promise<void> {
             }
             return new MessageResponse(assign);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -105,7 +105,7 @@ export async function AssignedEntityAPI(): Promise<void> {
 
             return new MessageResponse(true);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -127,7 +127,7 @@ export async function AssignedEntityAPI(): Promise<void> {
             const items = await DatabaseServer.getAssignedEntities(did, type);
             return new MessageResponse(items);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -169,7 +169,7 @@ export async function AssignedEntityAPI(): Promise<void> {
             }
             return new MessageResponse(assign);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

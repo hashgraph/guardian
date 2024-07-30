@@ -1,7 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
-import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { SchemaImportExportHelper, checkForCircularDependency, deleteSchema, copySchemaAsync, createSchemaAndArtifacts, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
@@ -15,7 +15,7 @@ export class SchemaService { }
 /**
  * Connect to the message broker methods of working with schemas.
  */
-export async function schemaAPI(): Promise<void> {
+export async function schemaAPI(logger: PinoLogger): Promise<void> {
     /**
      * Create schema
      *
@@ -31,7 +31,7 @@ export async function schemaAPI(): Promise<void> {
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -44,7 +44,7 @@ export async function schemaAPI(): Promise<void> {
                 const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
                 notifier.result(schema.id);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -64,7 +64,7 @@ export async function schemaAPI(): Promise<void> {
                 const schema = await copySchemaAsync(iri, topicId, name, owner);
                 notifier.result(schema.iri);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -102,7 +102,7 @@ export async function schemaAPI(): Promise<void> {
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -131,7 +131,7 @@ export async function schemaAPI(): Promise<void> {
                 }
                 return new MessageError('Invalid load schema parameter');
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -178,7 +178,7 @@ export async function schemaAPI(): Promise<void> {
                     ]
                 }));
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -242,7 +242,7 @@ export async function schemaAPI(): Promise<void> {
                 }
                 return new MessageResponse(await createNode(schema));
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -332,7 +332,7 @@ export async function schemaAPI(): Promise<void> {
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -424,7 +424,7 @@ export async function schemaAPI(): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -449,7 +449,7 @@ export async function schemaAPI(): Promise<void> {
                 });
                 return new MessageResponse(items);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -521,7 +521,7 @@ export async function schemaAPI(): Promise<void> {
                 }
                 return new MessageResponse(schemas);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -546,7 +546,7 @@ export async function schemaAPI(): Promise<void> {
                 const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -567,7 +567,7 @@ export async function schemaAPI(): Promise<void> {
                 const item = await findAndPublishSchema(id, version, owner, root, notifier);
                 notifier.result(item.id);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -659,6 +659,7 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
+
                 const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
                     messageIds,
                     owner,
@@ -666,11 +667,12 @@ export async function schemaAPI(): Promise<void> {
                         category,
                         topicId
                     },
-                    emptyNotifier()
+                    emptyNotifier(),
+                    logger
                 );
                 return new MessageResponse(schemasMap);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -689,6 +691,7 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
+
                 const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
                     messageIds,
                     owner,
@@ -696,11 +699,12 @@ export async function schemaAPI(): Promise<void> {
                         category,
                         topicId
                     },
-                    notifier
+                    notifier,
+                    logger
                 );
                 notifier.result(schemasMap);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -740,7 +744,7 @@ export async function schemaAPI(): Promise<void> {
 
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -774,7 +778,7 @@ export async function schemaAPI(): Promise<void> {
 
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -803,10 +807,10 @@ export async function schemaAPI(): Promise<void> {
                     return new MessageError('Invalid preview schema parameters');
                 }
 
-                const result = await prepareSchemaPreview(messageIds, emptyNotifier());
+                const result = await prepareSchemaPreview(messageIds, emptyNotifier(), logger);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -833,10 +837,10 @@ export async function schemaAPI(): Promise<void> {
                     return;
                 }
 
-                const result = await prepareSchemaPreview(messageIds, notifier);
+                const result = await prepareSchemaPreview(messageIds, notifier, logger);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -857,7 +861,7 @@ export async function schemaAPI(): Promise<void> {
                 const { ids } = msg;
                 return new MessageResponse(await SchemaImportExportHelper.exportSchemas(ids));
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -889,7 +893,7 @@ export async function schemaAPI(): Promise<void> {
                 const result = await DatabaseServer.createAndSaveSchema(schemaObject);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -931,7 +935,7 @@ export async function schemaAPI(): Promise<void> {
                     count
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -974,7 +978,7 @@ export async function schemaAPI(): Promise<void> {
                     count
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1028,7 +1032,7 @@ export async function schemaAPI(): Promise<void> {
                 });
                 return new MessageResponse(schema);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1064,7 +1068,7 @@ export async function schemaAPI(): Promise<void> {
                 });
                 return new MessageResponse(schema);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1093,7 +1097,7 @@ export async function schemaAPI(): Promise<void> {
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1123,7 +1127,7 @@ export async function schemaAPI(): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1160,7 +1164,7 @@ export async function schemaAPI(): Promise<void> {
                 const result = await DatabaseServer.createAndSaveSchema(schemaObject);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1184,7 +1188,7 @@ export async function schemaAPI(): Promise<void> {
                 const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1215,7 +1219,7 @@ export async function schemaAPI(): Promise<void> {
             });
             return new MessageResponse(schemas);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1231,7 +1235,7 @@ export async function schemaAPI(): Promise<void> {
                 const buffer = await JsonToXlsx.generate(schemas, [], []);
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1281,7 +1285,7 @@ export async function schemaAPI(): Promise<void> {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
-                    await PolicyImportExportHelper.updatePolicyComponents(target);
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger);
                 }
 
                 return new MessageResponse({
@@ -1289,7 +1293,7 @@ export async function schemaAPI(): Promise<void> {
                     errors: result.errors
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1311,7 +1315,7 @@ export async function schemaAPI(): Promise<void> {
                     throw new Error('Unknown target');
                 }
 
-                new Logger().info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
+                await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
                 notifier.start('File parsing');
@@ -1341,7 +1345,7 @@ export async function schemaAPI(): Promise<void> {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
-                    await PolicyImportExportHelper.updatePolicyComponents(target);
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger);
                 }
 
                 notifier.result({
@@ -1349,7 +1353,7 @@ export async function schemaAPI(): Promise<void> {
                     errors: result.errors
                 });
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -1383,7 +1387,7 @@ export async function schemaAPI(): Promise<void> {
 
                 return new MessageResponse(xlsxResult.toJson());
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1399,7 +1403,7 @@ export async function schemaAPI(): Promise<void> {
                 const file = await readFile(filePath);
                 return new BinaryMessageResponse(file.buffer);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

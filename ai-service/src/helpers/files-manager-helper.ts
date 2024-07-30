@@ -4,19 +4,19 @@ import * as path from 'path';
 import { GroupCategories } from './general-helper.js';
 import { PolicyDescription } from '../models/models.js';
 import { PolicyCategoryType } from '@guardian/interfaces';
-import { Logger, Policy, PolicyCategory } from '@guardian/common';
+import { PinoLogger, Policy, PolicyCategory } from '@guardian/common';
 
 const MIN_DESCRIPTION_WORDS = 5;
 
 export class FilesManager {
 
-    static async generateData(dirPath: string, policies: Policy[], categories: PolicyCategory[], policyDescriptions: PolicyDescription[]): Promise<boolean> {
+    static async generateData(dirPath: string, policies: Policy[], categories: PolicyCategory[], policyDescriptions: PolicyDescription[], logger: PinoLogger): Promise<boolean> {
         FilesManager.checkDir(dirPath);
         FilesManager.deleteAllFilesInDirectory(dirPath);
 
         try {
-            await FilesManager.generateMethodologyFiles(dirPath, policies, categories, policyDescriptions);
-            await FilesManager.generateMetadataFile(dirPath, policies, categories);
+            await FilesManager.generateMethodologyFiles(dirPath, policies, categories, policyDescriptions, logger);
+            await FilesManager.generateMetadataFile(dirPath, policies, categories, logger);
             return true;
         } catch (e) {
             console.log(e);
@@ -24,7 +24,7 @@ export class FilesManager {
         }
     }
 
-    static async generateMethodologyFiles(dirPath: string, policies: Policy[], categories: PolicyCategory[], policyDescriptions: PolicyDescription[]) {
+    static async generateMethodologyFiles(dirPath: string, policies: Policy[], categories: PolicyCategory[], policyDescriptions: PolicyDescription[], logger: PinoLogger) {
         if (!policies) {
             return false;
         }
@@ -38,17 +38,17 @@ export class FilesManager {
             const content = FilesManager.getFileData(policy, categories, descriptions);
 
             if (content) {
-                await FilesManager.generateFile(filePath, content);
+                await FilesManager.generateFile(filePath, content, logger);
             }
         }
     }
 
-    static async generateMetadataFile(dirPath: string, policies: Policy[], categories: PolicyCategory[]) {
+    static async generateMetadataFile(dirPath: string, policies: Policy[], categories: PolicyCategory[], logger: PinoLogger) {
         const content = FilesManager.getMetadataContent(policies, categories);
 
         if (content) {
             const fileName = `${dirPath}/metadata.txt`;
-            await FilesManager.generateFile(fileName, content);
+            await FilesManager.generateFile(fileName, content, logger);
         }
     }
 
@@ -159,14 +159,14 @@ export class FilesManager {
         return '';
     }
 
-    static async generateFile(filePath: string, content: string) {
+    static async generateFile(filePath: string, content: string, logger: PinoLogger) {
         return new Promise((resolve, reject) => {
-            fs.writeFile(filePath, content, (err) => {
+            fs.writeFile(filePath, content,  async (err) => {
                 if (err) {
                     console.error(err);
                     reject();
                 } else {
-                    new Logger().info(`File ${filePath} was created`, ['AI_SERVICE']);
+                    await logger.info(`File ${filePath} was created`, ['AI_SERVICE']);
                     resolve(true);
                 }
             });

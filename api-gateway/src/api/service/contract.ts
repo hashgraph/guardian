@@ -1,5 +1,5 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Response } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
@@ -12,7 +12,7 @@ import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getC
 @Controller('contracts')
 @ApiTags('contracts')
 export class ContractsApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     //#region Common contract endpoints
@@ -80,7 +80,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -123,7 +123,7 @@ export class ContractsApi {
 
             return await guardians.createContract(owner, description, type);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -175,7 +175,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.importContract(owner, contractId, description);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -218,7 +218,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.checkContractPermissions(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -260,7 +260,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeContract(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
     //#endregion
@@ -328,7 +328,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -370,7 +370,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.enableWipeRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -412,7 +412,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.disableWipeRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -454,7 +454,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.approveWipeRequest(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -508,7 +508,7 @@ export class ContractsApi {
                 String(ban).toLowerCase() === 'true'
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -550,7 +550,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.clearWipeRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -600,7 +600,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -650,7 +650,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -700,7 +700,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeManager(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -750,7 +750,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeManager(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -800,7 +800,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeWiper(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -850,7 +850,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeWiper(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -895,7 +895,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.syncRetirePools(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -962,7 +962,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1037,7 +1037,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1079,7 +1079,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.clearRetireRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1121,7 +1121,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.clearRetirePools(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1167,7 +1167,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.setRetirePool(owner, contractId, body);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1209,7 +1209,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.unsetRetirePool(owner, poolId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1251,7 +1251,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.unsetRetireRequest(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1298,7 +1298,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.retire(owner, poolId, body);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1340,7 +1340,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.approveRetire(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1383,7 +1383,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.cancelRetire(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1433,7 +1433,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1483,7 +1483,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1543,7 +1543,7 @@ export class ContractsApi {
             const [vcs, count] = await guardians.getRetireVCs(owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
     //#endregion

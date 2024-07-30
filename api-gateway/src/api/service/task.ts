@@ -1,4 +1,4 @@
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { ApiTags, ApiParam, ApiOperation, ApiExtraModels, ApiOkResponse, ApiInternalServerErrorResponse } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
@@ -8,6 +8,9 @@ import { InternalException, TaskManager } from '#helpers';
 @Controller('tasks')
 @ApiTags('tasks')
 export class TaskApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Get status
      */
@@ -42,7 +45,7 @@ export class TaskApi {
             const taskManager = new TaskManager();
             return taskManager.getState(user.id, taskId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }
