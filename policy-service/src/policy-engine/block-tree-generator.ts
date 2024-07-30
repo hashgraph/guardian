@@ -131,7 +131,7 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId, async (msg: any) => {
 
-            const {user, blockId, params} = msg;
+            const { user, blockId, params } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
@@ -145,7 +145,7 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
-            const {user, tag, params} = msg;
+            const { user, tag, params } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
@@ -321,6 +321,15 @@ export class BlockTreeGenerator extends NatsService {
             const result = await RecordUtils.SkipStep(policyId, options);
             return new MessageResponse(result);
         });
+    }
+
+    public async destroyModel(policyId: string, logger: PinoLogger): Promise<void> {
+        try {
+            await RecordUtils.DestroyRecording(policyId);
+            await RecordUtils.DestroyRunning(policyId);
+        } catch (error) {
+            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()]);
+        }
     }
 
     /**

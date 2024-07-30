@@ -103,9 +103,9 @@ export class CompareRecordComponent implements OnInit {
         this.minWidth = 770 * this.size;
 
         const k = Math.round(100 / this.size);
-        this._gridStyle = `max(calc(${k}vw - 70px), 690px)`;
+        this._gridStyle = `max(calc(${k}vw - 210px), 690px)`;
         for (let i = 1; i < this.size; i++) {
-            this._gridStyle += ` 35px max(calc(${k}vw - 55px), 710px)`;
+            this._gridStyle += ` 35px max(calc(${k}vw - 195px), 710px)`;
         }
 
         this.totalRate = this.value?.total;

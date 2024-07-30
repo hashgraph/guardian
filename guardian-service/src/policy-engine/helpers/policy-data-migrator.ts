@@ -40,12 +40,12 @@ import {
     ContractType,
     DocumentStatus,
     MigrationConfig,
-    PolicyType,
     Schema,
     SchemaCategory,
     SchemaHelper,
     TopicType,
     ISignOptions,
+    PolicyHelper,
 } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 import {
@@ -291,18 +291,19 @@ export class PolicyDataMigrator {
                 if (!srcModel) {
                     throw new Error(`Can't find source policy`);
                 }
+                const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
                 policyUsers = await users.getUsersBySrId(owner);
                 policyRoles = await new RolesLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 policyStates = await new BlockStateLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcSystemSchemas = await DatabaseServer.getSchemas({
                     category: SchemaCategory.SYSTEM,
@@ -312,7 +313,7 @@ export class PolicyDataMigrator {
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get({
                     id: { $in: vcs },
                 });
@@ -320,7 +321,7 @@ export class PolicyDataMigrator {
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get({
                     schema: '#UserRole',
                 });
@@ -328,7 +329,7 @@ export class PolicyDataMigrator {
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get({
                     id: { $in: vps },
                 });
@@ -336,49 +337,49 @@ export class PolicyDataMigrator {
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcMintRequests = await new MintRequestLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(srcVPs.map((item) => item.messageId));
                 srcMintTransactions = await new MintTransactionLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(srcMintRequests.map((item) => item.id));
                 srcMultiDocuments = await new MultiSignDocumentLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(vcs);
                 srcAggregateVCs = await new AggregateVCLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcSplitDocuments = await new SplitDocumentLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcDocumentStates = await new DocumentStateLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(vcs);
                 srcTokens = await new TokensLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 const policyTokens = findAllEntities(srcModel.config, [
                     'tokenId',
@@ -387,7 +388,7 @@ export class PolicyDataMigrator {
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(
                     srcTokens.map((token) => token.tokenId).concat(policyTokens)
                 );
@@ -400,7 +401,7 @@ export class PolicyDataMigrator {
             if (!dstModel) {
                 throw new Error(`Can't find destination policy`);
             }
-
+            const dstModelDryRun = PolicyHelper.isDryRunMode(dstModel);
             const dstSystemSchemas = await DatabaseServer.getSchemas({
                 category: SchemaCategory.SYSTEM,
                 topicId: dstModel.topicId,
@@ -424,13 +425,10 @@ export class PolicyDataMigrator {
             const signOptions = await wallet.getUserSignOptions(root);
 
             const instanceTopicConfig = await TopicConfig.fromObject(
-                await new DatabaseServer(
-                    dstModel.status === PolicyType.DRY_RUN
-                        ? dstModel.id
-                        : undefined
-                ).getTopic({
-                    topicId: dstModel.instanceTopicId,
-                })
+                await new DatabaseServer(dstModelDryRun ? dstModel.id : undefined)
+                    .getTopic({
+                        topicId: dstModel.instanceTopicId,
+                    })
             );
 
             const policyDataMigrator = new PolicyDataMigrator(
@@ -454,7 +452,7 @@ export class PolicyDataMigrator {
                 tokensMap || {},
                 editedVCs || {},
                 srcDids,
-                dstModel.status === PolicyType.DRY_RUN ? dstModel.id : null,
+                dstModelDryRun ? dstModel.id : null,
                 notifier
             );
             const migrationErrors = await policyDataMigrator._migrateData(
@@ -937,7 +935,8 @@ export class PolicyDataMigrator {
                 user.username,
                 user.did,
                 user.hederaAccountId,
-                null
+                null,
+                false
             );
         }
     }

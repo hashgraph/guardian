@@ -38,6 +38,7 @@ export class WebSocketService {
     private servicesReady: Subject<boolean>;
     private profileSubject: Subject<{ type: string, data: any }>;
     private recordUpdateSubject: Subject<any>;
+    private testUpdateSubject: Subject<any>;
     private blockUpdateSubject: Subject<any>;
     private userInfoUpdateSubject: Subject<any>;
     private taskStatusSubject: Subject<any>;
@@ -61,6 +62,7 @@ export class WebSocketService {
 
     constructor(private dialogService: DialogService, private auth: AuthService, private toastr: ToastrService, private router: Router) {
         this.recordUpdateSubject = new Subject();
+        this.testUpdateSubject = new Subject();
         this.blockUpdateSubject = new Subject();
         this.userInfoUpdateSubject = new Subject();
         this.servicesReady = new Subject();
@@ -245,6 +247,10 @@ export class WebSocketService {
                     this.recordUpdateSubject.next(data);
                     break;
                 }
+                case MessageAPI.UPDATE_TEST_EVENT: {
+                    this.testUpdateSubject.next(data);
+                    break;
+                }
                 case MessageAPI.UPDATE_EVENT: {
                     this.blockUpdateSubject.next(data);
                     break;
@@ -340,6 +346,14 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.recordUpdateSubject.subscribe(next, error, complete);
+    }
+
+    public testSubscribe(
+        next?: ((id: any) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.testUpdateSubject.subscribe(next, error, complete);
     }
 
     public subscribeUserInfo(

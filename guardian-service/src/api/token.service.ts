@@ -227,7 +227,7 @@ async function updateToken(
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishTokenTags(result, root);
+            await publishTokenTags(result, user, root);
         } catch (error) {
             log.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }

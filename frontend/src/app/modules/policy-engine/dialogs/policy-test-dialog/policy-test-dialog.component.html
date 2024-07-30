@@ -1,0 +1,238 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Policy Tests</div>
+        <div *ngIf="policy" class="header-item">{{policy.name}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <div *ngIf="tests && tests.length" class="dialog-grid-container">
+            <div class="dialog-grid-header">
+                <div class="col-44"></div>
+                <div class="col-200 col-text">Name</div>
+                <div class="col-180 col-text">Start Date</div>
+                <div class="col-auto col-text">Duration</div>
+                <div class="col-120 col-text">Status</div>
+                <div class="col-140">Results</div>
+                <div class="col-120">Operations</div>
+                <div class="col-64"></div>
+            </div>
+            <div class="dialog-grid-body">
+                <ng-container *ngFor="let item of tests" >   
+                    <div class="dialog-grid-row" (click)="expand(item)" [attr.expand]="getExpand(item)">
+                        <div class="col-44">
+                            <svg-icon
+                                *ngIf="item.result || item.error"
+                                class="icon-btn expand-icon"
+                                src="/assets/images/icons/right-arrow.svg"
+                                svgClass="icon-color-disabled">
+                            </svg-icon>
+                        </div>
+                        <div class="col-200 col-text">
+                            <span 
+                                class="col-text"
+                                [pTooltip]="getText(item.name)"
+                                [tooltipOptions]="{showDelay: 300}"
+                                tooltipPosition="top">{{getText(item.name)}}</span>
+                        </div>
+                        <div class="col-180 col-text">
+                            <span class="col-text">{{getDate(item.date)}}</span>
+                        </div>
+                        <div class="col-auto col-text">
+                            <span class="col-text">{{getTime(item.duration)}}</span>
+                        </div>
+                        <div class="col-120 col-button">
+                            <div class="guardian-label status-label-{{item.status}} action-button">{{item.status}}</div>
+                        </div>
+                        <div class="col-140">
+                            <div *ngIf="item.status==='Running'" class="results">
+                                <div class="progress-bar">
+                                    <div class="progress-bar-value" [style.width.%]="item.progress"></div>
+                                </div>
+                                <div class="progress-label"> {{getProgress(item.progress)}}</div>
+                            </div>
+                            <div *ngIf="item.status === 'Success' || item.status === 'Failure'" class="results">
+                                <ng-container *ngIf="item.result || item.error">
+                                    <div class="progress-bar static-bar">
+                                        <div class="progress-bar-value" [style.width.%]="item.result?.total"></div>
+                                    </div>
+                                    <div class="progress-label results-total"
+                                        [attr.total-value]="item.result?.total"> {{getProgress(item.result?.total)}}</div>
+                                </ng-container>
+                            </div>
+                        </div>
+                        <div class="col-120 col-button">
+                            <ng-container *ngIf="status === 'DRY-RUN' || status === 'DEMO'">
+                                <button 
+                                    *ngIf="item.status === 'New' || item.status === 'Stopped'"
+                                    (click)="runTest(item, $event)"
+                                    [disabled]="isRunning"
+                                    class="guardian-button guardian-button-primary action-button">Run</button>
+                                <button 
+                                    *ngIf="item.status === 'Success' || item.status === 'Failure'"
+                                    (click)="runTest(item, $event)"
+                                    [disabled]="isRunning"
+                                    class="guardian-button guardian-button-secondary action-button">Re-Run</button>
+                                <button 
+                                    *ngIf="item.status === 'Running'"
+                                    (click)="stopTest(item, $event)"
+                                    class="guardian-button guardian-button-delete action-button">Stop</button>
+                            </ng-container>
+                        </div>
+                        <div class="col-64 col-button">
+                            <div 
+                                class="guardian-icon-button big delete-btn" 
+                                [attr.disabled]="item.status === 'Running'"
+                                (click)="deleteTest(item, $event)">
+                                <svg-icon 
+                                    class="icon-btn"
+                                    src="/assets/images/icons/delete.svg"
+                                    [svgClass]="item.status === 'Running' ? 'icon-color-disabled' : 'icon-color-delete'">
+                                </svg-icon>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dialog-grid-expand-row" [attr.expand]="getExpand(item)">
+                        <ng-template 
+                            *ngIf="item.result || item.error"
+                            [ngTemplateOutlet]="detailsTemplate"
+                            [ngTemplateOutletContext]="item.__result"></ng-template>
+                    </div>
+                </ng-container>
+            </div>
+        </div> 
+
+        <div *ngIf="!(tests && tests.length)" class="no-tests">
+            No Tests
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+    </div>
+</div>
+
+<ng-template #detailsTemplate 
+    let-runStep="runStep" 
+    let-compareStep="compareStep"
+>
+    <div class="results-details">
+        <div class="results-step">
+            <div class="results-step-header">
+                <div class="results-step-status" [ngSwitch]="runStep.status">
+                    <svg-icon 
+                        *ngSwitchCase="'Skipped'"
+                        class="icon-btn"
+                        src="/assets/images/icons/skip-fill.svg"
+                        svgClass="icon-color-disabled"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Success'"
+                        class="icon-btn"
+                        src="/assets/images/icons/check-fill.svg"
+                        svgClass="icon-color-success"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Failure'"
+                        class="icon-btn"
+                        src="/assets/images/icons/close-fill.svg"
+                        svgClass="icon-color-delete"></svg-icon>
+                </div>
+                <div class="results-step-name">Run Test</div>
+            </div>
+            <div class="results-step-body" *ngIf="runStep.error">
+                <div class="text-error">{{runStep.error}}</div>
+            </div>
+            <div class="results-step-body" *ngIf="!runStep.error">
+                <div class="text-success">Finished</div>
+            </div>
+        </div>
+        <div class="results-step">
+            <div class="results-step-header">
+                <div class="results-step-status" [ngSwitch]="compareStep.status">
+                    <svg-icon 
+                        *ngSwitchCase="'Skipped'"
+                        class="icon-btn"
+                        src="/assets/images/icons/skip-fill.svg"
+                        svgClass="icon-color-disabled"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Success'"
+                        class="icon-btn"
+                        src="/assets/images/icons/check-fill.svg"
+                        svgClass="icon-color-success"></svg-icon>
+                    <svg-icon 
+                        *ngSwitchCase="'Failure'"
+                        class="icon-btn"
+                        src="/assets/images/icons/close-fill.svg"
+                        svgClass="icon-color-delete"></svg-icon>
+                </div>
+                <div class="results-step-name">Compare Results</div>
+            </div>
+            <div class="results-step-body" *ngIf="compareStep.report">
+                <ng-template 
+                    [ngTemplateOutlet]="compareDocumentTemplate"
+                    [ngTemplateOutletContext]="compareStep"></ng-template>
+            </div>
+            <div class="results-step-body" *ngIf="!compareStep.report">
+                <div class="text-skipped">Skipped</div>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #compareDocumentTemplate 
+    let-id="id" 
+    let-info="report.info" 
+    let-results="report.documents"
+    let-total="report.total"
+>
+    <div class="compare-details">
+
+        <div class="compare-col">
+            <div class="compare-header">
+                Common
+            </div>
+
+            <div class="compare-info">
+                <div class="compare-info-header">Created documents:</div>
+                <div>{{info?.documents}}</div>
+            </div>
+            <div class="compare-info">
+                <div class="compare-info-header">Minted tokens:</div>
+                <div>{{info?.tokens}}</div>
+            </div>
+            <div class="compare-info">
+                <div class="compare-info-header">Total rate:</div>
+                <div class="rate-color" [attr.rate-color]="total">{{total}}%</div>
+            </div>
+        </div>
+        <div class="compare-col">
+            <div class="compare-header">
+                Documents
+            </div>
+
+            <div class="compare-body">
+                <div *ngFor="let item of results; let i=index" class="compare-item">
+                    <div class="document-type">{{item.type}}</div>
+                    <div class="document-schema">
+                        <a (click)="openDocument(item)">{{item.schema}}</a>
+                    </div>
+                    <div class="document-rate rate-color" [attr.rate-color]="item.rate">{{item.rate}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="more-details">
+            <div 
+                class="guardian-button guardian-button-secondary more-btn" 
+                (click)="onDetails(id)">Show more details</div>
+        </div>
+    </div>
+</ng-template>

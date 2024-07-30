@@ -37,11 +37,19 @@ export async function brandingAPI(
         const brandingJSON: Branding[] = await brandingRepository.findAll();
         let newBrandingJSON: Branding[];
         if (!brandingJSON.length) {
-            const initialBranding = JSON.stringify({'headerColor': '#000', 'primaryColor': '#2C78F6', 'companyName': 'Guardian', 'companyLogoUrl': '', 'loginBannerUrl': 'bg.jpg', 'faviconUrl': 'favicon.ico', termsAndConditions});
-            await brandingRepository.save({config: initialBranding});
+            const initialBranding = JSON.stringify({
+                'headerColor': '#000',
+                'primaryColor': '#4169E2',
+                'companyName': 'Guardian',
+                'companyLogoUrl': '',
+                'loginBannerUrl': 'bg.jpg',
+                'faviconUrl': 'favicon.ico',
+                termsAndConditions
+            });
+            await brandingRepository.save({ config: initialBranding });
             newBrandingJSON = await brandingRepository.findAll();
         }
-        return new MessageResponse(brandingJSON.length ? brandingJSON[brandingJSON.length - 1] : newBrandingJSON[newBrandingJSON.length-1]);
+        return new MessageResponse(brandingJSON.length ? brandingJSON[brandingJSON.length - 1] : newBrandingJSON[newBrandingJSON.length - 1]);
     });
 
     /**
@@ -52,7 +60,7 @@ export async function brandingAPI(
      * @returns {Branding} - new branding object
      */
     ApiResponse(MessageAPI.STORE_BRANDING, async (config) => {
-            const branding: any = await brandingRepository.save(config);
-            return new MessageResponse(branding);
+        const branding: any = await brandingRepository.save(config);
+        return new MessageResponse(branding);
     });
 }

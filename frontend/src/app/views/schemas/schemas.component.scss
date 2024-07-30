@@ -185,6 +185,11 @@ a {
     color: var(--color-accent-red-1) !important;
 }
 
+.status-DEMO {
+    background: var(--color-grey-2, #EFF3F7) !important;
+    color: var(--color-grey-5, #848FA9) !important; 
+}
+
 .btn-approve {
     background: var(--color-primary);
     border-radius: 6px;

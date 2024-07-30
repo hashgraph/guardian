@@ -279,7 +279,7 @@ services:
     ports:
       - "5008:5008"
     expose:
-      - 3003
+      - 3005
       - 5008
 
   topic-viewer:
@@ -296,8 +296,16 @@ services:
   web-proxy:
     build:
       context: .
-      dockerfile: ./web-proxy/Dockerfile
+      dockerfile: ./web-proxy/Dockerfile.demo
     init: true
+    environment:
+      GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
+      GATEWAY_HOST: api-gateway
+      GATEWAY_PORT: 3002
+      MRV_SENDER_HOST: mrv-sender
+      MRV_SENDER_PORT: 3005
+      TOPIC_VIEWER_HOST: topic-viewer
+      TOPIC_VIEWER_PORT: 3006
     ports:
       - "3000:80"
     depends_on:

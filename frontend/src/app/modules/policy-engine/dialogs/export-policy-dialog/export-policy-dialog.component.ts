@@ -17,6 +17,7 @@ export class ExportPolicyDialog {
     public policy!: any;
     public module!: any;
     public tool!: any;
+    public header!: any;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -28,25 +29,72 @@ export class ExportPolicyDialog {
         this.policy = this.config.data.policy;
         this.module = this.config.data.module;
         this.tool = this.config.data.tool;
+        this.header = this.config.header;
     }
 
     ngOnInit() {
         this.loading = false;
     }
 
-    getSchemaTitle(model: any) {
+    public canCopy(): boolean {
+        return (
+            (this.policy && this.policy.messageId) ||
+            (this.module && this.module.messageId) ||
+            (this.tool && this.tool.messageId)
+        )
+    }
+
+    public canSave(): boolean {
+        return (
+            (this.policy) ||
+            (this.module) ||
+            (this.tool)
+        )
+    }
+
+    public onCopy(): void {
+        if (this.policy) {
+            this.handleCopyToClipboard(this.policy.messageId)
+            return;
+        }
+        if (this.module) {
+            this.handleCopyToClipboard(this.module.messageId)
+            return;
+        }
+        if (this.tool) {
+            this.handleCopyToClipboard(this.tool.messageId)
+            return;
+        }
+    }
+
+    public onSave(): void {
+        if (this.policy) {
+            this.saveToFile()
+            return;
+        }
+        if (this.module) {
+            this.moduleToFile()
+            return;
+        }
+        if (this.tool) {
+            this.toolToFile()
+            return;
+        }
+    }
+
+    public getSchemaTitle(model: any) {
         return `${model.name} (${model.version}): ${model.messageId}`;
     }
 
-    onClose(): void {
+    public onClose(): void {
         this.ref.close(false);
     }
 
-    handleCopyToClipboard(text: string): void {
+    private handleCopyToClipboard(text: string): void {
         navigator.clipboard.writeText(text || '');
     }
 
-    saveToFile() {
+    private saveToFile() {
         this.loading = true;
         this.policyEngineService.exportInFile(this.policy.id).subscribe(
             (fileBuffer) => {
@@ -72,7 +120,7 @@ export class ExportPolicyDialog {
         );
     }
 
-    moduleToFile() {
+    private moduleToFile() {
         this.loading = true;
         this.modulesService.exportInFile(this.module.uuid).subscribe(
             (fileBuffer) => {
@@ -98,7 +146,7 @@ export class ExportPolicyDialog {
         );
     }
 
-    toolToFile() {
+    private toolToFile() {
         this.loading = true;
         this.toolsService.exportInFile(this.tool.id)
             .subscribe(fileBuffer => {
