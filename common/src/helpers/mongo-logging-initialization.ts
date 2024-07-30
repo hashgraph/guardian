@@ -16,7 +16,7 @@ export const DEFAULT = {
 };
 
 export async function mongoForLoggingInitialization(options: Record<string, any> = {}) {
-    const isMongoTransport = process.env.TRANSPORTS.includes('MONGO')
+    const isMongoTransport = process.env.TRANSPORTS?.includes('MONGO')
 
     if(process.env.DB_LOGGER_NAME && isMongoTransport) {
         return await MikroORM.init<MongoDriver>({
