@@ -1,5 +1,22 @@
 import '../config.js'
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, entities, Environment, ExternalEventChannel, IPFS, LargePayloadContainer, Logger, MessageBrokerChannel, MessageServer, NotificationService, OldSecretManager, Users, Workers } from '@guardian/common';
+import {
+    COMMON_CONNECTION_CONFIG,
+    DataBaseHelper,
+    DatabaseServer,
+    entities,
+    Environment,
+    ExternalEventChannel,
+    IPFS,
+    LargePayloadContainer,
+    Logger,
+    MessageBrokerChannel,
+    MessageServer,
+    NotificationService,
+    OldSecretManager,
+    Users,
+    Wallet,
+    Workers,
+} from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
@@ -101,6 +118,7 @@ Promise.all([
     new ExternalEventChannel().setChannel(channel);
     await new OldSecretManager().setConnection(cn).init();
     await new Users().setConnection(cn).init();
+    await new Wallet().setConnection(cn).init();
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();;
     workersHelper.initListeners();

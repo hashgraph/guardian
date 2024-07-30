@@ -57,7 +57,7 @@ export async function AssignedEntityAPI(): Promise<void> {
             const { type, entityIds, assign, did, owner } = msg;
             for (const entityId of entityIds) {
                 const target = await getTarget(type, entityId);
-                if (!target && target.owner !== owner) {
+                if (!target || target.owner !== owner) {
                     throw new Error('Entity not found');
                 }
                 if (assign) {
