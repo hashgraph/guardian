@@ -164,6 +164,8 @@ function getNotificationResultTitle(action: TaskAction, result: any) {
 
 function getNotificationResult(action: TaskAction, result: any) {
     switch (action) {
+        case TaskAction.CREATE_RANDOM_KEY:
+            return;
         case TaskAction.CREATE_TOOL:
         case TaskAction.CREATE_POLICY:
         case TaskAction.CLONE_POLICY:

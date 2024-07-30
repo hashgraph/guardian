@@ -126,7 +126,8 @@ Promise.all([
     const synchronizationService = new SynchronizationService(policyConfig, logger);
     synchronizationService.start();
 
-    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, () => {
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async () => {
+        await generator.destroyModel(policyId, logger)
         synchronizationService.stop();
         process.exit(0);
     });

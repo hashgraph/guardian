@@ -36,6 +36,7 @@ export class PolicyTemplate {
     public readonly messageId!: string;
     public readonly version!: string;
     public readonly previousVersion!: string;
+    public readonly tests!: any;
 
     private _policyTag!: string;
     private _name!: string;
@@ -70,6 +71,8 @@ export class PolicyTemplate {
     public readonly isDryRun: boolean = false;
     public readonly readonly: boolean = false;
     public readonly isPublishError: boolean = false;
+    public readonly isDemo: boolean = false;
+    public readonly isRun: boolean = false;
 
     constructor(policy?: any) {
         this._changed = false;
@@ -93,6 +96,7 @@ export class PolicyTemplate {
         this.messageId = policy.messageId;
         this.version = policy.version;
         this.previousVersion = policy.previousVersion;
+        this.tests = policy.tests;
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
@@ -101,7 +105,9 @@ export class PolicyTemplate {
         this.isPublished = this.status === PolicyType.PUBLISH || this.status === PolicyType.DISCONTINUED;
         this.isDryRun = this.status === PolicyType.DRY_RUN;
         this.isPublishError = this.status === PolicyType.PUBLISH_ERROR;
-        this.readonly = this.isPublished || this.isDryRun || this.isPublishError;
+        this.isDemo = this.status === PolicyType.DEMO;
+        this.readonly = this.isPublished || this.isDryRun || this.isPublishError || this.isDemo;
+        this.isRun = this.isDryRun || this.isPublished || this.isDemo
     }
 
     public get policyTag(): string {
@@ -413,11 +419,11 @@ export class PolicyTemplate {
         this._policyNavigation = [];
         if (Array.isArray(policy.policyRoles)) {
             for (const role of policy.policyRoles) {
-                this._policyNavigation.push(new PolicyNavigationModel({role, steps: []}, this));
+                this._policyNavigation.push(new PolicyNavigationModel({ role, steps: [] }, this));
             }
         }
-        this._policyNavigation.push(new PolicyNavigationModel({role: 'NO_ROLE', steps: []}, this));
-        this._policyNavigation.push(new PolicyNavigationModel({role: 'OWNER', steps: []}, this));
+        this._policyNavigation.push(new PolicyNavigationModel({ role: 'NO_ROLE', steps: [] }, this));
+        this._policyNavigation.push(new PolicyNavigationModel({ role: 'OWNER', steps: [] }, this));
 
         if (policy.policyNavigation && Array.isArray(policy.policyNavigation)) {
             for (const nav of policy.policyNavigation) {

@@ -104,7 +104,7 @@ export class WebSocketsService {
      * @param user
      */
     public updatePermissions(users: IAuthUser | IAuthUser[]): void {
-        if(!users) {
+        if (!users) {
             return;
         }
 
@@ -287,6 +287,19 @@ export class WebSocketsService {
             });
             return new MessageResponse({});
         });
+
+        this.channel.subscribe('update-test',
+            async (msg: any) => {
+                this.wss.clients.forEach((client: any) => {
+                    if (this.checkUserByDid(client, msg)) {
+                        this.send(client, {
+                            type: MessageAPI.UPDATE_TEST_EVENT,
+                            data: msg,
+                        });
+                    }
+                });
+                return new MessageResponse({});
+            });
 
         this.channel.subscribe('update-block', async (msg) => {
             updateArray.push(msg);

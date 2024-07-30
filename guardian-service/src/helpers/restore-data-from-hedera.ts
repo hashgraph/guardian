@@ -697,7 +697,7 @@ export class RestoreDataFromHedera {
             }
         }
 
-        const _owner = EntityOwner.sr(parentDid);
+        const _owner = EntityOwner.sr(parent.id?.toString(), parentDid);
         const _roleMap = new Map<string, any>();
         for (const message of _guardianRoles.values()) {
             await this.loadIPFS(message);

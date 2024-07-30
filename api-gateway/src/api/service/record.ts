@@ -1,5 +1,5 @@
 import { Permissions } from '@guardian/interfaces';
-import { EntityOwner, Guardians, InternalException, ONLY_SR, checkPolicy } from '#helpers';
+import { EntityOwner, Guardians, InternalException, ONLY_SR, checkPolicyByRecord } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus, Post, Response, Param, Body } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
@@ -46,7 +46,7 @@ export class RecordApi {
         @Param('policyId') policyId: string,
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.getRecordStatus(policyId, owner);
@@ -95,7 +95,7 @@ export class RecordApi {
         @Body() options: any
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.startRecording(policyId, owner, options);
@@ -148,7 +148,7 @@ export class RecordApi {
         @Response() res: any
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             const result = await guardians.stopRecording(policyId, owner, options);
@@ -195,7 +195,7 @@ export class RecordApi {
         @Param('policyId') policyId: string,
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.getRecordedActions(policyId, owner);
@@ -229,8 +229,8 @@ export class RecordApi {
         type: String
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
-        type: Boolean
+        description: 'Record UUID.',
+        type: String
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -244,7 +244,7 @@ export class RecordApi {
         @Body() file: any
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const options = { file };
             const guardians = new Guardians();
@@ -294,7 +294,7 @@ export class RecordApi {
         @Body() options: any
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.stopRunning(policyId, owner, options);
@@ -337,7 +337,7 @@ export class RecordApi {
         @Param('policyId') policyId: string,
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.getRecordResults(policyId, owner);
@@ -380,7 +380,7 @@ export class RecordApi {
         @Param('policyId') policyId: string
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.getRecordDetails(policyId, owner);
@@ -429,7 +429,7 @@ export class RecordApi {
         @Body() options: any
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.fastForward(policyId, owner, options);
@@ -478,7 +478,7 @@ export class RecordApi {
         @Body() options: any
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.retryStep(policyId, owner, options);
@@ -527,7 +527,7 @@ export class RecordApi {
         @Body() options: any
     ) {
         const owner = new EntityOwner(user);
-        await checkPolicy(policyId, owner);
+        await checkPolicyByRecord(policyId, owner);
         try {
             const guardians = new Guardians();
             return await guardians.skipStep(policyId, owner, options);

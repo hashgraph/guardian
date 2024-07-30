@@ -293,7 +293,7 @@ export class AccountApi {
                             },
                             userDid: did
                         },
-                        EntityOwner.sr(did)
+                        EntityOwner.sr(null, did)
                     ) as PolicyListResponse;
                     return {
                         did,

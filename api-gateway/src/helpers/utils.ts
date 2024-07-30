@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { IOwner, PolicyType, UserRole } from '@guardian/interfaces';
+import { IOwner, PolicyHelper, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from './policy-engine.js';
 
 /**
@@ -107,9 +107,9 @@ export async function InternalException(error: HttpException | Error | string, l
  * @param policyId
  * @param owner
  */
-export async function checkPolicy(policyId: string, owner: IOwner): Promise<any> {
+export async function checkPolicyByRecord(policyId: string, owner: IOwner): Promise<any> {
     const policy = await (new PolicyEngine().accessPolicy(policyId, owner, 'read'));
-    if (policy.status !== PolicyType.DRY_RUN) {
+    if (!PolicyHelper.isDryRunMode(policy)) {
         throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
     }
     return policy;

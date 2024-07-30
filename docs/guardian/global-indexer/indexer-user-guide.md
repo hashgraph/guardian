@@ -17,6 +17,10 @@ To launch the Indexer, please run the following command in the root of the folde
 docker compose -f "docker-compose-indexer.yml" up -d --build
 ```
 
+### **Launching Indexer**
+
+Once the above command is successfully executed and all the docker containers are running, Indexer can be launched at [http://localhost:3005](http://localhost:3005)
+
 ### Landing page includes following information:
 
 * _Registries_, _Methodologies_, _Total Documents_, _Total Issuance_. All cards are clickable. Also there is an ability to check charts with count and date.
