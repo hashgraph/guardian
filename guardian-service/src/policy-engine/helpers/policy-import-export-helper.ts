@@ -1,5 +1,5 @@
 import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyTestStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
-import { DataBaseHelper, DatabaseServer, IPolicyComponents, Logger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, IPolicyComponents, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag, SchemaImportExportHelper } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
@@ -350,9 +350,9 @@ export class PolicyImport {
         }
     }
 
-    private async saveHash(policy: Policy) {
+    private async saveHash(policy: Policy, logger: PinoLogger) {
         this.notifier.completedAndStart('Updating hash');
-        await PolicyImportExportHelper.updatePolicyComponents(policy);
+        await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
     }
 
     private async setSuggestionsConfig(policy: Policy, user: IOwner) {
@@ -422,6 +422,7 @@ export class PolicyImport {
         versionOfTopicId: string,
         additionalPolicyConfig: Partial<Policy> | null,
         metadata: PolicyToolMetadata | null,
+        logger: PinoLogger,
     ): Promise<ImportPolicyResult> {
         const { policy, tokens, schemas, artifacts, tags, tools, tests } = policyComponents;
         await this.resolveAccount(user);
@@ -439,7 +440,7 @@ export class PolicyImport {
         await this.saveTopic(row);
         await this.saveArtifacts(row);
         await this.saveTests(row);
-        await this.saveHash(row);
+        await this.saveHash(row, logger);
         await this.setSuggestionsConfig(row, user);
         await this.importTags(row, tags);
 
@@ -487,6 +488,7 @@ export class PolicyImportExportHelper {
      * @param metadata
      * @param demo
      * @param notifier
+     * @param logger
      *
      * @returns import result
      */
@@ -494,10 +496,11 @@ export class PolicyImportExportHelper {
         policyToImport: IPolicyComponents,
         user: IOwner,
         versionOfTopicId: string,
+        logger: PinoLogger,
         additionalPolicyConfig: Partial<Policy> = null,
         metadata: PolicyToolMetadata = null,
         demo: boolean = false,
-        notifier: INotifier = emptyNotifier()
+        notifier: INotifier = emptyNotifier(),
     ): Promise<ImportPolicyResult> {
         const helper = new PolicyImport(demo, notifier);
         return helper.import(
@@ -505,7 +508,8 @@ export class PolicyImportExportHelper {
             user,
             versionOfTopicId,
             additionalPolicyConfig,
-            metadata
+            metadata,
+            logger
         )
     }
 
@@ -605,8 +609,9 @@ export class PolicyImportExportHelper {
     /**
      * Update policy components
      * @param policy
+     * @param logger
      */
-    public static async updatePolicyComponents(policy: Policy): Promise<Policy> {
+    public static async updatePolicyComponents(policy: Policy, logger: PinoLogger): Promise<Policy> {
         try {
             const raw = await PolicyLoader.load(policy.id.toString());
             const compareModel = await PolicyLoader.create(raw, HashComparator.options);
@@ -614,7 +619,7 @@ export class PolicyImportExportHelper {
             policy.hash = hash;
             policy.hashMap = hashMap;
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE, HASH']);
+            await logger.error(error, ['GUARDIAN_SERVICE, HASH']);
         }
         const toolIds = new Set<string>()
         PolicyImportExportHelper.findTools(policy.config, toolIds);

@@ -7,7 +7,7 @@ export class QueueService extends NatsService{
     public messageQueueName = 'queue-service';
     public replySubject = 'reply-queue-service-' + GenerateUUIDv4();
 
-    private refreshInterval = 1 * 1000; // 1s
+    private readonly refreshInterval = 1 * 1000; // 1s
 
     public async init() {
         await super.init();

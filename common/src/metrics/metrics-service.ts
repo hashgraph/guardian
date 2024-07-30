@@ -1,10 +1,10 @@
 import express, { Express } from 'express'
 import client, { Registry } from 'prom-client';
 import process from 'process';
-import { Logger } from '../helpers/index.js';
+import { PinoLogger } from '../helpers/index.js';
 
 export class MetricsService{
-    private readonly logger: Logger;
+    private readonly logger: PinoLogger;
     private readonly server: Express;
     private readonly register: Registry;
     private readonly port: number;
@@ -12,7 +12,7 @@ export class MetricsService{
     constructor() {
         this.server = express();
         this.register = client.register;
-        this.logger = new Logger();
+        this.logger = new PinoLogger();
         this.port = parseInt(process.env.PROMETEUS_PORT, 10) || 5007;
     }
 

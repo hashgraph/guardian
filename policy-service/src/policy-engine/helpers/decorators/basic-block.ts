@@ -6,7 +6,7 @@ import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
-import { Logger, DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer, Policy, PinoLogger } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
@@ -92,7 +92,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Logger instance
              * @protected
              */
-            protected logger: Logger;
+            protected logger: PinoLogger;
             /**
              * Policy id
              */
@@ -177,7 +177,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.components = _components;
                 this.databaseServer = this.components.databaseServer;
                 this._dryRun = null;
-                this.logger = new Logger();
+                this.logger = new PinoLogger();
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);

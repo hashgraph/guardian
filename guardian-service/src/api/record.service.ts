@@ -4,9 +4,8 @@ import {
     BinaryMessageResponse,
     DatabaseServer,
     IRecordResult,
-    Logger,
     MessageError,
-    MessageResponse,
+    MessageResponse, PinoLogger,
     Policy,
     RecordImportExport,
 } from '@guardian/common';
@@ -97,7 +96,7 @@ export async function checkPolicy(
 /**
  * Connect to the message broker methods of working with records.
  */
-export async function recordAPI(): Promise<void> {
+export async function recordAPI(logger: PinoLogger): Promise<void> {
     /**
      * Get recording or running status
      *
@@ -118,7 +117,7 @@ export async function recordAPI(): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.GET_RECORD_STATUS, policyId, null);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -143,7 +142,7 @@ export async function recordAPI(): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.START_RECORDING, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -184,7 +183,7 @@ export async function recordAPI(): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -209,7 +208,7 @@ export async function recordAPI(): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.GET_RECORDED_ACTIONS, policyId, null);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -244,7 +243,7 @@ export async function recordAPI(): Promise<void> {
                     });
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -271,7 +270,7 @@ export async function recordAPI(): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.STOP_RUNNING, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -300,7 +299,7 @@ export async function recordAPI(): Promise<void> {
                 const result = await getDetails(details);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -329,7 +328,7 @@ export async function recordAPI(): Promise<void> {
                 const result = await compareResults(details);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -356,7 +355,7 @@ export async function recordAPI(): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.FAST_FORWARD, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -383,7 +382,7 @@ export async function recordAPI(): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.RECORD_RETRY_STEP, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -410,7 +409,7 @@ export async function recordAPI(): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.RECORD_SKIP_STEP, policyId, options);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

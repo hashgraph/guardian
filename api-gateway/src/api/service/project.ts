@@ -4,6 +4,7 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, Examples } from '#middlewares';
 import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
+import { PinoLogger } from '@guardian/common';
 
 /**
  * Projects route
@@ -11,7 +12,7 @@ import { UseCache, Guardians, InternalException, ProjectService } from '#helpers
 @Controller('projects')
 @ApiTags('projects')
 export class ProjectsAPI {
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
+    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -52,7 +53,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.search(categoryIds, policyIds);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -139,7 +140,7 @@ export class ProjectsAPI {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -245,7 +246,7 @@ export class ProjectsAPI {
                 presentations: comparationVpArray
             }
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -273,7 +274,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.getPolicyProperties();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel } from '@guardian/common';
+import { MessageBrokerChannel, PinoLogger } from '@guardian/common';
 import { CronJob } from 'cron';
 
 /**
@@ -21,12 +21,14 @@ export class SynchronizationTask {
      * @param fn Function
      * @param mask Mask
      * @param channel Channel
+     * @param logger Channel
      */
     constructor(
         private readonly _name: string,
         private readonly _fn: () => void,
         private readonly _mask: string,
-        private readonly _channel: MessageBrokerChannel
+        private readonly _channel: MessageBrokerChannel,
+        private readonly logger: PinoLogger
     ) {}
 
     /**
@@ -71,7 +73,7 @@ export class SynchronizationTask {
                         }
                     } catch (error) {
                         isTaskRunning = false;
-                        new Logger().error(error, ['GUARDIAN_SERVICE']);
+                        await this.logger.error(error, ['GUARDIAN_SERVICE']);
                     }
                 }
                 this._job = new CronJob(this._mask, taskExecution);
