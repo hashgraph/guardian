@@ -54,6 +54,9 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "name": "worker-service",
+    "imports": {
+      "#constants": "./dist/constants/index.js"
+    },
     "scripts": {
         "build": "tsc && tsc-alias",
         "build:prod": "tsc --project tsconfig.production.json && tsc-alias",

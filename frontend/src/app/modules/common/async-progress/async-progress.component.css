@@ -90,11 +90,15 @@
     line-height: normal;
 }
 
-.task-viewer > .progress-bar {
+.task-viewer > .progress-bar-container {
     width: 100%;
     margin-top: 24px;
+    height: 10px;
 }
 
+.progress-bar {
+    height: 8px;
+}
 
 .status-items {
     margin-top: 24px;

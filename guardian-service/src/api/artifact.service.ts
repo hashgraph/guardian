@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, getArtifactExtention, getArtifactType, Logger, MessageError, MessageResponse, } from '@guardian/common';
+import { DatabaseServer, getArtifactExtention, getArtifactType, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
 import { IOwner, MessageAPI, ModuleStatus, PolicyType } from '@guardian/interfaces';
 
 export async function getParent(parentId: string) {
@@ -26,7 +26,7 @@ export async function getParent(parentId: string) {
 /**
  * Connect to the message broker methods of working with artifacts.
  */
-export async function artifactAPI(): Promise<void> {
+export async function artifactAPI(logger: PinoLogger): Promise<void> {
     /**
      * Upload artifact
      *
@@ -79,7 +79,7 @@ export async function artifactAPI(): Promise<void> {
             await DatabaseServer.saveArtifactFile(row.uuid, Buffer.from(msg.artifact.buffer));
             return new MessageResponse(row);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message);
         }
     });
@@ -154,7 +154,7 @@ export async function artifactAPI(): Promise<void> {
                 count
             });
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -231,7 +231,7 @@ export async function artifactAPI(): Promise<void> {
                 count
             });
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -277,7 +277,7 @@ export async function artifactAPI(): Promise<void> {
                 await DatabaseServer.removeArtifact(artifactToDelete);
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

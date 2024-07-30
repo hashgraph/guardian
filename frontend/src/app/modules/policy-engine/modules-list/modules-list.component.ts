@@ -3,15 +3,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
-import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
-import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
-import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { ImportPolicyDialog } from '../dialogs/import-policy-dialog/import-policy-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
 import { ModulesService } from 'src/app/services/modules.service';
-import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
+import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
-import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
+import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
@@ -247,13 +247,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.modulesService.exportInMessage(element.uuid)
             .subscribe(module => {
                 this.loading = false;
-                this.dialog.open(ExportPolicyDialog, {
+                this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Module',
                     width: '700px',
+                    styleClass: 'guardian-dialog',
                     data: {
-                        module
+                        module,
                     },
-                    closable: true,
-                })
+                });
             });
     }
 

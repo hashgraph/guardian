@@ -3,7 +3,6 @@ import {
     DataBaseHelper,
     GuardianRoleMessage,
     IAuthUser,
-    Logger,
     MessageAction,
     MessageError,
     MessageResponse,
@@ -15,9 +14,15 @@ import {
     Schema as SchemaCollection,
     VcDocument as VcDocumentCollection,
     UserPermissionsMessage,
+    PinoLogger,
+    KeyType,
+    KEY_TYPE_KEY_ENTITY,
+    KeyEntity,
+    Token,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from './helpers/index.js';
+import { emptyNotifier } from '../helpers/notifier.js';
 
 async function getSchema(
     entity: SchemaEntity,
@@ -44,7 +49,8 @@ async function getSchema(
                 schema,
                 owner,
                 messageServer,
-                MessageAction.PublishSystemSchema
+                MessageAction.PublishSystemSchema,
+                emptyNotifier()
             );
             const result = await new DataBaseHelper(SchemaCollection).save(item);
             return result;
@@ -134,7 +140,7 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
  * @param channel
  * @param settingsRepository
  */
-export async function permissionAPI(): Promise<void> {
+export async function permissionAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.CREATE_ROLE,
         async (msg: { role: any, owner: IOwner }) => {
             try {
@@ -166,7 +172,7 @@ export async function permissionAPI(): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -202,7 +208,7 @@ export async function permissionAPI(): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -238,7 +244,7 @@ export async function permissionAPI(): Promise<void> {
                 });
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -250,7 +256,41 @@ export async function permissionAPI(): Promise<void> {
                 const result = await serDefaultRole(user, owner);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.CHECK_KEY_PERMISSIONS,
+        async (msg: { did: string, keyType: KeyType, entityId: string }) => {
+            try {
+                const { did, keyType, entityId } = msg;
+
+                const entity = KEY_TYPE_KEY_ENTITY.get(keyType);
+                if (!entity) {
+                    return new MessageResponse(false);
+                }
+
+                switch (entity) {
+                    case KeyEntity.TOKEN:
+                        return new MessageResponse(
+                            await new DataBaseHelper(Token).count({
+                                owner: did,
+                                tokenId: entityId
+                            }) > 0
+                        );
+                    case KeyEntity.TOPIC:
+                        return new MessageResponse(
+                            await new DataBaseHelper(Topic).count({
+                                owner: did,
+                                topicId: entityId
+                            }) > 0
+                        );
+                    default:
+                        return new MessageResponse(false);
+                }
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

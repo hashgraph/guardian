@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
+import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Observable } from 'rxjs';
 //services
 import { ProfileService } from '../../services/profile.service';
@@ -108,6 +108,7 @@ export class SchemaConfigComponent implements OnInit {
     public tagSchemas: Schema[] = [];
     public tagEntity = TagType.Schema;
     public policies: any[] = [];
+    public allPolicies: any[] = [];
     public modules: any[] = [];
     public tools: any[] = [];
     public draftTools: any[] = [];
@@ -248,7 +249,8 @@ export class SchemaConfigComponent implements OnInit {
                 (
                     this.ifDraft(element) ||
                     !this.readonly
-                )
+                ) &&
+                element.status !== SchemaStatus.DEMO
             );
         }
     }
@@ -265,7 +267,8 @@ export class SchemaConfigComponent implements OnInit {
             return (
                 this.isConfirmed &&
                 this.user.SCHEMAS_SCHEMA_DELETE &&
-                this.ifDraft(element)
+                this.ifDraft(element) &&
+                element.status !== SchemaStatus.DEMO
             );
         }
     }
@@ -274,7 +277,8 @@ export class SchemaConfigComponent implements OnInit {
         return (
             this.isConfirmed &&
             this.user.SCHEMAS_SCHEMA_CREATE &&
-            this.type === SchemaType.Policy
+            this.type === SchemaType.Policy &&
+            element.status !== SchemaStatus.DEMO
         );
     }
 
@@ -438,7 +442,7 @@ export class SchemaConfigComponent implements OnInit {
                 const policies: any[] = value[2] || [];
                 this.policyNameByTopic = {};
                 this.policyIdByTopic = {};
-                this.policies = [{
+                this.allPolicies = [{
                     name: 'No binding',
                     topicId: null
                 }];
@@ -446,10 +450,11 @@ export class SchemaConfigComponent implements OnInit {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
                         this.policyNameByTopic[policy.topicId] = policy.name;
-                        this.policies.push(policy);
+                        this.allPolicies.push(policy);
                         this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
                     }
                 }
+                this.policies = this.allPolicies.filter((p) => p.status !== 'DEMO');
 
                 const modules: any[] = value[3]?.body || [];
                 this.moduleNameByTopic = {};

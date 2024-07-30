@@ -113,6 +113,16 @@ export class Recording {
     }
 
     /**
+     * Destroy recording
+     * @public
+     */
+    public async destroy(): Promise<boolean> {
+        this._status = RecordingStatus.Stopped;
+        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        return true;
+    }
+
+    /**
      * Record event (Select Group)
      * @param user
      * @param uuid

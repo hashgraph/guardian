@@ -38,11 +38,12 @@ export class RecordService {
         return this.http.get<any>(`${this.url}/${policyId}/recording/actions`);
     }
 
-    public runRecord(policyId: string, file: any): Observable<any> {
-        return this.http.post<any>(`${this.url}/${policyId}/running/start`, file, {
+    public runRecord(policyId: string, file: any): Observable<string> {
+        return this.http.post(`${this.url}/${policyId}/running/start`, file, {
             headers: {
                 'Content-Type': 'binary/octet-stream'
-            }
+            },
+            responseType: 'text'
         });
     }
 

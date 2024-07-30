@@ -1,9 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
-import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, Logger, MessageError, MessageResponse, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, exportSchemas, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSchemaByFiles, importSchemasByMessages, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
+import { SchemaImportExportHelper, checkForCircularDependency, deleteSchema, copySchemaAsync, createSchemaAndArtifacts, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -15,7 +15,7 @@ export class SchemaService { }
 /**
  * Connect to the message broker methods of working with schemas.
  */
-export async function schemaAPI(): Promise<void> {
+export async function schemaAPI(logger: PinoLogger): Promise<void> {
     /**
      * Create schema
      *
@@ -31,7 +31,7 @@ export async function schemaAPI(): Promise<void> {
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -44,7 +44,7 @@ export async function schemaAPI(): Promise<void> {
                 const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
                 notifier.result(schema.id);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -64,7 +64,7 @@ export async function schemaAPI(): Promise<void> {
                 const schema = await copySchemaAsync(iri, topicId, name, owner);
                 notifier.result(schema.iri);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -102,7 +102,7 @@ export async function schemaAPI(): Promise<void> {
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -131,7 +131,7 @@ export async function schemaAPI(): Promise<void> {
                 }
                 return new MessageError('Invalid load schema parameter');
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -178,7 +178,7 @@ export async function schemaAPI(): Promise<void> {
                     ]
                 }));
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -242,7 +242,7 @@ export async function schemaAPI(): Promise<void> {
                 }
                 return new MessageResponse(await createNode(schema));
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -332,7 +332,7 @@ export async function schemaAPI(): Promise<void> {
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -424,7 +424,7 @@ export async function schemaAPI(): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -449,7 +449,7 @@ export async function schemaAPI(): Promise<void> {
                 });
                 return new MessageResponse(items);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -521,7 +521,7 @@ export async function schemaAPI(): Promise<void> {
                 }
                 return new MessageResponse(schemas);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -543,12 +543,10 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const userAccount = await users.getUser(owner.username);
-                const userId = userAccount.id.toString();
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -566,12 +564,10 @@ export async function schemaAPI(): Promise<void> {
                 notifier.completedAndStart('Resolve Hedera account');
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const userAccount = await users.getUser(owner.username);
-                const userId = userAccount.id.toString();
-                const item = await findAndPublishSchema(id, version, owner, root, notifier, userId);
+                const item = await findAndPublishSchema(id, version, owner, root, notifier);
                 notifier.result(item.id);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -663,12 +659,20 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
-                const schemasMap = await importSchemasByMessages(
-                    category, owner, messageIds, topicId, emptyNotifier()
+
+                const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
+                    messageIds,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
+                    emptyNotifier(),
+                    logger
                 );
                 return new MessageResponse(schemasMap);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -687,12 +691,20 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
-                const schemasMap = await importSchemasByMessages(
-                    category, owner, messageIds, topicId, notifier
+
+                const schemasMap = await SchemaImportExportHelper.importSchemasByMessages(
+                    messageIds,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
+                    notifier,
+                    logger
                 );
                 notifier.result(schemasMap);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -719,18 +731,20 @@ export async function schemaAPI(): Promise<void> {
                 const notifier = emptyNotifier();
 
                 const category = await getSchemaCategory(topicId);
-                let result = await importSchemaByFiles(
-                    category,
-                    owner,
+                let result = await SchemaImportExportHelper.importSchemaByFiles(
                     schemas,
-                    topicId,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
                     notifier
                 );
                 result = await importTagsByFiles(result, tags, notifier);
 
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -751,18 +765,20 @@ export async function schemaAPI(): Promise<void> {
                 }
 
                 const category = await getSchemaCategory(topicId);
-                let result = await importSchemaByFiles(
-                    category,
-                    owner,
+                let result = await SchemaImportExportHelper.importSchemaByFiles(
                     schemas,
-                    topicId,
+                    owner,
+                    {
+                        category,
+                        topicId
+                    },
                     notifier
                 );
                 result = await importTagsByFiles(result, tags, notifier);
 
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -791,10 +807,10 @@ export async function schemaAPI(): Promise<void> {
                     return new MessageError('Invalid preview schema parameters');
                 }
 
-                const result = await prepareSchemaPreview(messageIds, emptyNotifier());
+                const result = await prepareSchemaPreview(messageIds, emptyNotifier(), logger);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error);
             }
@@ -821,10 +837,10 @@ export async function schemaAPI(): Promise<void> {
                     return;
                 }
 
-                const result = await prepareSchemaPreview(messageIds, notifier);
+                const result = await prepareSchemaPreview(messageIds, notifier, logger);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -842,10 +858,10 @@ export async function schemaAPI(): Promise<void> {
     ApiResponse(MessageAPI.EXPORT_SCHEMAS,
         async (msg: { ids: string[], owner: IOwner }) => {
             try {
-                const { ids, owner } = msg;
-                return new MessageResponse(await exportSchemas(ids, owner));
+                const { ids } = msg;
+                return new MessageResponse(await SchemaImportExportHelper.exportSchemas(ids));
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -877,7 +893,7 @@ export async function schemaAPI(): Promise<void> {
                 const result = await DatabaseServer.createAndSaveSchema(schemaObject);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -919,7 +935,7 @@ export async function schemaAPI(): Promise<void> {
                     count
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -938,7 +954,7 @@ export async function schemaAPI(): Promise<void> {
                     return new MessageError('Invalid load schema parameter');
                 }
 
-                const {fields, pageIndex, pageSize } = msg;
+                const { fields, pageIndex, pageSize } = msg;
                 const filter: any = {
                     where: {
                         system: true
@@ -962,7 +978,7 @@ export async function schemaAPI(): Promise<void> {
                     count
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1016,7 +1032,7 @@ export async function schemaAPI(): Promise<void> {
                 });
                 return new MessageResponse(schema);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1052,7 +1068,7 @@ export async function schemaAPI(): Promise<void> {
                 });
                 return new MessageResponse(schema);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1081,7 +1097,7 @@ export async function schemaAPI(): Promise<void> {
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1111,7 +1127,7 @@ export async function schemaAPI(): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1148,7 +1164,7 @@ export async function schemaAPI(): Promise<void> {
                 const result = await DatabaseServer.createAndSaveSchema(schemaObject);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1169,12 +1185,10 @@ export async function schemaAPI(): Promise<void> {
                 const { id, version, owner } = msg;
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
-                const userAccount = await users.getUser(owner.username);
-                const userId = userAccount.id.toString();
-                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier(), userId);
+                const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1205,7 +1219,7 @@ export async function schemaAPI(): Promise<void> {
             });
             return new MessageResponse(schemas);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -1216,12 +1230,12 @@ export async function schemaAPI(): Promise<void> {
     ApiResponse(MessageAPI.SCHEMA_EXPORT_XLSX,
         async (msg: { owner: IOwner, ids: string[] }) => {
             try {
-                const { owner, ids } = msg;
-                const schemas = await exportSchemas(ids, owner);
+                const { ids } = msg;
+                const schemas = await SchemaImportExportHelper.exportSchemas(ids);
                 const buffer = await JsonToXlsx.generate(schemas, [], []);
                 return new BinaryMessageResponse(buffer);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1256,20 +1270,22 @@ export async function schemaAPI(): Promise<void> {
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
 
-                const result = await importSchemaByFiles(
-                    category,
-                    owner,
+                const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
-                    topicId,
-                    notifier,
-                    true
+                    owner,
+                    {
+                        category,
+                        topicId,
+                        skipGenerateId: true
+                    },
+                    notifier
                 );
 
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
-                    await PolicyImportExportHelper.updatePolicyComponents(target);
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger);
                 }
 
                 return new MessageResponse({
@@ -1277,7 +1293,7 @@ export async function schemaAPI(): Promise<void> {
                     errors: result.errors
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1299,7 +1315,7 @@ export async function schemaAPI(): Promise<void> {
                     throw new Error('Unknown target');
                 }
 
-                new Logger().info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
+                await logger.info(`Import policy by xlsx`, ['GUARDIAN_SERVICE']);
                 const users = new Users();
                 const root = await users.getHederaAccount(owner.creator);
                 notifier.start('File parsing');
@@ -1314,20 +1330,22 @@ export async function schemaAPI(): Promise<void> {
                 xlsxResult.updatePolicy(target);
                 xlsxResult.addErrors(errors);
                 GenerateBlocks.generate(xlsxResult);
-                const result = await importSchemaByFiles(
-                    category,
-                    owner,
+                const result = await SchemaImportExportHelper.importSchemaByFiles(
                     xlsxResult.schemas,
-                    topicId,
-                    notifier,
-                    true
+                    owner,
+                    {
+                        category,
+                        topicId,
+                        skipGenerateId: true
+                    },
+                    notifier
                 );
 
                 if (category === SchemaCategory.TOOL) {
                     await updateToolConfig(target);
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
-                    await PolicyImportExportHelper.updatePolicyComponents(target);
+                    await PolicyImportExportHelper.updatePolicyComponents(target, logger);
                 }
 
                 notifier.result({
@@ -1335,7 +1353,7 @@ export async function schemaAPI(): Promise<void> {
                     errors: result.errors
                 });
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
             return new MessageResponse(task);
@@ -1369,7 +1387,7 @@ export async function schemaAPI(): Promise<void> {
 
                 return new MessageResponse(xlsxResult.toJson());
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -1385,7 +1403,7 @@ export async function schemaAPI(): Promise<void> {
                 const file = await readFile(filePath);
                 return new BinaryMessageResponse(file.buffer);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

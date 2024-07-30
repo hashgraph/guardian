@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, Logger, MessageBrokerChannel, NotificationService } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -36,14 +36,16 @@ Promise.all([
             ]
         },
     }),
+    mongoForLoggingInitialization()
 ]).then(async values => {
-    const [db, cn, app] = values;
+    const [db, cn, app, loggerMongo] = values;
     DataBaseHelper.orm = db;
 
     app.listen();
-    const channel = new MessageBrokerChannel(cn, 'worker');
-    const logger = new Logger();
-    logger.setConnection(cn);
+    // new MessageBrokerChannel(cn, 'worker');
+
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
     const state = new ApplicationState();
     await state.setServiceName('QUEUE').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
@@ -51,7 +53,7 @@ Promise.all([
     await new QueueService().setConnection(cn).init();
 
     await state.updateState(ApplicationStates.READY);
-    logger.info('Queue service started', ['QUEUE_SERVICE'])
+    await logger.info('Queue service started', ['QUEUE_SERVICE'])
 
 }, (reason) => {
     console.log(reason);

@@ -1,6 +1,6 @@
 import { NextFunction, Response } from 'express';
 import { Users } from '../helpers/users.js';
-import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
+import { AuthenticatedRequest, IAuthUser, PinoLogger } from '@guardian/common';
 import { createParamDecorator, ExecutionContext, HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 
 export const AuthUser = createParamDecorator((data: string = 'user', ctx: ExecutionContext) => {
@@ -30,8 +30,9 @@ export class PermissionMiddleware implements NestMiddleware {
  * @param req
  * @param res
  * @param next
+ * @param logger
  */
-export async function authorizationHelper(req: AuthenticatedRequest, res: Response, next: Function): Promise<void> {
+export async function authorizationHelper(req: AuthenticatedRequest, res: Response, next: Function, logger: PinoLogger): Promise<void> {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         next();
@@ -45,7 +46,7 @@ export async function authorizationHelper(req: AuthenticatedRequest, res: Respon
             next();
             return;
         } catch (error) {
-            new Logger().warn(error.message, ['API_GATEWAY']);
+            await logger.warn(error.message, ['API_GATEWAY']);
         }
     }
     throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
