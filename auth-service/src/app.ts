@@ -5,7 +5,6 @@ import {
     COMMON_CONNECTION_CONFIG,
     DataBaseHelper,
     LargePayloadContainer,
-    Logger,
     MessageBrokerChannel,
     Migration,
     mongoForLoggingInitialization,
@@ -126,11 +125,11 @@ Promise.all([
             if (Number.isInteger(maxPayload)) {
                 new LargePayloadContainer().runServer();
             }
-            new Logger().info('auth service started', ['AUTH_SERVICE']);
+            await logger.info('auth service started', ['AUTH_SERVICE']);
         })
         validator.setInvalidAction(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
-            new Logger().error('Auth service not configured', ['AUTH_SERVICE']);
+            await logger.error('Auth service not configured', ['AUTH_SERVICE']);
         })
         await validator.validate();
     } catch (error) {
