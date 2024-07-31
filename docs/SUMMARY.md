@@ -374,6 +374,8 @@
         * [Get next and nested suggested block types](guardian/standard-registry/policies/auto-suggestion/auto-suggestion-apis/get-next-and-nested-suggested-block-types.md)
         * [Get suggestions configuration](guardian/standard-registry/policies/auto-suggestion/auto-suggestion-apis/get-suggestions-configuration.md)
         * [Set suggestions configuration](guardian/standard-registry/policies/auto-suggestion/auto-suggestion-apis/set-suggestions-configuration.md)
+    * [📁 Auto Testing of the Policies](guardian/standard-registry/policies/auto-testing-of-the-policies/README.md)
+      * [💻 Auto Testing using UI](guardian/standard-registry/policies/auto-testing-of-the-policies/auto-testing-using-ui.md)
     * [📔 Library of Policy Examples](guardian/standard-registry/policies/library-of-policy-examples/README.md)
       * [💻 Creating and using Roles](guardian/standard-registry/policies/library-of-policy-examples/creating-and-using-roles.md)
       * [🔢 Data input via Forms, using Roles to partition user activities.](guardian/standard-registry/policies/library-of-policy-examples/data-input-via-forms-using-roles-to-partition-user-activities..md)
