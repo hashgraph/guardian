@@ -87,7 +87,7 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const {itemsPerPage, page, size, filterByUUID, ...filterIds} = queryParams;
+        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, ...filterIds} = queryParams;
 
         const filterAddons = ref.getFiltersAddons();
         const filters = filterAddons.map(addon => {
@@ -136,8 +136,15 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting;
-        const sortState = this.state[user.id] || {};
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField);
+        let sortState = this.state[user.id] || {};
+        if (sortDirection && sortField) {
+            sortState = {
+                orderDirection: sortDirection,
+                orderField: sortField
+            };
+            this.state[user.id] = sortState;
+        }
         let data: any = enableCommonSorting
             ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, history)
             : await ref.getGlobalSources(user, paginationData);
