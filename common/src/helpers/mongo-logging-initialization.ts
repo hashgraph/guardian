@@ -4,7 +4,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import process from 'process';
 
 //entities
-import { entities } from '../index.js';
+import { Log } from '../entity/log.js';
 
 //helpers
 import { DataBaseNamingStrategy } from '../helpers/index.js';
@@ -31,7 +31,7 @@ export async function mongoForLoggingInitialization(options: Record<string, any>
                 maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT.MAX_IDLE_TIME_MS, 10),
             },
             ensureIndexes: true,
-            entities,
+            entities: [Log],
             ...options
         });
     }
