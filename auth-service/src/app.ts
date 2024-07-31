@@ -1,6 +1,20 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager } from '@guardian/common';
+import {
+    ApplicationState,
+    COMMON_CONNECTION_CONFIG,
+    DataBaseHelper,
+    LargePayloadContainer,
+    Logger,
+    MessageBrokerChannel,
+    Migration,
+    mongoForLoggingInitialization,
+    OldSecretManager,
+    PinoLogger,
+    pinoLoggerInitialization,
+    SecretManager,
+    ValidateConfiguration,
+} from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -55,15 +69,6 @@ Promise.all([
 
     state.updateState(ApplicationStates.INITIALIZING);
     try {
-        // Include accounts for demo builds only
-        import(
-            `./helpers/fixtures${
-                ApplicationEnvironment.demoMode ? '.demo' : ''
-            }.js`
-        ).then(async (module) => {
-            await module.fixtures();
-        });
-
         app.listen();
 
         await new AccountService().setConnection(cn).init();
@@ -75,6 +80,8 @@ Promise.all([
         await new RoleService().setConnection(cn).init();
         new RoleService().registerListeners(logger);
 
+        const validator = new ValidateConfiguration();
+
         if (parseInt(process.env.MEECO_AUTH_PROVIDER_ACTIVE, 10)) {
             await new MeecoAuthService().setConnection(cn).init();
             new MeecoAuthService().registerListeners(logger);
@@ -85,19 +92,47 @@ Promise.all([
         }
 
         await new OldSecretManager().setConnection(cn).init();
-        const secretManager = SecretManager.New();
-        let { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-        if (!ACCESS_TOKEN_SECRET) {
-            ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-            await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET });
-        }
 
-        state.updateState(ApplicationStates.READY);
-        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
-        if (Number.isInteger(maxPayload)) {
-            new LargePayloadContainer().runServer();
-        }
-        await logger.info('auth service started', ['AUTH_SERVICE']);
+        validator.setValidator(async () => {
+            if (!ApplicationEnvironment.demoMode) {
+                if (!process.env.SR_INITIAL_PASSWORD) {
+                    console.log('Empty SR_INITIAL_PASSWORD setting');
+                    return false;
+                }
+                if (process.env.SR_INITIAL_PASSWORD.length < 6) {
+                    console.log('SR_INITIAL_PASSWORD length is less than 6');
+                    return false;
+                }
+            }
+            const secretManager = SecretManager.New();
+            let { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
+            if (!ACCESS_TOKEN_SECRET) {
+                ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+                await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET });
+            }
+            return true;
+        })
+
+        validator.setValidAction(async () => {
+            import(
+                `./helpers/fixtures${
+                    ApplicationEnvironment.demoMode ? '.demo' : ''
+                }.js`
+            ).then(async (module) => {
+                await module.fixtures();
+            });
+            state.updateState(ApplicationStates.READY);
+            const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+            if (Number.isInteger(maxPayload)) {
+                new LargePayloadContainer().runServer();
+            }
+            new Logger().info('auth service started', ['AUTH_SERVICE']);
+        })
+        validator.setInvalidAction(async () => {
+            await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+            new Logger().error('Auth service not configured', ['AUTH_SERVICE']);
+        })
+        await validator.validate();
     } catch (error) {
         console.error(error.message);
         process.exit(1);
