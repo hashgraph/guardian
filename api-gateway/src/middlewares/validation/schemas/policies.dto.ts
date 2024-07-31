@@ -1,9 +1,111 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
-import { PolicyType } from '@guardian/interfaces';
+import { IsArray, IsBoolean, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
+import { PolicyType, PolicyTestStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 import { ValidationErrorsDTO } from './blocks.js';
 
+export class PolicyTestDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'Test ID',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test UUID',
+        example: Examples.UUID
+    })
+    @IsOptional()
+    @IsString()
+    uuid?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test Name',
+        example: 'Test Name'
+    })
+    @IsOptional()
+    @IsString()
+    name?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Policy ID',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test owner',
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    owner?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test status',
+        enum: PolicyTestStatus,
+        example: PolicyTestStatus.New
+    })
+    @IsOptional()
+    @IsString()
+    status?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Last start date',
+        example: Examples.DATE
+    })
+    @IsOptional()
+    @IsString()
+    date?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test duration',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    duration?: number;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test progress',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    progress?: number;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test result',
+        example: Examples.UUID
+    })
+    @IsOptional()
+    @IsString()
+    resultId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Test result',
+    })
+    @IsOptional()
+    @IsObject()
+    result?: any;
+}
+
+@ApiExtraModels(PolicyTestDTO)
 export class PolicyDTO {
     @ApiProperty({
         type: 'string',
@@ -261,6 +363,14 @@ export class PolicyDTO {
     @IsOptional()
     @IsString()
     projectSchema?: string;
+
+    @ApiProperty({
+        type: () => PolicyTestDTO,
+        isArray: true
+    })
+    @IsOptional()
+    @IsArray()
+    tests?: PolicyTestDTO[];
 }
 
 @ApiExtraModels(PolicyDTO)

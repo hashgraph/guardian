@@ -2,7 +2,7 @@ import { Injectable, NgModule } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterModule, RouterStateSnapshot, Routes, UrlTree } from '@angular/router';
 import { IUser, Permissions, UserRole } from '@guardian/interfaces';
 import { of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { AuditComponent } from './views/audit/audit.component';
 import { HomeComponent } from './views/home/home.component';
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
@@ -35,6 +35,7 @@ import { AboutViewComponent } from './views/admin/about-view/about-view.componen
 import { PolicySearchComponent } from './views/policy-search/policy-search.component';
 import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-tokens-user.component';
 import { RecordResultsComponent } from './modules/policy-engine/record/record-results/record-results.component';
+import { TestResultsComponent } from './modules/policy-engine/record/test-results/test-results.component';
 import { ContractConfigComponent } from './modules/contract-engine/configs/contract-config/contract-config.component';
 import { UserContractConfigComponent } from './modules/contract-engine/configs/user-contract-config/user-contract-config.component';
 import { AnnotationBlockComponent } from './modules/project-comparison/component/annotation-block/annotation-block.component';
@@ -43,6 +44,7 @@ import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { MapService } from './services/map.service';
 
 @Injectable({
     providedIn: 'root'
@@ -50,7 +52,8 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
 export class PermissionsGuard {
     constructor(
         private readonly router: Router,
-        private readonly auth: AuthService
+        private readonly auth: AuthService,
+        private readonly mapSevice: MapService,
     ) {
     }
 
@@ -74,6 +77,12 @@ export class PermissionsGuard {
         const permissions: string[] | undefined = route.data.permissions;
         const defaultPage: string | undefined = route.data.defaultPage;
         return this.auth.sessions().pipe(
+            switchMap((user) => {
+                return this.mapSevice.loadMap().pipe(
+                    switchMap(() => of(user)),
+                    catchError(() => of(user))
+                );
+            }),
             map((user: IUser | null) => {
                 if (user) {
                     if (roles) {
@@ -112,7 +121,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
-    {path: 'worker-tasks', component: WorkerTasksComponent},
+    { path: 'worker-tasks', component: WorkerTasksComponent },
 
     {
         path: 'user-profile',
@@ -403,7 +412,15 @@ const routes: Routes = [
             permissions: [Permissions.POLICIES_RECORD_ALL]
         }
     },
-
+    {
+        path: 'test-results',
+        component: TestResultsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.STANDARD_REGISTRY],
+            permissions: [Permissions.POLICIES_RECORD_ALL]
+        }
+    },
     {
         path: 'branding',
         component: BrandingComponent,

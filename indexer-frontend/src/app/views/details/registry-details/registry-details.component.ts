@@ -202,4 +202,12 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
             },
         });
     }
+
+    public override onOpenContracts(): void {
+        this.router.navigate(['/contracts'], {
+            queryParams: {
+                owner: this.target.owner,
+            },
+        });
+    }
 }

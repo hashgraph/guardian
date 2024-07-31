@@ -12,11 +12,10 @@ import {
     HederaEd25519Method,
     IAuthUser,
     KeyType,
-    Logger,
     MessageAction,
     MessageError,
     MessageResponse,
-    MessageServer,
+    MessageServer, PinoLogger,
     RegistrationMessage,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -29,7 +28,7 @@ import {
     VcHelper,
     VCMessage,
     Wallet,
-    Workers
+    Workers,
 } from '@guardian/common';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { RestoreDataFromHedera } from '../helpers/restore-data-from-hedera.js';
@@ -95,11 +94,13 @@ async function getGlobalTopic(): Promise<TopicConfig | null> {
  * @param username
  * @param profile
  * @param notifier
+ * @param logger
  */
 async function setupUserProfile(
     username: string,
     profile: ICredentials,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ): Promise<string> {
     const users = new Users();
     const wallet = new Wallet();
@@ -113,10 +114,10 @@ async function setupUserProfile(
     let did: string;
     if (user.role === UserRole.STANDARD_REGISTRY) {
         profile.entity = SchemaEntity.STANDARD_REGISTRY;
-        did = await createUserProfile(profile, notifier, user);
+        did = await createUserProfile(profile, notifier, user, logger);
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
-        did = await createUserProfile(profile, notifier, user);
+        did = await createUserProfile(profile, notifier, user, logger);
     } else {
         throw new Error('Unknown user role.');
     }
@@ -132,7 +133,7 @@ async function setupUserProfile(
     notifier.completedAndStart('Update permissions');
     if (user.role === UserRole.USER) {
         const changeRole = await users.setDefaultUserRole(username, profile.parent);
-        await serDefaultRole(changeRole, EntityOwner.sr(profile.parent))
+        await serDefaultRole(changeRole, EntityOwner.sr(null, profile.parent))
     }
 
     notifier.completedAndStart('Set up wallet');
@@ -180,9 +181,8 @@ async function checkAndPublishSchema(
     userDID: string,
     srUser: IOwner,
     messageServer: MessageServer,
-    logger: Logger,
-    notifier: INotifier,
-    userId?: string
+    logger: PinoLogger,
+    notifier: INotifier
 ): Promise<void> {
     let schema = await new DataBaseHelper(SchemaCollection).findOne({
         entity,
@@ -200,7 +200,7 @@ async function checkAndPublishSchema(
             logger.info(`Publish System Schema (${entity})`, ['GUARDIAN_SERVICE']);
             schema.creator = userDID;
             schema.owner = userDID;
-            const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema);
+            const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier);
             await new DataBaseHelper(SchemaCollection).save(item);
         }
     }
@@ -211,13 +211,14 @@ async function checkAndPublishSchema(
  * @param profile
  * @param notifier
  * @param user
+ * @param logger
  */
 async function createUserProfile(
     profile: ICredentials,
     notifier: INotifier,
-    user: IAuthUser
+    user: IAuthUser,
+    logger: PinoLogger
 ): Promise<string> {
-    const logger = new Logger();
     const {
         hederaAccountId,
         hederaAccountKey,
@@ -244,6 +245,7 @@ async function createUserProfile(
         }
     }
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey, signOptions);
+    console.log('hederaAccountId', hederaAccountId);
 
     // ------------------------
     // <-- Check hedera key
@@ -346,7 +348,7 @@ async function createUserProfile(
     notifier.completedAndStart('Publish Schema');
     let schemaObject: Schema;
     try {
-        const srUser: IOwner = EntityOwner.sr(userDID);
+        const srUser: IOwner = EntityOwner.sr(user.id.toString(), userDID);
         await checkAndPublishSchema(
             SchemaEntity.STANDARD_REGISTRY,
             topicConfig,
@@ -354,8 +356,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.USER,
@@ -364,8 +365,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.RETIRE_TOKEN,
@@ -374,8 +374,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.ROLE,
@@ -384,8 +383,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         await checkAndPublishSchema(
             SchemaEntity.USER_PERMISSIONS,
@@ -394,8 +392,7 @@ async function createUserProfile(
             srUser,
             messageServer,
             logger,
-            notifier,
-            user.id.toString()
+            notifier
         );
         if (entity) {
             const schema = await new DataBaseHelper(SchemaCollection).findOne({
@@ -481,7 +478,7 @@ async function createUserProfile(
     // -----------------------
     if (user.role === UserRole.STANDARD_REGISTRY) {
         messageServer.setTopicObject(topicConfig);
-        await createDefaultRoles(userDID, currentDidDocument, messageServer, notifier, user.id.toString());
+        await createDefaultRoles(user.id.toString(), userDID, currentDidDocument, messageServer, notifier);
     }
 
     notifier.completed();
@@ -494,17 +491,16 @@ async function createUserProfile(
  * @param didDocument
  * @param messageServer
  * @param notifier
- * @param userId
  */
 async function createDefaultRoles(
+    userId: string,
     did: string,
     didDocument: CommonDidDocument,
     messageServer: MessageServer,
-    notifier: INotifier,
-    userId?: string
+    notifier: INotifier
 ): Promise<void> {
     notifier.completedAndStart('Create roles');
-    const owner = EntityOwner.sr(did);
+    const owner = EntityOwner.sr(userId, did);
     const users = new Users();
     const vcHelper = new VcHelper();
     const roles = [{
@@ -606,7 +602,7 @@ export class ProfileController {
 /**
  * Connect to the message broker methods of working with Address books.
  */
-export function profileAPI() {
+export function profileAPI(logger: PinoLogger) {
     ApiResponse(MessageAPI.GET_BALANCE,
         async (msg: { username: string }) => {
             try {
@@ -641,7 +637,7 @@ export function profileAPI() {
                     } : null
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error, 500);
             }
@@ -677,7 +673,7 @@ export function profileAPI() {
 
                 return new MessageResponse(balance);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error, 500);
             }
@@ -695,10 +691,10 @@ export function profileAPI() {
                     return new MessageError('Invalid Hedera Account Key', 403);
                 }
 
-                const did = await setupUserProfile(username, profile, emptyNotifier());
+                const did = await setupUserProfile(username, profile, emptyNotifier(), logger);
                 return new MessageResponse(did);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 console.error(error);
                 return new MessageError(error, 500);
             }
@@ -719,10 +715,10 @@ export function profileAPI() {
                     return;
                 }
 
-                const did = await setupUserProfile(username, profile, notifier);
+                const did = await setupUserProfile(username, profile, notifier, logger);
                 notifier.result(did);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -776,12 +772,13 @@ export function profileAPI() {
                     hederaAccountId,
                     hederaAccountKey,
                     topicId,
-                    oldDidDocument
+                    oldDidDocument,
+                    logger
                 )
                 notifier.completed();
                 notifier.result('did');
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -831,7 +828,7 @@ export function profileAPI() {
                 notifier.completed();
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -882,7 +879,7 @@ export function profileAPI() {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -911,7 +908,7 @@ export function profileAPI() {
                     return new MessageResponse(keys);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

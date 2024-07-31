@@ -5,7 +5,7 @@ import { INotifier } from '../../helpers/notifier.js';
 /**
  * Import Result
  */
-interface ImportResult {
+export interface ImportArtifactResult {
     /**
      * New token uuid
      */
@@ -30,7 +30,7 @@ export async function importArtifactsByFiles(
     user: IOwner,
     artifacts: any[] = [],
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportArtifactResult> {
     const errors: any[] = [];
     const artifactsMap = new Map<string, string>();
 

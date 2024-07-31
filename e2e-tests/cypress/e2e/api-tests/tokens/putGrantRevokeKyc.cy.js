@@ -1,11 +1,11 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Tokens", { tags: "@tokens" }, () => {
+context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const user = "Installer";
 
-    it("Set and unset the KYC flag for the user", () => {
+    it("Set and unset the KYC flag for the user", { tags: ['smoke'] }, () => {
         //grant kyc
         cy.request({
             method: 'POST',
@@ -29,9 +29,9 @@ context("Tokens", { tags: "@tokens" }, () => {
                     headers: {
                         authorization: accessToken
                     }
-                }).then((resp) => {
-                    expect(resp.status).eql(STATUS_CODE.OK);
-                    let tokenId = resp.body.at(-1).tokenId
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    let tokenId = response.body.at(-1).tokenId
                     cy.request({
                         method: METHOD.PUT,
                         url:
@@ -44,10 +44,10 @@ context("Tokens", { tags: "@tokens" }, () => {
                         headers: {
                             authorization,
                         },
-                    }).then((resp) => {
-                        expect(resp.status).eql(STATUS_CODE.OK);
-                        let token = resp.body.tokenId;
-                        let kyc = resp.body.kyc;
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.OK);
+                        let token = response.body.tokenId;
+                        let kyc = response.body.kyc;
                         expect(token).to.deep.equal(tokenId);
                         expect(kyc).to.be.true;
                         cy.request({
@@ -62,10 +62,10 @@ context("Tokens", { tags: "@tokens" }, () => {
                             headers: {
                                 authorization,
                             },
-                        }).then((resp) => {
-                            expect(resp.status).eql(STATUS_CODE.OK);
-                            let token = resp.body.tokenId;
-                            let kyc = resp.body.kyc;
+                        }).then((response) => {
+                            expect(response.status).eql(STATUS_CODE.OK);
+                            let token = response.body.tokenId;
+                            let kyc = response.body.kyc;
                             expect(token).to.deep.equal(tokenId);
                             expect(kyc).to.be.false;
                         });

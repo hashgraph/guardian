@@ -36,10 +36,11 @@ import { RolesGuard } from './auth/roles-guard.js';
 import { RecordApi } from './api/service/record.js';
 import { ProjectsAPI } from './api/service/project.js';
 import { AISuggestionsAPI } from './api/service/ai-suggestions.js';
-import { cacheProvider } from './helpers/cache-provider.js';
+import { cacheProvider } from './helpers/providers/cache-provider.js';
 import { CacheService } from './helpers/cache-service.js';
 import { PermissionsApi } from './api/service/permissions.js';
 import { WorkerTasksController } from './api/service/worker-tasks.js';
+import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -101,7 +102,10 @@ import { WorkerTasksController } from './api/service/worker-tasks.js';
         UsersService,
         cacheProvider,
         CacheService,
-    ]
+        loggerMongoProvider,
+        pinoLoggerProvider,
+    ],
+    exports: [pinoLoggerProvider],
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {

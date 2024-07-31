@@ -61,6 +61,23 @@ export class PaginationAddon {
     }
 
     /**
+     * Set pagination state
+     * @param user
+     * @param data
+     */
+    public async setState(user: PolicyUser, data: any): Promise<any> {
+        const {size, itemsPerPage, page} = data;
+        this.state[user.id] = {size, itemsPerPage, page};
+
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const totalCount = await (ref.parent as IPolicySourceBlock).getGlobalSources(user, null, true);
+
+        if (this.state[user.id].size !== totalCount) {
+            this.state[user.id].size = totalCount;
+        }
+    }
+
+    /**
      * Get block data
      * @param user
      */

@@ -1,3 +1,4 @@
+import { RawMessage } from '@indexer/interfaces';
 import { Entity, Property, PrimaryKey, SerializedPrimaryKey, Unique, Index } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -8,7 +9,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'status', properties: ['status'] })
 // @Index({ name: 'last_update', properties: ['lastUpdate'] })
 // @Index({ name: 'status_and_last_update', properties: ['status', 'lastUpdate'] })
-export class MessageCache {
+export class MessageCache implements RawMessage {
     @PrimaryKey()
     _id: ObjectId;
 

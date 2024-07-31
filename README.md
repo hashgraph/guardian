@@ -1,6 +1,6 @@
 # Guardian
 
-[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version) [![Discord chat](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545)
+[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version) [![Discord chat](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9216/badge)](https://www.bestpractices.dev/projects/9216)
 
 ## Overview
 
@@ -266,6 +266,7 @@ If you want to manually build every component with debug information, then build
 * [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 * [Nats 1.12.2](https://nats.io/)
 * [Redict 7.3.0](https://redict.io/)
+* [Seq 2024.3 - optional for logging](https://datalust.co/seq)
 
 ### Build and start each component
 

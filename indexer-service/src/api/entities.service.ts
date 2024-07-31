@@ -1,27 +1,55 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import {
+    Message,
     IndexerMessageAPI,
     MessageResponse,
     MessageError,
     AnyResponse,
-    IPage,
     DataBaseHelper,
     MessageCache,
     TopicCache,
-    Message,
     TokenCache,
     NftCache,
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { Relationships } from '../utils/relationships.js';
 import {
+    Message as IMessage,
     MessageType,
     MessageAction,
-    IPageFilters,
-    IDetailsResults,
-    IRelationshipsResults,
-    ISchemaTreeResult,
+    PageFilters,
+    RegistryDetails,
+    Registry,
+    Page,
+    RegistryUser,
+    RegistryUserDetails,
+    Policy,
+    PolicyDetails,
+    Tool,
+    ToolDetails,
+    Module,
+    ModuleDetails,
+    ISchema,
+    SchemaDetails,
+    Role,
+    RoleDetails,
+    DID,
+    DIDDetails,
+    VP,
+    VPDetails,
+    VC,
+    VCDetails,
+    Contract,
+    ContractDetails,
+    Topic,
+    TopicDetails,
+    TokenDetails,
+    Token,
+    NFTDetails,
+    NFT,
+    SchemaTree,
+    Relationships as IRelationships
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -35,7 +63,7 @@ const pageOptions = new Set([
     'keywords',
 ]);
 
-function parsePageFilters(msg: IPageFilters) {
+function parsePageFilters(msg: PageFilters) {
     let filters: any = {};
     const keys = Object.keys(msg).filter((name) => !pageOptions.has(name));
     for (const key of keys) {
@@ -71,7 +99,7 @@ function parseKeywordFilter(keywordsString: string) {
     return filter;
 }
 
-async function loadDocuments(row: Message): Promise<Message> {
+async function loadDocuments(row: IMessage): Promise<IMessage> {
     if (row?.files?.length) {
         row.documents = [];
         for (const fileName of row.files) {
@@ -88,8 +116,8 @@ export class EntityService {
     //#region STANDARD REGISTRIES
     @MessagePattern(IndexerMessageAPI.GET_REGISTRIES)
     async getRegistries(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Registry>>> {
         try {
             const options = parsePageParams(msg);
             const filters = Object.assign(
@@ -98,19 +126,19 @@ export class EntityService {
             );
             filters.type = MessageType.STANDARD_REGISTRY;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [Registry[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Registry>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -119,20 +147,20 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_REGISTRY)
     async getRegistry(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<RegistryDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.STANDARD_REGISTRY,
-            });
-            const row = await em.findOne(MessageCache, {
+            })) as Registry;
+            const row: any = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<RegistryDetails>({
                     id: messageId,
                     row,
                 });
@@ -181,7 +209,13 @@ export class EntityService {
                 treasury: item.owner,
             } as any);
 
-            return new MessageResponse<IDetailsResults>({
+            const contracts = await em.count(Message, {
+                type: MessageType.CONTRACT,
+                action: MessageAction.CreateContract,
+                owner: item.owner,
+            } as any);
+
+            return new MessageResponse<RegistryDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -195,6 +229,7 @@ export class EntityService {
                     modules,
                     tokens,
                     users,
+                    contracts
                 },
             });
         } catch (error) {
@@ -206,8 +241,8 @@ export class EntityService {
     //#region REGISTRY USERS
     @MessagePattern(IndexerMessageAPI.GET_REGISTRY_USERS)
     async getRegistryUsers(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<RegistryUser>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
@@ -247,19 +282,19 @@ export class EntityService {
                     },
                 ];
             }
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [RegistryUser[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<RegistryUser>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -268,7 +303,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_REGISTRY_USER)
     async getRegistryUser(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<RegistryUserDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -281,7 +316,7 @@ export class EntityService {
                     fields: ['options'],
                 }
             );
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 topicId: {
                     $in: registryOptions.map(
                         (reg) => reg.options.registrantTopicId
@@ -292,13 +327,13 @@ export class EntityService {
                 },
                 consensusTimestamp: messageId,
                 type: MessageType.DID_DOCUMENT,
-            } as any);
+            } as any)) as RegistryUser;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<RegistryUserDetails>({
                     id: messageId,
                     row,
                 });
@@ -321,7 +356,7 @@ export class EntityService {
                 'options.issuer': item.options.did,
             } as any);
 
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<RegistryUserDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -343,27 +378,27 @@ export class EntityService {
     //#region POLICIES
     @MessagePattern(IndexerMessageAPI.GET_POLICIES)
     async getPolicies(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Policy>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.INSTANCE_POLICY;
             filters.action = MessageAction.PublishPolicy;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [Policy[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Policy>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -372,15 +407,15 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_POLICY)
     async getPolicy(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<PolicyDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.INSTANCE_POLICY,
                 action: MessageAction.PublishPolicy,
-            } as any);
+            } as any)) as Policy;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
@@ -413,14 +448,14 @@ export class EntityService {
                 roles,
             };
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<PolicyDetails>({
                     id: messageId,
                     row,
                     activity,
                 });
             }
 
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<PolicyDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -435,27 +470,27 @@ export class EntityService {
     //#region TOOLS
     @MessagePattern(IndexerMessageAPI.GET_TOOLS)
     async getTools(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Tool>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.TOOL;
             filters.action = MessageAction.PublishTool;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [Tool[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Tool>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -464,15 +499,15 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_TOOL)
     async getTool(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<ToolDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.TOOL,
                 action: MessageAction.PublishTool,
-            } as any);
+            } as any)) as Tool;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
@@ -498,14 +533,14 @@ export class EntityService {
             };
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<ToolDetails>({
                     id: messageId,
                     row,
                     activity,
                 });
             }
 
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<ToolDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -520,27 +555,27 @@ export class EntityService {
     //#region MODULES
     @MessagePattern(IndexerMessageAPI.GET_MODULES)
     async getModules(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Module>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.MODULE;
             filters.action = MessageAction.PublishModule;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [Module[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Module>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -549,27 +584,27 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_MODULE)
     async getModule(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<ModuleDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.MODULE,
                 action: MessageAction.PublishModule,
-            } as any);
+            } as any)) as Module;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<ModuleDetails>({
                     id: messageId,
                     row,
                 });
             }
 
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<ModuleDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -583,20 +618,20 @@ export class EntityService {
     //#region SCHEMAS
     @MessagePattern(IndexerMessageAPI.GET_SCHEMAS)
     async getSchemas(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<ISchema>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.SCHEMA;
             filters.action = MessageAction.PublishSchema;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [ISchema[], number];
+            const result = {
                 items: rows.map((item) => {
                     delete item.analytics;
                     return item;
@@ -606,7 +641,7 @@ export class EntityService {
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<ISchema>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -615,11 +650,11 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_SCHEMA)
     async getSchema(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<SchemaDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.SCHEMA,
                 action: {
@@ -628,7 +663,7 @@ export class EntityService {
                         MessageAction.PublishSystemSchema,
                     ],
                 },
-            } as any);
+            } as any)) as ISchema;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
@@ -649,7 +684,7 @@ export class EntityService {
             };
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<SchemaDetails>({
                     id: messageId,
                     row,
                     activity,
@@ -658,7 +693,7 @@ export class EntityService {
 
             await loadDocuments(item);
 
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<SchemaDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -672,7 +707,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_SCHEMA_TREE)
     async getSchemaTree(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<ISchemaTreeResult>> {
+    ): Promise<AnyResponse<SchemaTree>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -684,9 +719,9 @@ export class EntityService {
                         MessageAction.PublishSystemSchema,
                     ],
                 },
-            });
+            }) as ISchema;
             if (!item) {
-                return new MessageResponse<ISchemaTreeResult>({
+                return new MessageResponse<SchemaTree>({
                     id: messageId,
                 });
             }
@@ -697,7 +732,7 @@ export class EntityService {
                 em
             );
             await root.loadChildren(item.analytics?.childSchemas || []);
-            return new MessageResponse<ISchemaTreeResult>({
+            return new MessageResponse<SchemaTree>({
                 id: messageId,
                 item,
                 root: root.toObject(),
@@ -711,8 +746,8 @@ export class EntityService {
     //#region TOKENS
     @MessagePattern(IndexerMessageAPI.GET_TOKENS)
     async getTokens(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<TokenCache>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Token>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
@@ -722,14 +757,14 @@ export class EntityService {
                 filters,
                 options
             );
-            const result: IPage<TokenCache> = {
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Token>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -738,14 +773,14 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_TOKEN)
     async getToken(
         @Payload() msg: { tokenId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<TokenDetails>> {
         try {
             const { tokenId } = msg;
             const em = DataBaseHelper.getEntityManager();
             const row = await em.findOne(TokenCache, {
                 tokenId,
             });
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<TokenDetails>({
                 id: tokenId,
                 row,
             });
@@ -757,26 +792,26 @@ export class EntityService {
     //#region ROLES
     @MessagePattern(IndexerMessageAPI.GET_ROLES)
     async getRoles(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Role>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.ROLE_DOCUMENT;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [Role[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Role>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -785,14 +820,14 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_ROLE)
     async getRole(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<RoleDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.ROLE_DOCUMENT,
-            } as any);
+            } as any)) as Role;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
@@ -807,7 +842,7 @@ export class EntityService {
             };
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<RoleDetails>({
                     id: messageId,
                     row,
                     activity,
@@ -816,7 +851,7 @@ export class EntityService {
 
             await loadDocuments(item);
 
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<RoleDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -834,26 +869,26 @@ export class EntityService {
     //#region DIDS
     @MessagePattern(IndexerMessageAPI.GET_DID_DOCUMENTS)
     async getDidDocuments(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<DID>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.DID_DOCUMENT;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [DID[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<DID>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -861,42 +896,42 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_DID_DOCUMENT)
     async getDidDocument(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<DIDDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.DID_DOCUMENT,
-            });
+            })) as DID;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<DIDDetails>({
                     id: messageId,
                     row,
                 });
             }
 
             await loadDocuments(item);
-            const history = await em.find(
+            const history = (await em.find(
                 Message,
                 {
                     uuid: item.uuid,
-                    type: MessageType.VP_DOCUMENT,
+                    type: MessageType.DID_DOCUMENT,
                 },
                 {
                     orderBy: {
                         consensusTimestamp: 'ASC',
                     },
                 }
-            );
+            )) as DID[];
             for (const historyItem of history) {
                 await loadDocuments(historyItem);
             }
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<DIDDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -910,7 +945,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_DID_RELATIONSHIPS)
     async getDidRelationships(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IRelationshipsResults>> {
+    ): Promise<AnyResponse<IRelationships>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -919,7 +954,7 @@ export class EntityService {
                 type: MessageType.DID_DOCUMENT,
             });
             if (!item) {
-                return new MessageResponse<IRelationshipsResults>({
+                return new MessageResponse<IRelationships>({
                     id: messageId,
                 });
             }
@@ -927,7 +962,7 @@ export class EntityService {
             const utils = new Relationships(item);
             const { target, relationships, links } = await utils.load();
 
-            return new MessageResponse<IRelationshipsResults>({
+            return new MessageResponse<IRelationships>({
                 id: messageId,
                 item,
                 target,
@@ -943,19 +978,19 @@ export class EntityService {
     //#region VPS
     @MessagePattern(IndexerMessageAPI.GET_VP_DOCUMENTS)
     async getVpDocuments(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VP>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VP_DOCUMENT;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [VP[], number];
+            const result = {
                 items: rows.map((item) => {
                     delete item.analytics;
                     return item;
@@ -965,7 +1000,7 @@ export class EntityService {
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<VP>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -973,27 +1008,27 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_VP_DOCUMENT)
     async getVpDocument(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<VPDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VP_DOCUMENT,
-            });
+            })) as VP;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<VPDetails>({
                     id: messageId,
                     row,
                 });
             }
 
             await loadDocuments(item);
-            const history = await em.find(
+            const history = (await em.find(
                 Message,
                 {
                     uuid: item.uuid,
@@ -1004,11 +1039,11 @@ export class EntityService {
                         consensusTimestamp: 'ASC',
                     },
                 }
-            );
+            )) as VP[];
             for (const historyItem of history) {
                 await loadDocuments(historyItem);
             }
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<VPDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -1022,7 +1057,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_VP_RELATIONSHIPS)
     async getVpRelationships(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IRelationshipsResults>> {
+    ): Promise<AnyResponse<IRelationships>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -1031,7 +1066,7 @@ export class EntityService {
                 type: MessageType.VP_DOCUMENT,
             });
             if (!item) {
-                return new MessageResponse<IRelationshipsResults>({
+                return new MessageResponse<IRelationships>({
                     id: messageId,
                 });
             }
@@ -1040,7 +1075,7 @@ export class EntityService {
             const { target, relationships, links, categories } =
                 await utils.load();
 
-            return new MessageResponse<IRelationshipsResults>({
+            return new MessageResponse<IRelationships>({
                 id: messageId,
                 item,
                 target,
@@ -1057,19 +1092,19 @@ export class EntityService {
     //#region VCS
     @MessagePattern(IndexerMessageAPI.GET_VC_DOCUMENTS)
     async getVcDocuments(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VC>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.VC_DOCUMENT;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [VC[], number];
+            const result = {
                 items: rows.map((item) => {
                     if (item.analytics) {
                         item.analytics = Object.assign(item.analytics, {
@@ -1083,7 +1118,7 @@ export class EntityService {
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<VC>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -1091,20 +1126,20 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_VC_DOCUMENT)
     async getVcDocument(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<VCDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VC_DOCUMENT,
-            });
+            })) as VC;
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<VCDetails>({
                     id: messageId,
                     row,
                 });
@@ -1125,7 +1160,7 @@ export class EntityService {
                     schema = JSON.parse(schemaFileString);
                 }
             }
-            const history = await em.find(
+            const history = (await em.find(
                 Message,
                 {
                     uuid: item.uuid,
@@ -1136,11 +1171,11 @@ export class EntityService {
                         consensusTimestamp: 'ASC',
                     },
                 }
-            );
+            )) as VC[];
             for (const historyItem of history) {
                 await loadDocuments(historyItem);
             }
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<VCDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -1155,7 +1190,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_VC_RELATIONSHIPS)
     async getVcRelationships(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IRelationshipsResults>> {
+    ): Promise<AnyResponse<IRelationships>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -1164,7 +1199,7 @@ export class EntityService {
                 type: MessageType.VC_DOCUMENT,
             });
             if (!item) {
-                return new MessageResponse<IRelationshipsResults>({
+                return new MessageResponse<IRelationships>({
                     id: messageId,
                 });
             }
@@ -1173,7 +1208,7 @@ export class EntityService {
             const { target, relationships, links, categories } =
                 await utils.load();
 
-            return new MessageResponse<IRelationshipsResults>({
+            return new MessageResponse<IRelationships>({
                 id: messageId,
                 item,
                 target,
@@ -1193,8 +1228,8 @@ export class EntityService {
     //#region NFTS
     @MessagePattern(IndexerMessageAPI.GET_NFTS)
     async getNFTs(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<NftCache>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<NFT>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
@@ -1204,14 +1239,14 @@ export class EntityService {
                 filters,
                 options
             );
-            const result: IPage<NftCache> = {
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<NFT>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -1220,7 +1255,7 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_NFT)
     async getNFT(
         @Payload() msg: { tokenId: string; serialNumber: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<NFTDetails>> {
         try {
             const { tokenId } = msg;
             const serialNumber = parseInt(msg.serialNumber, 10);
@@ -1232,8 +1267,7 @@ export class EntityService {
             const nftHistory: any = await axios.get(
                 `https://${process.env.HEDERA_NET}.mirrornode.hedera.com/api/v1/tokens/${tokenId}/nfts/${serialNumber}/transactions?limit=100`
             );
-            console.log(nftHistory);
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<NFTDetails>({
                 id: tokenId,
                 row,
                 history: nftHistory.data?.transactions || [],
@@ -1246,8 +1280,8 @@ export class EntityService {
     //#region TOPICS
     @MessagePattern(IndexerMessageAPI.GET_TOPICS)
     async getTopics(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Topic>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
@@ -1255,19 +1289,19 @@ export class EntityService {
             filters.action = MessageAction.CreateTopic;
             filters['options.childId'] = null;
             const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = await em.findAndCount(
+            const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
                 options
-            );
-            const result: IPage<Message> = {
+            )) as [Topic[], number];
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Topic>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -1275,16 +1309,16 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_TOPIC)
     async getTopic(
         @Payload() msg: { topicId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<TopicDetails>> {
         try {
             const { topicId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 type: MessageType.TOPIC,
                 action: MessageAction.CreateTopic,
                 'options.childId': null,
                 topicId,
-            } as any);
+            } as any)) as Topic;
             const row = await em.findOne(TopicCache, {
                 topicId,
             });
@@ -1364,13 +1398,13 @@ export class EntityService {
             };
 
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<TopicDetails>({
                     id: topicId,
                     row,
                     activity,
                 });
             }
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<TopicDetails>({
                 id: topicId,
                 uuid: item.uuid,
                 item,
@@ -1385,8 +1419,8 @@ export class EntityService {
     //#region CONTRACTS
     @MessagePattern(IndexerMessageAPI.GET_CONTRACTS)
     async getContracts(
-        @Payload() msg: IPageFilters
-    ): Promise<AnyResponse<IPage<Message>>> {
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Contract>>> {
         try {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
@@ -1398,14 +1432,14 @@ export class EntityService {
                 filters,
                 options
             );
-            const result: IPage<Message> = {
+            const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
                 order: options.orderBy,
             };
-            return new MessageResponse(result);
+            return new MessageResponse<Page<Contract>>(result);
         } catch (error) {
             return new MessageError(error);
         }
@@ -1413,25 +1447,25 @@ export class EntityService {
     @MessagePattern(IndexerMessageAPI.GET_CONTRACT)
     async getContract(
         @Payload() msg: { messageId: string }
-    ): Promise<AnyResponse<IDetailsResults>> {
+    ): Promise<AnyResponse<ContractDetails>> {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            const item = (await em.findOne(Message, {
                 type: MessageType.CONTRACT,
                 action: MessageAction.CreateContract,
-                messageId,
-            } as any);
-            const row = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+            } as any)) as Contract;
+            const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
             if (!item) {
-                return new MessageResponse<IDetailsResults>({
+                return new MessageResponse<ContractDetails>({
                     id: messageId,
                     row,
                 });
             }
-            return new MessageResponse<IDetailsResults>({
+            return new MessageResponse<ContractDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,

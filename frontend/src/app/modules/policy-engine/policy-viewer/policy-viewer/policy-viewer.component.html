@@ -106,7 +106,7 @@
             <div>
                 <a routerLink="/policy-viewer">
                     <p-button
-                        [ngClass]="{ 'back-button': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
+                        [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
                         icon="pi pi-arrow-left"
                         label="Back to Manage Policies"
                         styleClass="p-button-outlined p-button-sm"
@@ -121,21 +121,21 @@
                 <div class="policy-additional-info-container">
                     <span
                         *ngIf="policyInfo && policyInfo.version"
-                        [ngClass]="{ 'white-additional-policy-info-text': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
+                        [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
                         class="additional-policy-info-text"
                     >
                         Version: ({{ policyInfo.version }})
                     </span>
                     <span
                         *ngIf="!groups.length && !isMultipleGroups"
-                        [ngClass]="{ 'white-additional-policy-info-text': policyInfo.status === 'DRY-RUN' || !!policyInfo.discontinuedDate }"
+                        [ngClass]="{ 'white-additional-policy-info-text': isDryRun || !!policyInfo.discontinuedDate }"
                         class="additional-policy-info-text"
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
                     </span>
                     <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
                         <span
-                            [ngClass]="policyInfo.status === 'DRY-RUN' ? 'white-additional-policy-info-text' : ''"
+                            [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
                             class="additional-policy-info-text"
                             title="Group: {{userGroup}} / Role: {{userRole}}"
                         >

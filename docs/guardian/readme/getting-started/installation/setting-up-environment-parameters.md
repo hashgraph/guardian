@@ -24,3 +24,9 @@ Values from .env file need to be set up only on first start (when db or vault ar
 | DIRECT\_MESSAGE\_HOST     | Host for direct messages (if not set get hostname)                                                                                  | localhost                 |
 | DIRECT\_MESSAGE\_PROTOCOL | Protocol https or http (http by default, https need additional server like nginx)                                                   | http                      |
 | MQ\_MAX\_PAYLOAD          | Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker | 35                        |
+
+### `.env / .env.docker` Parameters in `auth-service`
+
+| Parameter             | Purpose                                                                                               | Example    |
+| --------------------- | ----------------------------------------------------------------------------------------------------- | ---------- |
+| SR\_INITIAL\_PASSWORD | Allows to set SR initial password when it will be created first time. It also should have more than 5 | Env!s!0n!@ |

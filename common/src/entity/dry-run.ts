@@ -1,5 +1,5 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterCreate, AfterUpdate } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterCreate, AfterUpdate, Index } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers/index.js';
@@ -10,6 +10,26 @@ import ObjSet from 'lodash.set';
  * DryRun document
  */
 @Entity()
+@Index({
+    properties: ['dryRunClass'],
+    name: 'class_index'
+})
+@Index({
+    properties: ['dryRunId'],
+    name: 'dry_run_index'
+})
+@Index({
+    properties: ['dryRunId', 'dryRunClass'],
+    name: 'full_index'
+})
+@Index({
+    properties: ['dryRunId', 'systemMode'],
+    name: 'system_index'
+})
+@Index({
+    properties: ['dryRunId', 'dryRunClass', 'active'],
+    name: 'user_index'
+})
 export class DryRun extends BaseEntity {
     /**
      * id
@@ -22,6 +42,12 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     dryRunClass?: string;
+
+    /**
+     * Class
+     */
+    @Property({ nullable: true })
+    systemMode?: boolean;
 
     /**
      * Document owner
@@ -686,13 +712,13 @@ export class DryRun extends BaseEntity {
     /**
      * Mint status
      */
-    @Property({ nullable: true, type: 'unknown'})
+    @Property({ nullable: true, type: 'unknown' })
     mintStatus?: any;
 
     /**
      * Transfer status
      */
-    @Property({ nullable: true, type: 'unknown'})
+    @Property({ nullable: true, type: 'unknown' })
     transferStatus?: any;
 
     /**

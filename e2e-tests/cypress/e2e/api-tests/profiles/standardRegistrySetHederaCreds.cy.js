@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import {checkForRemovedStyleOptions} from "cypress/mount-utils";
 
 
-context('Profiles', { tags: '@profiles' },() => {
+context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
 
     it('Get Standard Registry account information', () => {
         //Getting accessToken for StandardRegistry

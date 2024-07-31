@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Modules", { tags: '@modules' },() => {
+context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     const authorization = Cypress.env("authorization");
 
         it("Preview the module from IPFS", () => {
@@ -16,8 +16,8 @@ context("Modules", { tags: '@modules' },() => {
                         authorization,
                     },
                     timeout: 180000,
-                }).then((resp) => {
-                    expect(resp.status).eql(STATUS_CODE.OK);
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
                 });
             });
     });

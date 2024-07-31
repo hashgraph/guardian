@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas",{ tags: '@schemas' },  () => {
+context("Schemas",{ tags: ['schema', 'thirdPool'] },  () => {
     const authorization = Cypress.env("authorization");
 
     it("Push import new schema from IPFS", () => {
@@ -11,8 +11,8 @@ context("Schemas",{ tags: '@schemas' },  () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            const topicUid = resp.body[0].topicId;
+        }).then((response) => {
+            const topicUid = response.body[0].topicId;
             cy.request({
                 method: METHOD.POST,
                 url:

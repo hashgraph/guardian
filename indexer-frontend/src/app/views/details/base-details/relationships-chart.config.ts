@@ -1,10 +1,10 @@
-import { IRelationshipsResults } from '@services/search.service';
+import { Relationships } from '@indexer/interfaces';
 import { EChartsOption } from 'echarts';
 
 export function createChartConfig(
     data: any[] = [],
     links: any = [],
-    categories = []
+    categories: any[] = []
 ): EChartsOption {
     return {
         title: {
@@ -103,7 +103,7 @@ export function createChartLink(item: any): any {
     };
 }
 
-export function createChart(result: IRelationshipsResults | null = null) {
+export function createChart(result: Relationships | null = null) {
     if (result && result.relationships && result.links) {
         const data = [];
         const relationships = result.relationships.sort((a, b) => {
@@ -111,7 +111,7 @@ export function createChart(result: IRelationshipsResults | null = null) {
         });
         const categoriesLength: any = {};
         const categoriesIndexes: any = {};
-        for (let i = 0; i < result.categories.length; i++) {
+        for (let i = 0; i < result.categories!.length; i++) {
             categoriesLength[i] = relationships.filter(
                 (item: any) => item.category === i
             ).length;

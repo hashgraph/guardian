@@ -5,8 +5,10 @@ import {
     SerializedPrimaryKey,
     Unique,
     Index,
+    Enum,
 } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { Message as IMessage, MessageAction, MessageType } from '@indexer/interfaces';
 
 @Entity()
 @Unique({ name: 'consensus_timestamp', properties: ['consensusTimestamp'] })
@@ -14,7 +16,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'type', properties: ['type'] })
 @Index({ name: 'files', properties: ['files'] })
-export class Message {
+export class Message implements IMessage {
     @PrimaryKey()
     _id: ObjectId;
 
@@ -39,11 +41,11 @@ export class Message {
     @Property({ nullable: true })
     statusReason: string;
 
-    @Property({ nullable: true })
-    type: string;
+    @Enum({ nullable: true, type: () => MessageType })
+    type: MessageType;
 
-    @Property({ nullable: true })
-    action: string;
+    @Enum({ nullable: true, type: () => MessageAction })
+    action: MessageAction;
 
     @Property({ nullable: true })
     lang: string;
@@ -63,7 +65,7 @@ export class Message {
         schemaId?: string;
         schemaName?: string;
         policyId?: string;
-        policyIds?: string;
+        policyIds?: string[];
         textSearch?: string;
         childSchemas?: any[];
         owner?: string;
@@ -74,6 +76,7 @@ export class Message {
         tokensCount?: number;
         hash?: string;
         hashMap?: any;
+        properties?: string[];
     };
 
     @Property({ nullable: true })

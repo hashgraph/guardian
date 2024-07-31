@@ -1,6 +1,6 @@
 import { AccountId, PrivateKey, TopicId, } from '@hashgraph/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, Logger, Workers } from '../../helpers/index.js';
+import { IPFS, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -312,11 +312,11 @@ export class MessageServer {
                 message = SchemaMessage.fromMessageObject(json);
                 break;
             default:
-                new Logger().error(`Invalid format message: ${json.type}`, ['GUARDIAN_SERVICE']);
+                new PinoLogger().error(`Invalid format message: ${json.type}`, ['GUARDIAN_SERVICE']);
                 throw new Error(`Invalid format message: ${json.type || 'UNKNOWN TYPE'}`);
         }
         if (!message.validate()) {
-            new Logger().error(`Invalid json: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE']);
+            new PinoLogger().error(`Invalid json: ${json.type || 'UNKNOWN TYPE'}`, ['GUARDIAN_SERVICE']);
             throw new Error(`Invalid json: ${json.type}`);
         }
         return message as T;
@@ -376,7 +376,7 @@ export class MessageServer {
                 timeStamp
             }
         }, 10);
-        new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
         const result: Message[] = [];
         for (const message of messages) {
             try {
@@ -455,7 +455,7 @@ export class MessageServer {
                 index: 1
             }
         }, 10);
-        new Logger().info(`getTopic, ${topic}`, ['GUARDIAN_SERVICE']);
+        new PinoLogger().info(`getTopic, ${topic}`, ['GUARDIAN_SERVICE']);
         try {
             const json = JSON.parse(message.message);
             if (json.type === MessageType.Topic) {
@@ -636,7 +636,7 @@ export class MessageServer {
             }
         }, 10, null, userId);
 
-        new Logger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
+        new PinoLogger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
         const result = MessageServer.fromMessage<T>(message, type);
         result.setAccount(message.payer_account_id);
         result.setIndex(message.sequence_number);
@@ -682,7 +682,7 @@ export class MessageServer {
             }
         }, 10);
 
-        new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
         const result: Message[] = [];
         for (const message of messages) {
             try {

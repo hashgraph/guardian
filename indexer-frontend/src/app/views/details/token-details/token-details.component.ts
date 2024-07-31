@@ -90,7 +90,7 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
             this.entitiesService.getToken(this.id).subscribe({
                 next: (result) => {
                     this.setResult(result);
-                    if (result.row['type'] === TokenType.NFT) {
+                    if (result.row!['type'] === TokenType.NFT) {
                         this.additionalOveriviewFormFields = [
                             {
                                 label: 'details.token.overview.serial_number',
@@ -98,7 +98,7 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
                                 link: `/nfts`,
                                 direct: true,
                                 queryParams: {
-                                    tokenId: result.row['tokenId']
+                                    tokenId: result.row!['tokenId']
                                 }
                             }
                         ];

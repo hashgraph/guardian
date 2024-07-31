@@ -1,11 +1,11 @@
 {
   "name": "ai-service",
-  "version": "2.26.2",
+  "version": "2.27.0",
   "main": "dist/app.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "@guardian/common": "^2.26.2",
-    "@guardian/interfaces": "^2.26.2",
+    "@guardian/common": "^2.27.0",
+    "@guardian/interfaces": "^2.27.0",
     "@mikro-orm/core": "6.2.2",
     "@mikro-orm/mongodb": "6.2.2",
     "@nestjs/common": "^9.4.1",
@@ -20,6 +20,9 @@
     "prebuild": "^12.1.0",
     "typescript": "^5.2.2",
     "rxjs": "^7.8.1"
+  },
+  "imports": {
+    "#constants": "./dist/constants/index.js"
   },
   "scripts": {
     "build": "tsc",

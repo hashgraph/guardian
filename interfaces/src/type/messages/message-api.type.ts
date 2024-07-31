@@ -154,6 +154,7 @@ export enum MessageAPI {
     ERROR_EVENT = 'error-event',
     UPDATE_USER_INFO_EVENT = 'update-user-info-event',
     UPDATE_RECORD = 'update-record-event',
+    UPDATE_TEST_EVENT = 'update-test-event',
     MEECO_AUTH_REQUEST = 'MEECO_AUTH_REQUEST',
     MEECO_AUTH_PRESENT_VP = 'MEECO_AUTH_PRESENT_VP',
     MEECO_VERIFY_VP = 'MEECO_VERIFY_VP',
@@ -214,7 +215,8 @@ export enum MessageAPI {
     CREATE_ROLE = 'CREATE_ROLE_VC',
     UPDATE_ROLE = 'UPDATE_ROLE_VC',
     DELETE_ROLE = 'DELETE_ROLE_VC',
-    SET_ROLE = 'SET_ROLE_VC'
+    SET_ROLE = 'SET_ROLE_VC',
+    CHECK_KEY_PERMISSIONS = 'CHECK_KEY_PERMISSIONS',
 }
 
 /**

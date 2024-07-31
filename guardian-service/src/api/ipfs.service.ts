@@ -1,12 +1,12 @@
 import { ApiResponse, ApiResponseSubscribe } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DryRunFiles, IPFS, Logger, MessageError, MessageResponse } from '@guardian/common';
+import { DataBaseHelper, DryRunFiles, IPFS, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
 import { IPFSTaskManager } from '../helpers/ipfs-task-manager.js';
 
 /**
  * TODO
  */
-export async function ipfsAPI(): Promise<void> {
+export async function ipfsAPI(logger: PinoLogger): Promise<void> {
     ApiResponseSubscribe(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
         try {
             if (!msg) {
@@ -22,7 +22,7 @@ export async function ipfsAPI(): Promise<void> {
                 }
             }
         } catch (error) {
-            new Logger().error(error, ['IPFS_SERVICE']);
+            await logger.error(error, ['IPFS_SERVICE']);
         }
     });
 
@@ -41,7 +41,7 @@ export async function ipfsAPI(): Promise<void> {
                 }
             }
         } catch (error) {
-            new Logger().error(error, ['IPFS_SERVICE']);
+            await logger.error(error, ['IPFS_SERVICE']);
         }
     });
 
@@ -51,7 +51,7 @@ export async function ipfsAPI(): Promise<void> {
             return new MessageResponse(result);
         }
         catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageError(error);
         }
     })
@@ -73,7 +73,7 @@ export async function ipfsAPI(): Promise<void> {
                 url: IPFS.IPFS_PROTOCOL + entity.id
             });
         } catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageError(error);
         }
     })
@@ -93,7 +93,7 @@ export async function ipfsAPI(): Promise<void> {
             return new MessageResponse(await IPFS.getFile(msg.cid, msg.responseType, msg.userId));
         }
         catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageResponse({ error: error.message });
         }
     })
@@ -114,7 +114,7 @@ export async function ipfsAPI(): Promise<void> {
 
             return new MessageResponse(file.file);
         } catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageResponse({error: error.message});
         }
     })

@@ -1,0 +1,43 @@
+.context {
+    overflow: visible;
+    padding: 2px;
+}
+
+.dialog-header {
+    .header-item {
+        padding: 6px 12px;
+        margin: 0px 16px;
+        border-radius: 6px;
+        font-size: var(--guardian-primary-font-size);
+        color: var(--guardian-dry-run-color);
+        background: var(--guardian-dry-run-background);
+        user-select: none;
+        cursor: default;
+    }
+}
+
+.cancel-button {
+    margin-left: auto !important;
+    margin-right: 0px !important;
+}
+
+.publish-button {
+    margin-left: 15px !important;
+    margin-right: 0px !important;
+}
+
+.form-input-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+
+    .form-label {
+        margin-bottom: 6px;
+        color: var(--color-grey-black-1, #181818);
+        font-family: Inter;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 14px;
+    }
+}

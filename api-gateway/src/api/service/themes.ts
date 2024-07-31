@@ -1,4 +1,4 @@
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, UseCache } from '#helpers';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req, Response } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBody, ApiOkResponse, ApiInternalServerErrorResponse, ApiExtraModels, ApiParam } from '@nestjs/swagger';
@@ -11,7 +11,7 @@ import { PREFIXES } from '#constants';
 @ApiTags('themes')
 export class ThemesApi {
 
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -58,7 +58,7 @@ export class ThemesApi {
 
             return await guardians.createTheme(theme, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -122,7 +122,7 @@ export class ThemesApi {
 
             return await guardians.updateTheme(themeId, theme, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -176,7 +176,7 @@ export class ThemesApi {
 
             return await guardians.deleteTheme(themeId, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -216,7 +216,7 @@ export class ThemesApi {
                 return [];
             }
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -263,7 +263,7 @@ export class ThemesApi {
 
             return await guardian.importThemeFile(zip, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -309,7 +309,7 @@ export class ThemesApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

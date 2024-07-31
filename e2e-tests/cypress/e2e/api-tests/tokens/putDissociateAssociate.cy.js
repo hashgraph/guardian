@@ -1,8 +1,8 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Tokens",{ tags: '@tokens' }, () => {
-    const username = "Installer";
+context("Tokens",{ tags: ['tokens', 'thirdPool'] }, () => {
+    let username = "Installer";
     before(() => {
         cy.request({
             method: 'POST',
@@ -46,7 +46,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
 
 
     const authorization = Cypress.env("authorization");
-    it("Associate and disassociate the user with the provided Hedera token", () => {
+    it("Associate and disassociate the user with the provided Hedera token", { tags: ['smoke'] }, () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'accounts/login',

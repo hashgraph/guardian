@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schema",{ tags: '@schemas' }, () => {
+context("Schema",{ tags: ['schema', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Export schema message", () => {
@@ -27,7 +27,7 @@ context("Schema",{ tags: '@schemas' }, () => {
                     authorization,
                 },
             }).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
             });
         });
     });

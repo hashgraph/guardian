@@ -6,7 +6,7 @@ on:
 jobs:
     buildAndTest:
         name: Build and Test
-        runs-on: [self-hosted, Linux, medium, ephemeral]
+        runs-on: ubuntu-latest
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
@@ -62,6 +62,9 @@ jobs:
                   pushd auth-service
                   yarn run build
                   popd
+                  pushd queue-service
+                  yarn run build
+                  popd
                   pushd guardian-service
                   yarn run build
                   popd
@@ -98,6 +101,10 @@ jobs:
                   pushd auth-service
                   npm start &
                   sleep 20
+                  popd                  
+                  pushd queue-service
+                  npm start &
+                  sleep 20
                   popd
                   pushd guardian-service
                   npm start &
@@ -128,7 +135,7 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install --force
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" --spec cypress/e2e/api-tests/**/*.cy.js            
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=smoke,grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
                   popd
 
             - name: Publish API Test Results

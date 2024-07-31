@@ -2,8 +2,8 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "^2.26.2",
-        "@guardian/interfaces": "^2.26.2",
+        "@guardian/common": "^2.27.0",
+        "@guardian/interfaces": "^2.27.0",
         "@hashgraph/sdk": "2.46.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
@@ -54,6 +54,9 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "name": "worker-service",
+    "imports": {
+      "#constants": "./dist/constants/index.js"
+    },
     "scripts": {
         "build": "tsc && tsc-alias",
         "build:prod": "tsc --project tsconfig.production.json && tsc-alias",
@@ -66,5 +69,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "2.26.2"
+    "version": "2.27.0"
 }
