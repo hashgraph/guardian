@@ -66,10 +66,10 @@ export async function artifactAPI(logger: PinoLogger): Promise<void> {
                 }
             }
 
-            const extention = getArtifactExtention(artifact.originalname);
+            const extention = getArtifactExtention(artifact.filename);
             const type = getArtifactType(extention);
             const row = await DatabaseServer.saveArtifact({
-                name: artifact.originalname.split('.')[0],
+                name: artifact.filename.split('.')[0],
                 extention,
                 type,
                 policyId: parentId,
