@@ -1,6 +1,6 @@
 import { Entity, Enum, Property } from '@mikro-orm/core';
 import { ILog, LogType } from '@guardian/interfaces';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models/base-entity.js';
 
 /**
  * Log message
