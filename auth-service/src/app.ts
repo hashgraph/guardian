@@ -51,14 +51,6 @@ Promise.all([
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
     state.updateState(ApplicationStates.INITIALIZING);
     try {
-        // Include accounts for demo builds only
-        import(
-            `./helpers/fixtures${
-                ApplicationEnvironment.demoMode ? '.demo' : ''
-            }.js`
-        ).then(async (module) => {
-            await module.fixtures();
-        });
 
         app.listen();
 
@@ -95,10 +87,28 @@ Promise.all([
                 }
                 await secretManager.setSecrets('secretkey/auth', {ACCESS_TOKEN_SECRET});
             }
+            if (!ApplicationEnvironment.demoMode) {
+                if (!process.env.SR_INITIAL_PASSWORD) {
+                    console.log('Empty SR_INITIAL_PASSWORD setting');
+                    return false;
+                }
+                if (process.env.SR_INITIAL_PASSWORD.length < 6) {
+                    console.log('SR_INITIAL_PASSWORD length is less than 6');
+                    return false;
+                }
+            }
             return true;
         })
 
         validator.setValidAction(async () => {
+            // Include accounts for demo builds only
+            import(
+                `./helpers/fixtures${
+                    ApplicationEnvironment.demoMode ? '.demo' : ''
+                }.js`
+            ).then(async (module) => {
+                await module.fixtures();
+            });
             state.updateState(ApplicationStates.READY);
             const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
             if (Number.isInteger(maxPayload)) {
