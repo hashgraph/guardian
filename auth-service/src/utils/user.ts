@@ -22,11 +22,14 @@ export class UserUtils {
         user: User | IUser,
         requiredProps: Record<string, string>
     ): IUser {
-        const userRequiredProps: IUser = {};
-        for (const prop of Object.values(requiredProps)) {
-            userRequiredProps[prop] = user[prop];
+        if (user) {
+            const userRequiredProps: IUser = {};
+            for (const prop of Object.values(requiredProps)) {
+                userRequiredProps[prop] = user[prop];
+            }
+            return userRequiredProps;
         }
-        return userRequiredProps;
+        return user;
     }
 
     public static setDefaultPermissions(user: User): User {

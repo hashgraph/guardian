@@ -33,6 +33,9 @@ export class UserPassword {
         originalPassword: IPassword | User,
         currentPassword: string
     ): Promise<boolean> {
+        if (!originalPassword) {
+            return false;
+        }
         const passwordDigest = createHash('sha256').update(currentPassword).digest('hex');
         return passwordDigest === originalPassword.password;
     }
@@ -65,6 +68,10 @@ export class UserPassword {
         currentPassword: string
     ): Promise<boolean> {
         return new Promise((resolve, reject) => {
+            if (!originalPassword) {
+                resolve(false);
+                return;
+            }
             const { password, salt } = originalPassword;
             pbkdf2(
                 currentPassword,
@@ -81,5 +88,19 @@ export class UserPassword {
                     }
                 });
         });
+    }
+
+    public static async verifyPassword(
+        originalPassword: IPassword | User,
+        currentPassword: string
+    ): Promise<boolean> {
+        if (!originalPassword) {
+            return false;
+        }
+        if (originalPassword.passwordVersion === PasswordType.V2) {
+            return await UserPassword.verifyPasswordV2(originalPassword, currentPassword)
+        } else {
+            return await UserPassword.verifyPasswordV1(originalPassword, currentPassword)
+        }
     }
 }

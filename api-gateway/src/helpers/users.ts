@@ -2,7 +2,7 @@ import { Singleton } from '../helpers/decorators/singleton.js';
 import { ApplicationStates, AuthEvents, GenerateUUIDv4, IOwner, MessageAPI, UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '@guardian/common';
 import { Injectable } from '@nestjs/common';
-import { RoleDTO } from '#middlewares';
+import { AccountsSessionResponseDTO, RoleDTO } from '#middlewares';
 
 /**
  * Items and count
@@ -168,12 +168,26 @@ export class Users extends NatsService {
      * @param username
      * @param password
      */
-    public async generateNewToken(username: string, password: string) {
+    public async generateNewToken(username: string, password: string): Promise<AccountsSessionResponseDTO> {
         return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN, { username, password });
     }
 
     public async generateNewAccessToken(refreshToken: string): Promise<any> {
         return await this.sendMessage(AuthEvents.GENERATE_NEW_ACCESS_TOKEN, { refreshToken });
+    }
+
+    /**
+     * Register new token
+     * @param username
+     * @param oldPassword
+     * @param newPassword
+     */
+    public async changeUserPassword(
+        username: string,
+        oldPassword: string,
+        newPassword: string
+    ): Promise<AccountsSessionResponseDTO> {
+        return await this.sendMessage(AuthEvents.CHANGE_USER_PASSWORD, { username, oldPassword, newPassword });
     }
 
     /**

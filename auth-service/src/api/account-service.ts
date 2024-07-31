@@ -328,25 +328,43 @@ export class AccountService extends NatsService {
                             }
                         } else {
                             if (await UserPassword.verifyPasswordV1(user, password)) {
-
-
-
-                                const userAccessTokenService = await UserAccessTokenService.New();
-                                const token = userAccessTokenService.generateRefreshToken(user);
-                                user.refreshToken = token.id;
-                                await new DataBaseHelper(User).save(user);
-                                return new MessageResponse({
-                                    username: user.username,
-                                    did: user.did,
-                                    role: user.role,
-                                    refreshToken: token.token
-                                })
-
-
+                                return new MessageError('UNSUPPORTED_PASSWORD_TYPE', 401);
                             }
                         }
                     }
                     return new MessageError('Unauthorized request', 401);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.getMessages(AuthEvents.CHANGE_USER_PASSWORD,
+            async (msg: { username: string, oldPassword: string, newPassword: string }) => {
+                try {
+                    const { username, oldPassword, newPassword } = msg;
+                    const user = await UserUtils.getRowUser({ username, template: { $ne: true } });
+                    if (!(await UserPassword.verifyPassword(user, oldPassword))) {
+                        return new MessageError('Unauthorized request', 401);
+                    }
+
+                    const passwordDigest = await UserPassword.generatePasswordV2(newPassword);
+                    const userAccessTokenService = await UserAccessTokenService.New();
+                    const token = userAccessTokenService.generateRefreshToken(user);
+
+                    user.password = passwordDigest.password;
+                    user.salt = passwordDigest.salt;
+                    user.passwordVersion = passwordDigest.passwordVersion;
+                    user.refreshToken = token.id;
+
+                    await new DataBaseHelper(User).save(user);
+
+                    return new MessageResponse({
+                        username: user.username,
+                        did: user.did,
+                        role: user.role,
+                        refreshToken: token.token
+                    })
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
                     return new MessageError(error);

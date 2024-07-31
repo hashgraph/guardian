@@ -41,6 +41,23 @@ export class AccountsSessionResponseDTO {
     accessToken: string
 }
 
+export class ChangePasswordDTO {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    username: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    oldPassword: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    newPassword: string;
+}
+
 export class LoginUserDTO {
     @ApiProperty()
     @IsString()
@@ -77,7 +94,7 @@ export class RegisterUserDTO {
     @IsString()
     @IsNotEmpty()
     @IsIn(Object.values(UserRole))
-    role: UserRole | string
+    role: UserRole;
 }
 
 export class CredentialSubjectDTO {

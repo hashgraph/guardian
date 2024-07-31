@@ -7,6 +7,7 @@ import { AuditComponent } from './views/audit/audit.component';
 import { HomeComponent } from './views/home/home.component';
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
+import { ChangePasswordComponent } from './views/login/change-password/change-password.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootProfileComponent } from './views/root-profile/root-profile.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
@@ -119,6 +120,7 @@ export class PermissionsGuard {
 const routes: Routes = [
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
+    { path: 'change-password', component: ChangePasswordComponent },
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
     { path: 'worker-tasks', component: WorkerTasksComponent },

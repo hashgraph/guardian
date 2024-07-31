@@ -2,8 +2,8 @@ import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
 import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
+import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
 import { PolicyListResponse } from '../../entities/policy';
@@ -139,10 +139,44 @@ export class AccountApi {
         try {
             const { username, password } = body;
             const users = new Users();
-            return await users.generateNewToken(username, password) as any;
+            return await users.generateNewToken(username, password);
         } catch (error) {
             await this.logger.warn(error.message, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+            throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    /**
+     * Change password
+     */
+    @Post('/change-password')
+    @ApiOperation({
+        summary: 'Change user password.',
+    })
+    @ApiBody({
+        description: 'User credentials.',
+        type: ChangePasswordDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: AccountsSessionResponseDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async changePassword(
+        @Body() body: ChangePasswordDTO
+    ): Promise<AccountsSessionResponseDTO> {
+        try {
+            const { username, oldPassword, newPassword } = body;
+            const users = new Users();
+            return await users.changeUserPassword(username, oldPassword, newPassword);
+        } catch (error) {
+            await this.logger.warn(error.message, ['API_GATEWAY']);
+            throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
         }
     }
 
