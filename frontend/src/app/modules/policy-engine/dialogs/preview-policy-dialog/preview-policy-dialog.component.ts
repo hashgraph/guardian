@@ -31,7 +31,7 @@ export class PreviewPolicyDialog {
     public mode: string = 'new';
 
     public get inValid(): boolean {
-        if(!(this.policy || this.module || this.tool)) {
+        if(!(this.policy || this.module || this.tool || this.xlsx)) {
             return true;
         }
         if(!this.toolForm.valid) {
