@@ -89,7 +89,7 @@ Promise.all([
         validator.setValidator(async () => {
             let {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth');
             if (!ACCESS_TOKEN_SECRET) {
-                ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+                ACCESS_TOKEN_SECRET = process.env.JWT_PRIVATE_KEY;
                 if (ACCESS_TOKEN_SECRET.length < 8) {
                     return false;
                 }
