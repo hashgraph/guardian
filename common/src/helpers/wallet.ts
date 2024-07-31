@@ -15,7 +15,9 @@ import { IAuthUser } from '../interfaces';
  */
 export enum KeyEntity {
     TOKEN = 'TOKEN',
-    TOPIC = 'TOPIC'
+    TOPIC = 'TOPIC',
+    DID = 'DID',
+    KEY = 'KEY',
 }
 
 /**
@@ -48,6 +50,8 @@ export const KEY_TYPE_KEY_ENTITY: Map<KeyType, KeyEntity> = new Map([
     [KeyType.TOKEN_WIPE_KEY, KeyEntity.TOKEN],
     [KeyType.TOPIC_SUBMIT_KEY, KeyEntity.TOPIC],
     [KeyType.TOKEN_WIPE_KEY, KeyEntity.TOPIC],
+    [KeyType.DID_KEYS, KeyEntity.DID],
+    [KeyType.KEY, KeyEntity.KEY],
 ]);
 
 /**
