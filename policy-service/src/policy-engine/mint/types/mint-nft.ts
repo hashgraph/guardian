@@ -131,7 +131,7 @@ export class MintNFT extends TypedMint {
             !Number.isInteger(this._mintRequest.startSerial)
         ) {
             try {
-                const startSerial = await new Workers().addRetryableTask(
+                new Workers().addRetryableTask(
                     {
                         type: WorkerTaskType.GET_TOKEN_NFTS,
                         data: {
@@ -143,9 +143,14 @@ export class MintNFT extends TypedMint {
                     1,
                     10,
                     userId
-                );
-                this._mintRequest.startSerial = startSerial[0] || 0;
-                await this._db.saveMintRequest(this._mintRequest);
+                ).then(async (startSerial) => {
+                    try {
+                        this._mintRequest.startSerial = startSerial[0] || 0;
+                        await this._db.saveMintRequest(this._mintRequest);
+                    } catch (error) {
+                        this.error(error);
+                    }
+                }).catch((error) => this.error(error));
             } catch (error) {
                 this.error(error);
             }
