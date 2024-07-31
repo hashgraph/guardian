@@ -3,6 +3,7 @@ import { Controller, Get, HttpCode, HttpStatus, Inject, Put, Query } from '@nest
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { AISuggestions, InternalException } from '#helpers';
 import { InternalServerErrorDTO } from '#middlewares';
+import { PinoLogger } from '@guardian/common';
 
 /**
  * AI suggestions route
@@ -10,7 +11,7 @@ import { InternalServerErrorDTO } from '#middlewares';
 @Controller('ai-suggestions')
 @ApiTags('ai-suggestions')
 export class AISuggestionsAPI {
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
+    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -47,7 +48,7 @@ export class AISuggestionsAPI {
             const aiSuggestions = new AISuggestions();
             return await aiSuggestions.getAIAnswer(q);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -74,7 +75,7 @@ export class AISuggestionsAPI {
             const aiSuggestions = new AISuggestions();
             return await aiSuggestions.rebuildAIVector();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

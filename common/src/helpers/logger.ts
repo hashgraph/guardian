@@ -1,8 +1,11 @@
 import { ApplicationStates, GenerateUUIDv4, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
-import { createLogger, Logger as WinstonLogger, format } from 'winston';
-import Transport from 'winston-transport';
+
+import { Writable } from 'stream';
+import pino from 'pino';
+
+import { ConsoleTransport } from './console-transport.js';
 
 /**
  * Logger connection
@@ -25,7 +28,7 @@ class LoggerConnection extends NatsService {
 /**
  * Logger transport class
  */
-export class LoggerServiceTransport extends Transport {
+export class LoggerServiceTransport extends Writable {
     /**
      * Message broker channel
      * @private
@@ -33,7 +36,7 @@ export class LoggerServiceTransport extends Transport {
     private readonly channel: LoggerConnection;
 
     constructor(opts) {
-        super(opts);
+        super({ ...opts, objectMode: true });
         this.channel = new LoggerConnection();
     }
 
@@ -45,6 +48,17 @@ export class LoggerServiceTransport extends Transport {
     log(info, callback): void {
         this.channel.publish(MessageAPI.WRITE_LOG, info);
         callback();
+    }
+
+    /**
+     * Adapter for Pino
+     * @param chunk
+     * @param encoding
+     * @param callback
+     */
+    _write(chunk, encoding, callback) {
+        const info = JSON.parse(chunk.toString());
+        this.log(info, callback);
     }
 
     /**
@@ -114,40 +128,6 @@ export class LoggerServiceTransport extends Transport {
 }
 
 /**
- * Console transport
- */
-export class ConsoleTransport extends Transport {
-    /**
-     * Set log function
-     * @param info
-     * @param callback
-     */
-    log(info, callback): void {
-        let fn: Function;
-        switch (info.type) {
-            case LogType.INFO:
-                fn = console.info;
-                break;
-
-            case LogType.WARN:
-                fn = console.warn;
-                break;
-
-            case LogType.ERROR:
-                fn = console.error;
-                break;
-
-            default:
-                fn = console.log;
-        }
-
-        fn(`${new Date().toISOString()} [${info.attributes?.join(',')}]:`, info.message);
-
-        callback();
-    }
-}
-
-/**
  * Logger class
  */
 @Singleton
@@ -156,17 +136,23 @@ export class Logger {
      * Logger instance
      * @private
      */
-    private readonly loggerInstance: WinstonLogger;
+    private readonly loggerInstance;
     /**
      * Logger service transport
      * @private
      */
     private readonly messageTransport: LoggerServiceTransport;
 
+    /**
+     * Logger console transport
+     * @private
+     */
+    private readonly consoleTransport: ConsoleTransport;
+
     constructor() {
-        this.messageTransport = new LoggerServiceTransport({
-            format: format.json(),
-        });
+        this.messageTransport = new LoggerServiceTransport({});
+        this.consoleTransport = new ConsoleTransport({});
+
         const levelTypeMapping = [
             'error',
             'warn',
@@ -176,14 +162,23 @@ export class Logger {
             'debug',
             'silly',
         ];
-        this.loggerInstance = createLogger({
+
+        this.loggerInstance = pino({
             level: levelTypeMapping[process.env.LOG_LEVEL] || 'info',
-            format: format.json(),
-            transports: [
-                new ConsoleTransport({ format: format.json() }),
-                this.messageTransport,
-            ],
-        });
+            base: null,
+            formatters: {
+                level(label) {
+                    return { level: label };
+                },
+                log(object) {
+                    return { ...object };
+                }
+            },
+            timestamp: () => `,"time":"${new Date().toISOString()}"`
+        }, pino.multistream([
+            { stream: this.consoleTransport },
+            { stream: this.messageTransport },
+        ]));
     }
 
     /**

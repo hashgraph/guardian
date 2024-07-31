@@ -1,22 +1,20 @@
 import { WalletAccount } from '../entity/wallet-account.js';
-import { DataBaseHelper, Logger } from '@guardian/common';
+import { DataBaseHelper, PinoLogger } from '@guardian/common';
 import { IVault } from '../vaults/index.js';
 
 /**
  * Migration function
  * @constructor
  */
-export async function ImportKeysFromDatabase(vault: IVault): Promise<void> {
-    const logger = new Logger();
-
+export async function ImportKeysFromDatabase(vault: IVault, logger: PinoLogger): Promise<void> {
     if (process.env.VAULT_PROVIDER === 'database') {
-        logger.error('Cannot import to database provider', ['AUTH_SERVICE']);
+        await logger.error('Cannot import to database provider', ['AUTH_SERVICE']);
         return;
     }
 
     const re = /^(.*KEY)\|(.+)$/;
 
-    logger.info('Start import keys', ['AUTH_SERVICE']);
+    await logger.info('Start import keys', ['AUTH_SERVICE']);
     const walletRepository = new DataBaseHelper(WalletAccount)
     const databaseWallets = await walletRepository.find({
         type: re
@@ -30,15 +28,15 @@ export async function ImportKeysFromDatabase(vault: IVault): Promise<void> {
         }
     })
 
-    logger.info(`found ${walletAccounts.length} keys`, ['AUTH_SERVICE']);
+    await logger.info(`found ${walletAccounts.length} keys`, ['AUTH_SERVICE']);
 
     try {
         for (const {token, type, key, value} of walletAccounts) {
             await vault.setKey(token, type, key, value);
         }
-        logger.info(`${walletAccounts.length} keys was added to ${vault.constructor.name.toUpperCase()}`, ['AUTH_SERVICE']);
+        await logger.info(`${walletAccounts.length} keys was added to ${vault.constructor.name.toUpperCase()}`, ['AUTH_SERVICE']);
     } catch (e) {
-        logger.error(`${vault.constructor.name.toUpperCase()} vault import error: ${e.message}`, ['AUTH_SERVICE']);
+        await logger.error(`${vault.constructor.name.toUpperCase()} vault import error: ${e.message}`, ['AUTH_SERVICE']);
     }
 
 }

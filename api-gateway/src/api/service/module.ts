@@ -1,4 +1,4 @@
-import { Logger, IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
@@ -12,7 +12,7 @@ const ONLY_SR = ' Only users with the Standard Registry role are allowed to make
 @Controller('modules')
 @ApiTags('modules')
 export class ModulesApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -54,7 +54,7 @@ export class ModulesApi {
 
             return await guardian.createModule(module, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -111,7 +111,7 @@ export class ModulesApi {
             const { items, count } = await guardians.getModule(options, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -171,7 +171,7 @@ export class ModulesApi {
             const { items, count } = await guardians.getModuleV2(options, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -245,7 +245,7 @@ export class ModulesApi {
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -298,7 +298,7 @@ export class ModulesApi {
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await (new Logger()).error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
 
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -344,7 +344,7 @@ export class ModulesApi {
             }
             return await guardian.deleteModule(uuid, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -381,7 +381,7 @@ export class ModulesApi {
             const guardians = new Guardians();
             return await guardians.getMenuModule(new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -426,7 +426,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.getModuleById(uuid, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -487,7 +487,7 @@ export class ModulesApi {
 
             return await guardian.updateModule(uuid, module, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -531,7 +531,7 @@ export class ModulesApi {
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -572,7 +572,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.exportModuleMessage(uuid, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -615,7 +615,7 @@ export class ModulesApi {
 
             return await guardian.importModuleMessage(messageId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -652,7 +652,7 @@ export class ModulesApi {
         try {
             return await guardian.importModuleFile(body, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -694,7 +694,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.previewModuleMessage(messageId, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -731,7 +731,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.previewModuleFile(body, new EntityOwner(user));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -786,7 +786,7 @@ export class ModulesApi {
 
             return await guardian.publishModule(uuid, new EntityOwner(user), module);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -824,7 +824,7 @@ export class ModulesApi {
             const guardian = new Guardians();
             return await guardian.validateModule(new EntityOwner(user), module);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

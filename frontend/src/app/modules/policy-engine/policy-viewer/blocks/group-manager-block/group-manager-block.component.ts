@@ -5,7 +5,7 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
-import { InviteDialogComponent } from '../../../helpers/invite-dialog/invite-dialog.component';
+import { InviteDialogComponent } from '../../../dialogs/invite-dialog/invite-dialog.component';
 
 /**
  * Component for display block of 'policyRolesBlock' types.

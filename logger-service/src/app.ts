@@ -68,7 +68,14 @@ Promise.all([
         new LargePayloadContainer().runServer();
     }
 
-    state.updateState(ApplicationStates.READY);
+    const isMongoTransport = process.env.TRANSPORTS.includes('MONGO')
+
+    if(isMongoTransport) {
+        await state.updateState(ApplicationStates.READY);
+    } else {
+        await state.updateState(ApplicationStates.STOPPED);
+    }
+
     // const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     // if (Number.isInteger(maxPayload)) {
     //     new LargePayloadContainer().runServer();

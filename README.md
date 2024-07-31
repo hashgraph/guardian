@@ -266,6 +266,7 @@ If you want to manually build every component with debug information, then build
 * [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 * [Nats 1.12.2](https://nats.io/)
 * [Redict 7.3.0](https://redict.io/)
+* [Seq 2024.3 - optional for logging](https://datalust.co/seq)
 
 ### Build and start each component
 
