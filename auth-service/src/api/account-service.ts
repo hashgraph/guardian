@@ -422,18 +422,6 @@ export class AccountService extends NatsService {
                 }
             });
 
-        this.getMessages<ISaveUserMessage, IUser>(AuthEvents.SAVE_USER,
-            async (msg: { user: IAuthUser }) => {
-                const { user } = msg;
-                try {
-                    const result = await new DataBaseHelper(User).save(user)
-                    return new MessageResponse(UserUtils.updateUserFields(result));
-                } catch (error) {
-                    await logger.error(error, ['AUTH_SERVICE']);
-                    return new MessageError(error);
-                }
-            });
-
         this.getMessages(AuthEvents.GET_USER_ACCOUNTS,
             async (msg: {
                 filters?: any,

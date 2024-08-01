@@ -164,14 +164,6 @@ export class Users extends NatsService {
     }
 
     /**
-     * Save user
-     * @param user
-     */
-    public async save(user: IAuthUser) {
-        return await this.sendMessage(AuthEvents.SAVE_USER, user);
-    }
-
-    /**
      * Get user by token
      * @param token
      */

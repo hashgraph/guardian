@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
  * Registration page.
@@ -34,33 +35,43 @@ export class ChangePasswordComponent implements OnInit {
         ]),
     });
     public wrongNameOrPassword: boolean = false;
-    public errorMessage: string = '';
+    public wrongMatchPassword: boolean = false;
+    public login: string;
+    public message: string;
 
     constructor(
+        private dialogRef: DynamicDialogRef,
+        private dialogConfig: DynamicDialogConfig,
         private auth: AuthService,
         private router: Router,
         private authState: AuthStateService
     ) {
-
+        this.login = this.dialogConfig.data?.login;
+        this.message = this.dialogConfig.data?.message;
     }
 
     ngOnInit() {
+        this.changeForm.controls.login.setValue(this.login);
+    }
+
+    onNoClick() {
+        this.dialogRef.close(false);
     }
 
     onChange() {
-        this.errorMessage = '';
+        this.wrongNameOrPassword = false;
+        this.wrongMatchPassword = false;
         const value = this.changeForm.value;
         if (this.changeForm.invalid) {
-            this.errorMessage = '';
+            this.wrongNameOrPassword = true;
             return;
         }
         if (value.newPassword !== value.confirmPassword) {
-            this.errorMessage = '';
+            this.wrongMatchPassword = true;
             return;
         }
 
         this.loading = true;
-        this.wrongNameOrPassword = false;
         this.auth.changePassword(value.login, value.oldPassword, value.newPassword)
             .subscribe((result) => {
                 this.auth.setRefreshToken(result.refreshToken);
@@ -71,15 +82,12 @@ export class ChangePasswordComponent implements OnInit {
                     this.router.navigate([home]);
                 });
             }, (error) => {
-                this.loading = false;
-                this.errorMessage = error.message;
-                if (String(error.status) === '401') {
-                    if (error.error.message === 'UNSUPPORTED_PASSWORD_TYPE') {
-                        this.router.navigate(['/change-password']);
-                    } else {
+                setTimeout(() => {
+                    this.loading = false;
+                    if (String(error.status) === '401') {
                         this.wrongNameOrPassword = true;
                     }
-                }
+                }, 500);
             });
     }
 }

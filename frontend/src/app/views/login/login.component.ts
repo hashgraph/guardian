@@ -18,6 +18,7 @@ import { AccountTypeSelectorDialogComponent } from './register-dialogs/account-t
 import { ForgotPasswordDialogComponent } from './forgot-password-dialog/forgot-password-dialog.component';
 import { RegisterDialogComponent } from './register-dialogs/register-dialog/register-dialog.component';
 import { DemoService } from '../../services/demo.service';
+import { ChangePasswordComponent } from './change-password/change-password.component';
 
 /**
  * Login page.
@@ -148,7 +149,7 @@ export class LoginComponent implements OnInit, OnDestroy {
                 this.errorMessage = error.message;
                 if (String(error.status) === '401') {
                     if (error.error.message === 'UNSUPPORTED_PASSWORD_TYPE') {
-                        this.router.navigate(['/change-password']);
+                        this.changePassword(login);
                     } else {
                         this.wrongNameOrPassword = true;
                     }
@@ -274,6 +275,18 @@ export class LoginComponent implements OnInit, OnDestroy {
                 console.log(data);
             }
         });
+    }
+
+    changePassword(login: string) {
+        this.dialogService.open(ChangePasswordComponent, {
+            header: 'Please change user password',
+            width: '640px',
+            modal: true,
+            data: {
+                message: 'Please update your password to comply with hardened Guardian security protocols.',
+                login,
+            }
+        }).onClose.subscribe((data) => {});
     }
 
     onMeecoLogin(): void {
