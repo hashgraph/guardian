@@ -80,6 +80,7 @@ export class ChangePasswordComponent implements OnInit {
                     this.authState.updateState(true);
                     const home = this.auth.home(result.role);
                     this.router.navigate([home]);
+                    this.dialogRef.close(true);
                 });
             }, (error) => {
                 setTimeout(() => {

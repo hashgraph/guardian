@@ -913,3 +913,8 @@ mat-radio-button {
         margin-bottom: 8px;
     }
 }
+
+.primary-color {
+    fill: var(--color-primary, #0681ee);
+    color: var(--color-primary, #0681ee);
+}
