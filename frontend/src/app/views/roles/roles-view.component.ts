@@ -202,7 +202,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         this.newRole = this.fb.group({
             id: [row?.id],
             name: [row?.name || 'Role name', Validators.required],
-            description: [row?.description || 'Role name'],
+            description: [row?.description || 'Role description'],
             permissions: this.group.form
         });
         this.group.addRole();
