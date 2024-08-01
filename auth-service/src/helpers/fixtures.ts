@@ -1,5 +1,25 @@
+import crypto from 'crypto';
+import { User } from '../entity/user.js';
+import { UserRole } from '@guardian/interfaces';
+import { DataBaseHelper } from '@guardian/common';
+
 /**
  * Create default users
  */
-// tslint:disable-next-line:no-empty
-export async function fixtures(): Promise<void> {}
+export async function fixtures(): Promise<void> {
+    const usersRepository = new DataBaseHelper(User);
+    // Fixture user
+    if ((await usersRepository.count()) === 0) {
+        const user = usersRepository.create({
+            username: 'StandardRegistry',
+            password: crypto
+                .createHash('sha256')
+                .update(process.env.SR_INITIAL_PASSWORD)
+                .digest('hex'),
+            //walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
+            walletToken: '',
+            role: UserRole.STANDARD_REGISTRY,
+        });
+        await usersRepository.save(user);
+    }
+}

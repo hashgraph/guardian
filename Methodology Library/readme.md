@@ -14,8 +14,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - PWRM0001
    - PWRM0002
    - VM0041
-   - VMR0006
-     
+   - VMR0006 (Coming Soon)
 4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
@@ -48,7 +47,6 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - ACM0001
    - ACM0018
    - AMS-I.A
-   - AMS-I.E
 
 6. Tolam Earth - OCI
 7. Improved Cookstove - OCI

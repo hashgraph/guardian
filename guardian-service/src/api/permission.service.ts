@@ -272,6 +272,12 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 switch (entity) {
+                    case KeyEntity.KEY:
+                        return new MessageResponse(did === entityId);
+                    case KeyEntity.DID:
+                        return new MessageResponse(
+                            did === entityId?.split('#')[0]
+                        );
                     case KeyEntity.TOKEN:
                         return new MessageResponse(
                             await new DataBaseHelper(Token).count({
