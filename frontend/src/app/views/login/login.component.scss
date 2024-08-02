@@ -303,3 +303,11 @@ form {
     font-size: 15px;
     width: 100%;
 }
+
+.error-message {
+    border: 1px solid #f44336;
+    border-radius: 6px;
+    color: #f44336;
+    padding: 6px 16px;
+    background: #fff8f7;
+}
