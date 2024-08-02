@@ -75,10 +75,21 @@
                 }
 
                 & > *:nth-child(2) {
-                    width: 56px;
-                    min-width: 56px;
-                    max-width: 56px;
+                    // width: 56px;
+                    // min-width: 56px;
+                    // max-width: 56px;
+                    // margin-left: 16px;
+                    width: 160px;
+                    min-width: 160px;
+                    max-width: 160px;
                     margin-left: 16px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                *[hidden="true"] {
+                    display: none !important;
                 }
             }
         }

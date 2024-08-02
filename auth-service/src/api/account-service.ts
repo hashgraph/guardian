@@ -19,8 +19,7 @@ import {
     IUser,
     UserRole
 } from '@guardian/interfaces';
-import { UserUtils, UserPassword, PasswordType, UserAccessTokenService } from '#utils';
-import { REGISTER_REQUIRED_PROPS } from '#constants';
+import { UserUtils, UserPassword, PasswordType, UserAccessTokenService, UserProp } from '#utils';
 
 /**
  * Account service
@@ -59,7 +58,7 @@ export class AccountService extends NatsService {
                         throw new Error('Token expired');
                     }
 
-                    const user = await UserUtils.getUser({ username: decryptedToken.username });
+                    const user = await UserUtils.getUser({ username: decryptedToken.username }, UserProp.REQUIRED);
                     return new MessageResponse(user);
                 } catch (error) {
                     return new MessageError(error);
@@ -74,7 +73,7 @@ export class AccountService extends NatsService {
             async (msg: { did: string }) => {
                 const { did } = msg;
                 try {
-                    const user = await UserUtils.getUser({ did })
+                    const user = await UserUtils.getUser({ did }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -90,7 +89,7 @@ export class AccountService extends NatsService {
             async (msg: { username: string }) => {
                 const { username } = msg;
                 try {
-                    const user = await UserUtils.getUser({ username })
+                    const user = await UserUtils.getUser({ username }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -106,7 +105,7 @@ export class AccountService extends NatsService {
             async (msg: { account: string }) => {
                 const { account } = msg;
                 try {
-                    const user = await UserUtils.getUser({ hederaAccountId: account })
+                    const user = await UserUtils.getUser({ hederaAccountId: account }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -123,7 +122,7 @@ export class AccountService extends NatsService {
             async (msg: { providerId: string, provider: string }) => {
                 const { providerId, provider } = msg;
                 try {
-                    const user = await UserUtils.getUser({ providerId, provider })
+                    const user = await UserUtils.getUser({ providerId, provider }, UserProp.WITH_KEYS);
                     return new MessageResponse(user);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -139,7 +138,7 @@ export class AccountService extends NatsService {
             async (msg: { did: string }) => {
                 try {
                     const { did } = msg;
-                    const users = await UserUtils.getUsers({ parent: did })
+                    const users = await UserUtils.getUsers({ parent: did }, UserProp.WITH_KEYS);
                     return new MessageResponse(users);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -155,7 +154,7 @@ export class AccountService extends NatsService {
             async (msg: { dids: string[] }) => {
                 const { dids } = msg;
                 try {
-                    const users = await UserUtils.getUsers({ did: { $in: dids } })
+                    const users = await UserUtils.getUsers({ did: { $in: dids } }, UserProp.WITH_KEYS);
                     return new MessageResponse(users);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -171,7 +170,7 @@ export class AccountService extends NatsService {
             async (msg: { role: UserRole }) => {
                 const { role } = msg;
                 try {
-                    const users = await UserUtils.getUsers({ role })
+                    const users = await UserUtils.getUsers({ role }, UserProp.WITH_KEYS);
                     return new MessageResponse(users);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -256,10 +255,11 @@ export class AccountService extends NatsService {
                         password: passwordDigest.password,
                         salt: passwordDigest.salt,
                         passwordVersion: passwordDigest.passwordVersion,
-                        role
+                        role,
+                        walletToken: ''
                     });
 
-                    return new MessageResponse(UserUtils.getRequiredProps(user, REGISTER_REQUIRED_PROPS));
+                    return new MessageResponse(user);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
                     return new MessageError(error)
@@ -282,13 +282,14 @@ export class AccountService extends NatsService {
             async (msg: ProviderAuthUser) => {
                 try {
                     const { username, role, provider, providerId } = msg;
-                    let user = await UserUtils.getUser({ username, template: { $ne: true } })
+                    let user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.REQUIRED)
                     if (!user) {
                         user = await UserUtils.createNewUser({
                             username,
                             role,
                             provider,
-                            providerId
+                            providerId,
+                            walletToken: ''
                         })
                     }
 
@@ -310,7 +311,7 @@ export class AccountService extends NatsService {
             async (msg: { username: string, password: string }) => {
                 try {
                     const { username, password } = msg;
-                    const user = await UserUtils.getRowUser({ username, template: { $ne: true } });
+                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.ROW);
                     if (user) {
                         if (user.passwordVersion === PasswordType.V2) {
                             if (await UserPassword.verifyPasswordV2(user, password)) {
@@ -342,7 +343,7 @@ export class AccountService extends NatsService {
             async (msg: { username: string, oldPassword: string, newPassword: string }) => {
                 try {
                     const { username, oldPassword, newPassword } = msg;
-                    const user = await UserUtils.getRowUser({ username, template: { $ne: true } });
+                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.ROW);
                     if (!(await UserPassword.verifyPassword(user, oldPassword))) {
                         return new MessageError('Unauthorized request', 401);
                     }
@@ -414,7 +415,7 @@ export class AccountService extends NatsService {
                     }
                     const result = await new DataBaseHelper(User).update(user);
 
-                    return new MessageResponse(UserUtils.updateUserFields(result));
+                    return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
                     return new MessageError(error);

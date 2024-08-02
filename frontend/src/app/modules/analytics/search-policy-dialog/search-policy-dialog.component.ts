@@ -23,9 +23,9 @@ export class SearchPolicyDialog {
         tokens: new FormControl(false),
         vcDocuments: new FormControl(false),
         vpDocuments: new FormControl(false),
-        tokensCount: new FormControl(0),
-        vcDocumentsCount: new FormControl(0),
-        vpDocumentsCount: new FormControl(0),
+        tokensCount: new FormControl(1),
+        vcDocumentsCount: new FormControl(1),
+        vpDocumentsCount: new FormControl(1),
     });
     public types = [{
         name: 'Search only imported',

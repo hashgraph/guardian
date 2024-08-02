@@ -7,9 +7,18 @@ export const REQUIRED_PROPS = {
     PARENT: 'parent',
     HEDERA_ACCOUNT_ID: 'hederaAccountId',
     ROLE: 'role',
+    POLICY_ROLES: 'policyRoles',
     PERMISSIONS: 'permissions',
     PERMISSION_GROUP: 'permissionsGroup'
 };
+
+export const USER_KEYS_PROPS = {
+    ...REQUIRED_PROPS,
+    WALLET_TOKEN: 'walletToken',
+    PROVIDER: 'provider',
+    PROVIDER_ID: 'providerId',
+    USE_FIREBLOCKS_SIGNING: 'useFireblocksSigning'
+}
 
 export const REGISTER_REQUIRED_PROPS = {
     STATUS_CODE: 'status_code',

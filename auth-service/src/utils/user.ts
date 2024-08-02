@@ -7,23 +7,27 @@ import {
     UserRole,
     IGroup,
 } from '@guardian/interfaces';
-import { USER_REQUIRED_PROPS, DB_REQUIRED_PROPS } from '#constants';
+import { USER_REQUIRED_PROPS, USER_KEYS_PROPS } from '#constants';
 import { User } from '../entity/user.js';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { DataBaseHelper } from '@guardian/common';
+
+export enum UserProp {
+    ROW = 'ROW',
+    WITH_KEYS = 'WITH_KEYS',
+    REQUIRED = 'REQUIRED'
+}
 
 /**
  * Utils
  */
 export class UserUtils {
-    private static readonly options = { fields: DB_REQUIRED_PROPS };
-
     public static getRequiredProps(
-        user: User | IUser,
+        user: User,
         requiredProps: Record<string, string>
-    ): IUser {
+    ): User {
         if (user) {
-            const userRequiredProps: IUser = {};
+            const userRequiredProps: any = {};
             for (const prop of Object.values(requiredProps)) {
                 userRequiredProps[prop] = user[prop];
             }
@@ -54,12 +58,19 @@ export class UserUtils {
         return user;
     }
 
-    public static updateUserFields(user: User): IUser {
-        return UserUtils.getRequiredProps(UserUtils.setDefaultPermissions(user), USER_REQUIRED_PROPS);
+    public static updateUserFields(user: User, prop: UserProp): User {
+        if (prop === UserProp.ROW) {
+            return user;
+        } else if (prop === UserProp.REQUIRED) {
+            return UserUtils.getRequiredProps(UserUtils.setDefaultPermissions(user), USER_REQUIRED_PROPS);
+        } else if (prop === UserProp.WITH_KEYS) {
+            return UserUtils.getRequiredProps(UserUtils.setDefaultPermissions(user), USER_KEYS_PROPS);
+        }
+        return user;
     }
 
-    public static updateUsersFields(users: User[]): IUser[] {
-        return users.map((user) => UserUtils.updateUserFields(user));
+    public static updateUsersFields(users: User[], prop: UserProp): User[] {
+        return users.map((user) => UserUtils.updateUserFields(user, prop));
     }
 
     public static async createNewUser(user: {
@@ -73,7 +84,7 @@ export class UserUtils {
         provider?: string,
         providerId?: string,
         walletToken?: string,
-    }): Promise<IUser> {
+    }): Promise<User> {
         const defaultRole = await new DataBaseHelper(DynamicRole).findOne({
             owner: null,
             default: true,
@@ -93,7 +104,7 @@ export class UserUtils {
         });
         const result = await (new DataBaseHelper(User)).save(row);
 
-        return UserUtils.updateUserFields(result);
+        return UserUtils.updateUserFields(result, UserProp.REQUIRED);
     }
 
     public static async createUserTemplate(
@@ -110,24 +121,16 @@ export class UserUtils {
             template: true
         });
         const result = await (new DataBaseHelper(User)).save(row);
-        return UserUtils.updateUserFields(result);
+        return UserUtils.updateUserFields(result, UserProp.REQUIRED);
     }
 
-    public static async getUser(filters: any): Promise<IUser | undefined> {
-        const user = await new DataBaseHelper(User).findOne(filters, UserUtils.options);
-        return UserUtils.updateUserFields(user);
+    public static async getUser(filters: any, prop: UserProp): Promise<User | undefined> {
+        const user = await new DataBaseHelper(User).findOne(filters);
+        return UserUtils.updateUserFields(user, prop);
     }
 
-    public static async getUsers(filters: any): Promise<IUser[]> {
-        const users = await new DataBaseHelper(User).find(filters, UserUtils.options);
-        return UserUtils.updateUsersFields(users);
-    }
-
-    public static async getRowUser(filters: any): Promise<User | undefined> {
-        return await new DataBaseHelper(User).findOne(filters);
-    }
-
-    public static async getRowUsers(filters: any): Promise<User[]> {
-        return await new DataBaseHelper(User).find(filters);
+    public static async getUsers(filters: any, prop: UserProp): Promise<User[]> {
+        const users = await new DataBaseHelper(User).find(filters);
+        return UserUtils.updateUsersFields(users, prop);
     }
 }

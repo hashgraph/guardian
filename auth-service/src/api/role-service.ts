@@ -2,7 +2,7 @@ import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger,
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
-import { UserUtils } from '#utils';
+import { UserProp, UserUtils } from '#utils';
 
 const permissionList = PermissionsArray.filter((p) => !p.disabled).map((p) => {
     return {
@@ -159,7 +159,7 @@ export class RoleService extends NatsService {
                     }
 
                     if (onlyOwn) {
-                        const target = await UserUtils.getRowUser({ did: user });
+                        const target = await UserUtils.getUser({ did: user }, UserProp.ROW);
                         if (target && target.permissionsGroup?.length) {
                             const ids = target.permissionsGroup.map((group) => group.roleId);
                             options.id = { $in: ids };
@@ -355,7 +355,7 @@ export class RoleService extends NatsService {
                         target.permissionsGroup.length &&
                         target.permissionsGroup[0].owner
                     ) {
-                        return new MessageResponse(UserUtils.updateUserFields(target));
+                        return new MessageResponse(UserUtils.updateUserFields(target, UserProp.REQUIRED));
                     }
                     const defaultRole = await getDefaultRole(owner);
                     if (defaultRole) {
@@ -371,7 +371,7 @@ export class RoleService extends NatsService {
                         target.permissions = [];
                     }
                     const result = await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(UserUtils.updateUserFields(result));
+                    return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -393,7 +393,7 @@ export class RoleService extends NatsService {
                     }
                     const { username, userRoles, owner } = msg;
 
-                    const target = await UserUtils.getRowUser({ username, parent: owner.creator });
+                    const target = await UserUtils.getUser({ username, parent: owner.creator }, UserProp.ROW);
                     if (!target) {
                         return new MessageError('User does not exist');
                     }
@@ -434,7 +434,7 @@ export class RoleService extends NatsService {
                     }
                     target.permissions = Array.from(permissions);
                     const result = await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(UserUtils.updateUserFields(result));
+                    return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -452,7 +452,7 @@ export class RoleService extends NatsService {
             async (msg: { id: string, owner: string }) => {
                 try {
                     const { owner } = msg;
-                    const users = await UserUtils.getRowUsers({ parent: owner });
+                    const users = await UserUtils.getUsers({ parent: owner }, UserProp.ROW);
                     const roleMap = new Map<string, DynamicRole>();
                     for (const user of users) {
                         const permissionsGroup: IGroup[] = [];
@@ -477,7 +477,7 @@ export class RoleService extends NatsService {
                         user.permissions = Array.from(permissions);
                         await new DataBaseHelper(User).update(user);
                     }
-                    return new MessageResponse(UserUtils.updateUsersFields(users));
+                    return new MessageResponse(UserUtils.updateUsersFields(users, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -499,8 +499,8 @@ export class RoleService extends NatsService {
                     }
                     const { username, userRoles, owner } = msg;
 
-                    const user = await UserUtils.getRowUser({ did: owner.creator });
-                    const target = await UserUtils.getRowUser({ username });
+                    const user = await UserUtils.getUser({ did: owner.creator }, UserProp.ROW);
+                    const target = await UserUtils.getUser({ username }, UserProp.ROW);
 
                     if (!user || !target) {
                         return new MessageError('User does not exist');
@@ -550,7 +550,7 @@ export class RoleService extends NatsService {
                     target.permissionsGroup = permissionsGroup;
                     target.permissions = Array.from(permissions);
                     await new DataBaseHelper(User).update(target);
-                    return new MessageResponse(UserUtils.updateUserFields(target));
+                    return new MessageResponse(UserUtils.updateUserFields(target, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
@@ -564,7 +564,7 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.GET_USER_PERMISSIONS, async (msg: any) => {
             const { username } = msg;
             try {
-                const user = await UserUtils.getUser({ username })
+                const user = await UserUtils.getUser({ username }, UserProp.REQUIRED)
                 return new MessageResponse(user);
             } catch (error) {
                 await logger.error(error, ['AUTH_SERVICE']);
