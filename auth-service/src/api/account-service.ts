@@ -311,7 +311,7 @@ export class AccountService extends NatsService {
             async (msg: { username: string, password: string }) => {
                 try {
                     const { username, password } = msg;
-                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.ROW);
+                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
                     if (user) {
                         if (user.passwordVersion === PasswordType.V2) {
                             if (await UserPassword.verifyPasswordV2(user, password)) {
@@ -343,7 +343,7 @@ export class AccountService extends NatsService {
             async (msg: { username: string, oldPassword: string, newPassword: string }) => {
                 try {
                     const { username, oldPassword, newPassword } = msg;
-                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.ROW);
+                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
                     if (!(await UserPassword.verifyPassword(user, oldPassword))) {
                         return new MessageError('Unauthorized request', 401);
                     }

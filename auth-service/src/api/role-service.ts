@@ -159,7 +159,7 @@ export class RoleService extends NatsService {
                     }
 
                     if (onlyOwn) {
-                        const target = await UserUtils.getUser({ did: user }, UserProp.ROW);
+                        const target = await UserUtils.getUser({ did: user }, UserProp.RAW);
                         if (target && target.permissionsGroup?.length) {
                             const ids = target.permissionsGroup.map((group) => group.roleId);
                             options.id = { $in: ids };
@@ -393,7 +393,7 @@ export class RoleService extends NatsService {
                     }
                     const { username, userRoles, owner } = msg;
 
-                    const target = await UserUtils.getUser({ username, parent: owner.creator }, UserProp.ROW);
+                    const target = await UserUtils.getUser({ username, parent: owner.creator }, UserProp.RAW);
                     if (!target) {
                         return new MessageError('User does not exist');
                     }
@@ -452,7 +452,7 @@ export class RoleService extends NatsService {
             async (msg: { id: string, owner: string }) => {
                 try {
                     const { owner } = msg;
-                    const users = await UserUtils.getUsers({ parent: owner }, UserProp.ROW);
+                    const users = await UserUtils.getUsers({ parent: owner }, UserProp.RAW);
                     const roleMap = new Map<string, DynamicRole>();
                     for (const user of users) {
                         const permissionsGroup: IGroup[] = [];
@@ -499,8 +499,8 @@ export class RoleService extends NatsService {
                     }
                     const { username, userRoles, owner } = msg;
 
-                    const user = await UserUtils.getUser({ did: owner.creator }, UserProp.ROW);
-                    const target = await UserUtils.getUser({ username }, UserProp.ROW);
+                    const user = await UserUtils.getUser({ did: owner.creator }, UserProp.RAW);
+                    const target = await UserUtils.getUser({ username }, UserProp.RAW);
 
                     if (!user || !target) {
                         return new MessageError('User does not exist');

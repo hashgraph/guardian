@@ -13,7 +13,7 @@ import { DynamicRole } from '../entity/dynamic-role.js';
 import { DataBaseHelper } from '@guardian/common';
 
 export enum UserProp {
-    ROW = 'ROW',
+    RAW = 'RAW',
     WITH_KEYS = 'WITH_KEYS',
     REQUIRED = 'REQUIRED'
 }
@@ -59,7 +59,7 @@ export class UserUtils {
     }
 
     public static updateUserFields(user: User, prop: UserProp): User {
-        if (prop === UserProp.ROW) {
+        if (prop === UserProp.RAW) {
             return user;
         } else if (prop === UserProp.REQUIRED) {
             return UserUtils.getRequiredProps(UserUtils.setDefaultPermissions(user), USER_REQUIRED_PROPS);
