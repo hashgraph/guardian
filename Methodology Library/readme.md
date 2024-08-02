@@ -14,8 +14,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - PWRM0001
    - PWRM0002
    - VM0041
-   - VMR0006
-     
+   - VMR0006 (Coming Soon)
 4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
@@ -29,7 +28,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - Agricultural soils of Western Australia
    - MMCM
      
-5. CDM Methodologies (17) - Envision
+5. CDM Methodologies (18) - Envision
 
    - ACM0007
    - AMS-II.G

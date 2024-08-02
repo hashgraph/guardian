@@ -7,43 +7,13 @@ import { tokenAPI } from './api/token.service.js';
 import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
-    ApplicationState,
-    Branding,
-    COMMON_CONNECTION_CONFIG,
-    Contract,
-    DataBaseHelper,
-    DatabaseServer,
-    DidDocument,
-    entities,
-    Environment,
-    ExternalEventChannel,
-    IPFS,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    MessageServer,
-    Migration,
-    mongoForLoggingInitialization,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    Policy,
-    RetirePool,
-    RetireRequest,
-    Schema,
-    SecretManager,
-    Settings,
-    Token,
-    Topic,
-    TopicMemo,
-    TransactionLogger,
-    TransactionLogLvl,
-    Users,
-    ValidateConfiguration,
-    VcDocument,
-    VpDocument,
-    Wallet,
-    WiperRequest,
-    Workers,
+    AggregateVC, ApplicationState, ApprovalDocument, Artifact, ArtifactChunk, AssignEntity, BlockCache, BlockState, Branding, COMMON_CONNECTION_CONFIG,
+    Contract, DataBaseHelper, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
+    LargePayloadContainer, MessageBrokerChannel, MessageServer, Migration, MintRequest, MintTransaction, mongoForLoggingInitialization, MultiDocuments,
+    MultiPolicy, MultiPolicyTransaction, OldSecretManager, PinoLogger, pinoLoggerInitialization, Policy, PolicyCache, PolicyCacheData, PolicyCategory,
+    PolicyInvitations, PolicyModule, PolicyProperty, PolicyRoles, PolicyTest, PolicyTool, Record, RetirePool, RetireRequest, Schema, SecretManager,
+    Settings, SplitDocuments, SuggestionsConfig, Tag, TagCache, Theme, Token, Topic, TopicMemo, TransactionLogger, TransactionLogLvl, Users,
+    ValidateConfiguration, VcDocument, VpDocument, Wallet, WiperRequest, Workers
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -80,6 +50,53 @@ import { setDefaultSchema } from './api/helpers/default-schemas.js';
 
 export const obj = {};
 
+const necessaryEntity = [
+    AggregateVC,
+    ApprovalDocument,
+    ArtifactChunk,
+    Artifact,
+    BlockCache,
+    BlockState,
+    Branding,
+    Contract,
+    DidDocument,
+    DocumentState,
+    DryRun,
+    ExternalDocument,
+    PolicyModule,
+    MultiDocuments,
+    MultiPolicyTransaction,
+    MultiPolicy,
+    PolicyInvitations,
+    PolicyRoles,
+    Policy,
+    RetirePool,
+    RetireRequest,
+    Schema,
+    Settings,
+    SplitDocuments,
+    SuggestionsConfig,
+    TagCache,
+    Tag,
+    Theme,
+    Token,
+    PolicyTool,
+    Topic,
+    VcDocument,
+    VpDocument,
+    WiperRequest,
+    Record,
+    PolicyCategory,
+    PolicyProperty,
+    MintRequest,
+    MintTransaction,
+    DryRunFiles,
+    PolicyCacheData,
+    PolicyCache,
+    AssignEntity,
+    PolicyTest
+]
+
 Promise.all([
     Migration({
         ...COMMON_CONNECTION_CONFIG,
@@ -91,7 +108,7 @@ Promise.all([
             useUnifiedTopology: true
         },
         ensureIndexes: true,
-        entities
+        entities: necessaryEntity
     }, [
         'v2-4-0',
         'v2-7-0',

@@ -42,3 +42,4 @@ export * from './policy-cache-data.js';
 export * from './policy-cache.js';
 export * from './assign-entity.js';
 export * from './policy-test.js';
+export * from './log.js';
