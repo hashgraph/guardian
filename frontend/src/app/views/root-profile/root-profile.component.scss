@@ -420,8 +420,8 @@ button[disabled] {
     margin-top: 24px;
     display: flex;
     flex-direction: column;
-    grid-row-gap: 32px;
-    row-gap: 32px;
+    grid-row-gap: 16px;
+    row-gap: 16px;
     background: #FFFFFF;
     box-shadow: 0px 4px 8px 0px #00000014;
     padding: 24px;
@@ -429,10 +429,15 @@ button[disabled] {
 
     .item-header {
         font-family: Inter, sans-serif;
-        font-size: 24px;
+        font-size: 16px;
         font-weight: 600;
         line-height: 32px;
         text-align: left;
+        margin-top: 16px;
+
+        &:first-child {
+            margin-top: 0px;
+        }
     }
 
     .item {
