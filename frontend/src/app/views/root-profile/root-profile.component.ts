@@ -13,6 +13,7 @@ import { TasksService } from '../../services/tasks.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
+import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 
 enum OperationMode {
     None,
@@ -28,7 +29,7 @@ enum OperationMode {
     templateUrl: './root-profile.component.html',
     styleUrls: ['./root-profile.component.scss'],
 })
-export class RootProfileComponent implements OnInit, OnDestroy{
+export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
 
     public loading: boolean = true;
@@ -84,7 +85,7 @@ export class RootProfileComponent implements OnInit, OnDestroy{
         private informService: InformService,
         private taskService: TasksService,
         private headerProps: HeaderPropsService,
-        public dialog: DialogService,
+        private dialogService: DialogService,
         private cdRef: ChangeDetectorRef
     ) {
         console.log(this);
@@ -624,7 +625,7 @@ export class RootProfileComponent implements OnInit, OnDestroy{
     }
 
     public openVCDocument(document: any, title: string) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '65vw',
             closable: true,
             header: 'VC',
@@ -642,7 +643,7 @@ export class RootProfileComponent implements OnInit, OnDestroy{
     }
 
     public openDIDDocument(document: any, title: string) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '65vw',
             closable: true,
             header: 'DID',
@@ -656,6 +657,19 @@ export class RootProfileComponent implements OnInit, OnDestroy{
         });
 
         dialogRef.onClose.subscribe(async (result) => {
+        });
+    }
+
+    public changePassword(profile: any) {
+        this.dialogService.open(ChangePasswordComponent, {
+            header: 'Change password',
+            width: '640px',
+            modal: true,
+            data: {
+                login: profile?.username,
+            }
+        }).onClose.subscribe((data) => {
+            this.loadProfile();
         });
     }
 }
