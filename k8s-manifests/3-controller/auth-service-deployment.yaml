@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    
+
     kompose.version: 1.28.0 (HEAD)
   creationTimestamp: null
   labels:
@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       annotations:
-        
+
         kompose.version: 1.28.0 (HEAD)
       creationTimestamp: null
       labels:
@@ -27,10 +27,10 @@ spec:
     spec:
       containers:
         - env:
-            - name: ACCESS_TOKEN_SECRET
+            - name: JWT_PRIVATE_KEY
               valueFrom:
                 configMapKeyRef:
-                  key: ACCESS_TOKEN_SECRET
+                  key: JWT_PRIVATE_KEY
                   name: general-configs
             - name: AWS_REGION
               valueFrom:
