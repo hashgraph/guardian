@@ -1,19 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import {
-    ApplicationState,
-    COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    Migration,
-    mongoForLoggingInitialization,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    SecretManager,
-    ValidateConfiguration,
-} from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration, } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -104,13 +91,14 @@ Promise.all([
                 }
             }
             const secretManager = SecretManager.New();
-            let {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth');
-            if (!ACCESS_TOKEN_SECRET) {
-                ACCESS_TOKEN_SECRET = process.env.JWT_PRIVATE_KEY;
-                if (ACCESS_TOKEN_SECRET.length < 8) {
+            let {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY} = await secretManager.getSecrets('secretkey/auth');
+            if (!JWT_PRIVATE_KEY || !JWT_PUBLIC_KEY) {
+                JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
+                JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
+                if (JWT_PRIVATE_KEY.length < 8 || JWT_PUBLIC_KEY.length < 8) {
                     return false;
                 }
-                await secretManager.setSecrets('secretkey/auth', {ACCESS_TOKEN_SECRET});
+                await secretManager.setSecrets('secretkey/auth', {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY});
             }
             return true;
         })

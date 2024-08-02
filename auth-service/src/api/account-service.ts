@@ -124,9 +124,9 @@ export class AccountService extends NatsService {
         this.getMessages<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg: any) => {
             const { token } = msg;
             const secretManager = SecretManager.New();
-            const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
+            const {JWT_PUBLIC_KEY} = await secretManager.getSecrets('secretkey/auth')
             try {
-                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, ACCESS_TOKEN_SECRET, {
+                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, JWT_PUBLIC_KEY, {
                     algorithms: ['RS256']
                 });
                 if (Date.now() > decryptedToken.expireAt) {
@@ -367,12 +367,12 @@ export class AccountService extends NatsService {
                         )
                     }
                     const secretManager = SecretManager.New();
-                    const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
+                    const {JWT_PRIVATE_KEY} = await secretManager.getSecrets('secretkey/auth')
                     const accessToken = sign({
                         username: user.username,
                         did: user.did,
                         role: user.role
-                    }, ACCESS_TOKEN_SECRET, {
+                    }, JWT_PRIVATE_KEY, {
                         algorithm: 'RS256'
                     });
                     return new MessageResponse({
@@ -394,7 +394,7 @@ export class AccountService extends NatsService {
 
                 const secretManager = SecretManager.New();
 
-                const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
+                const {JWT_PRIVATE_KEY} = await secretManager.getSecrets('secretkey/auth');
 
                 const REFRESH_TOKEN_UPDATE_INTERVAL = process.env.REFRESH_TOKEN_UPDATE_INTERVAL || '31536000000' // 1 year
 
@@ -408,7 +408,7 @@ export class AccountService extends NatsService {
                         id: tokenId,
                         name: user.username,
                         expireAt: Date.now() + parseInt(REFRESH_TOKEN_UPDATE_INTERVAL, 10)
-                    }, ACCESS_TOKEN_SECRET, {
+                    }, JWT_PRIVATE_KEY, {
                         algorithm: 'RS256'
                     });
                     user.refreshToken = tokenId;
@@ -433,9 +433,9 @@ export class AccountService extends NatsService {
             const { refreshToken } = msg;
             const secretManager = SecretManager.New();
 
-            const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
+            const {JWT_PRIVATE_KEY} = await secretManager.getSecrets('secretkey/auth')
 
-            const decryptedToken = await util.promisify<string, any, Object, any>(verify)(refreshToken, ACCESS_TOKEN_SECRET, {
+            const decryptedToken = await util.promisify<string, any, Object, any>(verify)(refreshToken, JWT_PRIVATE_KEY, {
                 algorithms: ['RS256']
             });
             if (Date.now() > decryptedToken.expireAt) {
@@ -458,7 +458,7 @@ export class AccountService extends NatsService {
                 did: user.did,
                 role: user.role,
                 expireAt: Date.now() + parseInt(ACCESS_TOKEN_UPDATE_INTERVAL, 10)
-            }, ACCESS_TOKEN_SECRET, {
+            }, JWT_PRIVATE_KEY, {
                 algorithm: 'RS256'
             });
 
