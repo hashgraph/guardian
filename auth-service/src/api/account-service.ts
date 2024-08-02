@@ -1,5 +1,5 @@
 import { User } from '../entity/user.js';
-import { DataBaseHelper, IAuthUser, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton } from '@guardian/common';
+import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton } from '@guardian/common';
 import {
     AuthEvents,
     GenerateUUIDv4,
@@ -14,7 +14,6 @@ import {
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
     IRegisterNewUserMessage,
-    ISaveUserMessage,
     IStandardRegistryUserResponse,
     IUpdateUserMessage,
     IUser,
@@ -283,7 +282,7 @@ export class AccountService extends NatsService {
             async (msg: ProviderAuthUser) => {
                 try {
                     const { username, role, provider, providerId } = msg;
-                    let user = await UserUtils.getUser({ username: username, template: { $ne: true } })
+                    let user = await UserUtils.getUser({ username, template: { $ne: true } })
                     if (!user) {
                         user = await UserUtils.createNewUser({
                             username,

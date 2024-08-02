@@ -42,7 +42,7 @@ export class UserPassword {
 
     public static async generatePasswordV2(password: string): Promise<IPassword> {
         return new Promise((resolve, reject) => {
-            const salt = randomBytes(UserPassword.SALT_LENGTH).toString("hex");
+            const salt = randomBytes(UserPassword.SALT_LENGTH).toString('hex');
             pbkdf2(
                 password,
                 salt,

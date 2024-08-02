@@ -1,5 +1,5 @@
-import { SecretManager } from "@guardian/common";
-import { IUser, GenerateUUIDv4 } from "@guardian/interfaces";
+import { SecretManager } from '@guardian/common';
+import { IUser, GenerateUUIDv4 } from '@guardian/interfaces';
 import pkg from 'jsonwebtoken';
 import * as util from 'util';
 
