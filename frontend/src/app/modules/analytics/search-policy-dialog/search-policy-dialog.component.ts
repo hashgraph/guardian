@@ -91,15 +91,15 @@ export class SearchPolicyDialog {
             this.filtersCount++;
         }
         if (filters.tokens) {
-            options.minTokensCount = filters.tokensCount || 0;
+            options.minTokensCount = filters.tokensCount || 1;
             this.filtersCount++;
         }
         if (filters.vcDocuments) {
-            options.minVcCount = filters.vcDocumentsCount || 0;
+            options.minVcCount = filters.vcDocumentsCount || 1;
             this.filtersCount++;
         }
         if (filters.vpDocuments) {
-            options.minVpCount = filters.vpDocumentsCount || 0;
+            options.minVpCount = filters.vpDocumentsCount || 1;
             this.filtersCount++;
         }
         this.error = null;
@@ -180,9 +180,9 @@ export class SearchPolicyDialog {
                 tokens: false,
                 vcDocuments: false,
                 vpDocuments: false,
-                tokensCount: 0,
-                vcDocumentsCount: 0,
-                vpDocumentsCount: 0
+                tokensCount: 1,
+                vcDocumentsCount: 1,
+                vpDocumentsCount: 1
             })
             this.load();
         }, 0);
@@ -197,9 +197,9 @@ export class SearchPolicyDialog {
             tokens: false,
             vcDocuments: false,
             vpDocuments: false,
-            tokensCount: 0,
-            vcDocumentsCount: 0,
-            vpDocumentsCount: 0
+            tokensCount: 1,
+            vcDocumentsCount: 1,
+            vpDocumentsCount: 1
         })
         this.select();
         this.load();
