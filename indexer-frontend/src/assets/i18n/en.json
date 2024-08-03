@@ -40,9 +40,7 @@
         "search_placeholder": "Search by keyword"
     },
     "home": {
-        "header": "Indexer",
-        "description": "Guardian Indexer by",
-        "bold_description": "Managed Guardian Service"
+        "header": "Indexer"
     },
     "filter": {
         "placeholder": "placeholder",
