@@ -956,10 +956,10 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: { schema, example, category: this.getCategory() },
         });
-        dialogRef.afterClosed().subscribe(async (exampleDate: any) => {
-            if (exampleDate) {
+        dialogRef.afterClosed().subscribe(async ({ exampleDate, currentSchema }: { exampleDate: any, currentSchema: Schema }) => {
+            if (exampleDate && currentSchema) {
                 schema.setExample(exampleDate);
-                this.updateSchema(schema.id, schema);
+                this.updateSchema(currentSchema.id, currentSchema);
             }
         });
     }
