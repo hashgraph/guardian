@@ -62,7 +62,7 @@ export class InterfaceDocumentsSource {
 
     async onAddonEvent(user: PolicyUser, tag: string, documentId: string, options?: {
         field: string,
-        value: string;
+        value: unknown;
     }) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
         const fields = ref.options?.uiMetaData?.fields?.filter((field) =>

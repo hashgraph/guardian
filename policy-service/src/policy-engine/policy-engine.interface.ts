@@ -543,7 +543,7 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      */
     onAddonEvent(user: PolicyUser, tag: string, documentId: string, options?: {
         field: string,
-        value: string;
+        value: unknown;
     }) : Promise<void>
 }
 

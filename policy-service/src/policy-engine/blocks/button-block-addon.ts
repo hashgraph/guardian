@@ -107,7 +107,7 @@ export class ButtonBlockAddon {
         user: PolicyUser,
         blockData: {
             documentId: string;
-            dialogResult: string;
+            dialogResult: unknown;
         }
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
